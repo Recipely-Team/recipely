@@ -34,7 +34,7 @@ const ALERT_CHANNEL = 'recipely-timer-alert-v4';
 // Notification category identifier — the "Kapat" dismiss action lives under it.
 const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
 
-// WHY: only one notification — the in-app expo-av loop is the continuous
+// WHY: only one notification — the in-app expo-audio loop is the continuous
 // alarm. Reminder notifications caused repeated dings every 2 min which
 // felt like spam rather than an alarm. User dismisses via the alarm screen
 // or the "Kapat" action on the single notification.

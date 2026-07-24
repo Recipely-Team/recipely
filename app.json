@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "googleServicesFile": "./GoogleService-Info.plist",
@@ -19,7 +18,6 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
@@ -61,7 +59,8 @@
             "usesCleartextTraffic": true,
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "useLegacyPackaging": true
+            "useLegacyPackaging": true,
+            "extraProguardRules": "# expo-modules-core converts JS option objects into @Field-annotated Kotlin\n# Record classes (e.g. SecureStoreOptions) via kotlin-reflect at runtime. R8\n# full-mode optimization (proguard-android-optimize.txt) rewrites the reflection\n# helpers this relies on, so SecureStore.getItemAsync(key) throws \"cannot be cast\n# to type SecureStoreOptions (received ReadableNativeMap)\". expo ships a keep for\n# Record subclasses but not for the converter machinery — keep both.\n-keep class expo.modules.kotlin.records.** { *; }\n-keep class expo.modules.kotlin.types.** { *; }\n-keep class kotlin.Metadata { *; }\n-keep class kotlin.reflect.jvm.internal.** { *; }\n-keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations,AnnotationDefault,Signature,InnerClasses,EnclosingMethod,Metadata"
           }
         }
       ],
@@ -85,7 +84,13 @@
       ],
       "expo-localization",
       "expo-video",
-      "expo-av",
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false,
+          "recordAudioAndroid": false
+        }
+      ],
       [
         "expo-notifications",
         {
