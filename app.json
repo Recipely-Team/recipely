@@ -59,7 +59,8 @@
             "usesCleartextTraffic": true,
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
-            "useLegacyPackaging": true
+            "useLegacyPackaging": true,
+            "extraProguardRules": "# expo-modules-core converts JS option objects into @Field-annotated Kotlin\n# Record classes (e.g. SecureStoreOptions) via kotlin-reflect at runtime. R8\n# full-mode optimization (proguard-android-optimize.txt) rewrites the reflection\n# helpers this relies on, so SecureStore.getItemAsync(key) throws \"cannot be cast\n# to type SecureStoreOptions (received ReadableNativeMap)\". expo ships a keep for\n# Record subclasses but not for the converter machinery — keep both.\n-keep class expo.modules.kotlin.records.** { *; }\n-keep class expo.modules.kotlin.types.** { *; }\n-keep class kotlin.Metadata { *; }\n-keep class kotlin.reflect.jvm.internal.** { *; }\n-keepattributes RuntimeVisibleAnnotations,RuntimeVisibleParameterAnnotations,AnnotationDefault,Signature,InnerClasses,EnclosingMethod,Metadata"
           }
         }
       ],
