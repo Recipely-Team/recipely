@@ -78,8 +78,12 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // hydration so the first client render matches and React can hydrate cleanly
   // (React error #418). `preference` itself loads from storage in an effect, so
   // it is already at its SSR default ('system') on the first render.
-  const effectiveSystemScheme =
-    Platform.OS === 'web' && !hydrated ? 'light' : (systemScheme ?? 'light');
+  // React Native 0.83 widened `ColorSchemeName` with 'unspecified' (the system
+  // reports no preference); like a null scheme it resolves to light, so every
+  // non-'dark' value collapses to the same branch.
+  const ignoreSystemScheme = Platform.OS === 'web' && !hydrated;
+  const effectiveSystemScheme: EffectiveSchemeType =
+    !ignoreSystemScheme && systemScheme === 'dark' ? 'dark' : 'light';
 
   const scheme: EffectiveSchemeType =
     preference === 'system' ? effectiveSystemScheme : preference;
