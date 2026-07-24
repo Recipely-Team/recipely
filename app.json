@@ -119,7 +119,8 @@
           "iosUrlScheme": "com.googleusercontent.apps.421167568469-hl9tkgpi61p1rrir349b9ild9h976kgd"
         }
       ],
-      "./plugins/withAndroidReleaseSigning"
+      "./plugins/withAndroidReleaseSigning",
+      "./plugins/withAndroidR8Optimization"
     ],
     "experiments": {
       "typedRoutes": true
