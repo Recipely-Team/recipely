@@ -4,8 +4,8 @@ import { RecipePreviewEditor } from '@presentation/app/create-recipe/body/recipe
 import { RefineDock } from '@presentation/app/create-recipe/body/refine-dock';
 import { CreateRecipeHeader } from '@presentation/app/create-recipe/body/create-recipe-header';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { controlSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface CreateRecipePreviewProps {
@@ -92,11 +92,11 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
 
 const styles = StyleSheet.create({
   refiningTrack: {
-    height: sizes.progressBarThin,
+    height: controlSizes.progressBarThin,
     overflow: 'hidden',
   },
   refiningFill: {
-    height: sizes.progressBarThin,
+    height: controlSizes.progressBarThin,
     width: '40%',
   },
   content: {

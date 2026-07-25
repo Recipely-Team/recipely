@@ -8,11 +8,11 @@ import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import type { Failure } from '@presentation/base/types';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { RoutePaths, OpacityConstants } from '@presentation/base/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -200,24 +200,24 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   input: {
-    height: sizes.inputHeight,
-    borderWidth: sizes.inputBorderWidth,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,
     fontSize: fontSizes.body,
   },
   passwordInput: {
-    paddingRight: sizes.iconBtn + spacing.sm,
+    paddingRight: controlSizes.iconBtn + spacing.sm,
   },
   eyeButton: {
     position: 'absolute',
     right: spacing.sm,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -230,19 +230,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   forgotLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   signInButton: {
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.lg,
   },
   buttonDisabled: {
-    opacity: OpacityConstants.disabled,
+    opacity: opacities.disabled,
   },
   signInLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

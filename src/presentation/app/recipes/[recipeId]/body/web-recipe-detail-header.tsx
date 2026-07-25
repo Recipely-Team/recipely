@@ -2,15 +2,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
-import { OpacityConstants } from '@presentation/base/constants';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -80,7 +79,7 @@ export const WebRecipeDetailHeader = ({
               <AvatarImage
                 uri={author.authorPhotoUrl}
                 name={author.authorName}
-                size={sizes.webDetailAuthorAvatar}
+                size={avatarSizes.xs}
               />
               <ThemedText variant="body" style={styles.authorName}>
                 {author.authorName}
@@ -89,7 +88,7 @@ export const WebRecipeDetailHeader = ({
           ) : null}
           {recipe.rating > ValueConstants.zero ? (
             <View style={styles.statItem}>
-              <Ionicons name="star" size={sizes.iconSm} color={colors.starFilled} />
+              <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
               <ThemedText variant="body" style={[styles.statText, { color: colors.text }]}>
                 {recipe.rating.toFixed(1)}
               </ThemedText>
@@ -103,7 +102,7 @@ export const WebRecipeDetailHeader = ({
           >
             <MaterialCommunityIcons
               name={liked ? 'heart' : 'heart-outline'}
-              size={sizes.iconMd}
+              size={iconSizes.xl}
               color={liked ? colors.likeActive : colors.textMuted}
             />
             <ThemedText
@@ -115,7 +114,7 @@ export const WebRecipeDetailHeader = ({
           </Pressable>
           {recipe.viewCount > ValueConstants.zero ? (
             <View style={styles.statItem}>
-              <Ionicons name="eye-outline" size={sizes.iconMd} color={colors.textMuted} />
+              <Ionicons name="eye-outline" size={iconSizes.xl} color={colors.textMuted} />
               <ThemedText variant="body" style={[styles.statText, { color: colors.textMuted }]}>
                 {recipe.viewCount.toLocaleString()}
               </ThemedText>
@@ -132,10 +131,10 @@ export const WebRecipeDetailHeader = ({
             onPress={onEdit}
             style={({ pressed }) => [
               styles.pill,
-              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
             ]}
           >
-            <Ionicons name="create-outline" size={sizes.iconSm} color={colors.text} />
+            <Ionicons name="create-outline" size={iconSizes.md} color={colors.text} />
             <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
               {t().myRecipes.editRecipe}
             </ThemedText>
@@ -148,10 +147,10 @@ export const WebRecipeDetailHeader = ({
             onPress={onDelete}
             style={({ pressed }) => [
               styles.pill,
-              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
             ]}
           >
-            <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
+            <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
             <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.danger }]}>
               {t().myRecipes.deleteRecipe}
             </ThemedText>
@@ -167,12 +166,12 @@ export const WebRecipeDetailHeader = ({
             isSaved
               ? { backgroundColor: colors.primary, borderColor: colors.primary }
               : { backgroundColor: colors.surface, borderColor: colors.cardBorder },
-            { opacity: pressed || saveDisabled ? OpacityConstants.pressed : OpacityConstants.full },
+            { opacity: pressed || saveDisabled ? opacities.pressed : opacities.full },
           ]}
         >
           <Ionicons
             name={isSaved ? 'bookmark' : 'bookmark-outline'}
-            size={sizes.iconSm}
+            size={iconSizes.md}
             color={isSaved ? colors.primaryText : colors.text}
           />
           <ThemedText
@@ -211,13 +210,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   chipText: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   title: {
-    fontSize: fontSizes.webDetailTitle,
-    fontWeight: '800',
-    lineHeight: fontSizes.webDetailTitle + spacing.xs,
-    letterSpacing: -1,
+    fontSize: fontSizes.jumbo,
+    fontWeight: fontWeights.heavy,
+    lineHeight: fontSizes.jumbo + spacing.xs,
+    letterSpacing: letterSpacings.ultraTight,
   },
   statsRow: {
     flexDirection: 'row',
@@ -231,10 +230,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   authorName: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   statText: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   actions: {
     flexDirection: 'row',
@@ -246,13 +245,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs2,
-    height: sizes.searchBarHeight,
+    minHeight: controlSizes.searchBar,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
   pillLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.caption,
   },
 });

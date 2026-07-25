@@ -1,12 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
-const CHANNEL_CHIP_SIZE = sizes.channelChip;
+const CHANNEL_CHIP_SIZE = controlSizes.channelChip;
 
 export interface ChannelTileProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -27,12 +26,12 @@ export const ChannelTile = ({ icon, label, onPress }: ChannelTileProps): React.J
         {
           backgroundColor: colors.surface,
           borderColor: colors.cardBorder,
-          opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full,
+          opacity: pressed ? opacities.pressed : opacities.full,
         },
       ]}
     >
       <View style={[styles.channelChip, { backgroundColor: colors.chipBackground }]}>
-        <Ionicons name={icon} size={sizes.iconMd} color={colors.primary} />
+        <Ionicons name={icon} size={iconSizes.xl} color={colors.primary} />
       </View>
       <ThemedText variant="caption" style={styles.channelLabel}>
         {label}
@@ -46,7 +45,7 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.xs,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     borderRadius: radii.lg,
     paddingVertical: spacing.md,
     paddingHorizontal: spacing.xs,
@@ -60,7 +59,7 @@ const styles = StyleSheet.create({
   },
   channelLabel: {
     fontSize: fontSizes.small,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     textAlign: 'center',
   },
 });

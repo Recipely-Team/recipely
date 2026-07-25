@@ -20,7 +20,8 @@
     "prepare": "husky",
     "release:patch": "npm version patch -m 'chore(release): v%s' && git push --follow-tags",
     "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",
-    "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags"
+    "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags",
+    "map": "node scripts/generate-map.mjs"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",

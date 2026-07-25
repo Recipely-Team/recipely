@@ -3,10 +3,11 @@ import { Animated, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { useDragToDismiss } from '@presentation/base/hooks/use-drag-to-dismiss';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useDragToDismiss } from '@presentation/base/hooks/interaction/use-drag-to-dismiss';
+import { spacing, radii, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface BottomSheetProps {
   visible: boolean;
@@ -88,7 +89,7 @@ export const BottomSheet = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     justifyContent: 'flex-end',
   },
   backdrop: {
@@ -105,7 +106,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xs,
   },
   grabber: {
-    width: sizes.iconBtn,
+    width: controlSizes.iconBtn,
     height: spacing.xs,
     borderRadius: radii.xs,
   },

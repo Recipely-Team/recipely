@@ -6,9 +6,10 @@ import { alarmStore } from '@application/timers/alarm-store';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
 import { getAlarmAudioService } from '@application/audio/get-alarm-audio-service';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, mediaSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface AlarmScreenProps {
   timerId: string;
@@ -106,12 +107,12 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'space-between',
   },
   bell: {
-    fontSize: sizes.heroSquare,
+    fontSize: mediaSizes.heroSquare,
     textAlign: 'center',
   },
   labels: {
@@ -121,12 +122,12 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: fontSizes.headline,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   recipe: {
     fontSize: fontSizes.subtitle,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     textAlign: 'center',
   },
   dismissRow: {
@@ -134,13 +135,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xl,
   },
   dismissBtn: {
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dismissLabel: {
     fontSize: fontSizes.heading,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
 });

@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet } from 'react-native';
-import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
+import { SkeletonCard } from '@presentation/app/recipes/items/cards/skeleton-card';
 import { spacing } from '@presentation/base/theme';
 
 /** Skeleton cards shown on mobile while the list loads. */

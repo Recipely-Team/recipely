@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -80,7 +80,7 @@ export const WebRecipeDetailSidebar = ({
                       : { backgroundColor: 'transparent', borderColor: colors.border },
                   ]}
                 >
-                  {checked ? <Ionicons name="checkmark" size={sizes.iconXs} color={colors.onSuccess} /> : null}
+                  {checked ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.onSuccess} /> : null}
                 </View>
                 <ThemedText
                   variant="body"
@@ -110,7 +110,7 @@ export const WebRecipeDetailSidebar = ({
             ]}
           >
             <View style={styles.metaLabel}>
-              <Ionicons name={meta.icon} size={sizes.iconMd} color={colors.primary} />
+              <Ionicons name={meta.icon} size={iconSizes.xl} color={colors.primary} />
               <ThemedText variant="body" muted>
                 {meta.label}
               </ThemedText>
@@ -143,11 +143,11 @@ export const WebRecipeDetailSidebar = ({
 
 const styles = StyleSheet.create({
   stack: {
-    gap: sizes.webDetailStackGap,
+    gap: layoutSizes.webDetailStackGap,
   },
   card: {
     borderRadius: radii.xl,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     padding: spacing.lg,
   },
   cardHeader: {
@@ -166,10 +166,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   checkbox: {
-    width: sizes.checkboxSize,
-    height: sizes.checkboxSize,
+    width: controlSizes.checkbox,
+    height: controlSizes.checkbox,
     borderRadius: radii.sm,
-    borderWidth: ValueConstants.two,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   metaValue: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   tileGrid: {
     flexDirection: 'row',
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
   },
   tileValue: {
     fontSize: fontSizes.title,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   tileLabel: {
     fontSize: fontSizes.micro,
-    fontWeight: '600',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.semibold,
+    letterSpacing: letterSpacings.wide,
     textTransform: 'uppercase',
   },
 });

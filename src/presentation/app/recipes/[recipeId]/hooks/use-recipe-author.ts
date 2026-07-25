@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react';
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/recipe-author-input';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-input';
 import { ValueConstants } from '@core/constants';
 
 /**

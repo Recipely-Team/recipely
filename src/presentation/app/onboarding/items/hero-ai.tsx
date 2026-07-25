@@ -2,9 +2,9 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
@@ -40,7 +40,7 @@ export const HeroAI = ({ active = true }: HeroProps): React.JSX.Element => {
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           style={styles.headerIcon}
         >
-          <Ionicons name="sparkles" size={sizes.iconSm} color={colors.onOverlay} />
+          <Ionicons name="sparkles" size={iconSizes.md} color={colors.onOverlay} />
         </LinearGradient>
         <ThemedText style={styles.headerLabel}>{m.aiTitle}</ThemedText>
       </View>
@@ -100,8 +100,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerLabel: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '800',
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.heavy,
   },
   chips: {
     flexDirection: 'row',
@@ -115,7 +115,7 @@ const styles = StyleSheet.create({
   },
   chipText: {
     fontSize: fontSizes.small,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   resultLines: {
     gap: spacing.sm,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs2,
   },
   createLabel: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '700',
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.bold,
   },
 });

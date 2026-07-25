@@ -26,8 +26,8 @@ import type { RecipeCommentsState } from '@application/comments/list/recipe-comm
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { spacing } from '@presentation/base/theme';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 
 const RECIPE_ID = 'r-1';
 

@@ -1,6 +1,6 @@
 import type { Failure } from '@presentation/base/types';
 import { t } from '@presentation/i18n';
-import type { SeverityType } from '@presentation/base/theme/severity-type';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconName } from '@presentation/base/errors/ionicon-name';
 import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
 import type { FailureContent } from '@presentation/base/errors/failure-content';

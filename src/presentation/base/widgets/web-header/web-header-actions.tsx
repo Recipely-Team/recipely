@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, decorSizes, borderWidths, BrandColors } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
-const NOTIF_BTN_SIZE = 38;
+const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
 const AVATAR_SIZE = 36;
 
 export interface WebHeaderActionsProps {
@@ -153,45 +153,45 @@ const styles = StyleSheet.create({
     height: NOTIF_BTN_SIZE,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     backgroundColor: 'transparent',
   },
   createLabel: {
     fontSize: fontSizes.caption,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   iconBtn: {
     width: NOTIF_BTN_SIZE,
     height: NOTIF_BTN_SIZE,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    minWidth: 18,
-    height: 18,
-    paddingHorizontal: 4,
-    borderRadius: 9,
-    borderWidth: 2,
+    top: -spacing.xs,
+    right: -spacing.xs,
+    minWidth: decorSizes.notifBadge,
+    minHeight: decorSizes.notifBadge,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#FFFFFF',
-    fontSize: fontSizes.nano + 1,
-    fontWeight: '700',
-    lineHeight: sizes.notifBadgeLineHeight,
+    color: BrandColors.white,
+    fontSize: fontSizes.tiny,
+    fontWeight: fontWeights.bold,
+    lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },
   avatarBtn: {
     width: NOTIF_BTN_SIZE,
     height: NOTIF_BTN_SIZE,
     borderRadius: NOTIF_BTN_SIZE / 2,
-    borderWidth: 2,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',

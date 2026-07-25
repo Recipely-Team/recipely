@@ -1,4 +1,4 @@
-import type { SeverityType } from '@presentation/base/theme/severity-type';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 /** A toast as requested by a caller (id is assigned by the store). */
 export interface ToastInput {

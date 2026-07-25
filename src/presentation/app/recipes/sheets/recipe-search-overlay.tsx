@@ -1,11 +1,11 @@
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeListItem } from '@presentation/app/recipes/items/recipe-list-item';
+import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -43,7 +43,7 @@ export const RecipeSearchOverlay = ({
       </View>
       {recipes.length === ValueConstants.zero ? (
         <View style={styles.empty}>
-          <Ionicons name="search" size={sizes.iconMassive} color={colors.textMuted} />
+          <Ionicons name="search" size={iconSizes.massive} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyTitle}>
             {t().recipes.noResults}
           </ThemedText>

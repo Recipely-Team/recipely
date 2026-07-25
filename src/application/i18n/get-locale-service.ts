@@ -1,5 +1,5 @@
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { LocaleService } from '@application/i18n/locale-service';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';
 import { DEFAULT_LOCALE } from '@application/i18n/supported-locales';

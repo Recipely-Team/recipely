@@ -6,17 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { InputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
-import { SuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
+import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
+import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
-const AUTH_CARD_MAX_WIDTH = sizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -49,7 +48,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-        <Ionicons name="key-outline" size={isLandscapeShell ? sizes.iconXl : sizes.heroBadgeIcon} color={colors.onOverlay} />
+        <Ionicons name="key-outline" size={isLandscapeShell ? iconSizes.xxxl : iconSizes.xxl} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t().forgotPassword.title}
@@ -63,13 +62,13 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   );
 
   const cardBody = sent ? (
-    <SuccessView
+    <ForgotPasswordSuccessView
       email={email}
       onBack={() => router.back()}
       onTryDifferent={() => setSent(false)}
     />
   ) : (
-    <InputView
+    <ForgotPasswordInputView
       email={email}
       onChangeEmail={setEmail}
       focused={focused}
@@ -135,7 +134,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().forgotPassword.backToLogin}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         {hero}
@@ -162,7 +161,7 @@ const styles = StyleSheet.create({
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -170,34 +169,34 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / ValueConstants.two,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: controlSizes.iconBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: ValueConstants.one,
+    zIndex: zIndices.raised,
   },
   gradientCenter: {
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   iconBadge: {
-    width: sizes.avatarMd,
-    height: sizes.avatarMd,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
     borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: OpacityConstants.subtitle,
+    opacity: opacities.onMedia,
   },
   heroSubtitle: {
     textAlign: 'center',
@@ -206,7 +205,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -sizes.cardOverlap,
+    marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
@@ -221,7 +220,7 @@ const styles = StyleSheet.create({
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: sizes.maxContentLg,
+    maxWidth: layoutSizes.maxContentLg,
   },
   splitFormPane: {
     flex: ValueConstants.one,

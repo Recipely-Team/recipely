@@ -1,10 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { AiBannerCard } from '@presentation/app/recipes/items/ai-banner-card';
+import { AiBannerCard } from '@presentation/app/recipes/items/banners/ai-banner-card';
 import { CuisineStrip } from '@presentation/app/recipes/body/cuisine-strip';
-import { ActiveFilterChips } from '@presentation/app/recipes/items/active-filter-chips';
+import { ActiveFilterChips } from '@presentation/app/recipes/items/filters/active-filter-chips';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';

@@ -1,5 +1,5 @@
 import Svg, { Path } from 'react-native-svg';
-import { sizes, BrandColors } from '@presentation/base/theme';
+import { iconSizes, BrandColors } from '@presentation/base/theme';
 
 export interface AppleLogoProps {
   size?: number;
@@ -11,7 +11,7 @@ export interface AppleLogoProps {
  * social sign-in button (white on the black Apple button by default).
  */
 export const AppleLogo = ({
-  size = sizes.iconXxs,
+  size = iconSizes.lg,
   color = BrandColors.white,
 }: AppleLogoProps): React.JSX.Element => (
   <Svg width={size} height={size} viewBox="0 0 24 24" fill={color}>

@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface ConfirmSheetProps {
   visible: boolean;
@@ -88,7 +89,7 @@ export const ConfirmSheet = ({
 const styles = StyleSheet.create({
   message: {
     marginBottom: spacing.lg,
-    lineHeight: 22,
+    lineHeight: lineHeightFor(fontSizes.body),
   },
   error: {
     marginBottom: spacing.md,
@@ -98,13 +99,13 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   button: {
-    flex: 1,
-    height: sizes.buttonHeight,
+    flex: ValueConstants.one,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   buttonLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

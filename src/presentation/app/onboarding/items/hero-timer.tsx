@@ -2,12 +2,13 @@ import { StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
+import { ValueConstants } from '@core/constants';
 
 const RING_DELAY_MS = 40;
 const STEPS_DELAY_MS = 220;
@@ -137,15 +138,15 @@ const styles = StyleSheet.create({
   },
   ringTime: {
     fontSize: fontSizes.display,
-    fontWeight: '800',
-    letterSpacing: -0.5,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
     fontVariant: ['tabular-nums'],
   },
   ringCaption: {
     fontSize: fontSizes.tiny,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textTransform: 'uppercase',
-    letterSpacing: 0.6,
+    letterSpacing: letterSpacings.wide,
   },
   stepCard: {
     width: CARD_WIDTH,
@@ -167,9 +168,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   stepLabel: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   stepDone: {
     textDecorationLine: 'line-through',

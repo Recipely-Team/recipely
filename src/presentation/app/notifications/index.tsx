@@ -13,8 +13,8 @@ import {
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
@@ -126,7 +126,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().notifications.title}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.primary} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().notifications.title}
@@ -138,7 +138,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
             accessibilityRole="button"
             accessibilityLabel={t().notifications.markRead}
           >
-            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
               {t().notifications.markRead}
             </ThemedText>
           </Pressable>
@@ -169,7 +169,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
             >
               <ThemedText
                 variant="caption"
-                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: '600' }}
+                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: fontWeights.semibold }}
               >
                 {label}
               </ThemedText>
@@ -229,15 +229,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: '700' },
+  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: fontWeights.bold },
   markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  headerSpacer: { width: sizes.iconBtn },
+  headerSpacer: { width: controlSizes.iconBtn },
   filterRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -248,8 +248,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
-    height: sizes.chipHeight,
+    borderWidth: borderWidths.hairline,
+    minHeight: controlSizes.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -260,10 +260,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fontSizes.micro,
-    fontWeight: '700',
-    letterSpacing: 0.8,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wider,
   },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + sizes.avatarSm + spacing.md },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + avatarSizes.md + spacing.md },
   listContent: {},
   empty: {
     padding: spacing.xxxl,

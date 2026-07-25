@@ -6,8 +6,8 @@ import Animated, {
   withRepeat,
   withTiming,
 } from 'react-native-reanimated';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { radii, opacities } from '@presentation/base/theme';
 
 export interface SkeletonLoaderProps {
   width: number | string;
@@ -88,7 +88,7 @@ export const SkeletonLoader = ({
       <Animated.View
         style={[
           StyleSheet.absoluteFill,
-          { backgroundColor: colors.skeletonHighlight, width: SHIMMER_SWEEP_WIDTH, opacity: 0.6 },
+          { backgroundColor: colors.skeletonHighlight, width: SHIMMER_SWEEP_WIDTH, opacity: opacities.disabledFaint },
           shimmerStyle,
         ]}
       />

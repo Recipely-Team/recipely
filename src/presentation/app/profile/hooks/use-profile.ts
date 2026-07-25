@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
-import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-upload';
+import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import type { UseProfileResult } from '@presentation/app/profile/model/use-profile-result';
 import { CharConstants, ValueConstants } from '@core/constants';

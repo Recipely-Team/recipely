@@ -1,8 +1,8 @@
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, fontWeights, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
   },
   dividerLine: {
     flex: ValueConstants.one,
-    height: 1,
+    height: borderWidths.hairline,
   },
   dividerLabel: {
     flexShrink: ValueConstants.zero,
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   signUpLink: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   guestRow: {
     alignSelf: 'center',

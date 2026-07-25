@@ -3,11 +3,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
-import { WebRecipeCard } from '@presentation/app/recipes/items/web-recipe-card';
+import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -72,7 +72,7 @@ export const MyRecipesList = ({
           refreshControl={refreshControl}
         >
           <View style={styles.empty}>
-            <MaterialCommunityIcons name="file-document-edit-outline" size={sizes.iconJumbo} color={colors.textMuted} />
+            <MaterialCommunityIcons name="file-document-edit-outline" size={iconSizes.jumbo} color={colors.textMuted} />
             <ThemedText variant="body" muted style={styles.emptyText}>
               {t().drafts.empty}
             </ThemedText>
@@ -109,7 +109,7 @@ export const MyRecipesList = ({
         <View style={styles.empty}>
           <MaterialCommunityIcons
             name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
-            size={sizes.iconJumbo}
+            size={iconSizes.jumbo}
             color={colors.textMuted}
           />
           <ThemedText variant="body" muted style={styles.emptyText}>

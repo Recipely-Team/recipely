@@ -2,21 +2,21 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, fontWeights, iconSizes, decorSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-interface InvalidLinkViewProps {
+interface ResetPasswordInvalidLinkViewProps {
   onBack: () => void;
 }
 
-export const InvalidLinkView = ({ onBack }: InvalidLinkViewProps): React.JSX.Element => {
+export const ResetPasswordInvalidLinkView = ({ onBack }: ResetPasswordInvalidLinkViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <>
       <View style={[styles.successCircle, { backgroundColor: colors.dangerLight }]}>
-        <Ionicons name="alert-circle" size={sizes.iconHuge} color={colors.danger} />
+        <Ionicons name="alert-circle" size={iconSizes.huge} color={colors.danger} />
       </View>
 
       <ThemedText variant="subtitle" style={styles.cardTitle}>
@@ -39,7 +39,7 @@ export const InvalidLinkView = ({ onBack }: InvalidLinkViewProps): React.JSX.Ele
 
 const styles = StyleSheet.create({
   cardTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
@@ -51,9 +51,9 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   successCircle: {
-    width: sizes.statusCircle,
-    height: sizes.statusCircle,
-    borderRadius: sizes.statusCircle / ValueConstants.two,
+    width: decorSizes.statusCircle,
+    height: decorSizes.statusCircle,
+    borderRadius: decorSizes.statusCircle / ValueConstants.two,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',

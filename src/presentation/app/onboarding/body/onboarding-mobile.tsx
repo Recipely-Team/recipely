@@ -10,8 +10,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { OnboardingSlide } from '@presentation/app/onboarding/items/onboarding-slide';
 import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-dots';
@@ -101,7 +101,7 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   brand: {
     flexDirection: 'row',
@@ -113,12 +113,12 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     fontSize: fontSizes.subheading,
-    fontWeight: '800',
-    letterSpacing: -0.4,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
   },
   carousel: {
-    flex: 1,
-    minHeight: 0,
+    flex: ValueConstants.one,
+    minHeight: ValueConstants.zero,
   },
   dots: {
     paddingVertical: spacing.lg,

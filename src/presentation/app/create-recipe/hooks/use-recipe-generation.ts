@@ -15,11 +15,11 @@ import {
   emptyEditable,
   recipeToEditable,
   snapshotToEditable,
-} from '@presentation/app/create-recipe/model/recipe-mapping';
-import { buildRefineReply } from '@presentation/app/create-recipe/model/build-refine-reply';
+} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
-import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/use-recipe-generation-args';
+import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/generation/use-recipe-generation-args';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 

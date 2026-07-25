@@ -9,9 +9,8 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
@@ -84,12 +83,12 @@ export const RefineDock = ({
           disabled={!canRegenerate || refining}
           style={[
             styles.regenChip,
-            { borderColor: colors.primary, opacity: canRegenerate && !refining ? OpacityConstants.full : OpacityConstants.disabledSoft },
+            { borderColor: colors.primary, opacity: canRegenerate && !refining ? opacities.full : opacities.disabledStrong },
           ]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.regenerate}
         >
-          <Ionicons name="refresh" size={sizes.iconSm} color={colors.primary} />
+          <Ionicons name="refresh" size={iconSizes.md} color={colors.primary} />
           <ThemedText variant="caption" style={[styles.regenLabel, { color: colors.primary }]}>
             {t().createRecipe.regenerate}
           </ThemedText>
@@ -103,7 +102,7 @@ export const RefineDock = ({
               disabled={refining}
               style={[
                 styles.quickChip,
-                { borderColor: colors.border, backgroundColor: colors.background, opacity: refining ? OpacityConstants.disabled : OpacityConstants.full },
+                { borderColor: colors.border, backgroundColor: colors.background, opacity: refining ? opacities.disabled : opacities.full },
               ]}
               accessibilityRole="button"
               accessibilityLabel={label}
@@ -118,7 +117,7 @@ export const RefineDock = ({
 
       <View style={[styles.inputRow, { paddingBottom: resolvedBottomInset + spacing.md }]}>
         <View style={[styles.inputField, { backgroundColor: colors.background, borderColor: colors.inputBorder }]}>
-          <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primary} />
+          <Ionicons name="sparkles" size={iconSizes.md} color={colors.primary} />
           <TextInput
             value={chatInput}
             onChangeText={onChangeChatInput}
@@ -136,7 +135,7 @@ export const RefineDock = ({
             accessibilityRole="button"
             accessibilityLabel={t().createRecipe.refinePlaceholder}
           >
-            <Ionicons name="arrow-up" size={sizes.iconSm} color={colors.primaryText} />
+            <Ionicons name="arrow-up" size={iconSizes.md} color={colors.primaryText} />
           </Pressable>
         </View>
       </View>
@@ -157,25 +156,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    height: sizes.chipHeight,
+    minHeight: controlSizes.chip,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
   regenLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.small,
   },
   quickChip: {
-    height: sizes.chipHeight,
+    minHeight: controlSizes.chip,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
   quickChipLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.small,
   },
   inputRow: {
@@ -186,11 +185,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    height: sizes.searchBarHeight,
+    minHeight: controlSizes.searchBar,
     paddingLeft: spacing.md,
     paddingRight: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
   },
   input: {
     flex: ValueConstants.one,
@@ -198,8 +197,8 @@ const styles = StyleSheet.create({
     paddingVertical: ValueConstants.zero,
   },
   sendBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

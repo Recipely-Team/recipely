@@ -3,9 +3,8 @@ import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
@@ -82,11 +81,11 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
                     {
                       backgroundColor: colors.surface,
                       borderColor: colors.cardBorder,
-                      opacity: arrow.disabled ? OpacityConstants.inactive : OpacityConstants.full,
+                      opacity: arrow.disabled ? opacities.inactive : opacities.full,
                     },
                   ]}
                 >
-                  <Ionicons name={arrow.icon} size={sizes.iconMd} color={colors.text} />
+                  <Ionicons name={arrow.icon} size={iconSizes.xl} color={colors.text} />
                 </Pressable>
               ))}
             </View>
@@ -105,7 +104,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: spacing.xxl,
@@ -124,7 +123,7 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
   },
   copyCol: {
-    flex: 1,
+    flex: ValueConstants.one,
     maxWidth: COLUMN_MAX,
     gap: spacing.lg,
   },
@@ -142,8 +141,8 @@ const styles = StyleSheet.create({
   },
   wordmark: {
     fontSize: fontSizes.display,
-    fontWeight: '800',
-    letterSpacing: -0.4,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
   },
   eyebrow: {
     alignSelf: 'flex-start',
@@ -152,21 +151,21 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   eyebrowText: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '700',
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.bold,
     textTransform: 'uppercase',
-    letterSpacing: 0.3,
+    letterSpacing: letterSpacings.subtle,
   },
   title: {
     fontSize: fontSizes.hero,
-    fontWeight: '800',
-    letterSpacing: -0.8,
-    lineHeight: 50,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tightest,
+    lineHeight: lineHeightFor(fontSizes.hero, lineHeights.tight),
   },
   body: {
     fontSize: fontSizes.subtitle,
-    lineHeight: sizes.lineHeightXl + 5,
-    maxWidth: sizes.maxContentLg,
+    lineHeight: lineHeightFor(fontSizes.subtitle, lineHeights.relaxed),
+    maxWidth: layoutSizes.maxContentLg,
   },
   controls: {
     flexDirection: 'row',
@@ -187,7 +186,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   heroCol: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: HERO_MAX_HEIGHT,
   },
   heroColStacked: {
@@ -195,6 +194,6 @@ const styles = StyleSheet.create({
     flex: 0,
   },
   hero: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });

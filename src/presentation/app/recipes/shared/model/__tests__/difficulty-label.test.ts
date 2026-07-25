@@ -10,7 +10,7 @@
  */
 
 import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 
 describe('difficultyLabel()', () => {
   it('returns a non-empty string for every Difficulty value', () => {

@@ -10,8 +10,8 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
@@ -60,7 +60,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.stackedRow}>
           <View style={styles.stackedHeader}>
-            <Ionicons name="contrast-outline" size={sizes.iconMd} color={colors.primary} />
+            <Ionicons name="contrast-outline" size={iconSizes.xl} color={colors.primary} />
             <ThemedText variant="body" style={styles.stackedLabel}>
               {t().settings.mode}
             </ThemedText>
@@ -172,6 +172,6 @@ const styles = StyleSheet.create({
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: sizes.searchBarHeight + spacing.sm2,
+    marginLeft: controlSizes.searchBar + spacing.sm2,
   },
 });

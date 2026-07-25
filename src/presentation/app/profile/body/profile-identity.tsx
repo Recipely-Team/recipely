@@ -2,17 +2,16 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-const AVATAR_FRAME = sizes.avatarFrame;
-const AVATAR_INNER = sizes.avatarInner;
-const CAMERA_BTN = sizes.iconBtnSm;
-const CAMERA_ICON = sizes.iconXs;
+const AVATAR_FRAME = avatarSizes.frame;
+const AVATAR_INNER = avatarSizes.frameInner;
+const CAMERA_BTN = controlSizes.iconBtnSm;
+const CAMERA_ICON = iconSizes.sm;
 
 export interface ProfileIdentityProps {
   displayName: string;
@@ -114,7 +113,7 @@ const styles = StyleSheet.create({
     height: AVATAR_FRAME,
     borderRadius: AVATAR_FRAME / ValueConstants.two,
     padding: (AVATAR_FRAME - AVATAR_INNER) / ValueConstants.two,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -131,15 +130,15 @@ const styles = StyleSheet.create({
     width: CAMERA_BTN,
     height: CAMERA_BTN,
     borderRadius: CAMERA_BTN / ValueConstants.two,
-    borderWidth: sizes.borderThick,
+    borderWidth: borderWidths.thick,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cameraBtnDisabled: {
-    opacity: OpacityConstants.disabledStrong,
+    opacity: opacities.disabledFaint,
   },
   displayName: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     marginTop: spacing.md,
     textAlign: 'center',
   },

@@ -10,14 +10,14 @@ import { AuthTextField } from '@presentation/app/register/items/auth-text-field'
 import { PasswordStrengthMeter } from '@presentation/app/register/items/password-strength-meter';
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
 import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye-toggle';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/password-rules';
 import { computeStrength } from '@presentation/app/register/model/compute-strength';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { OpacityConstants, RoutePaths } from '@presentation/base/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -122,7 +122,7 @@ export const RegisterForm = (): React.JSX.Element => {
           email.length > ValueConstants.zero ? (
             <Ionicons
               name={emailValid ? 'checkmark-circle' : 'close-circle'}
-              size={sizes.iconXxs}
+              size={iconSizes.lg}
               color={emailValid ? colors.success : colors.danger}
               style={styles.inputStatusIcon}
             />
@@ -166,7 +166,7 @@ export const RegisterForm = (): React.JSX.Element => {
             {confirm.length > ValueConstants.zero ? (
               <Ionicons
                 name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
-                size={sizes.iconXxs}
+                size={iconSizes.lg}
                 color={passwordsMatch ? colors.success : colors.danger}
               />
             ) : null}
@@ -230,8 +230,8 @@ const styles = StyleSheet.create({
   eyeButton: {
     position: 'absolute',
     right: spacing.sm,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -246,17 +246,17 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   submitButton: {
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.md,
   },
   submitDisabled: {
-    opacity: OpacityConstants.disabled,
+    opacity: opacities.disabled,
   },
   submitLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   signInRow: {
     flexDirection: 'row',
@@ -266,6 +266,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   signInLink: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

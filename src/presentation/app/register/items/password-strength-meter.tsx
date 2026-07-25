@@ -1,9 +1,9 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { PresentationValueConstants } from '@presentation/base/constants';
+import { PASSWORD_STRENGTH_SEGMENTS } from '@presentation/app/register/model/password-strength-segments';
 import { ValueConstants } from '@core/constants';
 
 export interface PasswordStrengthMeterProps {
@@ -20,7 +20,7 @@ export const PasswordStrengthMeter = ({ strength }: PasswordStrengthMeterProps):
   return (
     <View style={styles.strengthWrap}>
       <View style={styles.strengthSegments}>
-        {Array.from({ length: PresentationValueConstants.passwordStrengthSegments }, (_, i) => (
+        {Array.from({ length: PASSWORD_STRENGTH_SEGMENTS }, (_, i) => (
           <View
             key={i}
             style={[

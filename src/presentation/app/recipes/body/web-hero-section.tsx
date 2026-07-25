@@ -1,18 +1,18 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
-import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/web-hero-featured-card';
-import { WebHeroMiniCard } from '@presentation/app/recipes/items/web-hero-mini-card';
+import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
+import { WebHeroMiniCard } from '@presentation/app/recipes/items/hero/web-hero-mini-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, mediaSizes } from '@presentation/base/theme';
 import { useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 /** Window width (px) below which the hero collapses to the featured card only. */
 const STACK_WIDTH = 700;
 /** Height of each mini-card skeleton so two fill the hero column. */
-const MINI_SKELETON_HEIGHT = (sizes.heroImageHeightWeb - spacing.sm2) / ValueConstants.two;
+const MINI_SKELETON_HEIGHT = (mediaSizes.heroImageHeightWeb - spacing.sm2) / ValueConstants.two;
 
 export interface WebHeroSectionProps {
   onOpenRecipe: (id: string) => void;
@@ -61,7 +61,7 @@ export const WebHeroSection = ({
     return (
       <View style={[styles.row, stacked ? styles.stacked : null]}>
         <View style={styles.featured}>
-          <SkeletonLoader width="100%" height={sizes.heroImageHeightWeb} borderRadius={radii.xxl2} />
+          <SkeletonLoader width="100%" height={mediaSizes.heroImageHeightWeb} borderRadius={radii.xxl2} />
         </View>
         {stacked ? null : (
           <View style={styles.mini}>

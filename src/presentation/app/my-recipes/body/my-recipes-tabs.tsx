@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface MyRecipesTabsProps {
@@ -62,14 +62,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
   segment: {
     flexGrow: ValueConstants.one,
     flexShrink: ValueConstants.one,
     flexBasis: 'auto',
     minWidth: ValueConstants.zero,
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     flexDirection: 'row',
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   segmentLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.small,
     flexShrink: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   countPill: {
-    minWidth: sizes.iconMd,
-    height: sizes.iconXxs,
+    minWidth: iconSizes.xl,
+    height: iconSizes.lg,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     alignItems: 'center',
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexShrink: ValueConstants.zero,
   },
   countText: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
   },
 });

@@ -13,16 +13,16 @@ import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
-import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
+import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
-const WEB_CONTENT_MAX = sizes.webContentMax;
+const WEB_CONTENT_MAX = layoutSizes.webContentMax;
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();

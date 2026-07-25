@@ -1,14 +1,15 @@
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
+import { COMMENT_MAX_LENGTH } from '@presentation/app/recipes/[recipeId]/model/comments/comment-limits';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
-import { OpacityConstants } from '@presentation/base/constants';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;
@@ -55,7 +56,7 @@ export const WebRecipeDetailComments = ({
       </ThemedText>
 
       <View style={styles.inputRow}>
-        <TextInput
+        <AutoGrowTextInput
           value={commentInput}
           onChangeText={onChangeCommentInput}
           placeholder={t().comments.placeholder}
@@ -64,8 +65,8 @@ export const WebRecipeDetailComments = ({
             styles.input,
             { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border },
           ]}
-          multiline
-          maxLength={2000}
+          minHeight={controlSizes.searchBar}
+          maxLength={COMMENT_MAX_LENGTH}
         />
         <Pressable
           onPress={onAddComment}
@@ -74,10 +75,10 @@ export const WebRecipeDetailComments = ({
           accessibilityLabel={t().comments.send}
           style={({ pressed }) => [
             styles.sendBtn,
-            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? OpacityConstants.disabledStrong : OpacityConstants.full },
+            { backgroundColor: colors.primary, opacity: pressed || submitDisabled ? opacities.disabledFaint : opacities.full },
           ]}
         >
-          <Ionicons name="send" size={sizes.iconSm} color={colors.onOverlay} />
+          <Ionicons name="send" size={iconSizes.md} color={colors.onOverlay} />
         </Pressable>
       </View>
 
@@ -126,7 +127,7 @@ export const WebRecipeDetailComments = ({
           accessibilityLabel={t().comments.loadMore}
           style={({ pressed }) => [
             styles.loadMore,
-            { borderColor: colors.border, opacity: pressed ? OpacityConstants.pressedStrong : OpacityConstants.full },
+            { borderColor: colors.border, opacity: pressed ? opacities.pressedStrong : opacities.full },
           ]}
         >
           <ThemedText variant="caption" muted>
@@ -144,8 +145,8 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: fontSizes.subheading,
-    fontWeight: '700',
-    letterSpacing: -0.3,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.tight,
   },
   inputRow: {
     flexDirection: 'row',
@@ -155,14 +156,13 @@ const styles = StyleSheet.create({
   input: {
     flex: ValueConstants.one,
     borderRadius: radii.lg,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    minHeight: sizes.searchBarHeight,
   },
   sendBtn: {
-    width: sizes.searchBarHeight,
-    height: sizes.searchBarHeight,
+    width: controlSizes.searchBar,
+    height: controlSizes.searchBar,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
@@ -180,6 +180,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
 });

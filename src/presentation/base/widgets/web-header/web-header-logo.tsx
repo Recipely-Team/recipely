@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 
 export interface WebHeaderLogoProps {
   onPress: () => void;
@@ -26,7 +26,7 @@ export const WebHeaderLogo = ({ onPress }: WebHeaderLogoProps): React.JSX.Elemen
         style={[
           styles.tile,
           shadows.sm,
-          { backgroundColor: '#FFFFFF', borderColor: colors.cardBorder },
+          { backgroundColor: BrandColors.white, borderColor: colors.cardBorder },
         ]}
       >
         <RecipelyLogo size={LOGO_SIZE} />
@@ -45,19 +45,19 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   pressed: {
-    opacity: 0.7,
+    opacity: opacities.pressedStrong,
   },
   tile: {
     width: LOGO_TILE_SIZE,
     height: LOGO_TILE_SIZE,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
   wordmark: {
     fontSize: fontSizes.subtitle,
-    fontWeight: '800',
-    letterSpacing: -0.3,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tight,
   },
 });

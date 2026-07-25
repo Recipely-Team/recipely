@@ -1,4 +1,5 @@
-import { CharConstants, LocaleConstants, ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { LocaleConstants } from '@application/i18n/locale-constants';
 
 /** Language codes the app ships translations for. Keep in sync with `@presentation/i18n`. */
 export const SUPPORTED_LOCALES: readonly string[] = [LocaleConstants.en, LocaleConstants.tr];

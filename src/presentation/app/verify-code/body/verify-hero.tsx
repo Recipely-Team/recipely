@@ -1,9 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights, iconSizes, avatarSizes, mediaSizes, layoutSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -19,7 +18,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
   return (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-        <Ionicons name="mail-unread-outline" size={sizes.heroBadgeIcon} color={colors.onOverlay} />
+        <Ionicons name="mail-unread-outline" size={iconSizes.xxl} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t().verify.title}
@@ -40,7 +39,7 @@ export const VerifyHero = ({ isLandscapeShell, email }: VerifyHeroProps): React.
 
 const styles = StyleSheet.create({
   gradientCenter: {
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
@@ -48,22 +47,22 @@ const styles = StyleSheet.create({
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: sizes.maxContentLg,
+    maxWidth: layoutSizes.maxContentLg,
   },
   iconBadge: {
-    width: sizes.avatarMd,
-    height: sizes.avatarMd,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: OpacityConstants.subtitle,
+    opacity: opacities.onMedia,
     alignItems: 'center',
   },
   heroSubtitle: {
@@ -71,7 +70,7 @@ const styles = StyleSheet.create({
   },
   heroEmail: {
     textAlign: 'center',
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     marginTop: spacing.xxs,
   },
 });

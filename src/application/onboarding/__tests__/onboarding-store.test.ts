@@ -2,7 +2,7 @@
  * Onboarding store unit tests — the device-scoped "don't show again" gate.
  */
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { ONBOARDING_SEEN_STORAGE_KEY } from '@infrastructure/constants/storage';
 import { onboardingStore } from '@application/onboarding/onboarding-store';

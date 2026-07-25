@@ -2,9 +2,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -16,7 +16,7 @@ export interface DraftCardProps {
   onDelete: () => void;
 }
 
-const THUMB = sizes.draftThumb;
+const THUMB = mediaSizes.draftThumb;
 
 /** Row in the Drafts tab: cover thumb, title, item count + relative time, delete. */
 export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
@@ -56,7 +56,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
         accessibilityRole="button"
         accessibilityLabel={t().drafts.delete}
       >
-        <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.textMuted} />
+        <Ionicons name="trash-outline" size={iconSizes.md} color={colors.textMuted} />
       </Pressable>
     </Pressable>
   );
@@ -69,7 +69,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.xl,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
   thumb: {
     width: THUMB,
@@ -96,17 +96,17 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   badgeLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.nano,
     textTransform: 'uppercase',
-    letterSpacing: 0.4,
+    letterSpacing: letterSpacings.wide,
   },
   name: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   deleteBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

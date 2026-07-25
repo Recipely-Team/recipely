@@ -2,7 +2,7 @@ import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { MobileFilterSheet } from '@presentation/app/recipes/sheets/mobile-filter-sheet';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
-import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
+import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { countActiveFilters } from '@presentation/app/recipes/model/filter-mutations';
 import { ValueConstants } from '@core/constants';
 

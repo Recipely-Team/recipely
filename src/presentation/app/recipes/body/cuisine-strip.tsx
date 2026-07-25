@@ -1,10 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { StyleSheet, View, ScrollView, Pressable, Platform } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
 import { ValueConstants } from '@core/constants';
 
@@ -105,7 +105,7 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   sectionTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   scroll: {
     paddingHorizontal: spacing.lg,
@@ -114,15 +114,15 @@ const styles = StyleSheet.create({
   item: {
     alignItems: 'center',
     gap: spacing.xs,
-    width: sizes.avatarMd,
+    width: avatarSizes.lg,
   },
   circle: {
-    width: sizes.avatarMd,
-    height: sizes.avatarMd,
-    borderRadius: sizes.avatarMd / 2,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
   },
   emoji: {
     fontSize: fontSizes.subheading,
@@ -130,6 +130,6 @@ const styles = StyleSheet.create({
   label: {
     fontSize: fontSizes.micro,
     textAlign: 'center',
-    fontWeight: '500',
+    fontWeight: fontWeights.medium,
   },
 });

@@ -5,8 +5,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ChannelTile } from '@presentation/app/recipes/[recipeId]/sheets/channel-tile';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -20,7 +20,7 @@ export interface RecipeShareSheetProps {
 }
 
 const COPIED_RESET_MS = 1800;
-const THUMBNAIL_SIZE = sizes.shareThumbnail;
+const THUMBNAIL_SIZE = mediaSizes.shareThumb;
 
 /** Bottom-sheet share dialog for a recipe — channels, link display, and copy. */
 export const RecipeShareSheet = ({
@@ -153,7 +153,7 @@ export const RecipeShareSheet = ({
             { backgroundColor: colors.surface, borderColor: colors.cardBorder },
           ]}
         >
-          <Ionicons name="link-outline" size={sizes.iconSm} color={colors.textMuted} />
+          <Ionicons name="link-outline" size={iconSizes.md} color={colors.textMuted} />
           <ThemedText variant="caption" muted numberOfLines={1} style={styles.linkText}>
             {url}
           </ThemedText>
@@ -172,7 +172,7 @@ export const RecipeShareSheet = ({
         >
           <Ionicons
             name={copied ? 'checkmark' : 'copy-outline'}
-            size={sizes.iconSm}
+            size={iconSizes.md}
             color={copied ? colors.onSuccess : colors.primaryText}
           />
           <ThemedText
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     borderRadius: radii.lg,
     padding: spacing.md,
     marginBottom: spacing.lg,
@@ -215,7 +215,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   previewName: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   channelRow: {
     flexDirection: 'row',
@@ -235,7 +235,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
@@ -252,6 +252,6 @@ const styles = StyleSheet.create({
   },
   copyLabel: {
     fontSize: fontSizes.small,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });
