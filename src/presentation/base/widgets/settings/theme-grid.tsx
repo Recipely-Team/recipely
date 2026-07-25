@@ -2,10 +2,10 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/themes';
-import type { ThemeId } from '@presentation/base/theme/theme-id';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
+import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -52,7 +52,7 @@ export const ThemeGrid = ({
               <LinearGradient
                 colors={[variant.primaryGradientStart, variant.primaryGradientEnd]}
                 start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-                end={{ x: 1, y: 1 }}
+                end={{ x: ValueConstants.one, y: ValueConstants.one }}
                 style={[
                   styles.swatch,
                   {
@@ -112,12 +112,12 @@ const styles = StyleSheet.create({
   },
   checkBadge: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
-    width: sizes.iconMd,
-    height: sizes.iconMd,
+    bottom: -borderWidths.medium,
+    right: -borderWidths.medium,
+    width: iconSizes.xl,
+    height: iconSizes.xl,
     borderRadius: radii.round,
-    borderWidth: 2,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -129,6 +129,6 @@ const styles = StyleSheet.create({
     minHeight: LABEL_MIN_HEIGHT,
   },
   labelActive: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
 });

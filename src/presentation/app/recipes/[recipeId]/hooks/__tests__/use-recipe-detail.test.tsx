@@ -31,7 +31,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
-import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
+import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { CommentsStore } from '@application/comments/comments-store';
@@ -72,14 +72,14 @@ jest.mock('@presentation/app/recipes/[recipeId]/hooks/use-recipe-author', () => 
   useRecipeAuthor: jest.fn(() => ({ status: 'unavailable' })),
 }));
 
-jest.mock('@presentation/app/recipes/shared/hooks/use-taxonomy-label', () => ({
+jest.mock('@presentation/base/taxonomy/use-taxonomy-label', () => ({
   useTaxonomyLabel: jest.fn(() => ({
     cuisineLabel: () => ({ name: 'Italian', emoji: '🍝' }),
     categoryLabel: () => ({ name: 'Dinner', emoji: '🍽️' }),
   })),
 }));
 
-jest.mock('@presentation/base/hooks/use-scroll-to-end-on-keyboard', () => ({
+jest.mock('@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard', () => ({
   useScrollToEndOnKeyboard: jest.fn(() => jest.fn()),
 }));
 
@@ -248,7 +248,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
     // `false`, so this shape only exists to keep submitError non-empty if that
     // contract ever breaks. A stub store is the only way to produce it.
     const commentsStore = create<CommentsStoreState>(() => ({
-      byRecipe: { [RECIPE_ID]: { ...defaultRecipeState(), error: null } },
+      byRecipe: { [RECIPE_ID]: { ...defaultRecipeCommentsState(), error: null } },
       load: jest.fn(),
       loadMore: jest.fn(),
       addComment: jest.fn().mockResolvedValue(false),

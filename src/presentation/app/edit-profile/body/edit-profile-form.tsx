@@ -1,10 +1,10 @@
 import { StyleSheet, TextInput, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { BIO_MAX, BIO_MIN_HEIGHT } from '@presentation/app/edit-profile/model/edit-profile-limits';
-import { ValueConstants } from '@core/constants';
+import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 
 export interface EditProfileFormProps {
@@ -57,7 +57,7 @@ export const EditProfileForm = ({
         <ThemedText variant="caption" muted style={styles.label}>
           {t().editProfile.bio.toUpperCase()}
         </ThemedText>
-        <TextInput
+        <AutoGrowTextInput
           value={bio}
           onChangeText={onChangeBio}
           placeholder={t().editProfile.bioPlaceholder}
@@ -67,10 +67,8 @@ export const EditProfileForm = ({
             styles.textArea,
             { color: colors.text, backgroundColor: colors.background, borderColor: colors.cardBorder },
           ]}
-          multiline
-          numberOfLines={4}
+          minHeight={controlSizes.messageField}
           maxLength={BIO_MAX}
-          textAlignVertical="top"
         />
         <ThemedText
           variant="caption"
@@ -89,29 +87,31 @@ const styles = StyleSheet.create({
     marginHorizontal: spacing.lg,
     padding: spacing.lg,
     borderRadius: radii.xl,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     gap: spacing.lg,
   },
   field: {
     gap: spacing.xs,
   },
   label: {
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
   },
   input: {
-    height: sizes.inputHeightSm,
+    // minHeight, not height: a wrapped value or a larger OS font scale has to
+    // be able to push the field taller instead of clipping inside it.
+    minHeight: controlSizes.inputSm,
     borderRadius: radii.lg,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
     fontSize: fontSizes.body,
   },
   textArea: {
-    height: BIO_MIN_HEIGHT,
     paddingTop: spacing.md,
   },
   errorLine: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   counter: {
     alignSelf: 'flex-end',

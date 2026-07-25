@@ -2,9 +2,8 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 
 export interface EditableItemsSectionProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -39,7 +38,7 @@ export const EditableItemsSection = ({
     <View>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionTitle}>
-          <Ionicons name={icon} size={sizes.iconXxs} color={colors.primary} />
+          <Ionicons name={icon} size={iconSizes.lg} color={colors.primary} />
           <ThemedText variant="subtitle">{title}</ThemedText>
         </View>
         <ThemedText variant="caption" muted>{count}</ThemedText>
@@ -49,7 +48,7 @@ export const EditableItemsSection = ({
         style={[
           { gap: listGap },
           error !== undefined
-            ? { borderWidth: ValueConstants.one, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
+            ? { borderWidth: borderWidths.hairline, borderColor: colors.danger, borderRadius: radii.lg, padding: spacing.xs }
             : null,
         ]}
       >
@@ -61,7 +60,7 @@ export const EditableItemsSection = ({
         accessibilityRole="button"
         accessibilityLabel={addLabel}
       >
-        <Ionicons name="add" size={sizes.iconSm} color={colors.primary} />
+        <Ionicons name="add" size={iconSizes.md} color={colors.primary} />
         <ThemedText variant="body" style={[styles.addLabel, { color: colors.primary }]}>
           {addLabel}
         </ThemedText>
@@ -87,14 +86,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs2,
-    height: sizes.searchBarHeight,
+    minHeight: controlSizes.searchBar,
     borderRadius: radii.lg,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
     borderStyle: 'dashed',
     marginTop: spacing.sm,
   },
   addLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.medium,
   },
 });

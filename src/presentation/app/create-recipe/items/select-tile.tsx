@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, borderWidths } from '@presentation/base/theme';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import { ValueConstants } from '@core/constants';
 
@@ -52,7 +52,7 @@ export const SelectTile = ({
           >
             {value ?? placeholder}
           </ThemedText>
-          <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.textMuted} style={styles.chevron} />
+          <Ionicons name="chevron-forward" size={iconSizes.md} color={colors.textMuted} style={styles.chevron} />
         </View>
       </Pressable>
       {hasError ? <FieldErrorText message={error} /> : null}
@@ -66,15 +66,15 @@ const styles = StyleSheet.create({
   },
   tile: {
     borderRadius: radii.lg,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm2,
     gap: spacing.xs,
   },
   label: {
     fontSize: fontSizes.nano,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
   },
   valueRow: {
     flexDirection: 'row',
@@ -86,7 +86,7 @@ const styles = StyleSheet.create({
   },
   value: {
     flex: ValueConstants.one,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   chevron: {
     transform: [{ rotate: '90deg' }],

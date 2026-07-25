@@ -3,8 +3,8 @@ import { Image, Pressable, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
@@ -53,7 +53,7 @@ export const MediaPicker = ({
         ]}
       >
         <View style={[styles.dropIconWrap, { backgroundColor: colors.chipBackground }]}>
-          <Ionicons name="camera-outline" size={sizes.iconLg} color={colors.primary} />
+          <Ionicons name="camera-outline" size={iconSizes.xxl} color={colors.primary} />
         </View>
         <ThemedText variant="body" style={styles.dropTitle}>
           {t().mediaPicker.add}
@@ -98,7 +98,7 @@ export const MediaPicker = ({
             accessibilityLabel={t().mediaPicker.remove}
             style={[styles.removeBtn, { backgroundColor: colors.overlay }]}
           >
-            <Ionicons name="close" size={sizes.iconXs} color={colors.onOverlay} />
+            <Ionicons name="close" size={iconSizes.sm} color={colors.onOverlay} />
           </Pressable>
 
           {i !== ValueConstants.zero ? (
@@ -125,7 +125,7 @@ export const MediaPicker = ({
           { borderColor: colors.inputBorder },
         ]}
       >
-        <Ionicons name="add" size={sizes.iconLg} color={colors.textMuted} />
+        <Ionicons name="add" size={iconSizes.xxl} color={colors.textMuted} />
         <ThemedText variant="caption" muted style={styles.addLabel}>
           {t().mediaPicker.more}
         </ThemedText>
@@ -137,7 +137,7 @@ export const MediaPicker = ({
 const styles = StyleSheet.create({
   dropZone: {
     borderRadius: radii.lg,
-    borderWidth: ValueConstants.two,
+    borderWidth: borderWidths.medium,
     borderStyle: 'dashed',
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.md,
@@ -145,14 +145,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dropIconWrap: {
-    width: sizes.buttonSmHeight,
-    height: sizes.buttonSmHeight,
+    width: controlSizes.buttonSm,
+    height: controlSizes.buttonSm,
     borderRadius: radii.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },
   dropTitle: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   dropHint: {
     textAlign: 'center',
@@ -183,17 +183,17 @@ const styles = StyleSheet.create({
   },
   coverText: {
     fontSize: fontSizes.nano,
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
     textTransform: 'uppercase',
   },
   removeBtn: {
     position: 'absolute',
     top: spacing.xs,
     right: spacing.xs,
-    width: sizes.mediaRemoveBtn,
-    height: sizes.mediaRemoveBtn,
-    borderRadius: sizes.mediaRemoveBtn / ValueConstants.two,
+    width: controlSizes.mediaRemoveBtn,
+    height: controlSizes.mediaRemoveBtn,
+    borderRadius: controlSizes.mediaRemoveBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -207,17 +207,17 @@ const styles = StyleSheet.create({
   },
   setCoverText: {
     fontSize: fontSizes.micro,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   addTile: {
-    borderWidth: ValueConstants.two,
+    borderWidth: borderWidths.medium,
     borderStyle: 'dashed',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,
   },
   addLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.micro,
   },
 });

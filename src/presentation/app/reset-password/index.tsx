@@ -7,18 +7,18 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { FormView } from '@presentation/app/reset-password/body/reset-password-form-view';
-import { SuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
-import { InvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
+import { ResetPasswordFormView } from '@presentation/app/reset-password/body/reset-password-form-view';
+import { ResetPasswordSuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
+import { ResetPasswordInvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { OpacityConstants, RoutePaths } from '@presentation/base/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = sizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 const MIN_PASSWORD_LENGTH = 8;
 
 export const ResetPasswordScreen = (): React.JSX.Element => {
@@ -74,7 +74,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={isLandscapeShell ? sizes.iconXl : sizes.heroBadgeIcon}
+          size={isLandscapeShell ? iconSizes.xxxl : iconSizes.xxl}
           color={colors.onOverlay}
         />
       </View>
@@ -93,15 +93,15 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
 
   if (tokenValue.length === ValueConstants.zero) {
     cardBody = (
-      <InvalidLinkView onBack={() => router.replace(RoutePaths.login)} />
+      <ResetPasswordInvalidLinkView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else if (succeeded) {
     cardBody = (
-      <SuccessView onBack={() => router.replace(RoutePaths.login)} />
+      <ResetPasswordSuccessView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else {
     cardBody = (
-      <FormView
+      <ResetPasswordFormView
         newPassword={newPassword}
         onChangeNew={setNewPassword}
         confirmPassword={confirmPassword}
@@ -175,7 +175,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().resetPassword.backToLogin}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         {hero}
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -210,34 +210,34 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / ValueConstants.two,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: controlSizes.iconBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: ValueConstants.one,
+    zIndex: zIndices.raised,
   },
   gradientCenter: {
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   iconBadge: {
-    width: sizes.avatarMd,
-    height: sizes.avatarMd,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
     borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: OpacityConstants.subtitle,
+    opacity: opacities.onMedia,
   },
   heroSubtitle: {
     textAlign: 'center',
@@ -246,7 +246,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -sizes.cardOverlap,
+    marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
@@ -261,7 +261,7 @@ const styles = StyleSheet.create({
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: sizes.maxContentLg,
+    maxWidth: layoutSizes.maxContentLg,
   },
   splitFormPane: {
     flex: ValueConstants.one,

@@ -2,16 +2,15 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, fontSizes, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-const AVATAR_FRAME = sizes.editAvatarFrame;
-const AVATAR_INNER = sizes.editAvatarInner;
-const CAMERA_BTN = sizes.iconBtnSm;
+const AVATAR_FRAME = avatarSizes.editFrame;
+const AVATAR_INNER = avatarSizes.editFrameInner;
+const CAMERA_BTN = controlSizes.iconBtnSm;
 
 export interface EditProfileAvatarProps {
   photoUri: string | undefined;
@@ -58,7 +57,7 @@ export const EditProfileAvatar = ({
           accessibilityRole="button"
           accessibilityLabel={t().profile.changePhoto}
         >
-          <Ionicons name="camera" size={sizes.iconSm - ValueConstants.two} color={colors.primaryText} />
+          <Ionicons name="camera" size={iconSizes.md - ValueConstants.two} color={colors.primaryText} />
         </Pressable>
       </View>
       <Pressable
@@ -93,7 +92,7 @@ const styles = StyleSheet.create({
     height: AVATAR_FRAME,
     borderRadius: AVATAR_FRAME / ValueConstants.two,
     padding: (AVATAR_FRAME - AVATAR_INNER) / ValueConstants.two,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -110,15 +109,15 @@ const styles = StyleSheet.create({
     width: CAMERA_BTN,
     height: CAMERA_BTN,
     borderRadius: CAMERA_BTN / ValueConstants.two,
-    borderWidth: sizes.borderThick,
+    borderWidth: borderWidths.thick,
     alignItems: 'center',
     justifyContent: 'center',
   },
   disabled: {
-    opacity: OpacityConstants.disabledStrong,
+    opacity: opacities.disabledFaint,
   },
   changePhoto: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
 });

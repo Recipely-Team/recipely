@@ -20,7 +20,7 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
 
-jest.mock('@presentation/app/recipes/items/recipe-list-item', () => {
+jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
   const { Text, Pressable } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
     RecipeListItem: ({

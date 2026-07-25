@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii, sizes, spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 /** Success panel shown after a feedback message is sent (shared between web modal and could mirror the sheet). */
 export const WebFeedbackSuccess = (): React.JSX.Element => {
@@ -12,7 +13,7 @@ export const WebFeedbackSuccess = (): React.JSX.Element => {
   return (
     <View style={styles.wrap}>
       <View style={[styles.iconChip, { backgroundColor: colors.successLight }]}>
-        <Ionicons name="checkmark-circle" size={sizes.iconXl} color={colors.success} />
+        <Ionicons name="checkmark-circle" size={iconSizes.xxxl} color={colors.success} />
       </View>
       <ThemedText variant="subtitle" style={styles.center}>
         {t().support.sentTitle}
@@ -31,8 +32,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
   },
   iconChip: {
-    width: sizes.iconXl * 2,
-    height: sizes.iconXl * 2,
+    width: iconSizes.xxxl * ValueConstants.two,
+    height: iconSizes.xxxl * ValueConstants.two,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

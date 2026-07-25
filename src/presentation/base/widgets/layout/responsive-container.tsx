@@ -4,6 +4,7 @@ import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints
 import type { WebContentRoute } from '@presentation/base/responsive/web-content-route';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface ResponsiveContainerProps {
   children: ReactNode;
@@ -62,7 +63,7 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   fill: {
-    flex: 1,
+    flex: ValueConstants.one,
     width: '100%',
   },
   cap: {

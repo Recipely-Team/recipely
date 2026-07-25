@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import type { SeverityType } from '@presentation/base/theme/severity-type';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { spacing, radii, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const SEVERITY_ICON: Record<SeverityType, keyof typeof Ionicons.glyphMap> = {
   danger: 'alert-circle',
@@ -35,7 +36,7 @@ export const FormBanner = ({
       accessibilityLiveRegion="polite"
       style={[styles.banner, { backgroundColor: surface.bg, borderColor: surface.border }]}
     >
-      <Ionicons name={icon ?? SEVERITY_ICON[severity]} size={sizes.iconXxs} color={surface.icon} />
+      <Ionicons name={icon ?? SEVERITY_ICON[severity]} size={iconSizes.lg} color={surface.icon} />
       <ThemedText variant="caption" style={[styles.message, { color: surface.text }]}>
         {message}
       </ThemedText>
@@ -51,10 +52,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm2,
     paddingHorizontal: spacing.md,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   message: {
-    flex: 1,
-    fontWeight: '600',
+    flex: ValueConstants.one,
+    fontWeight: fontWeights.semibold,
   },
 });

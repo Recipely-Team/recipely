@@ -65,11 +65,11 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 }));
 
 // Sibling hooks that only add unrelated store reads (favorites, taxonomy labels).
-jest.mock('@presentation/app/recipes/shared/hooks/use-save-recipe', () => ({
+jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
   useSaveRecipe: jest.fn(() => ({ isSaved: () => false, toggleSave: jest.fn() })),
 }));
 
-jest.mock('@presentation/app/recipes/shared/hooks/use-taxonomy-label', () => ({
+jest.mock('@presentation/base/taxonomy/use-taxonomy-label', () => ({
   useTaxonomyLabel: jest.fn(() => ({
     cuisineLabel: (key: string) => ({ name: key, emoji: '🍝' }),
     categoryLabel: (key: string) => ({ name: key, emoji: '🍽️' }),

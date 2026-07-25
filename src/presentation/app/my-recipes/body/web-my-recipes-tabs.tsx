@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes } from '@presentation/base/theme';
 import type { WebMyRecipesTab } from '@presentation/app/my-recipes/model/web-my-recipes-tab';
 import { ValueConstants } from '@core/constants';
 
@@ -66,19 +66,19 @@ const styles = StyleSheet.create({
     borderBottomWidth: ValueConstants.two,
   },
   label: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
   pill: {
-    minWidth: sizes.iconMd,
-    height: sizes.iconXxs,
+    minWidth: iconSizes.xl,
+    height: iconSizes.lg,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   pillText: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
   },
 });

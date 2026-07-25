@@ -1,15 +1,15 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import {
   toastBackground,
   TOAST_FOREGROUND,
-} from '@presentation/base/theme/error-surfaces';
-import type { SeverityType } from '@presentation/base/theme/severity-type';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+} from '@presentation/base/theme/colors/surfaces/error-surfaces';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { DEFAULT_TOAST_DURATION_MS } from '@presentation/base/feedback/toast-model';
 import type { ToastItem } from '@presentation/base/feedback/toast-item';
@@ -93,7 +93,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       ]}
     >
       <View style={[styles.iconChip, { backgroundColor: accent + ICON_CHIP_ALPHA }]}>
-        <Ionicons name={SEVERITY_ICON[item.severity]} size={sizes.iconSm} color={accent} />
+        <Ionicons name={SEVERITY_ICON[item.severity]} size={iconSizes.md} color={accent} />
       </View>
       <Text numberOfLines={2} style={[styles.message, { color: TOAST_FOREGROUND }]}>
         {item.message}
@@ -114,7 +114,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().errors.dismiss}
         >
-          <Ionicons name="close" size={sizes.iconSm} color={TOAST_FOREGROUND} style={styles.close} />
+          <Ionicons name="close" size={iconSizes.md} color={TOAST_FOREGROUND} style={styles.close} />
         </Pressable>
       )}
     </Animated.View>
@@ -139,15 +139,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   message: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   action: {
     fontSize: fontSizes.caption,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   close: {
-    opacity: 0.7,
+    opacity: opacities.pressedStrong,
   },
 });

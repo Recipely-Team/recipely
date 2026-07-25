@@ -1,9 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, sizes, radii } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
@@ -28,7 +27,7 @@ interface NotifRowProps {
   onTap: (item: NotifItem) => void;
 }
 
-const PRESSED_OPACITY = OpacityConstants.pressedGentle;
+const PRESSED_OPACITY = opacities.pressedLight;
 
 /**
  * One notification row. Tapping marks the notification read and, when it has a
@@ -50,9 +49,9 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
         styles.row,
         {
           backgroundColor: item.read ? colors.cardBackground : colors.chipBackground,
-          borderLeftWidth: item.read ? ValueConstants.zero : sizes.borderThick,
+          borderLeftWidth: item.read ? ValueConstants.zero : borderWidths.thick,
           borderLeftColor: colors.primary,
-          opacity: pressed && tappable ? PRESSED_OPACITY : OpacityConstants.full,
+          opacity: pressed && tappable ? PRESSED_OPACITY : opacities.full,
         },
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
@@ -64,11 +63,11 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       }
     >
       <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
-        <Ionicons name={meta.icon} size={sizes.iconMd} color={meta.color} />
+        <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
       </View>
       <View style={styles.rowBody}>
         <ThemedText variant="body" style={styles.actionLine} numberOfLines={2}>
-          <ThemedText variant="body" style={{ fontWeight: '700' }}>{item.actor}</ThemedText>
+          <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
           {' '}{actionText(item)}
         </ThemedText>
         {item.body !== undefined ? (
@@ -98,16 +97,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   iconCircle: {
-    width: sizes.avatarSm,
-    height: sizes.avatarSm,
-    borderRadius: sizes.avatarSm / ValueConstants.two,
+    width: avatarSizes.md,
+    height: avatarSizes.md,
+    borderRadius: avatarSizes.md / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: ValueConstants.zero,
   },
   rowBody: { flex: ValueConstants.one, gap: spacing.xxs },
-  actionLine: { fontSize: fontSizes.body, lineHeight: sizes.lineHeightMd },
-  bodyText: { lineHeight: sizes.lineHeightXs },
+  actionLine: { fontSize: fontSizes.body, lineHeight: lineHeightFor(fontSizes.body, lineHeights.snug) },
+  bodyText: { lineHeight: lineHeightFor(fontSizes.caption) },
   timestamp: { fontSize: fontSizes.small },
   unreadDot: {
     width: spacing.sm,

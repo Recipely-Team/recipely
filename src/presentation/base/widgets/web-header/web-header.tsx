@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { useRouter, usePathname } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { useWebShellState } from '@presentation/base/responsive/use-web-shell-state';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { spacing } from '@presentation/base/theme';
+import { spacing, zIndices } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
 import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
   root: {
     width: '100%',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    zIndex: 50,
+    zIndex: zIndices.appHeader,
   },
   inner: {
     width: '100%',
@@ -154,7 +154,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   searchWrap: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     alignItems: 'center',
     justifyContent: 'center',

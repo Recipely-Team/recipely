@@ -1,7 +1,6 @@
 import { StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { radii, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { radii, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 
 interface ControlButtonProps {
   icon: keyof typeof Ionicons.glyphMap;
@@ -30,21 +29,21 @@ export const ControlButton = ({
       {
         backgroundColor: bg,
         opacity: disabled
-          ? OpacityConstants.inactive
+          ? opacities.inactive
           : pressed
-            ? OpacityConstants.pressedStrong
-            : OpacityConstants.full,
+            ? opacities.pressedStrong
+            : opacities.full,
       },
     ]}
   >
-    <Ionicons name={icon} size={sizes.iconSm} color={iconColor} />
+    <Ionicons name={icon} size={iconSizes.md} color={iconColor} />
   </Pressable>
 );
 
 const styles = StyleSheet.create({
   ctrlBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

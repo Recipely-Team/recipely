@@ -1,10 +1,9 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { GoogleLogo } from '@presentation/app/login/items/google-logo';
 import { AppleLogo } from '@presentation/app/login/items/apple-logo';
-import { radii, sizes, fontSizes, spacing, BrandColors } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 
-const LOGO_SIZE = sizes.iconXxs;
+const LOGO_SIZE = iconSizes.lg;
 
 export interface SocialSignInButtonProps {
   provider: 'google' | 'apple';
@@ -38,7 +37,7 @@ export const SocialSignInButton = ({
       style={[
         styles.button,
         isGoogle
-          ? { backgroundColor: BrandColors.white, borderColor, borderWidth: sizes.inputBorderWidth }
+          ? { backgroundColor: BrandColors.white, borderColor, borderWidth: borderWidths.thin }
           : { backgroundColor: BrandColors.black },
         disabled ? styles.disabled : null,
       ]}
@@ -58,16 +57,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: sizes.inputHeight,
+    minHeight: controlSizes.input,
     borderRadius: radii.lg,
     gap: spacing.sm,
     marginTop: spacing.md,
   },
   label: {
     fontSize: fontSizes.medium,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   disabled: {
-    opacity: OpacityConstants.disabled,
+    opacity: opacities.disabled,
   },
 });

@@ -6,14 +6,19 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
-import { shadows } from '@presentation/base/theme/shadows';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, mediaSizes, opacities } from '@presentation/base/theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ValueConstants } from '@core/constants';
-import { PresentationValueConstants } from '@presentation/base/constants';
+import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
+
+/** How far the card dips under a press, and how long each half takes. */
+const PRESS_SCALE = 0.97;
+const PRESS_IN_MS = 100;
+const PRESS_OUT_MS = 150;
 
 export interface RecipeCardProps {
   name: string;
@@ -80,12 +85,12 @@ export const RecipeCard = ({
       {...hoverProps}
       onPress={onPress}
       onPressIn={() => {
-        scale.value = withTiming(0.97, { duration: 100 });
-        opacity.value = withTiming(0.9, { duration: 100 });
+        scale.value = withTiming(PRESS_SCALE, { duration: PRESS_IN_MS });
+        opacity.value = withTiming(opacities.pressedFaint, { duration: PRESS_IN_MS });
       }}
       onPressOut={() => {
-        scale.value = withTiming(1, { duration: 150 });
-        opacity.value = withTiming(1, { duration: 150 });
+        scale.value = withTiming(ValueConstants.one, { duration: PRESS_OUT_MS });
+        opacity.value = withTiming(opacities.full, { duration: PRESS_OUT_MS });
       }}
       style={[
         styles.card,
@@ -101,12 +106,12 @@ export const RecipeCard = ({
           placeholderLabel={t().recipes.noPhoto}
         />
         <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
-          <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: '600' }}>
+          <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: fontWeights.semibold }}>
             {cuisine}
           </ThemedText>
         </View>
         <View style={[styles.difficultyChip, { backgroundColor: colors.overlay }]}>
-          <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: '600' }}>
+          <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: fontWeights.semibold }}>
             {difficulty}
           </ThemedText>
         </View>
@@ -117,7 +122,7 @@ export const RecipeCard = ({
           <View style={styles.tagsRow}>
             {tags.length > ValueConstants.zero
               ? tags
-                  .slice(ValueConstants.zero, PresentationValueConstants.recipeCardTagLimit)
+                  .slice(ValueConstants.zero, RECIPE_CARD_TAG_LIMIT)
                   .map((tag) => (
                   <View key={tag} style={[styles.tag, { backgroundColor: colors.chipBackground }]}>
                     <ThemedText variant="caption" style={{ color: colors.chipText }}>{tag}</ThemedText>
@@ -178,7 +183,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   imageContainer: {
-    height: sizes.cardImageHeight,
+    height: mediaSizes.cardImageHeight,
     position: 'relative',
   },
   image: {
@@ -214,7 +219,7 @@ const styles = StyleSheet.create({
   tagsRow: {
     flexDirection: 'row',
     gap: spacing.xs,
-    flex: 1,
+    flex: ValueConstants.one,
   },
   tag: {
     borderRadius: radii.round,

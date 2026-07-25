@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';

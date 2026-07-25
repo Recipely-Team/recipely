@@ -3,13 +3,13 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeListItem } from '@presentation/app/recipes/items/recipe-list-item';
+import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
-import { FilterSortFab } from '@presentation/app/recipes/items/filter-sort-fab';
+import { FilterSortFab } from '@presentation/app/recipes/items/filters/filter-sort-fab';
 import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
-import { WebAiBanner } from '@presentation/app/recipes/items/web-ai-banner';
+import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
 import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
@@ -19,9 +19,9 @@ import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, sizes } from '@presentation/base/theme';
+import { spacing, iconSizes, controlSizes, layoutSizes } from '@presentation/base/theme';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
@@ -121,7 +121,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           />
         }
       >
-        <MaterialCommunityIcons name="food-off" size={sizes.iconGiant} color={colors.textMuted} />
+        <MaterialCommunityIcons name="food-off" size={iconSizes.giant} color={colors.textMuted} />
         <ThemedText variant="body" muted style={styles.feedbackTitle}>
           {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
         </ThemedText>
@@ -172,8 +172,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             refreshing={vm.isPullRefreshing}
             onRefresh={vm.onRefresh}
             progressViewOffset={Platform.select({
-              android: sizes.homeRefreshOffsetAndroid,
-              default: sizes.homeHeaderMax,
+              android: layoutSizes.homeRefreshOffsetAndroid,
+              default: layoutSizes.homeHeaderMax,
             })}
             tintColor={colors.textMuted}
             colors={[colors.primary]}
@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
   },
   bodyTopInset: {
-    paddingTop: sizes.homeHeaderMax,
+    paddingTop: layoutSizes.homeHeaderMax,
   },
   list: {
     flex: ValueConstants.one,
@@ -239,13 +239,13 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   mobileListContent: {
-    paddingTop: sizes.homeHeaderMax,
-    paddingBottom: sizes.fabExtendedHeight + spacing.xxl,
+    paddingTop: layoutSizes.homeHeaderMax,
+    paddingBottom: controlSizes.fabExtended + spacing.xxl,
   },
   webContent: {
     alignSelf: 'center',
     width: '100%',
-    maxWidth: sizes.webContentMax,
+    maxWidth: layoutSizes.webContentMax,
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,

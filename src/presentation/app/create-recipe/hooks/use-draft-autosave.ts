@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 import {
   editableHasContent,
   editableToSnapshot,
-} from '@presentation/app/create-recipe/model/recipe-mapping';
-import type { UseDraftAutosaveArgs } from '@presentation/app/create-recipe/model/use-draft-autosave-args';
+} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import type { UseDraftAutosaveArgs } from '@presentation/app/create-recipe/model/drafting/use-draft-autosave-args';
 
 const DEBOUNCE_MS = 500;
 

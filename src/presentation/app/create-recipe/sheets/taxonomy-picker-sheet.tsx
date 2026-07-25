@@ -3,17 +3,17 @@ import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
-import { CUISINE_EMOJI } from '@presentation/app/create-recipe/model/cuisine-emoji';
-import { CATEGORY_EMOJI } from '@presentation/app/create-recipe/model/category-emoji';
-import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';
-import type { Catalog } from '@presentation/app/create-recipe/model/catalog';
+import { CUISINE_EMOJI } from '@presentation/base/taxonomy/cuisine-emoji';
+import { CATEGORY_EMOJI } from '@presentation/base/taxonomy/category-emoji';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/base/taxonomy/taxonomy-placeholder';
+import type { Catalog } from '@presentation/app/create-recipe/model/taxonomy/catalog';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -105,7 +105,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
             accessibilityRole="button"
             accessibilityLabel={t().common.cancel}
           >
-            <Ionicons name="close" size={sizes.iconSm} color={colors.text} />
+            <Ionicons name="close" size={iconSizes.md} color={colors.text} />
           </Pressable>
         </View>
         <FlatList
@@ -165,8 +165,8 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   closeBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
@@ -185,14 +185,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     paddingVertical: spacing.md,
     borderRadius: radii.lg,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
   },
   optionEmoji: {
     fontSize: fontSizes.title,
   },
   optionLabel: {
     fontSize: fontSizes.micro,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     textAlign: 'center',
   },
 });

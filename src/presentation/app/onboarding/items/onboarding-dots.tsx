@@ -1,7 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, decorSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 const DOT_SIZE = 7;
@@ -28,9 +27,9 @@ export const OnboardingDots = ({ count, index, onSelect }: OnboardingDotsProps):
             style={[
               styles.dot,
               {
-                width: active ? sizes.dotActiveWidth : DOT_SIZE,
+                width: active ? decorSizes.dotActiveWidth : DOT_SIZE,
                 backgroundColor: colors.primary,
-                opacity: active ? OpacityConstants.full : OpacityConstants.inactive,
+                opacity: active ? opacities.full : opacities.inactive,
               },
             ]}
           />

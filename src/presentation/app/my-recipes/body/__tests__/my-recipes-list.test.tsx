@@ -35,7 +35,7 @@ jest.mock('@expo/vector-icons', () => {
 // The web card reads the taxonomy store to label a cuisine — a store this
 // wiring doesn't touch, and providing it would only buy a costlier render.
 // Same spirit as the `RecipeListItem` stub in `recipe-list-body.test.tsx`.
-jest.mock('@presentation/app/recipes/items/web-recipe-card', () => {
+jest.mock('@presentation/base/widgets/cards/web-recipe-card', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return { WebRecipeCard: (): React.JSX.Element => <Text>web-recipe-card</Text> };
 });

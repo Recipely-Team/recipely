@@ -1,5 +1,5 @@
 import { type Container } from '@core/di/container';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { HttpClient } from '@infrastructure/network/http/http-client';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';

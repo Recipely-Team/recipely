@@ -1,9 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
@@ -43,7 +42,7 @@ export const RecipeFloatingActions = ({
           onPress={onEdit}
           style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
         >
-          <Ionicons name="pencil" size={sizes.iconMd} color={colors.onOverlay} />
+          <Ionicons name="pencil" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
       <Pressable
@@ -52,7 +51,7 @@ export const RecipeFloatingActions = ({
         onPress={onShare}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
-        <Ionicons name="share-social-outline" size={sizes.iconMd} color={colors.onOverlay} />
+        <Ionicons name="share-social-outline" size={iconSizes.xl} color={colors.onOverlay} />
       </Pressable>
       <Pressable
         onPress={onToggleLike}
@@ -62,7 +61,7 @@ export const RecipeFloatingActions = ({
       >
         <MaterialCommunityIcons
           name={likedByMe ? 'heart' : 'heart-outline'}
-          size={sizes.iconMd}
+          size={iconSizes.xl}
           color={likedByMe ? colors.likeActive : colors.onOverlay}
         />
       </Pressable>
@@ -71,11 +70,11 @@ export const RecipeFloatingActions = ({
         accessibilityRole="button"
         accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
         disabled={saveDisabled}
-        style={[styles.floatingBtn, { opacity: saveDisabled ? OpacityConstants.disabled : OpacityConstants.full, backgroundColor: colors.overlayLight }]}
+        style={[styles.floatingBtn, { opacity: saveDisabled ? opacities.disabled : opacities.full, backgroundColor: colors.overlayLight }]}
       >
         <Ionicons
           name={isSaved ? 'bookmark' : 'bookmark-outline'}
-          size={sizes.iconMd}
+          size={iconSizes.xl}
           color={saveDisabled ? colors.textMuted : colors.onOverlay}
         />
       </Pressable>
@@ -91,8 +90,8 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   floatingBtn: {
-    width: sizes.floatingBtn,
-    height: sizes.floatingBtn,
+    width: controlSizes.floatingBtn,
+    height: controlSizes.floatingBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

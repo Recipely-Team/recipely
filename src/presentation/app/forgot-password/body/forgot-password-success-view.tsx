@@ -2,23 +2,23 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, fontWeights, iconSizes, decorSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-interface SuccessViewProps {
+interface ForgotPasswordSuccessViewProps {
   email: string;
   onBack: () => void;
   onTryDifferent: () => void;
 }
 
-export const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps): React.JSX.Element => {
+export const ForgotPasswordSuccessView = ({ email, onBack, onTryDifferent }: ForgotPasswordSuccessViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <>
       <View style={[styles.successCircle, { backgroundColor: colors.successLight }]}>
-        <Ionicons name="checkmark-circle" size={sizes.iconHuge} color={colors.success} />
+        <Ionicons name="checkmark-circle" size={iconSizes.huge} color={colors.success} />
       </View>
 
       <ThemedText variant="subtitle" style={styles.cardTitle}>
@@ -27,7 +27,7 @@ export const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps)
 
       <ThemedText variant="body" muted style={styles.cardSubtitle}>
         {t().forgotPassword.sentBody}{' '}
-        <ThemedText variant="body" style={{ fontWeight: '700' }}>
+        <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>
           {email}
         </ThemedText>
       </ThemedText>
@@ -45,7 +45,7 @@ export const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps)
         accessibilityRole="button"
         accessibilityLabel={t().forgotPassword.tryDifferent}
       >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
           {t().forgotPassword.tryDifferent}
         </ThemedText>
       </Pressable>
@@ -55,7 +55,7 @@ export const SuccessView = ({ email, onBack, onTryDifferent }: SuccessViewProps)
 
 const styles = StyleSheet.create({
   cardTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
     marginBottom: spacing.xs,
   },
@@ -72,9 +72,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   successCircle: {
-    width: sizes.statusCircle,
-    height: sizes.statusCircle,
-    borderRadius: sizes.statusCircle / ValueConstants.two,
+    width: decorSizes.statusCircle,
+    height: decorSizes.statusCircle,
+    borderRadius: decorSizes.statusCircle / ValueConstants.two,
     alignSelf: 'center',
     alignItems: 'center',
     justifyContent: 'center',

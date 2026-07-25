@@ -8,13 +8,13 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { RegisterHero } from '@presentation/app/register/body/register-hero';
 import { RegisterForm } from '@presentation/app/register/body/register-form';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = sizes.authCardMaxWidth;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -82,7 +82,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           onPress={() => router.back()}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         <RegisterHero isLandscapeShell={isLandscapeShell} />
@@ -112,27 +112,27 @@ const styles = StyleSheet.create({
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.gradientHeight,
+    height: decorSizes.gradientHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
   backButton: {
     position: 'absolute',
-    top: sizes.tabBarHeight,
+    top: controlSizes.tabBar,
     left: spacing.lg,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: ValueConstants.one,
+    zIndex: zIndices.raised,
   },
   card: {
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -sizes.cardOverlap,
+    marginTop: -decorSizes.cardOverlap,
   },
   splitRoot: {
     flex: ValueConstants.one,

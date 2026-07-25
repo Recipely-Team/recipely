@@ -2,12 +2,11 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
-import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/ingredient-card';
-import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/instruction-card';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-card';
+import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 
@@ -82,10 +81,10 @@ export const RecipeSteps = ({
               onPress={onEdit}
               style={({ pressed }) => [
                 styles.ghostPill,
-                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
               ]}
             >
-              <Ionicons name="create-outline" size={sizes.iconSm} color={colors.text} />
+              <Ionicons name="create-outline" size={iconSizes.md} color={colors.text} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.text }]}>
                 {t().myRecipes.editRecipe}
               </ThemedText>
@@ -96,10 +95,10 @@ export const RecipeSteps = ({
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ghostPill,
-                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
               ]}
             >
-              <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
+              <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
                 {t().myRecipes.deleteRecipe}
               </ThemedText>
@@ -116,10 +115,10 @@ export const RecipeSteps = ({
               onPress={onDelete}
               style={({ pressed }) => [
                 styles.ownerBtn,
-                { opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full, backgroundColor: colors.dangerLight },
+                { opacity: pressed ? opacities.pressed : opacities.full, backgroundColor: colors.dangerLight },
               ]}
             >
-              <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
+              <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
               <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.danger }]}>
                 {t().myRecipes.deleteRecipe}
               </ThemedText>
@@ -152,7 +151,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs2,
-    height: sizes.searchBarHeight,
+    minHeight: controlSizes.searchBar,
     borderRadius: radii.round,
   },
   ghostPill: {
@@ -160,13 +159,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs2,
-    height: sizes.searchBarHeight,
+    minHeight: controlSizes.searchBar,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
-    borderWidth: ValueConstants.one,
+    borderWidth: borderWidths.hairline,
   },
   ownerBtnLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.caption,
   },
 });

@@ -1,13 +1,12 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-const EDIT_BTN_HEIGHT = sizes.editBtnHeight;
+const EDIT_BTN_HEIGHT = controlSizes.editBtn;
 
 export interface ProfileActionsProps {
   onEditProfile: () => void;
@@ -32,7 +31,7 @@ export const ProfileActions = ({
         accessibilityLabel={t().profile.editProfile}
         hitSlop={spacing.xs}
       >
-        <Ionicons name="create-outline" size={sizes.iconSm} color={colors.primaryText} />
+        <Ionicons name="create-outline" size={iconSizes.md} color={colors.primaryText} />
         <ThemedText style={[styles.editBtnLabel, { color: colors.primaryText }]}>
           {t().profile.editProfile}
         </ThemedText>
@@ -59,10 +58,10 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
   },
   editBtnLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
   pressed: {
-    opacity: OpacityConstants.pressedSubtle,
+    opacity: opacities.pressedSubtle,
   },
 });

@@ -28,7 +28,7 @@ import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { t } from '@presentation/i18n';
 
 // Render the icon as plain text so query helpers never trip over the native mock.

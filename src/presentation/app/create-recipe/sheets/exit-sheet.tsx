@@ -2,8 +2,8 @@ import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -27,7 +27,7 @@ export const ExitSheet = ({
       <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onKeepEditing}>
         <Pressable style={[styles.card, { backgroundColor: colors.background }]} onPress={() => {}}>
           <View style={[styles.icon, { backgroundColor: colors.chipBackground }]}>
-            <Ionicons name="bookmark" size={sizes.iconLg} color={colors.primary} />
+            <Ionicons name="bookmark" size={iconSizes.xxl} color={colors.primary} />
           </View>
           <ThemedText variant="title">{t().createRecipe.exitTitle}</ThemedText>
           <ThemedText variant="body" style={[styles.body, { color: colors.textMuted }]}>
@@ -69,7 +69,7 @@ export const ExitSheet = ({
             accessibilityRole="button"
             accessibilityLabel={t().createRecipe.keepEditing}
           >
-            <ThemedText variant="caption" style={{ color: colors.textMuted, fontWeight: '600' }}>
+            <ThemedText variant="caption" style={{ color: colors.textMuted, fontWeight: fontWeights.semibold }}>
               {t().createRecipe.keepEditing}
             </ThemedText>
           </Pressable>
@@ -88,13 +88,13 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '100%',
-    maxWidth: sizes.maxContentMd,
+    maxWidth: layoutSizes.maxContentMd,
     borderRadius: radii.xxl,
     padding: spacing.xl,
   },
   icon: {
-    width: sizes.avatarSm,
-    height: sizes.avatarSm,
+    width: avatarSizes.md,
+    height: avatarSizes.md,
     borderRadius: radii.xl,
     alignItems: 'center',
     justifyContent: 'center',
@@ -103,10 +103,10 @@ const styles = StyleSheet.create({
   body: {
     marginTop: spacing.xs,
     marginBottom: spacing.lg,
-    lineHeight: sizes.lineHeightLg,
+    lineHeight: lineHeightFor(fontSizes.body),
   },
   primaryBtn: {
-    height: sizes.buttonSmHeight,
+    minHeight: controlSizes.buttonSm,
     borderRadius: radii.lg,
     marginBottom: spacing.sm,
   },
@@ -116,15 +116,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
   textBtn: {
-    height: sizes.buttonSmHeight,
+    minHeight: controlSizes.buttonSm,
     alignItems: 'center',
     justifyContent: 'center',
   },
   discardLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

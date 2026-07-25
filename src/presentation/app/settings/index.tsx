@@ -15,8 +15,8 @@ import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
@@ -73,7 +73,7 @@ export const SettingsScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().navigation.settings}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.text} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.text} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().settings.title}
@@ -189,20 +189,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
     flex: ValueConstants.one,
     textAlign: 'center',
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.heading,
   },
   headerSpacer: {
-    width: sizes.iconBtn,
+    width: controlSizes.iconBtn,
   },
   profileSection: {
     alignItems: 'center',
@@ -232,7 +232,7 @@ const styles = StyleSheet.create({
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: sizes.searchBarHeight + spacing.sm2,
+    marginLeft: controlSizes.searchBar + spacing.sm2,
   },
   bottomSpacer: {
     height: spacing.xxl,

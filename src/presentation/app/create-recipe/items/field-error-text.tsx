@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, iconSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface FieldErrorTextProps {
@@ -14,7 +14,7 @@ export const FieldErrorText = ({ message }: FieldErrorTextProps): React.JSX.Elem
   const colors = useTheme().colors;
   return (
     <View style={styles.root}>
-      <Ionicons name="alert-circle" size={sizes.iconXxs} color={colors.danger} />
+      <Ionicons name="alert-circle" size={iconSizes.lg} color={colors.danger} />
       <ThemedText variant="caption" style={[styles.message, { color: colors.danger }]}>
         {message}
       </ThemedText>

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { fontSizes, radii, sizes, spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -49,7 +50,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
       {sent ? (
         <View style={styles.successWrap}>
           <View style={[styles.iconChip, { backgroundColor: colors.successLight }]}>
-            <Ionicons name="checkmark-circle" size={sizes.iconXl} color={colors.success} />
+            <Ionicons name="checkmark-circle" size={iconSizes.xxxl} color={colors.success} />
           </View>
           <ThemedText variant="subtitle" style={styles.center}>
             {t().support.sentTitle}
@@ -91,14 +92,12 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
             <ThemedText variant="caption" muted style={styles.fieldLabel}>
               {t().support.message.toUpperCase()}
             </ThemedText>
-            <TextInput
+            <AutoGrowTextInput
               value={message}
               onChangeText={setMessage}
               placeholder={t().support.messagePlaceholder}
               placeholderTextColor={colors.textMuted}
-              multiline
-              numberOfLines={5}
-              textAlignVertical="top"
+              minHeight={controlSizes.messageField}
               style={[
                 styles.input,
                 styles.textArea,
@@ -143,22 +142,21 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   fieldLabel: {
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
   },
   input: {
-    height: sizes.inputHeightSm,
+    minHeight: controlSizes.inputSm,
     borderRadius: radii.lg,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
     paddingHorizontal: spacing.md,
     fontSize: fontSizes.body,
   },
   textArea: {
-    height: sizes.feedbackMessageMinHeight,
     paddingTop: spacing.md,
   },
   errorText: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   actionBtn: {
     borderRadius: radii.lg,
@@ -166,7 +164,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: sizes.buttonHeight,
+    minHeight: controlSizes.button,
   },
   successWrap: {
     alignItems: 'center',
@@ -174,8 +172,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xl,
   },
   iconChip: {
-    width: sizes.iconXl * ValueConstants.two,
-    height: sizes.iconXl * ValueConstants.two,
+    width: iconSizes.xxxl * ValueConstants.two,
+    height: iconSizes.xxxl * ValueConstants.two,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

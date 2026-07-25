@@ -3,13 +3,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { useRecipeTimer } from '@presentation/base/hooks/use-recipe-timer';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import type { TimerEntry } from '@application/timers/timer-entry';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 interface TimerChipProps {
   entry: TimerEntry;
@@ -97,26 +98,26 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     paddingVertical: spacing.xs,
     paddingLeft: spacing.sm2,
     paddingRight: spacing.xs,
     gap: spacing.xs,
-    minWidth: 120,
-    maxWidth: 180,
+    minWidth: controlSizes.timerChipMinWidth,
+    maxWidth: controlSizes.timerChipMaxWidth,
   },
   chipLeft: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   chipName: {
     fontSize: fontSizes.micro,
-    fontWeight: '600' as const,
-    lineHeight: 14,
+    fontWeight: fontWeights.semibold,
+    lineHeight: lineHeightFor(fontSizes.micro, lineHeights.snug),
   },
   chipTime: {
     fontSize: fontSizes.small,
-    fontWeight: '700' as const,
-    lineHeight: 16,
+    fontWeight: fontWeights.bold,
+    lineHeight: lineHeightFor(fontSizes.small, lineHeights.snug),
     fontVariant: ['tabular-nums'],
   },
   chipActions: {
@@ -124,8 +125,8 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
   },
   actionBtn: {
-    width: sizes.iconXxs,
-    height: sizes.iconXxs,
+    width: iconSizes.lg,
+    height: iconSizes.lg,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

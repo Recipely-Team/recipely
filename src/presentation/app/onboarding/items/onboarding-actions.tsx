@@ -1,12 +1,12 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
+import { ValueConstants } from '@core/constants';
 
 const PRIMARY_BORDER = 1.5;
 
@@ -35,7 +35,7 @@ export const OnboardingActions = ({
           accessibilityLabel={labels.signUp}
           style={({ pressed }) => [
             styles.button,
-            { borderColor: colors.primary, opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+            { borderColor: colors.primary, opacity: pressed ? opacities.pressed : opacities.full },
           ]}
         >
           <ThemedText style={[styles.buttonLabel, { color: colors.primary }]}>
@@ -52,7 +52,7 @@ export const OnboardingActions = ({
             {
               borderColor: colors.primary,
               backgroundColor: colors.primary,
-              opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full,
+              opacity: pressed ? opacities.pressed : opacities.full,
             },
           ]}
         >
@@ -69,11 +69,11 @@ export const OnboardingActions = ({
           accessibilityLabel={labels.explore}
           style={({ pressed }) => [
             styles.exploreLink,
-            { opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+            { opacity: pressed ? opacities.pressed : opacities.full },
           ]}
         >
           <ThemedText style={styles.exploreLabel}>{labels.explore}</ThemedText>
-          <Ionicons name="chevron-forward" size={sizes.iconSm} color={colors.primary} />
+          <Ionicons name="chevron-forward" size={iconSizes.md} color={colors.primary} />
         </Pressable>
         <Pressable
           onPress={onDismiss}
@@ -81,7 +81,7 @@ export const OnboardingActions = ({
           accessibilityLabel={labels.dontShow}
           style={({ pressed }) => [
             styles.dismissLink,
-            { opacity: pressed ? OpacityConstants.pressed : OpacityConstants.full },
+            { opacity: pressed ? opacities.pressed : opacities.full },
           ]}
         >
           <ThemedText muted style={styles.dismissLabel}>
@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   button: {
-    flex: 1,
-    height: sizes.buttonHeight,
+    flex: ValueConstants.one,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     borderWidth: PRIMARY_BORDER,
     alignItems: 'center',
@@ -111,7 +111,7 @@ const styles = StyleSheet.create({
   },
   buttonLabel: {
     fontSize: fontSizes.heading,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   linksMobile: {
     alignItems: 'center',
@@ -130,13 +130,13 @@ const styles = StyleSheet.create({
   },
   exploreLabel: {
     fontSize: fontSizes.body,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   dismissLink: {
     paddingVertical: spacing.xxs,
   },
   dismissLabel: {
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

@@ -10,9 +10,8 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
 
 export interface AuthTextFieldProps {
   iconName: React.ComponentProps<typeof Ionicons>['name'];
@@ -54,11 +53,11 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
   ): React.JSX.Element {
     const colors = useTheme().colors;
     const [focused, setFocused] = useState(false);
-    const paddingRight = rightSlot !== undefined ? sizes.iconBtn + spacing.sm : spacing.lg;
+    const paddingRight = rightSlot !== undefined ? controlSizes.iconBtn + spacing.sm : spacing.lg;
 
     return (
       <View style={[styles.inputWrapper, containerStyle]}>
-        <Ionicons name={iconName} size={sizes.iconMd} color={colors.textMuted} style={styles.inputIcon} />
+        <Ionicons name={iconName} size={iconSizes.xl} color={colors.textMuted} style={styles.inputIcon} />
         <TextInput
           ref={ref}
           style={[
@@ -98,11 +97,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: ValueConstants.one,
+    zIndex: zIndices.raised,
   },
   input: {
-    height: sizes.inputHeight,
-    borderWidth: sizes.inputBorderWidth,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     fontSize: fontSizes.body,

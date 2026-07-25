@@ -2,10 +2,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
-import { OpacityConstants } from '@presentation/base/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -55,7 +54,7 @@ export const CreateRecipeHeader = ({
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.cancel}
       >
-        <Ionicons name="close" size={sizes.iconXxs} color={colors.text} />
+        <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
       </Pressable>
       <View style={styles.headerCenter}>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
@@ -73,7 +72,7 @@ export const CreateRecipeHeader = ({
       <Pressable
         onPress={onSave}
         disabled={isSaving}
-        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? OpacityConstants.disabledStrong : OpacityConstants.full }]}
+        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? opacities.disabledFaint : opacities.full }]}
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.save}
       >
@@ -103,8 +102,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
@@ -126,11 +125,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   aiBadgeLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
   },
   saveBtn: {
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     overflow: 'hidden',
   },
@@ -141,7 +140,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   saveLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.caption,
   },
 });

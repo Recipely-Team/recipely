@@ -2,20 +2,20 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
+import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
-import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
+import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import * as mutate from '@presentation/app/recipes/model/filter-mutations';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useWebShellState } from '@presentation/base/responsive/use-web-shell-state';
+import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { t, useLocale } from '@presentation/i18n';
-import { spacing, sizes } from '@presentation/base/theme';
+import { spacing, layoutSizes } from '@presentation/base/theme';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -71,14 +71,14 @@ export const useRecipeList = (): UseRecipeListResult => {
       scrollY.value = y;
       if (reduceMotion) return;
       const delta = y - lastScrollY.value;
-      if (y <= sizes.homeHeaderMax) {
+      if (y <= layoutSizes.homeHeaderMax) {
         if (headerHidden.value !== ValueConstants.zero) {
           headerHidden.value = ValueConstants.zero;
           headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
         }
       } else if (delta > ValueConstants.zero && headerHidden.value !== 1) {
         headerHidden.value = 1;
-        headerTranslateY.value = withTiming(-sizes.homeHeaderMax, HEADER_TIMING);
+        headerTranslateY.value = withTiming(-layoutSizes.homeHeaderMax, HEADER_TIMING);
       } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
         headerHidden.value = ValueConstants.zero;
         headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
@@ -88,21 +88,21 @@ export const useRecipeList = (): UseRecipeListResult => {
     // Snap the band to whichever edge is nearer when scrolling settles.
     onMomentumEnd: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
+      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
     },
     onEndDrag: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -sizes.homeHeaderMax / 2;
+      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -sizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
     },
   });
 
   const gridColumns = useMemo<number>(() => {
     if (!isWebShell) return 1;
-    const available = Math.min(width, sizes.webContentMax) - spacing.xl * 2;
+    const available = Math.min(width, layoutSizes.webContentMax) - spacing.xl * ValueConstants.two;
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
 

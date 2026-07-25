@@ -6,7 +6,7 @@
 
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
-import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/themes';
+import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
 
 /** Recursively flattens a possibly-nested RN style prop into one object. */
 const flattenStyle = (style: unknown): Record<string, unknown> => {

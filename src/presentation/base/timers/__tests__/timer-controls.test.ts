@@ -9,7 +9,7 @@ jest.mock('@infrastructure/constants/storage', () => ({
 }));
 
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { FakeNotificationService } from '@application/__fixtures__/fake-notification-service';
 import { timerStore } from '@application/timers/timer-store';

@@ -1,6 +1,8 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
+import { themedTextVariants } from '@presentation/base/widgets/text/themed-text-variants';
+import { fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
 import type { ThemedTextVariant } from '@presentation/base/widgets/text/themed-text-variant';
 
 export interface ThemedTextProps extends TextProps {
@@ -8,7 +10,12 @@ export interface ThemedTextProps extends TextProps {
   muted?: boolean;
 }
 
-/** Theme-aware text primitive that applies variant typography and adaptive color. */
+/**
+ * Theme-aware text primitive that applies variant typography and adaptive color.
+ *
+ * The line box is computed per render rather than baked into the stylesheet so
+ * it tracks the OS font-scale setting — see `useTextLineHeight`.
+ */
 export const ThemedText = ({
   variant = 'body',
   muted = false,
@@ -16,43 +23,39 @@ export const ThemedText = ({
   ...rest
 }: ThemedTextProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const { fontSize, ratio } = themedTextVariants[variant];
+  const lineHeight = useTextLineHeight(fontSize, ratio);
   const color = muted ? colors.textMuted : colors.text;
-  return <Text {...rest} style={[styles[variant], { color }, style]} />;
+  return <Text {...rest} style={[styles[variant], { color, lineHeight }, style]} />;
 };
 
 const styles = StyleSheet.create<Record<ThemedTextVariant, TextStyle>>({
   headline: {
     fontSize: fontSizes.headline,
-    fontWeight: '800',
-    lineHeight: 40,
-    letterSpacing: -0.5,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
   },
   title: {
     fontSize: fontSizes.title,
-    fontWeight: '700',
-    lineHeight: 32,
-    letterSpacing: -0.3,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.tight,
   },
   subtitle: {
     fontSize: fontSizes.subtitle,
-    fontWeight: '600',
-    lineHeight: 26,
+    fontWeight: fontWeights.semibold,
   },
   body: {
     fontSize: fontSizes.body,
-    fontWeight: '400',
-    lineHeight: 22,
+    fontWeight: fontWeights.regular,
   },
   caption: {
     fontSize: fontSizes.caption,
-    fontWeight: '400',
-    lineHeight: 18,
+    fontWeight: fontWeights.regular,
   },
   label: {
-    fontSize: fontSizes.label,
-    fontWeight: '600',
-    lineHeight: 18,
-    letterSpacing: 0.5,
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.semibold,
+    letterSpacing: letterSpacings.wide,
     textTransform: 'uppercase',
   },
 });

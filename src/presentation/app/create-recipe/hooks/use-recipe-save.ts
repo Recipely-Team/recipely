@@ -4,10 +4,10 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
-import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-recipe/model/build-recipe-input';
-import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
-import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
-import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/use-recipe-save-args';
+import { buildCreateInput, buildUpdateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
+import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
+import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/saving/use-recipe-save-args';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 

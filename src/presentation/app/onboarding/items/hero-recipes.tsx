@@ -2,9 +2,9 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -51,7 +51,7 @@ const RecipeCard = ({ recipe }: { recipe: MockRecipe }): React.JSX.Element => {
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         style={styles.iconTile}
       >
-        <Ionicons name="restaurant" size={sizes.iconLg} color={colors.onOverlay} />
+        <Ionicons name="restaurant" size={iconSizes.xxl} color={colors.onOverlay} />
       </LinearGradient>
       <View style={styles.cardBody}>
         <ThemedText numberOfLines={1} style={styles.cardTitle}>
@@ -62,7 +62,7 @@ const RecipeCard = ({ recipe }: { recipe: MockRecipe }): React.JSX.Element => {
         </ThemedText>
         <MiniStars filled={recipe.stars} />
       </View>
-      <Ionicons name="bookmark" size={sizes.iconSm} color={colors.primary} />
+      <Ionicons name="bookmark" size={iconSizes.md} color={colors.primary} />
     </View>
   );
 };
@@ -86,7 +86,7 @@ export const HeroRecipes = ({ active = true }: HeroProps): React.JSX.Element => 
             { backgroundColor: colors.surface, borderColor: colors.cardBorder },
           ]}
         >
-          <Ionicons name="search" size={sizes.iconSm} color={colors.primary} />
+          <Ionicons name="search" size={iconSizes.md} color={colors.primary} />
           <ThemedText muted style={styles.searchText}>
             {m.searchPlaceholder}
           </ThemedText>
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   },
   searchText: {
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   card: {
     width: CARD_WIDTH,
@@ -137,14 +137,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   cardBody: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     gap: spacing.xxs,
   },
   cardTitle: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '800',
-    letterSpacing: -0.2,
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tight,
   },
   cardMeta: {
     fontSize: fontSizes.micro,

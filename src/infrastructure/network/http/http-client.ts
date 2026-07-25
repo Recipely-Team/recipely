@@ -1,4 +1,4 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { create, type AxiosInstance, type AxiosRequestConfig } from 'axios';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
@@ -26,7 +26,7 @@ export class HttpClient {
   constructor(private readonly options: HttpClientOptions) {
     this.aesKey = keyFromHex(API_AES_KEY_HEX);
 
-    this.instance = axios.create({
+    this.instance = create({
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {

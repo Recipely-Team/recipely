@@ -2,15 +2,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
-import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/recipe-meta-card';
-import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition-card';
-import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/recipe-author-card';
+import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card';
+import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-card';
+import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 
@@ -55,7 +55,7 @@ export const RecipeOverview = ({
       <View style={styles.captionRow}>
         {recipe.cuisine.length > ValueConstants.zero ? (
           <View style={styles.captionItem}>
-            <Ionicons name="globe-outline" size={sizes.iconCaption} color={colors.textMuted} />
+            <Ionicons name="globe-outline" size={iconSizes.md} color={colors.textMuted} />
             <ThemedText style={[styles.captionText, { color: colors.textMuted }]}>
               {cuisineLabel(recipe.cuisine).name}
             </ThemedText>
@@ -63,7 +63,7 @@ export const RecipeOverview = ({
         ) : null}
         {recipe.rating > ValueConstants.zero ? (
           <View style={styles.captionItem}>
-            <Ionicons name="star" size={sizes.iconCaption} color={colors.starFilled} />
+            <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
             <ThemedText style={[styles.captionRating, { color: colors.text }]}>
               {recipe.rating.toFixed(1)}
             </ThemedText>
@@ -80,7 +80,7 @@ export const RecipeOverview = ({
         >
           <MaterialCommunityIcons
             name={liked ? 'heart' : 'heart-outline'}
-            size={sizes.iconSm}
+            size={iconSizes.md}
             color={liked ? colors.likeActive : colors.textMuted}
           />
           <ThemedText style={[styles.statText, { color: liked ? colors.likeActive : colors.textMuted }]}>
@@ -89,7 +89,7 @@ export const RecipeOverview = ({
         </Pressable>
         {recipe.viewCount > ValueConstants.zero ? (
           <View style={styles.statItem}>
-            <Ionicons name="eye-outline" size={sizes.iconSm} color={colors.textMuted} />
+            <Ionicons name="eye-outline" size={iconSizes.md} color={colors.textMuted} />
             <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
               {recipe.viewCount.toLocaleString()}
             </ThemedText>
@@ -97,7 +97,7 @@ export const RecipeOverview = ({
         ) : null}
         {commentTotal > ValueConstants.zero ? (
           <View style={styles.statItem}>
-            <Ionicons name="chatbubble-outline" size={sizes.iconSm} color={colors.textMuted} />
+            <Ionicons name="chatbubble-outline" size={iconSizes.md} color={colors.textMuted} />
             <ThemedText style={[styles.statText, { color: colors.textMuted }]}>
               {String(commentTotal)}
             </ThemedText>
@@ -112,7 +112,7 @@ export const RecipeOverview = ({
       better since "who made this" belongs near the title. */}
       {authorState.status === 'loading' ? (
         <View style={styles.authorSkeleton}>
-          <SkeletonLoader width={sizes.avatarSm} height={sizes.avatarSm} borderRadius={radii.round} />
+          <SkeletonLoader width={avatarSizes.md} height={avatarSizes.md} borderRadius={radii.round} />
           <View style={styles.authorSkeletonText}>
             <SkeletonLoader width="40%" height={fontSizes.micro} />
             <SkeletonLoader width="65%" height={fontSizes.body} />
@@ -175,12 +175,12 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   captionText: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '600',
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.semibold,
   },
   captionRating: {
-    fontSize: fontSizes.captionLg,
-    fontWeight: '700',
+    fontSize: fontSizes.caption,
+    fontWeight: fontWeights.bold,
   },
   statsStrip: {
     flexDirection: 'row',
@@ -195,7 +195,7 @@ const styles = StyleSheet.create({
   },
   statText: {
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   authorSkeleton: {
     flexDirection: 'row',

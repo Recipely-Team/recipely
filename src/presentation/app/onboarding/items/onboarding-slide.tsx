@@ -1,9 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, layoutSizes } from '@presentation/base/theme';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
 import type { OnboardingSlide as OnboardingSlideModel } from '@presentation/app/onboarding/model/onboarding-slide';
+import { ValueConstants } from '@core/constants';
 
 export interface OnboardingSlideProps {
   slide: OnboardingSlideModel;
@@ -42,7 +43,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg2,
   },
   hero: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   copy: {
     paddingTop: spacing.lg2,
@@ -57,19 +58,19 @@ const styles = StyleSheet.create({
   },
   eyebrowText: {
     fontSize: fontSizes.small,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textTransform: 'uppercase',
-    letterSpacing: 0.2,
+    letterSpacing: letterSpacings.subtle,
   },
   title: {
     fontSize: fontSizes.headline,
-    fontWeight: '800',
-    letterSpacing: -0.6,
-    lineHeight: 37,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
+    lineHeight: lineHeightFor(fontSizes.headline, lineHeights.tight),
   },
   body: {
     fontSize: fontSizes.heading,
-    lineHeight: sizes.lineHeightMd + 4,
-    maxWidth: sizes.maxContentMd,
+    lineHeight: lineHeightFor(fontSizes.heading),
+    maxWidth: layoutSizes.maxContentMd,
   },
 });

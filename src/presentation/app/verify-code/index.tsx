@@ -8,14 +8,14 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
 import { VerifyCodeCard } from '@presentation/app/verify-code/body/verify-code-card';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, layoutSizes, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = sizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -89,7 +89,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().verify.changeEmail}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.heroImageHeight,
+    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -124,18 +124,18 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: ValueConstants.one,
+    zIndex: zIndices.raised,
   },
   card: {
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -sizes.cardOverlap,
+    marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
