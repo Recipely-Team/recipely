@@ -52,6 +52,28 @@ The Listing Hub exports everything at the right size. Filenames come out as
 the right sequence. Drop the six PNGs for a language straight into that
 language's folder and leave the names alone.
 
+### App Store rules the Hub copy does not know about
+
+Three things cost a failed upload each before they were written down:
+
+- **No emoji in `description.txt`.** The App Store rejects the whole field:
+  `Description can't contain the following character(s): 🔖, 🤖, …`. Play accepts
+  them, which is why `metadata/android/*/full_description.txt` still has the
+  emoji section headers and the App Store copy uses plain uppercase ones. Keep
+  the two deliberately different.
+- **`name.txt` must be globally unique across the App Store.** Adding a
+  localization fails with *"You cannot add this localization because the app
+  name is already being used by another app"* — the English name
+  `Recipely - AI Recipe Chef` is taken, which is why `en-US` is not yet a live
+  App Store localization.
+- **Screenshots go in the 6.9" slot, not 6.5".** 1290 × 2796 is only valid for
+  the slot Apple labels *6.5", 6.7" or 6.9" Displays*; the separate 6.5" entry
+  wants 1242 × 2688. Fill 6.9" and the smaller sizes inherit from it.
+
+> `deliver` re-uploads a screenshot when its post-upload check races Apple's
+> eventual consistency, and the retry lands as a DUPLICATE rather than
+> replacing. Always re-open Media Manager and count after an upload.
+
 > Verify the required screenshot sizes in App Store Connect before a submission
 > — Apple changes which display classes are mandatory, and a set that passed
 > last release can be rejected at upload.
