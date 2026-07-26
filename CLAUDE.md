@@ -241,7 +241,8 @@ blocking.
     files, run `npm run map`; `check:structure` rule J blocks on a stale map. Never hand-edit it.
 
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
-    `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming) mechanically and must be
+    `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming),
+    22 (unguarded `console.*`) mechanically and must be
     green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user
     approval.
 
@@ -279,6 +280,18 @@ blocking.
       primitives (`Result`, `Failure`). Because "bare concept" needs judgment, this half is enforced by
       `code-reviewer`, not the structure gate. Mappers follow the `Mapper` / `RequestMapper` contracts
       (architecture.md §Infrastructure), never a base class.
+
+22. **No unguarded `console.*`** — every `console.log/warn/error/info/debug` under `src/` must sit behind
+    `if (__DEV__)` (or an `enableLogging` option that is wired to `__DEV__`, as the HTTP client does).
+    **Enforced mechanically** by `check:structure` (rule K). Two reasons, both real:
+    - In a dev build an unguarded `console.error` / `console.warn` raises a **LogBox panel over the running
+      app**. A batch of leftover favorites tracing did exactly this and read as a production crash.
+    - In a **release** build the call still runs — it writes to logcat / Console.app instead of the screen —
+      so whatever you passed it leaks. The removed calls were logging user ids and saved-recipe ids.
+
+    Errors reach the user through `Result<T, Failure>` and the `failureContent` lookups (rule 12), never
+    through a log line. If a log is genuinely diagnostic, guard it; if it was scaffolding for a bug you
+    already fixed, delete it. Production error reporting is `recordCrash` (Crashlytics), not `console`.
 
 ### Pre-commit quality gate
 

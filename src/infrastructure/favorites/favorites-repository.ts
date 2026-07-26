@@ -47,15 +47,8 @@ export class FavoritesRepository implements IFavoritesRepository {
       params: { pageSize: 20 },
     });
 
-    if (!result.ok) {
-       
-      console.error('[FavoritesRepository] getFavoritesIds failed:', result.failure);
-      return fail(result.failure);
-    }
+    if (!result.ok) return fail(result.failure);
 
-    const ids = new Set(result.value.items.map((r) => r.id));
-     
-    console.log('[FavoritesRepository] getFavoritesIds loaded:', Array.from(ids));
-    return ok(ids);
+    return ok(new Set(result.value.items.map((r) => r.id)));
   }
 }

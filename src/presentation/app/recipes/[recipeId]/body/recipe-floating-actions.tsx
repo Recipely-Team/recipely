@@ -7,7 +7,8 @@ import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentatio
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
   isOwner: boolean;
-  likedByMe: boolean;
+  /** Server-confirmed like state, overlaid by any in-flight optimistic toggle. */
+  liked: boolean;
   isSaved: boolean;
   saveDisabled: boolean;
   onEdit: () => void;
@@ -23,7 +24,7 @@ export interface RecipeFloatingActionsProps {
 export const RecipeFloatingActions = ({
   insetsTop,
   isOwner,
-  likedByMe,
+  liked,
   isSaved,
   saveDisabled,
   onEdit,
@@ -56,13 +57,13 @@ export const RecipeFloatingActions = ({
       <Pressable
         onPress={onToggleLike}
         accessibilityRole="button"
-        accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
+        accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
         <MaterialCommunityIcons
-          name={likedByMe ? 'heart' : 'heart-outline'}
+          name={liked ? 'heart' : 'heart-outline'}
           size={iconSizes.xl}
-          color={likedByMe ? colors.likeActive : colors.onOverlay}
+          color={liked ? colors.likeActive : colors.onOverlay}
         />
       </Pressable>
       <Pressable

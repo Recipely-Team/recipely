@@ -8,9 +8,22 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 /** View model returned by {@link useRecipeList} for the recipe-list screen. */
 export interface UseRecipeListResult {
   state: RecipeListState;
-  filteredRecipes: RecipeSummaryEntity[];
+  /**
+   * The rows to render. Already narrowed by the backend — filters AND the
+   * search query are query params, so there is no client-side pass over this.
+   */
+  recipes: RecipeSummaryEntity[];
   isWebShell: boolean;
   isSearching: boolean;
+  /**
+   * True whenever the visible rows are out of date with what the user has
+   * asked for: a filter/sort/search refetch is in flight, OR a typed query is
+   * still waiting out its debounce. Drives the feed's inline "Refreshing…"
+   * indicator, which is what makes a filter tap read as a server round trip
+   * rather than a dead press. Distinct from `isPullRefreshing`, which is the
+   * pull gesture alone.
+   */
+  isRefetching: boolean;
   activeFilterCount: number;
   gridColumns: number;
   sortBy: SortKey;
@@ -24,7 +37,8 @@ export interface UseRecipeListResult {
   reduceMotion: boolean;
   scrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
 
-  // Search (mobile local search field).
+  // Search (mobile in-header field; web reads the shared app-header one).
+  // Raw, un-debounced value so the input stays responsive per keystroke.
   search: string;
   onSearchChange: (value: string) => void;
 

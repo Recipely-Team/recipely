@@ -32,9 +32,9 @@ export const getFirebaseApp = (): FirebaseApp | null => {
     firebaseConfig.projectId === undefined ||
     firebaseConfig.appId === undefined
   ) {
-    console.warn(
-      '[firebase-init.web] EXPO_PUBLIC_FIREBASE_* env vars missing — skipping init',
-    );
+    if (__DEV__) {
+      console.warn('[firebase-init.web] EXPO_PUBLIC_FIREBASE_* env vars missing — skipping init');
+    }
     return null;
   }
   const existing = getApps();
@@ -58,6 +58,6 @@ export const initFirebase = async (): Promise<void> => {
     const supported = await isAnalyticsSupported();
     if (supported) getAnalytics(app);
   } catch (err) {
-    console.warn('[firebase-init.web] analytics init skipped:', err);
+    if (__DEV__) console.warn('[firebase-init.web] analytics init skipped:', err);
   }
 };

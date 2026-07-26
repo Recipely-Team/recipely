@@ -12,10 +12,10 @@ import {
   HERO_OVERLAY_DEEP,
   HERO_OVERLAY_MID,
   HERO_OVERLAY_FADE,
-} from '@presentation/app/recipes/model/web-hero-constants';
+} from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
-import { HeroGradientConstants } from '@presentation/app/recipes/model/hero-gradient-constants';
+import { HeroGradientConstants } from '@presentation/app/recipes/model/hero/hero-gradient-constants';
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummaryEntity;

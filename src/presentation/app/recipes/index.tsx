@@ -33,7 +33,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       <WebFilterModal
         visible={vm.isWebShell && vm.sheetOpen === 'filter'}
         pending={vm.pendingFilters}
-        resultCount={vm.filteredRecipes.length}
+        resultCount={vm.recipes.length}
         hasActiveFilters={countActiveFilters(vm.pendingFilters) > ValueConstants.zero}
         onToggleCuisine={vm.onTogglePendingCuisine}
         onToggleCategory={vm.onTogglePendingCategory}

@@ -561,6 +561,8 @@ export const tr: Translations = {
     pause: 'Duraklat',
     resume: 'Devam',
     cancel: 'İptal',
+    collapse: 'Zamanlayıcıları gizle',
+    expand: 'Zamanlayıcıları göster',
   },
   alarm: {
     title: 'Süre doldu!',
@@ -578,6 +580,7 @@ export const tr: Translations = {
     fiberValue: 'Lif: {value}g',
     kcal: 'kcal',
     g: 'g',
+    unavailable: 'Bu tarif için besin değeri bilgisi henüz yok.',
   },
   comments: {
     title: 'Yorumlar',

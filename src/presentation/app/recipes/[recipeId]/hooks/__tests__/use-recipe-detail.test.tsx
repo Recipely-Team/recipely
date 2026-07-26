@@ -30,6 +30,8 @@ import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { Difficulty } from '@domain/recipes/difficulty';
 import { configureCommentsStore } from '@application/comments/configure-comments-store';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
@@ -143,9 +145,49 @@ const makeRealCommentsStore = (
  * state that keeps the hook's effects from firing (recipe kept `loading` so no
  * fetch, no comment load, and no like sync runs during these tests).
  */
-const makeStores = (commentsStore: CommentsStore): Stores => {
+/**
+ * A loaded recipe whose server-side like state is caller-supplied, for the
+ * single-source-of-truth tests below.
+ */
+const buildRecipe = (likedByMe: boolean): RecipeEntity => {
+  const result = RecipeEntity.create({
+    id: RECIPE_ID,
+    name: 'Baklava',
+    cuisine: 'TURKISH',
+    category: 'DESSERT',
+    difficulty: Difficulty.Medium,
+    ingredients: ['yufka'],
+    instructions: ['bake'],
+    prepTimeMinutes: 45,
+    cookTimeMinutes: 35,
+    servings: 1,
+    caloriesPerServing: 0,
+    image: 'https://cdn.example.com/baklava.webp',
+    media: [],
+    rating: 0,
+    tags: [],
+    mealType: [],
+    ownerId: 'someone-else',
+    likeCount: 7,
+    likedByMe,
+    viewCount: 60,
+    moderationStatus: 'approved',
+    commentCount: 1,
+  });
+  if (!result.ok) throw new Error('failed to build RecipeEntity fixture');
+  return result.value;
+};
+
+interface StoreOverrides {
+  /** Replaces the default `loading` detail state with a loaded recipe. */
+  detailState?: RecipeDetailStoreState['byId'][string];
+  /** Seeds the likes-store overlay; empty by default (nothing synced yet). */
+  likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
+}
+
+const makeStores = (commentsStore: CommentsStore, overrides: StoreOverrides = {}): Stores => {
   const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
-    byId: { [RECIPE_ID]: { status: 'loading' } },
+    byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
     replace: jest.fn(),
     remove: jest.fn(),
@@ -166,7 +208,10 @@ const makeStores = (commentsStore: CommentsStore): Stores => {
     deleteState: { status: 'idle' as const },
     loadMyRecipes: jest.fn(),
   }));
-  const likesStore = create(() => ({ byRecipe: {}, syncFromApi: jest.fn() }));
+  const likesStore = create(() => ({
+    byRecipe: overrides.likesByRecipe ?? {},
+    syncFromApi: jest.fn(),
+  }));
   const userProfileStore = create(() => ({ state: { status: 'idle' as const }, load: jest.fn() }));
 
   return {
@@ -182,7 +227,10 @@ const makeStores = (commentsStore: CommentsStore): Stores => {
 };
 
 /** Renders a probe that captures the live hook output on every render. */
-const driveHook = (commentsStore: CommentsStore): { latest: () => UseRecipeDetailResult } => {
+const driveHook = (
+  commentsStore: CommentsStore,
+  overrides: StoreOverrides = {},
+): { latest: () => UseRecipeDetailResult } => {
   let latest: UseRecipeDetailResult | null = null;
 
   const Probe = (): null => {
@@ -191,7 +239,7 @@ const driveHook = (commentsStore: CommentsStore): { latest: () => UseRecipeDetai
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(commentsStore)}>
+    <StoresProvider value={makeStores(commentsStore, overrides)}>
       <Probe />
     </StoresProvider>,
   );
@@ -294,5 +342,55 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
 
     expect(execute).not.toHaveBeenCalled();
     expect(latest().submitError).toBeNull();
+  });
+});
+
+/**
+ * Reported as: like a recipe, close and reopen the app, and the heart is empty
+ * again — then going back to the list showed it unliked there too.
+ *
+ * The root cause was a backend one (`GET /recipes/:id` carried no auth
+ * middleware, so `likedByMe` came back false for everyone), fixed in
+ * recipely-backend. These tests cover the client half: the view model exposed
+ * TWO fields for one fact — `liked`, which fell back to the server value, and
+ * `likedByMe`, which did not. The floating heart over the hero image read the
+ * second one, so it rendered empty until the likes store synced and stayed
+ * empty whenever that sync was skipped (it is skipped while an optimistic
+ * toggle is in flight). Only `liked` survives, and it must honour the server.
+ */
+describe('useRecipeDetail — liked is the single source of truth', () => {
+  const loaded = (likedByMe: boolean): StoreOverrides => ({
+    detailState: { status: 'loaded', recipe: buildRecipe(likedByMe) },
+  });
+
+  it("reports the server's likedByMe before the likes store has any entry", () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loaded(true));
+
+    // The regression: the heart that read the dropped `likedByMe` field showed
+    // `false` here, contradicting the response that had just loaded.
+    expect(latest().liked).toBe(true);
+  });
+
+  it('reports not-liked when the server says so', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loaded(false));
+
+    expect(latest().liked).toBe(false);
+  });
+
+  it('lets an optimistic likes-store overlay win over the loaded recipe', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), {
+      ...loaded(false),
+      likesByRecipe: { [RECIPE_ID]: { likeCount: 8, likedByMe: true, isLoading: true } },
+    });
+
+    // A toggle in flight must show immediately, otherwise the tap feels dead.
+    expect(latest().liked).toBe(true);
+    expect(latest().likeCount).toBe(8);
+  });
+
+  it('takes the like count from the loaded recipe when no overlay exists', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loaded(true));
+
+    expect(latest().likeCount).toBe(7);
   });
 });
