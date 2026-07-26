@@ -1,3 +1,4 @@
+import type { RequestMapper } from '@core/mapper/request-mapper';
 import { DEFAULT_FEEDBACK_CATEGORY } from '@domain/feedback/feedback-category';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackRequestDto } from '@infrastructure/feedback/feedback-dto';
@@ -9,7 +10,9 @@ import { CharConstants } from '@core/constants';
  * Omits `subject` entirely when it is blank after trimming so the backend
  * can distinguish "not provided" from an empty string.
  */
-export const toFeedbackRequestDto = (input: FeedbackSubmission): FeedbackRequestDto => {
+export const toFeedbackRequestDto: RequestMapper<FeedbackSubmission, FeedbackRequestDto> = (
+  input,
+) => {
   const trimmedSubject = input.subject.trim();
   const dto: FeedbackRequestDto = {
     category: DEFAULT_FEEDBACK_CATEGORY,

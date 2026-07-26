@@ -32,9 +32,9 @@ import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body'
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
-import { sizes } from '@presentation/base/theme';
+import { layoutSizes } from '@presentation/base/theme';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -45,13 +45,13 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
 
-jest.mock('@presentation/app/recipes/items/recipe-list-item', () => {
+jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return { RecipeListItem: (): React.JSX.Element => <Text>recipe-list-item</Text> };
 });
 
-const makeRecipe = (id: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeRecipe = (id: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -66,7 +66,7 @@ const makeRecipe = (id: string): RecipeSummary => {
     commentCount: 0,
     viewCount: 0,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 
@@ -244,7 +244,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
     // iOS applies the value as a raw frame shift, so the full band height is right.
     const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
 
-    expect(control.props.progressViewOffset).toBe(sizes.homeHeaderMax);
+    expect(control.props.progressViewOffset).toBe(layoutSizes.homeHeaderMax);
   });
 
   it('uses the smaller Android offset so the spinner rests under the band, not over the AI banner', () => {
@@ -257,7 +257,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
     try {
       const control = render({ isPullRefreshing: false }).findByType(RefreshControl);
 
-      expect(control.props.progressViewOffset).toBe(sizes.homeRefreshOffsetAndroid);
+      expect(control.props.progressViewOffset).toBe(layoutSizes.homeRefreshOffsetAndroid);
     } finally {
       selectSpy.mockRestore();
     }

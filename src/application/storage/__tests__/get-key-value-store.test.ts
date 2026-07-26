@@ -4,7 +4,7 @@
  * store (never throw) when nothing is registered — the DI-less unit-test mount.
  */
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';

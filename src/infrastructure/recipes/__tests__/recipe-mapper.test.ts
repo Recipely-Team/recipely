@@ -1,5 +1,5 @@
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';

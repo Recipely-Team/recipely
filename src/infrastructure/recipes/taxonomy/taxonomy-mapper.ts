@@ -1,5 +1,5 @@
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/taxonomy-item-dto';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**

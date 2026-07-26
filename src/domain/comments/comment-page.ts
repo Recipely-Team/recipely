@@ -1,7 +1,7 @@
-import type { Comment } from '@domain/comments/comment';
+import type { CommentEntity } from '@domain/comments/comment-entity';
 
 export interface CommentPage {
-  items: Comment[];
+  items: CommentEntity[];
   total: number;
   page: number;
   pageSize: number;

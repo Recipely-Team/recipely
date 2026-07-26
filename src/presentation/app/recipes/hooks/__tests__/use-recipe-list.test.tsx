@@ -45,7 +45,7 @@ import { NetworkFailure } from '@core/failure';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -65,18 +65,18 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 }));
 
 // Sibling hooks that only add unrelated store reads (favorites, taxonomy labels).
-jest.mock('@presentation/app/recipes/shared/hooks/use-save-recipe', () => ({
+jest.mock('@presentation/base/hooks/recipes/use-save-recipe', () => ({
   useSaveRecipe: jest.fn(() => ({ isSaved: () => false, toggleSave: jest.fn() })),
 }));
 
-jest.mock('@presentation/app/recipes/shared/hooks/use-taxonomy-label', () => ({
+jest.mock('@presentation/base/taxonomy/use-taxonomy-label', () => ({
   useTaxonomyLabel: jest.fn(() => ({
     cuisineLabel: (key: string) => ({ name: key, emoji: '🍝' }),
     categoryLabel: (key: string) => ({ name: key, emoji: '🍽️' }),
   })),
 }));
 
-type ListResult = Result<RecipeSummary[], Failure>;
+type ListResult = Result<RecipeSummaryEntity[], Failure>;
 
 /** A promise plus the handle to settle it, so a load can be held in flight. */
 interface Deferred {
@@ -92,8 +92,8 @@ const makeDeferred = (): Deferred => {
   return { promise, resolve };
 };
 
-const makeRecipe = (id: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeRecipe = (id: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -108,7 +108,7 @@ const makeRecipe = (id: string): RecipeSummary => {
     commentCount: 0,
     viewCount: 0,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 

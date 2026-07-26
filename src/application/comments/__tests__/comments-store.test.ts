@@ -7,13 +7,13 @@ import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-com
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Comment, type CommentProps } from '@domain/comments/comment';
+import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
 import type { CommentPage } from '@domain/comments/comment-page';
 
 const RECIPE_ID = 'recipe-3';
 
-const makeComment = (overrides: Partial<CommentProps> = {}): Comment => {
-  const result = Comment.create({
+const makeComment = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+  const result = CommentEntity.create({
     id: 'c1',
     body: 'Looks delicious!',
     authorId: 'author-9',
@@ -35,7 +35,7 @@ interface LikeCall {
 }
 
 interface StubConfig {
-  seed: Comment[];
+  seed: CommentEntity[];
   likeResult?: Result<void, Failure>;
   unlikeResult?: Result<void, Failure>;
 }

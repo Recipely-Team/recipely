@@ -3,12 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-interface InputViewProps {
+interface ForgotPasswordInputViewProps {
   email: string;
   onChangeEmail: (v: string) => void;
   focused: boolean;
@@ -20,16 +20,16 @@ interface InputViewProps {
   error: string | undefined;
 }
 
-export const InputView = ({
+export const ForgotPasswordInputView = ({
   email, onChangeEmail, focused, onFocus, onBlur, loading, onSend, onBack, error,
-}: InputViewProps): React.JSX.Element => {
+}: ForgotPasswordInputViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <>
       <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
         <Ionicons
           name="mail-outline"
-          size={20}
+          size={iconSizes.xl}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -81,7 +81,7 @@ export const InputView = ({
         accessibilityRole="button"
         accessibilityLabel={t().forgotPassword.backToLogin}
       >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
           {t().forgotPassword.backToLogin}
         </ThemedText>
       </Pressable>
@@ -97,11 +97,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   input: {
-    height: sizes.inputHeight,
-    borderWidth: 1.5,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,

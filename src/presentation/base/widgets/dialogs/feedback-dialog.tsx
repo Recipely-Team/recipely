@@ -1,10 +1,11 @@
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 const SEVERITY_ICON = {
   success: 'checkmark',
@@ -67,7 +68,7 @@ export const FeedbackDialog = ({
           style={[styles.card, { backgroundColor: colors.background }]}
         >
           <View style={[styles.disc, { backgroundColor: surface.disc }]}>
-            <Ionicons name={SEVERITY_ICON[severity]} size={sizes.iconXl} color={surface.icon} />
+            <Ionicons name={SEVERITY_ICON[severity]} size={iconSizes.xxxl} color={surface.icon} />
           </View>
           <ThemedText variant="subtitle" style={styles.title}>
             {title}
@@ -108,21 +109,21 @@ export const FeedbackDialog = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.lg,
   },
   card: {
     width: '100%',
-    maxWidth: sizes.dialogMaxWidth,
+    maxWidth: layoutSizes.dialogMaxWidth,
     borderRadius: radii.xxl,
     padding: spacing.xl,
     alignItems: 'center',
   },
   disc: {
-    width: sizes.feedbackDisc,
-    height: sizes.feedbackDisc,
+    width: decorSizes.feedbackDisc,
+    height: decorSizes.feedbackDisc,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
@@ -130,32 +131,32 @@ const styles = StyleSheet.create({
   },
   title: {
     textAlign: 'center',
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     marginBottom: spacing.sm,
   },
   message: {
     textAlign: 'center',
-    lineHeight: 22,
+    lineHeight: lineHeightFor(fontSizes.body),
     marginBottom: spacing.lg,
   },
   primary: {
     alignSelf: 'stretch',
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   primaryLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   secondary: {
     alignSelf: 'stretch',
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.xs,
   },
   secondaryLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

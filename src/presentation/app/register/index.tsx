@@ -8,12 +8,13 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { RegisterHero } from '@presentation/app/register/body/register-hero';
 import { RegisterForm } from '@presentation/app/register/body/register-form';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = 520;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -26,7 +27,7 @@ export const RegisterScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === 'authenticated') {
-      router.replace('/recipes');
+      router.replace(RoutePaths.recipes);
     }
   }, [state.status, router]);
 
@@ -37,7 +38,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             <RegisterHero isLandscapeShell={isLandscapeShell} />
@@ -72,7 +73,7 @@ export const RegisterScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -81,7 +82,7 @@ export const RegisterScreen = (): React.JSX.Element => {
           onPress={() => router.back()}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         <RegisterHero isLandscapeShell={isLandscapeShell} />
@@ -101,53 +102,53 @@ export const RegisterScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scrollContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
   },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.gradientHeight,
+    height: decorSizes.gradientHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
   backButton: {
     position: 'absolute',
-    top: sizes.tabBarHeight,
+    top: controlSizes.tabBar,
     left: spacing.lg,
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   card: {
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -sizes.cardOverlap,
+    marginTop: -decorSizes.cardOverlap,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

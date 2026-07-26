@@ -1,5 +1,5 @@
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';
+import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 
 /**
  * Maps a `RecipeDraftDto` from the API into a domain `RecipeDraft`. `snapshot`

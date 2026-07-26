@@ -2,26 +2,26 @@ import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { WebRecipeCard } from '@presentation/app/recipes/items/web-recipe-card';
+import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
-import { WebSortMenu } from '@presentation/app/recipes/items/web-sort-menu';
-import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
+import { WebSortMenu } from '@presentation/app/recipes/items/filters/web-sort-menu';
+import { SkeletonCard } from '@presentation/app/recipes/items/cards/skeleton-card';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
 const GRID_GAP = spacing.lg2;
 /** Skeleton rows shown in the grid area while the list (re)loads. */
-const SKELETON_ROWS = 2;
+const SKELETON_ROWS = ValueConstants.two;
 
 export interface WebRecipeGridProps {
-  recipes: RecipeSummary[];
+  recipes: RecipeSummaryEntity[];
   isSearching: boolean;
   /**
    * True while the recipe list is (re)loading — e.g. after a sort/filter
@@ -72,7 +72,7 @@ export const WebRecipeGrid = ({
       : t().recipes.webAllRecipes;
 
   const renderItem = useCallback(
-    ({ item }: { item: RecipeSummary }): React.JSX.Element => (
+    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
       <View style={styles.gridCell}>
         <WebRecipeCard
           recipe={item}
@@ -121,7 +121,7 @@ export const WebRecipeGrid = ({
         accessibilityLabel={t().recipes.filter}
         style={[styles.filterBtn, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       >
-        <Ionicons name="funnel-outline" size={sizes.iconSm} color={colors.textMuted} />
+        <Ionicons name="funnel-outline" size={iconSizes.md} color={colors.textMuted} />
         <ThemedText style={[styles.filterLabel, { color: colors.text }]}>
           {t().recipes.filter}
         </ThemedText>
@@ -169,7 +169,7 @@ export const WebRecipeGrid = ({
       ) : recipes.length === ValueConstants.zero ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
           <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
-            <Ionicons name="search" size={sizes.iconXl} color={colors.textMuted} />
+            <Ionicons name="search" size={iconSizes.xxxl} color={colors.textMuted} />
           </View>
           <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
             {t().recipes.noResults}
@@ -186,7 +186,7 @@ export const WebRecipeGrid = ({
           renderItem={renderItem}
           numColumns={gridColumns}
           scrollEnabled={false}
-          columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
+          columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
           contentContainerStyle={styles.gridContent}
         />
       )}
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
   // (absolutely positioned inside the head) is not painted over by the cards.
   headRow: {
     position: 'relative',
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   controls: {
     flexDirection: 'row',
@@ -212,18 +212,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    height: sizes.webSortBtn,
+    height: controlSizes.webSortBtn,
     paddingHorizontal: spacing.md,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     borderRadius: radii.lg,
   },
   filterLabel: {
     fontSize: fontSizes.caption,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   filterBadge: {
-    minWidth: sizes.iconXxs,
-    height: sizes.iconXxs,
+    minWidth: iconSizes.lg,
+    height: iconSizes.lg,
     paddingHorizontal: spacing.xs,
     borderRadius: radii.round,
     alignItems: 'center',
@@ -232,13 +232,13 @@ const styles = StyleSheet.create({
   filterBadgeText: {
     fontSize: fontSizes.micro,
     lineHeight: fontSizes.micro,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
     includeFontPadding: false,
   },
   segment: {
     flexDirection: 'row',
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     borderRadius: radii.lg,
     padding: spacing.xxs,
   },
@@ -269,11 +269,11 @@ const styles = StyleSheet.create({
     gap: GRID_GAP,
   },
   gridCell: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   empty: {
-    borderWidth: 1.5,
+    borderWidth: borderWidths.thin,
     borderStyle: 'dashed',
     borderRadius: radii.xl,
     padding: spacing.xxxl,
@@ -281,14 +281,14 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   emptyIcon: {
-    width: sizes.webEmptyIcon,
-    height: sizes.webEmptyIcon,
+    width: iconSizes.jumbo,
+    height: iconSizes.jumbo,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   emptyTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.subtitle,
   },
   emptyBody: {

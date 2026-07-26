@@ -21,8 +21,8 @@ import { ProfileScreen } from '@presentation/app/profile';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { t } from '@presentation/i18n';
 
@@ -30,7 +30,7 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
 }));
 
-jest.mock('@presentation/app/profile/hooks/use-avatar-upload', () => ({
+jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
   useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false, uploadError: null, onDismissUploadError: jest.fn() })),
 }));
 
@@ -57,12 +57,12 @@ const unwrap = <T,>(result: { ok: boolean; value?: T }): T => {
   return result.value;
 };
 
-/** Builds a real authenticated `AuthSession` whose user carries the given bio. */
-const buildSession = (bio: string | undefined): AuthSession => {
+/** Builds a real authenticated `AuthSessionEntity` whose user carries the given bio. */
+const buildSession = (bio: string | undefined): AuthSessionEntity => {
   const email = unwrap(Email.create('cook@example.com'));
-  const user = unwrap(User.create({ id: 'user-1', email, displayName: 'Ada Lovelace', bio }));
+  const user = unwrap(UserEntity.create({ id: 'user-1', email, displayName: 'Ada Lovelace', bio }));
   return unwrap(
-    AuthSession.create({
+    AuthSessionEntity.create({
       id: 'session-1',
       accessToken: 'access-token',
       expiresAt: new Date(Date.now() + 3_600_000),

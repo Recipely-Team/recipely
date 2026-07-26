@@ -6,16 +6,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { InputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
-import { SuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
+import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
+import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -36,9 +36,9 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
     if (email.trim().length === ValueConstants.zero) return;
     setSendError(undefined);
     setLoading(true);
-    const ok = await requestPasswordReset(email.trim());
+    const failure = await requestPasswordReset(email.trim());
     setLoading(false);
-    if (ok) {
+    if (failure === null) {
       setSent(true);
     } else {
       setSendError(t().forgotPassword.sendError);
@@ -48,7 +48,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
-        <Ionicons name="key-outline" size={isLandscapeShell ? 32 : 26} color={colors.onOverlay} />
+        <Ionicons name="key-outline" size={isLandscapeShell ? iconSizes.xxxl : iconSizes.xxl} color={colors.onOverlay} />
       </View>
       <ThemedText variant="subtitle" style={[styles.heroTitle, { color: colors.onOverlay }]}>
         {t().forgotPassword.title}
@@ -62,13 +62,13 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   );
 
   const cardBody = sent ? (
-    <SuccessView
+    <ForgotPasswordSuccessView
       email={email}
       onBack={() => router.back()}
       onTryDifferent={() => setSent(false)}
     />
   ) : (
-    <InputView
+    <ForgotPasswordInputView
       email={email}
       onChangeEmail={setEmail}
       focused={focused}
@@ -88,7 +88,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             {hero}
@@ -124,7 +124,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -134,7 +134,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().forgotPassword.backToLogin}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         {hero}
@@ -154,14 +154,14 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
+  flex: { flex: ValueConstants.one },
+  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: 280,
+    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -169,34 +169,34 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: controlSizes.iconBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   gradientCenter: {
-    height: 280,
+    height: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
+    borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: 0.82,
+    opacity: opacities.onMedia,
   },
   heroSubtitle: {
     textAlign: 'center',
@@ -205,28 +205,28 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -40,
+    marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: 420,
+    maxWidth: layoutSizes.maxContentLg,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

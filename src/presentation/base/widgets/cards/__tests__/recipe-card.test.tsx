@@ -1,5 +1,5 @@
 /**
- * `RecipeCard`'s `tags` prop is optional (lean `RecipeSummary` list contexts
+ * `RecipeCard`'s `tags` prop is optional (lean `RecipeSummaryEntity` list contexts
  * omit it entirely) — the tags-chip row must simply be absent rather than
  * crash or render empty chips when `tags` is undefined.
  */
@@ -23,7 +23,7 @@ const baseProps = {
 };
 
 describe('RecipeCard — tags', () => {
-  it('renders without a tags prop (lean RecipeSummary list contexts)', () => {
+  it('renders without a tags prop (lean RecipeSummaryEntity list contexts)', () => {
     expect(() => renderComponent(<RecipeCard {...baseProps} />)).not.toThrow();
   });
 

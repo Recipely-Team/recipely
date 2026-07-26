@@ -1,5 +1,5 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeSort } from '@domain/recipes/list/recipe-sort';
+import type { RecipeSortType } from '@domain/recipes/list/recipe-sort-type';
 
 export interface RecipeFilters {
   search?: string;
@@ -9,6 +9,6 @@ export interface RecipeFilters {
   categories?: string[];
   difficulties?: Difficulty[];
   maxTime?: number;
-  sort?: RecipeSort;
+  sort?: RecipeSortType;
   sortOrder?: 'asc' | 'desc';
 }

@@ -1,5 +1,5 @@
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
-import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';
+import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 
 const fullDto: RecipeDraftDto = {
   id: 'd1e2f3a4-5678-4901-bcde-f01234567890',

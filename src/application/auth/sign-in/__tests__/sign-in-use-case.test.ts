@@ -2,16 +2,16 @@ import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-reposito
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 
-const buildSession = (): AuthSession => {
+const buildSession = (): AuthSessionEntity => {
   const email = Email.create('u@example.com');
   if (!email.ok) throw new Error();
-  const user = User.create({ id: 'u1', email: email.value, displayName: 'U' });
+  const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'U' });
   if (!user.ok) throw new Error();
-  const session = AuthSession.create({
+  const session = AuthSessionEntity.create({
     id: 's1',
     accessToken: 'tok',
     expiresAt: new Date(Date.now() + 60_000),

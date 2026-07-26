@@ -5,7 +5,7 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import { toFeedbackRequestDto } from '@infrastructure/feedback/feedback-mapper';
-import { FEEDBACK_PATH } from '@infrastructure/constants/api';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
 
 /**
  * Implements `IFeedbackRepository` against the Recipely backend.
@@ -18,7 +18,7 @@ export class FeedbackRepository implements IFeedbackRepository {
   async submitFeedback(input: FeedbackSubmission): Promise<Result<void, Failure>> {
     const result = await this.http.request({
       method: 'POST',
-      url: FEEDBACK_PATH,
+      url: ApiRoutes.feedback,
       data: toFeedbackRequestDto(input),
     });
 

@@ -1,8 +1,8 @@
 import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 
 export type RefineRecipeState =
   | { status: 'idle' }
   | { status: 'refining' }
-  | { status: 'success'; recipe: Recipe }
+  | { status: 'success'; recipe: RecipeEntity }
   | { status: 'error'; failure: Failure };

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
@@ -11,7 +11,7 @@ import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -111,7 +111,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
 });
 

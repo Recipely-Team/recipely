@@ -1,18 +1,18 @@
 import { StyleSheet, View, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeListItem } from '@presentation/app/recipes/items/recipe-list-item';
+import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeSearchOverlayProps {
   /** Already name-filtered recipes for the current query (see `recipe-list-screen`'s `filteredRecipes`). */
-  recipes: RecipeSummary[];
+  recipes: RecipeSummaryEntity[];
   onOpenRecipe: (id: string) => void;
 }
 
@@ -43,7 +43,7 @@ export const RecipeSearchOverlay = ({
       </View>
       {recipes.length === ValueConstants.zero ? (
         <View style={styles.empty}>
-          <Ionicons name="search" size={48} color={colors.textMuted} />
+          <Ionicons name="search" size={iconSizes.massive} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyTitle}>
             {t().recipes.noResults}
           </ThemedText>
@@ -66,14 +66,14 @@ export const RecipeSearchOverlay = ({
 
 const styles = StyleSheet.create({
   panel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   countRow: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
   },
   listContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.xxl,
   },
@@ -81,7 +81,7 @@ const styles = StyleSheet.create({
     height: spacing.md,
   },
   empty: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,

@@ -43,14 +43,3 @@ export const showSuccessToast = (message: string, action?: ToastRetry): string =
     onAction: action?.onRetry,
   });
 
-/** Surfaces a neutral, informational toast (e.g. "Recipe deleted" with Undo). */
-export const showInfoToast = (
-  message: string,
-  action?: { label: string; onPress: () => void },
-): string =>
-  toastStore.getState().show({
-    severity: 'neutral',
-    message,
-    actionLabel: action?.label,
-    onAction: action?.onPress,
-  });

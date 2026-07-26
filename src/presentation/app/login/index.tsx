@@ -8,8 +8,8 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { LoginHero } from '@presentation/app/login/body/login-hero';
 import { LoginForm } from '@presentation/app/login/body/login-form';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
@@ -40,7 +40,7 @@ export const LoginScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             <LoginHero isLandscapeShell={isLandscapeShell} />
@@ -80,7 +80,7 @@ export const LoginScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
@@ -107,7 +107,7 @@ export const LoginScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scrollContent: {
     flexGrow: 1,
@@ -132,17 +132,17 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
     flexGrow: 1,

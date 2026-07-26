@@ -1,6 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { fontWeights } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AvatarImageProps {
@@ -35,7 +36,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
     <LinearGradient
       colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
       start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: ValueConstants.one, y: ValueConstants.one }}
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
@@ -57,6 +58,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   initials: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
 });

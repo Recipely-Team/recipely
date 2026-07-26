@@ -1,6 +1,6 @@
 import type { Failure } from '@presentation/base/types';
 import { t } from '@presentation/i18n';
-import type { Severity } from '@presentation/base/theme/severity';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconName } from '@presentation/base/errors/ionicon-name';
 import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
 import type { FailureContent } from '@presentation/base/errors/failure-content';
@@ -35,7 +35,7 @@ const CODE_TO_KEY: Record<string, FailureContentKey> = {
   unknown: 'unknown',
 };
 
-const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, Severity>> = {
+const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   notFound: 'neutral',
   rateLimit: 'warning',
   // Nothing is broken and nothing was refused — the user just has to wait, look
@@ -106,7 +106,7 @@ const keyFor = (failure: Failure): FailureContentKey =>
   dedicatedKeyFor(failure) ?? CODE_TO_KEY[failure.code] ?? 'unknown';
 
 /** The semantic severity a failure should be rendered with (defaults to danger). */
-export const failureSeverity = (failure: Failure): Severity =>
+export const failureSeverity = (failure: Failure): SeverityType =>
   KEY_TO_SEVERITY[keyFor(failure)] ?? 'danger';
 
 /** Localized title + body for a full-screen or section error state. */

@@ -1,11 +1,11 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { TimerChip } from '@presentation/base/widgets/timers/timer-chip';
 import { timerStore } from '@application/timers/timer-store';
-import { spacing, radii, sizes } from '@presentation/base/theme';
-import { shadows } from '@presentation/base/theme/shadows';
+import { spacing, radii, controlSizes, decorSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -43,7 +43,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   return (
     <View
       pointerEvents="box-none"
-      style={[styles.bar, { bottom: insets.bottom + sizes.tabBarHeight + spacing.sm }]}
+      style={[styles.bar, { bottom: insets.bottom + controlSizes.tabBar + spacing.sm }]}
     >
       <View
         style={[
@@ -73,21 +73,21 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.md,
     right: spacing.md,
-    zIndex: 100,
+    zIndex: zIndices.timersBar,
   },
   barInner: {
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
   },
   barHandle: {
-    width: 32,
-    height: 3,
+    width: decorSizes.dragHandleWidth,
+    height: controlSizes.progressBarThin,
     borderRadius: radii.round,
     alignSelf: 'center',
     marginBottom: spacing.xs,
-    opacity: 0.4,
+    opacity: opacities.inactive,
   },
   chipRow: {
     flexDirection: 'row',

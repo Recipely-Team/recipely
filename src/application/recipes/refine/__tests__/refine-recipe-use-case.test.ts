@@ -2,7 +2,7 @@ import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repo
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
@@ -14,8 +14,8 @@ const snapshot: DraftRecipeSnapshot = {
   instructions: ['Boil'],
 };
 
-const makeRecipe = (): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'Refined Recipe',
     cuisine: CuisineKey.Italian,

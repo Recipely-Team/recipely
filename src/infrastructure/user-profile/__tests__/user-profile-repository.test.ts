@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { UserProfile } from '@domain/user-profile/user-profile';
+import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
@@ -46,7 +46,7 @@ describe('UserProfileRepository.getById', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value).toBeInstanceOf(UserProfile);
+      expect(r.value).toBeInstanceOf(UserProfileEntity);
       expect(r.value.displayName).toBe('Ada Lovelace');
       expect(r.value.bio).toBe('Home kitchen, small steps.');
       expect(r.value.recipeCount).toBe(12);

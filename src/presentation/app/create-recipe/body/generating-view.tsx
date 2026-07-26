@@ -1,23 +1,17 @@
-import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
+import Animated from 'react-native-reanimated';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
 import { t } from '@presentation/i18n';
-import type { GeneratingVariant } from '@presentation/app/create-recipe/model/generating-variant';
+import type { GeneratingVariant } from '@presentation/app/create-recipe/model/generation/generating-variant';
 import { ValueConstants } from '@core/constants';
+import { AnimationConstants } from '@presentation/base/constants';
 
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
@@ -30,6 +24,19 @@ const STAGE = 188;
 const CORE = 104;
 const ORBIT_RADIUS = 90;
 const ORBIT_COUNT = 6;
+/**
+ * Import never reports 100%: the backend keeps working after the last named
+ * step, so the bar parks just short of full and keeps pulsing rather than
+ * claiming to be done.
+ */
+const IMPORT_PROGRESS_CAP = 0.92;
+/** Even spacing of the orbiting dots around the full circle. */
+const ORBIT_STEP_DEG = 360 / ORBIT_COUNT;
+/** Faintest orbiting dot, and the step that fans the rest brighter. */
+const ORBIT_DOT_MIN_OPACITY = 0.35;
+const ORBIT_DOT_OPACITY_STEP = 0.22;
+/** Dots repeat their brightness every third position. */
+const ORBIT_DOT_OPACITY_CYCLE = 3;
 const GENERATE_STEP_KEYS = ['gen0', 'gen1', 'gen2', 'gen3', 'gen4'] as const;
 const IMPORT_STEP_KEYS = ['import0', 'import1', 'import2', 'import3'] as const;
 const LOGO_SIZE = 60;
@@ -40,29 +47,7 @@ export const GeneratingView = ({
   variant = 'generate',
 }: GeneratingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const spin = useSharedValue(ValueConstants.zero);
-  const breathe = useSharedValue(ValueConstants.zero);
-
-  useEffect(() => {
-    spin.value = withRepeat(withTiming(1, { duration: 4500, easing: Easing.linear }), -1);
-    breathe.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-        withTiming(ValueConstants.zero, { duration: 1200, easing: Easing.inOut(Easing.ease) }),
-      ),
-      -1,
-    );
-  }, [spin, breathe]);
-
-  const orbitStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spin.value * 360}deg` }],
-  }));
-  const ringStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${spin.value * -360}deg` }],
-  }));
-  const coreStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: 1 + breathe.value * 0.06 }],
-  }));
+  const { orbitStyle, ringStyle, coreStyle } = useGeneratingAnimation();
 
   const copy = t().createRecipe;
   const isImport = variant === 'import';
@@ -76,8 +61,8 @@ export const GeneratingView = ({
   const lastStep = steps.length - 1;
   const spotlight = isImport ? Math.min(activeStep, lastStep) : activeStep;
   const progress = isImport
-    ? Math.min(0.92, (spotlight + 1) / steps.length)
-    : Math.min(1, (activeStep + 1) / steps.length);
+    ? Math.min(IMPORT_PROGRESS_CAP, (spotlight + 1) / steps.length)
+    : Math.min(AnimationConstants.progressMax, (activeStep + 1) / steps.length);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -97,8 +82,8 @@ export const GeneratingView = ({
                 styles.dot,
                 {
                   backgroundColor: colors.primary,
-                  opacity: 0.35 + (n % 3) * 0.22,
-                  transform: [{ rotate: `${n * 60}deg` }, { translateX: ORBIT_RADIUS }],
+                  opacity: ORBIT_DOT_MIN_OPACITY + (n % ORBIT_DOT_OPACITY_CYCLE) * ORBIT_DOT_OPACITY_STEP,
+                  transform: [{ rotate: `${n * ORBIT_STEP_DEG}deg` }, { translateX: ORBIT_RADIUS }],
                 },
               ]}
             />
@@ -108,12 +93,12 @@ export const GeneratingView = ({
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={[styles.core, shadows.lg]}
           >
             <RecipelyLogo size={LOGO_SIZE} monochrome mono={colors.primaryText} />
             <View style={styles.twinkle}>
-              <Ionicons name="sparkles" size={sizes.iconMd} color={colors.primaryText} />
+              <Ionicons name="sparkles" size={iconSizes.xl} color={colors.primaryText} />
             </View>
           </LinearGradient>
         </Animated.View>
@@ -133,19 +118,19 @@ export const GeneratingView = ({
           const done = i < spotlight;
           const active = i === spotlight;
           return (
-            <View key={label} style={[styles.checkRow, { opacity: done || active ? 1 : 0.4 }]}>
+            <View key={label} style={[styles.checkRow, { opacity: done || active ? opacities.full : opacities.inactive }]}>
               <View
                 style={[
                   styles.checkBadge,
                   {
                     backgroundColor: done ? colors.primary : 'transparent',
                     borderColor: active ? colors.primary : colors.border,
-                    borderWidth: done ? ValueConstants.zero : 1.5,
+                    borderWidth: done ? ValueConstants.zero : borderWidths.thin,
                   },
                 ]}
               >
                 {done ? (
-                  <Ionicons name="checkmark" size={sizes.iconSm} color={colors.primaryText} />
+                  <Ionicons name="checkmark" size={iconSizes.md} color={colors.primaryText} />
                 ) : active ? (
                   <View style={[styles.activeDot, { backgroundColor: colors.primary }]} />
                 ) : null}
@@ -168,7 +153,7 @@ export const GeneratingView = ({
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: ValueConstants.zero }}
+            end={{ x: ValueConstants.one, y: ValueConstants.zero }}
             style={[styles.progressFill, { width: `${progress * 100}%` }]}
           />
         </View>
@@ -179,7 +164,7 @@ export const GeneratingView = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
@@ -195,8 +180,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: STAGE,
     height: STAGE,
-    borderRadius: STAGE / 2,
-    borderWidth: 3,
+    borderRadius: STAGE / ValueConstants.two,
+    borderWidth: borderWidths.thick,
     borderRightColor: 'transparent',
     borderBottomColor: 'transparent',
   },
@@ -227,7 +212,7 @@ const styles = StyleSheet.create({
   },
   heading: {
     alignItems: 'center',
-    maxWidth: 300,
+    maxWidth: layoutSizes.maxContentXs,
   },
   title: {
     textAlign: 'center',
@@ -238,7 +223,7 @@ const styles = StyleSheet.create({
   },
   checklist: {
     width: '100%',
-    maxWidth: 320,
+    maxWidth: layoutSizes.maxContentSm,
     gap: spacing.sm2,
   },
   checkRow: {
@@ -247,8 +232,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   checkBadge: {
-    width: sizes.badgeSm,
-    height: sizes.badgeSm,
+    width: decorSizes.badgeSm,
+    height: decorSizes.badgeSm,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

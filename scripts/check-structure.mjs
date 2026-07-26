@@ -8,7 +8,12 @@
  *      from the composition root, `infrastructure/constants/*`, or via DI.
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
+ *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
  *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines.
+ *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
+ *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
+ *      <TextInput multiline> outside the AutoGrowTextInput pair.
+ *   I. Folder file counts (CLAUDE.md §14c): warn past 10, block past 15.
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -122,6 +127,43 @@ for (const file of files) {
     errors.push(`${file}: type/interface shares a file with runtime code — move ${typeLike.map((d) => `${d.kind} ${d.name}`).join(', ')} to its own file`);
   }
 
+  // --- G: entity naming (CLAUDE.md §21) -------------------------------------
+  // A class extending BaseEntity must be named `*Entity` and live in a
+  // `*-entity.ts` file, so entities are recognizable by name and file alike.
+  const entityRe = /export\s+(?:default\s+)?(?:abstract\s+)?class\s+([A-Za-z0-9_]+)\s+extends\s+BaseEntity\b/g;
+  for (const m of src.matchAll(entityRe)) {
+    const name = m[1];
+    const base = path.basename(file).replace(/\.tsx?$/, '');
+    if (!name.endsWith('Entity')) {
+      errors.push(`${file}: '${name}' extends BaseEntity but is not named '*Entity' (CLAUDE.md §21)`);
+    }
+    if (!base.endsWith('-entity')) {
+      errors.push(`${file}: entity '${name}' must live in a '*-entity.ts' file (CLAUDE.md §21)`);
+    }
+  }
+
+  // --- H: responsive sizing guard (CLAUDE.md §6b) ---------------------------
+  // The two sizing mistakes that silently break at a large OS font scale or on
+  // the web build, both invisible in a normal simulator run.
+  if (file.startsWith('presentation' + path.sep) && !isTest(file)) {
+    // React Native scales `fontSize` by the system font setting but never
+    // `lineHeight`, so an absolute line box clips its own glyphs at large
+    // accessibility sizes. Derive it instead.
+    for (const m of src.matchAll(/^\s*lineHeight: (-?\d+(?:\.\d+)?)\b/gm)) {
+      errors.push(
+        `${file}: absolute lineHeight ${m[1]} — derive it with lineHeightFor() / useTextLineHeight() (CLAUDE.md §6b)`,
+      );
+    }
+    // react-native-web renders `multiline` as a real <textarea>, which does not
+    // grow with its content — it keeps its box and shows a scrollbar.
+    const isAutoGrowWidget = path.basename(file).startsWith('auto-grow-text-input');
+    if (!isAutoGrowWidget && /^\s*multiline\b/m.test(src)) {
+      errors.push(
+        `${file}: bare <TextInput multiline> — use AutoGrowTextInput from base/widgets/inputs (CLAUDE.md §6b)`,
+      );
+    }
+  }
+
   // --- F: Smart-UI size guard (CLAUDE.md §18) --------------------------------
   // A .tsx over 300 lines is a blocking violation: split it into body/items/
   // sheets/hooks/model parts (or a hook) instead of growing the component.
@@ -158,6 +200,62 @@ for (const file of files) {
           ? `${file}: co-located page code must live in body/, items/, sheets/, hooks/, model/, shared/, or __tests__/`
           : `${file}: flat file at the app root will not register as a route — use app/<segment>/index.tsx`,
       );
+    }
+  }
+}
+
+// --- I: folder file-count guard (CLAUDE.md §14c) ----------------------------
+// A folder is a unit of meaning, not a bucket. Past ~10 sibling files nobody
+// reads the folder any more, they grep it — and that is exactly how the old
+// 46-file `base/theme/` and the 90-key `sizes` object happened.
+//
+// Two tiers on purpose. The soft limit is guidance for review, because some
+// flat lists are FORCED by another rule (rule 1 puts one Failure subclass per
+// file) and whether a split helps is a judgement about meaning, not something a
+// file count can make. The hard limit is where a folder has stopped being
+// scannable no matter what is in it.
+const SOFT_FILE_LIMIT = 10;
+const HARD_FILE_LIMIT = 15;
+// Test and fixture folders mirror the shape of the code they cover; splitting
+// them independently would only decouple them from that shape.
+const COUNT_EXEMPT = /(^|\/)(__tests__|__fixtures__|__mocks__)(\/|$)/;
+
+const folderCounts = new Map();
+for (const file of files) {
+  const dir = path.dirname(file);
+  if (COUNT_EXEMPT.test(dir)) continue;
+  folderCounts.set(dir, (folderCounts.get(dir) ?? 0) + 1);
+}
+const crowded = [];
+for (const [dir, count] of folderCounts) {
+  if (count > HARD_FILE_LIMIT) {
+    errors.push(
+      `${dir}/: ${String(count)} files — over the ${String(HARD_FILE_LIMIT)}-file hard limit (CLAUDE.md §14c); group the related ones into subfolders`,
+    );
+  } else if (count > SOFT_FILE_LIMIT) {
+    crowded.push(`${dir}/ (${String(count)})`);
+  }
+}
+if (crowded.length > 0 && process.env.CI !== 'true') {
+  console.warn(
+    `check:structure — ${String(crowded.length)} folder(s) past the ${String(SOFT_FILE_LIMIT)}-file soft limit; look for a grouping before adding another:\n` +
+      crowded.sort().map((c) => '  · ' + c).join('\n'),
+  );
+}
+
+// --- J: PROJECT-MAP.md must describe the tree that exists --------------------
+// The map only saves anyone time while it is true. It carries a fingerprint of
+// every folder and file name under src/; if the tree moved and the map did not,
+// fail here rather than letting a confidently wrong index rot in the repo.
+{
+  const mapPath = path.join(ROOT, 'PROJECT-MAP.md');
+  if (!fs.existsSync(mapPath)) {
+    errors.push('PROJECT-MAP.md is missing — run `npm run map`');
+  } else {
+    const { fingerprint } = await import('./generate-map.mjs');
+    const recorded = /<!-- fingerprint: ([a-f0-9]+) -->/.exec(fs.readFileSync(mapPath, 'utf8'))?.[1];
+    if (recorded !== fingerprint()) {
+      errors.push('PROJECT-MAP.md is stale — run `npm run map` (CLAUDE.md §22)');
     }
   }
 }

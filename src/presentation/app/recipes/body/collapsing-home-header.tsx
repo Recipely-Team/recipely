@@ -9,16 +9,16 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
-import { SearchBar } from '@presentation/app/recipes/items/search-bar';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
   scrollY: SharedValue<number>;
-  /** Direction-aware band offset, range [-sizes.homeHeaderMax, 0]. */
+  /** Direction-aware band offset, range [-layoutSizes.homeHeaderMax, 0]. */
   headerTranslateY: SharedValue<number>;
   /** When true, the band renders statically shown with no scroll-driven motion. */
   reduceMotion: boolean;
@@ -33,7 +33,7 @@ export interface CollapsingHomeHeaderProps {
  * title, the notifications bell, and the search field. Absolutely positioned over
  * the list; it slides up out of view on scroll-down and back on scroll-up
  * (`headerTranslateY`), while the title shrinks and the eyebrow fades as the list
- * scrolls past `sizes.homeTitleShrink` (`scrollY`). With reduce-motion on it stays
+ * scrolls past `layoutSizes.homeTitleShrink` (`scrollY`). With reduce-motion on it stays
  * fully shown at rest geometry.
  *
  * The band is absolutely positioned so it can float over the list and slide
@@ -63,7 +63,7 @@ export const CollapsingHomeHeader = ({
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
       ? 1
-      : interpolate(scrollY.value, [ValueConstants.zero, sizes.homeTitleShrink], [1, 0.82], Extrapolation.CLAMP);
+      : interpolate(scrollY.value, [ValueConstants.zero, layoutSizes.homeTitleShrink], [1, 0.82], Extrapolation.CLAMP);
     return { transform: [{ scale }] };
   });
 
@@ -72,7 +72,7 @@ export const CollapsingHomeHeader = ({
       ? 1
       : interpolate(
           scrollY.value,
-          [ValueConstants.zero, sizes.homeTitleShrink * 0.5],
+          [ValueConstants.zero, layoutSizes.homeTitleShrink * 0.5],
           [1, ValueConstants.zero],
           Extrapolation.CLAMP,
         ),
@@ -83,7 +83,7 @@ export const CollapsingHomeHeader = ({
       ? 1
       : interpolate(
           scrollY.value,
-          [sizes.homeTitleShrink * 0.5, sizes.homeTitleShrink],
+          [layoutSizes.homeTitleShrink * 0.5, layoutSizes.homeTitleShrink],
           [1, 0.55],
           Extrapolation.CLAMP,
         ),
@@ -96,7 +96,7 @@ export const CollapsingHomeHeader = ({
       <View style={styles.titleRow}>
         <View style={styles.titles}>
           <Animated.View style={eyebrowStyle}>
-            <RecipelyLogo size={sizes.iconMd} />
+            <RecipelyLogo size={iconSizes.xl} />
           </Animated.View>
           <Animated.View style={[styles.titleScaleAnchor, titleStyle]}>
             <ThemedText variant="title" style={styles.screenTitle}>
@@ -116,7 +116,7 @@ export const CollapsingHomeHeader = ({
         >
           <Ionicons
             name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
-            size={sizes.iconMd}
+            size={iconSizes.xl}
             color={colors.text}
           />
           {unreadCount > ValueConstants.zero ? (
@@ -146,8 +146,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: sizes.homeHeaderMax,
-    zIndex: 20,
+    height: layoutSizes.homeHeaderMax,
+    zIndex: zIndices.stickyHeader,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,
   },
@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   titles: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xxs,
   },
   titleScaleAnchor: {
@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
     transformOrigin: 'left',
   },
   screenTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   bell: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -178,19 +178,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: ValueConstants.zero,
     right: ValueConstants.zero,
-    minWidth: sizes.notifBadge,
-    height: sizes.notifBadge,
+    minWidth: decorSizes.notifBadge,
+    height: decorSizes.notifBadge,
     paddingHorizontal: spacing.xs,
-    borderRadius: sizes.notifBadge / 2,
-    borderWidth: 2,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: BrandColors.white,
     fontSize: fontSizes.nano,
-    fontWeight: '700',
-    lineHeight: sizes.notifBadgeLineHeight,
+    fontWeight: fontWeights.bold,
+    lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },
   searchWrapper: {

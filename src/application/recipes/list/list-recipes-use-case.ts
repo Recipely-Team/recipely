@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 
@@ -11,7 +11,7 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 export class ListRecipesUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 
-  execute(filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>> {
+  execute(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
     return this.repo.listActiveRecipes(filters);
   }
 }

@@ -1,3 +1,5 @@
+import { RoutePaths } from '@presentation/base/constants';
+
 /**
  * Resolves the post-login redirect target from the `redirect` search param.
  * Accepts the value only when it is an internal absolute path — starts with
@@ -10,10 +12,10 @@ export const resolveRedirect = (redirect: string | string[] | undefined): string
     typeof redirect === 'string' &&
     redirect.startsWith('/') &&
     !redirect.startsWith('//') &&
-    redirect !== '/login' &&
-    !redirect.startsWith('/login?')
+    redirect !== RoutePaths.login &&
+    !redirect.startsWith(`${RoutePaths.login}?`)
   ) {
     return redirect;
   }
-  return '/recipes';
+  return RoutePaths.recipes;
 };

@@ -1,18 +1,18 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 export interface FakeRecipeRepositoryConfig {
-  listActiveRecipesResult?: Result<RecipeSummary[], Failure>;
-  listTrendingRecipesResult?: Result<RecipeSummary[], Failure>;
-  listMyRecipesResult?: Result<RecipeSummary[], Failure>;
-  getRecipeResult?: Result<Recipe, Failure>;
-  createRecipeResult?: Result<Recipe, Failure>;
-  generateRecipeResult?: Result<Recipe, Failure>;
-  importInstagramRecipeResult?: Result<Recipe, Failure>;
+  listActiveRecipesResult?: Result<RecipeSummaryEntity[], Failure>;
+  listTrendingRecipesResult?: Result<RecipeSummaryEntity[], Failure>;
+  listMyRecipesResult?: Result<RecipeSummaryEntity[], Failure>;
+  getRecipeResult?: Result<RecipeEntity, Failure>;
+  createRecipeResult?: Result<RecipeEntity, Failure>;
+  generateRecipeResult?: Result<RecipeEntity, Failure>;
+  importInstagramRecipeResult?: Result<RecipeEntity, Failure>;
   refineRecipeResult?: Result<RefinedRecipe, Failure>;
-  updateRecipeResult?: Result<Recipe, Failure>;
+  updateRecipeResult?: Result<RecipeEntity, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
 }

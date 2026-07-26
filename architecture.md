@@ -25,7 +25,7 @@ src/
     |
   infrastructure/     Repository implementations, DTOs, mappers, network, storage
     |
-  core/               Framework-agnostic building blocks (Result, Failure, Entity, DI)
+  core/               Framework-agnostic building blocks (Result, Failure, BaseEntity, DI)
 ```
 
 ### Dependency Rule
@@ -114,12 +114,12 @@ references are **by id only**.
 
 | Aggregate root | Members / notes |
 |---|---|
-| `Recipe` | Root. `RecipeSummary` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
-| `Comment` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
-| `User` | Root (auth identity). |
-| `UserProfile` | Own root (profile lifecycle independent of auth session); references `User` by id. |
-| `AuthSession` | Root (token lifecycle). |
-| `Notification` | Own root; references related entities by id. |
+| `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
+| `UserEntity` | Root (auth identity). |
+| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. |
+| `AuthSessionEntity` | Root (token lifecycle). |
+| `NotificationEntity` | Own root; references related entities by id. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.
@@ -132,20 +132,25 @@ blocks otherwise.
 
 Framework-agnostic building blocks shared across all layers.
 
+The test for this layer is not "is it shared?" but **"is it a building block?"**. `core/di/`
+holds the `Container`, which maps a bare `symbol` to a factory and never learns a single token
+name — reusable in any project. The token list itself (`TOKENS`) enumerates *this* app's
+repositories, use cases and ports, so it is composition knowledge and lives in
+`application/di/tokens.ts`. Same reasoning keeps design tokens out of core (§5a).
+
 | Module | Purpose |
 |--------|---------|
 | `src/core/result/result.ts` | `Result<T, F>` monad (`ok` / `fail`) for typed error handling |
-| `src/core/failure/` | `Failure` base class + individual subclasses (one per file) with barrel `index.ts` |
-| `src/core/entity/entity.ts` | Base `Entity<Props>` with identity equality |
-| `src/core/di/container.ts` | `Container` class (register/resolve with lazy singletons) |
+| `src/core/failure/` | The contract (`Failure` base class, `ErrorMessageKey`, `ValidationFieldError`) at the root; the concrete failures in `kinds/`; barrel `index.ts` |
+| `src/core/entity/base-entity.ts` | Base `BaseEntity<Props>` with identity equality |
+| `src/core/di/container.ts` | `Container` class (register/resolve with lazy singletons), keyed by a bare `symbol` |
 | `src/core/di/container-instance.ts` | Singleton `container` instance |
-| `src/core/di/tokens.ts` | DI token symbols |
 
 ### `src/domain/`
 
 The heart of the application. Pure TypeScript, no framework dependencies.
 
-- **Entities** — `Recipe`, `AuthSession`, `User`, `Comment` extend `Entity<Props>` with factory `create()`
+- **Entities** — `RecipeEntity`, `AuthSessionEntity`, `UserEntity`, `CommentEntity` extend `BaseEntity<Props>` with factory `create()`
   methods returning `Result`.
 - **Value Objects** — e.g. `Email` (self-validating class with a factory `create()` returning `Result`).
 - **Enums / Literals** — typed string unions in their own files.
@@ -170,6 +175,11 @@ Implements domain interfaces with concrete I/O.
 - **DTOs** — One interface per file (`RecipeDto`, `RecipesListDto`, …).
 - **Mappers** — Pure functions (`toRecipe`, `toUser`) that convert DTOs to domain entities, returning
   `Result`. Mappers are stateless and have no dependencies, so plain exported functions are idiomatic.
+  They are typed to the shared function-type contracts in `@core/mapper`: a reconstituting DTO→domain
+  mapper is a `Mapper<TDto, TDomain, TFailure>` (returns `Result`); a total input→request-DTO mapper is a
+  `RequestMapper<TInput, TDto>` (returns the DTO directly). These are **type aliases, not base classes** —
+  mappers never become classes, and infallible field-copy transformers that fit neither contract stay
+  plain functions.
 - **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
@@ -205,10 +215,21 @@ All UI and user-facing logic.
   `use-auth-guard.ts`, `use-instagram-share-import.ts`, `alarm-screen.tsx` (global overlay rendered by the
   root layout).
 - **Bootstrap** — `AppBootstrap` (DI init + hydration), `StoresProvider` (React context for stores).
+**Placement follows consumers.** A module read by exactly one page belongs in that page's folder, not
+in `base/`; a module read by two or more pages belongs in `base/`, not inside one of them. The root
+layout is not a page, so the global shell chrome it mounts (tab bar, toast host, web header, active
+timers bar, splash overlay) correctly stays in `base/widgets/`.
+
 - **Widgets** — Shared UI components in `src/presentation/base/widgets/`, grouped by category folder: `text/`,
   `buttons/`, `cards/`, `sheets/`, `layout/`, `media/`, `feedback/`, `loading/`, `settings/`, `navigation/`,
-  `timers/`, `brand/`, and `web-header/`. A widget used by only one page lives in that page's folder, not here.
-- **Theme** — `src/presentation/base/theme/colors.ts` (palettes), `spacing.ts` (sizes), `shadows.ts`, `themes.ts`.
+  `timers/`, `brand/`, `inputs/`, and `web-header/`. A widget used by only one page lives in that page's
+  folder, not here.
+- **Theme** — `src/presentation/base/theme/`, three folders: `tokens/` (design measurements + the
+  device-scaling primitives in `scale.ts`), `colors/` (palettes, `themes.ts`, semantic surfaces) and
+  `context/` (the active-theme provider and `use-theme`). Full inventory and naming rules: §5a.
+- **Responsive** — `src/presentation/base/responsive/`: viewport breakpoints, the `LayoutProvider` context
+  and the web-shell state. Decides *layout* (which arrangement); `theme/tokens/scale.ts` decides
+  *measurement* (how big within that arrangement).
 - **i18n** — `src/presentation/i18n/en.ts`, `src/presentation/i18n/tr.ts`, `src/presentation/i18n/i18n.ts`.
 - **Utils** — `src/presentation/base/utils/`.
 
@@ -233,7 +254,7 @@ React component, or one enum. The only exceptions are:
   is for classes only — it does not cover hooks, stores, or plain functions).
 - The merged-enum idiom: a `const X` object plus a same-named `type X` union (and `X_VALUES` arrays),
   or a union type derived via `typeof` from a const in the same file. One concept = one file.
-- Constants-only files (`src/infrastructure/constants/api.ts`, `theme/spacing.ts`, …) and pure-function
+- Constants-only files (`src/infrastructure/constants/api.ts`, `theme/tokens/spacing.ts`, …) and pure-function
   collections with **no** type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
 
 Frequent violations to watch for — all of these must be split:
@@ -251,11 +272,11 @@ inside `base/*`, the type becomes a sibling file in the same folder. File name =
 declaration it contains.
 
 ```ts
-// ✅ recipe.ts — one entity class
-export class Recipe extends Entity<RecipeProps> { ... }
+// ✅ recipe-entity.ts — one entity class
+export class RecipeEntity extends BaseEntity<RecipeProps> { ... }
 
-// ❌ recipe.ts — two unrelated declarations
-export class Recipe extends Entity<RecipeProps> { ... }
+// ❌ recipe-entity.ts — two unrelated declarations
+export class RecipeEntity extends BaseEntity<RecipeProps> { ... }
 export class RecipeMapper { ... }   // move to recipe-mapper.ts
 ```
 
@@ -274,8 +295,8 @@ where a class would add no value.
 | Use case | `class GetRecipeUseCase { execute(...) }` |
 | Repository | `class RecipeRepository implements IRecipeRepository { ... }` |
 | HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
-| Domain entity | `class Recipe extends Entity<RecipeProps> { ... }` |
-| DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<Recipe, ...> => { ... }` |
+| Domain entity | `class RecipeEntity extends BaseEntity<RecipeProps> { ... }` |
+| DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ...> => { ... }` |
 | Date formatter | `export const formatDate = (d: Date): string => { ... }` |
 
 Never create a class whose only method is a static or standalone transform — use a plain function instead.
@@ -330,6 +351,40 @@ A file is too complex when a reader cannot understand its purpose at a glance.
 - No nested class definitions anywhere.
 - No more than 2 levels of callback nesting inside a method — extract a private helper instead.
 
+#### 4a. Folders must stay scannable — the 10 / 15 rule
+
+The same discipline applies one level up. A folder is a unit of meaning, not a bucket: past roughly
+ten sibling files nobody *reads* the folder any more, they grep it, and at that point the folder has
+stopped telling you anything. This is not hypothetical — it is exactly how `base/theme/` reached 46
+flat files and how the 90-key `sizes` object survived as long as it did.
+
+Two tiers, counting **only the files directly in the folder** (subfolders are the fix, so they are
+not part of the count):
+
+| Files | Meaning |
+|-------|---------|
+| ≤ 10 | Fine. |
+| 11–15 | **Soft limit.** `check:structure` prints the folder as a warning. Look for a grouping before adding another file; a reviewer may ask for one. Not blocking. |
+| > 15 | **Hard limit — blocking.** Group the related files into subfolders. |
+
+`__tests__/`, `__fixtures__/` and `__mocks__/` are exempt: they mirror the shape of the code they
+cover, and splitting them on their own would only decouple them from that shape.
+
+**Why the soft tier exists.** Some flat lists are *forced* by another rule, and splitting those on
+a script's say-so would invent fake categories. `core/failure/` reached 14 files purely because
+Standard 1 puts one `Failure` subclass in each; a blanket "max 10" would have flagged it on day one
+and taught everyone to ignore the check. Reviewed by a human, it did turn out to have an honest
+split — the contract (base class + the two shapes it carries) at the root, the catalogue of concrete
+failures in `kinds/` — but that is a judgement about meaning, not something a file count can make.
+So the soft tier prompts that judgement and the hard tier encodes the point where no arrangement of
+contents is scannable any more.
+
+**How to split.** Group by what the files are *for*, never by what they *are*. `theme/tokens/`
+became `sizing/` + `typography/` + `effects/`, not `objects/` + `functions/`; a page's crowded
+`model/` becomes `taxonomy/` + `validation/` + `drafting/`, not `types/` + `helpers/`. The
+same rule as §13a: capability, not kind. If no honest grouping exists, that is usually a sign the
+folder holds two unrelated concerns and one of them belongs somewhere else entirely.
+
 ---
 
 ### 5. Constants — No Magic Values in Business Logic
@@ -346,13 +401,14 @@ Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated c
 | Locale codes (`en`, `tr`) | `src/core/constants/locale-constants.ts` |
 | API endpoints, page sizes, timeouts | `src/infrastructure/constants/api.ts` |
 | Storage keys | `src/infrastructure/constants/storage.ts` |
-| Spacing, radii, font sizes, icon/avatar sizes | `src/presentation/base/theme/spacing.ts` |
+| Any design measurement (spacing, size, opacity, tracking, z-order, …) | `src/presentation/base/theme/` — see §5a |
 | Colour palettes (light & dark) | `src/presentation/base/theme/colors.ts` / `themes.ts` |
-| Shadow definitions | `src/presentation/base/theme/shadows.ts` |
+| A value only one page reads | that page's `model/` folder |
+| A value only one shared widget reads | a sibling file next to the widget |
 
 ```ts
 // ✅ correct
-import { spacing, fontSizes } from '@presentation/base/theme/spacing';
+import { spacing, fontSizes } from '@presentation/base/theme';
 import { colors } from '@presentation/base/theme/themes';
 
 const styles = StyleSheet.create({
@@ -389,8 +445,8 @@ if (items.length === 0) return null;
 
 **What does NOT belong here** — putting a measurement in `ValueConstants` is a review finding:
 
-- Design measurements (spacing, radii, font/icon sizes, opacity) → `theme/spacing.ts`.
-  `sizes.homeHeaderMin` stays a bare `0` because it is a measurement sitting beside `132` and `96`.
+- Design measurements (spacing, radii, font/icon sizes, opacity) → `theme/` (§5a).
+  `layoutSizes.homeHeaderMin` stays a bare `0` because it is a measurement sitting beside `132` and `96`.
 - API limits, page sizes, timeouts → `infrastructure/constants/api.ts`.
 - Arbitrary numbers. `ValueConstants` holds `zero`/`one`/`two`/`minusOne` only — never add `20`.
 - Feature-local regexes (ingredient parsing, route matching) stay next to the code that owns them.
@@ -430,23 +486,36 @@ vibrationPattern: [...ALARM_VIBRATION_PATTERN],
 ```
 
 Where a count drives the sequence, derive it instead of listing it:
-`Array.from({ length: PresentationValueConstants.passwordStrengthSegments }, (_, i) => …)`.
+`Array.from({ length: PASSWORD_STRENGTH_SEGMENTS }, (_, i) => …)`.
 
-#### `presentation/base/constants/` — UI values
+#### `presentation/base/constants/` — cross-cutting UI values only
 
 UI-specific values do **not** go in `@core/constants` (core is framework-free and shared by every
-layer). They live in `src/presentation/base/constants/`, consumed via the
-`@presentation/base/constants` barrel:
+layer). The genuinely cross-cutting ones live in `src/presentation/base/constants/`, consumed via
+the `@presentation/base/constants` barrel:
 
 | File | Holds |
 |------|-------|
-| `presentation-value-constants.ts` | UI counts and limits (tag limit, meter segments, filter options) |
 | `animation-constants.ts` | Driver ranges for `interpolate()` / `interpolateColor()` |
-| `gradient-constants.ts` | Gradient stops and start/end geometry |
-| `hex-color-constants.ts` | Channel offsets for parsing `#RRGGBB` |
+| `route-paths.ts` | Every in-app expo-router navigation target |
 
 Scalars here carry `as number` / `as string` for the same reason as `@core/constants` — see the
 widening invariant above.
+
+**The test for this folder is REUSE, not type.** A number is not "a constant" because it is a
+number. Before adding a file here, count the consumers:
+
+- More than one feature reads it, and it is not a measurement → this folder.
+- It is a measurement of any kind → `theme/` (§5a), never here.
+- Exactly one page reads it → that page's `model/` folder
+  (`app/register/model/password-strength-segments.ts`).
+- Exactly one shared widget reads it → a sibling file next to that widget
+  (`base/widgets/cards/recipe-card-tag-limit.ts`).
+
+This folder previously held a `PresentationValueConstants` grab-bag whose three members were read
+by three unrelated features, and a gradient's stop geometry whose matching colours lived two layers
+away in `app/recipes/model/`. Both are the same failure: a shared bag makes an unshared value look
+shared, and splits things that only make sense together.
 
 **Layer check before choosing a home.** `presentation/base/constants` is unreachable from
 `domain`, `application` and `infrastructure` (`ALLOWED_IMPORTS` in `scripts/check-structure.mjs`).
@@ -457,6 +526,119 @@ why the alarm vibration pattern lives in `infrastructure/constants/notifications
 (`[...ALARM_VIBRATION_PATTERN]`) when the consumer demands a mutable `number[]` — several
 Expo/React Native props do. Never widen the constant to mutable just to satisfy a call site: that
 turns it into shared state a native module can write through.
+
+---
+
+### 5a. Design Tokens & Responsive Sizing
+
+`src/presentation/base/theme/` is split into three folders by what a file is *for*:
+
+| Folder | Answers | Contents |
+|--------|---------|----------|
+| `tokens/` | "how big / far apart / opaque / deep?" | every design measurement, plus `scale.ts` |
+| `colors/` | "what colour?" | palettes, `themes.ts`, contrast helpers, severity surfaces |
+| `context/` | "which theme is active?" | the theme provider, its types, `use-theme` |
+
+A hook lives beside the thing it serves — `use-theme` in `context/`, `use-text-line-height` in
+`tokens/` — rather than in a `hooks/` dump, so the folder a file sits in still answers "what is this
+for?". The `@presentation/base/theme` barrel re-exports the token and colour **values** a component
+consumes; hooks, contexts and theme definitions keep their own import paths, so pulling in a spacing
+number never drags a React context along with it.
+
+Design tokens are **lowercase** objects (`spacing`, `iconSizes`, `opacities`); `*Constants`
+PascalCase objects are reserved for non-design literals. That casing is the fastest signal of which
+of the two vocabularies you are reading.
+
+**Why these are not in `src/core/`** — the question comes up because a type scale looks reusable
+enough to be "shared". Reusability is not what `core` is for; **dependency direction** is. `core` is
+the innermost layer, imports nothing (`ALLOWED_IMPORTS.core === ['@core']`) and is imported by
+`domain` and `infrastructure` — so a token placed there is a token a repository is allowed to read,
+which is precisely the inward pull Clean Architecture exists to stop. Concretely it would also drag
+React Native inward: `font-sizes.ts` → `scale.ts` → `Dimensions`/`PixelRatio`/`Platform`, into a
+layer whose only imports today are its own files. If these tokens ever need to be shared across
+*projects*, that is a published design-system package, not `src/core/`.
+
+Everything below lives in `tokens/`:
+
+| Module | Holds | Device-scaled? |
+|--------|-------|----------------|
+| `spacing.ts` | The one gap ladder — margins, paddings, `gap` | yes |
+| `radii.ts` | Corner radii (`round` is the pill sentinel) | yes, except `round` |
+| `font-sizes.ts` | The type scale, role-named | yes, at half strength |
+| `font-weights.ts` | Weight ladder `regular` → `heavy`; literal types, never widened | n/a |
+| `line-heights.ts` | Line-box **multipliers** — never absolute points | n/a (ratios) |
+| `letter-spacings.ts` | Tracking ladder, `ultraTight` → `wider` | no |
+| `icon-sizes.ts` | Glyph sizes, strict t-shirt ladder | yes |
+| `control-sizes.ts` | Boxes the user taps or types into | yes |
+| `avatar-sizes.ts` | Avatar diameters + ring frames | yes |
+| `media-sizes.ts` | Image / thumbnail / hero boxes | yes |
+| `decor-sizes.ts` | Non-interactive ornament (badges, discs, dots) | yes |
+| `layout-sizes.ts` | Content caps, column gaps, sticky offsets | **no** — see below |
+| `aspect-ratios.ts` | `width / height` ratios for media boxes | n/a |
+| `border-widths.ts` | Stroke weights and hairline dividers | **no** |
+| `opacities.ts` | Named alpha levels | n/a |
+| `color-alphas.ts` | Hex alpha suffixes for tinting a theme colour | n/a |
+| `z-indices.ts` | The app's whole stacking order | n/a |
+| `max-font-scales.ts` | `maxFontSizeMultiplier` caps — last resort only | n/a |
+| `shadows.ts` | The elevation ladder | offsets/blur only |
+
+#### Naming rules inside a token module
+
+1. **Scales are t-shirt ladders; components are role-named.** `iconSizes`, `spacing` and `radii`
+   name a position on a scale (`xs` → `illustration`), because nothing about a 16pt glyph says what
+   it is for. `controlSizes` names the control (`button`, `input`, `chip`), because a control size
+   is chosen by what the control *is*, and two controls that share a number today must be able to
+   diverge tomorrow without dragging the other with them.
+2. **A ladder must be monotonic and complete.** The previous `sizes` bag had `iconXxs` (18) larger
+   than `iconSm` (16) — names that cannot be ordered are names that cannot be reviewed. If a new
+   value breaks the ordering, the ladder is wrong, not the value.
+3. **Opacity suffixes grade the EFFECT, not the number.** Within a family
+   (`pressed*`, `disabled*`, `onMedia*`, `scrim*`) the order is
+   `Faint < Subtle < Light < (default) < Strong`, where `Faint` always has the weakest visible
+   effect. That holds whether the effect is a lower alpha (dimming) or a higher one (a scrim). The
+   old set had `disabledStrong` (0.6) dimming *less* than `disabled` (0.5) while `pressedStrong`
+   (0.7) dimmed *more* than `pressed` (0.75) — the same suffix meaning opposite things in
+   neighbouring families.
+4. **Reuse the nearest step before adding one.** A 15pt and a 16pt glyph are not a distinction
+   anyone can see; they are two names for one decision.
+
+#### Device scaling
+
+`tokens/scale.ts` reads the device's **shortest** viewport edge once at module load and derives a
+factor against a 375pt baseline, clamped to `[0.9, 1.12]`. `scale()` applies it to layout
+measurements; `scaleFont()` applies half of it to type, because the OS accessibility font scale
+multiplies on top of whatever we emit.
+
+- **Shortest edge, not width** — the factor must be orientation-independent, or rotating a phone
+  would resize every control on screen.
+- **Neutral on web** — the web build adapts through breakpoints, and a desktop viewport would
+  otherwise inflate the entire UI. A module-load read cannot follow a browser resize anyway.
+- **Not everything scales.** `layoutSizes` (max-widths, breakpoint-ish thresholds) are properties
+  of the *viewport*, not of the device — scaling them would fight
+  `base/responsive/breakpoints.ts`, which is the component that decides layout at that altitude.
+  `borderWidths` stay unscaled so a hairline stays a hairline instead of a blurry 1.12px.
+
+#### Sizing rules in components
+
+1. **`minHeight`, not `height`, on anything containing text.** A pinned height is only correct for
+   a *shape* — a circular icon button, an avatar, a media box. The moment a box holds a label it
+   has to grow: labels wrap, Turkish is longer than English, and the OS font scale multiplies the
+   glyphs but not the box.
+2. **Never write an absolute `lineHeight`.** React Native multiplies `fontSize` by the system font
+   scale at render time and leaves `lineHeight` exactly as written, so `lineHeight: 22` stops
+   containing its own glyphs as soon as the user turns text size up. Use `useTextLineHeight` for
+   rendered text (it re-derives from the live `fontScale`) or `lineHeightFor` inside a
+   `StyleSheet.create()` entry.
+3. **Prefer `aspectRatio` to a pinned image height.** A ratio follows whatever width the column
+   gives it; a height only ever matches one screen. Pair it with a `mediaSizes` cap when a wide
+   container would otherwise push the content below the fold.
+4. **Multi-line fields use `AutoGrowTextInput`** (`base/widgets/inputs/`), never a bare
+   `multiline` `TextInput` with a fixed height. react-native-web renders `multiline` as a real
+   `<textarea>`, which does not grow with its content — it keeps its box and puts a scrollbar down
+   the side. The web half of that platform pair measures and resizes the element itself.
+5. **`maxFontSizeMultiplier` is a last resort.** It stops honouring the user's accessibility
+   setting, so it is only for text inside a shape that genuinely cannot grow (digits in a
+   fixed-diameter badge). Everywhere else, make the box flexible instead.
 
 ---
 
@@ -580,6 +762,13 @@ Rules:
   `recipe-mapper.ts` in infrastructure.
 - **The same capability name is used across layers.** `create/`, `refine/`, `taxonomy/` and
   `media/` mean the same thing in `domain/`, `application/` and `infrastructure/`.
+- **Capability-internal `dtos/` / `mappers/` subfolders — only at ≥2.** Within a folder
+  (a capability folder or a not-yet-split flat feature root), once it holds **two or more**
+  DTO files, move them into a `dtos/` subfolder; likewise `mappers/` for two or more mappers.
+  A single DTO or mapper stays flat at the folder root — never create a one-file folder. This
+  is by-capability on the outside, by-kind only on the inside, and only when the count earns it
+  (e.g. `infrastructure/recipes/dtos/`, `infrastructure/recipes/taxonomy/dtos/`). Repositories
+  are one-per-feature, so no `repositories/` subfolder.
 - **Tests move with their subject** into that capability's `__tests__/`.
 - **No barrel `index.ts` per capability.** Imports stay explicit deep paths
   (`@application/recipes/list/recipe-list-store`), which keeps the layer graph readable and
@@ -607,7 +796,21 @@ A pre-commit hook (Husky + lint-staged) runs automatically on every `git commit`
    - layer-dependency violations (Dependency Rule) beyond the sanctioned exceptions and the shrinking
      `KNOWN_DEBT` list,
    - relative imports (`./`, `../`) outside barrel `index.ts` files — use the `@layer/...` alias,
-   - loose files at the `src/presentation/base/widgets/` root (category folders only).
+   - loose files at the `src/presentation/base/widgets/` root (category folders only),
+   - entity-naming violations (rule G): a class extending `BaseEntity` must be named `*Entity` and live
+     in a `*-entity.ts` file (CLAUDE.md §21). The companion `*Type` suffix for bare type aliases is a
+     judgment call, so it is enforced by `code-reviewer`, not this gate.
+   - a stale or missing `PROJECT-MAP.md` (rule J): the generated map carries a fingerprint of
+     every folder and file name under `src/`, so an index that no longer describes the tree fails
+     the gate instead of quietly misleading the next reader. Fix with `npm run map`.
+   - folder file-count violations (rule I, CLAUDE.md §14c): more than 15 files directly in one folder.
+     Folders in the 11-15 band are printed as a non-blocking warning instead.
+   - responsive-sizing violations (rule H, CLAUDE.md §6b): an absolute `lineHeight` literal, or a bare
+     `<TextInput multiline>` outside the `AutoGrowTextInput` pair. Both are invisible in a normal
+     simulator run — the first only clips at a large OS font scale, the second only shows its scrollbar
+     on the web build — which is exactly why they are mechanical checks rather than review notes. The
+     remaining §5a rules (`minHeight` over `height`, `aspectRatio` over pinned image heights, token
+     placement) need judgment and stay with `code-reviewer`.
 
 No task is "done" until `npm run lint`, `npx tsc --noEmit`, `npx jest`, **and** `npm run check:structure`
 are all green.

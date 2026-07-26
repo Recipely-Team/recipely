@@ -12,7 +12,7 @@ import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detai
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -21,8 +21,8 @@ import { Difficulty } from '@domain/recipes/difficulty';
 
 const snapshot: DraftRecipeSnapshot = { name: 'Spicy Pasta', ingredients: ['Pasta'] };
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'Refined Recipe',
     cuisine: CuisineKey.Italian,

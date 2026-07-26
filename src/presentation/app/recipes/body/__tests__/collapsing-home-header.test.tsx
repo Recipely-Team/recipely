@@ -8,7 +8,7 @@ import {
   textContent,
 } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
-import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { t } from '@presentation/i18n';

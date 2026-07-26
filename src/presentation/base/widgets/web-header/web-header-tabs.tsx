@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, borderWidths, opacities } from '@presentation/base/theme';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
 
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.sm,
   },
   hovered: {
-    opacity: 0.85,
+    opacity: opacities.pressedSubtle,
   },
   label: {
     fontSize: fontSizes.medium,
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: spacing.md,
     right: spacing.md,
-    bottom: -1,
-    height: 2,
+    bottom: -borderWidths.hairline,
+    height: borderWidths.medium,
     borderTopLeftRadius: radii.xs,
     borderTopRightRadius: radii.xs,
   },

@@ -2,7 +2,7 @@ import type { StoreApi } from 'zustand';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { Comment } from '@domain/comments/comment';
+import type { CommentEntity } from '@domain/comments/comment-entity';
 import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
@@ -28,7 +28,7 @@ export const createToggleLikeAction = (
     const wasLiked = original.likedByMe;
     const optimistic = original.withLikeToggled();
 
-    const replace = (target: Comment): void =>
+    const replace = (target: CommentEntity): void =>
       set((state) => {
         const current = state.byRecipe[recipeId];
         if (!current) {

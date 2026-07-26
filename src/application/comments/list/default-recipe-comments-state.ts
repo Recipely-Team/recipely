@@ -2,7 +2,7 @@ import type { RecipeCommentsState } from '@application/comments/list/recipe-comm
 import { ValueConstants } from '@core/constants';
 
 /** Returns the empty per-recipe comments state used before any load. */
-export const defaultRecipeState = (): RecipeCommentsState => ({
+export const defaultRecipeCommentsState = (): RecipeCommentsState => ({
   items: [],
   total: ValueConstants.zero,
   page: 1,

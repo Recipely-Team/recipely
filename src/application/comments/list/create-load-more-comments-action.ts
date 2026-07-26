@@ -3,7 +3,7 @@ import { UnknownFailure } from '@core/failure';
 import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
+import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import { mergeRecipeComments } from '@application/comments/list/merge-recipe-comments';
 
 /** Builds the `loadMore` action: appends the next page of a recipe's comments. */
@@ -13,7 +13,7 @@ export const createLoadMoreCommentsAction = (
   listComments: ListCommentsUseCase,
 ) => {
   return async (recipeId: string): Promise<void> => {
-    const current = get().byRecipe[recipeId] ?? defaultRecipeState();
+    const current = get().byRecipe[recipeId] ?? defaultRecipeCommentsState();
     if (current.isLoadingMore || current.items.length >= current.total) {
       return;
     }

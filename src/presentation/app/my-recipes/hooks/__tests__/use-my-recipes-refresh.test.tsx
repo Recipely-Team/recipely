@@ -32,7 +32,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
@@ -138,27 +138,27 @@ interface RenderSnapshot {
 describe('useMyRecipesRefresh', () => {
   let renders: RenderSnapshot[] = [];
   let vm: ReturnType<typeof useMyRecipesRefresh>;
-  let setTab: (tab: Tab) => void = () => {};
+  let setTab: (tab: TabType) => void = () => {};
   // Rebound by `mount` to read the live store — the probe mirrors the screen,
   // which subscribes to `state`, so a store refresh re-renders the hook's
   // consumer and the guard below has something to catch.
   let useStoreState: () => RecipeListState = () => IDLE_STATE;
 
-  const Probe = ({ tab }: { tab: Tab }): null => {
+  const Probe = ({ tab }: { tab: TabType }): null => {
     vm = useMyRecipesRefresh(tab);
     const state = useStoreState();
     renders.push({ isRefreshing: vm.isRefreshing, isStoreRefreshing: isRecipeListRefreshing(state) });
     return null;
   };
 
-  const Harness = ({ initialTab }: { initialTab: Tab }): React.JSX.Element => {
-    const [tab, setTabState] = useState<Tab>(initialTab);
+  const Harness = ({ initialTab }: { initialTab: TabType }): React.JSX.Element => {
+    const [tab, setTabState] = useState<TabType>(initialTab);
     setTab = setTabState;
     return <Probe tab={tab} />;
   };
 
   /** Mounts the hook on `tab` and returns the loaders + the live recipe-list store. */
-  const mount = (tab: Tab) => {
+  const mount = (tab: TabType) => {
     const loaders = makeLoaders();
     const { stores, recipeListStore } = makeStores(loaders);
     useStoreState = () => recipeListStore((s) => s.state);

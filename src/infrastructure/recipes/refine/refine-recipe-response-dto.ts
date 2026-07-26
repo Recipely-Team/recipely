@@ -1,4 +1,4 @@
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 
 // Wire shape returned by `POST /recipes/refine`: the recipe DTO fields with two
 // natural-language fields flattened on top of the recipe payload (not nested).

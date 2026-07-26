@@ -1,10 +1,10 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
-import type { RecipesListDto } from '@infrastructure/recipes/recipes-list-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
+import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
@@ -76,7 +76,7 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     expect(calls[0].params).toEqual({ limit: 3 });
   });
 
-  it('maps every item in the list envelope into a RecipeSummary[]', async () => {
+  it('maps every item in the list envelope into a RecipeSummaryEntity[]', async () => {
     const second: RecipeListItemDto = { ...validDto, id: 'second-id', name: 'Trending Tacos' };
     const { http } = makeHttp(ok(makeList([validDto, second])));
     const repo = new RecipeRepository(http);
@@ -86,7 +86,7 @@ describe('RecipeRepository.listTrendingRecipes', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value).toHaveLength(2);
-      expect(r.value[0]).toBeInstanceOf(RecipeSummary);
+      expect(r.value[0]).toBeInstanceOf(RecipeSummaryEntity);
       expect(r.value[0].id).toBe(validDto.id);
       expect(r.value[0].name).toBe('Trending Spicy Pasta');
       expect(r.value[1].id).toBe('second-id');

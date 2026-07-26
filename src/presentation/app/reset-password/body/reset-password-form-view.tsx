@@ -3,12 +3,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-interface FormViewProps {
+interface ResetPasswordFormViewProps {
   newPassword: string;
   onChangeNew: (v: string) => void;
   confirmPassword: string;
@@ -27,7 +27,7 @@ interface FormViewProps {
   onBack: () => void;
 }
 
-export const FormView = ({
+export const ResetPasswordFormView = ({
   newPassword,
   onChangeNew,
   confirmPassword,
@@ -44,14 +44,14 @@ export const FormView = ({
   error,
   onSubmit,
   onBack,
-}: FormViewProps): React.JSX.Element => {
+}: ResetPasswordFormViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <>
       <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={20}
+          size={iconSizes.xl}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -82,7 +82,7 @@ export const FormView = ({
         >
           <Ionicons
             name={showNew ? 'eye-off-outline' : 'eye-outline'}
-            size={20}
+            size={iconSizes.xl}
             color={colors.textMuted}
           />
         </Pressable>
@@ -91,7 +91,7 @@ export const FormView = ({
       <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={20}
+          size={iconSizes.xl}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -124,7 +124,7 @@ export const FormView = ({
         >
           <Ionicons
             name={showConfirm ? 'eye-off-outline' : 'eye-outline'}
-            size={20}
+            size={iconSizes.xl}
             color={colors.textMuted}
           />
         </Pressable>
@@ -151,7 +151,7 @@ export const FormView = ({
         accessibilityRole="button"
         accessibilityLabel={t().resetPassword.backToLogin}
       >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
           {t().resetPassword.backToLogin}
         </ThemedText>
       </Pressable>
@@ -167,11 +167,11 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   input: {
-    height: sizes.inputHeight,
-    borderWidth: 1.5,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.xxxl + spacing.lg,
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   eyeBtn: {
     position: 'absolute',
     right: spacing.lg,
-    zIndex: 1,
+    zIndex: zIndices.raised,
     padding: spacing.xs,
   },
   bannerRow: {

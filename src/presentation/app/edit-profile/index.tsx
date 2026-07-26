@@ -2,7 +2,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
@@ -10,7 +10,7 @@ import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -69,8 +69,8 @@ export const EditProfileScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  flex: { flex: 1 },
+  root: { flex: ValueConstants.one },
+  flex: { flex: ValueConstants.one },
 });
 
 export default EditProfileScreen;

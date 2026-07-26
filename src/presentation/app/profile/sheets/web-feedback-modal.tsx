@@ -5,8 +5,8 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebFeedbackForm } from '@presentation/app/profile/sheets/web-feedback-form';
 import { WebFeedbackSuccess } from '@presentation/app/profile/sheets/web-feedback-success';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii, shadows, sizes, spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, layoutSizes, borderWidths, shadows } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -74,7 +74,7 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
               accessibilityRole="button"
               accessibilityLabel={t().support.cancel}
             >
-              <Ionicons name="close" size={sizes.iconMd} color={colors.text} />
+              <Ionicons name="close" size={iconSizes.xl} color={colors.text} />
             </Pressable>
             <ThemedText variant="subtitle" style={styles.title}>
               {t().support.sheetTitle}
@@ -137,17 +137,17 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
   },
   card: {
     width: '100%',
-    maxWidth: sizes.webModalMaxWidth,
+    maxWidth: layoutSizes.webModalMaxWidth,
     maxHeight: '86%',
     borderRadius: radii.xxl,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
     overflow: 'hidden',
   },
   header: {
@@ -156,24 +156,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg2,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: borderWidths.hairline,
   },
   closeBtn: {
-    width: sizes.webModalCloseBtn,
-    height: sizes.webModalCloseBtn,
+    width: controlSizes.webModalClose,
+    height: controlSizes.webModalClose,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontWeight: '800',
+    fontWeight: fontWeights.heavy,
   },
   body: {
     padding: spacing.xl,
   },
   footer: {
     padding: spacing.lg,
-    borderTopWidth: 1,
+    borderTopWidth: borderWidths.hairline,
   },
   actionBtn: {
     borderRadius: radii.lg,
@@ -181,6 +181,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     alignItems: 'center',
     justifyContent: 'center',
-    minHeight: sizes.buttonHeight,
+    minHeight: controlSizes.button,
   },
 });

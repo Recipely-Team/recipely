@@ -6,8 +6,8 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { computeRemaining, formatCountdown, SECOND_MS } from '@presentation/app/verify-code/model/countdown';
 import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
@@ -29,7 +29,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const isLoading = authStore((s) => s.state.status === 'loading');
   const verifyRegistration = authStore((s) => s.verifyRegistration);
   const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
 
@@ -51,16 +51,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   }, [expiresAt]);
 
   const codeValid = code.length === CODE_LENGTH && RegexConstants.digitsOnly.test(code);
-  const isLoading = state.status === 'loading';
-  const remoteError =
-    state.status === 'error'
-      ? authFormMessage(state.failure, {
-          unauthorized: t().verify.invalidCode,
-          validation: t().verify.invalidCode,
-          not_found: t().verify.invalidCode,
-        })
-      : undefined;
-  const errorMessage = localError ?? remoteError;
+  const errorMessage = localError;
 
   const handleVerify = useCallback(async () => {
     if (!codeValid) {
@@ -68,7 +59,16 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
       return;
     }
     setLocalError(undefined);
-    await verifyRegistration(email, code);
+    const failure = await verifyRegistration(email, code);
+    if (failure) {
+      setLocalError(
+        authFormMessage(failure, {
+          unauthorized: t().verify.invalidCode,
+          validation: t().verify.invalidCode,
+          not_found: t().verify.invalidCode,
+        }),
+      );
+    }
   }, [codeValid, verifyRegistration, email, code]);
 
   // Resend is locked until the current code expires.
@@ -78,11 +78,14 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
     if (remaining > ValueConstants.zero || resending) return;
     setResending(true);
     setResent(false);
-    const challenge = await resendRegistrationCode(email);
+    setLocalError(undefined);
+    const result = await resendRegistrationCode(email);
     setResending(false);
-    if (challenge) {
+    if (result.ok) {
       setResent(true);
-      setExpiresAt(challenge.expiresAt);
+      setExpiresAt(result.value.expiresAt);
+    } else {
+      setLocalError(authFormMessage(result.failure, {}));
     }
   }, [remaining, resending, resendRegistrationCode, email]);
 
@@ -157,7 +160,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         >
           <ThemedText
             variant="caption"
-            style={{ color: canResend ? colors.primary : colors.textMuted, fontWeight: '600' }}
+            style={{ color: canResend ? colors.primary : colors.textMuted, fontWeight: fontWeights.semibold }}
           >
             {t().verify.resend}
           </ThemedText>
@@ -170,7 +173,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
         accessibilityRole="button"
         accessibilityLabel={t().verify.changeEmail}
       >
-        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+        <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
           {t().verify.changeEmail}
         </ThemedText>
       </Pressable>
@@ -180,8 +183,8 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
 
 const styles = StyleSheet.create({
   codeInput: {
-    height: sizes.inputHeight,
-    borderWidth: 1.5,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingHorizontal: spacing.lg,
     fontSize: fontSizes.subtitle,

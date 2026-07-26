@@ -1,10 +1,10 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 
 export interface IAuthRepository {
-  signIn(email: string, password: string): Promise<Result<AuthSession, Failure>>;
+  signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Starts registration by sending a verification code to `email`. Does NOT
    * create the account or a session — resolve the returned challenge with
@@ -16,13 +16,13 @@ export interface IAuthRepository {
     displayName: string,
   ): Promise<Result<RegistrationChallenge, Failure>>;
   /** Confirms the emailed code and, on success, creates the account + session. */
-  verifyRegistration(email: string, code: string): Promise<Result<AuthSession, Failure>>;
+  verifyRegistration(email: string, code: string): Promise<Result<AuthSessionEntity, Failure>>;
   /** Re-sends the registration code to a pending email. */
   resendRegistrationCode(email: string): Promise<Result<RegistrationChallenge, Failure>>;
   signOut(): Promise<Result<void, Failure>>;
-  getCurrentSession(): Promise<Result<AuthSession | null, Failure>>;
-  signInWithGoogle(): Promise<Result<AuthSession, Failure>>;
-  signInWithApple(): Promise<Result<AuthSession, Failure>>;
+  getCurrentSession(): Promise<Result<AuthSessionEntity | null, Failure>>;
+  signInWithGoogle(): Promise<Result<AuthSessionEntity, Failure>>;
+  signInWithApple(): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Sends a password-reset link to `email`. Resolves ok even when the email
    * is not registered — enumeration-safe by design.
@@ -42,12 +42,12 @@ export interface IAuthRepository {
     fileUri: string,
     fileName: string,
     mimeType: string,
-  ): Promise<Result<AuthSession, Failure>>;
+  ): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Updates the signed-in user's editable profile fields (display name, bio)
    * and returns the refreshed, persisted session.
    */
-  updateProfile(input: { displayName?: string; bio?: string }): Promise<Result<AuthSession, Failure>>;
+  updateProfile(input: { displayName?: string; bio?: string }): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Permanently deletes the signed-in user's account and all of its data on the
    * server, then clears the local session on success. On failure the local

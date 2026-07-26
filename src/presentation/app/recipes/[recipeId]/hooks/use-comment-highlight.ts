@@ -3,9 +3,9 @@ import type { ScrollViewProps } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { spacing } from '@presentation/base/theme';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
-import type { UseCommentHighlightArgs } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-args';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { UseCommentHighlightArgs } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-args';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { ValueConstants } from '@core/constants';
 
 /**

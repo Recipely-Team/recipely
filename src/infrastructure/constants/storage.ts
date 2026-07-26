@@ -1,3 +1,15 @@
+/**
+ * Keys for everything the app persists through the key-value port.
+ *
+ * Each key carries an explicit `.vN` suffix: a stored value cannot be migrated
+ * in place on a device that is already holding the old shape, so a breaking
+ * change to what is written bumps the suffix and the stale value is ignored
+ * rather than mis-parsed.
+ *
+ * Lives in infrastructure because storage is an infrastructure concern — the
+ * layers above reach it through the port, never through these strings.
+ */
 export const SESSION_STORAGE_KEY = 'recipely.session.v1';
 export const TIMERS_STORAGE_KEY = 'recipely.timers.v1';
 export const LANGUAGE_STORAGE_KEY = 'recipely.language.v1';
+export const ONBOARDING_SEEN_STORAGE_KEY = 'recipely.onboarding.seen.v1';

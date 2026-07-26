@@ -3,6 +3,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 
 /**
@@ -16,7 +17,7 @@ export class FavoritesRepository implements IFavoritesRepository {
   async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.request({
       method: 'POST',
-      url: `/recipes/${encodeURIComponent(recipeId)}/favorite`,
+      url: ApiRoutes.recipes.favorite(recipeId),
     });
 
     if (!result.ok) {
@@ -29,7 +30,7 @@ export class FavoritesRepository implements IFavoritesRepository {
   async removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.request({
       method: 'DELETE',
-      url: `/recipes/${encodeURIComponent(recipeId)}/favorite`,
+      url: ApiRoutes.recipes.favorite(recipeId),
     });
 
     if (!result.ok) {
@@ -42,7 +43,7 @@ export class FavoritesRepository implements IFavoritesRepository {
   async getFavoritesIds(): Promise<Result<Set<string>, Failure>> {
     const result = await this.http.request<FavoritesListResponse>({
       method: 'GET',
-      url: '/me/favorites',
+      url: ApiRoutes.me.favorites,
       params: { pageSize: 20 },
     });
 

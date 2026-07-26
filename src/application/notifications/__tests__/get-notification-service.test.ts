@@ -4,7 +4,7 @@
  * service (never throw) when nothing is registered.
  */
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { noopNotificationService } from '@application/notifications/noop-notification-service';
 import { FakeNotificationService } from '@application/__fixtures__/fake-notification-service';

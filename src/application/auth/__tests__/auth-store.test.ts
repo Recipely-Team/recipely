@@ -18,16 +18,16 @@ import { configureSavedRecipesStore } from '@application/recipes/saved/configure
 import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 
-const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSession => {
+const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
   if (!email.ok) throw new Error();
-  const user = User.create({ id: 'u1', email: email.value, displayName: 'U' });
+  const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'U' });
   if (!user.ok) throw new Error();
-  const session = AuthSession.create({
+  const session = AuthSessionEntity.create({
     id: 's1',
     accessToken: 'tok',
     expiresAt: overrides.expiresAt ?? new Date(Date.now() + 60_000),
@@ -87,15 +87,14 @@ describe('auth-store', () => {
     if (s.status === 'authenticated') expect(s.session).toBe(session);
   });
 
-  it('signIn transitions to error on failure and preserves the failure', async () => {
+  it('signIn returns the failure and flips to unauthenticated on failure', async () => {
     const failure = new UnauthorizedFailure('bad');
     const store = makeStore(new FakeAuthRepository({ signInResult: fail(failure) }));
 
-    await store.getState().signIn('bad', 'creds');
+    const result = await store.getState().signIn('bad', 'creds');
 
-    const s = store.getState().state;
-    expect(s.status).toBe('error');
-    if (s.status === 'error') expect(s.failure).toBe(failure);
+    expect(result).toBe(failure);
+    expect(store.getState().state.status).toBe('unauthenticated');
   });
 
   it('register returns the challenge and stays unauthenticated on success', async () => {
@@ -109,28 +108,30 @@ describe('auth-store', () => {
       }),
     );
 
-    const challenge = await store.getState().register('u@example.com', 'password1', 'U');
+    const result = await store.getState().register('u@example.com', 'password1', 'U');
 
-    expect(challenge).toEqual({
-      email: 'u@example.com',
-      expiresInSeconds: 180,
-      expiresAt: '2026-01-01T00:03:00.000Z',
-    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual({
+        email: 'u@example.com',
+        expiresInSeconds: 180,
+        expiresAt: '2026-01-01T00:03:00.000Z',
+      });
+    }
     expect(store.getState().state.status).toBe('unauthenticated');
   });
 
-  it('register returns null and sets error on failure', async () => {
+  it('register returns the failure and stays unauthenticated on failure', async () => {
     const failure = new UnauthorizedFailure('exists');
     const store = makeStore(
       new FakeAuthRepository({ requestRegistrationResult: fail(failure) }),
     );
 
-    const challenge = await store.getState().register('u@example.com', 'password1', 'U');
+    const result = await store.getState().register('u@example.com', 'password1', 'U');
 
-    expect(challenge).toBeNull();
-    const s = store.getState().state;
-    expect(s.status).toBe('error');
-    if (s.status === 'error') expect(s.failure).toBe(failure);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBe(failure);
+    expect(store.getState().state.status).toBe('unauthenticated');
   });
 
   it('verifyRegistration transitions to authenticated on success', async () => {
@@ -146,17 +147,16 @@ describe('auth-store', () => {
     if (s.status === 'authenticated') expect(s.session).toBe(session);
   });
 
-  it('verifyRegistration transitions to error on failure', async () => {
+  it('verifyRegistration returns the failure and flips to unauthenticated on failure', async () => {
     const failure = new UnauthorizedFailure('bad code');
     const store = makeStore(
       new FakeAuthRepository({ verifyRegistrationResult: fail(failure) }),
     );
 
-    await store.getState().verifyRegistration('u@example.com', '000000');
+    const result = await store.getState().verifyRegistration('u@example.com', '000000');
 
-    const s = store.getState().state;
-    expect(s.status).toBe('error');
-    if (s.status === 'error') expect(s.failure).toBe(failure);
+    expect(result).toBe(failure);
+    expect(store.getState().state.status).toBe('unauthenticated');
   });
 
   it('resendRegistrationCode returns the refreshed challenge on success', async () => {
@@ -170,13 +170,16 @@ describe('auth-store', () => {
       }),
     );
 
-    const challenge = await store.getState().resendRegistrationCode('u@example.com');
+    const result = await store.getState().resendRegistrationCode('u@example.com');
 
-    expect(challenge).toEqual({
-      email: 'u@example.com',
-      expiresInSeconds: 180,
-      expiresAt: '2026-01-01T00:03:00.000Z',
-    });
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(result.value).toEqual({
+        email: 'u@example.com',
+        expiresInSeconds: 180,
+        expiresAt: '2026-01-01T00:03:00.000Z',
+      });
+    }
   });
 
   it('signOut transitions to unauthenticated on success', async () => {
@@ -239,15 +242,15 @@ describe('auth-store', () => {
     expect(store.getState().state.status).toBe('unauthenticated');
   });
 
-  it('requestPasswordReset returns true when the use case succeeds', async () => {
+  it('requestPasswordReset returns null when the use case succeeds', async () => {
     const store = makeStore(new FakeAuthRepository());
 
     const result = await store.getState().requestPasswordReset('user@example.com');
 
-    expect(result).toBe(true);
+    expect(result).toBeNull();
   });
 
-  it('requestPasswordReset returns false and sets state to error when the use case fails', async () => {
+  it('requestPasswordReset returns the failure without touching the session state', async () => {
     const failure = new NetworkFailure('no connection');
     const repo = new (class extends FakeAuthRepository {
       override requestPasswordReset(_email: string) {
@@ -258,10 +261,9 @@ describe('auth-store', () => {
 
     const result = await store.getState().requestPasswordReset('user@example.com');
 
-    expect(result).toBe(false);
-    const s = store.getState().state;
-    expect(s.status).toBe('error');
-    if (s.status === 'error') expect(s.failure).toBe(failure);
+    expect(result).toBe(failure);
+    // The transient failure is page-scoped — it never lands in the global state.
+    expect(store.getState().state.status).toBe('idle');
   });
 
   it('resetPassword returns null on success and does not transition to authenticated', async () => {
@@ -273,7 +275,7 @@ describe('auth-store', () => {
     expect(store.getState().state.status).not.toBe('authenticated');
   });
 
-  it('resetPassword returns the Failure and sets state to error when the use case fails', async () => {
+  it('resetPassword returns the Failure without touching the session state', async () => {
     const failure = new NotFoundFailure('reset token not found');
     const repo = new (class extends FakeAuthRepository {
       override resetPassword(_token: string, _newPassword: string) {
@@ -285,9 +287,8 @@ describe('auth-store', () => {
     const result = await store.getState().resetPassword('expired-token', 'newP@ssw0rd');
 
     expect(result).toBe(failure);
-    const s = store.getState().state;
-    expect(s.status).toBe('error');
-    if (s.status === 'error') expect(s.failure).toBe(failure);
+    // The transient failure is page-scoped — it never lands in the global state.
+    expect(store.getState().state.status).toBe('idle');
   });
 
   it('uploadAvatar returns null and sets the new authenticated session on success', async () => {
@@ -374,17 +375,17 @@ describe('auth-store', () => {
   });
 
   describe('updateProfile', () => {
-    const buildUpdatedSession = (): AuthSession => {
+    const buildUpdatedSession = (): AuthSessionEntity => {
       const email = Email.create('u@example.com');
       if (!email.ok) throw new Error();
-      const user = User.create({
+      const user = UserEntity.create({
         id: 'u1',
         email: email.value,
         displayName: 'Updated Name',
         bio: 'Updated bio',
       });
       if (!user.ok) throw new Error();
-      const session = AuthSession.create({
+      const session = AuthSessionEntity.create({
         id: 's1',
         accessToken: 'tok',
         expiresAt: new Date(Date.now() + 60_000),

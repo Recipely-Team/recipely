@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -24,7 +24,7 @@ export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): R
       accessibilityLabel={t().createRecipe.resumeDraft}
     >
       <View style={[styles.resumeIcon, { backgroundColor: colors.chipBackground }]}>
-        <Ionicons name="bookmark" size={sizes.iconSm} color={colors.primary} />
+        <Ionicons name="bookmark" size={iconSizes.md} color={colors.primary} />
       </View>
       <View style={styles.resumeBody}>
         <ThemedText variant="caption" style={[styles.resumeKicker, { color: colors.primary }]}>
@@ -34,7 +34,7 @@ export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): R
           {name}
         </ThemedText>
       </View>
-      <Ionicons name="chevron-forward" size={sizes.iconXxs} color={colors.textMuted} />
+      <Ionicons name="chevron-forward" size={iconSizes.lg} color={colors.textMuted} />
     </Pressable>
   );
 };
@@ -46,25 +46,25 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   resumeIcon: {
-    width: sizes.floatingBtn,
-    height: sizes.floatingBtn,
+    width: controlSizes.floatingBtn,
+    height: controlSizes.floatingBtn,
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   resumeBody: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   resumeKicker: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
-    letterSpacing: 0.4,
+    letterSpacing: letterSpacings.wide,
     textTransform: 'uppercase',
   },
   resumeName: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

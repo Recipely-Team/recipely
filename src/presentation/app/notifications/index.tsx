@@ -13,16 +13,17 @@ import {
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Notification } from '@domain/notifications/notification';
+import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import type { SectionData } from '@presentation/app/notifications/model/section-data';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const KNOWN_KINDS = new Set<NotifKind>([
   'comment',
@@ -43,7 +44,7 @@ const daysSince = (createdAt: Date): number => {
   return Math.max(ValueConstants.zero, Math.floor(ms / (1000 * 60 * 60 * 24)));
 };
 
-const toNotifItem = (n: Notification): NotifItem => ({
+const toNotifItem = (n: NotificationEntity): NotifItem => ({
   id: n.id,
   kind: resolveKind(n.type),
   actor: n.senderDisplayName ?? 'Recipely',
@@ -58,8 +59,8 @@ const toNotifItem = (n: Notification): NotifItem => ({
 const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
   const visible = filter === 'unread' ? items.filter((n) => !n.read) : items;
   const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
-  const yesterday = visible.filter((n) => n.daysAgo === 1);
-  const earlier = visible.filter((n) => n.daysAgo > 1);
+  const yesterday = visible.filter((n) => n.daysAgo === ValueConstants.one);
+  const earlier = visible.filter((n) => n.daysAgo > ValueConstants.one);
   const sections: SectionData[] = [];
   const labels = t().notifications;
   if (today.length > ValueConstants.zero) sections.push({ title: labels.today, data: today });
@@ -102,7 +103,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
   const openTarget = (target: NotificationTarget): void => {
-    const path = `/recipes/${encodeURIComponent(target.recipeId)}`;
+    const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
       (target.kind === 'comment'
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
@@ -125,7 +126,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().notifications.title}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.primary} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().notifications.title}
@@ -137,7 +138,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
             accessibilityRole="button"
             accessibilityLabel={t().notifications.markRead}
           >
-            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: '600' }}>
+            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
               {t().notifications.markRead}
             </ThemedText>
           </Pressable>
@@ -168,7 +169,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
             >
               <ThemedText
                 variant="caption"
-                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: '600' }}
+                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: fontWeights.semibold }}
               >
                 {label}
               </ThemedText>
@@ -219,7 +220,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -228,15 +229,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  headerTitle: { flex: 1, textAlign: 'center', fontWeight: '700' },
+  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: fontWeights.bold },
   markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  headerSpacer: { width: sizes.iconBtn },
+  headerSpacer: { width: controlSizes.iconBtn },
   filterRow: {
     flexDirection: 'row',
     gap: spacing.sm,
@@ -247,8 +248,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
-    height: sizes.chipHeight,
+    borderWidth: borderWidths.hairline,
+    minHeight: controlSizes.chip,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -259,10 +260,10 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: fontSizes.micro,
-    fontWeight: '700',
-    letterSpacing: 0.8,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wider,
   },
-  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + 40 + spacing.md },
+  separator: { height: StyleSheet.hairlineWidth, marginLeft: spacing.lg + avatarSizes.md + spacing.md },
   listContent: {},
   empty: {
     padding: spacing.xxxl,

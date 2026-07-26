@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { UserProfile } from '@domain/user-profile/user-profile';
+import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { IUserProfileRepository } from '@domain/user-profile/i-user-profile-repository';
 import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';
 
@@ -8,7 +8,7 @@ import type { GetUserProfileInput } from '@application/user-profile/get-user-pro
 export class GetUserProfileUseCase {
   constructor(private readonly repo: IUserProfileRepository) {}
 
-  execute(input: GetUserProfileInput): Promise<Result<UserProfile, Failure>> {
+  execute(input: GetUserProfileInput): Promise<Result<UserProfileEntity, Failure>> {
     return this.repo.getById(input.userId);
   }
 }

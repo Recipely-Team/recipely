@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
 
 export interface StepperProps {
   value: number;
@@ -31,7 +31,7 @@ export const Stepper = ({
     >
       <Pressable
         onPress={onDecrement}
-        hitSlop={6}
+        hitSlop={spacing.xs2}
         style={styles.zone}
         accessibilityRole="button"
         accessibilityLabel={decreaseLabel}
@@ -46,7 +46,7 @@ export const Stepper = ({
       </View>
       <Pressable
         onPress={onIncrement}
-        hitSlop={6}
+        hitSlop={spacing.xs2}
         style={styles.zone}
         accessibilityRole="button"
         accessibilityLabel={increaseLabel}
@@ -61,24 +61,24 @@ const styles = StyleSheet.create({
   root: {
     flexDirection: 'row',
     alignItems: 'center',
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1.5,
+    borderWidth: borderWidths.thin,
     overflow: 'hidden',
   },
   zone: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
   },
   sign: {
     fontSize: fontSizes.subtitle,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     lineHeight: fontSizes.title,
   },
   valueWrap: {
-    minWidth: sizes.floatingBtn,
+    minWidth: controlSizes.floatingBtn,
     flexDirection: 'row',
     alignItems: 'baseline',
     justifyContent: 'center',
@@ -87,10 +87,10 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: fontSizes.heading,
-    fontWeight: '800',
+    fontWeight: fontWeights.heavy,
   },
   suffix: {
     fontSize: fontSizes.micro,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

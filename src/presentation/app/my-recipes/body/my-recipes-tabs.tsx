@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface MyRecipesTabsProps {
-  tabs: readonly { key: Tab; label: string; count: number }[];
-  active: Tab;
-  onChange: (key: Tab) => void;
+  tabs: readonly { key: TabType; label: string; count: number }[];
+  active: TabType;
+  onChange: (key: TabType) => void;
 }
 
 /** Mobile segmented control for the Saved / Created / Drafts tabs. */
@@ -62,14 +62,14 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
     padding: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   segment: {
-    flexGrow: 1,
-    flexShrink: 1,
+    flexGrow: ValueConstants.one,
+    flexShrink: ValueConstants.one,
     flexBasis: 'auto',
     minWidth: ValueConstants.zero,
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     flexDirection: 'row',
@@ -78,14 +78,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   segmentLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.small,
-    flexShrink: 1,
+    flexShrink: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   countPill: {
-    minWidth: sizes.iconMd,
-    height: sizes.iconXxs,
+    minWidth: iconSizes.xl,
+    height: iconSizes.lg,
     paddingHorizontal: spacing.xs2,
     borderRadius: radii.round,
     alignItems: 'center',
@@ -93,7 +93,7 @@ const styles = StyleSheet.create({
     flexShrink: ValueConstants.zero,
   },
   countText: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
   },
 });

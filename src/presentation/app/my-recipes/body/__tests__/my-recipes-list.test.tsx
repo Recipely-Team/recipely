@@ -19,8 +19,8 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -35,13 +35,13 @@ jest.mock('@expo/vector-icons', () => {
 // The web card reads the taxonomy store to label a cuisine — a store this
 // wiring doesn't touch, and providing it would only buy a costlier render.
 // Same spirit as the `RecipeListItem` stub in `recipe-list-body.test.tsx`.
-jest.mock('@presentation/app/recipes/items/web-recipe-card', () => {
+jest.mock('@presentation/base/widgets/cards/web-recipe-card', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return { WebRecipeCard: (): React.JSX.Element => <Text>web-recipe-card</Text> };
 });
 
-const makeRecipe = (id: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeRecipe = (id: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -56,7 +56,7 @@ const makeRecipe = (id: string): RecipeSummary => {
     commentCount: 0,
     viewCount: 0,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 
@@ -105,7 +105,7 @@ const refreshingProp = (overrides: Partial<MyRecipesListProps>): boolean => {
 };
 
 /** The empty-state branches: no items on saved/created, no drafts on drafts. */
-const EMPTY_TABS: readonly Tab[] = ['saved', 'created', 'drafts'];
+const EMPTY_TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
 
 describe('MyRecipesList — RefreshControl wiring', () => {
   // AppThemeProvider hydrates theme/preference from async storage on mount; let

@@ -1,7 +1,8 @@
 import { StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, borderWidths } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ValueConstants } from '@core/constants';
 
 export interface SectionHeaderProps {
   title: string;
@@ -27,8 +28,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   line: {
-    flex: 1,
-    height: 1,
+    flex: ValueConstants.one,
+    height: borderWidths.hairline,
     marginLeft: spacing.md,
   },
 });

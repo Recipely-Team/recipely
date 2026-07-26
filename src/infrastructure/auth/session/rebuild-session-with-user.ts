@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
-import { AuthSession } from '@domain/auth/auth-session';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
@@ -16,7 +16,7 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
 export const rebuildSessionWithUser = async (
   storage: SecureTokenStorage,
   userDto: RecipelyUserDto,
-): Promise<Result<AuthSession, Failure>> => {
+): Promise<Result<AuthSessionEntity, Failure>> => {
   const sessionResult = await storage.loadSession();
   if (!sessionResult.ok) {
     return fail(sessionResult.failure);
@@ -29,7 +29,7 @@ export const rebuildSessionWithUser = async (
   const userResult = toUser(userDto);
   if (!userResult.ok) return userResult;
 
-  const updatedResult = AuthSession.create({
+  const updatedResult = AuthSessionEntity.create({
     id: current.id,
     accessToken: current.accessToken,
     expiresAt: current.expiresAt,

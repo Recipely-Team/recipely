@@ -11,7 +11,7 @@
 
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
 
 jest.mock('@expo/vector-icons', () => {
@@ -20,7 +20,7 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
 
-jest.mock('@presentation/app/recipes/items/recipe-list-item', () => {
+jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
   const { Text, Pressable } = jest.requireActual<typeof import('react-native')>('react-native');
   return {
     RecipeListItem: ({
@@ -37,8 +37,8 @@ jest.mock('@presentation/app/recipes/items/recipe-list-item', () => {
   };
 });
 
-const buildRecipe = (id: string, name: string): RecipeSummary => {
-  const result = RecipeSummary.create({
+const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id,
     name,
     image: '',

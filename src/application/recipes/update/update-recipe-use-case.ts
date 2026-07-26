@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
@@ -16,7 +16,7 @@ export class UpdateRecipeUseCase {
     id: string,
     input: UpdateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RecipeEntity, Failure>> {
     return this.repo.updateRecipe(id, input, onProgress);
   }
 }

@@ -3,8 +3,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { ValueConstants } from '@core/constants';
@@ -26,10 +26,10 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.assistantBadge}
         >
-          <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primaryText} />
+          <Ionicons name="sparkles" size={iconSizes.md} color={colors.primaryText} />
         </LinearGradient>
         <View style={styles.transcriptHeaderText}>
           <ThemedText style={[styles.assistantName, { color: colors.text }]}>
@@ -41,12 +41,12 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         </View>
         <Pressable
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={styles.collapseBtn}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.closeAssistant}
         >
-          <Ionicons name="close" size={sizes.iconSm} color={colors.textMuted} />
+          <Ionicons name="close" size={iconSizes.md} color={colors.textMuted} />
         </Pressable>
       </View>
       <ScrollView
@@ -97,27 +97,27 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   assistantBadge: {
-    width: sizes.badgeSm,
-    height: sizes.badgeSm,
+    width: decorSizes.badgeSm,
+    height: decorSizes.badgeSm,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   transcriptHeaderText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   assistantName: {
     fontSize: fontSizes.caption,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   collapseBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     alignItems: 'center',
     justifyContent: 'center',
   },
   transcript: {
-    maxHeight: 200,
+    maxHeight: layoutSizes.dropdownMaxHeight,
   },
   transcriptInner: {
     paddingHorizontal: spacing.md,
@@ -132,7 +132,7 @@ const styles = StyleSheet.create({
   },
   bubbleText: {
     fontSize: fontSizes.caption,
-    lineHeight: 19,
+    lineHeight: lineHeightFor(fontSizes.caption),
   },
   thinking: {
     fontStyle: 'italic',

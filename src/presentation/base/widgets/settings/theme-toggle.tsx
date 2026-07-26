@@ -1,15 +1,17 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii, spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
+import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 
 export interface ThemeToggleProps {
-  value: 'system' | 'light' | 'dark';
-  onChange: (value: 'system' | 'light' | 'dark') => void;
+  value: ThemePreference;
+  onChange: (value: ThemePreference) => void;
 }
 
-const options: { key: 'system' | 'light' | 'dark'; labelKey: 'themeSystem' | 'themeLight' | 'themeDark' }[] = [
+const options: { key: ThemePreference; labelKey: 'themeSystem' | 'themeLight' | 'themeDark' }[] = [
   { key: 'system', labelKey: 'themeSystem' },
   { key: 'light', labelKey: 'themeLight' },
   { key: 'dark', labelKey: 'themeDark' },
@@ -53,13 +55,13 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: radii.round,
-    height: sizes.selectorHeight,
+    minHeight: controlSizes.selector,
     padding: spacing.xxs,
     overflow: 'hidden',
     gap: spacing.xxs,
   },
   segment: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.round,
@@ -67,7 +69,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   segmentLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.small,
   },
 });

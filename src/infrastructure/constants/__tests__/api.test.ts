@@ -8,7 +8,7 @@ describe('recipeWebUrl', () => {
   });
 
   it('uses EXPO_PUBLIC_WEB_APP_URL when the env override is set', () => {
-    // Isolate: temporarily inject the env var and re-require the module so the
+    // Isolate: temporarily inject the env var and re-import the module so its
     // top-level constant is re-evaluated from the new value.
     const originalEnv = process.env.EXPO_PUBLIC_WEB_APP_URL;
 
@@ -16,7 +16,10 @@ describe('recipeWebUrl', () => {
       process.env.EXPO_PUBLIC_WEB_APP_URL = 'https://staging.recipely.net';
       jest.resetModules();
 
-       
+      // `require` is the only way to re-read a module after `jest.resetModules()`:
+      // this suite exists to prove a module-level constant follows the env var, and
+      // a dynamic import needs --experimental-vm-modules, which jest does not run here.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
@@ -32,7 +35,10 @@ describe('recipeWebUrl', () => {
       process.env.EXPO_PUBLIC_WEB_APP_URL = 'https://staging.recipely.net/';
       jest.resetModules();
 
-       
+      // `require` is the only way to re-read a module after `jest.resetModules()`:
+      // this suite exists to prove a module-level constant follows the env var, and
+      // a dynamic import needs --experimental-vm-modules, which jest does not run here.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
@@ -66,8 +72,10 @@ describe('legal page URLs', () => {
     try {
       process.env.EXPO_PUBLIC_WEB_APP_URL = 'https://staging.recipely.net';
       jest.resetModules();
-
-
+      // `require` is the only way to re-read a module after `jest.resetModules()`:
+      // this suite exists to prove a module-level constant follows the env var, and
+      // a dynamic import needs --experimental-vm-modules, which jest does not run here.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const fresh = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
       expect(fresh.PRIVACY_POLICY_URL).toBe('https://recipely.net/privacy');
       expect(fresh.TERMS_OF_USE_URL).toBe('https://recipely.net/terms');

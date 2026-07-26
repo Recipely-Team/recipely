@@ -2,11 +2,11 @@ import { GetUserProfileUseCase } from '@application/user-profile/get-user-profil
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { UserProfile } from '@domain/user-profile/user-profile';
+import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { IUserProfileRepository } from '@domain/user-profile/i-user-profile-repository';
 
-const buildProfile = (): UserProfile => {
-  const result = UserProfile.create({
+const buildProfile = (): UserProfileEntity => {
+  const result = UserProfileEntity.create({
     id: 'u-1',
     displayName: 'Ada Lovelace',
     bio: null,
@@ -22,8 +22,8 @@ const buildProfile = (): UserProfile => {
 
 class StubRepository implements IUserProfileRepository {
   readonly calls: string[] = [];
-  constructor(private readonly result: Result<UserProfile, Failure>) {}
-  getById(userId: string): Promise<Result<UserProfile, Failure>> {
+  constructor(private readonly result: Result<UserProfileEntity, Failure>) {}
+  getById(userId: string): Promise<Result<UserProfileEntity, Failure>> {
     this.calls.push(userId);
     return Promise.resolve(this.result);
   }

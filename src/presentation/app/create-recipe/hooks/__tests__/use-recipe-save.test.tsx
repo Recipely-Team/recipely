@@ -19,7 +19,7 @@ import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -46,10 +46,10 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
-import { emptyEditable } from '@presentation/app/create-recipe/model/recipe-mapping';
-import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
-import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
-import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/en';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
@@ -70,8 +70,8 @@ jest.mock('expo-router', () => ({
 const CREATED_ID = 'r-created';
 const COVER = { type: 'image', url: 'https://cdn.example.com/cover.webp' } as const;
 
-const makeRecipe = (id: string): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (id: string): RecipeEntity => {
+  const result = RecipeEntity.create({
     id,
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,
@@ -240,10 +240,7 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
     act(() => driver.latest().onSuccessPrimary());
 
-    expect(mockReplace).toHaveBeenCalledWith({
-      pathname: '/recipes/[recipeId]',
-      params: { recipeId: CREATED_ID },
-    });
+    expect(mockReplace).toHaveBeenCalledWith(`/recipes/${CREATED_ID}`);
     expect(driver.latest().saveSuccess).toBeNull();
   });
 

@@ -1,12 +1,12 @@
-import type { Breakpoint } from '@presentation/base/responsive/breakpoint';
-import type { Orientation } from '@presentation/base/responsive/orientation';
+import type { BreakpointType } from '@presentation/base/responsive/breakpoint-type';
+import type { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 export interface LayoutContextValue {
   width: number;
   height: number;
   aspectRatio: number;
-  orientation: Orientation;
-  breakpoint: Breakpoint;
+  orientation: OrientationType;
+  breakpoint: BreakpointType;
   /** True on Platform.OS === 'web' when the viewport is wide enough for the desktop shell. */
   isWebShell: boolean;
   /** True for portrait phones and any narrow viewport regardless of platform. */

@@ -1,4 +1,4 @@
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 
 /**
  * Read model returned by the refine flow — NOT an entity: it has no identity of
@@ -7,7 +7,7 @@ import type { Recipe } from '@domain/recipes/recipe';
  * backend predates them.
  */
 export interface RefinedRecipe {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   /** 1-2 sentence description of what changed, in the user's language. */
   summary?: string;
   /** One short extra tip related to the refinement. */

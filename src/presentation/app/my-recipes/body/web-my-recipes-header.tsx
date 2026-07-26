@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -31,10 +31,10 @@ export const WebMyRecipesHeader = ({ onCreate }: WebMyRecipesHeaderProps): React
         style={({ pressed }) => [
           styles.createBtn,
           shadows.sm,
-          { backgroundColor: colors.primary, opacity: pressed ? 0.88 : 1 },
+          { backgroundColor: colors.primary, opacity: pressed ? opacities.pressedFaint : opacities.full },
         ]}
       >
-        <Ionicons name="add" size={sizes.iconMd} color={colors.primaryText} />
+        <Ionicons name="add" size={iconSizes.xl} color={colors.primaryText} />
         <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
           {t().myRecipes.createNew}
         </ThemedText>
@@ -54,14 +54,14 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   text: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
     gap: spacing.xs,
   },
   title: {
-    fontWeight: '800',
+    fontWeight: fontWeights.heavy,
     fontSize: fontSizes.headline,
-    letterSpacing: -0.5,
+    letterSpacing: letterSpacings.tighter,
   },
   subtitle: {
     fontSize: fontSizes.medium,
@@ -70,13 +70,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    height: sizes.heroActionBtn,
+    minHeight: controlSizes.heroActionBtn,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,
     flexShrink: ValueConstants.zero,
   },
   createLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
 });

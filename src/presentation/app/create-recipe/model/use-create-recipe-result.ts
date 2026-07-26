@@ -1,14 +1,14 @@
 import type { EdgeInsets } from 'react-native-safe-area-context';
-import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
-import type { Phase } from '@presentation/app/create-recipe/model/phase';
-import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 
 /** View model returned by {@link useCreateRecipe} for the create/edit screen. */
 export interface UseCreateRecipeResult {
-  phase: Phase;
+  phase: PhaseType;
   isEditMode: boolean;
   isWebShell: boolean;
   insets: EdgeInsets;

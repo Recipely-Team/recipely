@@ -10,14 +10,16 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-modal';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
+import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 export const ProfileSettingsSections = (): React.JSX.Element => {
   const router = useRouter();
@@ -34,7 +36,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
 
   const handleSignOut = async (): Promise<void> => {
     await signOut();
-    router.replace('/login');
+    router.replace(RoutePaths.login);
   };
 
   const handleDeleteAccount = async (): Promise<void> => {
@@ -44,7 +46,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
     setDeleting(false);
     if (failure === null) {
       setDeleteVisible(false);
-      router.replace('/login');
+      router.replace(RoutePaths.login);
       return;
     }
     // WHY: the session stays intact on failure, so keep the sheet open and show
@@ -58,7 +60,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
         <View style={styles.stackedRow}>
           <View style={styles.stackedHeader}>
-            <Ionicons name="contrast-outline" size={sizes.iconMd} color={colors.primary} />
+            <Ionicons name="contrast-outline" size={iconSizes.xl} color={colors.primary} />
             <ThemedText variant="body" style={styles.stackedLabel}>
               {t().settings.mode}
             </ThemedText>
@@ -166,10 +168,10 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   stackedLabel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: sizes.searchBarHeight + spacing.sm2,
+    marginLeft: controlSizes.searchBar + spacing.sm2,
   },
 });

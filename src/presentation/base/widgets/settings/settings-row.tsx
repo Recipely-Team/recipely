@@ -1,9 +1,10 @@
 import { type ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ValueConstants } from '@core/constants';
 
 export interface SettingsRowProps {
   icon: string;
@@ -52,13 +53,13 @@ export const SettingsRow = ({
 
 const styles = StyleSheet.create({
   row: {
-    height: sizes.settingsRowHeight,
+    minHeight: controlSizes.settingsRow,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
   },
   label: {
-    flex: 1,
+    flex: ValueConstants.one,
     marginLeft: spacing.md,
   },
 });

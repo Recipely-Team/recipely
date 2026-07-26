@@ -24,7 +24,10 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       set({ state: { status: 'loading' } });
       const result = await deps.getSession.execute();
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        // Can't read the persisted session — treat it as logged out. The
+        // failure is not surfaced anywhere (there is no screen listening on a
+        // cold start), so it does not need to live in the global state.
+        set({ state: { status: 'unauthenticated' } });
         return;
       }
       if (result.value === null || result.value.isExpired()) {
@@ -56,87 +59,90 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       set({ state: { status: 'loading' } });
       const result = await deps.signIn.execute(email, password);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return;
+        // Back to the resting login state; the wrong-password error is returned
+        // to the screen, which owns it in local state (page-scoped).
+        set({ state: { status: 'unauthenticated' } });
+        return result.failure;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+      return null;
     },
 
     register: async (email: string, password: string, displayName: string) => {
       set({ state: { status: 'loading' } });
       const result = await deps.requestRegistration.execute(email, password, displayName);
-      if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return null;
-      }
       // Account is not created yet — the user must confirm the emailed code.
+      // On failure the Result carries the failure back to the screen; either
+      // way the session stays unauthenticated.
       set({ state: { status: 'unauthenticated' } });
-      return result.value;
+      return result;
     },
 
     verifyRegistration: async (email: string, code: string) => {
       set({ state: { status: 'loading' } });
       const result = await deps.verifyRegistration.execute(email, code);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return;
+        set({ state: { status: 'unauthenticated' } });
+        return result.failure;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+      return null;
     },
 
     resendRegistrationCode: async (email: string) => {
-      const result = await deps.resendRegistrationCode.execute(email);
-      if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return null;
-      }
-      return result.value;
+      // No global state change — the verify-code screen stays put; the Result
+      // carries either the refreshed challenge or the failure back to it.
+      return deps.resendRegistrationCode.execute(email);
     },
 
     signOut: async () => {
-      set({ state: { status: 'loading' } });
+      // No `loading` transition: it would clobber the authenticated session,
+      // and on failure we want to leave the user signed in. Mirrors
+      // deleteAccount — the screen shows the returned failure and can retry.
       const result = await deps.signOut.execute();
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return;
+        return result.failure;
       }
       set({ state: { status: 'unauthenticated' } });
       deps.clearSessionCaches();
+      return null;
     },
 
     signInWithGoogle: async () => {
       set({ state: { status: 'loading' } });
       const result = await deps.signInWithGoogle.execute();
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return;
+        set({ state: { status: 'unauthenticated' } });
+        return result.failure;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+      return null;
     },
 
     signInWithApple: async () => {
       set({ state: { status: 'loading' } });
       const result = await deps.signInWithApple.execute();
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return;
+        set({ state: { status: 'unauthenticated' } });
+        return result.failure;
       }
       set({ state: { status: 'authenticated', session: result.value } });
+      return null;
     },
 
     requestPasswordReset: async (email: string) => {
       const result = await deps.requestPasswordReset.execute(email);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
-        return false;
+        return result.failure;
       }
-      return true;
+      return null;
     },
 
     resetPassword: async (token: string, newPassword: string) => {
       const result = await deps.resetPassword.execute(token, newPassword);
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        // The reset screen owns its own error (page-scoped) — return the
+        // failure without touching the global session state.
         return result.failure;
       }
       return null;

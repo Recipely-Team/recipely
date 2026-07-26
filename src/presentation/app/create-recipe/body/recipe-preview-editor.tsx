@@ -3,22 +3,22 @@ import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
 import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/app/create-recipe/sheets/taxonomy-picker-sheet';
-import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/app/create-recipe/model/taxonomy-placeholder';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/base/taxonomy/taxonomy-placeholder';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
-import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/map-field-errors-to-inputs';
-import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
+import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipePreviewEditorProps {
@@ -79,7 +79,7 @@ export const RecipePreviewEditor = ({
           accessibilityRole="button"
           accessibilityLabel={cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
         >
-          <Ionicons name="camera" size={sizes.iconSm} color={colors.onOverlay} />
+          <Ionicons name="camera" size={iconSizes.md} color={colors.onOverlay} />
           <ThemedText variant="caption" style={[styles.photoLabel, { color: colors.onOverlay }]}>
             {cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
           </ThemedText>
@@ -97,7 +97,7 @@ export const RecipePreviewEditor = ({
               styles.nameInput,
               { color: colors.text },
               fieldErrors.name !== undefined
-                ? { borderWidth: 1.5, borderColor: colors.danger, borderRadius: radii.md, padding: spacing.sm }
+                ? { borderWidth: borderWidths.thin, borderColor: colors.danger, borderRadius: radii.md, padding: spacing.sm }
                 : null,
             ]}
           />
@@ -196,8 +196,8 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.lg,
   },
   cover: {
-    height: sizes.heroImageHeight,
-    maxHeight: 200,
+    height: mediaSizes.heroImageHeight,
+    maxHeight: mediaSizes.coverMaxHeight,
   },
   coverImage: {
     width: '100%',
@@ -211,12 +211,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs2,
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
   },
   photoLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   body: {
     paddingHorizontal: spacing.lg,
@@ -225,8 +225,8 @@ const styles = StyleSheet.create({
   },
   nameInput: {
     fontSize: fontSizes.title,
-    fontWeight: '800',
-    letterSpacing: -0.4,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
     padding: ValueConstants.zero,
   },
   taxonomyRow: {

@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { radii, fontWeights, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ValueConstants } from '@core/constants';
 
 export interface LanguageSelectorProps {
   value: 'en' | 'tr';
@@ -32,7 +33,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
           >
             <ThemedText
               variant="caption"
-              style={{ color: active ? colors.primaryText : colors.textMuted, fontWeight: '600' }}
+              style={{ color: active ? colors.primaryText : colors.textMuted, fontWeight: fontWeights.semibold }}
             >
               {opt.label}
             </ThemedText>
@@ -47,12 +48,12 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: 'row',
     borderRadius: radii.round,
-    height: sizes.selectorHeight,
-    width: 100,
+    minHeight: controlSizes.selector,
+    width: controlSizes.languageSelectorWidth,
     overflow: 'hidden',
   },
   segment: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.round,

@@ -1,5 +1,5 @@
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';
 

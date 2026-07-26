@@ -1,5 +1,5 @@
 import type { Container } from '@core/di/container';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';

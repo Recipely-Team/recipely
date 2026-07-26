@@ -1,11 +1,11 @@
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'Margherita Pizza',
     cuisine: CuisineKey.Italian,
@@ -35,7 +35,7 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
 };
 
 describe('recipeToSummary', () => {
-  it('maps every field from the source Recipe onto a RecipeSummary', () => {
+  it('maps every field from the source Recipe onto a RecipeSummaryEntity', () => {
     const recipe = makeRecipe();
 
     const result = recipeToSummary(recipe);

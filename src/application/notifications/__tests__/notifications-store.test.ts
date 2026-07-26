@@ -6,10 +6,10 @@ import type { MarkOneReadUseCase } from '@application/notifications/read/mark-on
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Notification } from '@domain/notifications/notification';
+import { NotificationEntity } from '@domain/notifications/notification-entity';
 
-const makeNotification = (id: string, read: boolean): Notification => {
-  const result = Notification.create({
+const makeNotification = (id: string, read: boolean): NotificationEntity => {
+  const result = NotificationEntity.create({
     id,
     type: 'like',
     senderId: 'sender-1',
@@ -66,7 +66,7 @@ const makeStore = (config: StubConfig) => {
   return { store, listInputs, markCallCount: () => markCalls, markOneIds };
 };
 
-const loaded = (items: Notification[], unreadCount: number): Result<ListNotificationsResult, Failure> =>
+const loaded = (items: NotificationEntity[], unreadCount: number): Result<ListNotificationsResult, Failure> =>
   ok({ items, total: items.length, unreadCount });
 
 describe('notifications store — load', () => {

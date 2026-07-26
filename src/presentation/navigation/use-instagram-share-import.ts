@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 const INSTAGRAM_HOST = 'instagram.com';
 
@@ -48,6 +49,6 @@ export const useInstagramShareImport = (): void => {
     resetShareIntent();
     // expo-router serializes/deserializes object-form params itself, so the raw
     // URL rides through without a manual encode/decode pair on either side.
-    router.push({ pathname: '/create-recipe', params: { importUrl: url } });
+    router.push({ pathname: RoutePaths.createRecipe, params: { importUrl: url } });
   }, [hasShareIntent, shareIntent, resetShareIntent, router]);
 };

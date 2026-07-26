@@ -1,8 +1,8 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import { ValueConstants } from '@core/constants';
 
@@ -32,7 +32,7 @@ export const SpecRow = ({ icon, label, last, error, children }: SpecRowProps): R
     >
       <View style={styles.mainRow}>
         <View style={[styles.iconBadge, { backgroundColor: colors.chipBackground }]}>
-          <Ionicons name={icon} size={sizes.iconSm} color={colors.primary} />
+          <Ionicons name={icon} size={iconSizes.md} color={colors.primary} />
         </View>
         <ThemedText style={[styles.label, { color: colors.text }]}>{label}</ThemedText>
         <View style={styles.control}>{children}</View>
@@ -57,18 +57,18 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   errorRow: {
-    marginLeft: sizes.iconBtn + spacing.md,
+    marginLeft: controlSizes.iconBtn + spacing.md,
   },
   iconBadge: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   label: {
     fontSize: fontSizes.medium,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   control: {
     marginLeft: 'auto',

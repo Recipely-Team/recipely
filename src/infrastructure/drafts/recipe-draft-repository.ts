@@ -7,8 +7,9 @@ import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
-import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';
-import type { DraftsListDto } from '@infrastructure/drafts/drafts-list-dto';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
+import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
 
 /**
@@ -25,7 +26,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   ): Promise<Result<PagedDrafts, Failure>> {
     const result = await this.http.request<DraftsListDto>({
       method: 'GET',
-      url: '/recipes/drafts',
+      url: ApiRoutes.recipes.drafts,
       params: { page, pageSize },
     });
     if (!result.ok) {
@@ -47,7 +48,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   async getLatestDraft(): Promise<Result<RecipeDraft | null, Failure>> {
     const result = await this.http.request<RecipeDraftDto>({
       method: 'GET',
-      url: '/recipes/drafts/latest',
+      url: ApiRoutes.recipes.draftsLatest,
     });
     if (!result.ok) {
       if (result.failure instanceof NotFoundFailure) {
@@ -61,7 +62,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   async getDraft(id: string): Promise<Result<RecipeDraft, Failure>> {
     const result = await this.http.request<RecipeDraftDto>({
       method: 'GET',
-      url: `/recipes/drafts/${encodeURIComponent(id)}`,
+      url: ApiRoutes.recipes.draft(id),
     });
     if (!result.ok) {
       return result;
@@ -72,7 +73,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   async upsertDraft(input: UpsertDraftInput): Promise<Result<RecipeDraft, Failure>> {
     const result = await this.http.request<RecipeDraftDto>({
       method: 'PUT',
-      url: `/recipes/drafts/${encodeURIComponent(input.id)}`,
+      url: ApiRoutes.recipes.draft(input.id),
       data: {
         prompt: input.prompt,
         snapshot: input.snapshot,
@@ -88,7 +89,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   async deleteDraft(id: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'DELETE',
-      url: `/recipes/drafts/${encodeURIComponent(id)}`,
+      url: ApiRoutes.recipes.draft(id),
     });
     if (!result.ok) {
       return result;

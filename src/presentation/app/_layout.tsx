@@ -5,11 +5,12 @@ import { StyleSheet, View } from 'react-native';
 import { ShareIntentProvider } from 'expo-share-intent';
 import { useInstagramShareImport } from '@presentation/navigation/use-instagram-share-import';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
-import { AppThemeProvider } from '@presentation/base/theme/theme-context';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { zIndices } from '@presentation/base/theme';
 import { LayoutProvider } from '@presentation/base/responsive/layout-context';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { WebShellStateProvider } from '@presentation/base/responsive/web-shell-state';
+import { WebShellStateProvider } from '@presentation/base/web-shell/web-shell-state';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
@@ -26,7 +27,7 @@ const AlarmOverlay = (): React.JSX.Element | null => {
   if (activeAlarm === null) return null;
   return (
     // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.
-    <View style={[StyleSheet.absoluteFillObject, { zIndex: 201 }]}>
+    <View style={[StyleSheet.absoluteFillObject, { zIndex: zIndices.alarmOverlay }]}>
       <AlarmScreen timerId={activeAlarm.timerId} recipeName={activeAlarm.recipeName} />
     </View>
   );
@@ -42,6 +43,7 @@ const AlarmOverlay = (): React.JSX.Element | null => {
  */
 const HEADERLESS_PATHS = new Set<string>([
   '/',
+  '/onboarding',
   '/login',
   '/register',
   '/verify-code',
@@ -104,6 +106,7 @@ const RootStack = (): React.JSX.Element => {
             not match any route, so its options (headerShown:false) would be
             silently dropped and the default stack header would appear. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
+        <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="login/index" options={{ headerShown: false }} />
         <Stack.Screen name="register/index" options={{ headerShown: false }} />
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -39,31 +40,34 @@ export const StepRow = ({
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: ValueConstants.one, y: ValueConstants.one }}
         style={styles.badge}
       >
-        <ThemedText style={[styles.badgeLabel, { color: colors.primaryText }]}>
+        <ThemedText
+          maxFontSizeMultiplier={maxFontScales.badge}
+          style={[styles.badgeLabel, { color: colors.primaryText }]}
+        >
           {index + 1}
         </ThemedText>
       </LinearGradient>
-      <TextInput
+      <AutoGrowTextInput
         value={value}
         onChangeText={onChange}
         onFocus={() => setFocused(true)}
         onBlur={() => setFocused(false)}
         placeholder={t().createRecipe.stepPlaceholder}
         placeholderTextColor={colors.textMuted}
-        multiline
+        minHeight={controlSizes.iconBtn}
         style={[styles.input, { color: colors.text }]}
       />
       <Pressable
         onPress={onRemove}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.removeBtn}
         accessibilityRole="button"
         accessibilityLabel={removeLabel}
       >
-        <Ionicons name="close" size={sizes.iconSm} color={colors.textMuted} />
+        <Ionicons name="close" size={iconSizes.md} color={colors.textMuted} />
       </Pressable>
     </View>
   );
@@ -76,30 +80,29 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.sm2,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   badge: {
-    width: sizes.badgeSm,
-    height: sizes.badgeSm,
+    width: decorSizes.badgeSm,
+    height: decorSizes.badgeSm,
+    flexShrink: ValueConstants.zero,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeLabel: {
     fontSize: fontSizes.caption,
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     fontSize: fontSizes.medium,
-    lineHeight: 21,
-    minHeight: sizes.iconBtn,
+    lineHeight: lineHeightFor(fontSizes.medium),
     paddingVertical: spacing.xs,
-    textAlignVertical: 'top',
   },
   removeBtn: {
-    width: sizes.iconBtnSm,
-    height: sizes.iconBtnSm,
+    width: controlSizes.iconBtnSm,
+    height: controlSizes.iconBtnSm,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

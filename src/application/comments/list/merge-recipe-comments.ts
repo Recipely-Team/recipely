@@ -1,5 +1,5 @@
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
-import { defaultRecipeState } from '@application/comments/list/default-recipe-comments-state';
+import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 
 /**
  * Returns a new `byRecipe` map with one recipe's comment state patched. The
@@ -12,6 +12,6 @@ export const mergeRecipeComments = (
   recipeId: string,
   patch: (current: RecipeCommentsState) => Partial<RecipeCommentsState>,
 ): Record<string, RecipeCommentsState> => {
-  const current = byRecipe[recipeId] ?? defaultRecipeState();
+  const current = byRecipe[recipeId] ?? defaultRecipeCommentsState();
   return { ...byRecipe, [recipeId]: { ...current, ...patch(current) } };
 };

@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -13,14 +13,16 @@ import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
-import { useSaveRecipe } from '@presentation/app/recipes/shared/hooks/use-save-recipe';
+import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
-const WEB_CONTENT_MAX = 1200;
+const WEB_CONTENT_MAX = layoutSizes.webContentMax;
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -35,14 +37,14 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const drafts = draftsStore((s) => s.drafts);
 
-  const [tab, setTab] = useState<Tab>('saved');
+  const [tab, setTab] = useState<TabType>('saved');
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
   const gridColumns = useMemo<number>(() => {
-    if (!isWebShell) return 1;
-    const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * 2;
-    return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
+    if (!isWebShell) return ValueConstants.one;
+    const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
+    return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
 
   useEffect(() => {
@@ -66,29 +68,29 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   }, []);
 
   const savedRecipes = useMemo(() => {
-    const all: readonly RecipeSummary[] =
+    const all: readonly RecipeSummaryEntity[] =
       recipeListState.status === 'loaded' ? recipeListState.recipes : [];
     return all.filter((r) => savedIds.has(r.id));
   }, [recipeListState, savedIds]);
 
   const items = tab === 'saved' ? savedRecipes : createdRecipes;
 
-  const tabDefs: readonly { key: Tab; label: string; count: number }[] = [
+  const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
     { key: 'saved', label: t().myRecipes.saved, count: savedRecipes.length },
     { key: 'created', label: t().myRecipes.created, count: createdRecipes.length },
     { key: 'drafts', label: t().myRecipes.drafts, count: drafts.length },
   ];
 
   const openRecipe = (id: string): void => {
-    router.push({ pathname: '/recipes/[recipeId]', params: { recipeId: id } });
+    router.push(RoutePaths.recipeDetail(id) as Href);
   };
 
   const openCreate = (): void => {
-    router.push('/create-recipe');
+    router.push(RoutePaths.createRecipe);
   };
 
   const openDraft = (id: string): void => {
-    router.push({ pathname: '/create-recipe', params: { draftId: id } });
+    router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } });
   };
 
   const deleteDraft = async (id: string): Promise<void> => {
@@ -110,7 +112,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
           {isWebShell ? (
             <View style={styles.webTabsWrap}>
-              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={(key) => setTab(key as Tab)} />
+              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={(key) => setTab(key as TabType)} />
             </View>
           ) : (
             <MyRecipesTabs tabs={tabDefs} active={tab} onChange={setTab} />
@@ -138,7 +140,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   // Web band + underlined tabs share the list's horizontal inset so they line
   // up with the recipe grid below; top padding clears the web app header.

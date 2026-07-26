@@ -4,7 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
-import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
+import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
@@ -15,8 +15,9 @@ import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -113,9 +114,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         <Pressable
           accessibilityRole="button"
           onPress={() => router.back()}
-          style={[styles.backButton, { top: insets.top + 8, backgroundColor: colors.overlayLight }]}
+          style={[styles.backButton, { top: insets.top + spacing.sm, backgroundColor: colors.overlayLight }]}
         >
-          <Ionicons name="chevron-back" size={24} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xxl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
 
@@ -165,16 +166,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scroll: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
   },
   backButton: {
     position: 'absolute',
     left: spacing.lg,
-    width: sizes.floatingBtn,
-    height: sizes.floatingBtn,
+    width: controlSizes.floatingBtn,
+    height: controlSizes.floatingBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

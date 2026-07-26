@@ -3,21 +3,21 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
-import { WebRecipeCard } from '@presentation/app/recipes/items/web-recipe-card';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, iconSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
 
 export interface MyRecipesListProps {
-  tab: Tab;
+  tab: TabType;
   drafts: readonly DraftItem[];
-  items: readonly RecipeSummary[];
+  items: readonly RecipeSummaryEntity[];
   gridColumns: number;
   isWebShell: boolean;
   isSaved: (id: string) => boolean;
@@ -72,7 +72,7 @@ export const MyRecipesList = ({
           refreshControl={refreshControl}
         >
           <View style={styles.empty}>
-            <MaterialCommunityIcons name="file-document-edit-outline" size={56} color={colors.textMuted} />
+            <MaterialCommunityIcons name="file-document-edit-outline" size={iconSizes.jumbo} color={colors.textMuted} />
             <ThemedText variant="body" muted style={styles.emptyText}>
               {t().drafts.empty}
             </ThemedText>
@@ -109,7 +109,7 @@ export const MyRecipesList = ({
         <View style={styles.empty}>
           <MaterialCommunityIcons
             name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
-            size={56}
+            size={iconSizes.jumbo}
             color={colors.textMuted}
           />
           <ThemedText variant="body" muted style={styles.emptyText}>
@@ -124,11 +124,11 @@ export const MyRecipesList = ({
     <FlatList
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
-      data={items as RecipeSummary[]}
+      data={items as RecipeSummaryEntity[]}
       keyExtractor={(r) => r.id}
       numColumns={gridColumns}
       renderItem={({ item }) => (
-        <View style={gridColumns > 1 ? styles.gridCell : null}>
+        <View style={gridColumns > ValueConstants.one ? styles.gridCell : null}>
           {isWebShell ? (
             <WebRecipeCard
               recipe={item}
@@ -149,9 +149,9 @@ export const MyRecipesList = ({
           )}
         </View>
       )}
-      columnWrapperStyle={gridColumns > 1 ? styles.gridRow : undefined}
-      ItemSeparatorComponent={gridColumns === 1 ? () => <View style={styles.separator} /> : undefined}
-      contentContainerStyle={[styles.listContent, gridColumns > 1 ? styles.gridContent : null]}
+      columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
+      ItemSeparatorComponent={gridColumns === ValueConstants.one ? () => <View style={styles.separator} /> : undefined}
+      contentContainerStyle={[styles.listContent, gridColumns > ValueConstants.one ? styles.gridContent : null]}
       style={styles.list}
     />
   );
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xxl,
   },
   list: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   separator: {
     height: spacing.md,
@@ -178,12 +178,12 @@ const styles = StyleSheet.create({
     gap: GRID_GAP,
   },
   gridCell: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   // flexGrow keeps the empty state pullable: the scroll content must fill the
   // viewport so the gesture has a surface even with almost nothing rendered.
   emptyContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
   },
   empty: {
     alignItems: 'center',
