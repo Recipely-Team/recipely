@@ -1,7 +1,8 @@
 import { StyleSheet, TextInput, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { fontSizes, radii, sizes, spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface WebFeedbackFormProps {
@@ -45,14 +46,12 @@ export const WebFeedbackForm = ({
         <ThemedText variant="caption" muted style={styles.fieldLabel}>
           {t().support.message.toUpperCase()}
         </ThemedText>
-        <TextInput
+        <AutoGrowTextInput
           value={message}
           onChangeText={onChangeMessage}
           placeholder={t().support.messagePlaceholder}
           placeholderTextColor={colors.textMuted}
-          multiline
-          numberOfLines={5}
-          textAlignVertical="top"
+          minHeight={controlSizes.messageField}
           style={[
             styles.input,
             styles.textArea,
@@ -77,21 +76,20 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
   },
   fieldLabel: {
-    fontWeight: '700',
-    letterSpacing: 0.5,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
   },
   input: {
-    height: sizes.inputHeightSm,
+    minHeight: controlSizes.inputSm,
     borderRadius: radii.lg,
-    borderWidth: sizes.inputBorderWidth,
+    borderWidth: borderWidths.thin,
     paddingHorizontal: spacing.md,
     fontSize: fontSizes.body,
   },
   textArea: {
-    height: sizes.feedbackMessageMinHeight,
     paddingTop: spacing.md,
   },
   errorText: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

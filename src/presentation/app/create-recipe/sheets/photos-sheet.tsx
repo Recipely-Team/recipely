@@ -2,10 +2,11 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { MediaPicker } from '@presentation/app/create-recipe/items/media-picker';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import { ValueConstants } from '@core/constants';
 
 export interface PhotosSheetProps {
   visible: boolean;
@@ -61,7 +62,7 @@ export const PhotosSheet = ({
 
 const styles = StyleSheet.create({
   backdrop: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   sheet: {
     borderTopLeftRadius: radii.xxl,
@@ -82,7 +83,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   doneLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   body: {
     paddingBottom: spacing.md,

@@ -7,8 +7,9 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface ScreenContainerProps {
   children: ReactNode;
@@ -56,10 +57,10 @@ export const ScreenContainer = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   flex: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   scroll: {
     flexGrow: 1,

@@ -3,7 +3,7 @@ import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
-import { useAvatarUpload } from '@presentation/app/profile/hooks/use-avatar-upload';
+import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
 import { t } from '@presentation/i18n';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';

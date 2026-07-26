@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -44,12 +44,12 @@ export const IngredientRow = ({
       />
       <Pressable
         onPress={onRemove}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.removeBtn}
         accessibilityRole="button"
         accessibilityLabel={removeLabel}
       >
-        <Ionicons name="close" size={sizes.iconSm} color={colors.textMuted} />
+        <Ionicons name="close" size={iconSizes.md} color={colors.textMuted} />
       </Pressable>
     </View>
   );
@@ -63,7 +63,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs2,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   bullet: {
     width: spacing.sm,
@@ -71,14 +71,14 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   input: {
-    flex: 1,
-    height: sizes.iconBtn,
+    flex: ValueConstants.one,
+    height: controlSizes.iconBtn,
     fontSize: fontSizes.body,
     paddingVertical: ValueConstants.zero,
   },
   removeBtn: {
-    width: sizes.iconBtnSm,
-    height: sizes.iconBtnSm,
+    width: controlSizes.iconBtnSm,
+    height: controlSizes.iconBtnSm,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

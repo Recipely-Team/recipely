@@ -14,13 +14,13 @@ import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detai
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'AI Recipe',
     cuisine: CuisineKey.Italian,
@@ -87,14 +87,14 @@ const fakeRecipeDetailStore = {
 
 interface DeferredGenerateUseCase {
   useCase: GenerateRecipeUseCase;
-  resolve: (r: Result<Recipe, Failure>) => void;
+  resolve: (r: Result<RecipeEntity, Failure>) => void;
   lastInput: GenerateRecipeInput | null;
 }
 
 // Returns a use case whose `execute` returns a promise the test controls.
 const makeDeferredGenerateUseCase = (): DeferredGenerateUseCase => {
-  let resolveFn: (r: Result<Recipe, Failure>) => void = () => undefined;
-  const promise = new Promise<Result<Recipe, Failure>>((res) => {
+  let resolveFn: (r: Result<RecipeEntity, Failure>) => void = () => undefined;
+  const promise = new Promise<Result<RecipeEntity, Failure>>((res) => {
     resolveFn = res;
   });
   const ref: DeferredGenerateUseCase = {
@@ -110,7 +110,7 @@ const makeDeferredGenerateUseCase = (): DeferredGenerateUseCase => {
   return ref;
 };
 
-const makeStoreWithGenerateResult = (result: Result<Recipe, Failure>) => {
+const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
   const generateUseCase = {
     execute: (_input: GenerateRecipeInput) => Promise.resolve(result),
   } as unknown as GenerateRecipeUseCase;

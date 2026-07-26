@@ -1,18 +1,18 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 
 export interface FakeAuthRepositoryConfig {
-  signInResult?: Result<AuthSession, Failure>;
+  signInResult?: Result<AuthSessionEntity, Failure>;
   requestRegistrationResult?: Result<RegistrationChallenge, Failure>;
-  verifyRegistrationResult?: Result<AuthSession, Failure>;
+  verifyRegistrationResult?: Result<AuthSessionEntity, Failure>;
   resendRegistrationCodeResult?: Result<RegistrationChallenge, Failure>;
   signOutResult?: Result<void, Failure>;
-  currentSessionResult?: Result<AuthSession | null, Failure>;
-  signInWithGoogleResult?: Result<AuthSession, Failure>;
-  signInWithAppleResult?: Result<AuthSession, Failure>;
-  uploadAvatarResult?: Result<AuthSession, Failure>;
-  updateProfileResult?: Result<AuthSession, Failure>;
+  currentSessionResult?: Result<AuthSessionEntity | null, Failure>;
+  signInWithGoogleResult?: Result<AuthSessionEntity, Failure>;
+  signInWithAppleResult?: Result<AuthSessionEntity, Failure>;
+  uploadAvatarResult?: Result<AuthSessionEntity, Failure>;
+  updateProfileResult?: Result<AuthSessionEntity, Failure>;
   deleteAccountResult?: Result<void, Failure>;
 }

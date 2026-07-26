@@ -20,7 +20,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     // `recipeToSummary` so a create/update/delete doesn't need a re-fetch to
     // show up in both places. The conversion only fails on the
     // practically-impossible case of an already-valid Recipe producing an
-    // invalid RecipeSummary — skip the lean-list update in that case.
+    // invalid RecipeSummaryEntity — skip the lean-list update in that case.
     add: (recipe) =>
       set((s) => {
         const summary = recipeToSummary(recipe);
@@ -126,7 +126,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       const recipe = result.value;
       get().replace(recipe);
       // Propagate the edit to sibling caches so every screen sees fresh data.
-      // recipeListStore holds the lean RecipeSummary[] list cache, so the
+      // recipeListStore holds the lean RecipeSummaryEntity[] list cache, so the
       // full Recipe is first converted down to a summary.
       const summary = recipeToSummary(recipe);
       if (summary.ok) {

@@ -1,8 +1,8 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnknownFailure, ValidationFailure } from '@core/failure';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import type { SerializedSession } from '@infrastructure/storage/serialized-session';
 import { kvStore } from '@infrastructure/storage/kv-store';
@@ -10,13 +10,13 @@ import { kvStore } from '@infrastructure/storage/kv-store';
 const STORAGE_KEY = 'layerly.session.v1';
 
 /**
- * Persists and restores the authenticated `AuthSession` using the platform
+ * Persists and restores the authenticated `AuthSessionEntity` using the platform
  * key-value store (Expo SecureStore on native, localStorage on web). The
  * session is serialised as JSON under a versioned key so stale formats can be
  * flushed by bumping the key suffix.
  */
 export class SecureTokenStorage {
-  async saveSession(session: AuthSession): Promise<Result<void, Failure>> {
+  async saveSession(session: AuthSessionEntity): Promise<Result<void, Failure>> {
     try {
       const payload: SerializedSession = {
         id: session.id,
@@ -40,7 +40,7 @@ export class SecureTokenStorage {
     }
   }
 
-  async loadSession(): Promise<Result<AuthSession | null, Failure>> {
+  async loadSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     let raw: string | null;
     try {
       raw = await kvStore.getItem(STORAGE_KEY);
@@ -63,7 +63,7 @@ export class SecureTokenStorage {
     if (!emailResult.ok) {
       return fail(emailResult.failure);
     }
-    const userResult = User.create({
+    const userResult = UserEntity.create({
       id: parsed.user.id,
       email: emailResult.value,
       displayName: parsed.user.displayName,
@@ -73,7 +73,7 @@ export class SecureTokenStorage {
       return fail(userResult.failure);
     }
     const expiresAt = new Date(parsed.expiresAt);
-    const sessionResult = AuthSession.create({
+    const sessionResult = AuthSessionEntity.create({
       id: parsed.id,
       accessToken: parsed.accessToken,
       refreshToken: parsed.refreshToken,

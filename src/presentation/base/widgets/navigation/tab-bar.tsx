@@ -1,14 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { sizes, spacing, fontSizes } from '@presentation/base/theme';
+import { spacing, fontSizes, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface TabBarProps {
   active: TabBarKey;
@@ -40,7 +40,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
           backgroundColor: colors.tabBarBackground,
           borderTopColor: colors.tabBarBorder,
           paddingBottom: bottomPad,
-          height: sizes.tabBarHeight + bottomPad,
+          height: controlSizes.tabBar + bottomPad,
         },
       ]}
     >
@@ -76,7 +76,7 @@ const styles = StyleSheet.create({
     borderTopWidth: StyleSheet.hairlineWidth,
   },
   tab: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: spacing.sm,

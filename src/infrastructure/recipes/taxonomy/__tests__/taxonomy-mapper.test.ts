@@ -1,4 +1,4 @@
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/taxonomy-item-dto';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import {
   toTaxonomyItem,
   toTaxonomyItems,

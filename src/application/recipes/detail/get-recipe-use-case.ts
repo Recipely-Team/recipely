@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 
 /**
@@ -9,7 +9,7 @@ import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 export class GetRecipeUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 
-  execute(id: string): Promise<Result<Recipe, Failure>> {
+  execute(id: string): Promise<Result<RecipeEntity, Failure>> {
     return this.repo.getRecipe(id);
   }
 }

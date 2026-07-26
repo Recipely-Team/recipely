@@ -2,16 +2,16 @@ import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-const AVATAR_FRAME = 112;
-const AVATAR_INNER = 106;
-const CAMERA_BTN = 32;
-const CAMERA_ICON = 14;
+const AVATAR_FRAME = avatarSizes.frame;
+const AVATAR_INNER = avatarSizes.frameInner;
+const CAMERA_BTN = controlSizes.iconBtnSm;
+const CAMERA_ICON = iconSizes.sm;
 
 export interface ProfileIdentityProps {
   displayName: string;
@@ -111,39 +111,39 @@ const styles = StyleSheet.create({
   avatarFrame: {
     width: AVATAR_FRAME,
     height: AVATAR_FRAME,
-    borderRadius: AVATAR_FRAME / 2,
-    padding: (AVATAR_FRAME - AVATAR_INNER) / 2,
-    borderWidth: 1,
+    borderRadius: AVATAR_FRAME / ValueConstants.two,
+    padding: (AVATAR_FRAME - AVATAR_INNER) / ValueConstants.two,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
   avatarOverlay: {
     ...StyleSheet.absoluteFillObject,
-    borderRadius: AVATAR_FRAME / 2,
+    borderRadius: AVATAR_FRAME / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cameraBtn: {
     position: 'absolute',
-    bottom: -2,
-    right: -2,
+    bottom: -spacing.xxs,
+    right: -spacing.xxs,
     width: CAMERA_BTN,
     height: CAMERA_BTN,
-    borderRadius: CAMERA_BTN / 2,
-    borderWidth: 3,
+    borderRadius: CAMERA_BTN / ValueConstants.two,
+    borderWidth: borderWidths.thick,
     alignItems: 'center',
     justifyContent: 'center',
   },
   cameraBtnDisabled: {
-    opacity: 0.6,
+    opacity: opacities.disabledFaint,
   },
   displayName: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     marginTop: spacing.md,
     textAlign: 'center',
   },
   handle: {
-    marginTop: 2,
+    marginTop: spacing.xxs,
     textAlign: 'center',
   },
   bioText: {

@@ -10,9 +10,9 @@ import {
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -64,7 +64,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.fill}
         >
           <View style={styles.center}>
@@ -93,13 +93,13 @@ export const SplashOverlay = (): React.JSX.Element | null => {
 const styles = StyleSheet.create({
   root: {
     ...StyleSheet.absoluteFillObject,
-    zIndex: 300,
+    zIndex: zIndices.splash,
   },
   fill: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   center: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.lg,
@@ -108,18 +108,18 @@ const styles = StyleSheet.create({
     width: TILE_SIZE,
     height: TILE_SIZE,
     borderRadius: TILE_RADIUS,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: BrandColors.white,
     alignItems: 'center',
     justifyContent: 'center',
   },
   wordmark: {
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: -0.6,
+    fontSize: fontSizes.headline,
+    fontWeight: fontWeights.heavy,
+    letterSpacing: letterSpacings.tighter,
     marginTop: spacing.xs,
   },
   tagline: {
-    opacity: 0.88,
-    letterSpacing: 0.2,
+    opacity: opacities.pressedFaint,
+    letterSpacing: letterSpacings.subtle,
   },
 });

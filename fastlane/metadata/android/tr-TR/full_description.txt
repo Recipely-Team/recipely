@@ -1,30 +1,25 @@
-Recipely, mutfaktaki her şeyi tek bir uygulamada toplayan akıllı yardımcın — harika tarifler keşfet, kendi tariflerini oluştur ve zor işi yapay zekâya bırak.
+Recipely ile tanışın — "bu akşam ne pişirsem?" sorusunu saniyeler içinde lezzetli bir cevaba dönüştüren yapay zekâ destekli mutfak asistanınız.
 
-🤖 YAPAY ZEKÂ TARİF OLUŞTURUCU
-Canının ne çektiğini yaz, yapay zekâ şefimiz (GPT-4o mini ile) senin için baştan sona bir tarif yazsın — malzemeler, adım adım talimatlar ve besin değerleri dahil. Beğenmedin mi? "Vegan yap", "daha az kalorili" ya da "daha hızlı olsun" de, tarif anında değişsin.
+🤖 YAPAY ZEKÂ İLE TARİF OLUŞTURMA
+Canınızın ne çektiğini yazın — "30 dakikada kremalı limon sarımsaklı karidesli makarna" — AI şefimiz malzemeleri, porsiyonları ve net adımlarıyla eksiksiz bir tarif yazsın. Elinizdekiyle pişirin, fikirler bitmesin.
 
-🍳 KEŞFET & ARA
-Tarifleri mutfak türüne, kategoriye, zorluğa ve pişirme süresine göre keşfet. Moduna, diyetine ve programına uyanı kolayca bul.
+👩‍🍳 ADIM ADIM PİŞİRME
+İşaretlenebilir görevlerle ilerleyin, sıranızı asla kaybetmeyin — hazırlıktan servise, telaşsızca.
 
-📖 OLUŞTUR & PAYLAŞ
-Fotoğraflar, malzemeler, adımlar ve otomatik besin değerleriyle kendi tariflerini hazırla. Yayınla ve Recipely topluluğuyla paylaş.
+📊 MAKRO VE KALORİ TAKİBİ
+Porsiyon başına kalori, protein, karbonhidrat ve yağı görün, sağlık hedeflerinize göre pişirin.
 
-❤️ FAVORİLERİNİ KAYDET
-Sevdiğin tarifleri yer imine ekle, hep bir dokunuş uzağında olsun.
+🔖 KAYDET VE DÜZENLE
+Beğendiğiniz her tarifi kaydedin; kaydettikleriniz ve oluşturduklarınız Tariflerim'de düzenli dursun.
 
-👩‍🍳 SOSYAL BİR MUTFAK
-Tarifleri beğen ve yorumla, diğer aşçıları takip et, rozetler kazan ve mutfak profilini büyüt.
+🎨 KOYU VE AÇIK TEMALAR
+Recipely'yi şık temalar ve tam koyu/açık modla kişiselleştirin. İngilizce ya da Türkçe pişirin, istediğiniz an değiştirin.
 
-🔢 BİR BAKIŞTA BESİN DEĞERLERİ
-Her tarif için kalori, protein, karbonhidrat, yağ ve lif değerlerini gör.
+NEDEN RECIPELY
+• Damak zevkinize göre AI tarifleri
+• Net adım adım rehber
+• Makro ve besin takibi
+• Tarif kaydet, oluştur, düzenle
+• Göz alıcı koyu ve açık tasarım
 
-⏲️ PİŞİRME ZAMANLAYICISI
-Yerleşik zamanlayıcı, sen pişirirken her adımı takipte tutar.
-
-✨ SANA GÖRE
-• Açık & koyu tema
-• Türkçe & İngilizce
-• E-posta, Google veya Apple ile giriş
-• Sade, hızlı ve kolay
-
-Recipely'yi indir, bugün daha akıllı pişir. Tarifler, sade ve senin.
+Recipely'yi bugün indirin, kendi AI şefinizle daha akıllı pişirin. 🍳

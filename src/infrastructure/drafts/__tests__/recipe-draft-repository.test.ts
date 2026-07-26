@@ -2,8 +2,8 @@ import { NetworkFailure, NotFoundFailure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { RecipeDraftDto } from '@infrastructure/drafts/recipe-draft-dto';
-import type { DraftsListDto } from '@infrastructure/drafts/drafts-list-dto';
+import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
+import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 
 const draftDto: RecipeDraftDto = {

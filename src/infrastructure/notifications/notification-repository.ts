@@ -1,12 +1,13 @@
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { Notification } from '@domain/notifications/notification';
+import { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { NotificationItemDto } from '@infrastructure/notifications/notification-item-dto';
-import type { NotificationsResponseDto } from '@infrastructure/notifications/notifications-response-dto';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
+import type { NotificationsResponseDto } from '@infrastructure/notifications/dtos/notifications-response-dto';
 
 /**
  * Implements `INotificationRepository` against the Recipely backend. All
@@ -22,14 +23,14 @@ export class NotificationRepository implements INotificationRepository {
 
     const result = await this.http.request<NotificationsResponseDto>({
       method: 'GET',
-      url: '/me/notifications',
+      url: ApiRoutes.me.notifications,
       params,
     });
     if (!result.ok) {
       return result;
     }
 
-    const items: Notification[] = [];
+    const items: NotificationEntity[] = [];
     for (const dto of result.value.items) {
       const mapped = mapDtoToNotification(dto);
       if (mapped.ok) {
@@ -49,7 +50,7 @@ export class NotificationRepository implements INotificationRepository {
   async markAllRead(): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'POST',
-      url: '/me/notifications/read-all',
+      url: ApiRoutes.me.notificationsReadAll,
     });
     if (!result.ok) {
       return result;
@@ -60,7 +61,7 @@ export class NotificationRepository implements INotificationRepository {
   async markOneRead(id: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'POST',
-      url: `/me/notifications/${encodeURIComponent(id)}/read`,
+      url: ApiRoutes.me.notificationRead(id),
     });
     if (!result.ok) {
       return result;
@@ -74,7 +75,7 @@ export class NotificationRepository implements INotificationRepository {
   ): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'POST',
-      url: '/me/device-token',
+      url: ApiRoutes.me.deviceToken,
       data: { token, platform },
     });
     if (!result.ok) {
@@ -84,8 +85,8 @@ export class NotificationRepository implements INotificationRepository {
   }
 }
 
-function mapDtoToNotification(dto: NotificationItemDto): Result<Notification, Failure> {
-  return Notification.create({
+function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEntity, Failure> {
+  return NotificationEntity.create({
     id: dto.id,
     type: dto.type,
     senderId: dto.senderId,

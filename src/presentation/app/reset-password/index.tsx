@@ -7,17 +7,18 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { FormView } from '@presentation/app/reset-password/body/reset-password-form-view';
-import { SuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
-import { InvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
+import { ResetPasswordFormView } from '@presentation/app/reset-password/body/reset-password-form-view';
+import { ResetPasswordSuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
+import { ResetPasswordInvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 const MIN_PASSWORD_LENGTH = 8;
 
 export const ResetPasswordScreen = (): React.JSX.Element => {
@@ -73,7 +74,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
       <View style={[styles.iconBadge, { backgroundColor: colors.gradientSurface }]}>
         <Ionicons
           name="lock-closed-outline"
-          size={isLandscapeShell ? 32 : 26}
+          size={isLandscapeShell ? iconSizes.xxxl : iconSizes.xxl}
           color={colors.onOverlay}
         />
       </View>
@@ -92,15 +93,15 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
 
   if (tokenValue.length === ValueConstants.zero) {
     cardBody = (
-      <InvalidLinkView onBack={() => router.replace('/login')} />
+      <ResetPasswordInvalidLinkView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else if (succeeded) {
     cardBody = (
-      <SuccessView onBack={() => router.replace('/login')} />
+      <ResetPasswordSuccessView onBack={() => router.replace(RoutePaths.login)} />
     );
   } else {
     cardBody = (
-      <FormView
+      <ResetPasswordFormView
         newPassword={newPassword}
         onChangeNew={setNewPassword}
         confirmPassword={confirmPassword}
@@ -116,7 +117,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         loading={loading}
         error={error}
         onSubmit={() => { void handleSubmit(); }}
-        onBack={() => router.replace('/login')}
+        onBack={() => router.replace(RoutePaths.login)}
       />
     );
   }
@@ -128,7 +129,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.splitHero}
           >
             {hero}
@@ -164,17 +165,17 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
         />
 
         <Pressable
-          onPress={() => router.replace('/login')}
+          onPress={() => router.replace(RoutePaths.login)}
           style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
           accessibilityRole="button"
           accessibilityLabel={t().resetPassword.backToLogin}
         >
-          <Ionicons name="chevron-back" size={20} color={colors.onOverlay} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
 
         {hero}
@@ -194,14 +195,14 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
+  flex: { flex: ValueConstants.one },
+  scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
     position: 'absolute',
     top: ValueConstants.zero,
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    height: 280,
+    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -209,34 +210,34 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: spacing.xxxl,
     left: spacing.lg,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: controlSizes.iconBtn / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   gradientCenter: {
-    height: 280,
+    height: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.xl,
   },
   iconBadge: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
+    width: avatarSizes.lg,
+    height: avatarSizes.lg,
+    borderRadius: radii.xxl2,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.xs,
   },
   heroTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   heroSubtitleWrap: {
-    opacity: 0.82,
+    opacity: opacities.onMedia,
   },
   heroSubtitle: {
     textAlign: 'center',
@@ -245,28 +246,28 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl,
     padding: spacing.xl,
     marginHorizontal: spacing.lg,
-    marginTop: -40,
+    marginTop: -decorSizes.cardOverlap,
     marginBottom: spacing.xxl,
   },
   splitRoot: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
   },
   splitHero: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xxl,
   },
   heroLandscape: {
     height: 'auto',
-    maxWidth: 420,
+    maxWidth: layoutSizes.maxContentLg,
   },
   splitFormPane: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   splitFormContent: {
-    flexGrow: 1,
+    flexGrow: ValueConstants.one,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.xxxl,

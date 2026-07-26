@@ -11,11 +11,11 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
+import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 
@@ -36,9 +36,7 @@ export interface CommentCardProps {
   nodeRef?: (node: CommentNode | null) => void;
 }
 
-const DISABLED_OPACITY = 0.5;
-
-const AVATAR_SIZE = 36;
+const AVATAR_SIZE = avatarSizes.sm;
 
 const FLASH_IN_MS = 220;
 const FLASH_HOLD_MS = 700;
@@ -106,10 +104,10 @@ export const CommentCard = ({
             onPress={onDelete}
             accessibilityRole="button"
             accessibilityLabel={t().comments.delete}
-            hitSlop={8}
+            hitSlop={spacing.sm}
             style={styles.deleteBtn}
           >
-            <Ionicons name="trash-outline" size={sizes.iconSm} color={colors.danger} />
+            <Ionicons name="trash-outline" size={iconSizes.md} color={colors.danger} />
           </Pressable>
         ) : null}
       </View>
@@ -122,12 +120,12 @@ export const CommentCard = ({
           disabled={!canLike}
           accessibilityRole="button"
           accessibilityLabel={likedByMe ? t().comments.unlike : t().comments.like}
-          hitSlop={8}
-          style={[styles.likeBtn, { opacity: canLike ? 1 : DISABLED_OPACITY }]}
+          hitSlop={spacing.sm}
+          style={[styles.likeBtn, { opacity: canLike ? opacities.full : opacities.disabled }]}
         >
           <Ionicons
             name={likedByMe ? 'heart' : 'heart-outline'}
-            size={sizes.iconSm}
+            size={iconSizes.md}
             color={likedByMe ? colors.likeActive : colors.textMuted}
           />
           <ThemedText variant="caption" muted>
@@ -142,7 +140,7 @@ export const CommentCard = ({
 const styles = StyleSheet.create({
   card: {
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     gap: spacing.xs,
@@ -153,10 +151,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   headerText: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   author: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   bodyText: {
     marginLeft: AVATAR_SIZE + spacing.sm,

@@ -1,12 +1,13 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { Comment } from '@domain/comments/comment';
+import { CommentEntity } from '@domain/comments/comment-entity';
 import type { ICommentRepository } from '@domain/comments/i-comment-repository';
 import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { CommentDto } from '@infrastructure/comments/comment-dto';
-import type { CommentPageDto } from '@infrastructure/comments/comment-page-dto';
+import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
+import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -23,13 +24,13 @@ export class CommentRepository implements ICommentRepository {
   ): Promise<Result<CommentPage, Failure>> {
     const result = await this.http.request<CommentPageDto>({
       method: 'GET',
-      url: `/recipes/${encodeURIComponent(recipeId)}/comments`,
+      url: ApiRoutes.recipes.comments(recipeId),
       params: { page, pageSize },
     });
     if (!result.ok) {
       return result;
     }
-    const items: Comment[] = [];
+    const items: CommentEntity[] = [];
     for (const dto of result.value.items) {
       const mapped = mapDtoToComment(dto);
       if (!mapped.ok) {
@@ -45,10 +46,10 @@ export class CommentRepository implements ICommentRepository {
     });
   }
 
-  async add(recipeId: string, body: string): Promise<Result<Comment, Failure>> {
+  async add(recipeId: string, body: string): Promise<Result<CommentEntity, Failure>> {
     const result = await this.http.request<CommentDto>({
       method: 'POST',
-      url: `/recipes/${encodeURIComponent(recipeId)}/comments`,
+      url: ApiRoutes.recipes.comments(recipeId),
       data: { body },
     });
     if (!result.ok) {
@@ -60,7 +61,7 @@ export class CommentRepository implements ICommentRepository {
   async remove(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
     const result = await this.http.request<unknown>({
       method: 'DELETE',
-      url: `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}`,
+      url: ApiRoutes.recipes.comment(recipeId, commentId),
     });
     if (!result.ok) {
       return result;
@@ -71,7 +72,7 @@ export class CommentRepository implements ICommentRepository {
   async like(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
     const result = await this.http.request({
       method: 'POST',
-      url: `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
+      url: ApiRoutes.recipes.commentLike(recipeId, commentId),
     });
     if (!result.ok) return fail(result.failure);
     return ok(undefined);
@@ -80,15 +81,15 @@ export class CommentRepository implements ICommentRepository {
   async unlike(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
     const result = await this.http.request({
       method: 'DELETE',
-      url: `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
+      url: ApiRoutes.recipes.commentLike(recipeId, commentId),
     });
     if (!result.ok) return fail(result.failure);
     return ok(undefined);
   }
 }
 
-function mapDtoToComment(dto: CommentDto): Result<Comment, Failure> {
-  return Comment.create({
+function mapDtoToComment(dto: CommentDto): Result<CommentEntity, Failure> {
+  return CommentEntity.create({
     id: dto.id,
     body: dto.body,
     authorId: dto.authorId,

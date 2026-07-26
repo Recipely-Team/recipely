@@ -1,6 +1,7 @@
 import { usePathname, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Paths that show the root TabBar, mapped to the tab they highlight.
@@ -16,9 +17,9 @@ const TAB_BY_PATH = new Map<string, TabBarKey>([
 ]);
 
 const PATH_BY_TAB: Readonly<Record<TabBarKey, Href>> = {
-  recipes: '/recipes',
-  myRecipes: '/my-recipes',
-  profile: '/profile',
+  recipes: RoutePaths.recipes,
+  myRecipes: RoutePaths.myRecipes,
+  profile: RoutePaths.profile,
 };
 
 /**

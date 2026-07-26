@@ -2,19 +2,19 @@ import { act } from 'react-test-renderer';
 import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
-import { UserProfile } from '@domain/user-profile/user-profile';
+import { TOKENS } from '@application/di/tokens';
+import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import {
   useRecipeAuthor,
 } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
-import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/recipe-author-input';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/resolved-author';
+import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-input';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 
-const makeProfile = (overrides: Partial<Parameters<typeof UserProfile.create>[0]> = {}): UserProfile => {
-  const result = UserProfile.create({
+const makeProfile = (overrides: Partial<Parameters<typeof UserProfileEntity.create>[0]> = {}): UserProfileEntity => {
+  const result = UserProfileEntity.create({
     id: 'author-9',
     displayName: 'Bob Baker',
     bio: null,

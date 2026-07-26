@@ -1,12 +1,14 @@
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
+import { COMMENT_MAX_LENGTH } from '@presentation/app/recipes/[recipeId]/model/comments/comment-limits';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { CommentCard } from '@presentation/app/recipes/[recipeId]/items/comment-card';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, sizes } from '@presentation/base/theme';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import { spacing, radii, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
@@ -90,7 +92,7 @@ export const RecipeCommentsSection = ({
           onPress={onLoadMoreComments}
           style={({ pressed }) => [
             styles.loadMoreBtn,
-            { borderColor: colors.border, opacity: pressed ? 0.7 : 1 },
+            { borderColor: colors.border, opacity: pressed ? opacities.pressedStrong : opacities.full },
           ]}
         >
           <ThemedText variant="caption" muted>
@@ -100,7 +102,7 @@ export const RecipeCommentsSection = ({
       ) : null}
 
       <View style={styles.commentInputRow}>
-        <TextInput
+        <AutoGrowTextInput
           value={commentInput}
           onChangeText={onChangeCommentInput}
           placeholder={t().comments.placeholder}
@@ -109,8 +111,8 @@ export const RecipeCommentsSection = ({
             styles.commentInput,
             { backgroundColor: colors.surface, color: colors.text, borderColor: colors.border },
           ]}
-          multiline
-          maxLength={2000}
+          minHeight={controlSizes.searchBar}
+          maxLength={COMMENT_MAX_LENGTH}
           onFocus={onFocusCommentInput}
         />
         <Pressable
@@ -124,12 +126,12 @@ export const RecipeCommentsSection = ({
               backgroundColor: colors.primary,
               opacity:
                 pressed || commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero
-                  ? 0.6
-                  : 1,
+                  ? opacities.disabledFaint
+                  : opacities.full,
             },
           ]}
         >
-          <Ionicons name="send" size={16} color={colors.onOverlay} />
+          <Ionicons name="send" size={iconSizes.md} color={colors.onOverlay} />
         </Pressable>
       </View>
 
@@ -158,7 +160,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   commentInputRow: {
     flexDirection: 'row',
@@ -167,16 +169,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   commentInput: {
-    flex: 1,
+    flex: ValueConstants.one,
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    minHeight: sizes.searchBarHeight,
   },
   commentSendBtn: {
-    width: sizes.searchBarHeight,
-    height: sizes.searchBarHeight,
+    width: controlSizes.searchBar,
+    height: controlSizes.searchBar,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',

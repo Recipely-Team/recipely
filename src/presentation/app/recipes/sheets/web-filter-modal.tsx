@@ -2,15 +2,15 @@ import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { WebFilterChip } from '@presentation/app/recipes/items/web-filter-chip';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { WebFilterChip } from '@presentation/app/recipes/items/filters/web-filter-chip';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
-import { difficultyLabel } from '@presentation/app/recipes/shared/model/difficulty-label';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/ui-filter-defaults';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { fontSizes, radii, shadows, sizes, spacing } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths, opacities, shadows } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -77,7 +77,7 @@ export const WebFilterModal = ({
               accessibilityLabel={t().recipes.closeFilter}
               style={[styles.closeBtn, { backgroundColor: colors.surface }]}
             >
-              <Ionicons name="close" size={sizes.iconMd} color={colors.text} />
+              <Ionicons name="close" size={iconSizes.xl} color={colors.text} />
             </Pressable>
             <ThemedText variant="subtitle" style={styles.title}>
               {t().recipes.filter}
@@ -180,14 +180,14 @@ export const WebFilterModal = ({
 
 const styles = StyleSheet.create({
   overlay: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     padding: spacing.xl,
   },
   card: {
     width: '100%',
-    maxWidth: sizes.webModalMaxWidth,
+    maxWidth: layoutSizes.webModalMaxWidth,
     maxHeight: '86%',
     borderRadius: radii.xxl,
     overflow: 'hidden',
@@ -198,23 +198,23 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.lg2,
     paddingVertical: spacing.lg,
-    borderBottomWidth: 1,
+    borderBottomWidth: borderWidths.hairline,
   },
   closeBtn: {
-    width: sizes.webModalCloseBtn,
-    height: sizes.webModalCloseBtn,
+    width: controlSizes.webModalClose,
+    height: controlSizes.webModalClose,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    fontWeight: '800',
+    fontWeight: fontWeights.heavy,
   },
   clearDisabled: {
-    opacity: 0.5,
+    opacity: opacities.disabled,
   },
   clearLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   body: {
     padding: spacing.xl,
@@ -224,9 +224,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   sectionTitle: {
-    fontSize: fontSizes.sectionLabel,
-    fontWeight: '700',
-    letterSpacing: 0.6,
+    fontSize: fontSizes.micro,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
     textTransform: 'uppercase',
   },
   chipsWrap: {
@@ -240,6 +240,6 @@ const styles = StyleSheet.create({
   },
   footer: {
     padding: spacing.lg,
-    borderTopWidth: 1,
+    borderTopWidth: borderWidths.hairline,
   },
 });

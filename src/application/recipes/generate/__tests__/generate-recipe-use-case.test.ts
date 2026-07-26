@@ -2,13 +2,13 @@ import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repo
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ErrorMessageKey, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { Recipe } from '@domain/recipes/recipe';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'Stub Recipe',
     cuisine: CuisineKey.Italian,

@@ -1,11 +1,12 @@
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
@@ -48,12 +49,12 @@ export const PromptPhase = ({
       <View style={[styles.header, { paddingTop: insets.top + spacing.sm }]}>
         <Pressable
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={[styles.iconBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.cancel}
         >
-          <Ionicons name="close" size={sizes.iconXxs} color={colors.text} />
+          <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().createRecipe.promptTitle}
@@ -68,12 +69,12 @@ export const PromptPhase = ({
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={[styles.hero, shadows.md]}
         >
-          <Ionicons name="sparkles" size={140} color={colors.onOverlay} style={styles.heroBgIcon} />
+          <Ionicons name="sparkles" size={iconSizes.illustration} color={colors.onOverlay} style={styles.heroBgIcon} />
           <View style={[styles.heroBadge, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
-            <Ionicons name="restaurant" size={sizes.iconLg} color={colors.onOverlay} />
+            <Ionicons name="restaurant" size={iconSizes.xxl} color={colors.onOverlay} />
           </View>
           <ThemedText variant="title" style={[styles.heroTitle, { color: colors.onOverlay }]}>
             {t().createRecipe.promptHeadline}
@@ -97,13 +98,12 @@ export const PromptPhase = ({
             shadows.sm,
           ]}
         >
-          <TextInput
+          <AutoGrowTextInput
             value={prompt}
             onChangeText={onChangePrompt}
             placeholder={t().createRecipe.promptPlaceholder}
             placeholderTextColor={colors.textMuted}
-            multiline
-            numberOfLines={4}
+            minHeight={controlSizes.promptInput}
             style={[styles.promptInput, { color: colors.text }]}
           />
           {generateError !== null ? <FieldErrorText message={generateError} /> : null}
@@ -127,17 +127,17 @@ export const PromptPhase = ({
         <Pressable
           onPress={onGenerate}
           disabled={!canGenerate}
-          style={[styles.cta, shadows.md, { opacity: canGenerate ? 1 : 0.5 }]}
+          style={[styles.cta, shadows.md, { opacity: canGenerate ? opacities.full : opacities.disabled }]}
           accessibilityRole="button"
           accessibilityLabel={t().createRecipe.generate}
         >
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-            end={{ x: 1, y: 1 }}
+            end={{ x: ValueConstants.one, y: ValueConstants.one }}
             style={styles.ctaInner}
           >
-            <Ionicons name="sparkles" size={sizes.iconSm} color={colors.primaryText} />
+            <Ionicons name="sparkles" size={iconSizes.md} color={colors.primaryText} />
             <ThemedText variant="body" style={[styles.ctaLabel, { color: colors.primaryText }]}>
               {t().createRecipe.generate}
             </ThemedText>
@@ -168,7 +168,7 @@ export const PromptPhase = ({
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -177,10 +177,10 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   iconBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   headerSpacer: {
-    width: sizes.iconBtn,
+    width: controlSizes.iconBtn,
   },
   scroll: {
     paddingHorizontal: spacing.lg,
@@ -203,33 +203,32 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: -spacing.lg,
     top: -spacing.lg,
-    opacity: 0.18,
+    opacity: opacities.scrim,
   },
   heroBadge: {
-    width: sizes.avatarSm,
-    height: sizes.avatarSm,
+    width: avatarSizes.md,
+    height: avatarSizes.md,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
   heroTitle: {
-    fontWeight: '800',
+    fontWeight: fontWeights.heavy,
   },
   heroSub: {
     marginTop: spacing.xs,
-    lineHeight: 21,
+    lineHeight: lineHeightFor(fontSizes.body),
   },
   promptCard: {
     borderRadius: radii.xl,
-    borderWidth: 1.5,
+    borderWidth: borderWidths.thin,
     padding: spacing.md,
   },
   promptInput: {
-    minHeight: sizes.promptInputMin,
     fontSize: fontSizes.body,
-    lineHeight: 22,
+    lineHeight: lineHeightFor(fontSizes.body),
     textAlignVertical: 'top',
   },
   chipRow: {
@@ -239,31 +238,31 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   chip: {
-    height: sizes.chipHeight,
+    minHeight: controlSizes.chip,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
   chipLabel: {
     fontSize: fontSizes.small,
-    fontWeight: '500',
+    fontWeight: fontWeights.medium,
   },
   cta: {
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     overflow: 'hidden',
   },
   ctaInner: {
-    flex: 1,
+    flex: ValueConstants.one,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
   },
   ctaLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.heading,
   },
   dividerRow: {
@@ -272,18 +271,18 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   dividerLine: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: StyleSheet.hairlineWidth,
   },
   blankBtn: {
-    height: sizes.buttonSmHeight,
+    minHeight: controlSizes.buttonSm,
     borderRadius: radii.lg,
-    borderWidth: 1.5,
+    borderWidth: borderWidths.thin,
     alignItems: 'center',
     justifyContent: 'center',
   },
   blankLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.medium,
   },
 });

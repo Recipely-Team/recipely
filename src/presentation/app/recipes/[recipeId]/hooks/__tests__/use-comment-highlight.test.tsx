@@ -21,13 +21,13 @@
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import type { ScrollView } from 'react-native';
-import { Comment } from '@domain/comments/comment';
+import { CommentEntity } from '@domain/comments/comment-entity';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { spacing } from '@presentation/base/theme';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comment-node';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 
 const RECIPE_ID = 'r-1';
 
@@ -50,8 +50,8 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
   })),
 }));
 
-const makeComment = (id: string): Comment => {
-  const result = Comment.create({
+const makeComment = (id: string): CommentEntity => {
+  const result = CommentEntity.create({
     id,
     body: 'Looks great',
     authorId: 'u-1',
@@ -78,7 +78,7 @@ const makeState = (overrides: Partial<RecipeCommentsState> = {}): RecipeComments
 });
 
 /** A page of `count` comments whose ids never match the deep-linked target. */
-const decoyItems = (count: number): Comment[] =>
+const decoyItems = (count: number): CommentEntity[] =>
   Array.from({ length: count }, (_, i) => makeComment(`c-decoy-${String(i)}`));
 
 /** Stands in for the ScrollView's inner content node; only identity matters. */

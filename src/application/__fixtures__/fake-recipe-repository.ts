@@ -6,9 +6,9 @@ import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-inp
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
@@ -33,25 +33,25 @@ export class FakeRecipeRepository implements IRecipeRepository {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipeSummary[], Failure>> {
+  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  listTrendingRecipes(_limit?: number): Promise<Result<RecipeSummary[], Failure>> {
+  listTrendingRecipes(_limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
     return Promise.resolve(
       this.config.listTrendingRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  listMyRecipes(): Promise<Result<RecipeSummary[], Failure>> {
+  listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
     return Promise.resolve(
       this.config.listMyRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  getRecipe(_id: string): Promise<Result<Recipe, Failure>> {
+  getRecipe(_id: string): Promise<Result<RecipeEntity, Failure>> {
     return Promise.resolve(
       this.config.getRecipeResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -60,25 +60,25 @@ export class FakeRecipeRepository implements IRecipeRepository {
   createRecipe(
     _input: CreateRecipeInput,
     _onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RecipeEntity, Failure>> {
     return Promise.resolve(
       this.config.createRecipeResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  generateRecipe(prompt: string): Promise<Result<Recipe, Failure>> {
+  generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     this.lastGenerateCall = { prompt };
     this.generateCallCount += 1;
     return Promise.resolve(
-      this.config.generateRecipeResult ?? ok(undefined as unknown as Recipe),
+      this.config.generateRecipeResult ?? ok(undefined as unknown as RecipeEntity),
     );
   }
 
-  importInstagramRecipe(url: string): Promise<Result<Recipe, Failure>> {
+  importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
     this.lastImportInstagramCall = { url };
     this.importInstagramCallCount += 1;
     return Promise.resolve(
-      this.config.importInstagramRecipeResult ?? ok(undefined as unknown as Recipe),
+      this.config.importInstagramRecipeResult ?? ok(undefined as unknown as RecipeEntity),
     );
   }
 
@@ -97,7 +97,7 @@ export class FakeRecipeRepository implements IRecipeRepository {
     _id: string,
     _input: UpdateRecipeInput,
     _onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<Recipe, Failure>> {
+  ): Promise<Result<RecipeEntity, Failure>> {
     return Promise.resolve(
       this.config.updateRecipeResult ?? fail(new UnknownFailure('not configured')),
     );

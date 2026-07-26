@@ -1,13 +1,9 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
 import { GoogleLogo } from '@presentation/app/login/items/google-logo';
 import { AppleLogo } from '@presentation/app/login/items/apple-logo';
-import { radii, sizes, fontSizes, spacing } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 
-const GOOGLE_BACKGROUND = '#FFFFFF';
-const GOOGLE_LABEL = '#1F2937';
-const APPLE_BACKGROUND = '#000000';
-const APPLE_LABEL = '#FFFFFF';
-const LOGO_SIZE = 18;
+const LOGO_SIZE = iconSizes.lg;
 
 export interface SocialSignInButtonProps {
   provider: 'google' | 'apple';
@@ -41,15 +37,17 @@ export const SocialSignInButton = ({
       style={[
         styles.button,
         isGoogle
-          ? { backgroundColor: GOOGLE_BACKGROUND, borderColor, borderWidth: 1.5 }
-          : { backgroundColor: APPLE_BACKGROUND },
+          ? { backgroundColor: BrandColors.white, borderColor, borderWidth: borderWidths.thin }
+          : { backgroundColor: BrandColors.black },
         disabled ? styles.disabled : null,
       ]}
     >
-      {isGoogle ? <GoogleLogo size={LOGO_SIZE} /> : <AppleLogo size={LOGO_SIZE} color={APPLE_LABEL} />}
+      {isGoogle ? <GoogleLogo size={LOGO_SIZE} /> : <AppleLogo size={LOGO_SIZE} color={BrandColors.white} />}
       {/* Bare Text on purpose: brand surfaces are fixed white/black regardless of theme,
           so the label color must not follow ThemedText's theme-derived color. */}
-      <Text style={[styles.label, { color: isGoogle ? GOOGLE_LABEL : APPLE_LABEL }]}>{label}</Text>
+      <Text style={[styles.label, { color: isGoogle ? BrandColors.googleLabel : BrandColors.white }]}>
+        {label}
+      </Text>
     </Pressable>
   );
 };
@@ -59,16 +57,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    height: sizes.inputHeight,
+    minHeight: controlSizes.input,
     borderRadius: radii.lg,
     gap: spacing.sm,
     marginTop: spacing.md,
   },
   label: {
     fontSize: fontSizes.medium,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   disabled: {
-    opacity: 0.5,
+    opacity: opacities.disabled,
   },
 });

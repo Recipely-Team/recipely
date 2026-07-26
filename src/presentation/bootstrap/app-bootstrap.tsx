@@ -1,11 +1,12 @@
 import '@presentation/bootstrap/crypto-polyfill';
 import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
+import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
@@ -61,6 +62,9 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');
     });
+    // Resolves the persisted "don't show onboarding again" choice so the launch
+    // redirect can decide whether native guests land on the onboarding gate.
+    void onboardingStore.getState().hydrate();
   }, []);
 
   // Register the device's push token once the user is authenticated (Android

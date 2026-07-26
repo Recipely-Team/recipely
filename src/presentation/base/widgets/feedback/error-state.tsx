@@ -2,9 +2,10 @@ import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
-import { useSeveritySurfaces } from '@presentation/base/theme/use-severity-surfaces';
-import type { Severity } from '@presentation/base/theme/severity';
-import { spacing } from '@presentation/base/theme';
+import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { spacing, fontWeights, opacities } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const DISC_SIZE = 104;
 const DISC_ICON_SIZE = 46;
@@ -12,7 +13,7 @@ const ACTION_MAX_WIDTH = 240;
 const BODY_MAX_WIDTH = 260;
 
 export interface ErrorStateProps {
-  severity?: Severity;
+  severity?: SeverityType;
   icon: keyof typeof Ionicons.glyphMap;
   title: string;
   body?: string;
@@ -84,7 +85,7 @@ export const ErrorState = ({
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
@@ -113,11 +114,11 @@ const styles = StyleSheet.create({
   },
   secondary: {
     marginTop: spacing.md,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   code: {
     marginTop: spacing.md,
     fontFamily: 'monospace',
-    opacity: 0.7,
+    opacity: opacities.pressedStrong,
   },
 });

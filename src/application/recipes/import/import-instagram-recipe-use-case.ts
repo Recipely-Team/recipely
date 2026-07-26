@@ -1,7 +1,7 @@
 import { fail } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 
 import type { ImportInstagramRecipeInput } from '@application/recipes/import/import-instagram-recipe-input';
@@ -25,7 +25,7 @@ const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
 export class ImportInstagramRecipeUseCase {
   constructor(private readonly repo: IRecipeRepository) {}
 
-  execute(input: ImportInstagramRecipeInput): Promise<Result<Recipe, Failure>> {
+  execute(input: ImportInstagramRecipeInput): Promise<Result<RecipeEntity, Failure>> {
     const trimmed = input.url.trim();
     if (trimmed.length === ValueConstants.zero) {
       return Promise.resolve(

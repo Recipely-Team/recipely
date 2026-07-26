@@ -1,8 +1,8 @@
 import type { ReactNode } from 'react';
 import type { Stores } from '@presentation/bootstrap/stores';
-import { useTimerNotificationSync } from '@presentation/base/hooks/use-timer-notification-sync';
-import { useUnreadNotificationsSync } from '@presentation/base/hooks/use-unread-notifications-sync';
-import { useTaxonomySync } from '@presentation/base/hooks/use-taxonomy-sync';
+import { useTimerNotificationSync } from '@presentation/base/hooks/timers/use-timer-notification-sync';
+import { useUnreadNotificationsSync } from '@presentation/base/hooks/sync/use-unread-notifications-sync';
+import { useTaxonomySync } from '@presentation/base/hooks/sync/use-taxonomy-sync';
 
 export interface AppSyncsProps {
   stores: Stores;

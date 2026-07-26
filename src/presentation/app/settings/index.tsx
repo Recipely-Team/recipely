@@ -10,16 +10,17 @@ import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { RoutePaths } from '@presentation/base/constants';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -37,7 +38,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
   const handleSignOut = async () => {
     await signOut();
-    router.replace('/login');
+    router.replace(RoutePaths.login);
   };
 
   const handleDeleteAccount = async (): Promise<void> => {
@@ -47,7 +48,7 @@ export const SettingsScreen = (): React.JSX.Element => {
     setDeleting(false);
     if (failure === null) {
       setDeleteVisible(false);
-      router.replace('/login');
+      router.replace(RoutePaths.login);
       return;
     }
     // WHY: the session stays intact on failure, so keep the sheet open and show
@@ -72,7 +73,7 @@ export const SettingsScreen = (): React.JSX.Element => {
           accessibilityRole="button"
           accessibilityLabel={t().navigation.settings}
         >
-          <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.text} />
+          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.text} />
         </Pressable>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
           {t().settings.title}
@@ -178,7 +179,7 @@ export const SettingsScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   header: {
     flexDirection: 'row',
@@ -188,20 +189,20 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    flex: 1,
+    flex: ValueConstants.one,
     textAlign: 'center',
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.heading,
   },
   headerSpacer: {
-    width: sizes.iconBtn,
+    width: controlSizes.iconBtn,
   },
   profileSection: {
     alignItems: 'center',
@@ -227,11 +228,11 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   stackedLabel: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   rowSeparator: {
     height: StyleSheet.hairlineWidth,
-    marginLeft: sizes.searchBarHeight + spacing.sm2,
+    marginLeft: controlSizes.searchBar + spacing.sm2,
   },
   bottomSpacer: {
     height: spacing.xxl,

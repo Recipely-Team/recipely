@@ -2,12 +2,12 @@ import { StyleSheet, View } from 'react-native';
 import { SpecRow } from '@presentation/app/create-recipe/items/spec-row';
 import { Stepper } from '@presentation/app/create-recipe/body/stepper';
 import { DifficultyToggle } from '@presentation/app/create-recipe/items/difficulty-toggle';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { radii, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { Difficulty } from '@domain/recipes/difficulty';
-import type { EditableRecipe } from '@presentation/app/create-recipe/model/editable-recipe';
-import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/create-recipe-field-errors';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
 
 const SERVINGS_MIN = 1;
@@ -86,7 +86,7 @@ export const RecipeSpecCard = ({
 const styles = StyleSheet.create({
   specCard: {
     borderRadius: radii.lg,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     overflow: 'hidden',
   },
 });

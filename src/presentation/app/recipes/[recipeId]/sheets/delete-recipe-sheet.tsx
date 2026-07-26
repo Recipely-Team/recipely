@@ -1,9 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, controlSizes, opacities } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface DeleteRecipeSheetProps {
   visible: boolean;
@@ -46,7 +47,7 @@ export const DeleteRecipeSheet = ({
           onPress={onClose}
           style={({ pressed }) => [
             styles.deleteSheetBtn,
-            { backgroundColor: colors.surface, opacity: pressed ? 0.75 : 1 },
+            { backgroundColor: colors.surface, opacity: pressed ? opacities.pressed : opacities.full },
           ]}
         >
           <ThemedText variant="body" style={styles.semiBold}>
@@ -59,7 +60,7 @@ export const DeleteRecipeSheet = ({
           style={({ pressed }) => [
             styles.deleteSheetBtn,
             styles.deleteSheetBtnDanger,
-            { opacity: pressed || isDeleting ? 0.7 : 1, backgroundColor: colors.dangerLight },
+            { opacity: pressed || isDeleting ? opacities.pressedStrong : opacities.full, backgroundColor: colors.dangerLight },
           ]}
         >
           <ThemedText variant="body" style={[styles.deleteSheetBtnDangerLabel, styles.semiBold, { color: colors.danger }]}>
@@ -74,7 +75,7 @@ export const DeleteRecipeSheet = ({
 const styles = StyleSheet.create({
   deleteSheetBody: {
     marginBottom: spacing.md,
-    lineHeight: 22,
+    lineHeight: lineHeightFor(fontSizes.body),
   },
   deleteSheetError: {
     marginBottom: spacing.md,
@@ -85,8 +86,8 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   deleteSheetBtn: {
-    flex: 1,
-    height: sizes.buttonSmHeight,
+    flex: ValueConstants.one,
+    minHeight: controlSizes.buttonSm,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
@@ -94,6 +95,6 @@ const styles = StyleSheet.create({
   deleteSheetBtnDanger: {},
   deleteSheetBtnDangerLabel: {},
   semiBold: {
-    fontWeight: '600' as const,
+    fontWeight: fontWeights.semibold,
   },
 });

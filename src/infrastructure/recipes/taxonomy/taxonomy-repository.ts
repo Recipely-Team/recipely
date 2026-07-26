@@ -4,12 +4,9 @@ import type { Failure } from '@core/failure';
 import type { ITaxonomyRepository } from '@domain/recipes/taxonomy/i-taxonomy-repository';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import {
-  RECIPE_CATEGORIES_PATH,
-  RECIPE_CUISINES_PATH,
-} from '@infrastructure/constants/api';
-import type { CategoriesResponseDto } from '@infrastructure/recipes/taxonomy/categories-response-dto';
-import type { CuisinesResponseDto } from '@infrastructure/recipes/taxonomy/cuisines-response-dto';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import type { CategoriesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/categories-response-dto';
+import type { CuisinesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/cuisines-response-dto';
 import { toTaxonomyItems } from '@infrastructure/recipes/taxonomy/taxonomy-mapper';
 
 /**
@@ -23,7 +20,7 @@ export class TaxonomyRepository implements ITaxonomyRepository {
   async listCuisines(): Promise<Result<TaxonomyItem[], Failure>> {
     const result = await this.http.request<CuisinesResponseDto>({
       method: 'GET',
-      url: RECIPE_CUISINES_PATH,
+      url: ApiRoutes.recipes.cuisines,
     });
     if (!result.ok) {
       return result;
@@ -34,7 +31,7 @@ export class TaxonomyRepository implements ITaxonomyRepository {
   async listCategories(): Promise<Result<TaxonomyItem[], Failure>> {
     const result = await this.http.request<CategoriesResponseDto>({
       method: 'GET',
-      url: RECIPE_CATEGORIES_PATH,
+      url: ApiRoutes.recipes.categories,
     });
     if (!result.ok) {
       return result;

@@ -1,17 +1,17 @@
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import type { Recipe } from '@domain/recipes/recipe';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 /**
- * Converts a full-detail `Recipe` into a lean `RecipeSummary`, so an
+ * Converts a full-detail `Recipe` into a lean `RecipeSummaryEntity`, so an
  * owner-mutation flow (e.g. after `updateRecipe`) can patch a
- * `RecipeSummary[]` list cache in place without a network round-trip.
+ * `RecipeSummaryEntity[]` list cache in place without a network round-trip.
  * `totalTimeMinutes` is derived by summing `prepTimeMinutes` +
  * `cookTimeMinutes`, since detail flows only carry those two fields.
  */
-export const recipeToSummary = (recipe: Recipe): Result<RecipeSummary, ValidationFailure> => {
-  return RecipeSummary.create({
+export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntity, ValidationFailure> => {
+  return RecipeSummaryEntity.create({
     id: recipe.id,
     name: recipe.name,
     image: recipe.image,

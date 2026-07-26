@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface MyRecipesHeaderProps {
@@ -24,10 +24,10 @@ export const MyRecipesHeader = ({ onCreate }: MyRecipesHeaderProps): React.JSX.E
           style={({ pressed }) => [
             styles.createButton,
             shadows.sm,
-            { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+            { backgroundColor: colors.primary, opacity: pressed ? opacities.pressedSubtle : opacities.full },
           ]}
         >
-          <Ionicons name="add" size={16} color={colors.primaryText} />
+          <Ionicons name="add" size={iconSizes.md} color={colors.primaryText} />
           <ThemedText variant="caption" style={[styles.createLabel, { color: colors.primaryText }]}>
             {t().myRecipes.createNew}
           </ThemedText>
@@ -55,11 +55,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs2,
-    height: sizes.floatingBtn,
+    height: controlSizes.floatingBtn,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
   },
   createLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

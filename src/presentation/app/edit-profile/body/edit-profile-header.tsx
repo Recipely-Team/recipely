@@ -1,9 +1,10 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 export interface EditProfileHeaderProps {
   topInset: number;
@@ -36,7 +37,7 @@ export const EditProfileHeader = ({
         accessibilityRole="button"
         accessibilityLabel={t().errors.back}
       >
-        <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.text} />
+        <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.text} />
       </Pressable>
       <ThemedText variant="subtitle" style={styles.headerTitle}>
         {t().editProfile.title}
@@ -70,29 +71,29 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   backBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerTitle: {
-    flex: 1,
-    fontWeight: '700',
+    flex: ValueConstants.one,
+    fontWeight: fontWeights.bold,
   },
   saveBtn: {
-    minWidth: 72,
-    height: sizes.iconBtn,
+    minWidth: controlSizes.saveBtnMinWidth,
+    height: controlSizes.iconBtn,
     paddingHorizontal: spacing.lg,
-    borderRadius: sizes.iconBtn / 2,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
   saveBtnDisabled: {
-    opacity: 0.5,
+    opacity: opacities.disabled,
   },
   saveBtnLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.body,
   },
 });

@@ -1,10 +1,10 @@
-import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
-import { Recipe } from '@domain/recipes/recipe';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { ValidationFailure } from '@core/failure';
+import type { Mapper } from '@core/mapper/mapper';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
-import type { RecipeDto } from '@infrastructure/recipes/recipe-dto';
-import type { RecipeListItemDto } from '@infrastructure/recipes/recipe-list-item-dto';
+import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -15,7 +15,7 @@ import { ValueConstants } from '@core/constants';
  * that into a `[{ url: '' }]` item would defeat the create flow's add-photo
  * guard, so an empty cover maps to an empty gallery instead.
  */
-export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
+export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto) => {
   const media: MediaItem[] =
     dto.media && dto.media.length > ValueConstants.zero
       ? dto.media.map((m) => ({ type: m.type, url: m.url }))
@@ -23,7 +23,7 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
         ? [{ type: 'image', url: dto.image }]
         : [];
 
-  return Recipe.create({
+  return RecipeEntity.create({
     id: dto.id,
     name: dto.name,
     cuisine: dto.cuisine,
@@ -52,12 +52,12 @@ export const toRecipe = (dto: RecipeDto): Result<Recipe, ValidationFailure> => {
 
 /**
  * Maps a lean `RecipeListItemDto` (list/my-recipes/trending endpoints) into a
- * domain `RecipeSummary` entity.
+ * domain `RecipeSummaryEntity` entity.
  */
-export const toRecipeSummary = (
-  dto: RecipeListItemDto,
-): Result<RecipeSummary, ValidationFailure> => {
-  return RecipeSummary.create({
+export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, ValidationFailure> = (
+  dto,
+) => {
+  return RecipeSummaryEntity.create({
     id: dto.id,
     name: dto.name,
     image: dto.image,

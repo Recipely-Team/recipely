@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 
 /**
@@ -10,7 +10,7 @@ import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 export class SignInWithAppleUseCase {
   constructor(private readonly repo: IAuthRepository) {}
 
-  execute(): Promise<Result<AuthSession, Failure>> {
+  execute(): Promise<Result<AuthSessionEntity, Failure>> {
     return this.repo.signInWithApple();
   }
 }

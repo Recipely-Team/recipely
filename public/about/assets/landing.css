@@ -366,6 +366,7 @@ section.band { padding: 96px 0; position: relative; }
 }
 @media (max-width: 980px) {
   .nav-center { display: none; }
+  .nav-right { margin-left: auto; }
   .hero-grid { grid-template-columns: 1fr; gap: 52px; }
   .hero h1 { font-size: 48px; }
   .hero-copy { text-align: center; }
@@ -373,10 +374,13 @@ section.band { padding: 96px 0; position: relative; }
   .hero-copy .sub { margin-left: auto; margin-right: auto; }
   .ai-grid, .cook-grid { grid-template-columns: 1fr; gap: 40px; }
   .ai-grid .ai-copy { order: 1; } .ai-grid .ai-chat { order: 2; }
+  .cook-grid .cook-copy { order: 1; } .cook-grid .cook-panel { order: 2; }
+  .ai-copy h2, .cook-copy h2 { font-size: 34px !important; }
   .creators { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 760px) {
   .cards { grid-template-columns: repeat(2, 1fr); }
+  .marquee-inner { justify-content: center; text-align: center; }
 }
 @media (max-width: 640px) {
   .wrap { padding: 0 18px; }
@@ -389,7 +393,11 @@ section.band { padding: 96px 0; position: relative; }
   .fab-nutri { left: -6px; } .fab-timer { right: -6px; }
   section.band { padding: 64px 0; }
   .sec-head h2 { font-size: 30px; }
+  .ai-copy h2, .cook-copy h2 { font-size: 28px !important; letter-spacing: -0.6px !important; }
+  .ai-copy p, .cook-copy p { font-size: 16px !important; }
   .download h2 { font-size: 30px; }
+  .stat-row { gap: 24px; }
+  .stat .num { font-size: 24px; }
   .bento { grid-template-columns: 1fr; grid-auto-rows: auto; gap: 16px; }
   .cell, .c-ai, .c-lang, .c-disc, .c-time, .c-coll, .c-nutri { grid-column: auto; grid-row: auto; min-height: 180px; }
   .cards { grid-template-columns: 1fr; }

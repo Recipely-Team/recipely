@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebHeaderSearchProps {
@@ -61,23 +61,23 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     maxWidth: SEARCH_MAX_WIDTH,
-    height: sizes.searchBarHeight - 4,
+    height: controlSizes.searchBarSlim,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
   },
   input: {
-    flex: 1,
+    flex: ValueConstants.one,
     height: '100%',
     fontSize: fontSizes.medium,
     outlineStyle: 'none',
   } as object,
   clearBtn: {
-    width: 24,
-    height: 24,
+    width: iconSizes.xxl,
+    height: iconSizes.xxl,
     alignItems: 'center',
     justifyContent: 'center',
   },

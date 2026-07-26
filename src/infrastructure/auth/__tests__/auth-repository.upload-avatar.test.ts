@@ -1,8 +1,8 @@
 import { NetworkFailure, UnauthorizedFailure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
@@ -20,17 +20,17 @@ const userDto: RecipelyUserDto = {
 
 // The session already in storage before the upload — its token/expiry/id must be
 // reused, since the avatar endpoint returns only the user (no fresh token).
-const buildCurrentSession = (): AuthSession => {
+const buildCurrentSession = (): AuthSessionEntity => {
   const email = Email.create('old@example.com');
   if (!email.ok) throw new Error();
-  const user = User.create({
+  const user = UserEntity.create({
     id: 'session-user',
     email: email.value,
     displayName: 'Old Name',
     photoUrl: 'https://cdn.recipely.net/avatars/old.png',
   });
   if (!user.ok) throw new Error();
-  const session = AuthSession.create({
+  const session = AuthSessionEntity.create({
     id: 'session-id-123',
     accessToken: 'reused-token',
     expiresAt: new Date('2030-01-01T00:00:00.000Z'),
@@ -59,12 +59,12 @@ const makeHttp = (
 };
 
 const makeStorage = (
-  loadResult: Result<AuthSession | null, unknown>,
-): { storage: SecureTokenStorage; saved: AuthSession[] } => {
-  const saved: AuthSession[] = [];
+  loadResult: Result<AuthSessionEntity | null, unknown>,
+): { storage: SecureTokenStorage; saved: AuthSessionEntity[] } => {
+  const saved: AuthSessionEntity[] = [];
   const stub = {
     loadSession: jest.fn(() => Promise.resolve(loadResult)),
-    saveSession: jest.fn((session: AuthSession) => {
+    saveSession: jest.fn((session: AuthSessionEntity) => {
       saved.push(session);
       return Promise.resolve(ok(undefined));
     }),

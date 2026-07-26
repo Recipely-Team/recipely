@@ -2,9 +2,9 @@ import { StyleSheet, View, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, fontSizes, sizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, borderWidths, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -24,7 +24,7 @@ export const RecipesAppHeader = ({
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.titles}>
-        <RecipelyLogo size={sizes.iconMd} />
+        <RecipelyLogo size={iconSizes.xl} />
         <ThemedText variant="title" style={styles.screenTitle}>
           {t().recipes.title}
         </ThemedText>
@@ -41,7 +41,7 @@ export const RecipesAppHeader = ({
       >
         <Ionicons
           name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
-          size={sizes.iconMd}
+          size={iconSizes.xl}
           color={colors.text}
         />
         {unreadCount > ValueConstants.zero ? (
@@ -63,16 +63,16 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
   },
   titles: {
-    flex: 1,
+    flex: ValueConstants.one,
     gap: spacing.xxs,
   },
   screenTitle: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
   },
   bell: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
-    borderRadius: sizes.iconBtn / 2,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -80,19 +80,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: ValueConstants.zero,
     right: ValueConstants.zero,
-    minWidth: sizes.notifBadge,
-    height: sizes.notifBadge,
+    minWidth: decorSizes.notifBadge,
+    height: decorSizes.notifBadge,
     paddingHorizontal: spacing.xs,
-    borderRadius: sizes.notifBadge / 2,
-    borderWidth: 2,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
   badgeText: {
-    color: '#FFFFFF',
+    color: BrandColors.white,
     fontSize: fontSizes.nano,
-    fontWeight: '700',
-    lineHeight: sizes.notifBadgeLineHeight,
+    fontWeight: fontWeights.bold,
+    lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },
 });

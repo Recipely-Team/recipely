@@ -1,5 +1,5 @@
 import type { Failure } from '@core/failure';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 export type RecipeListState =
   | { status: 'idle' }
@@ -12,7 +12,7 @@ export type RecipeListState =
   // vs. loaded just to render the list.
   | {
       status: 'loaded';
-      recipes: RecipeSummary[];
+      recipes: RecipeSummaryEntity[];
       isRefreshing?: boolean;
       refreshFailure?: Failure;
     }

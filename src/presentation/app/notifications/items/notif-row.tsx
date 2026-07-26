@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
@@ -27,7 +27,7 @@ interface NotifRowProps {
   onTap: (item: NotifItem) => void;
 }
 
-const PRESSED_OPACITY = 0.8;
+const PRESSED_OPACITY = opacities.pressedLight;
 
 /**
  * One notification row. Tapping marks the notification read and, when it has a
@@ -49,9 +49,9 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
         styles.row,
         {
           backgroundColor: item.read ? colors.cardBackground : colors.chipBackground,
-          borderLeftWidth: item.read ? ValueConstants.zero : 3,
+          borderLeftWidth: item.read ? ValueConstants.zero : borderWidths.thick,
           borderLeftColor: colors.primary,
-          opacity: pressed && tappable ? PRESSED_OPACITY : 1,
+          opacity: pressed && tappable ? PRESSED_OPACITY : opacities.full,
         },
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
@@ -63,11 +63,11 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       }
     >
       <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
-        <Ionicons name={meta.icon} size={20} color={meta.color} />
+        <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
       </View>
       <View style={styles.rowBody}>
         <ThemedText variant="body" style={styles.actionLine} numberOfLines={2}>
-          <ThemedText variant="body" style={{ fontWeight: '700' }}>{item.actor}</ThemedText>
+          <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
           {' '}{actionText(item)}
         </ThemedText>
         {item.body !== undefined ? (
@@ -97,21 +97,21 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   iconCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: avatarSizes.md,
+    height: avatarSizes.md,
+    borderRadius: avatarSizes.md / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
     flexShrink: ValueConstants.zero,
   },
-  rowBody: { flex: 1, gap: spacing.xxs },
-  actionLine: { fontSize: fontSizes.body, lineHeight: 20 },
-  bodyText: { lineHeight: 18 },
+  rowBody: { flex: ValueConstants.one, gap: spacing.xxs },
+  actionLine: { fontSize: fontSizes.body, lineHeight: lineHeightFor(fontSizes.body, lineHeights.snug) },
+  bodyText: { lineHeight: lineHeightFor(fontSizes.caption) },
   timestamp: { fontSize: fontSizes.small },
   unreadDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    width: spacing.sm,
+    height: spacing.sm,
+    borderRadius: radii.xs,
     marginTop: spacing.sm,
     flexShrink: ValueConstants.zero,
   },

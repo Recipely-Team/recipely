@@ -1,6 +1,6 @@
 import { toUserProfile } from '@infrastructure/user-profile/user-profile-mapper';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
-import { UserProfile } from '@domain/user-profile/user-profile';
+import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 
 const fullDto: UserProfileDto = {
   id: 'u-1',
@@ -19,7 +19,7 @@ describe('toUserProfile', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value).toBeInstanceOf(UserProfile);
+      expect(r.value).toBeInstanceOf(UserProfileEntity);
       expect(r.value.displayName).toBe('Ada Lovelace');
       expect(r.value.bio).toBe('Home kitchen, small steps.');
       expect(r.value.photoUrl).toBe('https://cdn.recipely.io/avatars/ada.webp');

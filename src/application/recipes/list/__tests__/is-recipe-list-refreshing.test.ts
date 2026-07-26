@@ -1,13 +1,13 @@
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
 import { NetworkFailure } from '@core/failure';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeRecipe = (): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id: 'r1',
     name: 'Stub Recipe',
     image: 'https://cdn.example.com/r1.webp',
@@ -22,7 +22,7 @@ const makeRecipe = (): RecipeSummary => {
     commentCount: 0,
     viewCount: 0,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 

@@ -6,11 +6,13 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
+import type { Failure } from '@presentation/base/types';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -22,7 +24,7 @@ export const LoginForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const state = authStore((s) => s.state);
+  const isLoading = authStore((s) => s.state.status === 'loading');
   const signIn = authStore((s) => s.signIn);
   const signInWithGoogle = authStore((s) => s.signInWithGoogle);
   const signInWithApple = authStore((s) => s.signInWithApple);
@@ -30,26 +32,41 @@ export const LoginForm = (): React.JSX.Element => {
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  // Page-scoped error: it lives with this screen and dies when it unmounts, so
+  // a failed sign-in never bleeds onto register / other auth screens.
+  const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
   const passwordRef = useRef<TextInput>(null);
 
+  const runSocial = useCallback(
+    async (signInWith: () => Promise<Failure | null>) => {
+      setErrorMessage(undefined);
+      const failure = await signInWith();
+      if (failure) {
+        setErrorMessage(authFormMessage(failure, {}));
+      }
+    },
+    [],
+  );
+
   const fieldsEmpty = email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero;
 
-  const handleSignIn = useCallback(() => {
+  const handleSignIn = useCallback(async () => {
     if (email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero) {
       return;
     }
-    void signIn(email, password);
-  }, [signIn, email, password]);
-
-  const isLoading = state.status === 'loading';
-  const errorMessage =
-    state.status === 'error'
-      ? authFormMessage(state.failure, {
+    setErrorMessage(undefined);
+    const failure = await signIn(email, password);
+    if (failure) {
+      setErrorMessage(
+        authFormMessage(failure, {
           unauthorized: t().login.invalidCredentials,
           validation: t().login.invalidCredentials,
-        })
-      : undefined;
+        }),
+      );
+    }
+  }, [signIn, email, password]);
 
   return (
     <>
@@ -95,6 +112,7 @@ export const LoginForm = (): React.JSX.Element => {
           ref={passwordRef}
           style={[
             styles.input,
+            styles.passwordInput,
             {
               backgroundColor: colors.inputBackground,
               color: colors.text,
@@ -106,12 +124,26 @@ export const LoginForm = (): React.JSX.Element => {
           placeholderTextColor={colors.textMuted}
           value={password}
           onChangeText={setPassword}
-          secureTextEntry
+          secureTextEntry={!showPassword}
+          autoCapitalize="none"
           returnKeyType="done"
           onFocus={() => setFocusField('password')}
           onBlur={() => setFocusField(null)}
-          onSubmitEditing={handleSignIn}
+          onSubmitEditing={() => { void handleSignIn(); }}
         />
+        <Pressable
+          onPress={() => setShowPassword((visible) => !visible)}
+          hitSlop={8}
+          style={styles.eyeButton}
+          accessibilityRole="button"
+          accessibilityLabel={showPassword ? t().login.hidePassword : t().login.showPassword}
+        >
+          <MaterialCommunityIcons
+            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
+            size={18}
+            color={colors.textMuted}
+          />
+        </Pressable>
       </View>
 
       {errorMessage ? (
@@ -121,7 +153,7 @@ export const LoginForm = (): React.JSX.Element => {
       ) : null}
 
       <Pressable
-        onPress={() => router.push('/forgot-password')}
+        onPress={() => router.push(RoutePaths.forgotPassword)}
         style={styles.forgotRow}
         accessibilityRole="button"
         accessibilityLabel={t().login.forgotPassword}
@@ -132,7 +164,7 @@ export const LoginForm = (): React.JSX.Element => {
       </Pressable>
 
       <Pressable
-        onPress={handleSignIn}
+        onPress={() => { void handleSignIn(); }}
         disabled={fieldsEmpty || isLoading}
         style={[
           styles.signInButton,
@@ -151,10 +183,10 @@ export const LoginForm = (): React.JSX.Element => {
 
       <SocialAuthSection
         disabled={isLoading}
-        onGoogle={() => { void signInWithGoogle(); }}
-        onApple={() => { void signInWithApple(); }}
-        onSignUp={() => router.push('/register')}
-        onGuest={() => router.replace('/recipes')}
+        onGoogle={() => { void runSocial(signInWithGoogle); }}
+        onApple={() => { void runSocial(signInWithApple); }}
+        onSignUp={() => router.push(RoutePaths.register)}
+        onGuest={() => router.replace(RoutePaths.recipes)}
       />
     </>
   );
@@ -168,15 +200,26 @@ const styles = StyleSheet.create({
   inputIcon: {
     position: 'absolute',
     left: spacing.lg,
-    zIndex: 1,
+    zIndex: zIndices.raised,
   },
   input: {
-    height: sizes.inputHeight,
-    borderWidth: 1.5,
+    minHeight: controlSizes.input,
+    borderWidth: borderWidths.thin,
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     paddingRight: spacing.lg,
     fontSize: fontSizes.body,
+  },
+  passwordInput: {
+    paddingRight: controlSizes.iconBtn + spacing.sm,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: spacing.sm,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   error: {
     marginTop: spacing.md,
@@ -187,19 +230,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   forgotLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   signInButton: {
-    height: sizes.buttonHeight,
+    minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: spacing.lg,
   },
   buttonDisabled: {
-    opacity: 0.5,
+    opacity: opacities.disabled,
   },
   signInLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
 });

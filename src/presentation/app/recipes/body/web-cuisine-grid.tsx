@@ -1,11 +1,11 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy-options';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -32,7 +32,7 @@ export const WebCuisineGrid = ({ selectedCuisines, onToggle }: WebCuisineGridPro
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
   const { width } = useLayout();
-  const minWidth = width < TILE_SHRINK_WIDTH ? sizes.cuisineTileMinSm : sizes.cuisineTileMin;
+  const minWidth = width < TILE_SHRINK_WIDTH ? mediaSizes.cuisineTileMinSm : mediaSizes.cuisineTileMin;
 
   const tile = (key: string, name: string, emoji: string, active: boolean): React.JSX.Element => (
     <Pressable
@@ -88,13 +88,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.sm,
     borderRadius: radii.xl,
-    borderWidth: 1.5,
+    borderWidth: borderWidths.thin,
   },
   emoji: {
     fontSize: fontSizes.subheading,
   },
   label: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     fontSize: fontSizes.small,
   },
 });

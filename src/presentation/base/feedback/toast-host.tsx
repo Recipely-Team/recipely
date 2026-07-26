@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { spacing, sizes } from '@presentation/base/theme';
+import { spacing, controlSizes, zIndices } from '@presentation/base/theme';
 import { Toast } from '@presentation/base/feedback/toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { ValueConstants } from '@core/constants';
@@ -25,7 +25,7 @@ export const ToastHost = (): React.JSX.Element | null => {
       style={[
         StyleSheet.absoluteFill,
         styles.host,
-        { paddingBottom: insets.bottom + sizes.tabBarHeight + spacing.md },
+        { paddingBottom: insets.bottom + controlSizes.tabBar + spacing.md },
       ]}
     >
       <View pointerEvents="box-none" style={styles.stack}>
@@ -40,7 +40,7 @@ export const ToastHost = (): React.JSX.Element | null => {
 const styles = StyleSheet.create({
   host: {
     // Above ActiveTimersBar (100), below AlarmOverlay (201).
-    zIndex: 150,
+    zIndex: zIndices.toast,
     justifyContent: 'flex-end',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,

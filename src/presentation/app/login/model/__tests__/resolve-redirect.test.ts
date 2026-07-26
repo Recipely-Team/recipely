@@ -41,10 +41,10 @@ jest.mock('@presentation/base/errors/auth-form-message', () => ({ authFormMessag
 jest.mock('@presentation/base/responsive/layout-context', () => ({
   useLayout: jest.fn(() => ({ isWebShell: false, orientation: 'portrait' })),
 }));
-jest.mock('@presentation/base/theme/use-theme', () => ({
+jest.mock('@presentation/base/theme/context/use-theme', () => ({
   useTheme: jest.fn(() => ({ colors: {} })),
 }));
-jest.mock('@presentation/base/theme/shadows', () => ({ shadows: { lg: {} } }));
+jest.mock('@presentation/base/theme/tokens/effects/shadows', () => ({ shadows: { lg: {} } }));
 jest.mock('@presentation/base/theme', () => ({
   spacing: {},
   radii: {},

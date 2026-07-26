@@ -1,19 +1,19 @@
 import { StyleSheet, View } from 'react-native';
-import { MediaGallery } from '@presentation/app/recipes/[recipeId]/items/media-gallery';
+import { MediaGallery } from '@presentation/app/recipes/[recipeId]/items/media/media-gallery';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
-import { useTheme } from '@presentation/base/theme/use-theme';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
 export interface MobileRecipeDetailProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;

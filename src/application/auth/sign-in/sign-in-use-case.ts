@@ -1,16 +1,16 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 
 /**
  * Authenticates a user with email and password, returning a persisted
- * `AuthSession` on success.
+ * `AuthSessionEntity` on success.
  */
 export class SignInUseCase {
   constructor(private readonly repo: IAuthRepository) {}
 
-  execute(email: string, password: string): Promise<Result<AuthSession, Failure>> {
+  execute(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
     return this.repo.signIn(email, password);
   }
 }

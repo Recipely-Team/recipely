@@ -2,11 +2,8 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import {
-  RECIPE_CATEGORIES_PATH,
-  RECIPE_CUISINES_PATH,
-} from '@infrastructure/constants/api';
-import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/taxonomy-item-dto';
+import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
 
 const turkish: TaxonomyItemDto = { key: 'TURKISH', name: 'Turkish', emoji: '🇹🇷' };
@@ -56,7 +53,7 @@ describe('TaxonomyRepository.listCuisines', () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe(RECIPE_CUISINES_PATH);
+    expect(calls[0].url).toBe(ApiRoutes.recipes.cuisines);
   });
 
   it('drops malformed rows before returning (mapper is applied)', async () => {
@@ -106,7 +103,7 @@ describe('TaxonomyRepository.listCategories', () => {
 
     expect(calls).toHaveLength(1);
     expect(calls[0].method).toBe('GET');
-    expect(calls[0].url).toBe(RECIPE_CATEGORIES_PATH);
+    expect(calls[0].url).toBe(ApiRoutes.recipes.categories);
   });
 
   it('propagates the HttpClient failure unchanged', async () => {

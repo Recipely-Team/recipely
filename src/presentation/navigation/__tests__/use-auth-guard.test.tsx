@@ -14,7 +14,7 @@ import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 
 const mockReplace = jest.fn();
 let mockPathname = '/';
-let mockStatus: 'idle' | 'loading' | 'authenticated' | 'unauthenticated' | 'error' = 'idle';
+let mockStatus: 'idle' | 'loading' | 'authenticated' | 'unauthenticated' = 'idle';
 
 jest.mock('expo-router', () => ({
   usePathname: jest.fn(() => mockPathname),
@@ -95,15 +95,6 @@ describe('useAuthGuard', () => {
     renderGuard();
 
     expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Fsettings');
-  });
-
-  it('redirects a guest on an errored session for a gated route', () => {
-    mockPathname = '/profile';
-    mockStatus = 'error';
-
-    renderGuard();
-
-    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Fprofile');
   });
 
   it('does not redirect while the session is still hydrating (idle)', () => {

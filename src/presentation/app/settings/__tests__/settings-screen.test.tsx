@@ -22,8 +22,8 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { SettingsScreen } from '@presentation/app/settings';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
-import { AuthSession } from '@domain/auth/auth-session';
-import { User } from '@domain/auth/user';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
@@ -50,11 +50,11 @@ const unwrap = <T,>(result: { ok: boolean; value?: T }): T => {
   return result.value;
 };
 
-const buildSession = (): AuthSession => {
+const buildSession = (): AuthSessionEntity => {
   const email = unwrap(Email.create('cook@example.com'));
-  const user = unwrap(User.create({ id: 'user-1', email, displayName: 'Ada Lovelace' }));
+  const user = unwrap(UserEntity.create({ id: 'user-1', email, displayName: 'Ada Lovelace' }));
   return unwrap(
-    AuthSession.create({
+    AuthSessionEntity.create({
       id: 'session-1',
       accessToken: 'access-token',
       expiresAt: new Date(Date.now() + 3_600_000),

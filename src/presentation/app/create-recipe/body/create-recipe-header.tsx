@@ -2,9 +2,9 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { shadows } from '@presentation/base/theme/shadows';
-import { spacing, radii, fontSizes, sizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -49,12 +49,12 @@ export const CreateRecipeHeader = ({
     >
       <Pressable
         onPress={onClose}
-        hitSlop={8}
+        hitSlop={spacing.sm}
         style={styles.iconBtn}
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.cancel}
       >
-        <Ionicons name="close" size={sizes.iconXxs} color={colors.text} />
+        <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
       </Pressable>
       <View style={styles.headerCenter}>
         <ThemedText variant="subtitle" style={styles.headerTitle}>
@@ -72,14 +72,14 @@ export const CreateRecipeHeader = ({
       <Pressable
         onPress={onSave}
         disabled={isSaving}
-        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? 0.6 : 1 }]}
+        style={[styles.saveBtn, shadows.sm, { opacity: isSaving ? opacities.disabledFaint : opacities.full }]}
         accessibilityRole="button"
         accessibilityLabel={t().createRecipe.save}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-          end={{ x: 1, y: 1 }}
+          end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.saveInner}
         >
           <ThemedText variant="caption" style={[styles.saveLabel, { color: colors.primaryText }]}>
@@ -102,8 +102,8 @@ const styles = StyleSheet.create({
     borderBottomWidth: StyleSheet.hairlineWidth,
   },
   iconBtn: {
-    width: sizes.iconBtn,
-    height: sizes.iconBtn,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
@@ -125,22 +125,22 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
   },
   aiBadgeLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
   },
   saveBtn: {
-    height: sizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     overflow: 'hidden',
   },
   saveInner: {
-    flex: 1,
+    flex: ValueConstants.one,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   saveLabel: {
-    fontWeight: '700',
+    fontWeight: fontWeights.bold,
     fontSize: fontSizes.caption,
   },
 });

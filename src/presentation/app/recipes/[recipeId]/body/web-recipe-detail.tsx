@@ -3,23 +3,23 @@ import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
-import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/instruction-card';
+import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-comments';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/use-comment-highlight-result';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
+import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii, sizes, fontSizes } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, mediaSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailProps {
-  recipe: Recipe;
+  recipe: RecipeEntity;
   recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;
@@ -54,7 +54,7 @@ const HERO_ASPECT = 16 / 10;
 // react-native-web honours CSS `position: sticky`, which RN's ViewStyle type
 // omits. This component only renders on the web shell, so widen the value
 // locally via a plain object (no `unknown` double-cast).
-const stickyBase = { position: 'sticky', top: sizes.webDetailStickyTop };
+const stickyBase = { position: 'sticky', top: layoutSizes.webDetailStickyTop };
 const stickyColumn = stickyBase as ViewStyle;
 
 /**
@@ -69,7 +69,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
   const { width } = useLayout();
   const [activeImage, setActiveImage] = useState(ValueConstants.zero);
   const { recipe, recipeId, media } = props;
-  const twoColumn = width >= sizes.webDetailTwoColMin;
+  const twoColumn = width >= layoutSizes.webDetailTwoColMin;
   const activeUrl = media[activeImage]?.url ?? recipe.image;
 
   return (
@@ -80,7 +80,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         accessibilityLabel={t().recipes.backToRecipes}
         style={styles.backLink}
       >
-        <Ionicons name="chevron-back" size={sizes.iconMd} color={colors.textMuted} />
+        <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.textMuted} />
         <ThemedText variant="body" style={[styles.backLabel, { color: colors.textMuted }]}>
           {t().recipes.backToRecipes}
         </ThemedText>
@@ -111,7 +111,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
             />
           </View>
 
-          {media.length > 1 ? (
+          {media.length > ValueConstants.one ? (
             <View style={styles.thumbStrip}>
               {media.map((item, i) => (
                 <Pressable
@@ -191,10 +191,10 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   backLabel: {
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
   },
   grid: {
-    gap: sizes.webDetailColGap,
+    gap: layoutSizes.webDetailColGap,
   },
   gridRow: {
     flexDirection: 'row',
@@ -209,13 +209,13 @@ const styles = StyleSheet.create({
     gap: spacing.xl,
   },
   sideColumn: {
-    flex: 1,
+    flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
   },
   hero: {
     aspectRatio: HERO_ASPECT,
     borderRadius: radii.xl,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     overflow: 'hidden',
   },
   heroImage: {
@@ -229,14 +229,14 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   thumb: {
-    width: sizes.webDetailThumbWidth,
-    height: sizes.webDetailThumbHeight,
+    width: mediaSizes.webDetailThumbWidth,
+    height: mediaSizes.webDetailThumbHeight,
     borderRadius: radii.md,
-    borderWidth: 1,
+    borderWidth: borderWidths.hairline,
     overflow: 'hidden',
   },
   thumbActive: {
-    borderWidth: 2,
+    borderWidth: borderWidths.medium,
   },
   thumbImage: {
     width: '100%',
@@ -248,8 +248,8 @@ const styles = StyleSheet.create({
   },
   heading: {
     fontSize: fontSizes.subheading,
-    fontWeight: '700',
-    letterSpacing: -0.3,
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.tight,
   },
   stepList: {
     gap: spacing.sm,

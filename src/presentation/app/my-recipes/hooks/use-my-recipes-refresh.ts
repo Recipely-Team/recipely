@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
-import type { Tab } from '@presentation/app/my-recipes/model/tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import type { UseMyRecipesRefreshResult } from '@presentation/app/my-recipes/model/use-my-recipes-refresh-result';
 
 /**
@@ -9,7 +9,7 @@ import type { UseMyRecipesRefreshResult } from '@presentation/app/my-recipes/mod
  * tab renders — the saved tab needs both the favorite ids and the recipe list
  * they filter against, the created and drafts tabs each own a single store load.
  */
-export const useMyRecipesRefresh = (tab: Tab): UseMyRecipesRefreshResult => {
+export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => {
   const { recipeListStore, savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
   const loadRecipes = recipeListStore((s) => s.load);
 

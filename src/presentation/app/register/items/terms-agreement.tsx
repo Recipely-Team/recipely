@@ -1,10 +1,11 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { spacing, radii } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
+import { ValueConstants } from '@core/constants';
 
 export interface TermsAgreementProps {
   agree: boolean;
@@ -31,7 +32,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
           },
         ]}
       >
-        {agree ? <Ionicons name="checkmark" size={14} color={colors.primaryText} /> : null}
+        {agree ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primaryText} /> : null}
       </View>
       <ThemedText variant="caption" muted style={styles.termsText}>
         {t().register.agreeText}{' '}
@@ -68,19 +69,19 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
   },
   termsBox: {
-    width: 22,
-    height: 22,
+    width: controlSizes.checkboxSm,
+    height: controlSizes.checkboxSm,
     borderRadius: radii.sm,
-    borderWidth: 2,
+    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 1,
+    marginTop: ValueConstants.one,
   },
   termsText: {
-    flex: 1,
-    lineHeight: 18,
+    flex: ValueConstants.one,
+    lineHeight: lineHeightFor(fontSizes.caption),
   },
   linkWeight: {
-    fontWeight: '600' as const,
+    fontWeight: fontWeights.semibold,
   },
 });

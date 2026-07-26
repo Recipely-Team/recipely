@@ -1,7 +1,7 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { AuthSession } from '@domain/auth/auth-session';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { IAuthRepository } from '@domain/auth/i-auth-repository';
 import type { FakeAuthRepositoryConfig } from '@application/__fixtures__/fake-auth-repository-config';
@@ -14,7 +14,7 @@ import type { FakeAuthRepositoryConfig } from '@application/__fixtures__/fake-au
 export class FakeAuthRepository implements IAuthRepository {
   constructor(private readonly config: FakeAuthRepositoryConfig = {}) {}
 
-  signIn(_email: string, _password: string): Promise<Result<AuthSession, Failure>> {
+  signIn(_email: string, _password: string): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.signInResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -30,7 +30,7 @@ export class FakeAuthRepository implements IAuthRepository {
     );
   }
 
-  verifyRegistration(_email: string, _code: string): Promise<Result<AuthSession, Failure>> {
+  verifyRegistration(_email: string, _code: string): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.verifyRegistrationResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -46,17 +46,17 @@ export class FakeAuthRepository implements IAuthRepository {
     return Promise.resolve(this.config.signOutResult ?? ok(undefined));
   }
 
-  getCurrentSession(): Promise<Result<AuthSession | null, Failure>> {
+  getCurrentSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     return Promise.resolve(this.config.currentSessionResult ?? ok(null));
   }
 
-  signInWithGoogle(): Promise<Result<AuthSession, Failure>> {
+  signInWithGoogle(): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.signInWithGoogleResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 
-  signInWithApple(): Promise<Result<AuthSession, Failure>> {
+  signInWithApple(): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.signInWithAppleResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -74,7 +74,7 @@ export class FakeAuthRepository implements IAuthRepository {
     _fileUri: string,
     _fileName: string,
     _mimeType: string,
-  ): Promise<Result<AuthSession, Failure>> {
+  ): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.uploadAvatarResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -83,7 +83,7 @@ export class FakeAuthRepository implements IAuthRepository {
   updateProfile(_input: {
     displayName?: string;
     bio?: string;
-  }): Promise<Result<AuthSession, Failure>> {
+  }): Promise<Result<AuthSessionEntity, Failure>> {
     return Promise.resolve(
       this.config.updateProfileResult ?? fail(new UnknownFailure('not configured')),
     );

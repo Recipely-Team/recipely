@@ -1,5 +1,5 @@
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import type { INotificationService } from '@domain/notifications/i-notification-service';
 import { noopNotificationService } from '@application/notifications/noop-notification-service';
 

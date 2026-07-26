@@ -3,15 +3,15 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Defs, Line, Pattern, Rect } from 'react-native-svg';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useTheme } from '@presentation/base/theme/use-theme';
-import { fontSizes, spacing } from '@presentation/base/theme';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
-const WASH_OPACITY = 0.16;
-const TEXTURE_OPACITY = 0.6;
-const MOTIF_OPACITY = 0.92;
-const LABEL_OPACITY = 0.85;
-const LABEL_TRACKING = 0.2;
+const WASH_OPACITY = opacities.scrimSubtle;
+const TEXTURE_OPACITY = opacities.disabledFaint;
+const MOTIF_OPACITY = opacities.onMediaFaint;
+const LABEL_OPACITY = opacities.pressedSubtle;
+const LABEL_TRACKING = letterSpacings.subtle;
 const TEXTURE_GAP = 12;
 const FULL_LOGO_SIZE = 52;
 const COMPACT_LOGO_SIZE = 30;
@@ -46,7 +46,7 @@ export const RecipePlaceholder = ({
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: 1, y: 1 }}
+        end={{ x: ValueConstants.one, y: ValueConstants.one }}
         style={[StyleSheet.absoluteFill, styles.wash]}
       />
       <Svg style={[StyleSheet.absoluteFill, styles.texture]} width="100%" height="100%">
@@ -95,7 +95,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: fontSizes.small,
-    fontWeight: '600',
+    fontWeight: fontWeights.semibold,
     letterSpacing: LABEL_TRACKING,
     opacity: LABEL_OPACITY,
   },

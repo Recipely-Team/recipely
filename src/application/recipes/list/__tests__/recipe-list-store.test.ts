@@ -4,15 +4,15 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
 const makeRecipe = (
-  overrides: Partial<Parameters<typeof RecipeSummary.create>[0]> = {},
-): RecipeSummary => {
-  const result = RecipeSummary.create({
+  overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
+): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id: 'r1',
     name: 'Stub Recipe',
     image: 'https://cdn.example.com/r1.webp',
@@ -28,16 +28,16 @@ const makeRecipe = (
     viewCount: 0,
     ...overrides,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 
 const makeDeferred = (): {
-  promise: Promise<Result<RecipeSummary[], Failure>>;
-  resolve: (r: Result<RecipeSummary[], Failure>) => void;
+  promise: Promise<Result<RecipeSummaryEntity[], Failure>>;
+  resolve: (r: Result<RecipeSummaryEntity[], Failure>) => void;
 } => {
-  let resolve: (r: Result<RecipeSummary[], Failure>) => void = () => {};
-  const promise = new Promise<Result<RecipeSummary[], Failure>>((r) => {
+  let resolve: (r: Result<RecipeSummaryEntity[], Failure>) => void = () => {};
+  const promise = new Promise<Result<RecipeSummaryEntity[], Failure>>((r) => {
     resolve = r;
   });
   return { promise, resolve };

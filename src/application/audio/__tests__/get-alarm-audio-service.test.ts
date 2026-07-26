@@ -4,7 +4,7 @@
  * service (never throw) when nothing is registered.
  */
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import { getAlarmAudioService } from '@application/audio/get-alarm-audio-service';
 import { noopAlarmAudioService } from '@application/audio/noop-alarm-audio-service';
 import { FakeAlarmAudioService } from '@application/__fixtures__/fake-alarm-audio-service';

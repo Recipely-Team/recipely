@@ -11,6 +11,7 @@ import {
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import { ValueConstants } from '@core/constants';
 
 export interface StateViewProps {
   status: StateViewStatus;
@@ -92,7 +93,7 @@ export const StateView = ({
 
 const styles = StyleSheet.create({
   center: {
-    flex: 1,
+    flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
   },

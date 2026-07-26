@@ -2,19 +2,20 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useGuestGate } from '@presentation/base/hooks/use-guest-gate';
-import { useScrollToEndOnKeyboard } from '@presentation/base/hooks/use-scroll-to-end-on-keyboard';
+import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
-import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/resolved-author';
+import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
-import { useTaxonomyLabel } from '@presentation/app/recipes/shared/hooks/use-taxonomy-label';
+import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -41,7 +42,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     closePrompt();
     // Cast: the dynamic redirect param can't be statically verified against
     // expo-router's typed-routes union — same pattern as useAuthGuard.
-    router.push(`/login?redirect=${encodeURIComponent(pathname)}` as Href);
+    router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
   const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
@@ -286,7 +287,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
     onDeleteComment: (id: string) => void handleDeleteComment(id),
-    onEdit: () => router.push(`/create-recipe?recipeId=${recipeId}`),
+    onEdit: () => router.push(RoutePaths.createRecipeWithDraft(recipeId) as Href),
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

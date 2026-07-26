@@ -2,13 +2,13 @@ import type { SharedValue, useAnimatedScrollHandler } from 'react-native-reanima
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Difficulty } from '@domain/recipes/difficulty';
 
 /** View model returned by {@link useRecipeList} for the recipe-list screen. */
 export interface UseRecipeListResult {
   state: RecipeListState;
-  filteredRecipes: RecipeSummary[];
+  filteredRecipes: RecipeSummaryEntity[];
   isWebShell: boolean;
   isSearching: boolean;
   activeFilterCount: number;

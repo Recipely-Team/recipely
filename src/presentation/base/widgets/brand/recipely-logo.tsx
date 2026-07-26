@@ -5,6 +5,7 @@ import Svg, {
   Path,
   Stop,
 } from 'react-native-svg';
+import { BrandColors } from '@presentation/base/theme';
 
 export interface RecipelyLogoProps {
   size?: number;
@@ -27,7 +28,7 @@ const ASPECT = 335 / 370;
 export const RecipelyLogo = ({
   size = 64,
   monochrome = false,
-  mono = '#FFFFFF',
+  mono = BrandColors.white,
 }: RecipelyLogoProps): React.JSX.Element => {
   const width = size;
   const height = Math.round(size * ASPECT);

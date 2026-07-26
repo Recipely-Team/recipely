@@ -1,5 +1,5 @@
 import { container } from '@core/di/container-instance';
-import { TOKENS } from '@core/di/tokens';
+import { TOKENS } from '@application/di/tokens';
 import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
 import { noopAlarmAudioService } from '@application/audio/noop-alarm-audio-service';
 

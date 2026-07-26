@@ -1,5 +1,5 @@
-import type { Recipe } from '@domain/recipes/recipe';
-import type { RecipeSummary } from '@domain/recipes/recipe-summary';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
@@ -14,12 +14,12 @@ import type { RefineRecipeState } from '@application/recipes/refine/refine-recip
 export interface CreatedRecipesStoreState {
   // WHY: `recipes` and `localRecipes` split the two jobs this used to do as
   // one `Recipe[]` field. `recipes` is the lean list for the "My Recipes"
-  // grid, populated by `loadMyRecipes` (backend now returns RecipeSummary for
+  // grid, populated by `loadMyRecipes` (backend now returns RecipeSummaryEntity for
   // /me/recipes). `localRecipes` is the full-detail override cache read by
   // `findById` (detail/edit screens fall back to a network fetch when an id
   // isn't present here) and is kept fresh by create/update/delete.
-  recipes: readonly RecipeSummary[];
-  localRecipes: readonly Recipe[];
+  recipes: readonly RecipeSummaryEntity[];
+  localRecipes: readonly RecipeEntity[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
   // WHY: reuses GenerateRecipeState — the import flow has the identical
@@ -29,11 +29,11 @@ export interface CreatedRecipesStoreState {
   updateState: UpdateRecipeState;
   deleteState: DeleteRecipeState;
   refineState: RefineRecipeState;
-  aiDraft: Recipe | null;
-  add: (recipe: Recipe) => void;
+  aiDraft: RecipeEntity | null;
+  add: (recipe: RecipeEntity) => void;
   remove: (id: string) => void;
-  replace: (recipe: Recipe) => void;
-  findById: (id: string) => Recipe | undefined;
+  replace: (recipe: RecipeEntity) => void;
+  findById: (id: string) => RecipeEntity | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;
   generateRecipe: (prompt: string) => Promise<void>;

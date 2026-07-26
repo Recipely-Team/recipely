@@ -61,39 +61,10 @@ export const TERMS_OF_USE_URL: string = `${PROD_WEB_APP_BASE_URL}/terms`;
 export const recipeWebUrl = (recipeId: string): string =>
   `${WEB_APP_BASE_URL}/recipes/${recipeId}`;
 
-// Feedback submission endpoint. Inside /api/v1 — path is relative.
-export const FEEDBACK_PATH = '/feedback';
-
-export const AUTH_LOGIN_PATH = "/auth/login";
-export const AUTH_REGISTER_PATH = "/auth/register";
-export const AUTH_REGISTER_VERIFY_PATH = "/auth/register/verify";
-export const AUTH_REGISTER_RESEND_PATH = "/auth/register/resend";
-export const AUTH_SOCIAL_PATH = "/auth/social";
-export const AUTH_FORGOT_PASSWORD_PATH = "/auth/forgot-password";
-export const AUTH_RESET_PASSWORD_PATH = "/auth/reset-password";
-// Signed-in user's editable profile (display name, bio). Inside /api/v1, so
-// the path is relative — the HTTP client prepends API_BASE_URL.
-export const ME_PROFILE_PATH = "/me/profile";
-// Signed-in user's own account resource. `DELETE /me` permanently deletes the
-// account and all its data. Inside /api/v1, so the path is relative.
-export const ME_PATH = "/me";
-
-/** Public profile of any user by id. Inside /api/v1 — path is relative. */
-export const userProfilePath = (userId: string): string =>
-  `/users/${encodeURIComponent(userId)}`;
-
 // Fallback verification-code lifetime (seconds) used only when the backend
 // response omits both expiresAt and expiresInSeconds. Mirrors the backend
 // CODE_TTL_MS (3 minutes).
 export const DEFAULT_CODE_TTL_SECONDS = 180;
-
-// Backend-driven taxonomy catalog endpoints. Inside /api/v1 — paths are
-// relative, so the HTTP client prepends API_BASE_URL.
-export const RECIPE_CUISINES_PATH = "/recipes/cuisines";
-export const RECIPE_CATEGORIES_PATH = "/recipes/categories";
-
-// Backend-driven "Trending this week" rail. Inside /api/v1 — path is relative.
-export const RECIPE_TRENDING_PATH = "/recipes/trending";
 
 // Default size of the trending discover rail (backend caps `limit` at 1–30).
 export const TRENDING_RECIPES_LIMIT = 10;

@@ -1,7 +1,7 @@
 import type { ReactElement } from 'react';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AppThemeProvider } from '@presentation/base/theme/theme-context';
+import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 

@@ -12,14 +12,14 @@ import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-inp
 import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import { Recipe } from '@domain/recipes/recipe';
-import { RecipeSummary } from '@domain/recipes/recipe-summary';
+import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 
-const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}): Recipe => {
-  const result = Recipe.create({
+const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+  const result = RecipeEntity.create({
     id: 'r1',
     name: 'My Recipe',
     cuisine: CuisineKey.Italian,
@@ -48,8 +48,8 @@ const makeRecipe = (overrides: Partial<Parameters<typeof Recipe.create>[0]> = {}
   return result.value;
 };
 
-const makeSummary = (overrides: Partial<Parameters<typeof RecipeSummary.create>[0]> = {}): RecipeSummary => {
-  const result = RecipeSummary.create({
+const makeSummary = (overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {}): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
     id: 'network-only',
     name: 'Network Only Recipe',
     image: 'https://cdn.example.com/network.webp',
@@ -65,7 +65,7 @@ const makeSummary = (overrides: Partial<Parameters<typeof RecipeSummary.create>[
     viewCount: 0,
     ...overrides,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummary fixture');
+  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
 };
 
@@ -156,7 +156,7 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
 
 describe('createdRecipesStore CRUD', () => {
   describe('add', () => {
-    it('prepends the full Recipe to localRecipes and a lean RecipeSummary to recipes', () => {
+    it('prepends the full Recipe to localRecipes and a lean RecipeSummaryEntity to recipes', () => {
       const { store } = makeStore();
       const recipe = makeRecipe({ id: 'r-added', name: 'Added Recipe' });
 
@@ -166,7 +166,7 @@ describe('createdRecipesStore CRUD', () => {
       expect(s.localRecipes[0]).toBe(recipe);
       expect(s.recipes[0].id).toBe('r-added');
       expect(s.recipes[0].name).toBe('Added Recipe');
-      expect(s.recipes[0]).toBeInstanceOf(RecipeSummary);
+      expect(s.recipes[0]).toBeInstanceOf(RecipeSummaryEntity);
     });
   });
 
@@ -254,7 +254,7 @@ describe('createdRecipesStore CRUD', () => {
   });
 
   describe('updateRecipe', () => {
-    it('on success, updates recipes/localRecipes and replaces recipeListStore with a RecipeSummary-shaped recipe', async () => {
+    it('on success, updates recipes/localRecipes and replaces recipeListStore with a RecipeSummaryEntity-shaped recipe', async () => {
       const original = makeRecipe({ id: 'r-target', name: 'Original' });
       const updated = makeRecipe({ id: 'r-target', name: 'Updated via API' });
       const updateRecipeUseCase = {
@@ -271,8 +271,8 @@ describe('createdRecipesStore CRUD', () => {
       expect(recipeDetailStoreReplace).toHaveBeenCalledWith(updated);
       expect(recipeListStoreReplace).toHaveBeenCalledTimes(1);
       const summaryArg = recipeListStoreReplace.mock.calls[0][0];
-      expect(summaryArg).toBeInstanceOf(RecipeSummary);
-      expect(summaryArg).not.toBeInstanceOf(Recipe);
+      expect(summaryArg).toBeInstanceOf(RecipeSummaryEntity);
+      expect(summaryArg).not.toBeInstanceOf(RecipeEntity);
       expect(summaryArg.id).toBe('r-target');
       expect(summaryArg.name).toBe('Updated via API');
       expect('ingredients' in summaryArg).toBe(false);

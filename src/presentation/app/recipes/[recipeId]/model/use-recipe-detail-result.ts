@@ -1,9 +1,9 @@
 import type { RefObject } from 'react';
 import type { ScrollView } from 'react-native';
 import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
-import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/recipe-author-state';
+import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { Failure } from '@presentation/base/types';
-import type { Recipe } from '@domain/recipes/recipe';
+import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 
@@ -14,7 +14,7 @@ export interface UseRecipeDetailResult {
   failure: Failure | undefined;
   onRetry: () => void;
 
-  recipe: Recipe | null;
+  recipe: RecipeEntity | null;
   media: readonly MediaItem[];
   firstImageUrl: string;
   cuisineName: string;
