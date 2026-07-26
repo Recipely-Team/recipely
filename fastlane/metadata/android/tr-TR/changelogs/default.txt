@@ -1,4 +1,8 @@
-• Bazı cihazlarda Google ile giriş sorunu giderildi
-• Kararlılık iyileştirmeleri ve küçük dokunuşlar
+• Tarif adımları metnin tamamına göre uzuyor — yarısını gizleyen kaydırma çubuğu yok.
+• Yorumlar, adımlar, biyografiniz ve yapay zekâ istemi yazdıkça büyüyor.
+• Uygulama cihazınızın yazı boyutuna uyuyor — sonuna kadar açın, hiçbir yazı kırpılmıyor.
+• Giriş ve kayıtta şifre göster/gizle.
+• Hesapsız gezinmek isteyenler için yeni karşılama ekranı.
+• Daha küçük, daha hızlı uygulama ve baştan sona akıcı bir his.
 
-Recipely ile pişirdiğin için teşekkürler!
+Recipely ile pişirdiğiniz için teşekkürler!

@@ -1,0 +1,10 @@
+Long recipes, finally readable.
+
+• Recipe steps now grow to fit the whole instruction — no more tiny scrollbar hiding half the text.
+• Every text field expands as you type: comments, recipe steps, your bio and the AI prompt.
+• The whole app follows your device's text size setting. Turn it all the way up and nothing gets clipped or cut off.
+• Show/hide your password on both the sign-in and sign-up screens.
+• A new welcome screen if you would rather look around before making an account.
+• Faster launch and a smoother, more polished feel throughout.
+
+Thanks for cooking with Recipely!
