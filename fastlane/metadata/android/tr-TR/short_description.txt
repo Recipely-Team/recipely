@@ -1,1 +1,1 @@
-Cebindeki yapay zekâ şefiyle tarif keşfet, oluştur ve pişir.
+Yapay zekâ tarif üretici, makro takibi ve adım adım pişirme tek uygulamada.

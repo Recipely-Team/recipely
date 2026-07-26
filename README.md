@@ -383,7 +383,10 @@ short version.
 | [`architecture.md`](architecture.md) | Full architecture: layers, DDD guardrails, every coding standard with its rationale |
 | [`CLAUDE.md`](CLAUDE.md) | The mandatory rule list, agent workflow and git flow |
 | [`WORKFLOW.md`](WORKFLOW.md) | Step-by-step contribution workflow |
-| [`TODO.md`](TODO.md) | Tracked follow-ups |
+| [`fastlane/README.md`](fastlane/README.md) | Store listing copy and assets for both stores, and how they get uploaded |
+| [`docs/roadmap.md`](docs/roadmap.md) | Planned features — the reasoning behind each, and what is still open |
+| [`docs/qa/android.md`](docs/qa/android.md) · [`docs/qa/ios.md`](docs/qa/ios.md) | Step-by-step manual QA passes, per platform |
+| [`TODO.md`](TODO.md) | Closed-out record of the backend-contract parity work |
 
 ---
 
