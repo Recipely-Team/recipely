@@ -1,0 +1,10 @@
+Uzun tarifler artık rahat okunuyor.
+
+• Tarif adımları metnin tamamına göre uzuyor — yarısını gizleyen minik kaydırma çubuğu yok artık.
+• Yazdıkça büyüyen alanlar: yorumlar, tarif adımları, biyografiniz ve yapay zekâ istemi.
+• Uygulamanın tamamı cihazınızın yazı boyutu ayarına uyuyor. Sonuna kadar açın, hiçbir yazı kırpılmıyor.
+• Giriş ve kayıt ekranlarında şifrenizi göster/gizle.
+• Hesap açmadan önce etrafa bakmak isteyenler için yeni bir karşılama ekranı.
+• Daha hızlı açılış ve baştan sona daha akıcı bir his.
+
+Recipely ile pişirdiğiniz için teşekkürler!

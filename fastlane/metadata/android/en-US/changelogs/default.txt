@@ -1,4 +1,8 @@
-• Fixed Google Sign-In on some devices
-• Stability improvements and polish
+• Recipe steps now grow to fit the whole instruction — no more scrollbar hiding half the text.
+• Comments, steps, your bio and the AI prompt all expand as you type.
+• The app follows your device's text size setting — turn it up, nothing gets clipped.
+• Show/hide password on sign-in and sign-up.
+• New welcome screen for browsing without an account.
+• Smaller, faster app and a smoother feel throughout.
 
 Thanks for cooking with Recipely!
