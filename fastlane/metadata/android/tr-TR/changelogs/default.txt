@@ -1,8 +1,8 @@
-• Tarif adımları metnin tamamına göre uzuyor — yarısını gizleyen kaydırma çubuğu yok.
-• Yorumlar, adımlar, biyografiniz ve yapay zekâ istemi yazdıkça büyüyor.
-• Uygulama cihazınızın yazı boyutuna uyuyor — sonuna kadar açın, hiçbir yazı kırpılmıyor.
-• Giriş ve kayıtta şifre göster/gizle.
-• Hesapsız gezinmek isteyenler için yeni karşılama ekranı.
-• Daha küçük, daha hızlı uygulama ve baştan sona akıcı bir his.
+• Arama artık yalnızca ekrandaki tarifleri değil, tüm tarifleri tarıyor.
+• Beğendiğiniz tarifler uygulamayı kapatıp açtığınızda beğenili kalıyor.
+• Yorumlar ilk dokunuşta gönderiliyor.
+• Filtre hiçbir şeyle eşleşmezse filtreler yerinde kalıyor; sadece o seçimi geri alabiliyorsunuz.
+• Filtre panelindeki "Göster" düğmesi her zaman elinizin altında.
+• Çalışan zamanlayıcı çubuğu, önünüze geldiğinde kenara alınabiliyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!

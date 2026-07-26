@@ -1,8 +1,8 @@
-• Recipe steps now grow to fit the whole instruction — no more scrollbar hiding half the text.
-• Comments, steps, your bio and the AI prompt all expand as you type.
-• The app follows your device's text size setting — turn it up, nothing gets clipped.
-• Show/hide password on sign-in and sign-up.
-• New welcome screen for browsing without an account.
-• Smaller, faster app and a smoother feel throughout.
+• Search now looks through every recipe, not just the ones already on screen.
+• Your likes stay liked after you close and reopen the app.
+• Comments send on the first tap.
+• If a filter matches nothing, the filters stay put so you can undo just that one.
+• The "Show" button in the filter sheet is always in reach.
+• The running-timer bar can be tucked away when it's in the way.
 
 Thanks for cooking with Recipely!

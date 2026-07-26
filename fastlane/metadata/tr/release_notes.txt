@@ -1,10 +1,13 @@
-Uzun tarifler artık rahat okunuyor.
+Her şeyi arayan arama.
 
-• Tarif adımları metnin tamamına göre uzuyor — yarısını gizleyen minik kaydırma çubuğu yok artık.
-• Yazdıkça büyüyen alanlar: yorumlar, tarif adımları, biyografiniz ve yapay zekâ istemi.
-• Uygulamanın tamamı cihazınızın yazı boyutu ayarına uyuyor. Sonuna kadar açın, hiçbir yazı kırpılmıyor.
-• Giriş ve kayıt ekranlarında şifrenizi göster/gizle.
-• Hesap açmadan önce etrafa bakmak isteyenler için yeni bir karşılama ekranı.
-• Daha hızlı açılış ve baştan sona daha akıcı bir his.
+• Arama artık yalnızca ekrandaki tarifler arasında değil, tüm tarif kataloğunda arıyor — gerçekten aradığınızı buluyor.
+• Filtre seçtiğinizde çalıştığını görüyorsunuz; dokunuşun geçip geçmediğini merak etmiyorsunuz.
+• Filtre hiçbir şeyle eşleşmezse filtreler ekranda kalıyor; hepsini temizlemek yerine sadece o seçimi geri alabiliyorsunuz.
+• Filtre panelindeki "Göster" düğmesi her zaman elinizin altında — bulmak için kaydırmanız gerekmiyor.
+• Beğendiğiniz tarifler uygulamayı kapatıp açtığınızda beğenili kalıyor.
+• Yorumlar ilk dokunuşta gönderiliyor.
+• Tarif adımları, metnin yanında pişirme süresini bir daha tekrar etmiyor.
+• Besin değerleri, bir tarifte veri yoksa bunu söylüyor; sessizce boş kalmıyor.
+• Çalışan zamanlayıcı çubuğu, ihtiyacınız olan bir şeyi kapattığında kenara alınabiliyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!
