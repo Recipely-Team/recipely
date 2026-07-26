@@ -1,30 +1,25 @@
-Recipely is your all-in-one cooking companion — discover great recipes, create your own, and let AI do the heavy lifting in the kitchen.
+Meet Recipely — your AI-powered culinary assistant that turns "what's for dinner?" into a delicious answer in seconds.
 
-🤖 AI RECIPE GENERATOR
-Describe what you're craving and our AI sous-chef (powered by GPT-4o mini) writes a complete recipe for you — ingredients, step-by-step instructions and nutrition included. Don't like something? Just ask: "make it vegan", "lower calorie" or "make it faster" and watch it adapt instantly.
+🤖 AI RECIPE GENERATION
+Just describe a craving — "a 30-minute creamy lemon garlic shrimp pasta" — and our AI chef writes a complete recipe: ingredients, portions and clear steps. Cook with what you have and never run out of ideas.
 
-🍳 DISCOVER & SEARCH
-Browse recipes by cuisine, category, difficulty and cooking time. Find exactly what fits your mood, your diet and your schedule.
+👩‍🍳 STEP-BY-STEP COOKING
+Follow guided, checkable cooking tasks so you never lose your place — from prep to plate, stress-free.
 
-📖 CREATE & SHARE
-Build beautiful recipes of your own with photos, ingredients, steps and automatic nutrition info. Publish them and share with the Recipely community.
+📊 MACRO & CALORIE TRACKING
+See calories, protein, carbs and fat per serving and cook toward your health goals with confidence.
 
-❤️ SAVE YOUR FAVORITES
-Bookmark the recipes you love so they're always one tap away.
+🔖 SAVE & ORGANIZE
+Bookmark every favorite and keep your saved and created recipes neatly sorted in My Recipes — your cookbook, always in your pocket.
 
-👩‍🍳 A SOCIAL KITCHEN
-Like and comment on recipes, follow other cooks, earn badges and grow your cooking profile.
+🎨 DARK & LIGHT THEMES
+Personalize Recipely with beautiful themes and full dark and light mode. Cook in English or Turkish and switch anytime.
 
-🔢 NUTRITION AT A GLANCE
-See calories, protein, carbs, fat and fiber for every recipe.
+WHY RECIPELY
+• AI recipes tailored to your cravings
+• Clear step-by-step guidance
+• Macro & nutrition tracking
+• Save, create & organize recipes
+• Gorgeous dark & light design
 
-⏲️ COOKING TIMER
-A built-in timer keeps every step on track while you cook.
-
-✨ MADE FOR YOU
-• Light & dark themes
-• English & Turkish
-• Sign in with email, Google or Apple
-• Clean, fast and simple
-
-Download Recipely and cook smarter today. Recipes, simply yours.
+Download Recipely today and cook smarter with your very own AI chef. 🍳

@@ -1,1 +1,1 @@
-Discover, create & cook recipes with an AI sous-chef in your pocket.
+AI recipe generator, macro tracking & step-by-step cooking in one app.
