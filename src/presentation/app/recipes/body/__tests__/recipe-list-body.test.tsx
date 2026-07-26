@@ -21,17 +21,19 @@
  */
 
 import { act } from 'react-test-renderer';
-import { Platform, RefreshControl, ScrollView } from 'react-native';
+import { Platform, RefreshControl, ScrollView, StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { create } from 'zustand';
-import { renderComponent } from '@presentation/base/test-support/render-component';
+import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
+import { t } from '@presentation/i18n';
 import { layoutSizes } from '@presentation/base/theme';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -91,9 +93,10 @@ const makeStores = (): Stores =>
  */
 const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 'scrollHandler'> => ({
   state: { status: 'loaded', recipes: RECIPES },
-  filteredRecipes: RECIPES,
+  recipes: RECIPES,
   isWebShell: false,
   isSearching: false,
+  isRefetching: false,
   activeFilterCount: 0,
   gridColumns: 1,
   sortBy: 'popular',
@@ -180,17 +183,19 @@ const refreshingProp = (overrides: Partial<UseRecipeListResult>): boolean => {
 };
 
 /**
- * The vm overrides that land on the empty branch: loaded, mobile, not searching,
- * zero filtered results. `withFilters` picks which empty copy renders — the
- * "no results" + clear-filters button (filters active) or the "empty" + retry
- * button (no filters).
+ * The vm overrides for a loaded-but-empty mobile feed. `withFilters` picks which
+ * empty copy renders — the "no results" + clear-filters button (filters active)
+ * or the "empty" + retry button (no filters).
  */
 const emptyVm = (withFilters: boolean): Partial<UseRecipeListResult> => ({
   state: { status: 'loaded', recipes: [] },
-  filteredRecipes: [],
+  recipes: [],
   activeFilterCount: withFilters ? 1 : 0,
   filters: withFilters ? { ...emptyFilters, cuisines: [CuisineKey.Italian] } : emptyFilters,
 });
+
+/** Every string the tree rendered, for presence assertions on header copy. */
+const renderedText = (root: ReactTestInstance): string[] => textContent(root);
 
 describe('RecipeListBody — mobile RefreshControl wiring', () => {
   // AppThemeProvider hydrates theme/preference from async storage on mount; let
@@ -285,13 +290,13 @@ describe('RecipeListBody — empty state is pullable', () => {
   // + retry branch — both must sit on the same pullable surface.
   const FLAVORS: readonly boolean[] = [true, false];
 
-  it.each(FLAVORS)('hangs the RefreshControl off a ScrollView (filters active: %s)', (withFilters) => {
+  it.each(FLAVORS)('hangs the RefreshControl off a scrollable surface (filters active: %s)', (withFilters) => {
     const onRefresh = jest.fn();
 
     const root = render({ ...emptyVm(withFilters), onRefresh });
 
     // A plain View would render the icon and copy but swallow the pull gesture:
-    // the control must hang off the ScrollView that replaced it.
+    // the control must hang off the list's own scroll view.
     const scrollView = root.findByType(ScrollView);
     expect(scrollView.props.refreshControl).toBeDefined();
     expect(root.findByType(RefreshControl).props.onRefresh).toBe(onRefresh);
@@ -306,8 +311,87 @@ describe('RecipeListBody — empty state is pullable', () => {
     const root = render(emptyVm(withFilters));
 
     // Without flexGrow the content collapses to its natural height and there is
-    // nothing tall enough to pull on.
-    const contentStyle = root.findByType(ScrollView).props.contentContainerStyle;
-    expect(contentStyle).toEqual(expect.objectContaining({ flexGrow: 1 }));
+    // nothing tall enough to pull on. The style arrives as an array of the
+    // list's two content styles, so flatten before asserting.
+    const contentStyle = StyleSheet.flatten(
+      root.findByType(ScrollView).props.contentContainerStyle as StyleProp<ViewStyle>,
+    );
+    expect(contentStyle.flexGrow).toBe(1);
+  });
+});
+
+/**
+ * The Android bug: selecting a filter that matches nothing swapped the whole
+ * list out for a centered empty state, which unmounted `MobileFeedHeader` — and
+ * with it the cuisine strip, the only control that can un-tap a single cuisine.
+ * The user was stranded: either keep the empty feed or "Clear all" and lose the
+ * other filters too. The header must survive a zero-result feed.
+ */
+describe('RecipeListBody — an empty feed keeps its filter controls', () => {
+  // Same async-storage settle as the sibling body suites (see above).
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  it('still renders the cuisine strip when a filter matched nothing', () => {
+    const root = render(emptyVm(true));
+
+    // The strip is how a single cuisine gets deselected; its section heading
+    // standing in for it here is enough to prove the header was not unmounted.
+    expect(renderedText(root)).toContain(t().recipes.browseCuisines);
+  });
+
+  it('renders the no-results copy alongside the header, not instead of it', () => {
+    const text = renderedText(render(emptyVm(true)));
+
+    expect(text).toContain(t().recipes.noResults);
+    expect(text).toContain(t().recipes.browseCuisines);
+  });
+
+  it('keeps the strip on an empty feed with no filters at all', () => {
+    // The plain-empty branch (backend returned nothing) must not lose the strip
+    // either — browsing by cuisine is the way out of an empty default feed.
+    const text = renderedText(render(emptyVm(false)));
+
+    expect(text).toContain(t().recipes.empty);
+    expect(text).toContain(t().recipes.browseCuisines);
+  });
+});
+
+/**
+ * A filter/sort/search change refetches in place and keeps the previous rows on
+ * screen, so without an indicator a cuisine tap looked like a dead press — the
+ * Android report was "you can't tell it went to the server".
+ */
+describe('RecipeListBody — refetch indicator', () => {
+  // Same async-storage settle as the sibling body suites (see above).
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  it('shows the refreshing pill while a filter refetch is in flight', () => {
+    const root = render({ isRefetching: true });
+
+    expect(renderedText(root)).toContain(t().recipes.refreshing);
+  });
+
+  it('hides the pill on a settled feed', () => {
+    const root = render({ isRefetching: false });
+
+    expect(renderedText(root)).not.toContain(t().recipes.refreshing);
+  });
+
+  it('keeps the pill off while the first page is still loading', () => {
+    // `loading` already owns the screen with a skeleton; a pill on top of it
+    // would be a second, redundant spinner.
+    const root = render({ state: { status: 'loading' }, isRefetching: true });
+
+    expect(renderedText(root)).not.toContain(t().recipes.refreshing);
   });
 });

@@ -40,14 +40,6 @@ export const RecipeOverview = ({
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
 
-  const nutrition = recipe.nutrition;
-  const hasNutrition =
-    recipe.caloriesPerServing > ValueConstants.zero ||
-    (nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.fiber ?? ValueConstants.zero) > ValueConstants.zero;
-
   return (
     <>
       <ThemedText variant="title">{recipe.name}</ThemedText>
@@ -136,16 +128,15 @@ export const RecipeOverview = ({
         recipeName={recipe.name}
       />
 
-      {hasNutrition ? (
-        <>
-          <SectionHeader title={t().recipes.nutrition} />
-          <NutritionCard
-            caloriesPerServing={recipe.caloriesPerServing}
-            servings={recipe.servings}
-            nutrition={recipe.nutrition}
-          />
-        </>
-      ) : null}
+      {/* Unconditional: the card itself says when a recipe has no figures.
+          Hiding the whole section on missing data made an absent backend value
+          look like a broken screen — see NutritionCard's docblock. */}
+      <SectionHeader title={t().recipes.nutrition} />
+      <NutritionCard
+        caloriesPerServing={recipe.caloriesPerServing}
+        servings={recipe.servings}
+        nutrition={recipe.nutrition}
+      />
 
       {recipe.tags.length > ValueConstants.zero ? (
         <View style={styles.tagsRow}>

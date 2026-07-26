@@ -54,12 +54,15 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
-      console.error('[AppBootstrap] hydrate failed:', err);
+      // `recordCrash` is the production channel (Crashlytics); the console line
+      // only exists for local visibility, so it stays behind __DEV__ — an
+      // unguarded console.error also raises a LogBox over the app in dev builds.
+      if (__DEV__) console.error('[AppBootstrap] hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.authStore.hydrate');
     });
     void getNotificationService().init();
     timerStore.getState().hydrate().catch((err: unknown) => {
-      console.error('[AppBootstrap] timer hydrate failed:', err);
+      if (__DEV__) console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');
     });
     // Resolves the persisted "don't show onboarding again" choice so the launch

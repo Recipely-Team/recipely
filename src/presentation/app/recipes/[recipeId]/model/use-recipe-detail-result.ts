@@ -18,9 +18,13 @@ export interface UseRecipeDetailResult {
   media: readonly MediaItem[];
   firstImageUrl: string;
   cuisineName: string;
+  /**
+   * Whether the viewer has liked this recipe. The single source of truth for
+   * every heart on the screen — the optimistic likes-store overlay when it has
+   * an entry, otherwise the value the detail endpoint returned.
+   */
   liked: boolean;
   likeCount: number;
-  likedByMe: boolean;
 
   isOwner: boolean;
   isSaved: boolean;

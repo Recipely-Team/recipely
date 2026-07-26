@@ -14,24 +14,40 @@ export interface NutritionCardProps {
   nutrition?: RecipeNutrition;
 }
 
-/** Displays per-serving macros (calories, protein, carbs, fat, fiber) from the recipe. */
-export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: NutritionCardProps): React.JSX.Element | null => {
+/**
+ * A figure the backend actually reported, or `undefined`.
+ *
+ * The API sends `0` both for "measured as zero" and for "never filled in", and
+ * some recipes arrive with calories but every macro at 0. Rendering those as
+ * "0 g protein" states a nutritional fact the backend never claimed, so a
+ * non-positive figure is treated as absent and the tile shows an em dash.
+ */
+const reported = (value: number | undefined): number | undefined =>
+  value !== undefined && value > ValueConstants.zero ? value : undefined;
+
+/**
+ * Displays per-serving macros (calories, protein, carbs, fat, fiber).
+ *
+ * Always renders: a recipe with no nutrition at all says so explicitly rather
+ * than returning `null`, because a silently missing section is indistinguishable
+ * from a broken screen — which is exactly how it was reported.
+ */
+export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: NutritionCardProps): React.JSX.Element => {
   const { colors } = useTheme();
   const strings = t().nutrition;
 
-  const hasData =
-    caloriesPerServing > ValueConstants.zero ||
-    (nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero ||
-    (nutrition?.fiber ?? ValueConstants.zero) > ValueConstants.zero;
+  const calories = reported(caloriesPerServing);
+  const protein = reported(nutrition?.protein);
+  const carbs = reported(nutrition?.carbs);
+  const fat = reported(nutrition?.fat);
+  const fiber = reported(nutrition?.fiber);
 
-  if (!hasData) return null;
+  const hasAnyData = [calories, protein, carbs, fat, fiber].some((v) => v !== undefined);
 
   const tiles: NutritionTileProps[] = [
     {
       label: strings.calories,
-      value: caloriesPerServing,
+      value: calories,
       unit: strings.kcal,
       tileColor: colors.primaryLight,
       valueColor: colors.primary,
@@ -39,7 +55,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.protein,
-      value: nutrition?.protein ?? ValueConstants.zero,
+      value: protein,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
@@ -47,7 +63,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.carbs,
-      value: nutrition?.carbs ?? ValueConstants.zero,
+      value: carbs,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
@@ -55,15 +71,13 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
     },
     {
       label: strings.fat,
-      value: nutrition?.fat ?? ValueConstants.zero,
+      value: fat,
       unit: strings.g,
       tileColor: colors.chipBackground,
       valueColor: colors.text,
       labelColor: colors.textMuted,
     },
   ];
-
-  const fiberValue = nutrition?.fiber ?? ValueConstants.zero;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
@@ -73,18 +87,26 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
           {`${String(servings)} ${strings.perServing}`}
         </ThemedText>
       </View>
-      <View style={styles.tilesRow}>
-        {tiles.map((tile) => (
-          <NutritionTile key={tile.label} {...tile} />
-        ))}
-      </View>
-      {fiberValue > ValueConstants.zero ? (
-        <View style={[styles.fiberRow, { borderTopColor: colors.border }]}>
-          <ThemedText variant="caption" style={{ color: colors.text }}>
-            {strings.fiberValue.replace('{value}', String(fiberValue))}
-          </ThemedText>
-        </View>
-      ) : null}
+      {hasAnyData ? (
+        <>
+          <View style={styles.tilesRow}>
+            {tiles.map((tile) => (
+              <NutritionTile key={tile.label} {...tile} />
+            ))}
+          </View>
+          {fiber === undefined ? null : (
+            <View style={[styles.fiberRow, { borderTopColor: colors.border }]}>
+              <ThemedText variant="caption" style={{ color: colors.text }}>
+                {strings.fiberValue.replace('{value}', String(fiber))}
+              </ThemedText>
+            </View>
+          )}
+        </>
+      ) : (
+        <ThemedText variant="caption" muted>
+          {strings.unavailable}
+        </ThemedText>
+      )}
     </View>
   );
 };

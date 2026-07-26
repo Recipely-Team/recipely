@@ -5,7 +5,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useDragToDismiss } from '@presentation/base/hooks/interaction/use-drag-to-dismiss';
-import { spacing, radii, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -21,16 +21,29 @@ export interface BottomSheetProps {
    */
   showCloseButton?: boolean;
   rightAction?: { label: string; onPress: () => void };
+  /**
+   * Pinned below the scroll area instead of inside it, for the sheet's primary
+   * action. A sheet is capped at 78% of the screen, so a tall body (the recipe
+   * filter sheet is five chip sections) pushes a CTA placed in `children` off
+   * the bottom of the scroll — it exists, but the user has to scroll the whole
+   * sheet to discover it. Anything the user must be able to reach at any scroll
+   * position goes here; supporting content stays in `children`.
+   */
+  footer?: ReactNode;
   children: ReactNode;
 }
 
-/** Modal bottom sheet with a draggable grabber, header, optional close button, and scrollable content area. */
+/**
+ * Modal bottom sheet with a draggable grabber, header, optional close button, a
+ * scrollable content area, and an optional pinned {@link BottomSheetProps.footer}.
+ */
 export const BottomSheet = ({
   visible,
   title,
   onClose,
   showCloseButton = false,
   rightAction,
+  footer,
   children,
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -76,11 +89,15 @@ export const BottomSheet = ({
             rightAction={rightAction}
           />
           <ScrollView
+            style={styles.scroll}
             contentContainerStyle={styles.content}
             showsVerticalScrollIndicator={false}
           >
             {children}
           </ScrollView>
+          {footer === undefined ? null : (
+            <View style={[styles.footer, { borderTopColor: colors.border }]}>{footer}</View>
+          )}
         </Animated.View>
       </KeyboardAvoider>
     </Modal>
@@ -110,8 +127,21 @@ const styles = StyleSheet.create({
     height: spacing.xs,
     borderRadius: radii.xs,
   },
+  // flexShrink lets the scroll area give up height to the pinned footer once the
+  // sheet hits its 78% cap; without it the ScrollView claims its content height
+  // and pushes the footer past the bottom edge — the bug the footer prevents.
+  scroll: {
+    flexShrink: ValueConstants.one,
+  },
   content: {
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
+  },
+  // The hairline separates the pinned action from content scrolling behind it,
+  // so it doesn't read as the last row of the list.
+  footer: {
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    borderTopWidth: borderWidths.hairline,
   },
 });

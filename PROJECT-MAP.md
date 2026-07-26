@@ -96,7 +96,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(6)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(13)_
+- `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(14)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(7)_
 - `test-support/` — render harness for component tests _(3)_
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 69bbec6240706609 -->
+<!-- fingerprint: 147ba441f9b1f3e0 -->

@@ -250,6 +250,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: 'image', url: recipe.image }];
   const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
+  // ONE source of truth for the like, deliberately. There used to be a second
+  // `likedByMe` field without the `recipe?.likedByMe` fallback, which the
+  // floating heart consumed — so that heart rendered empty until the likes
+  // store synced, and stayed empty whenever the sync was skipped (it is skipped
+  // while an optimistic toggle is in flight). The store overlay wins when it has
+  // an entry; otherwise the server's answer stands.
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
@@ -264,7 +270,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     cuisineName,
     liked,
     likeCount,
-    likedByMe: likeState?.likedByMe ?? false,
     isOwner,
     isSaved,
     saveDisabled: isLoading,

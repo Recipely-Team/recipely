@@ -1,4 +1,4 @@
-import { StyleSheet, View, FlatList } from 'react-native';
+import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
@@ -11,8 +11,16 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeSearchOverlayProps {
-  /** Already name-filtered recipes for the current query (see `recipe-list-screen`'s `filteredRecipes`). */
+  /** Backend results for the current query — `RecipeFilters.search`, not a local filter. */
   recipes: RecipeSummaryEntity[];
+  /**
+   * True while the query the user has typed has not been answered yet (request
+   * in flight, or still inside the debounce window). Must suppress the empty
+   * state: `recipes` is the PREVIOUS query's answer until the new one lands, so
+   * rendering "no matches" here would accuse a perfectly good query of failing
+   * on nearly every keystroke.
+   */
+  isLoading: boolean;
   onOpenRecipe: (id: string) => void;
 }
 
@@ -28,6 +36,7 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  */
 export const RecipeSearchOverlay = ({
   recipes,
+  isLoading,
   onOpenRecipe,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -37,11 +46,24 @@ export const RecipeSearchOverlay = ({
       style={[styles.panel, { backgroundColor: colors.background }, shadows.md]}
     >
       <View style={styles.countRow}>
-        <ThemedText variant="caption" muted>
-          {recipes.length} {t().recipes.results}
-        </ThemedText>
+        {isLoading ? (
+          <View style={styles.countLoading}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <ThemedText variant="caption" muted>
+              {t().recipes.refreshing}
+            </ThemedText>
+          </View>
+        ) : (
+          <ThemedText variant="caption" muted>
+            {recipes.length} {t().recipes.results}
+          </ThemedText>
+        )}
       </View>
-      {recipes.length === ValueConstants.zero ? (
+      {isLoading && recipes.length === ValueConstants.zero ? (
+        <View style={styles.empty}>
+          <ActivityIndicator color={colors.primary} />
+        </View>
+      ) : recipes.length === ValueConstants.zero ? (
         <View style={styles.empty}>
           <Ionicons name="search" size={iconSizes.massive} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyTitle}>
@@ -71,6 +93,11 @@ const styles = StyleSheet.create({
   countRow: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,
+  },
+  countLoading: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   listContent: {
     flexGrow: ValueConstants.one,

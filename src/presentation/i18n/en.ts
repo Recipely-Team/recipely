@@ -562,6 +562,8 @@ export const en = {
     pause: 'Pause',
     resume: 'Resume',
     cancel: 'Cancel',
+    collapse: 'Hide timers',
+    expand: 'Show timers',
   },
   alarm: {
     title: 'Time is up!',
@@ -579,6 +581,7 @@ export const en = {
     fiberValue: 'Fiber: {value}g',
     kcal: 'kcal',
     g: 'g',
+    unavailable: 'No nutritional info for this recipe yet.',
   },
   comments: {
     title: 'Comments',

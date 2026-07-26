@@ -64,8 +64,6 @@ export const RecipeSteps = ({
             step={step}
             completed={completedSteps[i] ?? false}
             onToggle={() => onToggleStep(i)}
-            recipeId={recipeId}
-            recipeName={recipe.name}
           />
         ))}
       </View>

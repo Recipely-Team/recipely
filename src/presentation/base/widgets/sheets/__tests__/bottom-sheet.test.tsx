@@ -6,6 +6,8 @@
  */
 
 import { act } from 'react-test-renderer';
+import { ScrollView, StyleSheet } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -110,5 +112,71 @@ describe('BottomSheet', () => {
 
     expect(onPressRight).toHaveBeenCalledTimes(1);
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The Android bug: the recipe filter sheet's "Show results" button sat at the
+   * end of `children`, inside the scroll area. The sheet is capped at 78% of the
+   * screen and the filter body is five chip sections tall, so the button lived
+   * permanently below the fold — users reported not noticing it at all. `footer`
+   * renders outside the ScrollView so it is reachable at any scroll position.
+   */
+  describe('pinned footer', () => {
+    it('renders footer content outside the scroll area', () => {
+      const { root } = renderComponent(
+        <BottomSheet
+          visible
+          title="Title"
+          onClose={jest.fn()}
+          footer={<ThemedText variant="body">apply</ThemedText>}
+        >
+          <ThemedText variant="body">content</ThemedText>
+        </BottomSheet>,
+      );
+
+      // The discriminating assertion: the footer node must have NO ScrollView
+      // ancestor. Merely being rendered would also pass if it were appended to
+      // `children`, which is the bug.
+      const footerText = root
+        .findAllByType(ThemedText)
+        .find((node) => node.props.children === 'apply');
+      expect(footerText).toBeDefined();
+
+      const scrollViews = root.findAllByType(ScrollView);
+      expect(scrollViews).not.toHaveLength(0);
+      const insideScroll = scrollViews.some((scroll) =>
+        scroll.findAllByType(ThemedText).some((node) => node.props.children === 'apply'),
+      );
+      expect(insideScroll).toBe(false);
+    });
+
+    it('lets the scroll area shrink so the footer keeps its height at the sheet cap', () => {
+      const { root } = renderComponent(
+        <BottomSheet
+          visible
+          title="Title"
+          onClose={jest.fn()}
+          footer={<ThemedText variant="body">apply</ThemedText>}
+        >
+          <ThemedText variant="body">content</ThemedText>
+        </BottomSheet>,
+      );
+
+      // Without flexShrink the ScrollView claims its full content height and
+      // pushes the footer past the sheet's bottom edge — the same invisible
+      // button, just one layer down.
+      const scroll = root.findAllByType(ScrollView)[0];
+      expect(StyleSheet.flatten(scroll.props.style as StyleProp<ViewStyle>).flexShrink).toBe(1);
+    });
+
+    it('renders no footer container when a consumer passes none', () => {
+      const { root } = renderComponent(
+        <BottomSheet visible title="Title" onClose={jest.fn()}>
+          <ThemedText variant="body">content</ThemedText>
+        </BottomSheet>,
+      );
+
+      expect(textContent(root)).not.toContain('apply');
+    });
   });
 });

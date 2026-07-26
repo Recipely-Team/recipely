@@ -143,8 +143,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
                   step={step}
                   completed={props.completedSteps[i] ?? false}
                   onToggle={() => props.onToggleStep(i)}
-                  recipeId={recipeId}
-                  recipeName={recipe.name}
                 />
               ))}
             </View>

@@ -3,7 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { HERO_SAVE_BG } from '@presentation/app/recipes/model/web-hero-constants';
+import { HERO_SAVE_BG } from '@presentation/app/recipes/model/hero/web-hero-constants';
 
 export interface WebHeroActionRowProps {
   onView: () => void;

@@ -28,12 +28,13 @@
  * rejecting load, the defensive path behind `onRefresh`'s catch/finally.
  */
 
-import { act } from 'react-test-renderer';
+import { act, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
+import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
@@ -149,6 +150,7 @@ interface RenderSnapshot {
 describe('useRecipeList — pull-to-refresh spinner and load parameters', () => {
   let renders: RenderSnapshot[] = [];
   let vm: ReturnType<typeof useRecipeList>;
+  let renderer: ReactTestRenderer | null = null;
 
   const Probe = (): null => {
     vm = useRecipeList();
@@ -169,11 +171,11 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
     execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r1')])));
 
-    renderComponent(
+    renderer = renderComponent(
       <StoresProvider value={makeStores(store)}>
         <Probe />
       </StoresProvider>,
-    );
+    ).renderer;
 
     await act(async () => {
       await Promise.resolve();
@@ -185,9 +187,17 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
   beforeEach(() => {
     renders = [];
+    renderer = null;
   });
 
   afterEach(async () => {
+    // Unmount before settling: the hook debounces the search query on a timer,
+    // and a tree left mounted keeps that timer alive past the end of the test —
+    // it then fires into a torn-down Jest environment. Unmounting runs the
+    // hook's own cleanup, which is what cancels it.
+    await act(async () => {
+      renderer?.unmount();
+    });
     // Let AppThemeProvider's async storage hydration settle inside act, so a
     // late re-render can't fire after the Jest environment is torn down.
     await act(async () => {
@@ -372,6 +382,126 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     const lastCall = execute.mock.calls.at(-1)?.[0];
     expect(lastCall).toEqual(expect.objectContaining({ sort: 'rating' }));
     expect(lastCall).not.toHaveProperty('cuisines');
+  });
+
+  /**
+   * The Android bug: search ran as a local `Array.filter` over the loaded page.
+   * That page is only the first slice of the catalogue, so a query could only
+   * ever match recipes already downloaded and silently missed the rest. Search
+   * is a backend filter (`RecipeFilters.search`), debounced so a typing burst is
+   * one request instead of one per keystroke.
+   */
+  describe('search', () => {
+    /** Advances past the debounce window and lets the resulting load settle. */
+    const settleSearch = async (): Promise<void> => {
+      await act(async () => {
+        jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+    };
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('sends the query to the backend once the typing pauses', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'pasta' }));
+    });
+
+    it('collapses a burst of keystrokes into a single request', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+      const callsAfterMount = execute.mock.calls.length;
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('p');
+        vm.onSearchChange('pa');
+        vm.onSearchChange('pas');
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      // One request for the settled query — not four.
+      expect(execute.mock.calls.length - callsAfterMount).toBe(1);
+      expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'pasta' }));
+    });
+
+    it('reports isRefetching from the keystroke, before the debounce even fires', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+      expect(vm.isRefetching).toBe(false);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+
+      // The gap between the keystroke and the request is still "the rows you can
+      // see are out of date" — treating it as idle is what let the search
+      // surface flash the previous query's results (or "no matches") mid-typing.
+      expect(vm.isRefetching).toBe(true);
+
+      await settleSearch();
+      expect(vm.isRefetching).toBe(false);
+    });
+
+    it('drops the search param entirely once the field is cleared', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      act(() => {
+        vm.onSearchChange('');
+      });
+      await settleSearch();
+
+      // An empty `search=` would ask the backend to match the empty string
+      // rather than to stop filtering.
+      expect(execute.mock.calls.at(-1)?.[0]).not.toHaveProperty('search');
+    });
+
+    it('keeps the query when a filter changes, so the two compose', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      act(() => {
+        vm.onToggleCuisineQuick(CuisineKey.Turkish);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // A filter tap that dropped the query would silently widen the results
+      // back to the whole catalogue while the search field still showed "pasta".
+      expect(execute.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ search: 'pasta', cuisines: [CuisineKey.Turkish] }),
+      );
+    });
   });
 
   it('clears isPullRefreshing and leaks no unhandled rejection when the load rejects', async () => {

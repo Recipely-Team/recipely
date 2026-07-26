@@ -29,11 +29,7 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
         next.delete(id);
         return { savedIds: next };
       }),
-    setSavedIds: (ids) => {
-       
-      console.log('[SavedRecipesStore] setSavedIds called:', Array.from(ids));
-      set({ savedIds: ids });
-    },
+    setSavedIds: (ids) => set({ savedIds: ids }),
     setLoading: (loading) => set({ isLoading: loading }),
     setError: (error) => set({ error }),
     clearError: () => set({ error: null }),

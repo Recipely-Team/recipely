@@ -41,6 +41,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           ref={vm.scrollViewRef}
           contentContainerStyle={styles.scroll}
           {...commentHighlight.scrollViewProps}
+          // After the spread on purpose, so a later addition to
+          // `scrollViewProps` cannot silently take this over.
+          //
+          // RN defaults this to 'never': with the keyboard up, the first tap
+          // anywhere inside the scroll view is swallowed to dismiss the
+          // keyboard and never reaches the child. Sending a comment therefore
+          // took two taps — the first only closed the keyboard. 'handled' lets
+          // a child that handles the touch (the send button) win, while a tap
+          // on empty space still dismisses.
+          keyboardShouldPersistTaps="handled"
         >
           <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>
             {vm.recipe !== null ? (
@@ -141,7 +151,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
             <RecipeFloatingActions
               insetsTop={insets.top}
               isOwner={vm.isOwner}
-              likedByMe={vm.likedByMe}
+              liked={vm.liked}
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}
               onEdit={vm.onEdit}

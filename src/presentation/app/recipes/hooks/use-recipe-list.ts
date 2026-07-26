@@ -6,8 +6,11 @@ import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe'
 import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
+import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
+import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import * as mutate from '@presentation/app/recipes/model/filter-mutations';
@@ -59,6 +62,18 @@ export const useRecipeList = (): UseRecipeListResult => {
   const language = useLocale();
 
   const [search, setSearch] = useState(CharConstants.empty);
+
+  // Web takes the query from the shared app-header field, native from the
+  // in-header one; from here down only the effective query matters.
+  const effectiveSearch = isWebShell ? webSearchQuery : search;
+  const trimmedSearch = effectiveSearch.trim();
+  // WHY: search is a backend filter (`RecipeFilters.search`), not a local
+  // `Array.filter` over the loaded page — the loaded page is only the first
+  // slice of the catalogue, so filtering it locally could only ever find a
+  // match among recipes already downloaded and silently missed the rest.
+  // Debounced so a typing burst is one request, fired when the user pauses.
+  const debouncedSearch = useDebouncedValue(trimmedSearch, SEARCH_DEBOUNCE_MS);
+  const isSearching = trimmedSearch.length > ValueConstants.zero;
 
   const scrollY = useSharedValue(ValueConstants.zero);
   const headerTranslateY = useSharedValue(ValueConstants.zero);
@@ -120,8 +135,13 @@ export const useRecipeList = (): UseRecipeListResult => {
     });
   }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 
+  // Takes the query as an argument rather than closing over it: this identity
+  // is a dependency of the focus/locale effects below, and a callback that
+  // changed on every debounced keystroke would make those effects re-fire and
+  // issue a second, duplicate request alongside the search one.
   const buildApiFilters = useCallback(
-    (f: UiFilters, sort: SortKey): RecipeFilters => ({
+    (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({
+      ...(query.length > ValueConstants.zero ? { search: query } : {}),
       ...(f.cuisines.length > ValueConstants.zero ? { cuisines: f.cuisines } : {}),
       ...(f.categories.length > ValueConstants.zero ? { categories: f.categories } : {}),
       ...(f.difficulties.length > ValueConstants.zero ? { difficulties: f.difficulties } : {}),
@@ -137,8 +157,8 @@ export const useRecipeList = (): UseRecipeListResult => {
   // would use different orderings — the list visibly reshuffled the first
   // time the user came back from a recipe detail.
   useEffect(() => {
-    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy));
-  }, [state.status, load, buildApiFilters, filters, sortBy]);
+    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy, debouncedSearch));
+  }, [state.status, load, buildApiFilters, filters, sortBy, debouncedSearch]);
 
   // WHY: the store's `isRefreshing` covers every in-place refetch (filter, sort,
   // locale switch, focus), but `RefreshControl.refreshing` must reflect ONLY a
@@ -151,7 +171,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     setIsPullRefreshing(true);
     void (async () => {
       try {
-        await load(buildApiFilters(filters, sortBy));
+        await load(buildApiFilters(filters, sortBy, debouncedSearch));
       } catch {
         // `load` folds failures into state and shouldn't reject; swallow anyway so
         // an unexpected throw can't escape as an unhandled rejection.
@@ -161,22 +181,37 @@ export const useRecipeList = (): UseRecipeListResult => {
         setIsPullRefreshing(false);
       }
     })();
-  }, [load, filters, sortBy, buildApiFilters]);
+  }, [load, filters, sortBy, debouncedSearch, buildApiFilters]);
 
   // Recipe content is localized server-side, so a language switch must re-fetch.
-  // Refs keep the latest filters/sort without re-running this effect on their change.
+  // Refs keep the latest filters/sort/query without re-running these effects on
+  // their change — each of them owns its own refetch trigger below.
   const filtersRef = useRef(filters);
   const sortByRef = useRef(sortBy);
+  const searchRef = useRef(debouncedSearch);
   filtersRef.current = filters;
   sortByRef.current = sortBy;
+  searchRef.current = debouncedSearch;
   const didMountRef = useRef(false);
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
-    void load(buildApiFilters(filtersRef.current, sortByRef.current));
+    void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
   }, [language, load, buildApiFilters]);
+
+  // The query settled — fetch the matching page. Skips the mount run because
+  // the idle-load effect above already issues the first request; without the
+  // guard the screen would fire two identical loads on every cold open.
+  const didSearchRef = useRef(false);
+  useEffect(() => {
+    if (!didSearchRef.current) {
+      didSearchRef.current = true;
+      return;
+    }
+    void load(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
+  }, [debouncedSearch, load, buildApiFilters]);
 
   // Re-fetch quietly on focus so new/edited recipes appear; skip the mount focus.
   const didFocusRef = useRef(false);
@@ -186,7 +221,7 @@ export const useRecipeList = (): UseRecipeListResult => {
         didFocusRef.current = true;
         return;
       }
-      void load(buildApiFilters(filtersRef.current, sortByRef.current));
+      void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),
   );
 
@@ -201,9 +236,9 @@ export const useRecipeList = (): UseRecipeListResult => {
     (next: UiFilters): void => {
       setFilters(next);
       setPendingFilters(next);
-      void load(buildApiFilters(next, sortBy));
+      void load(buildApiFilters(next, sortBy, debouncedSearch));
     },
-    [load, buildApiFilters, sortBy],
+    [load, buildApiFilters, sortBy, debouncedSearch],
   );
 
   const onApplyFilters = (): void => {
@@ -212,7 +247,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(pendingFilters);
     setSortBy(nextSort);
     setSheetOpen(null);
-    void load(buildApiFilters(pendingFilters, nextSort));
+    void load(buildApiFilters(pendingFilters, nextSort, debouncedSearch));
   };
 
   const onOpenFilter = (): void => {
@@ -225,24 +260,26 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
     // Keep the active sort: resetting filters must not silently change ordering.
-    void load(buildApiFilters(emptyFilters, sortBy));
+    void load(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
-  const effectiveSearch = isWebShell ? webSearchQuery : search;
-  const isSearching = effectiveSearch.trim().length > ValueConstants.zero;
+  const recipes = useMemo(
+    () => (state.status === 'loaded' ? state.recipes : []),
+    [state],
+  );
 
-  const filteredRecipes = useMemo(() => {
-    if (state.status !== 'loaded') return [];
-    const query = effectiveSearch.trim().toLowerCase();
-    if (query.length === ValueConstants.zero) return state.recipes;
-    return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
-  }, [state, effectiveSearch]);
+  // Covers the whole round trip the user is waiting on, not just the request:
+  // the window between a keystroke and the debounce firing is also "results
+  // you can see are out of date", and treating it as idle would flash the
+  // previous query's results (or an empty state) mid-typing.
+  const isRefetching = isRecipeListRefreshing(state) || trimmedSearch !== debouncedSearch;
 
   return {
     state,
-    filteredRecipes,
+    recipes,
     isWebShell,
     isSearching,
+    isRefetching,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
     sortBy,
@@ -264,7 +301,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     onChangeSort: (key: SortKey) => {
       setSortBy(key);
-      void load(buildApiFilters(filters, key));
+      void load(buildApiFilters(filters, key, debouncedSearch));
     },
     onToggleCuisineQuick: (cuisine: string) => applyAndLoad(mutate.toggleCuisineQuick(filters, cuisine)),
     onDifficultyChange: (d: Difficulty | null) => applyAndLoad(mutate.setDifficultyQuick(filters, d)),
