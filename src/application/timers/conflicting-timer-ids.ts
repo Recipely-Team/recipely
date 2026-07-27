@@ -1,15 +1,17 @@
 import type { TimerEntry } from '@application/timers/timer-entry';
 
 /**
- * Ids of the timers that must yield when a recipe starts (or resumes) one.
+ * Ids of the timers that stand in the way of a recipe starting (or resuming) one.
  *
  * A recipe's prep and cook times are consecutive phases of the same dish, so
  * counting both down at once describes a kitchen that cannot exist — you are
  * either prepping or cooking. One timer per recipe is therefore the rule, and
- * starting the other phase replaces the one already running.
+ * the running phase WINS: the second start is refused and explained, never
+ * granted by discarding the countdown already on the clock. A mistaken tap
+ * that silently reset a 40-minute bake is the failure this ordering prevents.
  *
- * Paused timers count as conflicts too: leaving one parked would let a later
- * resume put the recipe back into the two-timers state this rule forbids.
+ * Paused timers count as conflicts too: a parked timer is one the user still
+ * intends to finish, and starting the other phase over it would strand it.
  * The scope is deliberately ONE recipe — timers on different recipes are
  * genuinely concurrent (a soup simmering while another dough rests).
  */

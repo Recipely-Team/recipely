@@ -136,35 +136,59 @@ describe('timer-controls', () => {
 
   /**
    * A recipe's prep and cook times are consecutive phases of the same dish, so
-   * counting both down at once describes a kitchen that cannot exist. Starting
-   * one phase replaces the other; timers on OTHER recipes are untouched,
-   * because those really do run in parallel.
+   * counting both down at once describes a kitchen that cannot exist. The
+   * RUNNING one wins: a second start is refused and explained, never granted by
+   * discarding the countdown already on the clock — a mistaken tap must not be
+   * able to reset a 40-minute bake. Timers on OTHER recipes really do run in
+   * parallel and are untouched.
    */
   describe('one timer per recipe', () => {
-    it('stops the running prep timer when the cook timer starts', async () => {
+    it('refuses to start the cook timer while prep is running', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
 
       await startTimer('r1:cook', 'r1', 'Pasta', 20);
 
-      expect(timerStore.getState().timers['r1:prep']).toBeUndefined();
-      expect(timerStore.getState().timers['r1:cook']).toBeDefined();
+      expect(timerStore.getState().timers['r1:cook']).toBeUndefined();
     });
 
-    it('cancels the replaced timer’s notifications rather than orphaning them', async () => {
+    it('leaves the running timer exactly as it was', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      const running = timerStore.getState().timers['r1:prep'];
+
+      await startTimer('r1:cook', 'r1', 'Pasta', 20);
+
+      expect(timerStore.getState().timers['r1:prep']).toEqual(running);
+      expect(notificationService.cancelCalls).toHaveLength(0);
+    });
+
+    it('explains why nothing happened', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
 
       await startTimer('r1:cook', 'r1', 'Pasta', 20);
 
-      expect(notificationService.cancelCalls).toContainEqual(['notif-1', 'notif-2', 'notif-3']);
+      expect(toastStore.getState().toasts.map((toast) => toast.message)).toContain(
+        t().timer.alreadyRunning,
+      );
     });
 
-    it('replaces a PAUSED timer too, so resuming it cannot revive the pair', async () => {
+    it('is blocked by a PAUSED timer too, which the user still means to finish', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       await pauseTimer('r1:prep');
 
       await startTimer('r1:cook', 'r1', 'Pasta', 20);
 
-      expect(timerStore.getState().timers['r1:prep']).toBeUndefined();
+      expect(timerStore.getState().timers['r1:cook']).toBeUndefined();
+      expect(timerStore.getState().timers['r1:prep']).toBeDefined();
+    });
+
+    it('starts once the running timer is stopped', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      await startTimer('r1:cook', 'r1', 'Pasta', 20);
+
+      await stopTimer('r1:prep');
+      await startTimer('r1:cook', 'r1', 'Pasta', 20);
+
+      expect(timerStore.getState().timers['r1:cook']).toBeDefined();
     });
 
     it('leaves timers belonging to other recipes running', async () => {
@@ -176,43 +200,28 @@ describe('timer-controls', () => {
       expect(timerStore.getState().timers['r1:cook']).toBeDefined();
     });
 
-    it('applies the rule when a paused timer is resumed', async () => {
+    it('refuses to resume a paused timer while the other phase runs', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       await pauseTimer('r1:prep');
-      await startTimer('r1:cook', 'r1', 'Pasta', 20);
-      // The cook timer replaced prep, so put prep back and pause it by hand:
-      // this is the "other phase was started while I sat paused" case.
+      // The other phase was started elsewhere while this one sat paused.
       await timerStore.getState().add({
-        id: 'r1:prep',
+        id: 'r1:cook',
         recipeId: 'r1',
         recipeName: 'Pasta',
-        durationSeconds: 300,
-        endTimeMs: Date.now() + 300_000,
-        isPaused: true,
-        remainingMsOnPause: 300_000,
+        durationSeconds: 1200,
+        endTimeMs: Date.now() + 1_200_000,
+        isPaused: false,
+        remainingMsOnPause: 0,
         completionNotifIds: [],
       });
 
       await resumeTimer('r1:prep');
 
-      expect(timerStore.getState().timers['r1:cook']).toBeUndefined();
-      expect(timerStore.getState().timers['r1:prep']?.isPaused).toBe(false);
+      expect(timerStore.getState().timers['r1:prep']?.isPaused).toBe(true);
+      expect(timerStore.getState().timers['r1:cook']).toBeDefined();
     });
 
-    it('tells the user which way the switch went', async () => {
-      await startTimer('r1:prep', 'r1', 'Pasta', 5);
-      toastStore.setState({ toasts: [] });
-
-      await startTimer('r1:cook', 'r1', 'Pasta', 20);
-
-      expect(toastStore.getState().toasts.map((toast) => toast.message)).toContain(
-        t().timer.switched,
-      );
-    });
-
-    it('stays quiet when there was nothing to replace', async () => {
-      toastStore.setState({ toasts: [] });
-
+    it('stays quiet when there is nothing in the way', async () => {
       await startTimer('r1:cook', 'r1', 'Pasta', 20);
 
       expect(toastStore.getState().toasts).toHaveLength(0);
