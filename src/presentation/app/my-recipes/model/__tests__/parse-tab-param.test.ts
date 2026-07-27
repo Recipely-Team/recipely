@@ -16,6 +16,5 @@ describe('parseTabParam', () => {
     expect(parseTabParam(undefined)).toBe('saved');
     expect(parseTabParam('')).toBe('saved');
     expect(parseTabParam('nonsense')).toBe('saved');
-    expect(parseTabParam(42)).toBe('saved');
   });
 });

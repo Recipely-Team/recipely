@@ -43,8 +43,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
       try {
         const favResult = await deps.loadFavorites.execute();
         if (favResult.ok) {
-          const { setSavedIds } = deps.savedRecipesStore.getState();
-          setSavedIds(favResult.value);
+          deps.savedRecipesStore.getState().setSaved(favResult.value);
         }
       } catch {
         // Intentionally ignored — see above.

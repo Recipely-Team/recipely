@@ -135,7 +135,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   useEffect(() => {
     if (!isWebShell) return;
     void loadFavoritesUseCase.execute().then((result) => {
-      if (result.ok) savedRecipesStore.getState().setSavedIds(result.value);
+      if (result.ok) savedRecipesStore.getState().setSaved(result.value);
     });
   }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 

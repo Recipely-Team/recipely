@@ -18,10 +18,7 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
           set({ isLoading: false, error: result.failure });
           return;
         }
-        const { savedIds, setSavedIds } = savedRecipesStore.getState();
-        const next = new Set(savedIds);
-        next.add(recipeId);
-        setSavedIds(next);
+        savedRecipesStore.getState().addLocal(recipeId);
         set({ isLoading: false });
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
@@ -36,10 +33,7 @@ export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): F
           set({ isLoading: false, error: result.failure });
           return;
         }
-        const { savedIds, setSavedIds } = savedRecipesStore.getState();
-        const next = new Set(savedIds);
-        next.delete(recipeId);
-        setSavedIds(next);
+        savedRecipesStore.getState().removeLocal(recipeId);
         set({ isLoading: false });
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);

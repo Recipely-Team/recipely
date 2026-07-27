@@ -69,6 +69,10 @@ export const RECIPES_PAGE_SIZE = 30;
 
 export const DRAFTS_PAGE_SIZE = 20;
 
+// The saved grid is not paginated in the UI, so this is effectively "how many
+// saved recipes a user can see". 100 is the backend's own per-page ceiling.
+export const FAVORITES_PAGE_SIZE = 100;
+
 export const COMMENTS_PAGE_SIZE = 20;
 
 export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;

@@ -8,5 +8,5 @@ const TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
  * Publishing a recipe lands here on `created`: a user who just made something
  * and is shown the saved tab instead reasonably concludes it was not saved.
  */
-export const parseTabParam = (value: unknown): TabType =>
+export const parseTabParam = (value: string | undefined): TabType =>
   TABS.find((tab) => tab === value) ?? 'saved';

@@ -54,10 +54,10 @@ export const useRecipeGeneration = ({
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
-  // Read inside `handleRefine` without making it a dependency: the callback
-  // must not be rebuilt every time the panel opens or closes.
-  const chatExpandedRef = useRef(chatExpanded);
-  chatExpandedRef.current = chatExpanded;
+  // A refine outlives the screen: publishing (or exiting to a draft) while one
+  // is in flight must not pop its "Updated!" over whatever comes next.
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
 
   const refining = refineState.status === 'refining';
@@ -212,7 +212,7 @@ export const useRecipeGeneration = ({
         // The answer landed with the assistant closed: the recipe has just
         // rewritten itself under the user, and the bubble explaining it is
         // behind a panel they cannot see. Say it out loud instead.
-        if (!chatExpandedRef.current) showSuccessToast(t().createRecipe.aiUpdated);
+        if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.aiUpdated);
         createdRecipesStore.getState().resetRefineState();
         return;
       }
@@ -229,7 +229,7 @@ export const useRecipeGeneration = ({
       ]);
       createdRecipesStore.getState().resetRefineState();
     },
-    [createdRecipesStore, recipe, refining, setRecipe],
+    [createdRecipesStore, recipe, refining, setRecipe, chatExpanded],
   );
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix

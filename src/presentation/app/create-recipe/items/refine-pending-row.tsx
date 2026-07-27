@@ -17,7 +17,12 @@ export const RefinePendingRow = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
-    <View style={[styles.row, { borderBottomColor: colors.border }]}>
+    <View
+      accessible
+      accessibilityLiveRegion="polite"
+      accessibilityLabel={t().createRecipe.refining}
+      style={[styles.row, { borderBottomColor: colors.border }]}
+    >
       <ActivityIndicator size="small" color={colors.primary} />
       <ThemedText variant="caption" muted>
         {t().createRecipe.refining}

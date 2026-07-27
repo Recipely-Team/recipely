@@ -178,7 +178,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   // survives an account switch shows the previous user's data (stale comments,
   // likes, notifications) until a manual refresh.
   const clearSessionCaches = (): void => {
-    savedRecipesStore.getState().setSavedIds(new Set());
+    savedRecipesStore.getState().setSaved([]);
     commentsStore.getState().clear();
     likesStore.getState().clear();
     recipeDetailStore.getState().clear();

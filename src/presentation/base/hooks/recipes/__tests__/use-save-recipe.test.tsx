@@ -41,6 +41,7 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 /** Builds a savedRecipesStore whose savedIds can be seeded and mutated. */
 const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
   create<SavedRecipesStoreState>((set, get) => ({
+    savedRecipes: [],
     savedIds: initial,
     isLoading: false,
     error: null,
@@ -64,7 +65,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         next.delete(id);
         return { savedIds: next };
       }),
-    setSavedIds: (ids) => set({ savedIds: ids }),
+    setSaved: (): void => undefined,
     setLoading: (loading) => set({ isLoading: loading }),
     setError: (error) => set({ error }),
     clearError: () => set({ error: null }),

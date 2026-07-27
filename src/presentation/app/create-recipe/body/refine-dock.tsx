@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import {
   Keyboard,
   Pressable,
@@ -70,20 +71,37 @@ export const RefineDock = ({
   // other, and the dock visibly jumped. Waiting for the keyboard to finish
   // hiding costs nothing and the panel closes into a settled layout. The
   // timeout is the escape hatch for a platform that never emits the event.
+  const pendingClose = useRef<(() => void) | null>(null);
+
+  // A close in flight is cancelled on unmount (the exit sheet can take the
+  // screen down inside the window) and before starting another, so a second
+  // tap cannot stack a second listener and timer.
+  useEffect(() => () => pendingClose.current?.(), []);
+
   const closeAssistant = (): void => {
+    pendingClose.current?.();
     if (!keyboardVisible) {
       onCollapse();
       return;
     }
-    const sub = Keyboard.addListener('keyboardDidHide', () => {
-      sub.remove();
-      clearTimeout(fallback);
+    const finish = (): void => {
+      pendingClose.current = null;
       onCollapse();
+    };
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      cancel();
+      finish();
     });
     const fallback = setTimeout(() => {
-      sub.remove();
-      onCollapse();
+      cancel();
+      finish();
     }, KEYBOARD_HIDE_TIMEOUT_MS);
+    const cancel = (): void => {
+      sub.remove();
+      clearTimeout(fallback);
+      pendingClose.current = null;
+    };
+    pendingClose.current = cancel;
     Keyboard.dismiss();
   };
 
