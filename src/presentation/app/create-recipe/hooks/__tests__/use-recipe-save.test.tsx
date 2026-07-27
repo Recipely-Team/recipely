@@ -26,7 +26,6 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
@@ -126,7 +125,6 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
-    updateRecipeUseCase: new UpdateRecipeUseCase(repo),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
     recipeListStore: noopCacheStore<RecipeListStore>(),
     recipeDetailStore: noopCacheStore<RecipeDetailStore>(),
@@ -160,7 +158,6 @@ interface HookDriver {
 const driveHook = (
   config: FakeRecipeRepositoryConfig,
   recipe: EditableRecipe,
-  edit?: { recipeId: string },
 ): HookDriver => {
   let latest!: Save;
   let fieldErrors: CreateRecipeFieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS;
@@ -170,8 +167,6 @@ const driveHook = (
     fieldErrors = errors;
     latest = useRecipeSave({
       recipe,
-      recipeId: edit?.recipeId,
-      isEditMode: edit !== undefined,
       activeDraftId: 'draft-1',
       setFieldErrors: setErrors,
     });
@@ -229,7 +224,7 @@ describe('useRecipeSave — publish', () => {
 
     await driver.save();
 
-    expect(driver.latest().saveSuccess).toEqual({ mode: 'publish', recipeId: CREATED_ID });
+    expect(driver.latest().saveSuccess).toEqual({ recipeId: CREATED_ID });
     expect(mockReplace).not.toHaveBeenCalled();
     expect(mockBack).not.toHaveBeenCalled();
   });
@@ -283,25 +278,5 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
 
     expect(driver.latest().saveIssue).toBe(en.errors.invalidMediaType.short);
-  });
-});
-
-describe('useRecipeSave — update', () => {
-  it('surfaces update success as a dialog state and navigates back on dismiss', async () => {
-    const driver = driveHook(
-      { updateRecipeResult: ok(makeRecipe('r-1')) },
-      publishable(),
-      { recipeId: 'r-1' },
-    );
-
-    await driver.save();
-
-    expect(driver.latest().saveSuccess).toEqual({ mode: 'update' });
-    expect(mockBack).not.toHaveBeenCalled();
-
-    act(() => driver.latest().onCloseSuccess());
-
-    expect(mockBack).toHaveBeenCalledTimes(1);
-    expect(driver.latest().saveSuccess).toBeNull();
   });
 });

@@ -4,12 +4,10 @@ import type { GenerateRecipeUseCase } from '@application/recipes/generate/genera
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
-import type { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -82,10 +80,6 @@ const createInput: CreateRecipeInput = {
   media: [],
 };
 
-const updateInput: UpdateRecipeInput = {
-  name: { en: 'Updated Recipe' },
-};
-
 // Hand-rolled fakes — construction requires all use cases, but each test only
 // exercises the one(s) relevant to its scenario.
 const fakeGenerateUseCase = {
@@ -103,7 +97,6 @@ const fakeRefineUseCase = {
 interface Deps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
-  updateRecipeUseCase: UpdateRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   recipeListStore: RecipeListStore;
   recipeDetailStore: RecipeDetailStore;
@@ -117,10 +110,6 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
   const fakeListMyUseCase = {
     execute: () => Promise.resolve(ok([])),
   } as unknown as ListMyRecipesUseCase;
-
-  const fakeUpdateUseCase = {
-    execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
-  } as unknown as UpdateRecipeUseCase;
 
   const fakeDeleteUseCase = {
     execute: () => Promise.resolve(ok(undefined)),
@@ -144,7 +133,6 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     generateRecipeUseCase: fakeGenerateUseCase,
     importInstagramRecipeUseCase: fakeImportUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
-    updateRecipeUseCase: fakeUpdateUseCase,
     deleteRecipeUseCase: fakeDeleteUseCase,
     recipeListStore: fakeRecipeListStore,
     recipeDetailStore: fakeRecipeDetailStore,
@@ -250,46 +238,6 @@ describe('createdRecipesStore CRUD', () => {
       expect(s.createState).toEqual({ status: 'error', failure });
       expect(s.localRecipes).toEqual([]);
       expect(s.recipes).toEqual([]);
-    });
-  });
-
-  describe('updateRecipe', () => {
-    it('on success, updates recipes/localRecipes and replaces recipeListStore with a RecipeSummaryEntity-shaped recipe', async () => {
-      const original = makeRecipe({ id: 'r-target', name: 'Original' });
-      const updated = makeRecipe({ id: 'r-target', name: 'Updated via API' });
-      const updateRecipeUseCase = {
-        execute: () => Promise.resolve(ok(updated)),
-      } as unknown as UpdateRecipeUseCase;
-      const { store, recipeListStoreReplace, recipeDetailStoreReplace } = makeStore({ updateRecipeUseCase });
-      store.getState().add(original);
-
-      await store.getState().updateRecipe('r-target', updateInput);
-
-      const s = store.getState();
-      expect(s.localRecipes.find((r) => r.id === 'r-target')?.name).toBe('Updated via API');
-      expect(s.recipes.find((r) => r.id === 'r-target')?.name).toBe('Updated via API');
-      expect(recipeDetailStoreReplace).toHaveBeenCalledWith(updated);
-      expect(recipeListStoreReplace).toHaveBeenCalledTimes(1);
-      const summaryArg = recipeListStoreReplace.mock.calls[0][0];
-      expect(summaryArg).toBeInstanceOf(RecipeSummaryEntity);
-      expect(summaryArg).not.toBeInstanceOf(RecipeEntity);
-      expect(summaryArg.id).toBe('r-target');
-      expect(summaryArg.name).toBe('Updated via API');
-      expect('ingredients' in summaryArg).toBe(false);
-    });
-
-    it('on failure, sets updateState.error and does not touch sibling stores', async () => {
-      const failure = new UnknownFailure('nope');
-      const updateRecipeUseCase = {
-        execute: () => Promise.resolve(fail(failure)),
-      } as unknown as UpdateRecipeUseCase;
-      const { store, recipeListStoreReplace, recipeDetailStoreReplace } = makeStore({ updateRecipeUseCase });
-
-      await store.getState().updateRecipe('r-target', updateInput);
-
-      expect(store.getState().updateState).toEqual({ status: 'error', failure });
-      expect(recipeListStoreReplace).not.toHaveBeenCalled();
-      expect(recipeDetailStoreReplace).not.toHaveBeenCalled();
     });
   });
 

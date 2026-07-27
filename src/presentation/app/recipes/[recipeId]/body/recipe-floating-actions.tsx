@@ -11,7 +11,6 @@ export interface RecipeFloatingActionsProps {
   liked: boolean;
   isSaved: boolean;
   saveDisabled: boolean;
-  onEdit: () => void;
   onShare: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
@@ -27,7 +26,6 @@ export const RecipeFloatingActions = ({
   liked,
   isSaved,
   saveDisabled,
-  onEdit,
   onShare,
   onToggleLike,
   onToggleSave,
@@ -36,16 +34,6 @@ export const RecipeFloatingActions = ({
 
   return (
     <View style={[styles.floatingActions, { top: insetsTop + spacing.sm }]}>
-      {isOwner ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().myRecipes.editRecipe}
-          onPress={onEdit}
-          style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-        >
-          <Ionicons name="pencil" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t().recipes.share}

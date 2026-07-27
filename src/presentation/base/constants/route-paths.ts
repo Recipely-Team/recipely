@@ -18,6 +18,5 @@ export const RoutePaths = {
   editProfile: '/edit-profile',
   settings: '/settings',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
-  createRecipeWithDraft: (recipeId: string): string => `/create-recipe?recipeId=${recipeId}`,
   loginWithRedirect: (pathname: string): string => `/login?redirect=${encodeURIComponent(pathname)}`,
 } as const;

@@ -9,7 +9,6 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 /** View model returned by {@link useCreateRecipe} for the create/edit screen. */
 export interface UseCreateRecipeResult {
   phase: PhaseType;
-  isEditMode: boolean;
   isWebShell: boolean;
   insets: EdgeInsets;
 
@@ -73,7 +72,7 @@ export interface UseCreateRecipeResult {
   onKeepEditing: () => void;
 
   // Save-error dialog.
-  saveError: { message: string; mode: 'publish' | 'update' } | null;
+  saveError: string | null;
   onConfirmSaveError: () => void;
   onCloseSaveError: () => void;
 
@@ -82,7 +81,7 @@ export interface UseCreateRecipeResult {
   onCloseSaveIssue: () => void;
 
   // Save-success dialog.
-  saveSuccess: { mode: 'publish'; recipeId: string } | { mode: 'update' } | null;
+  saveSuccess: { recipeId: string } | null;
   onSuccessPrimary: () => void;
   onCloseSuccess: () => void;
 }

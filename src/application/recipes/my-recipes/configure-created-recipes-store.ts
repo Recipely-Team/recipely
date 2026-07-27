@@ -11,13 +11,12 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     createState: { status: 'idle' },
     generateState: { status: 'idle' },
     importState: { status: 'idle' },
-    updateState: { status: 'idle' },
     deleteState: { status: 'idle' },
     refineState: { status: 'idle' },
     aiDraft: null,
     // WHY: localRecipes is the source of truth for `findById`; recipes (the
     // lean "My Recipes" grid data) is kept in sync alongside it via
-    // `recipeToSummary` so a create/update/delete doesn't need a re-fetch to
+    // `recipeToSummary` so a create/delete doesn't need a re-fetch to
     // show up in both places. The conversion only fails on the
     // practically-impossible case of an already-valid Recipe producing an
     // invalid RecipeSummaryEntity — skip the lean-list update in that case.
@@ -116,25 +115,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
       set({ refineState: { status: 'success', recipe: refined.recipe } });
       return refined;
     },
-    updateRecipe: async (id, input, onProgress) => {
-      set({ updateState: { status: 'updating' } });
-      const result = await deps.updateRecipeUseCase.execute(id, input, onProgress);
-      if (!result.ok) {
-        set({ updateState: { status: 'error', failure: result.failure } });
-        return;
-      }
-      const recipe = result.value;
-      get().replace(recipe);
-      // Propagate the edit to sibling caches so every screen sees fresh data.
-      // recipeListStore holds the lean RecipeSummaryEntity[] list cache, so the
-      // full Recipe is first converted down to a summary.
-      const summary = recipeToSummary(recipe);
-      if (summary.ok) {
-        deps.recipeListStore.getState().replace(summary.value);
-      }
-      deps.recipeDetailStore.getState().replace(recipe);
-      set({ updateState: { status: 'success', recipe } });
-    },
     deleteRecipe: async (id) => {
       set({ deleteState: { status: 'deleting' } });
       const result = await deps.deleteRecipeUseCase.execute(id);
@@ -151,7 +131,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     resetGenerateState: () => set({ generateState: { status: 'idle' } }),
     resetImportState: () => set({ importState: { status: 'idle' } }),
     resetRefineState: () => set({ refineState: { status: 'idle' } }),
-    resetUpdateState: () => set({ updateState: { status: 'idle' } }),
     resetDeleteState: () => set({ deleteState: { status: 'idle' } }),
     clearAiDraft: () => set({ aiDraft: null }),
     clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),

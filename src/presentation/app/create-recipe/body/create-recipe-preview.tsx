@@ -24,7 +24,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
     <>
       <CreateRecipeHeader
         title={vm.headerTitle}
-        showAiBadge={!vm.isEditMode}
+        showAiBadge
         saveLabel={vm.saveLabel}
         isSaving={vm.isSaving}
         isWebShell={vm.isWebShell}

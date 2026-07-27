@@ -132,7 +132,6 @@ report block at the bottom — that is all I need to work from.
 | F12 | Reopen Create | "Resume draft" card offers the unfinished recipe | | |
 | F13 | Resume the draft | All fields restored | | |
 | F14 | Save the recipe | Appears under My Recipes | | |
-| F15 | Edit a saved recipe and re-save | Changes persist | | |
 | F16 | Delete a recipe | Confirmation, then it disappears | | |
 | F17 | Try to save with an empty title | Field-level error, no crash | | |
 

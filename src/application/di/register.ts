@@ -30,7 +30,6 @@ import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
 import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
-import { UpdateRecipeUseCase } from '@application/recipes/update/update-recipe-use-case';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
@@ -90,7 +89,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
   const importInstagramRecipeUseCase = new ImportInstagramRecipeUseCase(recipeRepo);
   const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
-  const updateRecipeUseCase = new UpdateRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
   const listDraftsUseCase = new ListDraftsUseCase(draftRepo);
   const getLatestDraftUseCase = new GetLatestDraftUseCase(draftRepo);
@@ -125,7 +123,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
     generateRecipeUseCase,
     importInstagramRecipeUseCase,
     refineRecipeUseCase,
-    updateRecipeUseCase,
     deleteRecipeUseCase,
     recipeListStore,
     recipeDetailStore,

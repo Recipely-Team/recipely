@@ -5,7 +5,6 @@ import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -90,16 +89,6 @@ export class FakeRecipeRepository implements IRecipeRepository {
     this.refineCallCount += 1;
     return Promise.resolve(
       this.config.refineRecipeResult ?? ok(undefined as unknown as RefinedRecipe),
-    );
-  }
-
-  updateRecipe(
-    _id: string,
-    _input: UpdateRecipeInput,
-    _onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<RecipeEntity, Failure>> {
-    return Promise.resolve(
-      this.config.updateRecipeResult ?? fail(new UnknownFailure('not configured')),
     );
   }
 

@@ -292,7 +292,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
     onDeleteComment: (id: string) => void handleDeleteComment(id),
-    onEdit: () => router.push(RoutePaths.createRecipeWithDraft(recipeId) as Href),
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 717 source files.
+[architecture.md](architecture.md). 711 source files.
 
 ## Layers
 
@@ -36,7 +36,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(7)_
-- `recipes/` — create, list, media, refine, taxonomy, update _(19)_
+- `recipes/` — create, list, media, refine, taxonomy _(18)_
 - `storage/` _(1)_
 - `user-profile/` _(2)_
 
@@ -53,7 +53,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(7)_
 - `notifications/` — list, read _(13)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending, update _(48)_
+- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(46)_
 - `storage/` _(2)_
 - `timers/` _(7)_
 - `user-profile/` _(7)_
@@ -74,7 +74,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` — envelope, errors, http, jwt, upload _(16)_
 - `notifications/` — dtos _(7)_
-- `recipes/` — create, dtos, media, refine, taxonomy, update _(17)_
+- `recipes/` — create, dtos, media, refine, taxonomy _(14)_
 - `storage/` _(4)_
 - `user-profile/` _(3)_
 
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 8530c735f87ef483 -->
+<!-- fingerprint: 03722a32f92c8a28 -->

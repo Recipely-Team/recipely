@@ -32,7 +32,6 @@ export interface WebRecipeDetailProps {
   onBack: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
-  onEdit: () => void;
   onDelete: () => void;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
@@ -93,7 +92,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         likeCount={props.likeCount}
         onToggleLike={props.onToggleLike}
         isOwner={props.isOwner}
-        onEdit={props.onEdit}
         onDelete={props.onDelete}
         isSaved={props.isSaved}
         saveDisabled={props.saveDisabled}

@@ -13,6 +13,5 @@ export interface FakeRecipeRepositoryConfig {
   generateRecipeResult?: Result<RecipeEntity, Failure>;
   importInstagramRecipeResult?: Result<RecipeEntity, Failure>;
   refineRecipeResult?: Result<RefinedRecipe, Failure>;
-  updateRecipeResult?: Result<RecipeEntity, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
 }
