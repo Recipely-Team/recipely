@@ -1,8 +1,27 @@
 import { timerStore } from '@application/timers/timer-store';
+import { conflictingTimerIds } from '@application/timers/conflicting-timer-ids';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
 import { TimerTimeConstants } from '@presentation/base/timers/timer-time-constants';
+import { showNeutralToast } from '@presentation/base/feedback/show-toast';
+import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+
+/**
+ * Stops whatever else this recipe had running, so only one of its phases counts
+ * down at a time (see {@link conflictingTimerIds}). The switch is silent apart
+ * from a toast: reaching for "cook" while "prep" runs says the prep is over,
+ * and asking for confirmation every time would tax the common case.
+ */
+const replaceRecipeTimers = async (recipeId: string, startingTimerId: string): Promise<void> => {
+  const replaced = conflictingTimerIds(timerStore.getState().timers, recipeId, startingTimerId);
+  if (replaced.length === ValueConstants.zero) return;
+
+  for (const id of replaced) {
+    await stopTimer(id);
+  }
+  showNeutralToast(t().timer.switched);
+};
 
 /** Starts a timer: schedules all alarm notifications and persists the entry. */
 export const startTimer = async (
@@ -15,6 +34,10 @@ export const startTimer = async (
   // Timer ids are deterministic (`<recipeId>:<slot>`), so a re-start must clear
   // the "already alarmed" mark or this run would expire silently.
   triggeredAlarms.release(timerId);
+  // Restarting the SAME timer would otherwise leave the previous run's
+  // notifications scheduled — `add()` overwrites the entry that held their ids.
+  if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
+  await replaceRecipeTimers(recipeId, timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
   const endTimeMs = Date.now() + durationSeconds * TimerTimeConstants.msPerSecond;
@@ -56,8 +79,16 @@ export const resumeTimer = async (timerId: string): Promise<void> => {
   // Same reason as `startTimer`: this run gets a new end time, so the mark from
   // an earlier expiry must not silence it.
   triggeredAlarms.release(timerId);
-  const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, entry.recipeName, newEndTimeMs);
+  // Resuming is a start as far as the one-timer-per-recipe rule is concerned:
+  // the other phase may well have been started while this one sat paused.
+  await replaceRecipeTimers(entry.recipeId, timerId);
+  // Re-read: stopping the other phase is awaited, and this timer can be stopped
+  // (or dismissed from its notification) inside that window. Scheduling on a
+  // stale entry would leave notifications firing for a timer that is gone.
+  const current = timerStore.getState().timers[timerId];
+  if (current === undefined || !current.isPaused) return;
+  const newEndTimeMs = Date.now() + current.remainingMsOnPause;
+  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, current.recipeName, newEndTimeMs);
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;

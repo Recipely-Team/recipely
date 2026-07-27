@@ -1,6 +1,7 @@
 import '@presentation/bootstrap/crypto-polyfill';
 import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
+import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
 import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
@@ -65,6 +66,9 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       if (__DEV__) console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');
     });
+    // Restores whether the docked timers bar was left parked as a corner pill;
+    // it defaults to expanded, so a storage failure is not worth reporting.
+    void timersBarStore.getState().hydrate().catch(() => undefined);
     // Resolves the persisted "don't show onboarding again" choice so the launch
     // redirect can decide whether native guests land on the onboarding gate.
     void onboardingStore.getState().hydrate();

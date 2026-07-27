@@ -12,6 +12,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { t } from '@presentation/i18n';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
 import { timerStore } from '@application/timers/timer-store';
+import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
 import type { TimerEntry } from '@application/timers/timer-entry';
 
 let mockPathname = '/recipes/pecan-pie';
@@ -41,6 +42,7 @@ describe('ActiveTimersBar — same-screen dedupe', () => {
     });
     renderer = undefined;
     timerStore.setState({ timers: {}, hydrated: true });
+    timersBarStore.setState({ collapsed: false });
   });
 
   it('renders nothing when the only active timer belongs to the recipe currently on screen', () => {
@@ -95,6 +97,7 @@ describe('ActiveTimersBar — collapse', () => {
     });
     renderer = undefined;
     timerStore.setState({ timers: {}, hydrated: true });
+    timersBarStore.setState({ collapsed: false });
   });
 
   /** The button carrying the given accessibility label, or undefined. */
@@ -158,5 +161,32 @@ describe('ActiveTimersBar — collapse', () => {
     });
 
     expect(buttonLabelled(renderer, t().timer.collapse)).toBeDefined();
+  });
+
+  /**
+   * The bar is parked to reach what it covers, so the choice has to outlive the
+   * screen that prompted it — and, once persisted, the app launch too.
+   */
+  it('stays collapsed when the bar is mounted again', () => {
+    renderer = renderBar();
+    act(() => {
+      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+    });
+    act(() => {
+      renderer?.unmount();
+    });
+
+    renderer = renderBar();
+
+    expect(buttonLabelled(renderer, t().timer.expand)).toBeDefined();
+    expect(buttonLabelled(renderer, t().timer.collapse)).toBeUndefined();
+  });
+
+  it('names the hide control in words, not just a chevron', () => {
+    renderer = renderBar();
+
+    // The grabber line it replaced looked like decoration; testers reported the
+    // bar as unhideable while a working collapse control was on screen.
+    expect(textContent(renderer.root)).toContain(t().timer.collapse);
   });
 });

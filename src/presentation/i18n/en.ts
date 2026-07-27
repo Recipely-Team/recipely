@@ -563,6 +563,7 @@ export const en = {
     resume: 'Resume',
     cancel: 'Cancel',
     stop: 'Stop timer',
+    switched: 'Only one timer runs per recipe — the other one was stopped.',
     collapse: 'Hide timers',
     expand: 'Show timers',
   },

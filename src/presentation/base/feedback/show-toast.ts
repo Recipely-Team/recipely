@@ -34,6 +34,13 @@ export const showErrorToast = (failure: Failure, retry?: ToastRetry): string =>
 export const showDangerToast = (message: string): string =>
   toastStore.getState().show({ severity: 'danger', message });
 
+/**
+ * Surfaces a plain notice (muted): nothing failed and nothing was achieved —
+ * the app just did something on the user's behalf that they should know about.
+ */
+export const showNeutralToast = (message: string): string =>
+  toastStore.getState().show({ severity: 'neutral', message });
+
 /** Surfaces a success confirmation (green). */
 export const showSuccessToast = (message: string, action?: ToastRetry): string =>
   toastStore.getState().show({
