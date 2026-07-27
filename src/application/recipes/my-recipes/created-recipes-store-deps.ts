@@ -16,7 +16,7 @@ export interface CreatedRecipesStoreDeps {
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // WHY: owner-mutation flows must keep the public feed and detail cache in
   // sync. Without this, the recipe list at /recipes and the detail page show
-  // stale data after an edit until the next full reload.
+  // stale data after a delete until the next full reload.
   recipeListStore: RecipeListStore;
   recipeDetailStore: RecipeDetailStore;
 }

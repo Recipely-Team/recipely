@@ -33,16 +33,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
         localRecipes: s.localRecipes.filter((r) => r.id !== id),
         recipes: s.recipes.filter((r) => r.id !== id),
       })),
-    replace: (recipe) =>
-      set((s) => {
-        const summary = recipeToSummary(recipe);
-        return {
-          localRecipes: s.localRecipes.map((r) => (r.id === recipe.id ? recipe : r)),
-          recipes: summary.ok
-            ? s.recipes.map((r) => (r.id === summary.value.id ? summary.value : r))
-            : s.recipes,
-        };
-      }),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: 'creating' } });

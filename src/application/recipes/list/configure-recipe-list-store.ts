@@ -34,20 +34,6 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListS
       }
       set({ state: { status: 'loaded', recipes: result.value } });
     },
-    // WHY: lets owner-mutation flows (update/delete via createdRecipesStore)
-    // patch the public feed in-place so screens watching this store reflect
-    // the edit without a full re-fetch. No-ops if the recipe isn't in the
-    // currently loaded page — re-fetch will surface it when the user reaches it.
-    replace: (recipe) =>
-      set((s) => {
-        if (s.state.status !== 'loaded') return s;
-        return {
-          state: {
-            ...s.state,
-            recipes: s.state.recipes.map((r) => (r.id === recipe.id ? recipe : r)),
-          },
-        };
-      }),
     remove: (id) =>
       set((s) => {
         if (s.state.status !== 'loaded') return s;

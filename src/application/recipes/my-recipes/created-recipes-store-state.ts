@@ -14,7 +14,7 @@ export interface CreatedRecipesStoreState {
   // one `Recipe[]` field. `recipes` is the lean list for the "My Recipes"
   // grid, populated by `loadMyRecipes` (backend now returns RecipeSummaryEntity for
   // /me/recipes). `localRecipes` is the full-detail override cache read by
-  // `findById` (detail/edit screens fall back to a network fetch when an id
+  // `findById` (the detail screen falls back to a network fetch when an id
   // isn't present here) and is kept fresh by create/delete.
   recipes: readonly RecipeSummaryEntity[];
   localRecipes: readonly RecipeEntity[];
@@ -29,7 +29,6 @@ export interface CreatedRecipesStoreState {
   aiDraft: RecipeEntity | null;
   add: (recipe: RecipeEntity) => void;
   remove: (id: string) => void;
-  replace: (recipe: RecipeEntity) => void;
   findById: (id: string) => RecipeEntity | undefined;
   createRecipe: (input: CreateRecipeInput, onProgress?: CreateRecipeProgressCallback) => Promise<void>;
   loadMyRecipes: () => Promise<void>;

@@ -148,7 +148,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           {!isWebShell ? (
             <RecipeFloatingActions
               insetsTop={insets.top}
-              isOwner={vm.isOwner}
               liked={vm.liked}
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}

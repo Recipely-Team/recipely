@@ -6,7 +6,7 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 
-/** View model returned by {@link useCreateRecipe} for the create/edit screen. */
+/** View model returned by {@link useCreateRecipe} for the create-recipe screen. */
 export interface UseCreateRecipeResult {
   phase: PhaseType;
   isWebShell: boolean;

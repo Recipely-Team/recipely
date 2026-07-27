@@ -6,7 +6,6 @@ import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentatio
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
-  isOwner: boolean;
   /** Server-confirmed like state, overlaid by any in-flight optimistic toggle. */
   liked: boolean;
   isSaved: boolean;
@@ -17,12 +16,11 @@ export interface RecipeFloatingActionsProps {
 }
 
 /**
- * Floating overlay cluster (edit / share / like / save) pinned to the top-right
+ * Floating overlay cluster (share / like / save) pinned to the top-right
  * of the native recipe-detail hero image. Rendered only on the mobile shell.
  */
 export const RecipeFloatingActions = ({
   insetsTop,
-  isOwner,
   liked,
   isSaved,
   saveDisabled,

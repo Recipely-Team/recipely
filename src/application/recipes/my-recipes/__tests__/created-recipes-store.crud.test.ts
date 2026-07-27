@@ -158,25 +158,6 @@ describe('createdRecipesStore CRUD', () => {
     });
   });
 
-  describe('replace', () => {
-    it('updates the matching entry in both arrays by id and leaves others untouched', () => {
-      const { store } = makeStore();
-      const untouched = makeRecipe({ id: 'r-untouched', name: 'Untouched' });
-      const original = makeRecipe({ id: 'r-target', name: 'Original' });
-      store.getState().add(untouched);
-      store.getState().add(original);
-
-      const updated = makeRecipe({ id: 'r-target', name: 'Updated Name' });
-      store.getState().replace(updated);
-
-      const s = store.getState();
-      expect(s.localRecipes.find((r) => r.id === 'r-target')?.name).toBe('Updated Name');
-      expect(s.recipes.find((r) => r.id === 'r-target')?.name).toBe('Updated Name');
-      expect(s.localRecipes.find((r) => r.id === 'r-untouched')?.name).toBe('Untouched');
-      expect(s.recipes.find((r) => r.id === 'r-untouched')?.name).toBe('Untouched');
-    });
-  });
-
   describe('remove', () => {
     it('removes the matching entry from both arrays', () => {
       const { store } = makeStore();
