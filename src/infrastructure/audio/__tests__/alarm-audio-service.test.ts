@@ -27,6 +27,7 @@ jest.mock('expo-audio', () => {
 
 import { Platform } from 'react-native';
 import * as ExpoAudio from 'expo-audio';
+import type { AudioStatus } from 'expo-audio';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 
 type AudioMock = {
@@ -170,24 +171,18 @@ describe('AlarmAudioService', () => {
      */
     it('re-issues play once the source reports itself loaded', async () => {
       await service.start();
-      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: {
-        isLoaded: boolean;
-        playing: boolean;
-      }) => void;
+      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: AudioStatus) => void;
 
-      onStatus({ isLoaded: true, playing: false });
+      onStatus({ isLoaded: true, playing: false } as AudioStatus);
 
       expect(audio.__player.play).toHaveBeenCalledTimes(2);
     });
 
     it('does not fight the player once it is playing', async () => {
       await service.start();
-      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: {
-        isLoaded: boolean;
-        playing: boolean;
-      }) => void;
+      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: AudioStatus) => void;
 
-      onStatus({ isLoaded: true, playing: true });
+      onStatus({ isLoaded: true, playing: true } as AudioStatus);
 
       expect(audio.__player.play).toHaveBeenCalledTimes(1);
     });
@@ -224,6 +219,24 @@ describe('AlarmAudioService', () => {
 
       expect(audio.createAudioPlayer).not.toHaveBeenCalled();
       expect(audio.__player.play).not.toHaveBeenCalled();
+      // And the exclusive session it had already applied is handed back — held
+      // on, it leaves every other app's audio paused with nothing to end it.
+      expect(audio.setAudioModeAsync).toHaveBeenLastCalledWith(
+        expect.objectContaining({ interruptionMode: 'mixWithOthers' }),
+      );
+    });
+
+    it('stops nudging a source that never manages to play', async () => {
+      await service.start();
+      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: AudioStatus) => void;
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        onStatus({ isLoaded: true, playing: false } as AudioStatus);
+      }
+
+      // The initial play plus a capped number of retries — never a hot loop
+      // driven by the status stream for as long as the overlay is up.
+      expect(audio.__player.play.mock.calls.length).toBeLessThanOrEqual(4);
     });
   });
 });

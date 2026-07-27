@@ -23,10 +23,11 @@ import { t } from '@presentation/i18n';
 const RECIPE_NAME = 'Microwave Chocolate Mug Cake';
 
 /** The `<Text>` node whose rendered content is exactly `text`. */
-const textNode = (root: ReactTestInstance, text: string): ReactTestInstance =>
-  root
-    .findAllByType('Text')
-    .filter((node) => node.children.join('') === text)[0];
+const textNode = (root: ReactTestInstance, text: string): ReactTestInstance => {
+  const node = root.findAllByType('Text').filter((n) => n.children.join('') === text)[0];
+  if (node === undefined) throw new Error(`No <Text> rendering "${text}"`);
+  return node;
+};
 
 describe('AlarmScreen', () => {
   it('gives every label a line box at least as tall as its own font size', () => {

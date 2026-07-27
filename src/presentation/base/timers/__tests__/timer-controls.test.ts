@@ -134,6 +134,16 @@ describe('timer-controls', () => {
       expect(triggeredAlarms.has('r1:prep')).toBe(false);
     });
 
+    it('clears the mark when a paused timer is resumed', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      await pauseTimer('r1:prep');
+      triggeredAlarms.mark('r1:prep');
+
+      await resumeTimer('r1:prep');
+
+      expect(triggeredAlarms.has('r1:prep')).toBe(false);
+    });
+
     it('clears the mark when the timer is stopped', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       triggeredAlarms.mark('r1:prep');

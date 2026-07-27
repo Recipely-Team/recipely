@@ -10,7 +10,16 @@ let nowMs = Date.now();
 
 const publish = (): void => {
   nowMs = Date.now();
-  for (const listener of listeners) listener();
+  // Snapshot the set and isolate each listener: a subscriber that throws (or
+  // unsubscribes mid-round) must not stop every countdown behind it in
+  // insertion order from updating.
+  for (const listener of [...listeners]) {
+    try {
+      listener();
+    } catch {
+      // A broken subscriber is its own problem, not the clock's.
+    }
+  }
 };
 
 /**
@@ -21,8 +30,11 @@ const publish = (): void => {
  * `setInterval` per timer meant N unsynchronised wake-ups and N separate React
  * commits every second — the stutter reported once several timers were running
  * at the same time. Here one callback notifies every listener, so React batches
- * them into a single commit, and the interval exists only while something is
- * actually counting down.
+ * them into a single commit, and the cost stops scaling with the timer count.
+ *
+ * The interval itself runs for as long as anything is subscribed, which in
+ * practice is the app's lifetime: `useTimerNotificationSync` is mounted at the
+ * root and has to keep sweeping for expired timers.
  */
 export const subscribeToTick = (listener: TickListener): (() => void) => {
   // Refreshed on subscribe so a countdown that mounts mid-second renders the
