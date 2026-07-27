@@ -1,10 +1,9 @@
 import { useMemo } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
@@ -29,7 +28,8 @@ export interface TaxonomyPickerSheetProps {
   onSelect: (value: string) => void;
 }
 
-const GRID_COLUMNS = 3;
+/** Width of one option cell — three per row once the gaps are taken out. */
+const GRID_COLUMN_WIDTH = '31%' as const;
 
 const localItems = (
   values: readonly string[],
@@ -79,7 +79,6 @@ const useCatalog = (kind: 'cuisine' | 'category'): Catalog => {
 export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.Element => {
   const { visible, kind, selected, onClose } = props;
   const colors = useTheme().colors;
-  const insets = useSafeAreaInsets();
   const catalog = useCatalog(kind);
 
   const handleSelect = (key: string): void => {
@@ -88,98 +87,55 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
   };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
-      <View
-        style={[
-          styles.sheet,
-          { backgroundColor: colors.background, paddingBottom: insets.bottom + spacing.lg },
-        ]}
-      >
-        <View style={styles.header}>
-          <ThemedText variant="title">{catalog.title}</ThemedText>
-          <Pressable
-            onPress={onClose}
-            hitSlop={spacing.sm}
-            style={[styles.closeBtn, { backgroundColor: colors.surface }]}
-            accessibilityRole="button"
-            accessibilityLabel={t().common.cancel}
-          >
-            <Ionicons name="close" size={iconSizes.md} color={colors.text} />
-          </Pressable>
-        </View>
-        <FlatList
-          data={catalog.items}
-          numColumns={GRID_COLUMNS}
-          keyExtractor={(item) => item.key}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.grid}
-          showsVerticalScrollIndicator={false}
-          renderItem={({ item }) => {
-            const active = item.key === selected;
-            return (
-              <Pressable
-                onPress={() => handleSelect(item.key)}
-                accessibilityRole="button"
-                accessibilityLabel={item.name}
-                style={[
-                  styles.option,
-                  {
-                    backgroundColor: active ? colors.chipBackground : colors.surface,
-                    borderColor: active ? colors.primary : colors.cardBorder,
-                  },
-                ]}
+    // Presented through the shared sheet, which is what decides
+    // sheet-on-mobile / dialog-on-web. The grid is plain wrapped Views rather
+    // than a FlatList: the sheet already scrolls its content, and a list
+    // inside that scroller would fight it for the gesture.
+    <BottomSheet visible={visible} title={catalog.title} onClose={onClose} showCloseButton>
+      <View style={styles.grid}>
+        {catalog.items.map((item) => {
+          const active = item.key === selected;
+          return (
+            <Pressable
+              key={item.key}
+              onPress={() => handleSelect(item.key)}
+              accessibilityRole="button"
+              accessibilityLabel={item.name}
+              style={[
+                styles.option,
+                {
+                  backgroundColor: active ? colors.chipBackground : colors.surface,
+                  borderColor: active ? colors.primary : colors.cardBorder,
+                },
+              ]}
+            >
+              <ThemedText style={styles.optionEmoji}>{item.emoji}</ThemedText>
+              <ThemedText
+                variant="caption"
+                numberOfLines={1}
+                style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}
               >
-                <ThemedText style={styles.optionEmoji}>{item.emoji}</ThemedText>
-                <ThemedText
-                  variant="caption"
-                  numberOfLines={1}
-                  style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}
-                >
-                  {item.name}
-                </ThemedText>
-              </Pressable>
-            );
-          }}
-        />
+                {item.name}
+              </ThemedText>
+            </Pressable>
+          );
+        })}
       </View>
-    </Modal>
+    </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: ValueConstants.one,
-  },
-  sheet: {
-    borderTopLeftRadius: radii.xxl,
-    borderTopRightRadius: radii.xxl,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    maxHeight: '78%',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: spacing.md,
-  },
-  closeBtn: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm,
     paddingBottom: spacing.md,
-    gap: spacing.sm,
-  },
-  row: {
-    gap: spacing.sm,
   },
   option: {
-    flex: ValueConstants.one,
+    // Three per row: each cell takes a third of the row minus its share of the
+    // two gaps between them.
+    width: GRID_COLUMN_WIDTH,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xs,

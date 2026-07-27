@@ -1,5 +1,5 @@
 import { act, create, type ReactTestInstance } from 'react-test-renderer';
-import { TextInput } from 'react-native';
+import { StyleSheet, TextInput, type StyleProp, type ViewStyle } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
@@ -132,6 +132,20 @@ describe('CollapsingHomeHeader', () => {
 
     expect(textContent(root)).not.toContain('Recipely');
     expect(root.findAllByType(RecipelyLogo).length).toBeGreaterThan(0);
+  });
+
+  it('puts the mark on the same row as the title, not stacked above it', () => {
+    const { root } = renderHeader();
+
+    // Walk up from the logo to the first ancestor that also holds the title —
+    // the container the two share. Stacked, that container is a column.
+    let shared = root.findByType(RecipelyLogo).parent;
+    while (shared !== null && !textContent(shared).includes(t().recipes.title)) {
+      shared = shared.parent;
+    }
+
+    expect(shared).not.toBeNull();
+    expect(StyleSheet.flatten(shared?.props.style as StyleProp<ViewStyle>)?.flexDirection).toBe('row');
   });
 
   it('renders a SearchBar wired to the search value and change handler', () => {

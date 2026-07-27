@@ -242,7 +242,7 @@ blocking.
 
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
     `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming),
-    22 (unguarded `console.*`) mechanically and must be
+    22 (unguarded `console.*`), 23 (hand-rolled bottom sheets) mechanically and must be
     green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user
     approval.
 
@@ -292,6 +292,16 @@ blocking.
     Errors reach the user through `Result<T, Failure>` and the `failureContent` lookups (rule 12), never
     through a log line. If a log is genuinely diagnostic, guard it; if it was scaffolding for a bug you
     already fixed, delete it. Production error reporting is `recordCrash` (Crashlytics), not `console`.
+
+23. **Sheets and dialogs come from `base/widgets/`** — a modal is presented with
+    `BottomSheet` (or the `ConfirmSheet` / `FeedbackDialog` built on the same idea), never
+    with a hand-rolled `Modal`. That component is the single place that knows the
+    presentation is per shell: **a bottom sheet on mobile, a centred dialog on the web
+    shell**. A panel glued to the bottom edge of a desktop window has nothing to reach for
+    it, and its grabber promises a drag gesture a mouse never performs — so **there are no
+    modal bottom sheets on web**, and no screen re-decides that for itself.
+    **Enforced mechanically** by `check:structure` (rule L), which flags a `Modal` outside
+    `base/widgets/sheets/` that slides up or carries a top-only corner radius.
 
 ### Pre-commit quality gate
 
