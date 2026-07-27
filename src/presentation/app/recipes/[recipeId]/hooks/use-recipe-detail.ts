@@ -162,13 +162,18 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // Local (user-created) recipes short-circuit the network store entirely.
   const isLocal = localRecipe !== undefined;
   const recipeState =
-    localRecipe !== undefined ? ({ status: 'loaded' as const, recipe: localRecipe }) : networkState;
+    localRecipe !== undefined
+      ? ({ status: 'loaded' as const, recipe: localRecipe, fetchedAt: ValueConstants.zero })
+      : networkState;
 
+  // WHY every entry and not only the first: the cached copy was read at some
+  // earlier point and its like count, comment count and view count have moved
+  // on since. The store keeps the cached recipe on screen while this runs, so
+  // a re-entry shows content immediately and corrects itself.
   useEffect(() => {
-    if (!isLocal && recipeId.length > ValueConstants.zero && (networkState === undefined || networkState.status === 'idle')) {
-      void load(recipeId);
-    }
-  }, [isLocal, recipeId, networkState, load]);
+    if (!isLocal && recipeId.length > ValueConstants.zero) void load(recipeId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLocal, recipeId]);
 
   useEffect(() => {
     if (recipeState?.status === 'loaded' && commentState === undefined) {
@@ -181,12 +186,13 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // re-fire syncFromApi on every render and trigger an infinite update loop.
   const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
   const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
+  const syncFetchedAt = recipeState?.status === 'loaded' ? recipeState.fetchedAt : null;
 
   useEffect(() => {
-    if (syncLikeCount !== null && syncLikedByMe !== null) {
-      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe);
+    if (syncLikeCount !== null && syncLikedByMe !== null && syncFetchedAt !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe, syncFetchedAt);
     }
-  }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
+  }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : ValueConstants.zero;
   const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : ValueConstants.zero;
