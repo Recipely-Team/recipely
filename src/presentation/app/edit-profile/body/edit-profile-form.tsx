@@ -4,6 +4,7 @@ import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-t
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { BIO_MAX } from '@presentation/app/edit-profile/model/edit-profile-limits';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 
@@ -31,7 +32,7 @@ export const EditProfileForm = ({
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.label}>
-          {t().editProfile.displayName.toUpperCase()}
+          {upperCase(t().editProfile.displayName)}
         </ThemedText>
         <TextInput
           value={displayName}
@@ -55,7 +56,7 @@ export const EditProfileForm = ({
 
       <View style={styles.field}>
         <ThemedText variant="caption" muted style={styles.label}>
-          {t().editProfile.bio.toUpperCase()}
+          {upperCase(t().editProfile.bio)}
         </ThemedText>
         <AutoGrowTextInput
           value={bio}

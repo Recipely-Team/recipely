@@ -7,6 +7,7 @@ import type { RenderResult } from '@presentation/base/test-support/render-result
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import type { RecipeAuthorCardProps } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 
 const baseProps: RecipeAuthorCardProps = {
   authorName: 'Ada Lovelace',
@@ -23,7 +24,7 @@ describe('RecipeAuthorCard — other author', () => {
     const { root } = renderCard();
 
     const texts = textContent(root);
-    expect(texts).toContain(t().recipes.recipeBy);
+    expect(texts).toContain(upperCase(t().recipes.recipeBy));
     expect(texts).toContain('Ada Lovelace');
   });
 
@@ -39,9 +40,9 @@ describe('RecipeAuthorCard — owner', () => {
     const { root } = renderCard({ isOwner: true });
 
     const texts = textContent(root);
-    expect(texts).toContain(t().recipes.yourRecipe);
+    expect(texts).toContain(upperCase(t().recipes.yourRecipe));
     expect(texts).toContain(t().recipes.youPill);
-    expect(texts).not.toContain(t().recipes.recipeBy);
+    expect(texts).not.toContain(upperCase(t().recipes.recipeBy));
   });
 });
 

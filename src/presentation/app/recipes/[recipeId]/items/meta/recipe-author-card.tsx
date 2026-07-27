@@ -3,6 +3,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -47,7 +48,7 @@ export const RecipeAuthorCard = ({
           muted
           style={[styles.eyebrow, { color: colors.textMuted }]}
         >
-          {eyebrow}
+          {upperCase(eyebrow)}
         </ThemedText>
         <ThemedText variant="body" style={styles.name} numberOfLines={1}>
           {authorName}
@@ -89,7 +90,6 @@ const styles = StyleSheet.create({
   eyebrow: {
     fontSize: fontSizes.micro,
     fontWeight: fontWeights.bold,
-    textTransform: 'uppercase',
     letterSpacing: letterSpacings.wide,
   },
   name: {

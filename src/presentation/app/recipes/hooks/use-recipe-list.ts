@@ -167,6 +167,26 @@ export const useRecipeList = (): UseRecipeListResult => {
   // reveal the spinner and back when cleared — a visible jump on a filter tap.
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
+  // Counts the loads that change WHAT the list should contain — a filter, a
+  // sort, a search or a language switch. Those are the ones the feed blanks its
+  // rows for: keeping the previous results on screen while the next set arrives
+  // read as the list loading twice, and (worse) as if the tap had done nothing.
+  // A pull-to-refresh and the silent focus refetch deliberately do NOT count:
+  // the first has the pull spinner and needs its rows to stay under the finger,
+  // the second asks for the same content the user is already looking at.
+  const [pendingReloads, setPendingReloads] = useState(ValueConstants.zero);
+  const reload = useCallback(
+    async (next: RecipeFilters): Promise<void> => {
+      setPendingReloads((n) => n + ValueConstants.one);
+      try {
+        await load(next);
+      } finally {
+        setPendingReloads((n) => n - ValueConstants.one);
+      }
+    },
+    [load],
+  );
+
   const onRefresh = useCallback(() => {
     setIsPullRefreshing(true);
     void (async () => {
@@ -198,8 +218,8 @@ export const useRecipeList = (): UseRecipeListResult => {
       didMountRef.current = true;
       return;
     }
-    void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
-  }, [language, load, buildApiFilters]);
+    void reload(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
+  }, [language, reload, buildApiFilters]);
 
   // The query settled — fetch the matching page. Skips the mount run because
   // the idle-load effect above already issues the first request; without the
@@ -210,8 +230,8 @@ export const useRecipeList = (): UseRecipeListResult => {
       didSearchRef.current = true;
       return;
     }
-    void load(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
-  }, [debouncedSearch, load, buildApiFilters]);
+    void reload(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
+  }, [debouncedSearch, reload, buildApiFilters]);
 
   // Re-fetch quietly on focus so new/edited recipes appear; skip the mount focus.
   const didFocusRef = useRef(false);
@@ -236,9 +256,9 @@ export const useRecipeList = (): UseRecipeListResult => {
     (next: UiFilters): void => {
       setFilters(next);
       setPendingFilters(next);
-      void load(buildApiFilters(next, sortBy, debouncedSearch));
+      void reload(buildApiFilters(next, sortBy, debouncedSearch));
     },
-    [load, buildApiFilters, sortBy, debouncedSearch],
+    [reload, buildApiFilters, sortBy, debouncedSearch],
   );
 
   const onApplyFilters = (): void => {
@@ -247,7 +267,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(pendingFilters);
     setSortBy(nextSort);
     setSheetOpen(null);
-    void load(buildApiFilters(pendingFilters, nextSort, debouncedSearch));
+    void reload(buildApiFilters(pendingFilters, nextSort, debouncedSearch));
   };
 
   const onOpenFilter = (): void => {
@@ -260,7 +280,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
     // Keep the active sort: resetting filters must not silently change ordering.
-    void load(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
+    void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
   const recipes = useMemo(
@@ -273,6 +293,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   // you can see are out of date", and treating it as idle would flash the
   // previous query's results (or an empty state) mid-typing.
   const isRefetching = isRecipeListRefreshing(state) || trimmedSearch !== debouncedSearch;
+  const isReloadingResults = pendingReloads > ValueConstants.zero;
 
   return {
     state,
@@ -280,6 +301,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     isWebShell,
     isSearching,
     isRefetching,
+    isReloadingResults,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
     sortBy,

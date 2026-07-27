@@ -236,6 +236,54 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(renders.every((r) => !r.isPullRefreshing)).toBe(true);
   });
 
+  /**
+   * "Recipes look like they load twice on the home page." A filter tap kept the
+   * previous rows up while the next set arrived, so one tap showed two sets in
+   * sequence. The feed now blanks its rows for exactly the loads that change
+   * WHAT it should contain — and for no others.
+   */
+  it('reports isReloadingResults for a filter change, until the results land', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    expect(vm.isReloadingResults).toBe(false);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+    expect(vm.isReloadingResults).toBe(true);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+
+    expect(vm.isReloadingResults).toBe(false);
+  });
+
+  it('leaves isReloadingResults false for a pull-to-refresh', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onRefresh();
+    });
+
+    // The pull has its own spinner, and its rows must stay under the finger.
+    expect(vm.isPullRefreshing).toBe(true);
+    expect(vm.isReloadingResults).toBe(false);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+  });
+
   it('leaves isPullRefreshing false for the whole in-flight window of a sort refetch', async () => {
     const execute = jest.fn();
     await mountLoaded(execute);

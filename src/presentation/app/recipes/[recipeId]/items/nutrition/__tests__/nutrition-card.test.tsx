@@ -7,6 +7,7 @@
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-card';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { CharConstants } from '@core/constants';
 
 describe('NutritionCard — fiber row', () => {
@@ -58,7 +59,7 @@ describe('NutritionCard — absent figures', () => {
     const texts = textContent(root);
     expect(texts).toContain(t().nutrition.unavailable);
     // The heading stays so the section is visibly present, not dropped.
-    expect(texts).toContain(t().nutrition.title);
+    expect(texts).toContain(upperCase(t().nutrition.title));
   });
 
   it('treats an all-zero nutrition object as absent, not as measured zeroes', () => {

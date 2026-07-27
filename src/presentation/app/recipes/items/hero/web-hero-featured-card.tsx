@@ -6,6 +6,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { WebHeroActionRow } from '@presentation/app/recipes/items/hero/web-hero-action-row';
 import {
@@ -63,7 +64,7 @@ export const WebHeroFeaturedCard = ({
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <Ionicons name="flame" size={iconSizes.md} color={colors.primaryText} />
           <ThemedText style={[styles.badgeText, { color: colors.primaryText }]}>
-            {t().recipes.trending}
+            {upperCase(t().recipes.trending)}
           </ThemedText>
         </View>
 
@@ -147,7 +148,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
     fontWeight: fontWeights.bold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
   title: {
     fontSize: fontSizes.hero,

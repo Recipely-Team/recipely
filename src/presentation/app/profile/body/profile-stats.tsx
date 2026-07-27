@@ -3,6 +3,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { ValueConstants } from '@core/constants';
 
@@ -82,7 +83,7 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
           >
             <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
             <ThemedText variant="caption" muted style={styles.statLabel}>
-              {stat.label.toUpperCase()}
+              {upperCase(stat.label)}
             </ThemedText>
           </View>
         ))}

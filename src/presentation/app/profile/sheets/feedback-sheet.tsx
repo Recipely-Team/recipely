@@ -8,6 +8,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface FeedbackSheetProps {
@@ -74,7 +75,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
           <ThemedText variant="body" muted>{t().support.subtitle}</ThemedText>
           <View style={styles.field}>
             <ThemedText variant="caption" muted style={styles.fieldLabel}>
-              {t().support.subject.toUpperCase()}
+              {upperCase(t().support.subject)}
             </ThemedText>
             <TextInput
               value={subject}
@@ -90,7 +91,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
           </View>
           <View style={styles.field}>
             <ThemedText variant="caption" muted style={styles.fieldLabel}>
-              {t().support.message.toUpperCase()}
+              {upperCase(t().support.message)}
             </ThemedText>
             <AutoGrowTextInput
               value={message}

@@ -6,6 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
 
@@ -87,7 +88,7 @@ export const MediaPicker = ({
                 variant="caption"
                 style={[styles.coverText, { color: colors.primaryText }]}
               >
-                {t().mediaPicker.cover}
+                {upperCase(t().mediaPicker.cover)}
               </ThemedText>
             </View>
           ) : null}
@@ -185,7 +186,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.nano,
     fontWeight: fontWeights.bold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
   removeBtn: {
     position: 'absolute',

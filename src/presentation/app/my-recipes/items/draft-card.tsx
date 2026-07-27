@@ -7,6 +7,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
 
@@ -39,7 +40,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
         <View style={[styles.badge, { backgroundColor: colors.chipBackground }]}>
           <Ionicons name="pencil" size={fontSizes.small} color={colors.primary} />
           <ThemedText variant="caption" style={[styles.badgeLabel, { color: colors.primary }]}>
-            {t().drafts.title}
+            {upperCase(t().drafts.title)}
           </ThemedText>
         </View>
         <ThemedText variant="body" style={styles.name} numberOfLines={1}>
@@ -98,7 +99,6 @@ const styles = StyleSheet.create({
   badgeLabel: {
     fontWeight: fontWeights.bold,
     fontSize: fontSizes.nano,
-    textTransform: 'uppercase',
     letterSpacing: letterSpacings.wide,
   },
   name: {

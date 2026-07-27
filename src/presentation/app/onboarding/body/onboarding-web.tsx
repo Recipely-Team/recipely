@@ -7,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-dots';
@@ -57,7 +58,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
           <OnboardingReveal key={index} style={styles.copyBlock}>
             <View style={[styles.eyebrow, { backgroundColor: colors.chipBackground }]}>
               <ThemedText style={[styles.eyebrowText, { color: colors.chipText }]}>
-                {slide.eyebrow}
+                {upperCase(slide.eyebrow)}
               </ThemedText>
             </View>
             <ThemedText style={styles.title}>{slide.title}</ThemedText>
@@ -153,7 +154,6 @@ const styles = StyleSheet.create({
   eyebrowText: {
     fontSize: fontSizes.caption,
     fontWeight: fontWeights.bold,
-    textTransform: 'uppercase',
     letterSpacing: letterSpacings.subtle,
   },
   title: {
