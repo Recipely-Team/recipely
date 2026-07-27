@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, borderWidths } from '@presentation/base/theme';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
@@ -41,7 +42,7 @@ export const SelectTile = ({
         style={[styles.tile, { backgroundColor: colors.surface, borderColor: hasError ? colors.danger : colors.cardBorder }]}
       >
         <ThemedText variant="caption" style={[styles.label, { color: colors.textMuted }]}>
-          {label.toUpperCase()}
+          {upperCase(label)}
         </ThemedText>
         <View style={styles.valueRow}>
           <ThemedText style={styles.emoji}>{emoji}</ThemedText>

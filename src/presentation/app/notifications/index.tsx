@@ -16,6 +16,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
@@ -199,7 +200,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         renderSectionHeader={({ section }) => (
           <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
             <ThemedText variant="caption" muted style={styles.sectionTitle}>
-              {section.title.toUpperCase()}
+              {upperCase(section.title)}
             </ThemedText>
           </View>
         )}

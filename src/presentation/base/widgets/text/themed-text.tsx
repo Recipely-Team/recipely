@@ -3,6 +3,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { themedTextVariants } from '@presentation/base/widgets/text/themed-text-variants';
 import { fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { ThemedTextVariant } from '@presentation/base/widgets/text/themed-text-variant';
 
 export interface ThemedTextProps extends TextProps {
@@ -20,13 +21,24 @@ export const ThemedText = ({
   variant = 'body',
   muted = false,
   style,
+  children,
   ...rest
 }: ThemedTextProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { fontSize, ratio } = themedTextVariants[variant];
   const lineHeight = useTextLineHeight(fontSize, ratio);
   const color = muted ? colors.textMuted : colors.text;
-  return <Text {...rest} style={[styles[variant], { color, lineHeight }, style]} />;
+  // The `label` variant is upper-case by definition, and that casing is done
+  // HERE rather than with `textTransform` because the platform applies that
+  // style without knowing the app's language — which turns Turkish "Beğeni"
+  // into "BEĞENI". Non-string children are left alone; they carry their own.
+  const content =
+    variant === 'label' && typeof children === 'string' ? upperCase(children) : children;
+  return (
+    <Text {...rest} style={[styles[variant], { color, lineHeight }, style]}>
+      {content}
+    </Text>
+  );
 };
 
 const styles = StyleSheet.create<Record<ThemedTextVariant, TextStyle>>({
@@ -56,6 +68,5 @@ const styles = StyleSheet.create<Record<ThemedTextVariant, TextStyle>>({
     fontSize: fontSizes.caption,
     fontWeight: fontWeights.semibold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
 });

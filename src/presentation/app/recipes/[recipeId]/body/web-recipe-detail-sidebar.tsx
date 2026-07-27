@@ -5,6 +5,7 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -131,7 +132,7 @@ export const WebRecipeDetailSidebar = ({
             {macros.map((macro) => (
               <View key={macro.label} style={[styles.tile, { backgroundColor: colors.surface }]}>
                 <ThemedText style={[styles.tileValue, { color: colors.text }]}>{macro.value}</ThemedText>
-                <ThemedText style={[styles.tileLabel, { color: colors.textMuted }]}>{macro.label}</ThemedText>
+                <ThemedText style={[styles.tileLabel, { color: colors.textMuted }]}>{upperCase(macro.label)}</ThemedText>
               </View>
             ))}
           </View>
@@ -215,6 +216,5 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.micro,
     fontWeight: fontWeights.semibold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
 });

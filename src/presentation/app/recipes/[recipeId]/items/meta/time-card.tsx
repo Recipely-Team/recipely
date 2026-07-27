@@ -168,7 +168,6 @@ const styles = StyleSheet.create({
   },
   segmentLabel: {
     fontSize: fontSizes.micro,
-    textTransform: 'uppercase',
     textAlign: 'center',
   },
   header: {

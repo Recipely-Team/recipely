@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { ValueConstants } from '@core/constants';
 
 export interface ResumeDraftCardProps {
@@ -21,14 +22,14 @@ export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): R
       onPress={onPress}
       style={[styles.resumeCard, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       accessibilityRole="button"
-      accessibilityLabel={t().createRecipe.resumeDraft}
+      accessibilityLabel={upperCase(t().createRecipe.resumeDraft)}
     >
       <View style={[styles.resumeIcon, { backgroundColor: colors.chipBackground }]}>
         <Ionicons name="bookmark" size={iconSizes.md} color={colors.primary} />
       </View>
       <View style={styles.resumeBody}>
         <ThemedText variant="caption" style={[styles.resumeKicker, { color: colors.primary }]}>
-          {t().createRecipe.resumeDraft}
+          {upperCase(t().createRecipe.resumeDraft)}
         </ThemedText>
         <ThemedText variant="body" style={[styles.resumeName, { color: colors.text }]} numberOfLines={1}>
           {name}
@@ -62,7 +63,6 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
   resumeName: {
     fontWeight: fontWeights.semibold,
