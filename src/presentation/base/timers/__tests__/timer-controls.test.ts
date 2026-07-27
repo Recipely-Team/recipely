@@ -61,6 +61,18 @@ describe('timer-controls', () => {
       expect(notificationService.scheduleCalls).toHaveLength(1);
     });
 
+    it('cancels the previous run’s notifications when the same timer is restarted', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      notificationService.cancelCalls = [];
+
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+
+      // `add()` overwrites the entry holding the old notification ids, so
+      // without this the first run's alerts stay scheduled and still fire.
+      expect(notificationService.cancelCalls).toContainEqual(['notif-1', 'notif-2', 'notif-3']);
+      expect(timerStore.getState().timers['r1:prep']).toBeDefined();
+    });
+
     it('is a no-op for a non-positive duration', async () => {
       await startTimer('r1:cook', 'r1', 'Pasta', 0);
       expect(timerStore.getState().timers['r1:cook']).toBeUndefined();

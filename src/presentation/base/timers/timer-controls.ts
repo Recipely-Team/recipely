@@ -34,6 +34,9 @@ export const startTimer = async (
   // Timer ids are deterministic (`<recipeId>:<slot>`), so a re-start must clear
   // the "already alarmed" mark or this run would expire silently.
   triggeredAlarms.release(timerId);
+  // Restarting the SAME timer would otherwise leave the previous run's
+  // notifications scheduled — `add()` overwrites the entry that held their ids.
+  if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
   await replaceRecipeTimers(recipeId, timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
@@ -79,8 +82,13 @@ export const resumeTimer = async (timerId: string): Promise<void> => {
   // Resuming is a start as far as the one-timer-per-recipe rule is concerned:
   // the other phase may well have been started while this one sat paused.
   await replaceRecipeTimers(entry.recipeId, timerId);
-  const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, entry.recipeName, newEndTimeMs);
+  // Re-read: stopping the other phase is awaited, and this timer can be stopped
+  // (or dismissed from its notification) inside that window. Scheduling on a
+  // stale entry would leave notifications firing for a timer that is gone.
+  const current = timerStore.getState().timers[timerId];
+  if (current === undefined || !current.isPaused) return;
+  const newEndTimeMs = Date.now() + current.remainingMsOnPause;
+  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, current.recipeName, newEndTimeMs);
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;
