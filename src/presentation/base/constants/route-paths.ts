@@ -13,6 +13,12 @@ export const RoutePaths = {
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   myRecipes: '/my-recipes',
+  /**
+   * The feed's name in the root navigator's state (not a path) — expo-router
+   * registers folder pages as `<segment>/index`. Used to tell where a back
+   * navigation will land.
+   */
+  recipesRouteName: 'recipes/index',
   /** The My Recipes tab a publish lands on — the one holding the new recipe. */
   myRecipesCreatedTab: 'created',
   notifications: '/notifications',
