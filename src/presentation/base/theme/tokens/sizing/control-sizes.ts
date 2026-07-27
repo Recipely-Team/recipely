@@ -83,7 +83,7 @@ export const controlSizes = {
   /** Multi-line message field — a bio, a support message, a long note. */
   messageField: scale(112),
   /** Minimum width of a docked timer chip. */
-  timerChipMinWidth: scale(120),
+  timerChipMinWidth: scale(150),
   /** Maximum width of a docked timer chip, past which its name truncates. */
-  timerChipMaxWidth: scale(180),
+  timerChipMaxWidth: scale(210),
 } as const;

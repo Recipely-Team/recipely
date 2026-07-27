@@ -562,6 +562,7 @@ export const en = {
     pause: 'Pause',
     resume: 'Resume',
     cancel: 'Cancel',
+    stop: 'Stop timer',
     collapse: 'Hide timers',
     expand: 'Show timers',
   },

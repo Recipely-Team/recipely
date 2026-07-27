@@ -16,6 +16,14 @@ interface TimerChipProps {
   entry: TimerEntry;
 }
 
+/**
+ * Padding around the pause / stop buttons. Their 36pt box plus 4pt on each
+ * side clears the 44pt minimum touch target, and 4pt is exactly half the gap
+ * between them, so the two areas meet without ever overlapping — an overlap
+ * here would let a miss on "pause" register as "stop" and kill the timer.
+ */
+const ACTION_HIT_SLOP = spacing.xs;
+
 export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
   const { colors } = useTheme();
   const router = useRouter();
@@ -73,20 +81,22 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
         {!isDone ? (
           <Pressable
             accessibilityRole="button"
-            accessibilityLabel={isPaused ? 'Resume timer' : 'Pause timer'}
+            accessibilityLabel={isPaused ? t().timer.resume : t().timer.pause}
             onPress={() => void (isPaused ? timer.resume() : timer.pause())}
+            hitSlop={ACTION_HIT_SLOP}
             style={[styles.actionBtn, { backgroundColor: colors.chipBackground }]}
           >
-            <Ionicons name={isPaused ? 'play' : 'pause'} size={11} color={colors.primary} />
+            <Ionicons name={isPaused ? 'play' : 'pause'} size={iconSizes.md} color={colors.primary} />
           </Pressable>
         ) : null}
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel="Stop timer"
+          accessibilityLabel={t().timer.stop}
           onPress={() => void timer.stop()}
+          hitSlop={ACTION_HIT_SLOP}
           style={[styles.actionBtn, { backgroundColor: colors.dangerLight }]}
         >
-          <Ionicons name="close" size={12} color={colors.danger} />
+          <Ionicons name="close" size={iconSizes.md} color={colors.danger} />
         </Pressable>
       </View>
     </View>
@@ -122,11 +132,14 @@ const styles = StyleSheet.create({
   },
   chipActions: {
     flexDirection: 'row',
-    gap: spacing.xxs,
+    gap: spacing.sm,
   },
+  // A round button is a shape, so a pinned size is correct here — it holds a
+  // glyph, never text. Was an 18pt box with an 11pt glyph, which testers could
+  // not reliably hit; `controlSizes.iconBtn` + hit slop is a real target.
   actionBtn: {
-    width: iconSizes.lg,
-    height: iconSizes.lg,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

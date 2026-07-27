@@ -19,6 +19,7 @@ import {
   pauseTimer,
   resumeTimer,
 } from '@presentation/base/timers/timer-controls';
+import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
 
 // Shared in-memory / recording fakes resolved via the DI tokens. The
 // notification fake's default `scheduledIds` are the ids the assertions below
@@ -115,6 +116,41 @@ describe('timer-controls', () => {
       const originalEnd = timerStore.getState().timers['r1:prep']?.endTimeMs;
       await resumeTimer('r1:prep');
       expect(timerStore.getState().timers['r1:prep']?.endTimeMs).toBe(originalEnd);
+    });
+  });
+
+  /**
+   * Timer ids are deterministic (`<recipeId>:<slot>`), and the session-wide
+   * "already alarmed" set is what stops the one-second sweep re-raising the
+   * alarm every tick. Left uncleared, the SECOND run of the same prep timer
+   * expired in silence — the alarm overlay never appeared again.
+   */
+  describe('triggered-alarm marks', () => {
+    it('clears the mark when the timer is started again', async () => {
+      triggeredAlarms.mark('r1:prep');
+
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+
+      expect(triggeredAlarms.has('r1:prep')).toBe(false);
+    });
+
+    it('clears the mark when a paused timer is resumed', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      await pauseTimer('r1:prep');
+      triggeredAlarms.mark('r1:prep');
+
+      await resumeTimer('r1:prep');
+
+      expect(triggeredAlarms.has('r1:prep')).toBe(false);
+    });
+
+    it('clears the mark when the timer is stopped', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      triggeredAlarms.mark('r1:prep');
+
+      await stopTimer('r1:prep');
+
+      expect(triggeredAlarms.has('r1:prep')).toBe(false);
     });
   });
 });
