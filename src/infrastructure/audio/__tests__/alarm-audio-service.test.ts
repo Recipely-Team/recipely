@@ -7,16 +7,20 @@
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
 jest.mock('expo-audio', () => {
+  const subscription = { remove: jest.fn() };
   const player = {
     loop: false,
     volume: 0,
     play: jest.fn(),
     pause: jest.fn(),
     remove: jest.fn(),
+    addListener: jest.fn((): typeof subscription => subscription),
   };
   return {
     __player: player,
+    __subscription: subscription,
     setAudioModeAsync: jest.fn((): Promise<void> => Promise.resolve()),
+    setIsAudioActiveAsync: jest.fn((): Promise<void> => Promise.resolve()),
     createAudioPlayer: jest.fn((): typeof player => player),
   };
 });
@@ -32,8 +36,11 @@ type AudioMock = {
     play: jest.Mock;
     pause: jest.Mock;
     remove: jest.Mock;
+    addListener: jest.Mock;
   };
+  __subscription: { remove: jest.Mock };
   setAudioModeAsync: jest.Mock;
+  setIsAudioActiveAsync: jest.Mock;
   createAudioPlayer: jest.Mock;
 };
 const audio = ExpoAudio as unknown as AudioMock;
@@ -134,6 +141,89 @@ describe('AlarmAudioService', () => {
       await service.start();
 
       expect(audio.createAudioPlayer).toHaveBeenCalledTimes(2);
+    });
+
+    it('activates the audio session so the tone is actually routed', async () => {
+      await service.start();
+
+      expect(audio.setIsAudioActiveAsync).toHaveBeenCalledWith(true);
+    });
+
+    /**
+     * The reported bug: the alarm screen appeared with no sound. Session setup
+     * and playback used to share one try block, so a device that rejected the
+     * audio mode skipped the tone entirely instead of ringing with whatever
+     * session it already had.
+     */
+    it('still plays when the audio session cannot be configured', async () => {
+      audio.setAudioModeAsync.mockRejectedValueOnce(new Error('session busy'));
+
+      await service.start();
+
+      expect(audio.createAudioPlayer).toHaveBeenCalledTimes(1);
+      expect(audio.__player.play).toHaveBeenCalledTimes(1);
+    });
+
+    /**
+     * `createAudioPlayer` loads asynchronously, so the first `play()` can land
+     * before there is anything to play — silence, with no error raised.
+     */
+    it('re-issues play once the source reports itself loaded', async () => {
+      await service.start();
+      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: {
+        isLoaded: boolean;
+        playing: boolean;
+      }) => void;
+
+      onStatus({ isLoaded: true, playing: false });
+
+      expect(audio.__player.play).toHaveBeenCalledTimes(2);
+    });
+
+    it('does not fight the player once it is playing', async () => {
+      await service.start();
+      const onStatus = audio.__player.addListener.mock.calls[0][1] as (s: {
+        isLoaded: boolean;
+        playing: boolean;
+      }) => void;
+
+      onStatus({ isLoaded: true, playing: true });
+
+      expect(audio.__player.play).toHaveBeenCalledTimes(1);
+    });
+
+    it('drops the status listener and releases exclusive focus on stop', async () => {
+      await service.start();
+
+      await service.stop();
+
+      expect(audio.__subscription.remove).toHaveBeenCalledTimes(1);
+      expect(audio.setAudioModeAsync).toHaveBeenLastCalledWith(
+        expect.objectContaining({ interruptionMode: 'mixWithOthers' }),
+      );
+    });
+
+    /**
+     * Dismiss lands while `start()` is still awaiting the audio session: the
+     * player created afterwards had nothing left to stop it and rang forever.
+     */
+    it('leaves nothing ringing when dismissed mid-start', async () => {
+      let releaseSession = (): void => undefined;
+      audio.setAudioModeAsync.mockReturnValueOnce(
+        new Promise<void>((resolve) => {
+          releaseSession = () => {
+            resolve();
+          };
+        }),
+      );
+
+      const starting = service.start();
+      await service.stop();
+      releaseSession();
+      await starting;
+
+      expect(audio.createAudioPlayer).not.toHaveBeenCalled();
+      expect(audio.__player.play).not.toHaveBeenCalled();
     });
   });
 });

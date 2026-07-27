@@ -7,7 +7,15 @@ import { stopTimer } from '@presentation/base/timers/timer-controls';
 import { getAlarmAudioService } from '@application/audio/get-alarm-audio-service';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, mediaSizes } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontWeights,
+  lineHeights,
+  lineHeightFor,
+  controlSizes,
+  mediaSizes,
+} from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -25,7 +33,6 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const scale = useRef(new Animated.Value(1)).current;
-  const hapticActive = useRef(true);
 
   useEffect(() => {
     // Pulse animation
@@ -50,25 +57,24 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     // Looping alarm tone — bypasses silent switch on iOS.
     void getAlarmAudioService().start();
 
-    // Repeating haptic so the phone buzzes even when on silent mode.
-    hapticActive.current = true;
-    const buzz = async (): Promise<void> => {
-      while (hapticActive.current) {
-        await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-        await new Promise<void>((r) => setTimeout(r, HAPTIC_INTERVAL_MS));
-      }
+    // Repeating haptic so the phone buzzes even when on silent mode. An
+    // interval rather than a self-scheduling async loop: the loop could only be
+    // asked to stop and then had to wait out its own sleep, so it kept buzzing
+    // (and held a live timer) past the dismiss that was meant to end it.
+    const buzz = (): void => {
+      void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     };
-    void buzz();
+    buzz();
+    const buzzInterval = setInterval(buzz, HAPTIC_INTERVAL_MS);
 
     return () => {
       pulse.stop();
-      hapticActive.current = false;
+      clearInterval(buzzInterval);
       void getAlarmAudioService().stop();
     };
   }, [scale]);
 
   const dismiss = useCallback(() => {
-    hapticActive.current = false;
     void getAlarmAudioService().stop();
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     void stopTimer(timerId);
@@ -79,28 +85,40 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     <View
       style={[
         styles.container,
-        { backgroundColor: colors.background, paddingTop: insets.top + spacing.xxxl },
+        {
+          backgroundColor: colors.background,
+          paddingTop: insets.top + spacing.xl,
+          paddingBottom: insets.bottom + spacing.xl,
+        },
       ]}
     >
-      <Animated.Text style={[styles.bell, { transform: [{ scale }] }]}>⏰</Animated.Text>
-
-      <View style={styles.labels}>
-        <ThemedText style={styles.title}>{t().alarm.title}</ThemedText>
-        <ThemedText style={[styles.recipe, { color: colors.primary }]}>{recipeName}</ThemedText>
-      </View>
-
-      <View style={[styles.dismissRow, { paddingBottom: insets.bottom + spacing.xxxl }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().alarm.dismiss}
-          onPress={dismiss}
-          style={[styles.dismissBtn, { backgroundColor: colors.primary }]}
+      <View style={styles.content}>
+        <Animated.Text
+          accessibilityElementsHidden
+          importantForAccessibility="no"
+          style={[styles.bell, { transform: [{ scale }] }]}
         >
-          <ThemedText style={[styles.dismissLabel, { color: colors.primaryText }]}>
-            {t().alarm.dismiss}
-          </ThemedText>
-        </Pressable>
+          ⏰
+        </Animated.Text>
+
+        <ThemedText variant="headline" style={styles.centered}>
+          {t().alarm.title}
+        </ThemedText>
+        <ThemedText variant="subtitle" style={[styles.centered, { color: colors.primary }]}>
+          {recipeName}
+        </ThemedText>
       </View>
+
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t().alarm.dismiss}
+        onPress={dismiss}
+        style={[styles.dismissBtn, { backgroundColor: colors.primary }]}
+      >
+        <ThemedText variant="subtitle" style={[styles.dismissLabel, { color: colors.primaryText }]}>
+          {t().alarm.dismiss}
+        </ThemedText>
+      </Pressable>
     </View>
   );
 };
@@ -108,40 +126,37 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
 const styles = StyleSheet.create({
   container: {
     flex: ValueConstants.one,
+    paddingHorizontal: spacing.xl,
+  },
+  // One centred block instead of `space-between` on the whole screen: with
+  // three loose children the bell was pinned to the top edge and the labels
+  // floated in the middle of an otherwise empty screen.
+  content: {
+    flex: ValueConstants.one,
     alignItems: 'center',
-    justifyContent: 'space-between',
+    justifyContent: 'center',
+    gap: spacing.md,
   },
   bell: {
     fontSize: mediaSizes.heroSquare,
+    // An emoji is still text: without a line box sized to it the glyph is
+    // clipped to the platform default line height.
+    lineHeight: lineHeightFor(mediaSizes.heroSquare, lineHeights.snug),
+    textAlign: 'center',
+    marginBottom: spacing.lg,
+  },
+  centered: {
     textAlign: 'center',
   },
-  labels: {
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.xxl,
-  },
-  title: {
-    fontSize: fontSizes.headline,
+  dismissLabel: {
+    textAlign: 'center',
     fontWeight: fontWeights.bold,
-    textAlign: 'center',
-  },
-  recipe: {
-    fontSize: fontSizes.subtitle,
-    fontWeight: fontWeights.semibold,
-    textAlign: 'center',
-  },
-  dismissRow: {
-    width: '100%',
-    paddingHorizontal: spacing.xl,
   },
   dismissBtn: {
     minHeight: controlSizes.button,
     borderRadius: radii.xxl,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  dismissLabel: {
-    fontSize: fontSizes.heading,
-    fontWeight: fontWeights.bold,
+    paddingHorizontal: spacing.lg,
   },
 });
