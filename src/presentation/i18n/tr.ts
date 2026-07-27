@@ -561,6 +561,7 @@ export const tr: Translations = {
     pause: 'Duraklat',
     resume: 'Devam',
     cancel: 'İptal',
+    stop: 'Zamanlayıcıyı durdur',
     collapse: 'Zamanlayıcıları gizle',
     expand: 'Zamanlayıcıları göster',
   },
