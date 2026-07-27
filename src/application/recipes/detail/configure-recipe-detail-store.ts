@@ -7,16 +7,28 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): RecipeD
   return create<RecipeDetailStoreState>((set, get) => ({
     byId: {},
     load: async (id: string) => {
-      set({ byId: { ...get().byId, [id]: { status: 'loading' } } });
+      // A re-entry refetches, and the cached recipe stays on screen while it
+      // does — dropping back to `loading` would blank a screen the user has
+      // already seen, for a request that usually changes nothing.
+      const cached = get().byId[id];
+      if (cached?.status !== 'loaded') {
+        set({ byId: { ...get().byId, [id]: { status: 'loading' } } });
+      }
       const result = await deps.getRecipe.execute(id);
       if (!result.ok) {
-        set({
-          byId: { ...get().byId, [id]: { status: 'error', failure: result.failure } },
-        });
+        // A failed refresh must not throw away a recipe already on screen.
+        if (cached?.status !== 'loaded') {
+          set({
+            byId: { ...get().byId, [id]: { status: 'error', failure: result.failure } },
+          });
+        }
         return;
       }
       set({
-        byId: { ...get().byId, [id]: { status: 'loaded', recipe: result.value } },
+        byId: {
+          ...get().byId,
+          [id]: { status: 'loaded', recipe: result.value, fetchedAt: Date.now() },
+        },
       });
     },
     remove: (id) =>

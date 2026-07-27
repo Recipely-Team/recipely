@@ -24,7 +24,7 @@
  * module-mocked.
  */
 
-import { act } from 'react-test-renderer';
+import { act, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -238,11 +238,12 @@ const driveHook = (
     return null;
   };
 
-  renderComponent(
+  const { renderer } = renderComponent(
     <StoresProvider value={makeStores(commentsStore, overrides)}>
       <Probe />
     </StoresProvider>,
   );
+  mounted = renderer;
 
   return {
     latest: () => {
@@ -251,6 +252,14 @@ const driveHook = (
     },
   };
 };
+
+/**
+ * The tree each test mounted. Unmounted and settled in `afterEach`: the hook
+ * loads the detail and the comments on mount, and a promise still in flight
+ * when the environment is torn down surfaces as "import after teardown" — a
+ * failure of the whole isolated run, however green the assertions were.
+ */
+let mounted: ReactTestRenderer | null = null;
 
 /** Types a comment body into the input, then submits it and flushes the post. */
 const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<void> => {
@@ -263,7 +272,15 @@ const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string):
   });
 };
 
-afterEach(() => {
+afterEach(async () => {
+  await act(async () => {
+    mounted?.unmount();
+  });
+  mounted = null;
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
   jest.clearAllMocks();
 });
 
@@ -360,7 +377,7 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
  */
 describe('useRecipeDetail — liked is the single source of truth', () => {
   const loaded = (likedByMe: boolean): StoreOverrides => ({
-    detailState: { status: 'loaded', recipe: buildRecipe(likedByMe) },
+    detailState: { status: 'loaded', recipe: buildRecipe(likedByMe), fetchedAt: Date.now() },
   });
 
   it("reports the server's likedByMe before the likes store has any entry", () => {

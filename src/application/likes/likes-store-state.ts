@@ -12,12 +12,17 @@ export interface LikesStoreState {
    */
   seed: (recipeId: string, likeCount: number, likedByMe: boolean) => void;
   /**
-   * Sync the store from a fresh authoritative API response (e.g. recipe detail
-   * endpoint). Unlike `seed`, this always writes the new values — unless an
-   * optimistic toggle is currently in-flight — so the detail screen always
-   * reflects the server-confirmed like state.
+   * Sync the store from an API response, dated by `fetchedAt` (epoch ms).
+   * Unlike `seed` this overwrites what is held — but only when the payload is
+   * NEWER than it, so a cached recipe re-rendered on re-entry cannot rewind a
+   * like the user made after that copy was read.
    */
-  syncFromApi: (recipeId: string, likeCount: number, likedByMe: boolean) => void;
+  syncFromApi: (
+    recipeId: string,
+    likeCount: number,
+    likedByMe: boolean,
+    fetchedAt: number,
+  ) => void;
   /**
    * Toggle like with optimistic update; rolls back on failure. Returns the
    * `Result` so the caller can surface a toast when the toggle is rejected —
