@@ -20,7 +20,7 @@ export interface RecipeMetaCardProps {
 /**
  * Unified rounded meta card for the mobile recipe detail screen: a single row of
  * equal-flex segments separated by hairline vertical dividers. Prep/cook segments
- * reuse `TimeCard` in `segment` mode (countdown behaviour preserved); serves and
+ * the cook time is a `TimeCard` (the recipe's one timer); prep, serves and
  * difficulty are static stats. Time segments render only when their minutes > 0.
  */
 export const RecipeMetaCard = ({
@@ -39,14 +39,14 @@ export const RecipeMetaCard = ({
     segments.push({
       key: 'prep',
       node: (
-        <TimeCard
-          segment
+        // Prep time is a fact about the recipe, not something to count down:
+        // chopping is not a step you set a kitchen timer for, and the card
+        // carrying start/pause controls for it only invited a mis-tap that
+        // blocked the cook timer. It reads as a stat, like servings.
+        <InfoStat
+          icon="time-outline"
+          value={`${String(prepTimeMinutes)} ${t().recipes.minutes}`}
           label={t().recipes.prepTime}
-          minutes={prepTimeMinutes}
-          iconName="time-outline"
-          recipeId={recipeId}
-          recipeName={recipeName}
-          slot="prep"
         />
       ),
     });
@@ -56,13 +56,10 @@ export const RecipeMetaCard = ({
       key: 'cook',
       node: (
         <TimeCard
-          segment
           label={t().recipes.cookTime}
           minutes={cookTimeMinutes}
-          iconName="flame-outline"
           recipeId={recipeId}
           recipeName={recipeName}
-          slot="cook"
         />
       ),
     });
