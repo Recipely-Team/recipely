@@ -7,26 +7,22 @@ import {
   DISMISS_ALARM_ACTION,
 } from '@domain/notifications/timer-notification-keys';
 import { stopTimer } from '@presentation/base/timers/timer-controls';
+import { subscribeToTick } from '@presentation/base/timers/timer-tick';
+import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
+import { remainingSecondsUntil } from '@presentation/base/timers/remaining-seconds';
 import type * as NotificationsType from 'expo-notifications';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
 
-const TICK_MS = 1000;
-
-// Module-level set: tracks timers whose alarm has already been triggered this
-// session so the 1-second tick does not re-fire it on each subsequent call.
-const triggeredAlarms = new Set<string>();
-
 const checkForCompletedTimers = (): void => {
   const { timers } = timerStore.getState();
   for (const entry of Object.values(timers)) {
     if (entry.isPaused) continue;
     if (triggeredAlarms.has(entry.id)) continue;
-    const remaining = Math.max(ValueConstants.zero, Math.round((entry.endTimeMs - Date.now()) / 1000));
-    if (remaining === ValueConstants.zero) {
-      triggeredAlarms.add(entry.id);
+    if (remainingSecondsUntil(entry.endTimeMs, Date.now()) === ValueConstants.zero) {
+      triggeredAlarms.mark(entry.id);
       alarmStore.getState().trigger(entry.id, entry.recipeName);
     }
   }
@@ -54,13 +50,14 @@ const handleNotificationResponse = (
 /**
  * App-global timer bridge, mounted once at the app root.
  *
- * - Checks for completed timers every second while app is in the foreground.
+ * - Checks for completed timers on the shared one-second clock while the app
+ *   is in the foreground.
  * - Re-checks immediately when the app returns to the foreground.
  * - Handles "timer done" notification taps (warm-start and cold-start).
  */
 export const useTimerNotificationSync = (): void => {
   useEffect(() => {
-    const interval = setInterval(checkForCompletedTimers, TICK_MS);
+    const unsubscribeTick = subscribeToTick(checkForCompletedTimers);
 
     const handleAppState = (nextState: AppStateStatus): void => {
       if (nextState === 'active') checkForCompletedTimers();
@@ -72,7 +69,7 @@ export const useTimerNotificationSync = (): void => {
 
     if (Platform.OS === 'web') {
       return () => {
-        clearInterval(interval);
+        unsubscribeTick();
         appStateSub.remove();
       };
     }
@@ -88,7 +85,7 @@ export const useTimerNotificationSync = (): void => {
     );
 
     return () => {
-      clearInterval(interval);
+      unsubscribeTick();
       appStateSub.remove();
       responseSub.remove();
     };

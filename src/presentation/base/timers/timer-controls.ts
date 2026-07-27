@@ -1,5 +1,6 @@
 import { timerStore } from '@application/timers/timer-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
+import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
 import { ValueConstants } from '@core/constants';
 
 /** Starts a timer: schedules all alarm notifications and persists the entry. */
@@ -10,6 +11,9 @@ export const startTimer = async (
   minutes: number,
 ): Promise<void> => {
   if (minutes <= ValueConstants.zero) return;
+  // Timer ids are deterministic (`<recipeId>:<slot>`), so a re-start must clear
+  // the "already alarmed" mark or this run would expire silently.
+  triggeredAlarms.clear(timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * 60);
   const endTimeMs = Date.now() + durationSeconds * 1000;
@@ -28,6 +32,7 @@ export const startTimer = async (
 
 /** Stops and removes a timer, cancelling all of its alarm notifications. */
 export const stopTimer = async (timerId: string): Promise<void> => {
+  triggeredAlarms.clear(timerId);
   const entry = timerStore.getState().timers[timerId];
   if (entry !== undefined) {
     await getNotificationService().cancel(entry.completionNotifIds);
