@@ -160,9 +160,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: spacing.sm,
   },
+  // The mark sits BESIDE the screen title, not stacked above it: two lines of
+  // branding pushed the search field down the band for no information the one
+  // line does not already carry.
   titles: {
     flex: ValueConstants.one,
-    gap: spacing.xxs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   titleScaleAnchor: {
     alignSelf: 'flex-start',
@@ -197,7 +202,11 @@ const styles = StyleSheet.create({
     lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },
+  // Pinned to the bottom of the band. The title row got shorter when the mark
+  // moved beside the title, and letting the search rise with it would have
+  // moved the field the whole app's list padding is measured against.
   searchWrapper: {
+    marginTop: 'auto',
     paddingBottom: spacing.sm,
   },
 });

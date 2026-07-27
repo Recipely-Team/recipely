@@ -5,7 +5,8 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useDragToDismiss } from '@presentation/base/hooks/interaction/use-drag-to-dismiss';
-import { spacing, radii, controlSizes, borderWidths } from '@presentation/base/theme';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { spacing, radii, controlSizes, borderWidths, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -34,8 +35,15 @@ export interface BottomSheetProps {
 }
 
 /**
- * Modal bottom sheet with a draggable grabber, header, optional close button, a
- * scrollable content area, and an optional pinned {@link BottomSheetProps.footer}.
+ * Modal sheet with a header, optional close button, a scrollable content area
+ * and an optional pinned {@link BottomSheetProps.footer}.
+ *
+ * PRESENTATION IS PER SHELL. On the mobile shell it is a bottom sheet, dragged
+ * or tapped away by its grabber. On the WEB shell it is a centred dialog: a
+ * panel glued to the bottom edge of a desktop window is a touch idiom with
+ * nothing to reach for it there, and the grabber promises a drag gesture a
+ * mouse never performs. Every sheet in the app goes through this component, so
+ * the rule holds app-wide rather than per call site.
  */
 export const BottomSheet = ({
   visible,
@@ -48,44 +56,50 @@ export const BottomSheet = ({
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isWebShell } = useLayout();
   const { translateY, panHandlers } = useDragToDismiss(onClose, visible);
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={isWebShell ? 'fade' : 'slide'}
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <KeyboardAvoider style={styles.root}>
+      <KeyboardAvoider style={[styles.root, isWebShell ? styles.rootWeb : null]}>
         <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
         <Animated.View
           style={[
             styles.sheet,
+            isWebShell ? styles.dialog : null,
             {
               backgroundColor: colors.background,
-              paddingBottom: Math.max(insets.bottom, spacing.lg),
-              transform: [{ translateY }],
+              paddingBottom: isWebShell ? spacing.lg : Math.max(insets.bottom, spacing.lg),
+              transform: [{ translateY: isWebShell ? ValueConstants.zero : translateY }],
             },
           ]}
         >
-          <View
-            {...panHandlers}
-            style={styles.grabberWrap}
-            hitSlop={spacing.sm}
-            accessible
-            accessibilityRole="button"
-            accessibilityLabel={t().common.close}
-            accessibilityHint={t().common.closeHint}
-            onAccessibilityTap={onClose}
-          >
-            <View style={[styles.grabber, { backgroundColor: colors.border }]} />
-          </View>
+          {isWebShell ? null : (
+            <View
+              {...panHandlers}
+              style={styles.grabberWrap}
+              hitSlop={spacing.sm}
+              accessible
+              accessibilityRole="button"
+              accessibilityLabel={t().common.close}
+              accessibilityHint={t().common.closeHint}
+              onAccessibilityTap={onClose}
+            >
+              <View style={[styles.grabber, { backgroundColor: colors.border }]} />
+            </View>
+          )}
           <BottomSheetHeader
             title={title}
             onClose={onClose}
-            showCloseButton={showCloseButton}
+            // The grabber is the mobile dismiss affordance; without it the
+            // dialog needs a visible close control of its own.
+            showCloseButton={showCloseButton || isWebShell}
             rightAction={rightAction}
           />
           <ScrollView
@@ -109,6 +123,11 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
     justifyContent: 'flex-end',
   },
+  rootWeb: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: spacing.lg,
+  },
   backdrop: {
     ...StyleSheet.absoluteFillObject,
   },
@@ -116,6 +135,13 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     maxHeight: '78%',
+  },
+  dialog: {
+    width: '100%',
+    maxWidth: layoutSizes.dialogMaxWidth,
+    borderRadius: radii.xl,
+    maxHeight: '80%',
+    overflow: 'hidden',
   },
   grabberWrap: {
     alignItems: 'center',

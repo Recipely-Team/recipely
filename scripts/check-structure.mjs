@@ -16,6 +16,8 @@
  *   I. Folder file counts (CLAUDE.md §14c): warn past 10, block past 15.
  *   J. PROJECT-MAP.md freshness (CLAUDE.md §15b).
  *   K. No unguarded console.* in shipped code (CLAUDE.md §22).
+ *   L. No hand-rolled bottom sheets (CLAUDE.md §23) — sheets go through the
+ *      shared BottomSheet, which presents as a dialog on the web shell.
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -280,6 +282,30 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
         `${file}:${String(i + 1)}: unguarded console.* — wrap it in \`if (__DEV__)\` or delete it (CLAUDE.md §22)`,
       );
     });
+  }
+}
+
+// --- L: sheets come from the shared widget (CLAUDE.md §23) -----------------
+// A bottom sheet is a touch idiom: on a desktop browser a panel glued to the
+// bottom edge has nothing to reach for it, and its grabber promises a drag a
+// mouse never performs. `base/widgets/sheets/bottom-sheet.tsx` is the one
+// place that knows to present as a centred dialog on the web shell, so a
+// hand-rolled `Modal` that slides up from the bottom bypasses the rule for
+// every screen that copies it. Detected by the two things such a modal always
+// carries: a slide animation, or a top-only corner radius on its panel.
+{
+  const SHEET_WIDGET = 'presentation/base/widgets/sheets/';
+
+  for (const file of files) {
+    if (isTest(file) || file.includes(SHEET_WIDGET)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!/<Modal[\s>]/.test(src)) continue;
+    const slides = /animationType=["']slide["']/.test(src);
+    const topOnlyRadius = /borderTopLeftRadius:/.test(src);
+    if (!slides && !topOnlyRadius) continue;
+    errors.push(
+      `${file}: hand-rolled bottom sheet — render it through @presentation/base/widgets/sheets/bottom-sheet (CLAUDE.md §23)`,
+    );
   }
 }
 
