@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 713 source files.
+[architecture.md](architecture.md). 716 source files.
 
 ## Layers
 
@@ -55,7 +55,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `onboarding/` _(2)_
 - `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending, update _(48)_
 - `storage/` _(2)_
-- `timers/` _(6)_
+- `timers/` _(7)_
 - `user-profile/` _(7)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
@@ -101,7 +101,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(7)_
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
-- `timers/` — timer control helpers _(5)_
+- `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(5)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(42)_
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 83f5c399f94548e6 -->
+<!-- fingerprint: 473fed19eee6fd84 -->

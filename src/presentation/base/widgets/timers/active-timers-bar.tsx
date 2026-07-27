@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -9,7 +8,8 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { TimerChip } from '@presentation/base/widgets/timers/timer-chip';
 import { timerStore } from '@application/timers/timer-store';
-import { spacing, radii, fontWeights, iconSizes, controlSizes, decorSizes, borderWidths, zIndices, opacities, maxFontScales } from '@presentation/base/theme';
+import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
+import { spacing, radii, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, zIndices, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -36,11 +36,14 @@ const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
  *
  * Being pinned over the content, it can cover whatever sits at the bottom of
  * the screen — the onboarding CTAs are directly underneath it, with no way to
- * scroll them clear. So the grabber collapses it to a small pill: the timer
- * stays visible and controllable (never silently lose a running countdown),
- * but it stops blocking anything. Collapsed state lives here rather than in
- * the timer store because it is a view preference, not timer state, and this
- * component is mounted once at the root so it survives navigation.
+ * scroll them clear. So it collapses to a small corner pill: the timer stays
+ * visible and controllable (never silently lose a running countdown), but it
+ * stops blocking anything. The control for that is an explicit labelled
+ * chevron across the full width of the bar — the bare grabber line it replaced
+ * looked like decoration, and testers reported the bar as simply unhideable.
+ * Collapsed state lives in `timersBarStore` rather than the timer store
+ * because it is a view preference, not timer state, and it is persisted so a
+ * bar parked to reach the content underneath stays parked across launches.
  */
 export const ActiveTimersBar = (): React.JSX.Element | null => {
   const { colors } = useTheme();
@@ -52,7 +55,8 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   // into the content instead of leaving it at the screen edge.
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const timers = timerStore((s) => s.timers);
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = timersBarStore((s) => s.collapsed);
+  const setCollapsed = timersBarStore((s) => s.setCollapsed);
   const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[1] ?? null;
   const entries = Object.values(timers).filter(
     (entry) => entry.recipeId !== currentRecipeId,
@@ -67,7 +71,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
     return (
       <View pointerEvents="box-none" style={[styles.bar, { bottom }]}>
         <Pressable
-          onPress={() => setCollapsed(false)}
+          onPress={() => void setCollapsed(false)}
           accessibilityRole="button"
           accessibilityLabel={t().timer.expand}
           hitSlop={spacing.sm}
@@ -100,13 +104,16 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
         ]}
       >
         <Pressable
-          onPress={() => setCollapsed(true)}
+          onPress={() => void setCollapsed(true)}
           accessibilityRole="button"
           accessibilityLabel={t().timer.collapse}
           hitSlop={spacing.sm}
-          style={styles.barHandleHitArea}
+          style={styles.hideRow}
         >
-          <View style={[styles.barHandle, { backgroundColor: colors.border }]} />
+          <ThemedText variant="caption" muted style={styles.hideLabel}>
+            {t().timer.collapse}
+          </ThemedText>
+          <Ionicons name="chevron-down" size={iconSizes.md} color={colors.textMuted} />
         </Pressable>
         <ScrollView
           horizontal
@@ -136,18 +143,19 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
   },
-  // The grabber is small, so the press target around it is padded out to a
-  // comfortable size rather than asking for a hit on the 4pt pill itself.
-  barHandleHitArea: {
+  // Full width of the bar so the hide control is impossible to miss, and
+  // labelled: a bare chevron (or the grabber line before it) reads as
+  // decoration, which is why the bar was reported as unhideable.
+  hideRow: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: spacing.xs,
-    marginTop: -spacing.xs,
+    justifyContent: 'center',
+    gap: spacing.xs,
+    minHeight: controlSizes.iconBtnSm,
   },
-  barHandle: {
-    width: decorSizes.dragHandleWidth,
-    height: controlSizes.progressBarThin,
-    borderRadius: radii.round,
-    opacity: opacities.inactive,
+  hideLabel: {
+    textTransform: 'uppercase',
+    letterSpacing: letterSpacings.wide,
   },
   // Right-aligned so the collapsed pill parks in the corner and leaves the
   // widest possible span of whatever is underneath reachable.

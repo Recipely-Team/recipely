@@ -562,6 +562,7 @@ export const tr: Translations = {
     resume: 'Devam',
     cancel: 'İptal',
     stop: 'Zamanlayıcıyı durdur',
+    switched: 'Bir tarifte aynı anda tek zamanlayıcı çalışır — diğeri durduruldu.',
     collapse: 'Zamanlayıcıları gizle',
     expand: 'Zamanlayıcıları göster',
   },
