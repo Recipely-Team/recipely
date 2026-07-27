@@ -10,6 +10,7 @@ export const en = {
     of: 'of',
     clear: 'Clear',
     close: 'Close',
+    back: 'Back',
     closeHint: 'Double tap or swipe down to close',
   },
   errors: {

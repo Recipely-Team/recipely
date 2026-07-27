@@ -11,6 +11,7 @@ import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
+import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -22,6 +23,7 @@ import { ValueConstants } from '@core/constants';
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const backLabel = useBackLabel();
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
@@ -121,6 +123,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       {!isWebShell ? (
         <Pressable
           accessibilityRole="button"
+          // Named after where back actually goes — the glyph alone announced
+          // nothing at all to a screen reader.
+          accessibilityLabel={backLabel}
           onPress={() => router.back()}
           style={[styles.backButton, { top: insets.top + spacing.sm, backgroundColor: colors.overlayLight }]}
         >
