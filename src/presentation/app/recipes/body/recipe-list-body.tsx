@@ -14,7 +14,7 @@ import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid'
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
-import { FeedRefetchPill } from '@presentation/app/recipes/body/feed-refetch-pill';
+import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
@@ -81,11 +81,13 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         )}
         <WebRecipeGrid
           recipes={recipes}
-          isLoading={state.status !== 'loaded'}
+          isLoading={state.status !== 'loaded' || vm.isReloadingResults}
           // `vm.isRefetching`, not `isRecipeListRefreshing(state)`: the web
           // header search is debounced too, so the store looks idle for the
-          // first few hundred ms after a keystroke.
-          isRefreshing={vm.isRefetching}
+          // first few hundred ms after a keystroke. Once the request itself is
+          // in flight the grid switches to skeletons (`isLoading` above), so
+          // this covers only the debounce window — never both at once.
+          isRefreshing={vm.isRefetching && !vm.isReloadingResults}
           isSearching={isSearching}
           activeCuisineLabel={vm.activeCuisineLabel}
           sortBy={vm.sortBy}
@@ -123,7 +125,11 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       // replacement for it. The list's own `contentContainerStyle` keeps
       // `flexGrow: 1`, so the pull-to-refresh gesture still has a surface.
       <Animated.FlatList
-        data={recipes}
+        // Emptied on purpose while the next set is fetched: the rows on screen
+        // answer the PREVIOUS filter, and leaving them up read as a second
+        // load. `ListEmptyComponent` carries the loading placeholder, so the
+        // feed header above it (cuisine strip, active-filter chips) stays.
+        data={vm.isReloadingResults ? [] : recipes}
         keyExtractor={(r) => r.id}
         renderItem={renderItem}
         ListHeaderComponent={
@@ -140,6 +146,9 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           />
         }
         ListEmptyComponent={
+          vm.isReloadingResults ? (
+            <FeedReloadingRows />
+          ) : (
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="food-off" size={iconSizes.giant} color={colors.textMuted} />
             <ThemedText variant="body" muted style={styles.feedbackTitle}>
@@ -153,6 +162,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
               )}
             </View>
           </View>
+          )
         }
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
@@ -199,7 +209,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       ) : (
         <>
           <View style={[styles.bodyContainer, isMobileLoadedFeed ? null : styles.bodyTopInset]}>{body}</View>
-          {vm.isRefetching && state.status === 'loaded' ? <FeedRefetchPill /> : null}
           <CollapsingHomeHeader
             scrollY={vm.scrollY}
             headerTranslateY={vm.headerTranslateY}

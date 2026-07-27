@@ -24,6 +24,17 @@ export interface UseRecipeListResult {
    * pull gesture alone.
    */
   isRefetching: boolean;
+  /**
+   * True while a load that changes WHAT the list should contain is in flight —
+   * a filter, sort, search or language change. The feed replaces its rows with
+   * a loading placeholder for exactly these: keeping the previous results up
+   * while the next set arrives read as the list loading twice.
+   *
+   * A pull-to-refresh (`isPullRefreshing`) and the silent focus refetch are
+   * deliberately excluded — the first needs its rows to stay under the finger
+   * that is pulling them, the second re-fetches what the user already sees.
+   */
+  isReloadingResults: boolean;
   activeFilterCount: number;
   gridColumns: number;
   sortBy: SortKey;

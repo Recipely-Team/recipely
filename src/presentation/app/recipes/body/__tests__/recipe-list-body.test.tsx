@@ -97,6 +97,7 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   isWebShell: false,
   isSearching: false,
   isRefetching: false,
+  isReloadingResults: false,
   activeFilterCount: 0,
   gridColumns: 1,
   sortBy: 'popular',
@@ -362,12 +363,14 @@ describe('RecipeListBody — an empty feed keeps its filter controls', () => {
 });
 
 /**
- * A filter/sort/search change refetches in place and keeps the previous rows on
- * screen, so without an indicator a cuisine tap looked like a dead press — the
- * Android report was "you can't tell it went to the server".
+ * Reported from the home feed: "recipes look like they load twice". A filter
+ * tap kept the previous rows on screen behind a floating "Refreshing…" pill,
+ * so one tap produced two sets of recipes in sequence — and while the stale
+ * ones were up, nothing said the tap had registered. The rows are now replaced
+ * by a loading placeholder for the round trip, and only for the loads that
+ * change what the list should contain.
  */
-describe('RecipeListBody — refetch indicator', () => {
-  // Same async-storage settle as the sibling body suites (see above).
+describe('RecipeListBody — reloading the results', () => {
   afterEach(async () => {
     await act(async () => {
       await Promise.resolve();
@@ -375,23 +378,54 @@ describe('RecipeListBody — refetch indicator', () => {
     });
   });
 
-  it('shows the refreshing pill while a filter refetch is in flight', () => {
-    const root = render({ isRefetching: true });
+  /** The rows the list was actually handed — virtualization keeps them out of the tree. */
+  const listData = (overrides: Partial<UseRecipeListResult>): unknown[] => {
+    const list = render(overrides).findAll((node) => Array.isArray(node.props.data))[0];
+    if (list === undefined) throw new Error('no list rendered');
+    return list.props.data as unknown[];
+  };
 
-    expect(renderedText(root)).toContain(t().recipes.refreshing);
+  it('replaces the rows with the loading copy while new results are fetched', () => {
+    expect(listData({ isReloadingResults: true })).toHaveLength(0);
+    expect(renderedText(render({ isReloadingResults: true }))).toContain(t().common.loading);
   });
 
-  it('hides the pill on a settled feed', () => {
-    const root = render({ isRefetching: false });
+  it('keeps the feed header up, so the filter that started the load can be undone', () => {
+    const root = render({
+      isReloadingResults: true,
+      activeFilterCount: 1,
+      filters: { ...emptyFilters, cuisines: [CuisineKey.Italian] },
+    });
 
-    expect(renderedText(root)).not.toContain(t().recipes.refreshing);
+    // The cuisine strip and the active-filter chips live in the list header,
+    // which must survive the blanked rows — un-tapping is the way out.
+    expect(renderedText(root)).toContain(t().recipes.browseCuisines);
   });
 
-  it('keeps the pill off while the first page is still loading', () => {
-    // `loading` already owns the screen with a skeleton; a pill on top of it
-    // would be a second, redundant spinner.
-    const root = render({ state: { status: 'loading' }, isRefetching: true });
+  it('shows the rows again once the results land', () => {
+    expect(listData({ isReloadingResults: false })).toHaveLength(RECIPES.length);
+    expect(renderedText(render({ isReloadingResults: false }))).not.toContain(t().common.loading);
+  });
 
-    expect(renderedText(root)).not.toContain(t().recipes.refreshing);
+  it('does not blank the rows for a pull-to-refresh', () => {
+    // The pull spinner is the indicator there, and the rows have to stay under
+    // the finger that is pulling them.
+    expect(listData({ isPullRefreshing: true })).toHaveLength(RECIPES.length);
+    expect(renderedText(render({ isPullRefreshing: true }))).not.toContain(t().common.loading);
+  });
+
+  it('leaves the first load to the shimmer, not the reload copy', () => {
+    // A cold open still gets skeleton cards; the placeholder is for the loads
+    // that REPLACE a list the user is already looking at.
+    const texts = renderedText(render({ state: { status: 'loading' }, isReloadingResults: true }));
+
+    expect(texts).not.toContain(t().common.loading);
+  });
+
+  it('keeps the empty-state copy for a loaded-but-empty feed', () => {
+    const texts = renderedText(render({ ...emptyVm(false), isReloadingResults: false }));
+
+    expect(texts).toContain(t().recipes.empty);
+    expect(texts).not.toContain(t().common.loading);
   });
 });
