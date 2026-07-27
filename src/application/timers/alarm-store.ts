@@ -2,11 +2,12 @@ import { create } from 'zustand';
 import type { AlarmStoreState } from '@application/timers/alarm-store-state';
 
 export const alarmStore = create<AlarmStoreState>((set) => ({
-  activeAlarm: null,
+  alarms: [],
   trigger: (timerId, recipeName) =>
     set((state) => {
-      if (state.activeAlarm?.timerId === timerId) return state;
-      return { activeAlarm: { timerId, recipeName } };
+      if (state.alarms.some((alarm) => alarm.timerId === timerId)) return state;
+      return { alarms: [...state.alarms, { timerId, recipeName }] };
     }),
-  dismiss: () => set({ activeAlarm: null }),
+  dismiss: (timerId) =>
+    set((state) => ({ alarms: state.alarms.filter((alarm) => alarm.timerId !== timerId) })),
 }));

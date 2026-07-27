@@ -1,4 +1,5 @@
 import { timerStore } from '@application/timers/timer-store';
+import { alarmStore } from '@application/timers/alarm-store';
 import { conflictingTimerIds } from '@application/timers/conflicting-timer-ids';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
@@ -58,6 +59,10 @@ export const startTimer = async (
 /** Stops and removes a timer, cancelling all of its alarm notifications. */
 export const stopTimer = async (timerId: string): Promise<void> => {
   triggeredAlarms.release(timerId);
+  // A stopped timer must not stay in the alarm queue: whether it was stopped
+  // from its chip, from the notification's "dismiss" action or by the overlay
+  // itself, there is nothing left for that alarm to be about.
+  alarmStore.getState().dismiss(timerId);
   const entry = timerStore.getState().timers[timerId];
   if (entry !== undefined) {
     await getNotificationService().cancel(entry.completionNotifIds);

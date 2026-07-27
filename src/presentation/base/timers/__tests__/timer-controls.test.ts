@@ -21,6 +21,7 @@ import {
 } from '@presentation/base/timers/timer-controls';
 import { triggeredAlarms } from '@presentation/base/timers/triggered-alarms';
 import { toastStore } from '@presentation/base/feedback/toast-store';
+import { alarmStore } from '@application/timers/alarm-store';
 import { t } from '@presentation/i18n';
 
 // Shared in-memory / recording fakes resolved via the DI tokens. The
@@ -37,6 +38,7 @@ const resetAll = (): void => {
   notificationService.scheduleCalls = [];
   notificationService.cancelCalls = [];
   toastStore.setState({ toasts: [] });
+  alarmStore.setState({ alarms: [] });
 };
 
 describe('timer-controls', () => {
@@ -91,6 +93,21 @@ describe('timer-controls', () => {
 
     it('is a no-op when the timer does not exist', async () => {
       await expect(stopTimer('ghost')).resolves.not.toThrow();
+    });
+
+    /**
+     * Two timers can be ringing at once. Stopping one — from its chip, from the
+     * notification's dismiss action, or from the overlay — must take only that
+     * alarm off the queue and leave the other one on screen.
+     */
+    it('takes the stopped timer out of the alarm queue and leaves the rest', async () => {
+      await startTimer('r1:prep', 'r1', 'Pasta', 5);
+      alarmStore.getState().trigger('r1:prep', 'Pasta');
+      alarmStore.getState().trigger('r2:cook', 'Soup');
+
+      await stopTimer('r1:prep');
+
+      expect(alarmStore.getState().alarms.map((a) => a.timerId)).toEqual(['r2:cook']);
     });
   });
 

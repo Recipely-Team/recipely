@@ -21,6 +21,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
+import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { Difficulty } from '@domain/recipes/difficulty';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -41,6 +43,27 @@ const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity =
 const fakeLoadFavorites: LoadFavoritesUseCase = {
   execute: () => Promise.resolve(ok(new Set<string>())),
 } as unknown as LoadFavoritesUseCase;
+
+/** Minimal saved-recipe row — only its id matters to these tests. */
+const makeSummary = (id: string): RecipeSummaryEntity => {
+  const result = RecipeSummaryEntity.create({
+    id,
+    name: `Recipe ${id}`,
+    image: 'https://cdn.example.com/r.webp',
+    cuisine: 'ITALIAN',
+    category: 'DINNER',
+    difficulty: Difficulty.Easy,
+    totalTimeMinutes: 30,
+    rating: 0,
+    moderationStatus: 'approved',
+    likeCount: 0,
+    likedByMe: false,
+    commentCount: 0,
+    viewCount: 0,
+  });
+  if (!result.ok) throw new Error('fixture summary invalid');
+  return result.value;
+};
 
 const makeStore = (
   repo: FakeAuthRepository,
@@ -65,7 +88,7 @@ const makeStore = (
     deleteAccount: new DeleteAccountUseCase(repo),
     clearSessionCaches:
       overrides.clearSessionCaches ??
-      (() => savedRecipesStore.getState().setSavedIds(new Set<string>())),
+      (() => savedRecipesStore.getState().setSaved([])),
   });
 };
 
@@ -364,7 +387,7 @@ describe('auth-store', () => {
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
-      savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));
+      savedRecipesStore.getState().setSaved([makeSummary('r1'), makeSummary('r2')]);
 
       await store.getState().expireSession();
 
@@ -448,7 +471,7 @@ describe('auth-store', () => {
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
-      savedRecipesStore.getState().setSavedIds(new Set(['r1', 'r2']));
+      savedRecipesStore.getState().setSaved([makeSummary('r1'), makeSummary('r2')]);
 
       const result = await store.getState().deleteAccount();
 

@@ -60,8 +60,9 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
+const mockDismissTo = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack })),
+  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack, dismissTo: mockDismissTo })),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -245,7 +246,14 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
     act(() => driver.latest().onCloseSuccess());
 
-    expect(mockReplace).toHaveBeenCalledWith('/my-recipes');
+    // …on the "created" tab: a user who just published and is shown the saved
+    // tab instead reasonably concludes the recipe did not save. `dismissTo`
+    // returns to the My Recipes already under this screen rather than stacking
+    // a second copy of it.
+    expect(mockDismissTo).toHaveBeenCalledWith({
+      pathname: '/my-recipes',
+      params: { tab: 'created' },
+    });
     expect(driver.latest().saveSuccess).toBeNull();
   });
 

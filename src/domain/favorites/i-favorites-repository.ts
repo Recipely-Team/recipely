@@ -1,5 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 /**
  * Repository interface for favorite/bookmark operations.
@@ -23,8 +24,11 @@ export interface IFavoritesRepository {
   removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>>;
 
   /**
-   * Get all favorite recipe IDs for the current user.
-   * @returns Set of favorite recipe IDs, or failure if request fails
+   * The current user's saved recipes, in favourite order.
+   *
+   * Returns the rows themselves rather than ids: the saved grid renders these
+   * directly, so it no longer depends on the discover feed having the same
+   * recipes in its currently-loaded (searched, filtered, sorted) page.
    */
-  getFavoritesIds(): Promise<Result<Set<string>, Failure>>;
+  listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>>;
 }

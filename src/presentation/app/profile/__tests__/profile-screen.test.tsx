@@ -100,6 +100,7 @@ const makeUserProfileStore = () =>
 
 const makeSavedRecipesStore = () =>
   create<SavedRecipesStoreState>(() => ({
+    savedRecipes: [],
     savedIds: new Set<string>(),
     isLoading: false,
     error: null,
@@ -107,7 +108,7 @@ const makeSavedRecipesStore = () =>
     toggle: jest.fn(),
     addLocal: jest.fn(),
     removeLocal: jest.fn(),
-    setSavedIds: jest.fn(),
+    setSaved: jest.fn(),
     setLoading: jest.fn(),
     setError: jest.fn(),
     clearError: jest.fn(),

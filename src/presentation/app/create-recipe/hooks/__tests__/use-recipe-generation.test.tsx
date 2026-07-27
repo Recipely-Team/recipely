@@ -65,6 +65,7 @@ import { en } from '@presentation/i18n/en';
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showDangerToast: jest.fn(),
   showErrorToast: jest.fn(),
+  showSuccessToast: jest.fn(),
 }));
 
 jest.mock('expo-router', () => ({

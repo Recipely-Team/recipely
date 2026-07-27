@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
-import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import {
   failureKeyMessage,
   failureToastMessage,
@@ -54,6 +54,10 @@ export const useRecipeGeneration = ({
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
+  // A refine outlives the screen: publishing (or exiting to a draft) while one
+  // is in flight must not pop its "Updated!" over whatever comes next.
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
 
   const refining = refineState.status === 'refining';
@@ -205,6 +209,10 @@ export const useRecipeGeneration = ({
         setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
         const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
         setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
+        // The answer landed with the assistant closed: the recipe has just
+        // rewritten itself under the user, and the bubble explaining it is
+        // behind a panel they cannot see. Say it out loud instead.
+        if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.aiUpdated);
         createdRecipesStore.getState().resetRefineState();
         return;
       }
@@ -221,7 +229,7 @@ export const useRecipeGeneration = ({
       ]);
       createdRecipesStore.getState().resetRefineState();
     },
-    [createdRecipesStore, recipe, refining, setRecipe],
+    [createdRecipesStore, recipe, refining, setRecipe, chatExpanded],
   );
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
