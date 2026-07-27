@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
+import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
 import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
@@ -77,6 +79,8 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const scrollY = useSharedValue(ValueConstants.zero);
   const headerTranslateY = useSharedValue(ValueConstants.zero);
+  const insets = useSafeAreaInsets();
+  const hiddenHeaderY = hiddenHeaderOffset(insets.top);
   const lastScrollY = useSharedValue(ValueConstants.zero);
   const headerHidden = useSharedValue(ValueConstants.zero);
 
@@ -93,7 +97,7 @@ export const useRecipeList = (): UseRecipeListResult => {
         }
       } else if (delta > ValueConstants.zero && headerHidden.value !== 1) {
         headerHidden.value = 1;
-        headerTranslateY.value = withTiming(-layoutSizes.homeHeaderMax, HEADER_TIMING);
+        headerTranslateY.value = withTiming(hiddenHeaderY, HEADER_TIMING);
       } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
         headerHidden.value = ValueConstants.zero;
         headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
@@ -103,15 +107,15 @@ export const useRecipeList = (): UseRecipeListResult => {
     // Snap the band to whichever edge is nearer when scrolling settles.
     onMomentumEnd: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
+      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
     onEndDrag: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
+      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
   });
 

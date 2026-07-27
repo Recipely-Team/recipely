@@ -18,7 +18,11 @@ import { ValueConstants } from '@core/constants';
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
   scrollY: SharedValue<number>;
-  /** Direction-aware band offset, range [-layoutSizes.homeHeaderMax, 0]. */
+  /**
+   * Direction-aware band offset: 0 when shown, `hiddenHeaderOffset(insets.top)`
+   * when hidden — the band's own height plus the inset it sits below, so it
+   * leaves the screen instead of parking behind the status bar.
+   */
   headerTranslateY: SharedValue<number>;
   /** When true, the band renders statically shown with no scroll-driven motion. */
   reduceMotion: boolean;
