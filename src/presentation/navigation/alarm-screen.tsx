@@ -78,7 +78,7 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     void getAlarmAudioService().stop();
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy);
     void stopTimer(timerId);
-    alarmStore.getState().dismiss();
+    alarmStore.getState().dismiss(timerId);
   }, [timerId]);
 
   return (

@@ -20,15 +20,24 @@ import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
+import { ValueConstants } from '@core/constants';
 
-/** Full-screen overlay that appears whenever `alarmStore` has an active alarm. */
+/**
+ * Full-screen overlay for the alarm at the head of the queue.
+ *
+ * Alarms are dismissed one at a time: when two timers finish together,
+ * dismissing the first hands the screen to the second instead of leaving it
+ * ringing with no way to reach it. `key` matters — it remounts `AlarmScreen`
+ * for the next alarm so its tone and haptics start again rather than carrying
+ * over the dismissed one's.
+ */
 const AlarmOverlay = (): React.JSX.Element | null => {
-  const activeAlarm = alarmStore((s) => s.activeAlarm);
-  if (activeAlarm === null) return null;
+  const alarm = alarmStore((s) => s.alarms[ValueConstants.zero]);
+  if (alarm === undefined) return null;
   return (
     // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.
     <View style={[StyleSheet.absoluteFillObject, { zIndex: zIndices.alarmOverlay }]}>
-      <AlarmScreen timerId={activeAlarm.timerId} recipeName={activeAlarm.recipeName} />
+      <AlarmScreen key={alarm.timerId} timerId={alarm.timerId} recipeName={alarm.recipeName} />
     </View>
   );
 };
