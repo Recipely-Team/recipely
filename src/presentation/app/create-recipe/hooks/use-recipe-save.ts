@@ -109,10 +109,11 @@ export const useRecipeSave = ({
     if (success !== null) router.replace(RoutePaths.recipeDetail(success.recipeId) as Href);
   }, [saveSuccess, router]);
 
-  // Dismiss / secondary "Done", and the backdrop close: go to My Recipes.
+  // Dismiss / secondary "Done", and the backdrop close: go to My Recipes — on
+  // the "created" tab, which is where the recipe that was just published is.
   const onCloseSuccess = useCallback((): void => {
     setSaveSuccess(null);
-    router.replace(RoutePaths.myRecipes);
+    router.replace(RoutePaths.myRecipesCreated as Href);
   }, [router]);
 
   const headerTitle = t().createRecipe.previewTitle;

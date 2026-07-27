@@ -9,6 +9,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
+import { RefinePendingRow } from '@presentation/app/create-recipe/items/refine-pending-row';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -31,6 +32,9 @@ export interface RefineDockProps {
 }
 
 const QUICK_CHIP_KEYS = ['chipVegan', 'chipFaster', 'chipSpicier', 'chipHealthier', 'chipKid'] as const;
+
+/** Longest the close waits for `keyboardDidHide` before collapsing anyway. */
+const KEYBOARD_HIDE_TIMEOUT_MS = 400;
 
 /** Sticky bottom AI dock: chat transcript, quick chips, "Try again", free-text. */
 export const RefineDock = ({
@@ -61,15 +65,34 @@ export const RefineDock = ({
     onSubmit(chatInput.trim());
   };
 
+  // WHY the two steps are serialized: dismissing the keyboard and unmounting
+  // the transcript in the same frame ran two layout animations against each
+  // other, and the dock visibly jumped. Waiting for the keyboard to finish
+  // hiding costs nothing and the panel closes into a settled layout. The
+  // timeout is the escape hatch for a platform that never emits the event.
   const closeAssistant = (): void => {
+    if (!keyboardVisible) {
+      onCollapse();
+      return;
+    }
+    const sub = Keyboard.addListener('keyboardDidHide', () => {
+      sub.remove();
+      clearTimeout(fallback);
+      onCollapse();
+    });
+    const fallback = setTimeout(() => {
+      sub.remove();
+      onCollapse();
+    }, KEYBOARD_HIDE_TIMEOUT_MS);
     Keyboard.dismiss();
-    onCollapse();
   };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
       {expanded ? (
         <RefineTranscript chatHistory={chatHistory} refining={refining} onClose={closeAssistant} />
+      ) : refining ? (
+        <RefinePendingRow />
       ) : null}
 
       <ScrollView

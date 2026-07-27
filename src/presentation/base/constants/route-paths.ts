@@ -13,6 +13,8 @@ export const RoutePaths = {
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   myRecipes: '/my-recipes',
+  /** My Recipes with the "created" tab pre-selected — where a publish lands. */
+  myRecipesCreated: '/my-recipes?tab=created',
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',

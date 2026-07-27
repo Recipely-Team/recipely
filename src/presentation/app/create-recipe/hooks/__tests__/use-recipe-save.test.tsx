@@ -245,7 +245,9 @@ describe('useRecipeSave — publish', () => {
     await driver.save();
     act(() => driver.latest().onCloseSuccess());
 
-    expect(mockReplace).toHaveBeenCalledWith('/my-recipes');
+    // …on the "created" tab: a user who just published and is shown the saved
+    // tab instead reasonably concludes the recipe did not save.
+    expect(mockReplace).toHaveBeenCalledWith('/my-recipes?tab=created');
     expect(driver.latest().saveSuccess).toBeNull();
   });
 

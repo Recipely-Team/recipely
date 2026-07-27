@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { type Href, useRouter } from 'expo-router';
+import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -13,6 +13,8 @@ import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
+import { orderSavedRecipes } from '@presentation/app/my-recipes/model/order-saved-recipes';
+import { parseTabParam } from '@presentation/app/my-recipes/model/parse-tab-param';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -37,7 +39,10 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const drafts = draftsStore((s) => s.drafts);
 
-  const [tab, setTab] = useState<TabType>('saved');
+  // Deep-linked tab: publishing a recipe lands here on `created`, so the thing
+  // the user just made is the thing they are looking at.
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
@@ -53,24 +58,24 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     }
   }, [recipeListState.status, loadRecipes]);
 
-  useEffect(() => {
-    const loadSavedRecipes = async () => {
-      const result = await loadFavoritesUseCase.execute();
-      if (result.ok) {
-        const { setSavedIds } = savedRecipesStore.getState();
-        setSavedIds(result.value);
-      }
-    };
-    void loadSavedRecipes();
-    void createdRecipesStore.getState().loadMyRecipes();
-    void draftsStore.getState().loadDrafts();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // WHY on focus, not on mount: this screen stays mounted behind the create
+  // flow, so a mount-only load left a recipe the user had just published (or a
+  // draft they had just deleted) missing until a manual pull-to-refresh.
+  useFocusEffect(
+    useCallback(() => {
+      void (async () => {
+        const result = await loadFavoritesUseCase.execute();
+        if (result.ok) savedRecipesStore.getState().setSavedIds(result.value);
+      })();
+      void createdRecipesStore.getState().loadMyRecipes();
+      void draftsStore.getState().loadDrafts();
+    }, [loadFavoritesUseCase, savedRecipesStore, createdRecipesStore, draftsStore]),
+  );
 
   const savedRecipes = useMemo(() => {
     const all: readonly RecipeSummaryEntity[] =
       recipeListState.status === 'loaded' ? recipeListState.recipes : [];
-    return all.filter((r) => savedIds.has(r.id));
+    return orderSavedRecipes(savedIds, all);
   }, [recipeListState, savedIds]);
 
   const items = tab === 'saved' ? savedRecipes : createdRecipes;
