@@ -9,7 +9,7 @@ import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { TimerChip } from '@presentation/base/widgets/timers/timer-chip';
 import { timerStore } from '@application/timers/timer-store';
 import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
-import { spacing, radii, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, zIndices, maxFontScales } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, zIndices, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -38,9 +38,10 @@ const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
  * the screen — the onboarding CTAs are directly underneath it, with no way to
  * scroll them clear. So it collapses to a small corner pill: the timer stays
  * visible and controllable (never silently lose a running countdown), but it
- * stops blocking anything. The control for that is an explicit labelled
- * chevron across the full width of the bar — the bare grabber line it replaced
- * looked like decoration, and testers reported the bar as simply unhideable.
+ * stops blocking anything. The control for that is a round chevron button at
+ * the end of the chip row: the hairline grabber it replaced read as decoration
+ * (testers reported the bar as unhideable), and the labelled caption row that
+ * replaced the grabber cost the bar a whole second row of chrome.
  * Collapsed state lives in `timersBarStore` rather than the timer store
  * because it is a view preference, not timer state, and it is persisted so a
  * bar parked to reach the content underneath stays parked across launches.
@@ -81,9 +82,9 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
             shadows.md as object,
           ]}
         >
-          <Ionicons name="timer-outline" size={iconSizes.md} color={colors.primary} />
+          <Ionicons name="timer-outline" size={iconSizes.xl} color={colors.primary} />
           <ThemedText
-            variant="caption"
+            variant="subtitle"
             maxFontSizeMultiplier={maxFontScales.badge}
             style={[styles.collapsedCount, { color: colors.primary }]}
           >
@@ -103,21 +104,10 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
           shadows.md as object,
         ]}
       >
-        <Pressable
-          onPress={() => void setCollapsed(true)}
-          accessibilityRole="button"
-          accessibilityLabel={t().timer.collapse}
-          hitSlop={spacing.sm}
-          style={styles.hideRow}
-        >
-          <ThemedText variant="caption" muted style={styles.hideLabel}>
-            {t().timer.collapse}
-          </ThemedText>
-          <Ionicons name="chevron-down" size={iconSizes.md} color={colors.textMuted} />
-        </Pressable>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
+          style={styles.chipScroll}
           contentContainerStyle={styles.chipRow}
           keyboardShouldPersistTaps="handled"
         >
@@ -125,6 +115,15 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
             <TimerChip key={entry.id} entry={entry} />
           ))}
         </ScrollView>
+        <Pressable
+          onPress={() => void setCollapsed(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t().timer.collapse}
+          hitSlop={spacing.sm}
+          style={[styles.hideBtn, { backgroundColor: colors.chipBackground }]}
+        >
+          <Ionicons name="chevron-down" size={iconSizes.xl} color={colors.textMuted} />
+        </Pressable>
       </View>
     </View>
   );
@@ -138,34 +137,40 @@ const styles = StyleSheet.create({
     zIndex: zIndices.timersBar,
   },
   barInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
     borderRadius: radii.xl,
     borderWidth: borderWidths.hairline,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.sm,
   },
-  // Full width of the bar so the hide control is impossible to miss, and
-  // labelled: a bare chevron (or the grabber line before it) reads as
-  // decoration, which is why the bar was reported as unhideable.
-  hideRow: {
-    flexDirection: 'row',
+  chipScroll: {
+    flex: ValueConstants.one,
+  },
+  // A round button parked at the end of the row: it reads as a control the way
+  // the hairline grabber before it never did, without the uppercase caption
+  // that replaced the grabber and cluttered the bar with a second row. Sized as
+  // a shape (it holds a glyph, never text) and slopped out well past the 44pt
+  // minimum, because this is the control that gets the bar off the content.
+  hideBtn: {
+    width: controlSizes.floatingBtn,
+    height: controlSizes.floatingBtn,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs,
-    minHeight: controlSizes.iconBtnSm,
-  },
-  hideLabel: {
-    textTransform: 'uppercase',
-    letterSpacing: letterSpacings.wide,
   },
   // Right-aligned so the collapsed pill parks in the corner and leaves the
-  // widest possible span of whatever is underneath reachable.
+  // widest possible span of whatever is underneath reachable. Its resting size
+  // is a full 44pt tall: collapsed is a state the bar can sit in for the whole
+  // cook, so the way back out cannot be a target you have to aim at.
   collapsedPill: {
     alignSelf: 'flex-end',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xxs,
-    minHeight: controlSizes.iconBtnSm,
-    paddingHorizontal: spacing.sm,
+    gap: spacing.xs,
+    minHeight: controlSizes.searchBar,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: borderWidths.hairline,
   },

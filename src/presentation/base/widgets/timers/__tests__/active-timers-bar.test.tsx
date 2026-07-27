@@ -8,6 +8,8 @@
  */
 
 import { act, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
+import { StyleSheet, type StyleProp, type ViewStyle } from 'react-native';
+import { controlSizes } from '@presentation/base/theme';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { t } from '@presentation/i18n';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
@@ -182,11 +184,43 @@ describe('ActiveTimersBar — collapse', () => {
     expect(buttonLabelled(renderer, t().timer.collapse)).toBeUndefined();
   });
 
-  it('names the hide control in words, not just a chevron', () => {
+  /**
+   * Both ends of the collapse round-trip are glyph-only controls, and a tester
+   * could not press either: the hide affordance started as a 3pt hairline and
+   * the pill that replaces the bar was a 32pt chip. Whatever they look like,
+   * their pressable area stays at or above the 44pt minimum — which is what
+   * `controlSizes.searchBar` is, device-scaled like every other token.
+   */
+  const pressableTarget = (node: ReactTestInstance): { width: number; height: number } => {
+    const style = StyleSheet.flatten(node.props.style as StyleProp<ViewStyle>) ?? {};
+    const slop = typeof node.props.hitSlop === 'number' ? (node.props.hitSlop as number) : 0;
+    // A pill without a fixed width grows with its content, so only the axis the
+    // stylesheet actually pins can be asserted on.
+    const width = style.width ?? Number.POSITIVE_INFINITY;
+    const height = style.height ?? style.minHeight ?? 0;
+    return {
+      width: (typeof width === 'number' ? width : 0) + slop * 2,
+      height: (typeof height === 'number' ? height : 0) + slop * 2,
+    };
+  };
+
+  it('gives the hide control a target at or above the 44pt minimum', () => {
     renderer = renderBar();
 
-    // The grabber line it replaced looked like decoration; testers reported the
-    // bar as unhideable while a working collapse control was on screen.
-    expect(textContent(renderer.root)).toContain(t().timer.collapse);
+    const target = pressableTarget(buttonLabelled(renderer, t().timer.collapse)!);
+
+    expect(target.height).toBeGreaterThanOrEqual(controlSizes.searchBar);
+    expect(target.width).toBeGreaterThanOrEqual(controlSizes.searchBar);
+  });
+
+  it('keeps the collapsed pill pressable rather than shrinking it to a badge', () => {
+    renderer = renderBar();
+    act(() => {
+      (buttonLabelled(renderer!, t().timer.collapse)?.props.onPress as () => void)();
+    });
+
+    const target = pressableTarget(buttonLabelled(renderer, t().timer.expand)!);
+
+    expect(target.height).toBeGreaterThanOrEqual(controlSizes.searchBar);
   });
 });
