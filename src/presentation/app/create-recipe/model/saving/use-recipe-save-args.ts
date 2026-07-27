@@ -3,8 +3,6 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 
 export interface UseRecipeSaveArgs {
   recipe: EditableRecipe;
-  recipeId: string | undefined;
-  isEditMode: boolean;
   activeDraftId: string;
   setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
 }

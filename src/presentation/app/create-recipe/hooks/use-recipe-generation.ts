@@ -34,7 +34,6 @@ const GEN_STEP_INTERVAL_MS = 620;
 export const useRecipeGeneration = ({
   recipe,
   setRecipe,
-  isEditMode,
   activeDraftId,
   draftId,
   importUrl,
@@ -46,7 +45,7 @@ export const useRecipeGeneration = ({
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<PhaseType>(isEditMode ? 'preview' : 'prompt');
+  const [phase, setPhase] = useState<PhaseType>('prompt');
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
@@ -79,8 +78,8 @@ export const useRecipeGeneration = ({
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {
-    if (!isEditMode && draftId === undefined) void loadLatestDraft();
-  }, [isEditMode, draftId, loadLatestDraft]);
+    if (draftId === undefined) void loadLatestDraft();
+  }, [draftId, loadLatestDraft]);
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
@@ -93,7 +92,7 @@ export const useRecipeGeneration = ({
   }, [phase]);
 
   useDraftAutosave({
-    enabled: !isEditMode && phase === 'preview',
+    enabled: phase === 'preview',
     draftId: activeDraftId,
     prompt: originalPrompt.current,
     recipe,
@@ -189,10 +188,10 @@ export const useRecipeGeneration = ({
   // Kick off an Instagram import once when arriving via a share intent.
   const importHandledRef = useRef(false);
   useEffect(() => {
-    if (isEditMode || importUrl === undefined || importHandledRef.current) return;
+    if (importUrl === undefined || importHandledRef.current) return;
     importHandledRef.current = true;
     void runImport(importUrl);
-  }, [isEditMode, importUrl, runImport]);
+  }, [importUrl, runImport]);
 
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
@@ -250,16 +249,12 @@ export const useRecipeGeneration = ({
   }, [latestDraft, router]);
 
   const onClose = useCallback((): void => {
-    if (isEditMode) {
-      router.back();
-      return;
-    }
     if (phase === 'preview' && editableHasContent(recipe)) {
       setExitOpen(true);
       return;
     }
     router.back();
-  }, [isEditMode, phase, recipe, router]);
+  }, [phase, recipe, router]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({

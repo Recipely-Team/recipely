@@ -7,7 +7,6 @@ import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -24,8 +23,6 @@ import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-d
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
-import { buildUpdateRecipeBody } from '@infrastructure/recipes/update/build-update-recipe-body';
-import { uploadRecipeMedia } from '@infrastructure/recipes/media/upload-recipe-media';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles
@@ -102,37 +99,6 @@ export class RecipeRepository implements IRecipeRepository {
       formData,
       onProgress ? (event) => onProgress(event.loaded, event.total) : undefined,
     );
-    if (!result.ok) {
-      return result;
-    }
-    return this.mapRecipe(result.value);
-  }
-
-  async updateRecipe(
-    id: string,
-    input: UpdateRecipeInput,
-    onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<RecipeEntity, Failure>> {
-    const body = buildUpdateRecipeBody(input);
-
-    // WHY: the backend PATCH /:id accepts a full `media[]` of { type, url } and
-    // replaces the gallery. Local URIs must first be turned into hosted URLs via
-    // POST /upload; already-hosted https URLs are sent verbatim. The first image
-    // is also mirrored to `image` to keep the cover in sync.
-    if (input.media !== undefined) {
-      const galleryResult = await uploadRecipeMedia(this.http, input.media, onProgress);
-      if (!galleryResult.ok) return galleryResult;
-      const gallery = galleryResult.value;
-      body['media'] = gallery;
-      const cover = gallery.find((m) => m.type === 'image');
-      if (cover !== undefined) body['image'] = cover.url;
-    }
-
-    const result = await this.http.request<RecipeDto>({
-      method: 'PATCH',
-      url: ApiRoutes.recipes.byId(id),
-      data: body,
-    });
     if (!result.ok) {
       return result;
     }

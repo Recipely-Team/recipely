@@ -19,7 +19,6 @@ export interface RecipeStepsProps {
   onToggleIngredient: (index: number) => void;
   completedSteps: boolean[];
   onToggleStep: (index: number) => void;
-  onEdit: () => void;
   onDelete: () => void;
 }
 
@@ -36,7 +35,6 @@ export const RecipeSteps = ({
   onToggleIngredient,
   completedSteps,
   onToggleStep,
-  onEdit,
   onDelete,
 }: RecipeStepsProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -70,23 +68,9 @@ export const RecipeSteps = ({
 
       {isOwner ? (
         isWebShell ? (
-          // WEB: design's header-cluster button language — ghost
-          // "Edit" pill + ghost "Delete" pill (danger-tinted).
+          // WEB: design's header-cluster button language — a ghost
+          // "Delete" pill (danger-tinted).
           <View style={styles.ownerActionsWeb}>
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t().myRecipes.editRecipe}
-              onPress={onEdit}
-              style={({ pressed }) => [
-                styles.ghostPill,
-                { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
-              ]}
-            >
-              <Ionicons name="create-outline" size={iconSizes.md} color={colors.text} />
-              <ThemedText variant="caption" style={[styles.ownerBtnLabel, { color: colors.text }]}>
-                {t().myRecipes.editRecipe}
-              </ThemedText>
-            </Pressable>
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t().myRecipes.deleteRecipe}
@@ -103,9 +87,8 @@ export const RecipeSteps = ({
             </Pressable>
           </View>
         ) : (
-          // MOBILE: edit lives in the floating overlay cluster (a
-          // pencil button, per the design); delete stays inline as
-          // a single danger button.
+          // MOBILE: delete stays inline as a single danger button; the
+          // floating overlay cluster over the hero owns share/like/save.
           <View style={styles.ownerActions}>
             <Pressable
               accessibilityRole="button"

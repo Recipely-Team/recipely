@@ -2,58 +2,47 @@ import { useRef } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
-import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useEditableRecipe } from '@presentation/app/create-recipe/hooks/use-editable-recipe';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
 import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/model/use-create-recipe-result';
-import { ValueConstants } from '@core/constants';
 
 /**
- * Assembles the create/edit recipe view model from the focused sub-hooks:
+ * Assembles the create-recipe view model from the focused sub-hooks:
  * {@link useEditableRecipe} (form state), {@link useRecipeGeneration} (AI phase
- * flow + drafts), and {@link useRecipeSave} (publish/update). The screen renders
- * the returned state and dispatches its handlers.
+ * flow + drafts), and {@link useRecipeSave} (publish). The screen renders the
+ * returned state and dispatches its handlers.
  */
 export const useCreateRecipe = (): UseCreateRecipeResult => {
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
-  const { createdRecipesStore } = useStores();
 
-  const params = useLocalSearchParams<{ recipeId?: string; draftId?: string; importUrl?: string }>();
-  const recipeId = typeof params.recipeId === 'string' ? params.recipeId : undefined;
+  const params = useLocalSearchParams<{ draftId?: string; importUrl?: string }>();
   const draftId = typeof params.draftId === 'string' ? params.draftId : undefined;
   const importUrl = typeof params.importUrl === 'string' ? params.importUrl : undefined;
-  const isEditMode = recipeId !== undefined && recipeId.length > ValueConstants.zero;
-
-  const existingRecipe = isEditMode ? createdRecipesStore((s) => s.findById)(recipeId) : undefined;
 
   // A stable draft id for the lifetime of a NEW draft. A real UUID is required
   // by the backend; resumed drafts reuse their own id.
   const newDraftId = useRef(Crypto.randomUUID()).current;
   const activeDraftId = draftId ?? newDraftId;
 
-  const editable = useEditableRecipe(existingRecipe, isEditMode);
+  const editable = useEditableRecipe();
   const generation = useRecipeGeneration({
     recipe: editable.recipe,
     setRecipe: editable.setRecipe,
-    isEditMode,
     activeDraftId,
     draftId,
     importUrl,
   });
   const save = useRecipeSave({
     recipe: editable.recipe,
-    recipeId,
-    isEditMode,
     activeDraftId,
     setFieldErrors: editable.setFieldErrors,
   });
 
   return {
     phase: generation.phase,
-    isEditMode,
     isWebShell,
     insets,
     prompt: generation.prompt,

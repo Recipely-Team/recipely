@@ -5,7 +5,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 /**
  * Converts a full-detail `Recipe` into a lean `RecipeSummaryEntity`, so an
- * owner-mutation flow (e.g. after `updateRecipe`) can patch a
+ * owner-mutation flow (e.g. after a create) can patch a
  * `RecipeSummaryEntity[]` list cache in place without a network round-trip.
  * `totalTimeMinutes` is derived by summing `prepTimeMinutes` +
  * `cookTimeMinutes`, since detail flows only carry those two fields.

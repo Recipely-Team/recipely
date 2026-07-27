@@ -188,16 +188,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
 
-  // WHY: when the user reaches this screen from the main list (not My Recipes),
-  // createdRecipesStore is empty, so isLocal is false and the edit form won't
-  // pre-fill. Loading my recipes here ensures the store is populated before
-  // the user taps Edit.
-  useEffect(() => {
-    if (isOwner && !isLocal) {
-      void createdRecipesStore.getState().loadMyRecipes();
-    }
-  }, [isOwner, isLocal, createdRecipesStore]);
-
   const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : ValueConstants.zero;
   const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : ValueConstants.zero;
 
@@ -292,7 +282,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
     onDeleteComment: (id: string) => void handleDeleteComment(id),
-    onEdit: () => router.push(RoutePaths.createRecipeWithDraft(recipeId) as Href),
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

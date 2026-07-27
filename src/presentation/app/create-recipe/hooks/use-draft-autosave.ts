@@ -10,8 +10,7 @@ const DEBOUNCE_MS = 500;
 /**
  * Debounced draft persistence: whenever the editable model or chat changes in
  * the preview phase (and the flow is enabled), the working recipe is upserted
- * to the backend ~500ms later so an accidental exit never loses work. Disabled
- * while editing an already-published recipe.
+ * to the backend ~500ms later so an accidental exit never loses work.
  */
 export const useDraftAutosave = ({
   enabled,

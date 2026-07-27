@@ -50,7 +50,6 @@ export interface UseRecipeDetailResult {
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
-  onEdit: () => void;
 
   shareOpen: boolean;
   onOpenShare: () => void;

@@ -27,10 +27,6 @@ export const HEALTH_URL: string = `${SERVER_URL}/health`;
 // under here, so the v1 prefix lives in one place.
 export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 
-// Upload endpoint is mounted at the server root (outside /api/v1), so it
-// needs an absolute URL that bypasses HttpClient's baseURL.
-export const UPLOAD_URL: string = `${SERVER_URL}/upload`;
-
 // Avatar upload endpoint is mounted at the server root (outside /api/v1), so
 // it needs an absolute URL that bypasses HttpClient's baseURL.
 export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;

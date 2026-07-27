@@ -6,28 +6,24 @@ import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentatio
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
-  isOwner: boolean;
   /** Server-confirmed like state, overlaid by any in-flight optimistic toggle. */
   liked: boolean;
   isSaved: boolean;
   saveDisabled: boolean;
-  onEdit: () => void;
   onShare: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
 }
 
 /**
- * Floating overlay cluster (edit / share / like / save) pinned to the top-right
+ * Floating overlay cluster (share / like / save) pinned to the top-right
  * of the native recipe-detail hero image. Rendered only on the mobile shell.
  */
 export const RecipeFloatingActions = ({
   insetsTop,
-  isOwner,
   liked,
   isSaved,
   saveDisabled,
-  onEdit,
   onShare,
   onToggleLike,
   onToggleSave,
@@ -36,16 +32,6 @@ export const RecipeFloatingActions = ({
 
   return (
     <View style={[styles.floatingActions, { top: insetsTop + spacing.sm }]}>
-      {isOwner ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().myRecipes.editRecipe}
-          onPress={onEdit}
-          style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-        >
-          <Ionicons name="pencil" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t().recipes.share}

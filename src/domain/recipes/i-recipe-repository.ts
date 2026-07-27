@@ -6,7 +6,6 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import type { UpdateRecipeInput } from '@domain/recipes/update/update-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 
 export interface IRecipeRepository {
@@ -41,10 +40,5 @@ export interface IRecipeRepository {
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
   ): Promise<Result<RefinedRecipe, Failure>>;
-  updateRecipe(
-    id: string,
-    input: UpdateRecipeInput,
-    onProgress?: CreateRecipeProgressCallback,
-  ): Promise<Result<RecipeEntity, Failure>>;
   deleteRecipe(id: string): Promise<Result<void, Failure>>;
 }

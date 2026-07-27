@@ -71,7 +71,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       <ConfirmSheet
         visible={vm.saveError !== null}
         title={t().createRecipe.saveErrorTitle}
-        message={vm.saveError?.message ?? CharConstants.empty}
+        message={vm.saveError ?? CharConstants.empty}
         confirmLabel={t().common.retry}
         onConfirm={vm.onConfirmSaveError}
         onClose={vm.onCloseSaveError}
@@ -88,21 +88,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       <FeedbackDialog
         visible={vm.saveSuccess !== null}
         title={t().createRecipe.successTitle}
-        message={
-          vm.saveSuccess?.mode === 'update'
-            ? t().createRecipe.successUpdated
-            : t().createRecipe.successPublished
-        }
-        primaryLabel={
-          vm.saveSuccess?.mode === 'update'
-            ? t().createRecipe.successDone
-            : t().createRecipe.viewRecipe
-        }
+        message={t().createRecipe.successPublished}
+        primaryLabel={t().createRecipe.viewRecipe}
         onPrimary={vm.onSuccessPrimary}
-        secondaryLabel={
-          vm.saveSuccess?.mode === 'publish' ? t().createRecipe.successDone : undefined
-        }
-        onSecondary={vm.saveSuccess?.mode === 'publish' ? vm.onCloseSuccess : undefined}
+        secondaryLabel={t().createRecipe.successDone}
+        onSecondary={vm.onCloseSuccess}
         onClose={vm.onCloseSuccess}
       />
     </KeyboardAvoider>

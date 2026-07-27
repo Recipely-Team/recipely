@@ -69,7 +69,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onBack={() => router.back()}
                   onToggleLike={vm.onToggleLike}
                   onToggleSave={vm.onToggleSave}
-                  onEdit={vm.onEdit}
                   onDelete={vm.onOpenDelete}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}
@@ -106,7 +105,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onChangeCommentInput={vm.onChangeCommentInput}
                   onFocusCommentInput={vm.onFocusCommentInput}
                   onToggleLike={vm.onToggleLike}
-                  onEdit={vm.onEdit}
                   onDelete={vm.onOpenDelete}
                   onAddComment={vm.onAddComment}
                   onLoadMoreComments={vm.onLoadMoreComments}
@@ -150,11 +148,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           {!isWebShell ? (
             <RecipeFloatingActions
               insetsTop={insets.top}
-              isOwner={vm.isOwner}
               liked={vm.liked}
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}
-              onEdit={vm.onEdit}
               onShare={vm.onOpenShare}
               onToggleLike={vm.onToggleLike}
               onToggleSave={vm.onToggleSave}

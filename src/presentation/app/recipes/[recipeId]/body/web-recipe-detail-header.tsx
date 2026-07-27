@@ -18,7 +18,6 @@ export interface WebRecipeDetailHeaderProps {
   likeCount: number;
   onToggleLike: () => void;
   isOwner: boolean;
-  onEdit: () => void;
   onDelete: () => void;
   isSaved: boolean;
   saveDisabled: boolean;
@@ -41,7 +40,6 @@ export const WebRecipeDetailHeader = ({
   likeCount,
   onToggleLike,
   isOwner,
-  onEdit,
   onDelete,
   isSaved,
   saveDisabled,
@@ -124,22 +122,6 @@ export const WebRecipeDetailHeader = ({
       </View>
 
       <View style={styles.actions}>
-        {isOwner ? (
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t().myRecipes.editRecipe}
-            onPress={onEdit}
-            style={({ pressed }) => [
-              styles.pill,
-              { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
-            ]}
-          >
-            <Ionicons name="create-outline" size={iconSizes.md} color={colors.text} />
-            <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
-              {t().myRecipes.editRecipe}
-            </ThemedText>
-          </Pressable>
-        ) : null}
         {isOwner ? (
           <Pressable
             accessibilityRole="button"
