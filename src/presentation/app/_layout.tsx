@@ -91,6 +91,13 @@ const RootTabBar = (): React.JSX.Element | null => {
   return <TabBar active={state.active} onChange={state.onChange} />;
 };
 
+/**
+ * The three bottom-tab destinations swap instantly. `animation: 'none'` also
+ * covers the way back to them, which is what keeps a tab press from reading as
+ * a push in one direction and a pop in the other.
+ */
+const TAB_SCREEN_OPTIONS = { headerShown: false, animation: 'none' } as const;
+
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
@@ -113,22 +120,28 @@ const RootStack = (): React.JSX.Element => {
         {/* Folder pages register on the parent navigator under their full
             relative name (`<segment>/index`) — a bare `<segment>` here would
             not match any route, so its options (headerShown:false) would be
-            silently dropped and the default stack header would appear. */}
+            silently dropped and the default stack header would appear.
+
+            TAB_SCREEN_OPTIONS on the three tab destinations: a tab bar is a
+            switch between peers, not a journey into a detail, so sliding one
+            tab in over another borrowed a gesture that says "deeper". The
+            screens that ARE pushed on top of a tab (a recipe, the editor, the
+            auth flow) keep the stack animation. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="login/index" options={{ headerShown: false }} />
         <Stack.Screen name="register/index" options={{ headerShown: false }} />
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
-        <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
-        <Stack.Screen name="my-recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="my-recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="create-recipe/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
         <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="ai-generate/index" options={{ headerShown: false }} />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
-        <Stack.Screen name="profile/index" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
       <RootTabBar />
