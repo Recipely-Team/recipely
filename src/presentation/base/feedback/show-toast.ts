@@ -35,11 +35,11 @@ export const showDangerToast = (message: string): string =>
   toastStore.getState().show({ severity: 'danger', message });
 
 /**
- * Surfaces a plain notice (muted): nothing failed and nothing was achieved —
- * the app just did something on the user's behalf that they should know about.
+ * Surfaces a caution (amber): nothing failed, but the app declined to do what
+ * was asked and the user has to resolve something before asking again.
  */
-export const showNeutralToast = (message: string): string =>
-  toastStore.getState().show({ severity: 'neutral', message });
+export const showWarningToast = (message: string): string =>
+  toastStore.getState().show({ severity: 'warning', message });
 
 /** Surfaces a success confirmation (green). */
 export const showSuccessToast = (message: string, action?: ToastRetry): string =>

@@ -160,12 +160,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Right-aligned so the collapsed pill parks in the corner and leaves the
-  // widest possible span of whatever is underneath reachable. Its resting size
-  // is a full 44pt tall: collapsed is a state the bar can sit in for the whole
-  // cook, so the way back out cannot be a target you have to aim at.
+  // Parked in a corner so the widest possible span of whatever is underneath
+  // stays reachable — the LEFT one, because the bottom-right belongs to the
+  // feed's Filter & Sort FAB and the pill sat squarely on top of it. Its
+  // resting size is a full 44pt tall: collapsed is a state the bar can sit in
+  // for the whole cook, so the way back out cannot be a target you aim at.
   collapsedPill: {
-    alignSelf: 'flex-end',
+    alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
