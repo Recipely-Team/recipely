@@ -135,6 +135,10 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     maxHeight: '78%',
+    // Clips its own children to the rounded corners. Without it the scroll
+    // area and the header paint square corners over the radius, which reads as
+    // two odd notches at the top edge of the sheet.
+    overflow: 'hidden',
   },
   dialog: {
     width: '100%',
