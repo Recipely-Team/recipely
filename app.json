@@ -44,8 +44,7 @@
         {
           "ios": {
             "infoPlist": {
-              "NSAllowsArbitraryLoads": true,
-              "UIBackgroundModes": ["audio"]
+              "NSAllowsArbitraryLoads": true
             },
             "useFrameworks": "static",
             "forceStaticLinking": [

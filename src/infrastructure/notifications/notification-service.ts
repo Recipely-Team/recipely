@@ -125,7 +125,7 @@ export class NotificationService implements INotificationService {
     if (Platform.OS === 'web') return [];
     const ids: string[] = [];
     const all = [endTimeMs];
-    for (let i = 1; i <= REMINDER_COUNT; i++) {
+    for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
       all.push(endTimeMs + i * 2 * 60 * 1000);
     }
     const results = await Promise.all(all.map((t) => this.scheduleSingle(timerId, recipeName, t)));
