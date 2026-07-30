@@ -94,6 +94,21 @@ longer-named rows beside them kept theirs. Nothing looked broken; it looked
 inconsistent.
 *Guard:* it falls back to the amount alone. **An early return is a product decision.**
 
+## Integration
+
+**A URL the server gave us is not a file we can upload.**
+The Instagram importer started returning a cover it had already stored
+(`https://…/uploads/imports/<uuid>.webp`), so the editor showed a picture — and
+publishing would have tried to upload it as though it were a device photo,
+asking `FormData` for a file that was never on the device. The create route
+already took a plain `image` field for exactly this, so nothing needed to change
+server-side.
+*Guard:* `isHostedMedia` splits the gallery, and eight tests across
+`build-recipe-input` and `build-create-recipe-form-data` pin which half travels
+as a file and which as a field. **When a payload gains a second provenance,
+the code that consumes it has to learn the difference** — the two look
+identical in the UI and identical in the type.
+
 ## Backend
 
 **Search only matched the alphabet the developer typed in.**

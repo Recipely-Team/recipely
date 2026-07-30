@@ -7,8 +7,11 @@ import { ValueConstants } from '@core/constants';
  *
  * Every media file is appended under the `media` field in order: the backend
  * (Multer `.array('media', 10)`) promotes the first image to the cover `image`
- * and persists the rest as the gallery. Optional fields are omitted entirely
- * when unset so the backend applies its own defaults.
+ * and persists the rest as the gallery. A cover the backend already hosts —
+ * the frame an Instagram import lifted out of the video — rides along as the
+ * plain `image` field instead, because the device has no file to send for it.
+ * Optional fields are omitted entirely when unset so the backend applies its
+ * own defaults.
  */
 export const buildCreateRecipeFormData = async (
   input: CreateRecipeInput,
@@ -20,6 +23,13 @@ export const buildCreateRecipeFormData = async (
       fileName: item.fileName,
       mimeType: item.mimeType,
     });
+  }
+
+  // The cover the importer already stored, handed back as a field. The route
+  // reads `req.body.image` only when no file was uploaded, so a photo the user
+  // picked still wins — which is the precedence we want.
+  if (input.imageUrl !== undefined) {
+    formData.append('image', input.imageUrl);
   }
 
   formData.append('name', JSON.stringify(input.name));
