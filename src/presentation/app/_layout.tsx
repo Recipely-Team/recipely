@@ -1,4 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useMemo } from 'react';
+import { ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
@@ -18,6 +19,7 @@ import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
+import { navigationTheme } from '@presentation/navigation/navigation-theme';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
@@ -103,7 +105,7 @@ const RootStack = (): React.JSX.Element => {
   useAuthGuard();
   useInstagramShareImport();
 
-  const reactNavTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const reactNavTheme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
   const headerBg = colors.background;
   const headerTint = colors.text;
 
@@ -115,6 +117,11 @@ const RootStack = (): React.JSX.Element => {
           headerStyle: { backgroundColor: headerBg },
           headerTintColor: headerTint,
           headerShadowVisible: false,
+          // Belt and braces with the theme above: `contentStyle` is what the
+          // native stack paints a scene with, and a screen that renders nothing
+          // on its first frame (a detail page waiting on its fetch) shows it
+          // bare. Both must be the app's background or that frame is a flash.
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         {/* Folder pages register on the parent navigator under their full

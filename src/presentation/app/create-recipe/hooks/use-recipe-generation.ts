@@ -59,6 +59,12 @@ export const useRecipeGeneration = ({
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
+  /**
+   * The draft exactly as this screen adopted it, or null for one started here.
+   * Leaving with the recipe still identical to it means there is nothing to
+   * decide — see {@link onClose}.
+   */
+  const openedAs = useRef<string | null>(null);
 
   const refining = refineState.status === 'refining';
 
@@ -69,7 +75,12 @@ export const useRecipeGeneration = ({
     void (async () => {
       const loaded = await draftsStore.getState().getDraft(draftId);
       if (cancelled || loaded === null) return;
-      setRecipe(snapshotToEditable(loaded.snapshot));
+      const resumed = snapshotToEditable(loaded.snapshot);
+      setRecipe(resumed);
+      // Round-tripped through the same mapper the comparison uses, so a draft
+      // that was only opened and closed compares equal rather than differing
+      // by whatever the mapping normalises.
+      openedAs.current = JSON.stringify(editableToSnapshot(resumed));
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
@@ -95,7 +106,7 @@ export const useRecipeGeneration = ({
     return () => clearInterval(id);
   }, [phase]);
 
-  useDraftAutosave({
+  const cancelAutosave = useDraftAutosave({
     enabled: phase === 'preview',
     draftId: activeDraftId,
     prompt: originalPrompt.current,
@@ -256,8 +267,16 @@ export const useRecipeGeneration = ({
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId: latestDraft.id } });
   }, [latestDraft, router]);
 
+  // WHY the identity check: the exit dialog asks what should happen to work
+  // that is not in the drafts list yet. Opening an existing draft, reading it,
+  // and backing out is not that — nothing was written, so there is nothing to
+  // keep or throw away. It asked anyway, and its only non-destructive answer
+  // re-saved a draft that was already saved, on every single exit.
   const onClose = useCallback((): void => {
-    if (phase === 'preview' && editableHasContent(recipe)) {
+    const unchanged =
+      openedAs.current !== null &&
+      openedAs.current === JSON.stringify(editableToSnapshot(recipe));
+    if (phase === 'preview' && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
       return;
     }
@@ -276,11 +295,17 @@ export const useRecipeGeneration = ({
   }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
+    // Stop autosaving BEFORE the delete, not after: the timer armed by the
+    // user's last keystroke was still pending, so it could fire while the
+    // delete was in flight and upsert the draft back into the list the user
+    // had just removed it from. That is why "leave without saving" appeared to
+    // do nothing.
+    cancelAutosave();
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     router.back();
-  }, [draftsStore, activeDraftId, router]);
+  }, [cancelAutosave, draftsStore, activeDraftId, router]);
 
   return {
     phase,

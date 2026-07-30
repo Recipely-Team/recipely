@@ -1,9 +1,10 @@
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, layoutSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -14,7 +15,20 @@ export interface ExitSheetProps {
   onKeepEditing: () => void;
 }
 
-/** Confirmation dialog shown when leaving an unpublished, unsaved recipe. */
+/**
+ * Confirmation shown when leaving a recipe that is not in the drafts list yet.
+ *
+ * Built on {@link BottomSheet} rather than its own `Modal` (CLAUDE.md §23), for
+ * two reasons beyond consistency. The shared component sets
+ * `statusBarTranslucent`, without which an Android window in edge-to-edge mode
+ * re-lays-out around the status bar as the modal opens — the whole screen
+ * visibly jumped as this dialog appeared. And it is the single place that knows
+ * a sheet is a centred dialog on the web shell instead of a panel stuck to the
+ * bottom of a desktop window.
+ *
+ * The three actions live in the pinned `footer` so none of them can be scrolled
+ * out of reach: this is a question the user has to answer to leave the screen.
+ */
 export const ExitSheet = ({
   visible,
   onSaveDraft,
@@ -22,21 +36,17 @@ export const ExitSheet = ({
   onKeepEditing,
 }: ExitSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onKeepEditing}>
-      <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onKeepEditing}>
-        <Pressable style={[styles.card, { backgroundColor: colors.background }]} onPress={() => {}}>
-          <View style={[styles.icon, { backgroundColor: colors.chipBackground }]}>
-            <Ionicons name="bookmark" size={iconSizes.xxl} color={colors.primary} />
-          </View>
-          <ThemedText variant="title">{t().createRecipe.exitTitle}</ThemedText>
-          <ThemedText variant="body" style={[styles.body, { color: colors.textMuted }]}>
-            {t().createRecipe.exitBody}
-          </ThemedText>
 
+  return (
+    <BottomSheet
+      visible={visible}
+      title={t().createRecipe.exitTitle}
+      onClose={onKeepEditing}
+      footer={
+        <View style={styles.actions}>
           <Pressable
             onPress={onSaveDraft}
-            style={[styles.primaryBtn, { overflow: 'hidden' }]}
+            style={styles.primaryBtn}
             accessibilityRole="button"
             accessibilityLabel={t().createRecipe.exitSave}
           >
@@ -69,28 +79,29 @@ export const ExitSheet = ({
             accessibilityRole="button"
             accessibilityLabel={t().createRecipe.keepEditing}
           >
-            <ThemedText variant="caption" style={{ color: colors.textMuted, fontWeight: fontWeights.semibold }}>
+            <ThemedText variant="caption" style={[styles.keepLabel, { color: colors.textMuted }]}>
               {t().createRecipe.keepEditing}
             </ThemedText>
           </Pressable>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+      }
+    >
+      <View style={styles.body}>
+        <View style={[styles.icon, { backgroundColor: colors.chipBackground }]}>
+          <Ionicons name="bookmark" size={iconSizes.xxl} color={colors.primary} />
+        </View>
+        <ThemedText variant="body" style={[styles.bodyText, { color: colors.textMuted }]}>
+          {t().createRecipe.exitBody}
+        </ThemedText>
+      </View>
+    </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  backdrop: {
-    flex: ValueConstants.one,
+  body: {
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.lg,
-  },
-  card: {
-    width: '100%',
-    maxWidth: layoutSizes.maxContentMd,
-    borderRadius: radii.xxl,
-    padding: spacing.xl,
+    paddingBottom: spacing.md,
   },
   icon: {
     width: avatarSizes.md,
@@ -100,15 +111,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  body: {
-    marginTop: spacing.xs,
-    marginBottom: spacing.lg,
+  bodyText: {
+    textAlign: 'center',
     lineHeight: lineHeightFor(fontSizes.body),
+  },
+  actions: {
+    paddingTop: spacing.sm,
   },
   primaryBtn: {
     minHeight: controlSizes.buttonSm,
     borderRadius: radii.lg,
     marginBottom: spacing.sm,
+    overflow: 'hidden',
   },
   primaryInner: {
     flex: ValueConstants.one,
@@ -125,6 +139,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   discardLabel: {
+    fontWeight: fontWeights.semibold,
+  },
+  keepLabel: {
     fontWeight: fontWeights.semibold,
   },
 });
