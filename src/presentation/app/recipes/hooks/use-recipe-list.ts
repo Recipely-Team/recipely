@@ -318,8 +318,18 @@ export const useRecipeList = (): UseRecipeListResult => {
   // for good, and without this the spinner would never stop. The empty state
   // takes over and `useRefreshFailureToast` says what went wrong.
   const hasRefreshFailure = state.status === 'loaded' && state.refreshFailure !== undefined;
-  const isRefetching = isRecipeListRefreshing(state) || (!answersCurrentQuery && !hasRefreshFailure);
-  const isReloadingResults = pendingReloads > ValueConstants.zero;
+  // The window in which the rows on screen have been withheld for not answering
+  // what is being asked. Both flags below need it, for the same reason and with
+  // the same failure escape hatch.
+  const isAwaitingAnswer = !answersCurrentQuery && !hasRefreshFailure;
+  const isRefetching = isRecipeListRefreshing(state) || isAwaitingAnswer;
+  // WHY the staleness term belongs here too: `pendingReloads` counts requests,
+  // and the debounce window sits BEFORE the request. Clearing the search field
+  // drops straight back to the feed body with `recipes` already withheld and no
+  // reload counted yet — which put the "no recipes yet, try again" empty state
+  // on screen for the length of the debounce. A focus refetch still doesn't
+  // count: it asks for the same content, so `answersCurrentQuery` stays true.
+  const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
 
   return {
     state,

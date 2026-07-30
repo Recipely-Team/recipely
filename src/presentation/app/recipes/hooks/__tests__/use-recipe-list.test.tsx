@@ -647,6 +647,9 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       // Staleness cuts both ways: the search hits are no more the feed than the
       // feed was a set of search hits.
       expect(vm.recipes).toEqual([]);
+      // …and the feed body must be told it is reloading, or the withheld rows
+      // read as "no recipes yet, try again" for the length of the debounce.
+      expect(vm.isReloadingResults).toBe(true);
 
       await act(async () => {
         jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
