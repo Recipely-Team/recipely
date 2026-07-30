@@ -14,6 +14,7 @@ import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, layout
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { enterApp } from '@presentation/navigation/enter-app';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
@@ -32,7 +33,10 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === 'authenticated') {
-      router.replace(RoutePaths.recipes);
+    // The code has been accepted, so the whole sign-up detour behind this
+      // screen is spent. Landing on the feed with it still stacked let one back
+      // gesture return to a code entry that can no longer be used.
+      enterApp(router, RoutePaths.recipes);
     }
   }, [state.status, router]);
 

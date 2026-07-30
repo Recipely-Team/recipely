@@ -13,6 +13,7 @@ import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIn
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { enterApp } from '@presentation/navigation/enter-app';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -186,7 +187,7 @@ export const LoginForm = (): React.JSX.Element => {
         onGoogle={() => { void runSocial(signInWithGoogle); }}
         onApple={() => { void runSocial(signInWithApple); }}
         onSignUp={() => router.push(RoutePaths.register)}
-        onGuest={() => router.replace(RoutePaths.recipes)}
+        onGuest={() => enterApp(router, RoutePaths.recipes)}
       />
     </>
   );
