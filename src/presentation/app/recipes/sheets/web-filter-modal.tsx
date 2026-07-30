@@ -59,7 +59,13 @@ export const WebFilterModal = ({
     resultCount > ValueConstants.zero ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <Pressable
         style={[styles.overlay, { backgroundColor: colors.scrim }]}
         accessibilityRole="button"

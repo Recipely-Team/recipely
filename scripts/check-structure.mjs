@@ -309,6 +309,26 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- M: every Modal is status-bar translucent (CLAUDE.md §23b) --------------
+// `edgeToEdgeEnabled` is on, and without this prop Android re-lays-out the
+// window around the status bar as a modal opens — the screen underneath jumps
+// by the inset height and back. It cost a "the layout shifts when I leave a
+// draft" report: the exit dialog was a hand-rolled `Modal` that faded rather
+// than slid, so rule L above never looked at it. Rule L asks whether a modal
+// is a sheet in disguise; this one asks the question that applies to all of
+// them, so nothing gets through by not looking like a sheet.
+{
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!/<Modal[\s>]/.test(src)) continue;
+    if (/statusBarTranslucent/.test(src)) continue;
+    errors.push(
+      `${file}: <Modal> without statusBarTranslucent — the screen under it jumps on Android edge-to-edge (CLAUDE.md §23b)`,
+    );
+  }
+}
+
 // --- J: PROJECT-MAP.md must describe the tree that exists --------------------
 // The map only saves anyone time while it is true. It carries a fingerprint of
 // every folder and file name under src/; if the tree moved and the map did not,
