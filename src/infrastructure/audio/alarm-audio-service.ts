@@ -14,10 +14,20 @@ import { ALARM_SOUND_ASSET } from '@infrastructure/constants/assets';
 
 const ALARM_SOURCE: AudioSource = ALARM_SOUND_ASSET;
 
-/** The session an alarm needs: exclusive focus, audible through the silent switch. */
+/**
+ * The session an alarm needs: exclusive focus, audible through the silent switch.
+ *
+ * `shouldPlayInBackground` is false because the app has no background-audio
+ * capability to back it — App Review rejects that entitlement without a feature
+ * that plays audible content while backgrounded (CLAUDE.md §23c), so neither
+ * platform is configured for it. Asking the session for background playback
+ * anyway would claim something the build cannot do. An alarm that comes due
+ * while the app is backgrounded is delivered by the local notification
+ * `NotificationService` schedules alongside the timer, not by this player.
+ */
 const ALARM_AUDIO_MODE: Partial<AudioMode> = {
   allowsRecording: false,
-  shouldPlayInBackground: true,
+  shouldPlayInBackground: false,
   playsInSilentMode: true,
   interruptionMode: 'doNotMix',
   shouldRouteThroughEarpiece: false,

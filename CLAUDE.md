@@ -248,7 +248,7 @@ blocking.
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
     `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming),
     22 (unguarded `console.*`), 23 (hand-rolled bottom sheets), 23b (`Modal` without
-    `statusBarTranslucent`) mechanically and must be green before any commit/PR. Its
+    `statusBarTranslucent`), 23c (background-audio capability) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.
@@ -315,6 +315,19 @@ blocking.
     underneath visibly jumps. `edgeToEdgeEnabled` is on, so this is not optional.
     **Enforced mechanically** by `check:structure` (rule M). If you are writing a raw
     `Modal` at all, re-read rule 23 first — the shared widgets already set it.
+
+23c. **No background-audio capability** — the app has no feature that plays audible
+    content while backgrounded, so `UIBackgroundModes: audio` must never reach the shipped
+    `Info.plist`. App Review rejected two builds over this (guideline 2.5.4). Deleting the
+    key from `app.json`'s `ios.infoPlist` does NOT achieve it: **`expo-audio`'s config
+    plugin defaults `enableBackgroundPlayback` to `true`** and re-adds the key on every
+    prebuild, so the config diff looks right while the artifact is unchanged. `expo-video`
+    does the same when `supportsBackgroundPlayback` / `supportsPictureInPicture` is on.
+    A timer finishing while the app is backgrounded is served by a scheduled local
+    notification, which is what Apple expects — not by holding an audio session open.
+    **Enforced twice**: `check:structure` (rule N) on the plugin options, and a CI step
+    that asserts on the *generated* Info.plist after `expo prebuild`. Config is not the
+    artifact; check the artifact.
 
 24. **A bug fix ships the test that would have caught it** — this is how the repo gets
     harder to break instead of merely getting patched. Three steps, in order:

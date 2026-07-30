@@ -108,7 +108,11 @@ describe('AlarmAudioService', () => {
         expect.objectContaining({
           interruptionMode: 'doNotMix',
           playsInSilentMode: true,
-          shouldPlayInBackground: true,
+          // Not background playback: the app ships no background-audio
+          // capability (App Review rejects it without a qualifying feature),
+          // so asking the session for it would claim something the build
+          // cannot do. A backgrounded alarm rides the local notification.
+          shouldPlayInBackground: false,
         }),
       );
     });
