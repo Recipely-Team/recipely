@@ -109,7 +109,15 @@ per-word matching. Verified against the dev database, not only against a mocked 
 **A capability declared in `Info.plist` with no feature behind it.**
 `UIBackgroundModes: ["audio"]` was carried for timer alerts, which Apple names as an
 invalid use in guideline 2.5.4. Rejected at review, not at build.
-*Guard:* nothing mechanical yet. If a native capability is declared, something in the
-app has to need it — and removing one moves work to whatever depended on it (here:
-a backgrounded timer alarm now rests entirely on scheduled local notifications, which
-only a physical device can confirm).
+
+**And the fix that fixed nothing.** The key was deleted from `app.json`'s
+`ios.infoPlist` — and the next build was rejected for the same thing. `expo-audio`'s
+config plugin defaults `enableBackgroundPlayback` to **true** and re-adds the key on
+every prebuild, so the diff read correctly, the review notes read correctly, and the
+artifact never changed. Two review cycles were spent on a config file nobody had
+compared against its own output.
+*Guard:* `check:structure` rule N on the plugin options, plus a CI step asserting on the
+**generated** Info.plist after `expo prebuild`. **Config is not the artifact.** When a
+build tool transforms your input, the guard belongs on the output — anything else
+verifies your intent rather than what ships. Also worth naming: a fix that cannot be
+observed anywhere except in the diff has not been verified at all.

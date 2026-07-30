@@ -450,6 +450,25 @@ jobs:
       - name: Expo prebuild (iOS)
         run: npx expo prebuild --platform ios --no-install
 
+      # App Review rejected 1.0.38 and 1.0.39 under guideline 2.5.4 for
+      # declaring background audio with no feature behind it. Deleting the key
+      # from app.json's ios.infoPlist did NOT fix it: expo-audio's config
+      # plugin defaults `enableBackgroundPlayback` to true and re-adds it on
+      # every prebuild, so the app.json diff looked right and the shipped
+      # Info.plist was unchanged. Assert on the GENERATED file — the artifact
+      # that actually reaches Apple — so any plugin that reintroduces this is
+      # caught here rather than a review cycle later.
+      - name: Assert no background-audio mode in the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          modes="$(/usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$plist" 2>/dev/null || true)"
+          if printf '%s' "$modes" | grep -qw audio; then
+            echo "::error file=app.json::$plist declares UIBackgroundModes: audio. App Review rejects this (guideline 2.5.4) unless the app plays audible content in the background. Set enableBackgroundPlayback:false on the expo-audio plugin (and supportsBackgroundPlayback:false on expo-video) in app.json."
+            exit 1
+          fi
+          echo "OK — no background-audio mode in $plist"
+
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.
       - uses: actions/cache@v4
@@ -813,6 +832,25 @@ jobs:
 
       - name: Expo prebuild (iOS)
         run: npx expo prebuild --platform ios --no-install
+
+      # App Review rejected 1.0.38 and 1.0.39 under guideline 2.5.4 for
+      # declaring background audio with no feature behind it. Deleting the key
+      # from app.json's ios.infoPlist did NOT fix it: expo-audio's config
+      # plugin defaults `enableBackgroundPlayback` to true and re-adds it on
+      # every prebuild, so the app.json diff looked right and the shipped
+      # Info.plist was unchanged. Assert on the GENERATED file — the artifact
+      # that actually reaches Apple — so any plugin that reintroduces this is
+      # caught here rather than a review cycle later.
+      - name: Assert no background-audio mode in the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          modes="$(/usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$plist" 2>/dev/null || true)"
+          if printf '%s' "$modes" | grep -qw audio; then
+            echo "::error file=app.json::$plist declares UIBackgroundModes: audio. App Review rejects this (guideline 2.5.4) unless the app plays audible content in the background. Set enableBackgroundPlayback:false on the expo-audio plugin (and supportsBackgroundPlayback:false on expo-video) in app.json."
+            exit 1
+          fi
+          echo "OK — no background-audio mode in $plist"
 
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.
