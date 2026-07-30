@@ -31,6 +31,8 @@ import { act } from 'react-test-renderer';
 import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -192,7 +194,7 @@ const noopCacheStore = <T,>(): T =>
  * the real `GenerateRecipeUseCase` down to a `FakeRecipeRepository` reading
  * `config` on every call.
  */
-const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
+const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft): Stores => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -210,7 +212,9 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     getLatestDraftUseCase: {
       execute: () => Promise.resolve(ok(null)),
     } as unknown as GetLatestDraftUseCase,
-    getDraftUseCase: unusedUseCase<GetDraftUseCase>(),
+    getDraftUseCase: {
+      execute: () => Promise.resolve(getDraft === undefined ? fail(new UnknownFailure('no draft')) : ok(getDraft)),
+    } as unknown as GetDraftUseCase,
     upsertDraftUseCase: unusedUseCase<UpsertDraftUseCase>(),
     deleteDraftUseCase: unusedUseCase<DeleteDraftUseCase>(),
   });
@@ -227,29 +231,39 @@ interface HookDriver {
   generate: (text?: string) => Promise<void>;
   /** Sends a refine instruction from the preview phase. */
   refine: (instruction: string) => Promise<void>;
+  /** Edits the recipe the way the form fields do on the real screen. */
+  setRecipe: (update: (prev: EditableRecipe) => EditableRecipe) => void;
+}
+
+/** Resuming an existing draft, as `?draftId=` does on the real route. */
+interface ResumeOptions {
+  draftId: string;
+  getDraft: RecipeDraft;
 }
 
 /**
  * Mounts the hook behind a probe that owns the editable-recipe state (the job
  * `useEditableRecipe` does on the real screen).
  */
-const driveHook = (config: FakeRecipeRepositoryConfig): HookDriver => {
+const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): HookDriver => {
   let latest!: Generation;
+  let setRecipe!: (update: (prev: EditableRecipe) => EditableRecipe) => void;
 
   const Probe = (): null => {
-    const [recipe, setRecipe] = useState<EditableRecipe>(emptyEditable());
+    const [recipe, setRecipeState] = useState<EditableRecipe>(emptyEditable());
+    setRecipe = setRecipeState;
     latest = useRecipeGeneration({
       recipe,
-      setRecipe,
-      activeDraftId: 'draft-1',
-      draftId: undefined,
+      setRecipe: setRecipeState,
+      activeDraftId: resume?.draftId ?? 'draft-1',
+      draftId: resume?.draftId,
       importUrl: undefined,
     });
     return null;
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(config)}>
+    <StoresProvider value={makeStores(config, resume?.getDraft)}>
       <Probe />
     </StoresProvider>,
   );
@@ -269,7 +283,12 @@ const driveHook = (config: FakeRecipeRepositoryConfig): HookDriver => {
     });
   };
 
-  return { latest: () => latest, generate, refine };
+  return {
+    latest: () => latest,
+    generate,
+    refine,
+    setRecipe: (update) => setRecipe(update),
+  };
 };
 
 afterEach(() => {
@@ -567,5 +586,81 @@ describe('useRecipeGeneration — clearing a stale generateError', () => {
 
     expect(latest().generateError).toBeNull();
     expect(latest().phase).toBe('preview');
+  });
+});
+
+// ─── leaving a draft: only ask when there is something to decide ──────────────
+
+/**
+ * The bug: opening a saved draft, reading it, and backing out still asked "shall
+ * we keep this draft?", and its only non-destructive answer re-saved a draft
+ * that was already saved. It asked on every single exit, whether or not the
+ * user had touched anything.
+ */
+describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
+  const SNAPSHOT: DraftRecipeSnapshot = {
+    name: 'Garlic Pasta',
+    ingredients: ['pasta', 'garlic'],
+    instructions: ['boil', 'toss'],
+  };
+
+  const savedDraft = (): RecipeDraft => ({
+    id: 'draft-1',
+    ownerId: 'owner-1',
+    prompt: PROMPT,
+    snapshot: SNAPSHOT,
+    chatHistory: [],
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+  });
+
+  /** Mounts the hook resuming `draft-1`, and settles the load. */
+  const driveResumed = async (): Promise<HookDriver> => {
+    const driver = driveHook(generated(), {
+      draftId: 'draft-1',
+      getDraft: savedDraft(),
+    });
+    await act(async () => {
+      await Promise.resolve();
+    });
+    return driver;
+  };
+
+  it('leaves straight away when nothing was changed', async () => {
+    const { latest } = await driveResumed();
+    // Guards the assertion below from passing for the wrong reason: an empty
+    // editor would also skip the dialog, so the draft has to have loaded.
+    expect(latest().phase).toBe('preview');
+    expect(latest().prompt).toBe(PROMPT);
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(latest().exitOpen).toBe(false);
+  });
+
+  it('asks once the draft has actually been edited', async () => {
+    const { latest, setRecipe } = await driveResumed();
+
+    act(() => {
+      setRecipe((prev) => ({ ...prev, name: 'Garlic Pasta with chilli' }));
+    });
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(latest().exitOpen).toBe(true);
+  });
+
+  it('still asks for a recipe started here, which is in no drafts list yet', async () => {
+    const { latest, generate } = driveHook(generated());
+    await generate();
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(latest().exitOpen).toBe(true);
   });
 });
