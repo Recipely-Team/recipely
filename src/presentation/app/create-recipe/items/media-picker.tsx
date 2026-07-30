@@ -9,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 export interface MediaPickerProps {
   media: readonly MediaItem[];
@@ -26,7 +27,7 @@ const pickImages = async (): Promise<MediaItem[]> => {
     quality: 0.85,
   });
   if (result.canceled) return [];
-  return result.assets.map((a) => ({ type: 'image', url: a.uri }));
+  return result.assets.map((a) => ({ type: MediaType.Image, url: a.uri }));
 };
 
 export const MediaPicker = ({

@@ -4,6 +4,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
+import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
 import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create-recipe-preview';
@@ -17,7 +18,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
 
-  if (vm.phase === 'prompt') {
+  if (vm.phase === PhaseType.Prompt) {
     return (
       <KeyboardAvoider style={styles.root}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
@@ -38,7 +39,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     );
   }
 
-  if (vm.phase === 'generating') {
+  if (vm.phase === PhaseType.Generating) {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>

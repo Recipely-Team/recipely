@@ -1,10 +1,10 @@
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
-import type { ConfigureFavoritesStoreOptions } from '@application/favorites/configure-favorites-store-options';
+import type { FavoritesStoreDeps } from '@application/favorites/favorites-store-deps';
 import type { FavoritesStore } from '@application/favorites/favorites-store';
 
-export const configureFavoritesStore = (deps: ConfigureFavoritesStoreOptions): FavoritesStore => {
+export const configureFavoritesStore = (deps: FavoritesStoreDeps): FavoritesStore => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;
 
   return create<FavoritesStoreState>((set) => ({

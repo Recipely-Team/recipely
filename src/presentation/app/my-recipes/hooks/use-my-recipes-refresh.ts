@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import type { UseMyRecipesRefreshResult } from '@presentation/app/my-recipes/model/use-my-recipes-refresh-result';
 
 /**
@@ -34,9 +34,9 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
     setIsRefreshing(true);
     void (async () => {
       try {
-        if (tab === 'saved') {
+        if (tab === TabType.Saved) {
           await refreshSaved();
-        } else if (tab === 'created') {
+        } else if (tab === TabType.Created) {
           await createdRecipesStore.getState().loadMyRecipes();
         } else {
           await draftsStore.getState().loadDrafts();

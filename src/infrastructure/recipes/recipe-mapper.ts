@@ -6,6 +6,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -20,7 +21,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     dto.media && dto.media.length > ValueConstants.zero
       ? dto.media.map((m) => ({ type: m.type, url: m.url }))
       : dto.image.trim().length > ValueConstants.zero
-        ? [{ type: 'image', url: dto.image }]
+        ? [{ type: MediaType.Image, url: dto.image }]
         : [];
 
   return RecipeEntity.create({

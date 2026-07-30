@@ -6,7 +6,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
 import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
@@ -125,10 +125,10 @@ export const useRecipeList = (): UseRecipeListResult => {
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
 
-  const [sortBy, setSortBy] = useState<SortKey>('popular');
+  const [sortBy, setSortBy] = useState<SortKey>(SortKey.Popular);
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
-  const [pendingSort, setPendingSort] = useState<SortKey>('popular');
+  const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
   const [sheetOpen, setSheetOpen] = useState<'filter' | null>(null);
 
   // Web home shows a Save bookmark on each card, so the saved set must be populated.

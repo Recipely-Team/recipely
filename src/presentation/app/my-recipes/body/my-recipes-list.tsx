@@ -4,7 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes } from '@presentation/base/theme';
@@ -63,7 +63,7 @@ export const MyRecipesList = ({
     />
   );
 
-  if (tab === 'drafts') {
+  if (tab === TabType.Drafts) {
     if (drafts.length === ValueConstants.zero) {
       return (
         <ScrollView
@@ -108,12 +108,12 @@ export const MyRecipesList = ({
       >
         <View style={styles.empty}>
           <MaterialCommunityIcons
-            name={tab === 'saved' ? 'bookmark-outline' : 'silverware-fork-knife'}
+            name={tab === TabType.Saved ? 'bookmark-outline' : 'silverware-fork-knife'}
             size={iconSizes.jumbo}
             color={colors.textMuted}
           />
           <ThemedText variant="body" muted style={styles.emptyText}>
-            {tab === 'saved' ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
+            {tab === TabType.Saved ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
           </ThemedText>
         </View>
       </ScrollView>
@@ -135,7 +135,7 @@ export const MyRecipesList = ({
               saved={isSaved(item.id)}
               onOpen={onOpenRecipe}
               onToggleSave={onToggleSave}
-              ownedByMe={tab === 'created'}
+              ownedByMe={tab === TabType.Created}
             />
           ) : (
             <RecipeCard

@@ -14,6 +14,7 @@ import { spacing, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
 import { ValueConstants } from '@core/constants';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = 460;
 
@@ -22,7 +23,7 @@ export const LoginScreen = (): React.JSX.Element => {
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);

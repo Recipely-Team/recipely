@@ -7,7 +7,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { ValueConstants } from '@core/constants';
 
 /** DOM id of the anchor wrapper, used to scope the web outside-press check. */

@@ -6,7 +6,7 @@ import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-g
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
-import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { t } from '@presentation/i18n';
@@ -16,6 +16,7 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -237,13 +238,13 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       ? 'loading'
       : current.status === 'error'
         ? 'error'
-        : 'content';
+        : StateViewStatus.Content;
   const failure: Failure | undefined = current.status === 'error' ? current.failure : undefined;
 
   const recipe = current.status === 'loaded' ? current.recipe : null;
-  const images = recipe !== null ? recipe.media.filter((m) => m.type === 'image') : [];
+  const images = recipe !== null ? recipe.media.filter((m) => m.type === MediaType.Image) : [];
   const media: readonly MediaItem[] =
-    recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: 'image', url: recipe.image }];
+    recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: MediaType.Image, url: recipe.image }];
   const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
   // ONE source of truth for the like, deliberately. There used to be a second

@@ -32,7 +32,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';

@@ -3,7 +3,7 @@ import { Platform, useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import type { BreakpointType } from '@presentation/base/responsive/breakpoint-type';
-import type { OrientationType } from '@presentation/base/responsive/orientation-type';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';
 import { ValueConstants } from '@core/constants';
 
@@ -11,7 +11,7 @@ const DEFAULT_VALUE: LayoutContextValue = {
   width: ValueConstants.zero,
   height: ValueConstants.zero,
   aspectRatio: 1,
-  orientation: 'portrait',
+  orientation: OrientationType.Portrait,
   breakpoint: 'mobile',
   isWebShell: false,
   isCompact: true,
@@ -49,7 +49,7 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
   const value = useMemo<LayoutContextValue>(() => {
     if (gated) return DEFAULT_VALUE;
     const breakpoint = resolveBreakpoint(width);
-    const orientation: OrientationType = width >= height ? 'landscape' : 'portrait';
+    const orientation: OrientationType = width >= height ? OrientationType.Landscape : OrientationType.Portrait;
     const isWebShell = Platform.OS === 'web' && width >= BREAKPOINTS.desktop;
     const isCompact = breakpoint === 'mobile';
     const aspectRatio = height === ValueConstants.zero ? 1 : width / height;

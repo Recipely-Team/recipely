@@ -14,6 +14,7 @@ import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borde
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
@@ -21,7 +22,7 @@ export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);

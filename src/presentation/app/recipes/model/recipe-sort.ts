@@ -1,6 +1,6 @@
 import { t } from '@presentation/i18n';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SortKey } from '@presentation/app/recipes/model/sort-key';
 
 /** Maps a UI sort key to the repository's `sort` filter value. */
 export const SORT_TO_FILTER: Record<SortKey, RecipeFilters['sort']> = {
