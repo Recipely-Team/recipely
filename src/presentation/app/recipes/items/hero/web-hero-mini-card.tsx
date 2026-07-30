@@ -6,7 +6,7 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, mediaSizes, decorSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/web-hero-constants';
+import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 

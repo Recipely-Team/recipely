@@ -10,6 +10,7 @@ import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/ui-filter-defaults';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths, opacities, shadows } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
@@ -58,7 +59,13 @@ export const WebFilterModal = ({
     resultCount > ValueConstants.zero ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+      statusBarTranslucent
+    >
       <Pressable
         style={[styles.overlay, { backgroundColor: colors.scrim }]}
         accessibilityRole="button"
@@ -105,7 +112,7 @@ export const WebFilterModal = ({
           <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
             <View style={styles.section}>
               <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {t().recipes.cuisine}
+                {upperCase(t().recipes.cuisine)}
               </ThemedText>
               <View style={styles.chipsWrap}>
                 {cuisineKeys.map((c) => (
@@ -121,7 +128,7 @@ export const WebFilterModal = ({
 
             <View style={styles.section}>
               <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {t().recipes.category}
+                {upperCase(t().recipes.category)}
               </ThemedText>
               <View style={styles.chipsWrap}>
                 {categoryKeys.map((c) => (
@@ -137,7 +144,7 @@ export const WebFilterModal = ({
 
             <View style={styles.section}>
               <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {t().recipes.difficulty}
+                {upperCase(t().recipes.difficulty)}
               </ThemedText>
               <View style={styles.chipsRow}>
                 {DIFFICULTY_VALUES.map((d) => (
@@ -154,7 +161,7 @@ export const WebFilterModal = ({
 
             <View style={styles.section}>
               <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {t().recipes.maxTime}
+                {upperCase(t().recipes.maxTime)}
               </ThemedText>
               <View style={styles.chipsWrap}>
                 {TIME_OPTIONS.map((m) => (
@@ -227,7 +234,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.micro,
     fontWeight: fontWeights.bold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
   chipsWrap: {
     flexDirection: 'row',

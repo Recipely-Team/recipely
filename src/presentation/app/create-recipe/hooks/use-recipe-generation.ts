@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
-import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import {
   failureKeyMessage,
   failureToastMessage,
@@ -34,7 +34,6 @@ const GEN_STEP_INTERVAL_MS = 620;
 export const useRecipeGeneration = ({
   recipe,
   setRecipe,
-  isEditMode,
   activeDraftId,
   draftId,
   importUrl,
@@ -46,7 +45,7 @@ export const useRecipeGeneration = ({
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<PhaseType>(isEditMode ? 'preview' : 'prompt');
+  const [phase, setPhase] = useState<PhaseType>('prompt');
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
@@ -55,7 +54,17 @@ export const useRecipeGeneration = ({
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
+  // A refine outlives the screen: publishing (or exiting to a draft) while one
+  // is in flight must not pop its "Updated!" over whatever comes next.
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
+  /**
+   * The draft exactly as this screen adopted it, or null for one started here.
+   * Leaving with the recipe still identical to it means there is nothing to
+   * decide — see {@link onClose}.
+   */
+  const openedAs = useRef<string | null>(null);
 
   const refining = refineState.status === 'refining';
 
@@ -66,7 +75,12 @@ export const useRecipeGeneration = ({
     void (async () => {
       const loaded = await draftsStore.getState().getDraft(draftId);
       if (cancelled || loaded === null) return;
-      setRecipe(snapshotToEditable(loaded.snapshot));
+      const resumed = snapshotToEditable(loaded.snapshot);
+      setRecipe(resumed);
+      // Round-tripped through the same mapper the comparison uses, so a draft
+      // that was only opened and closed compares equal rather than differing
+      // by whatever the mapping normalises.
+      openedAs.current = JSON.stringify(editableToSnapshot(resumed));
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
@@ -79,8 +93,8 @@ export const useRecipeGeneration = ({
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {
-    if (!isEditMode && draftId === undefined) void loadLatestDraft();
-  }, [isEditMode, draftId, loadLatestDraft]);
+    if (draftId === undefined) void loadLatestDraft();
+  }, [draftId, loadLatestDraft]);
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
@@ -92,8 +106,8 @@ export const useRecipeGeneration = ({
     return () => clearInterval(id);
   }, [phase]);
 
-  useDraftAutosave({
-    enabled: !isEditMode && phase === 'preview',
+  const cancelAutosave = useDraftAutosave({
+    enabled: phase === 'preview',
     draftId: activeDraftId,
     prompt: originalPrompt.current,
     recipe,
@@ -189,10 +203,10 @@ export const useRecipeGeneration = ({
   // Kick off an Instagram import once when arriving via a share intent.
   const importHandledRef = useRef(false);
   useEffect(() => {
-    if (isEditMode || importUrl === undefined || importHandledRef.current) return;
+    if (importUrl === undefined || importHandledRef.current) return;
     importHandledRef.current = true;
     void runImport(importUrl);
-  }, [isEditMode, importUrl, runImport]);
+  }, [importUrl, runImport]);
 
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
@@ -206,6 +220,10 @@ export const useRecipeGeneration = ({
         setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
         const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
         setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
+        // The answer landed with the assistant closed: the recipe has just
+        // rewritten itself under the user, and the bubble explaining it is
+        // behind a panel they cannot see. Say it out loud instead.
+        if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.aiUpdated);
         createdRecipesStore.getState().resetRefineState();
         return;
       }
@@ -222,7 +240,7 @@ export const useRecipeGeneration = ({
       ]);
       createdRecipesStore.getState().resetRefineState();
     },
-    [createdRecipesStore, recipe, refining, setRecipe],
+    [createdRecipesStore, recipe, refining, setRecipe, chatExpanded],
   );
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
@@ -249,17 +267,21 @@ export const useRecipeGeneration = ({
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId: latestDraft.id } });
   }, [latestDraft, router]);
 
+  // WHY the identity check: the exit dialog asks what should happen to work
+  // that is not in the drafts list yet. Opening an existing draft, reading it,
+  // and backing out is not that — nothing was written, so there is nothing to
+  // keep or throw away. It asked anyway, and its only non-destructive answer
+  // re-saved a draft that was already saved, on every single exit.
   const onClose = useCallback((): void => {
-    if (isEditMode) {
-      router.back();
-      return;
-    }
-    if (phase === 'preview' && editableHasContent(recipe)) {
+    const unchanged =
+      openedAs.current !== null &&
+      openedAs.current === JSON.stringify(editableToSnapshot(recipe));
+    if (phase === 'preview' && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
       return;
     }
     router.back();
-  }, [isEditMode, phase, recipe, router]);
+  }, [phase, recipe, router]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({
@@ -273,11 +295,17 @@ export const useRecipeGeneration = ({
   }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
+    // Stop autosaving BEFORE the delete, not after: the timer armed by the
+    // user's last keystroke was still pending, so it could fire while the
+    // delete was in flight and upsert the draft back into the list the user
+    // had just removed it from. That is why "leave without saving" appeared to
+    // do nothing.
+    cancelAutosave();
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     router.back();
-  }, [draftsStore, activeDraftId, router]);
+  }, [cancelAutosave, draftsStore, activeDraftId, router]);
 
   return {
     phase,

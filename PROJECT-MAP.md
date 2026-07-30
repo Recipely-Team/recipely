@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 708 source files.
+[architecture.md](architecture.md). 717 source files.
 
 ## Layers
 
@@ -36,7 +36,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(7)_
-- `recipes/` — create, list, media, refine, taxonomy, update _(19)_
+- `recipes/` — create, list, media, refine, taxonomy _(18)_
 - `storage/` _(1)_
 - `user-profile/` _(2)_
 
@@ -53,9 +53,9 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(7)_
 - `notifications/` — list, read _(13)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending, update _(48)_
+- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(46)_
 - `storage/` _(2)_
-- `timers/` _(6)_
+- `timers/` _(7)_
 - `user-profile/` _(7)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
@@ -74,7 +74,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` — envelope, errors, http, jwt, upload _(16)_
 - `notifications/` — dtos _(7)_
-- `recipes/` — create, dtos, media, refine, taxonomy, update _(17)_
+- `recipes/` — create, dtos, media, refine, taxonomy _(14)_
 - `storage/` _(4)_
 - `user-profile/` _(3)_
 
@@ -96,12 +96,12 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(6)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(13)_
+- `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(15)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(7)_
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
-- `timers/` — timer control helpers _(1)_
+- `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(5)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(42)_
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 69bbec6240706609 -->
+<!-- fingerprint: 1fe730e7e546f33e -->

@@ -1,18 +1,18 @@
 Recipely is your AI-powered culinary assistant for iPhone — the fastest way to answer "what should I cook tonight?"
 
-🤖 AI RECIPE GENERATION
+AI RECIPE GENERATION
 Describe what you're craving and our AI chef instantly writes a complete recipe: ingredients, portions and step-by-step instructions. Perfect for busy weeknights and empty-fridge moments.
 
-👩‍🍳 STEP-BY-STEP COOKING
+STEP-BY-STEP COOKING
 Guided, checkable tasks keep you on track from prep to plate — no more scrolling back to find your place.
 
-📊 MACRO & CALORIE TRACKING
+MACRO & CALORIE TRACKING
 Every recipe shows calories, protein, carbs and fat per serving so you can cook toward your goals.
 
-🔖 SAVE & ORGANIZE
+SAVE & ORGANIZE
 Bookmark favorites and keep saved and created recipes sorted in My Recipes.
 
-🎨 DARK & LIGHT THEMES
+DARK & LIGHT THEMES
 Beautiful themes with full dark and light mode, in English or Turkish.
 
 WHY RECIPELY
@@ -22,4 +22,4 @@ WHY RECIPELY
 • Save, create & organize recipes
 • Elegant dark & light design
 
-Download Recipely and cook smarter with your own AI chef. 🍳
+Download Recipely and cook smarter with your own AI chef.

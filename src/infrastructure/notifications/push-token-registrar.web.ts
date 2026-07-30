@@ -19,7 +19,9 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
   try {
     if (typeof window === 'undefined' || !('Notification' in window)) return;
     if (VAPID_KEY === undefined) {
-      console.warn('[push-token-registrar] EXPO_PUBLIC_FIREBASE_VAPID_KEY missing — skipping web push registration');
+      if (__DEV__) {
+        console.warn('[push-token-registrar] EXPO_PUBLIC_FIREBASE_VAPID_KEY missing — skipping web push registration');
+      }
       return;
     }
     if (!(await isSupported())) return;
@@ -37,10 +39,10 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     if (token.length === ValueConstants.zero) return;
 
     const result = await register(token, 'web');
-    if (!result.ok) {
+    if (!result.ok && __DEV__) {
       console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
     }
   } catch (err) {
-    console.warn('[push-token-registrar] web push registration skipped:', err);
+    if (__DEV__) console.warn('[push-token-registrar] web push registration skipped:', err);
   }
 };

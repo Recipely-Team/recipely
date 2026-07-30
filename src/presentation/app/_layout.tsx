@@ -1,4 +1,5 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { useMemo } from 'react';
+import { ThemeProvider } from '@react-navigation/native';
 import { Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
@@ -18,17 +19,27 @@ import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
 import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
+import { navigationTheme } from '@presentation/navigation/navigation-theme';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { alarmStore } from '@application/timers/alarm-store';
+import { ValueConstants } from '@core/constants';
 
-/** Full-screen overlay that appears whenever `alarmStore` has an active alarm. */
+/**
+ * Full-screen overlay for the alarm at the head of the queue.
+ *
+ * Alarms are dismissed one at a time: when two timers finish together,
+ * dismissing the first hands the screen to the second instead of leaving it
+ * ringing with no way to reach it. `key` matters — it remounts `AlarmScreen`
+ * for the next alarm so its tone and haptics start again rather than carrying
+ * over the dismissed one's.
+ */
 const AlarmOverlay = (): React.JSX.Element | null => {
-  const activeAlarm = alarmStore((s) => s.activeAlarm);
-  if (activeAlarm === null) return null;
+  const alarm = alarmStore((s) => s.alarms[ValueConstants.zero]);
+  if (alarm === undefined) return null;
   return (
     // zIndex must exceed ActiveTimersBar (100) so the alarm sits on top.
-    <View style={[StyleSheet.absoluteFillObject, { zIndex: zIndices.alarmOverlay }]}>
-      <AlarmScreen timerId={activeAlarm.timerId} recipeName={activeAlarm.recipeName} />
+    <View style={[StyleSheet.absoluteFill, { zIndex: zIndices.alarmOverlay }]}>
+      <AlarmScreen key={alarm.timerId} timerId={alarm.timerId} recipeName={alarm.recipeName} />
     </View>
   );
 };
@@ -82,12 +93,19 @@ const RootTabBar = (): React.JSX.Element | null => {
   return <TabBar active={state.active} onChange={state.onChange} />;
 };
 
+/**
+ * The three bottom-tab destinations swap instantly. `animation: 'none'` also
+ * covers the way back to them, which is what keeps a tab press from reading as
+ * a push in one direction and a pop in the other.
+ */
+const TAB_SCREEN_OPTIONS = { headerShown: false, animation: 'none' } as const;
+
 const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
   useInstagramShareImport();
 
-  const reactNavTheme = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const reactNavTheme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
   const headerBg = colors.background;
   const headerTint = colors.text;
 
@@ -99,27 +117,38 @@ const RootStack = (): React.JSX.Element => {
           headerStyle: { backgroundColor: headerBg },
           headerTintColor: headerTint,
           headerShadowVisible: false,
+          // Belt and braces with the theme above: `contentStyle` is what the
+          // native stack paints a scene with, and a screen that renders nothing
+          // on its first frame (a detail page waiting on its fetch) shows it
+          // bare. Both must be the app's background or that frame is a flash.
+          contentStyle: { backgroundColor: colors.background },
         }}
       >
         {/* Folder pages register on the parent navigator under their full
             relative name (`<segment>/index`) — a bare `<segment>` here would
             not match any route, so its options (headerShown:false) would be
-            silently dropped and the default stack header would appear. */}
+            silently dropped and the default stack header would appear.
+
+            TAB_SCREEN_OPTIONS on the three tab destinations: a tab bar is a
+            switch between peers, not a journey into a detail, so sliding one
+            tab in over another borrowed a gesture that says "deeper". The
+            screens that ARE pushed on top of a tab (a recipe, the editor, the
+            auth flow) keep the stack animation. */}
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="onboarding/index" options={{ headerShown: false }} />
         <Stack.Screen name="login/index" options={{ headerShown: false }} />
         <Stack.Screen name="register/index" options={{ headerShown: false }} />
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
-        <Stack.Screen name="recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
-        <Stack.Screen name="my-recipes/index" options={{ headerShown: false }} />
+        <Stack.Screen name="my-recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="create-recipe/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />
         <Stack.Screen name="forgot-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="reset-password/index" options={{ headerShown: false }} />
         <Stack.Screen name="ai-generate/index" options={{ headerShown: false }} />
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
-        <Stack.Screen name="profile/index" options={{ headerShown: false }} />
+        <Stack.Screen name="profile/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
       <RootTabBar />

@@ -1,6 +1,6 @@
 /* Recipely landing — interactions
    theme (light/dark) · language (EN/TR) · cuisine filter · live timers ·
-   AI typing demo · live accent themes · scroll reveal */
+   AI typing demo · live accent themes · open-in-app · scroll reveal */
 (function () {
   'use strict';
   var root = document.documentElement;
@@ -39,18 +39,23 @@
   });
   applyLang(startLang);
 
-  /* ───── Live accent themes (mirrors the app's 20 themes) ───── */
+  /* ───── Live accent themes ─────
+     Exactly the themes the app ships (ALL_THEMES in
+     src/presentation/base/theme/colors/palette/themes.ts), with their real
+     gradient and primary values. This list used to carry ten invented
+     palettes under a "20 themes" headline; the app has four. If a theme is
+     added or removed there, it belongs here too.
+
+     `tangerine` is NOT one of them — it is the Recipely brand orange the page
+     itself is painted in, kept as the load-time tint so the landing matches
+     the logo. It has no swatch, because it is not something you can pick
+     inside the app. */
   var ACCENTS = {
-    tangerine: ['#EC7B41', '#F9B050', '#D5611C'],
-    crimson:   ['#DC2626', '#F87171', '#B91C1C'],
-    golden:    ['#CA8A04', '#FDE047', '#92700A'],
-    emerald:   ['#059669', '#34D399', '#047857'],
-    teal:      ['#0D9488', '#5EEAD4', '#0F766E'],
-    ocean:     ['#0284C7', '#7DD3FC', '#0369A1'],
-    indigo:    ['#4F46E5', '#818CF8', '#4338CA'],
-    violet:    ['#7C3AED', '#A78BFA', '#6D28D9'],
-    rose:      ['#E11D48', '#FB7185', '#BE123C'],
-    coral:     ['#FB7185', '#FDA4AF', '#E11D48']
+    'tangerine':      ['#EC7B41', '#F9B050', '#D5611C'],
+    'pearl-white':    ['#3B82F6', '#60A5FA', '#1D4ED8'],
+    'crimson-ember':  ['#DC2626', '#F87171', '#B91C1C'],
+    'emerald-garden': ['#059669', '#34D399', '#053A29'],
+    'royal-purple':   ['#9333EA', '#C084FC', '#7E22CE']
   };
   var AKEY = 'recipely-landing-accent';
   function applyAccent(key) {
@@ -142,6 +147,48 @@
       var aio = new IntersectionObserver(function (en) { en.forEach(function (x) { if (x.isIntersecting) { playType(); aio.disconnect(); } }); }, { threshold: 0.5 });
       aio.observe(aiTyped);
     } else { playType(); }
+  }
+
+
+  /* ───── Open in app (mobile) ─────
+     "Get started" points at /register, a web route. On a phone the app is the
+     better destination — but a plain link cannot get there. iOS deliberately
+     ignores universal links for SAME-DOMAIN navigation, so tapping a
+     recipely.net link while already on recipely.net stays in Safari no matter
+     what the AASA file says. The custom scheme is the only in-page route into
+     the app, with the store as the fallback for a visitor who does not have it.
+
+     The timer is the "is it installed?" test: opening the scheme backgrounds
+     the page, so if we are still visible ~1.2s later nothing handled it and the
+     store is the right answer. Cancelled on pagehide/visibilitychange, or the
+     store would also open behind the app that just launched. */
+  var APP_SCHEME = 'recipely://';
+  var STORE = {
+    ios: 'https://apps.apple.com/app/recipely/id6787391255',
+    android: 'https://play.google.com/store/apps/details?id=com.recipely.app'
+  };
+  function mobilePlatform() {
+    var ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) return 'android';
+    // iPadOS 13+ reports as Macintosh; the touch check separates it from a Mac.
+    if (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    return null;
+  }
+  var platform = mobilePlatform();
+  if (platform) {
+    document.querySelectorAll('[data-open-app]').forEach(function (el) {
+      el.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var settled = false;
+        function cancel() { settled = true; }
+        document.addEventListener('visibilitychange', cancel, { once: true });
+        window.addEventListener('pagehide', cancel, { once: true });
+        setTimeout(function () {
+          if (!settled && !document.hidden) window.location.href = STORE[platform];
+        }, 1200);
+        window.location.href = APP_SCHEME;
+      });
+    });
   }
 
   /* ───── Scroll reveal ───── */

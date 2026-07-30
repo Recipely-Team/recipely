@@ -193,7 +193,11 @@ All UI and user-facing logic.
   `index.tsx` (named export + `export default`), and its parts are co-located in a fixed set of subfolders:
   - `body/` — large view sections or phase views of the screen.
   - `items/` — row / tile / chip / card components rendered in lists or grids.
-  - `sheets/` — bottom sheets, modals, and overlays.
+  - `sheets/` — the shared modal surfaces. `BottomSheet` is the only place that renders a
+    modal panel: it presents as a bottom sheet on the mobile shell and as a **centred
+    dialog on the web shell**, because a panel glued to the bottom edge of a desktop
+    window is a touch idiom (its grabber promises a drag a mouse never performs). Screens
+    compose it — they never hand-roll a `Modal`; `check:structure` rule L blocks that.
   - `hooks/` — the page's `use-*` hooks (one hook per file).
   - `model/` — pure TypeScript: types, mappers, constants, and label helpers.
   - `__tests__/` — inside the subfolder that owns the file under test.

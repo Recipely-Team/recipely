@@ -49,25 +49,24 @@ source.
 
 **Open:** do we cap video length, and what do we tell the user when we do?
 
-## 3. Float the app over other apps while cooking
+## 3. Persistent Recipe & Timer view in Background
 
-**Status:** `blocked` — needs a platform decision
+**Status:** `ready` — platform strategy & automatic trigger defined
 
-The goal is real: you are cooking, the recipe needs to stay visible while you
-use something else. **But the two platforms cannot do the same thing**, so this
-cannot be one feature.
+The goal: keep the active recipe step, ingredients, and timer visible while the user navigates away or uses other apps during cooking.
 
-- **Android** — genuinely possible. Either Picture-in-Picture (`PiP`) with a
-  compact step + timer view, or a floating bubble via `SYSTEM_ALERT_WINDOW`
-  (heavier: a runtime permission the user must grant in system settings).
-- **iOS** — **not possible as described.** iOS has no floating-app-over-apps
-  mode; PiP is reserved for video playback. The honest iOS equivalents are a
-  **Live Activity / Dynamic Island** for the running timer and a **Lock Screen
-  widget** — the timer and current step follow you, the whole app does not.
+**Trigger Logic:**
+- **Automatic (No manual start):** Triggers automatically whenever the user pushes the app to the background (`AppState -> background`) while on the **Recipe Detail** screen.
+- Auto-dismisses when the user finishes cooking or pops off the Recipe Detail screen.
 
-**Open:** accept the asymmetry (Android PiP + iOS Live Activity), or build only
-the Live Activity shape on both so behaviour matches? Worth deciding before any
-code, because the two answers share almost no implementation.
+**Unified Cross-Platform Strategy:**
+To ensure strict feature parity, zero battery drain, and 100% App Store / Play Store compliance without heavy floating runtime permissions:
+
+- **iOS** — **Live Activity & Dynamic Island** (`ActivityKit`). Shows current step, ingredients, and countdown timer on the Lock Screen and Dynamic Island. Includes interactive `Next` / `Prev` step controls.
+- **Android** — **Ongoing Notification Card** (`Notifee` / Native Builder). Displays a persistent, lock-screen-ready notification card matching the iOS layout with action buttons for step navigation.
+
+**Key Decision:** 
+Avoided heavy floating system overlays (`SYSTEM_ALERT_WINDOW` / Video `PiP`) to maintain 1:1 cross-platform symmetry, full App Store Guideline compliance, and optimal battery efficiency.
 
 ## 4. Conversational AI recipe editing, with confirmation
 

@@ -4,6 +4,7 @@ import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes
 
 export const configureSavedRecipesStore = (): SavedRecipesStore => {
   return create<SavedRecipesStoreState>((set, get) => ({
+    savedRecipes: [],
     savedIds: new Set<string>(),
     isLoading: false,
     error: null,
@@ -11,8 +12,13 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
     toggle: (id) =>
       set((s) => {
         const next = new Set(s.savedIds);
-        if (next.has(id)) next.delete(id);
-        else next.add(id);
+        if (next.has(id)) {
+          next.delete(id);
+          // Unsaving from the saved grid must take the card with it, or the row
+          // sits there un-bookmarked until the next load.
+          return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
+        }
+        next.add(id);
         return { savedIds: next };
       }),
     addLocal: (id) =>
@@ -27,13 +33,10 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
         if (!s.savedIds.has(id)) return s;
         const next = new Set(s.savedIds);
         next.delete(id);
-        return { savedIds: next };
+        return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
       }),
-    setSavedIds: (ids) => {
-       
-      console.log('[SavedRecipesStore] setSavedIds called:', Array.from(ids));
-      set({ savedIds: ids });
-    },
+    setSaved: (recipes) =>
+      set({ savedRecipes: recipes, savedIds: new Set(recipes.map((r) => r.id)) }),
     setLoading: (loading) => set({ isLoading: loading }),
     setError: (error) => set({ error }),
     clearError: () => set({ error: null }),

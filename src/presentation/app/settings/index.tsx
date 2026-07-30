@@ -32,11 +32,13 @@ export const SettingsScreen = (): React.JSX.Element => {
 
   const language = useLocale() as 'en' | 'tr';
 
+  const [signOutVisible, setSignOutVisible] = useState(false);
   const [deleteVisible, setDeleteVisible] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
 
   const handleSignOut = async () => {
+    setSignOutVisible(false);
     await signOut();
     router.replace(RoutePaths.login);
   };
@@ -121,7 +123,7 @@ export const SettingsScreen = (): React.JSX.Element => {
             icon="log-out-outline"
             label={t().settings.signOut}
             destructive
-            onPress={() => void handleSignOut()}
+            onPress={() => setSignOutVisible(true)}
           />
           <View style={[styles.rowSeparator, { backgroundColor: colors.border }]} />
           <SettingsRow
@@ -162,6 +164,17 @@ export const SettingsScreen = (): React.JSX.Element => {
         <View style={styles.bottomSpacer} />
       </ScreenContainer>
       </ResponsiveContainer>
+      {/* Signing out is one tap away from a destructive-looking row and drops
+          the session; it asks first, like account deletion does. */}
+      <ConfirmSheet
+        visible={signOutVisible}
+        title={t().settings.signOut}
+        message={t().settings.signOutConfirm}
+        confirmLabel={t().settings.signOut}
+        destructive
+        onConfirm={() => void handleSignOut()}
+        onClose={() => setSignOutVisible(false)}
+      />
       <ConfirmSheet
         visible={deleteVisible}
         title={t().settings.deleteAccountConfirmTitle}

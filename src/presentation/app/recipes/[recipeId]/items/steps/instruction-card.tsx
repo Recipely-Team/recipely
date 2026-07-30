@@ -1,10 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { InlineTimer } from '@presentation/app/recipes/[recipeId]/items/steps/inline-timer';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, decorSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
-import { splitStepWithTimers } from '@presentation/app/recipes/[recipeId]/model/ingredients/split-step-with-timers';
 import { ValueConstants } from '@core/constants';
 
 export interface InstructionCardProps {
@@ -12,21 +10,24 @@ export interface InstructionCardProps {
   step: string;
   completed: boolean;
   onToggle: () => void;
-  recipeId: string;
-  recipeName: string;
 }
 
-/** Numbered instruction step card that detects time references and renders inline countdown timers. */
+/**
+ * Numbered instruction step card with a tap-to-complete badge.
+ *
+ * Deliberately renders no per-step countdown chip. The step text already states
+ * its duration ("35 dakika pişirin"), so a chip beside it repeated the same
+ * number as visual noise. Recipe timers live on the meta card's prep/cook
+ * times instead (`time-card.tsx`), where the duration is not already spelled
+ * out in a sentence.
+ */
 export const InstructionCard = ({
   index,
   step,
   completed,
   onToggle,
-  recipeId,
-  recipeName,
 }: InstructionCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const parts = splitStepWithTimers(step);
 
   return (
     <View
@@ -70,30 +71,13 @@ export const InstructionCard = ({
             },
           ]}
         >
-          {/* The step is passed as ONE plain string, never as element children.
-              `parts` exists only to derive the timer chips below: embedding the
-              chip (a View) inside Text baseline-misaligns it on native (the
-              "crooked 10dk badge" bug), and feeding Text element children (even
-              Fragments wrapping strings) lets the native text layout drop them
-              on a re-measure mid-scroll — the step then renders as blank space
-              at full height. A string child cannot do that. */}
+          {/* The step must stay ONE plain string child, never element children:
+              feeding Text element children (even Fragments wrapping strings)
+              lets the native text layout drop them on a re-measure mid-scroll,
+              and the step then renders as blank space at full height. A string
+              child cannot do that. */}
           {step}
         </ThemedText>
-        {parts.some((part) => part.kind === 'timer') ? (
-          <View style={styles.timerRow}>
-            {parts.map((part, i) =>
-              part.kind === 'timer' && part.minutes !== undefined ? (
-                <InlineTimer
-                  key={i}
-                  timerId={`${recipeId}:step${String(index)}:${String(Math.round(part.minutes))}min`}
-                  recipeId={recipeId}
-                  recipeName={recipeName}
-                  minutes={part.minutes}
-                />
-              ) : null,
-            )}
-          </View>
-        ) : null}
       </View>
     </View>
   );
@@ -128,11 +112,5 @@ const styles = StyleSheet.create({
   },
   stepText: {
     lineHeight: lineHeightFor(fontSizes.body, lineHeights.relaxed),
-  },
-  timerRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.xs,
-    marginTop: spacing.xs,
   },
 });

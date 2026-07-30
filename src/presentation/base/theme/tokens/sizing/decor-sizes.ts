@@ -23,8 +23,6 @@ export const decorSizes = {
   rankBadge: scale(26),
   /** Numbered step / count badge. */
   badgeSm: scale(28),
-  /** Grab handle on a draggable dock (its height is `controlSizes.progressBarThin`). */
-  dragHandleWidth: scale(32),
   /** Card overlap onto the hero above it. */
   cardOverlap: scale(40),
   /** Circular icon plate on the AI banner. */

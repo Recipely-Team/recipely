@@ -18,7 +18,11 @@ import { ValueConstants } from '@core/constants';
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
   scrollY: SharedValue<number>;
-  /** Direction-aware band offset, range [-layoutSizes.homeHeaderMax, 0]. */
+  /**
+   * Direction-aware band offset: 0 when shown, `hiddenHeaderOffset(insets.top)`
+   * when hidden — the band's own height plus the inset it sits below, so it
+   * leaves the screen instead of parking behind the status bar.
+   */
   headerTranslateY: SharedValue<number>;
   /** When true, the band renders statically shown with no scroll-driven motion. */
   reduceMotion: boolean;
@@ -156,9 +160,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: spacing.sm,
   },
+  // The mark sits BESIDE the screen title, not stacked above it: two lines of
+  // branding pushed the search field down the band for no information the one
+  // line does not already carry.
   titles: {
     flex: ValueConstants.one,
-    gap: spacing.xxs,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
   },
   titleScaleAnchor: {
     alignSelf: 'flex-start',
@@ -193,7 +202,11 @@ const styles = StyleSheet.create({
     lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },
+  // Pinned to the bottom of the band. The title row got shorter when the mark
+  // moved beside the title, and letting the search rise with it would have
+  // moved the field the whole app's list padding is measured against.
   searchWrapper: {
+    marginTop: 'auto',
     paddingBottom: spacing.sm,
   },
 });

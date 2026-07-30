@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useRouter } from 'expo-router';
 import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { RoutePaths } from '@presentation/base/constants';
+import { enterApp } from '@presentation/navigation/enter-app';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
 
 /**
@@ -22,12 +23,12 @@ export const useOnboarding = (): UseOnboardingResult => {
   }, [router]);
 
   const onExplore = useCallback((): void => {
-    router.replace(RoutePaths.recipes);
+    enterApp(router, RoutePaths.recipes);
   }, [router]);
 
   const onDismiss = useCallback((): void => {
     void onboardingStore.getState().dismiss();
-    router.replace(RoutePaths.recipes);
+    enterApp(router, RoutePaths.recipes);
   }, [router]);
 
   return { onSignUp, onSignIn, onExplore, onDismiss };

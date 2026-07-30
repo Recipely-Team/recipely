@@ -1,13 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
+import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
 import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
 import type { SortKey } from '@presentation/app/recipes/model/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
+import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
+import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
 import * as mutate from '@presentation/app/recipes/model/filter-mutations';
@@ -60,8 +65,22 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const [search, setSearch] = useState(CharConstants.empty);
 
+  // Web takes the query from the shared app-header field, native from the
+  // in-header one; from here down only the effective query matters.
+  const effectiveSearch = isWebShell ? webSearchQuery : search;
+  const trimmedSearch = effectiveSearch.trim();
+  // WHY: search is a backend filter (`RecipeFilters.search`), not a local
+  // `Array.filter` over the loaded page — the loaded page is only the first
+  // slice of the catalogue, so filtering it locally could only ever find a
+  // match among recipes already downloaded and silently missed the rest.
+  // Debounced so a typing burst is one request, fired when the user pauses.
+  const debouncedSearch = useDebouncedValue(trimmedSearch, SEARCH_DEBOUNCE_MS);
+  const isSearching = trimmedSearch.length > ValueConstants.zero;
+
   const scrollY = useSharedValue(ValueConstants.zero);
   const headerTranslateY = useSharedValue(ValueConstants.zero);
+  const insets = useSafeAreaInsets();
+  const hiddenHeaderY = hiddenHeaderOffset(insets.top);
   const lastScrollY = useSharedValue(ValueConstants.zero);
   const headerHidden = useSharedValue(ValueConstants.zero);
 
@@ -78,7 +97,7 @@ export const useRecipeList = (): UseRecipeListResult => {
         }
       } else if (delta > ValueConstants.zero && headerHidden.value !== 1) {
         headerHidden.value = 1;
-        headerTranslateY.value = withTiming(-layoutSizes.homeHeaderMax, HEADER_TIMING);
+        headerTranslateY.value = withTiming(hiddenHeaderY, HEADER_TIMING);
       } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
         headerHidden.value = ValueConstants.zero;
         headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
@@ -88,15 +107,15 @@ export const useRecipeList = (): UseRecipeListResult => {
     // Snap the band to whichever edge is nearer when scrolling settles.
     onMomentumEnd: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
+      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
     onEndDrag: () => {
       if (reduceMotion) return;
-      const hide = headerTranslateY.value < -layoutSizes.homeHeaderMax / ValueConstants.two;
+      const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
       headerHidden.value = hide ? 1 : ValueConstants.zero;
-      headerTranslateY.value = withTiming(hide ? -layoutSizes.homeHeaderMax : ValueConstants.zero, HEADER_TIMING);
+      headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
   });
 
@@ -116,12 +135,17 @@ export const useRecipeList = (): UseRecipeListResult => {
   useEffect(() => {
     if (!isWebShell) return;
     void loadFavoritesUseCase.execute().then((result) => {
-      if (result.ok) savedRecipesStore.getState().setSavedIds(result.value);
+      if (result.ok) savedRecipesStore.getState().setSaved(result.value);
     });
   }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 
+  // Takes the query as an argument rather than closing over it: this identity
+  // is a dependency of the focus/locale effects below, and a callback that
+  // changed on every debounced keystroke would make those effects re-fire and
+  // issue a second, duplicate request alongside the search one.
   const buildApiFilters = useCallback(
-    (f: UiFilters, sort: SortKey): RecipeFilters => ({
+    (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({
+      ...(query.length > ValueConstants.zero ? { search: query } : {}),
       ...(f.cuisines.length > ValueConstants.zero ? { cuisines: f.cuisines } : {}),
       ...(f.categories.length > ValueConstants.zero ? { categories: f.categories } : {}),
       ...(f.difficulties.length > ValueConstants.zero ? { difficulties: f.difficulties } : {}),
@@ -137,8 +161,8 @@ export const useRecipeList = (): UseRecipeListResult => {
   // would use different orderings — the list visibly reshuffled the first
   // time the user came back from a recipe detail.
   useEffect(() => {
-    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy));
-  }, [state.status, load, buildApiFilters, filters, sortBy]);
+    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy, debouncedSearch));
+  }, [state.status, load, buildApiFilters, filters, sortBy, debouncedSearch]);
 
   // WHY: the store's `isRefreshing` covers every in-place refetch (filter, sort,
   // locale switch, focus), but `RefreshControl.refreshing` must reflect ONLY a
@@ -147,11 +171,31 @@ export const useRecipeList = (): UseRecipeListResult => {
   // reveal the spinner and back when cleared — a visible jump on a filter tap.
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
+  // Counts the loads that change WHAT the list should contain — a filter, a
+  // sort, a search or a language switch. Those are the ones the feed blanks its
+  // rows for: keeping the previous results on screen while the next set arrives
+  // read as the list loading twice, and (worse) as if the tap had done nothing.
+  // A pull-to-refresh and the silent focus refetch deliberately do NOT count:
+  // the first has the pull spinner and needs its rows to stay under the finger,
+  // the second asks for the same content the user is already looking at.
+  const [pendingReloads, setPendingReloads] = useState(ValueConstants.zero);
+  const reload = useCallback(
+    async (next: RecipeFilters): Promise<void> => {
+      setPendingReloads((n) => n + ValueConstants.one);
+      try {
+        await load(next);
+      } finally {
+        setPendingReloads((n) => n - ValueConstants.one);
+      }
+    },
+    [load],
+  );
+
   const onRefresh = useCallback(() => {
     setIsPullRefreshing(true);
     void (async () => {
       try {
-        await load(buildApiFilters(filters, sortBy));
+        await load(buildApiFilters(filters, sortBy, debouncedSearch));
       } catch {
         // `load` folds failures into state and shouldn't reject; swallow anyway so
         // an unexpected throw can't escape as an unhandled rejection.
@@ -161,22 +205,37 @@ export const useRecipeList = (): UseRecipeListResult => {
         setIsPullRefreshing(false);
       }
     })();
-  }, [load, filters, sortBy, buildApiFilters]);
+  }, [load, filters, sortBy, debouncedSearch, buildApiFilters]);
 
   // Recipe content is localized server-side, so a language switch must re-fetch.
-  // Refs keep the latest filters/sort without re-running this effect on their change.
+  // Refs keep the latest filters/sort/query without re-running these effects on
+  // their change — each of them owns its own refetch trigger below.
   const filtersRef = useRef(filters);
   const sortByRef = useRef(sortBy);
+  const searchRef = useRef(debouncedSearch);
   filtersRef.current = filters;
   sortByRef.current = sortBy;
+  searchRef.current = debouncedSearch;
   const didMountRef = useRef(false);
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
-    void load(buildApiFilters(filtersRef.current, sortByRef.current));
-  }, [language, load, buildApiFilters]);
+    void reload(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
+  }, [language, reload, buildApiFilters]);
+
+  // The query settled — fetch the matching page. Skips the mount run because
+  // the idle-load effect above already issues the first request; without the
+  // guard the screen would fire two identical loads on every cold open.
+  const didSearchRef = useRef(false);
+  useEffect(() => {
+    if (!didSearchRef.current) {
+      didSearchRef.current = true;
+      return;
+    }
+    void reload(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
+  }, [debouncedSearch, reload, buildApiFilters]);
 
   // Re-fetch quietly on focus so new/edited recipes appear; skip the mount focus.
   const didFocusRef = useRef(false);
@@ -186,7 +245,7 @@ export const useRecipeList = (): UseRecipeListResult => {
         didFocusRef.current = true;
         return;
       }
-      void load(buildApiFilters(filtersRef.current, sortByRef.current));
+      void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),
   );
 
@@ -201,9 +260,9 @@ export const useRecipeList = (): UseRecipeListResult => {
     (next: UiFilters): void => {
       setFilters(next);
       setPendingFilters(next);
-      void load(buildApiFilters(next, sortBy));
+      void reload(buildApiFilters(next, sortBy, debouncedSearch));
     },
-    [load, buildApiFilters, sortBy],
+    [reload, buildApiFilters, sortBy, debouncedSearch],
   );
 
   const onApplyFilters = (): void => {
@@ -212,7 +271,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(pendingFilters);
     setSortBy(nextSort);
     setSheetOpen(null);
-    void load(buildApiFilters(pendingFilters, nextSort));
+    void reload(buildApiFilters(pendingFilters, nextSort, debouncedSearch));
   };
 
   const onOpenFilter = (): void => {
@@ -225,24 +284,60 @@ export const useRecipeList = (): UseRecipeListResult => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
     // Keep the active sort: resetting filters must not silently change ordering.
-    void load(buildApiFilters(emptyFilters, sortBy));
+    void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
-  const effectiveSearch = isWebShell ? webSearchQuery : search;
-  const isSearching = effectiveSearch.trim().length > ValueConstants.zero;
+  // The query the rows currently in the store are the answer to. Empty both
+  // for the unfiltered feed and while nothing is loaded yet.
+  const answeredQuery = state.status === 'loaded' ? state.query : CharConstants.empty;
+  const answersCurrentQuery = answeredQuery === trimmedSearch;
 
-  const filteredRecipes = useMemo(() => {
-    if (state.status !== 'loaded') return [];
-    const query = effectiveSearch.trim().toLowerCase();
-    if (query.length === ValueConstants.zero) return state.recipes;
-    return state.recipes.filter((r) => r.name.toLowerCase().includes(query));
-  }, [state, effectiveSearch]);
+  // WHY: rows are handed over only while they answer the query being asked.
+  // Search is server-side, so on the first keystroke the store still holds the
+  // unfiltered feed — the old code rendered it under the search field, and
+  // listing the entire catalogue as the match for one letter was the single
+  // weirdest thing about typing here. It cuts the other way too: clearing the
+  // box used to show the last query's handful of results as if they were the
+  // feed. Both surfaces already have a loading state for the gap
+  // (`isRefetching` is true for the whole of it), so handing back nothing is
+  // never an empty screen.
+  const recipes = useMemo(
+    () => (state.status === 'loaded' && answersCurrentQuery ? state.recipes : []),
+    [state, answersCurrentQuery],
+  );
+
+  // Covers the whole round trip the user is waiting on, not just the request.
+  // Anchoring it on `answersCurrentQuery` rather than on the debounce window
+  // closes a gap the old `trimmedSearch !== debouncedSearch` left open: the
+  // debounce fires during render but `load` only flips `isRefreshing` in the
+  // effect that follows, so for one frame nothing claimed to be loading while
+  // `recipes` was already empty — long enough to flash "no results" at the
+  // start of every single search.
+  //
+  // A failed refresh is deliberately excluded: it leaves the query unanswered
+  // for good, and without this the spinner would never stop. The empty state
+  // takes over and `useRefreshFailureToast` says what went wrong.
+  const hasRefreshFailure = state.status === 'loaded' && state.refreshFailure !== undefined;
+  // The window in which the rows on screen have been withheld for not answering
+  // what is being asked. Both flags below need it, for the same reason and with
+  // the same failure escape hatch.
+  const isAwaitingAnswer = !answersCurrentQuery && !hasRefreshFailure;
+  const isRefetching = isRecipeListRefreshing(state) || isAwaitingAnswer;
+  // WHY the staleness term belongs here too: `pendingReloads` counts requests,
+  // and the debounce window sits BEFORE the request. Clearing the search field
+  // drops straight back to the feed body with `recipes` already withheld and no
+  // reload counted yet — which put the "no recipes yet, try again" empty state
+  // on screen for the length of the debounce. A focus refetch still doesn't
+  // count: it asks for the same content, so `answersCurrentQuery` stays true.
+  const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
 
   return {
     state,
-    filteredRecipes,
+    recipes,
     isWebShell,
     isSearching,
+    isRefetching,
+    isReloadingResults,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
     sortBy,
@@ -264,7 +359,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     onChangeSort: (key: SortKey) => {
       setSortBy(key);
-      void load(buildApiFilters(filters, key));
+      void load(buildApiFilters(filters, key, debouncedSearch));
     },
     onToggleCuisineQuick: (cuisine: string) => applyAndLoad(mutate.toggleCuisineQuick(filters, cuisine)),
     onDifficultyChange: (d: Difficulty | null) => applyAndLoad(mutate.setDifficultyQuick(filters, d)),

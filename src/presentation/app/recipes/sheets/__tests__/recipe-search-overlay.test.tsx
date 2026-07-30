@@ -58,9 +58,9 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
 };
 
 describe('RecipeSearchOverlay', () => {
-  it('shows the zero-results empty state when the filtered list is empty', () => {
+  it('shows the zero-results empty state when the backend returned no matches', () => {
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={[]} onOpenRecipe={jest.fn()} />,
+      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -71,7 +71,7 @@ describe('RecipeSearchOverlay', () => {
   it('renders the result count and every matching recipe row when results exist', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta'), buildRecipe('r2', 'Search Salad')];
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} onOpenRecipe={jest.fn()} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -85,7 +85,7 @@ describe('RecipeSearchOverlay', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta')];
     const onOpenRecipe = jest.fn();
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} onOpenRecipe={onOpenRecipe} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={onOpenRecipe} />,
     );
 
     const row = root.find(
@@ -94,5 +94,46 @@ describe('RecipeSearchOverlay', () => {
     (row.props.onPress as () => void)();
 
     expect(onOpenRecipe).toHaveBeenCalledWith('r1');
+  });
+
+  /**
+   * Search became a backend filter, which put a gap between the keystroke and
+   * the answer (debounce + request). During that gap `recipes` still holds the
+   * PREVIOUS query's results, so the empty state must be suppressed — otherwise
+   * every query that starts by narrowing to zero flashes "no matches" at a user
+   * who is still typing a perfectly good search.
+   */
+  describe('while the typed query is unanswered', () => {
+    it('suppresses the no-results copy instead of accusing the query of failing', () => {
+      const { root } = renderComponent(
+        <RecipeSearchOverlay recipes={[]} isLoading onOpenRecipe={jest.fn()} />,
+      );
+
+      expect(textContent(root)).not.toContain(t().recipes.noResults);
+    });
+
+    it('replaces the stale result count with the refreshing label', () => {
+      const recipes = [buildRecipe('r1', 'Search Pasta')];
+      const { root } = renderComponent(
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} />,
+      );
+
+      const texts = textContent(root);
+      expect(texts).toContain(t().recipes.refreshing);
+      // The count belongs to the previous query; showing it would claim the new
+      // one has already been answered.
+      expect(texts).not.toContain(`1 ${t().recipes.results}`);
+    });
+
+    it('keeps the previous rows visible rather than blanking the list', () => {
+      const recipes = [buildRecipe('r1', 'Search Pasta')];
+      const { root } = renderComponent(
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} />,
+      );
+
+      // Stale-while-revalidate: emptying the list on every keystroke would make
+      // the surface flicker between results and a spinner as the user types.
+      expect(textContent(root)).toContain('Search Pasta');
+    });
   });
 });

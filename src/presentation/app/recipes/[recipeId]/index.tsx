@@ -11,6 +11,7 @@ import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
+import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { recipeWebUrl } from '@infrastructure/constants/api';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -22,6 +23,7 @@ import { ValueConstants } from '@core/constants';
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
+  const backLabel = useBackLabel();
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
@@ -41,6 +43,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           ref={vm.scrollViewRef}
           contentContainerStyle={styles.scroll}
           {...commentHighlight.scrollViewProps}
+          // After the spread on purpose, so a later addition to
+          // `scrollViewProps` cannot silently take this over.
+          //
+          // RN defaults this to 'never': with the keyboard up, the first tap
+          // anywhere inside the scroll view is swallowed to dismiss the
+          // keyboard and never reaches the child. Sending a comment therefore
+          // took two taps — the first only closed the keyboard. 'handled' lets
+          // a child that handles the touch (the send button) win, while a tap
+          // on empty space still dismisses.
+          keyboardShouldPersistTaps="handled"
         >
           <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>
             {vm.recipe !== null ? (
@@ -59,7 +71,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onBack={() => router.back()}
                   onToggleLike={vm.onToggleLike}
                   onToggleSave={vm.onToggleSave}
-                  onEdit={vm.onEdit}
                   onDelete={vm.onOpenDelete}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}
@@ -96,7 +107,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onChangeCommentInput={vm.onChangeCommentInput}
                   onFocusCommentInput={vm.onFocusCommentInput}
                   onToggleLike={vm.onToggleLike}
-                  onEdit={vm.onEdit}
                   onDelete={vm.onOpenDelete}
                   onAddComment={vm.onAddComment}
                   onLoadMoreComments={vm.onLoadMoreComments}
@@ -113,6 +123,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
       {!isWebShell ? (
         <Pressable
           accessibilityRole="button"
+          // Named after where back actually goes — the glyph alone announced
+          // nothing at all to a screen reader.
+          accessibilityLabel={backLabel}
           onPress={() => router.back()}
           style={[styles.backButton, { top: insets.top + spacing.sm, backgroundColor: colors.overlayLight }]}
         >
@@ -140,11 +153,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           {!isWebShell ? (
             <RecipeFloatingActions
               insetsTop={insets.top}
-              isOwner={vm.isOwner}
-              likedByMe={vm.likedByMe}
+              liked={vm.liked}
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}
-              onEdit={vm.onEdit}
               onShare={vm.onOpenShare}
               onToggleLike={vm.onToggleLike}
               onToggleSave={vm.onToggleSave}

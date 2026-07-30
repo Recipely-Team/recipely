@@ -162,13 +162,18 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // Local (user-created) recipes short-circuit the network store entirely.
   const isLocal = localRecipe !== undefined;
   const recipeState =
-    localRecipe !== undefined ? ({ status: 'loaded' as const, recipe: localRecipe }) : networkState;
+    localRecipe !== undefined
+      ? ({ status: 'loaded' as const, recipe: localRecipe, fetchedAt: ValueConstants.zero })
+      : networkState;
 
+  // WHY every entry and not only the first: the cached copy was read at some
+  // earlier point and its like count, comment count and view count have moved
+  // on since. The store keeps the cached recipe on screen while this runs, so
+  // a re-entry shows content immediately and corrects itself.
   useEffect(() => {
-    if (!isLocal && recipeId.length > ValueConstants.zero && (networkState === undefined || networkState.status === 'idle')) {
-      void load(recipeId);
-    }
-  }, [isLocal, recipeId, networkState, load]);
+    if (!isLocal && recipeId.length > ValueConstants.zero) void load(recipeId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLocal, recipeId]);
 
   useEffect(() => {
     if (recipeState?.status === 'loaded' && commentState === undefined) {
@@ -181,22 +186,13 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // re-fire syncFromApi on every render and trigger an infinite update loop.
   const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
   const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
+  const syncFetchedAt = recipeState?.status === 'loaded' ? recipeState.fetchedAt : null;
 
   useEffect(() => {
-    if (syncLikeCount !== null && syncLikedByMe !== null) {
-      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe);
+    if (syncLikeCount !== null && syncLikedByMe !== null && syncFetchedAt !== null) {
+      likesStore.getState().syncFromApi(recipeId, syncLikeCount, syncLikedByMe, syncFetchedAt);
     }
-  }, [syncLikeCount, syncLikedByMe, recipeId, likesStore]);
-
-  // WHY: when the user reaches this screen from the main list (not My Recipes),
-  // createdRecipesStore is empty, so isLocal is false and the edit form won't
-  // pre-fill. Loading my recipes here ensures the store is populated before
-  // the user taps Edit.
-  useEffect(() => {
-    if (isOwner && !isLocal) {
-      void createdRecipesStore.getState().loadMyRecipes();
-    }
-  }, [isOwner, isLocal, createdRecipesStore]);
+  }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : ValueConstants.zero;
   const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : ValueConstants.zero;
@@ -250,6 +246,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: 'image', url: recipe.image }];
   const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
+  // ONE source of truth for the like, deliberately. There used to be a second
+  // `likedByMe` field without the `recipe?.likedByMe` fallback, which the
+  // floating heart consumed — so that heart rendered empty until the likes
+  // store synced, and stayed empty whenever the sync was skipped (it is skipped
+  // while an optimistic toggle is in flight). The store overlay wins when it has
+  // an entry; otherwise the server's answer stands.
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
@@ -264,7 +266,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     cuisineName,
     liked,
     likeCount,
-    likedByMe: likeState?.likedByMe ?? false,
     isOwner,
     isSaved,
     saveDisabled: isLoading,
@@ -287,7 +288,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
     onDeleteComment: (id: string) => void handleDeleteComment(id),
-    onEdit: () => router.push(RoutePaths.createRecipeWithDraft(recipeId) as Href),
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

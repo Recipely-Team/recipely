@@ -28,12 +28,13 @@
  * rejecting load, the defensive path behind `onRefresh`'s catch/finally.
  */
 
-import { act } from 'react-test-renderer';
+import { act, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
+import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
@@ -42,7 +43,7 @@ import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import { NetworkFailure } from '@core/failure';
-import { ok } from '@core/result/result-helpers';
+import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -149,6 +150,7 @@ interface RenderSnapshot {
 describe('useRecipeList — pull-to-refresh spinner and load parameters', () => {
   let renders: RenderSnapshot[] = [];
   let vm: ReturnType<typeof useRecipeList>;
+  let renderer: ReactTestRenderer | null = null;
 
   const Probe = (): null => {
     vm = useRecipeList();
@@ -169,11 +171,11 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
     execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r1')])));
 
-    renderComponent(
+    renderer = renderComponent(
       <StoresProvider value={makeStores(store)}>
         <Probe />
       </StoresProvider>,
-    );
+    ).renderer;
 
     await act(async () => {
       await Promise.resolve();
@@ -185,9 +187,17 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
   beforeEach(() => {
     renders = [];
+    renderer = null;
   });
 
   afterEach(async () => {
+    // Unmount before settling: the hook debounces the search query on a timer,
+    // and a tree left mounted keeps that timer alive past the end of the test —
+    // it then fires into a torn-down Jest environment. Unmounting runs the
+    // hook's own cleanup, which is what cancels it.
+    await act(async () => {
+      renderer?.unmount();
+    });
     // Let AppThemeProvider's async storage hydration settle inside act, so a
     // late re-render can't fire after the Jest environment is torn down.
     await act(async () => {
@@ -224,6 +234,54 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
     expect(vm.isPullRefreshing).toBe(false);
     expect(renders.every((r) => !r.isPullRefreshing)).toBe(true);
+  });
+
+  /**
+   * "Recipes look like they load twice on the home page." A filter tap kept the
+   * previous rows up while the next set arrived, so one tap showed two sets in
+   * sequence. The feed now blanks its rows for exactly the loads that change
+   * WHAT it should contain — and for no others.
+   */
+  it('reports isReloadingResults for a filter change, until the results land', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    expect(vm.isReloadingResults).toBe(false);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onToggleCuisineQuick(CuisineKey.Turkish);
+    });
+    expect(vm.isReloadingResults).toBe(true);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
+
+    expect(vm.isReloadingResults).toBe(false);
+  });
+
+  it('leaves isReloadingResults false for a pull-to-refresh', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+
+    const deferred = makeDeferred();
+    execute.mockReturnValueOnce(deferred.promise);
+
+    act(() => {
+      vm.onRefresh();
+    });
+
+    // The pull has its own spinner, and its rows must stay under the finger.
+    expect(vm.isPullRefreshing).toBe(true);
+    expect(vm.isReloadingResults).toBe(false);
+
+    await act(async () => {
+      deferred.resolve(ok([makeRecipe('r2')]));
+      await deferred.promise;
+    });
   });
 
   it('leaves isPullRefreshing false for the whole in-flight window of a sort refetch', async () => {
@@ -372,6 +430,235 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     const lastCall = execute.mock.calls.at(-1)?.[0];
     expect(lastCall).toEqual(expect.objectContaining({ sort: 'rating' }));
     expect(lastCall).not.toHaveProperty('cuisines');
+  });
+
+  /**
+   * The Android bug: search ran as a local `Array.filter` over the loaded page.
+   * That page is only the first slice of the catalogue, so a query could only
+   * ever match recipes already downloaded and silently missed the rest. Search
+   * is a backend filter (`RecipeFilters.search`), debounced so a typing burst is
+   * one request instead of one per keystroke.
+   */
+  describe('search', () => {
+    /** Advances past the debounce window and lets the resulting load settle. */
+    const settleSearch = async (): Promise<void> => {
+      await act(async () => {
+        jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+    };
+
+    beforeEach(() => {
+      jest.useFakeTimers();
+    });
+
+    afterEach(() => {
+      jest.useRealTimers();
+    });
+
+    it('sends the query to the backend once the typing pauses', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'pasta' }));
+    });
+
+    it('collapses a burst of keystrokes into a single request', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+      const callsAfterMount = execute.mock.calls.length;
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('p');
+        vm.onSearchChange('pa');
+        vm.onSearchChange('pas');
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      // One request for the settled query — not four.
+      expect(execute.mock.calls.length - callsAfterMount).toBe(1);
+      expect(execute).toHaveBeenLastCalledWith(expect.objectContaining({ search: 'pasta' }));
+    });
+
+    it('reports isRefetching from the keystroke, before the debounce even fires', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+      expect(vm.isRefetching).toBe(false);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+
+      // The gap between the keystroke and the request is still "the rows you can
+      // see are out of date" — treating it as idle is what let the search
+      // surface flash the previous query's results (or "no matches") mid-typing.
+      expect(vm.isRefetching).toBe(true);
+
+      await settleSearch();
+      expect(vm.isRefetching).toBe(false);
+    });
+
+    it('drops the search param entirely once the field is cleared', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      act(() => {
+        vm.onSearchChange('');
+      });
+      await settleSearch();
+
+      // An empty `search=` would ask the backend to match the empty string
+      // rather than to stop filtering.
+      expect(execute.mock.calls.at(-1)?.[0]).not.toHaveProperty('search');
+    });
+
+    it('keeps the query when a filter changes, so the two compose', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      act(() => {
+        vm.onToggleCuisineQuick(CuisineKey.Turkish);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      // A filter tap that dropped the query would silently widen the results
+      // back to the whole catalogue while the search field still showed "pasta".
+      expect(execute.mock.calls.at(-1)?.[0]).toEqual(
+        expect.objectContaining({ search: 'pasta', cuisines: [CuisineKey.Turkish] }),
+      );
+    });
+
+    it('hands back no rows while the typed query is unanswered', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+      expect(vm.recipes).toHaveLength(1);
+
+      const inFlight = makeDeferred();
+      execute.mockReturnValueOnce(inFlight.promise);
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+
+      // The store still holds the unfiltered feed here. Handing it back is what
+      // made one keystroke look like it had matched the entire catalogue.
+      expect(vm.recipes).toEqual([]);
+
+      await act(async () => {
+        jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+      expect(vm.recipes).toEqual([]);
+
+      await act(async () => {
+        inFlight.resolve(ok([makeRecipe('match')]));
+        await Promise.resolve();
+      });
+
+      expect(vm.recipes.map((r) => r.id)).toEqual(['match']);
+    });
+
+    it('never reports an unanswered query as idle, so the empty state cannot flash', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      const inFlight = makeDeferred();
+      execute.mockReturnValueOnce(inFlight.promise);
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+
+      // Every frame from the keystroke to the answer must claim to be loading:
+      // `recipes` is empty across all of them, and one idle frame in between is
+      // a flash of "no results" at the start of every search. The debounce
+      // fires during render while `load` only marks the store refreshing in the
+      // effect after it, which is exactly where that frame used to appear.
+      const framesAreLoading: boolean[] = [vm.isRefetching];
+      await act(async () => {
+        jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        await Promise.resolve();
+      });
+      framesAreLoading.push(vm.isRefetching);
+
+      expect(framesAreLoading).toEqual([true, true]);
+
+      await act(async () => {
+        inFlight.resolve(ok([makeRecipe('match')]));
+        await Promise.resolve();
+      });
+      expect(vm.isRefetching).toBe(false);
+    });
+
+    it('stops claiming to load when the search itself fails, so the spinner cannot stick', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValueOnce(Promise.resolve(fail(new NetworkFailure('offline'))));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+
+      // The query stays unanswered for good — a spinner keyed only on "answered
+      // yet?" would never stop. The failure toast reports what happened.
+      expect(vm.isRefetching).toBe(false);
+      expect(vm.recipes).toEqual([]);
+    });
+
+    it('shows the feed again the moment the field is cleared, not the last query\'s results', async () => {
+      const execute = jest.fn();
+      await mountLoaded(execute);
+
+      execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('match')])));
+      act(() => {
+        vm.onSearchChange('pasta');
+      });
+      await settleSearch();
+      expect(vm.recipes.map((r) => r.id)).toEqual(['match']);
+
+      const inFlight = makeDeferred();
+      execute.mockReturnValueOnce(inFlight.promise);
+      act(() => {
+        vm.onSearchChange('');
+      });
+
+      // Staleness cuts both ways: the search hits are no more the feed than the
+      // feed was a set of search hits.
+      expect(vm.recipes).toEqual([]);
+      // …and the feed body must be told it is reloading, or the withheld rows
+      // read as "no recipes yet, try again" for the length of the debounce.
+      expect(vm.isReloadingResults).toBe(true);
+
+      await act(async () => {
+        jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+        inFlight.resolve(ok([makeRecipe('r1'), makeRecipe('r2')]));
+        await Promise.resolve();
+      });
+
+      expect(vm.recipes).toHaveLength(2);
+    });
   });
 
   it('clears isPullRefreshing and leaks no unhandled rejection when the load rejects', async () => {

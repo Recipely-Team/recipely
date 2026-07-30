@@ -34,11 +34,11 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return;
 
     const result = await register(token.data, 'android');
-    if (!result.ok) {
+    if (!result.ok && __DEV__) {
       console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
     }
   } catch (err) {
     // Expo Go or a device without push support — the polled badge still works.
-    console.warn('[push-token-registrar] android push registration skipped:', err);
+    if (__DEV__) console.warn('[push-token-registrar] android push registration skipped:', err);
   }
 };

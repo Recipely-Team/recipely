@@ -6,27 +6,24 @@ import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentatio
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
-  isOwner: boolean;
-  likedByMe: boolean;
+  /** Server-confirmed like state, overlaid by any in-flight optimistic toggle. */
+  liked: boolean;
   isSaved: boolean;
   saveDisabled: boolean;
-  onEdit: () => void;
   onShare: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
 }
 
 /**
- * Floating overlay cluster (edit / share / like / save) pinned to the top-right
+ * Floating overlay cluster (share / like / save) pinned to the top-right
  * of the native recipe-detail hero image. Rendered only on the mobile shell.
  */
 export const RecipeFloatingActions = ({
   insetsTop,
-  isOwner,
-  likedByMe,
+  liked,
   isSaved,
   saveDisabled,
-  onEdit,
   onShare,
   onToggleLike,
   onToggleSave,
@@ -35,16 +32,6 @@ export const RecipeFloatingActions = ({
 
   return (
     <View style={[styles.floatingActions, { top: insetsTop + spacing.sm }]}>
-      {isOwner ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().myRecipes.editRecipe}
-          onPress={onEdit}
-          style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
-        >
-          <Ionicons name="pencil" size={iconSizes.xl} color={colors.onOverlay} />
-        </Pressable>
-      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t().recipes.share}
@@ -56,13 +43,13 @@ export const RecipeFloatingActions = ({
       <Pressable
         onPress={onToggleLike}
         accessibilityRole="button"
-        accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
+        accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
         <MaterialCommunityIcons
-          name={likedByMe ? 'heart' : 'heart-outline'}
+          name={liked ? 'heart' : 'heart-outline'}
           size={iconSizes.xl}
-          color={likedByMe ? colors.likeActive : colors.onOverlay}
+          color={liked ? colors.likeActive : colors.onOverlay}
         />
       </Pressable>
       <Pressable

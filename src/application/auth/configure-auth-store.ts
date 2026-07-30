@@ -35,23 +35,18 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
-      // Pre-load favorites in background
+      // Pre-load favorites in the background. A failure here is deliberately
+      // silent: hydration has already succeeded, the saved-recipe overlay simply
+      // stays empty until something else loads it, and there is no user action
+      // to report on. The `catch` guards against a throw escaping into the
+      // caller's `void`ed promise.
       try {
-         
-        console.log('[AuthStore] hydrate: loading favorites...');
         const favResult = await deps.loadFavorites.execute();
         if (favResult.ok) {
-           
-          console.log('[AuthStore] hydrate: favorites loaded:', Array.from(favResult.value));
-          const { setSavedIds } = deps.savedRecipesStore.getState();
-          setSavedIds(favResult.value);
-        } else {
-           
-          console.error('[AuthStore] hydrate: failed to load favorites:', favResult.failure);
+          deps.savedRecipesStore.getState().setSaved(favResult.value);
         }
-      } catch (e) {
-         
-        console.error('[AuthStore] hydrate: error loading favorites:', e);
+      } catch {
+        // Intentionally ignored — see above.
       }
     },
 

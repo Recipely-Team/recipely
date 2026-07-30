@@ -10,6 +10,7 @@ import { WebRecipeDetailComments } from '@presentation/app/recipes/[recipeId]/bo
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, mediaSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -32,7 +33,6 @@ export interface WebRecipeDetailProps {
   onBack: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
-  onEdit: () => void;
   onDelete: () => void;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
@@ -66,6 +66,7 @@ const stickyColumn = stickyBase as ViewStyle;
  */
 export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const backLabel = useBackLabel();
   const { width } = useLayout();
   const [activeImage, setActiveImage] = useState(ValueConstants.zero);
   const { recipe, recipeId, media } = props;
@@ -77,12 +78,12 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
       <Pressable
         onPress={props.onBack}
         accessibilityRole="button"
-        accessibilityLabel={t().recipes.backToRecipes}
+        accessibilityLabel={backLabel}
         style={styles.backLink}
       >
         <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.textMuted} />
         <ThemedText variant="body" style={[styles.backLabel, { color: colors.textMuted }]}>
-          {t().recipes.backToRecipes}
+          {backLabel}
         </ThemedText>
       </Pressable>
 
@@ -93,7 +94,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         likeCount={props.likeCount}
         onToggleLike={props.onToggleLike}
         isOwner={props.isOwner}
-        onEdit={props.onEdit}
         onDelete={props.onDelete}
         isSaved={props.isSaved}
         saveDisabled={props.saveDisabled}
@@ -143,8 +143,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
                   step={step}
                   completed={props.completedSteps[i] ?? false}
                   onToggle={() => props.onToggleStep(i)}
-                  recipeId={recipeId}
-                  recipeName={recipe.name}
                 />
               ))}
             </View>

@@ -47,12 +47,11 @@ export const RecipeCommentsSection = ({
 
   return (
     <>
+      {/* A zero stays hidden, as it was before the count moved out of the
+          title: "Yorumlar 0" beside the empty-state copy says it twice. */}
       <SectionHeader
-        title={
-          commentState?.total
-            ? `${t().comments.title} · ${commentState.total}`
-            : t().comments.title
-        }
+        title={t().comments.title}
+        count={commentState?.total === ValueConstants.zero ? undefined : commentState?.total}
       />
 
       {commentState?.isLoading ? (

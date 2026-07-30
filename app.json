@@ -44,8 +44,7 @@
         {
           "ios": {
             "infoPlist": {
-              "NSAllowsArbitraryLoads": true,
-              "UIBackgroundModes": ["audio"]
+              "NSAllowsArbitraryLoads": true
             },
             "useFrameworks": "static",
             "forceStaticLinking": [
@@ -74,7 +73,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 240,
+          "imageWidth": 150,
           "resizeMode": "contain",
           "backgroundColor": "#EE8941",
           "dark": {

@@ -5,16 +5,15 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
 }
-
-const EMPTY_MACRO = '—';
 
 /** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and a nutrition tile grid. */
 export const WebRecipeDetailSidebar = ({
@@ -27,12 +26,12 @@ export const WebRecipeDetailSidebar = ({
   const checkedCount = checkedIngredients.filter(Boolean).length;
 
   const gram = (value: number | undefined): string =>
-    value !== undefined && value > ValueConstants.zero ? `${String(value)}${strings.nutrition.g}` : EMPTY_MACRO;
+    value !== undefined && value > ValueConstants.zero ? `${String(value)}${strings.nutrition.g}` : CharConstants.emDash;
 
   const macros = [
     {
       label: strings.nutrition.calories,
-      value: recipe.caloriesPerServing > ValueConstants.zero ? String(recipe.caloriesPerServing) : EMPTY_MACRO,
+      value: recipe.caloriesPerServing > ValueConstants.zero ? String(recipe.caloriesPerServing) : CharConstants.emDash,
     },
     { label: strings.nutrition.protein, value: gram(recipe.nutrition?.protein) },
     { label: strings.nutrition.carbs, value: gram(recipe.nutrition?.carbs) },
@@ -122,21 +121,27 @@ export const WebRecipeDetailSidebar = ({
         ))}
       </View>
 
-      {hasNutrition ? (
-        <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
-          <View style={styles.cardHeader}>
-            <ThemedText variant="subtitle">{strings.recipes.nutrition}</ThemedText>
-          </View>
+      {/* Always rendered, matching the mobile card: a recipe with no figures
+          says so rather than dropping the section, which read as a bug. */}
+      <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
+        <View style={styles.cardHeader}>
+          <ThemedText variant="subtitle">{strings.recipes.nutrition}</ThemedText>
+        </View>
+        {hasNutrition ? (
           <View style={styles.tileGrid}>
             {macros.map((macro) => (
               <View key={macro.label} style={[styles.tile, { backgroundColor: colors.surface }]}>
                 <ThemedText style={[styles.tileValue, { color: colors.text }]}>{macro.value}</ThemedText>
-                <ThemedText style={[styles.tileLabel, { color: colors.textMuted }]}>{macro.label}</ThemedText>
+                <ThemedText style={[styles.tileLabel, { color: colors.textMuted }]}>{upperCase(macro.label)}</ThemedText>
               </View>
             ))}
           </View>
-        </View>
-      ) : null}
+        ) : (
+          <ThemedText variant="caption" muted>
+            {strings.nutrition.unavailable}
+          </ThemedText>
+        )}
+      </View>
     </View>
   );
 };
@@ -211,6 +216,5 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.micro,
     fontWeight: fontWeights.semibold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
 });

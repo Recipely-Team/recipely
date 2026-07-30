@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
 import { ValueConstants } from '@core/constants';
@@ -73,7 +74,7 @@ export const HeroTimer = ({ active = true }: HeroProps): React.JSX.Element => {
           <View style={styles.ringLabel}>
             <ThemedText style={styles.ringTime}>{TIMER_FACE}</ThemedText>
             <ThemedText muted style={styles.ringCaption}>
-              {m.timerLabel}
+              {upperCase(m.timerLabel)}
             </ThemedText>
           </View>
         </View>
@@ -145,7 +146,6 @@ const styles = StyleSheet.create({
   ringCaption: {
     fontSize: fontSizes.tiny,
     fontWeight: fontWeights.bold,
-    textTransform: 'uppercase',
     letterSpacing: letterSpacings.wide,
   },
   stepCard: {

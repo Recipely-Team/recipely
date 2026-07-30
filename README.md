@@ -283,6 +283,7 @@ is not a linter — it encodes the rules a linter cannot see:
 | H | No absolute `lineHeight`; no bare `<TextInput multiline>` outside `AutoGrowTextInput` |
 | I | Folder file counts — soft warning past 10, blocking past 15 |
 | J | `PROJECT-MAP.md` still describes the tree (`npm run map` to refresh) |
+| K | No unguarded `console.*` — it raises a LogBox in dev and leaks to logcat in release |
 
 A Husky pre-commit hook runs `lint-staged` → `tsc --noEmit` → `check:structure` on every commit.
 The emergency bypass is `git commit --no-verify`, and the reason belongs in the commit message.

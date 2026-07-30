@@ -6,16 +6,17 @@ import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { WebHeroActionRow } from '@presentation/app/recipes/items/hero/web-hero-action-row';
 import {
   HERO_OVERLAY_DEEP,
   HERO_OVERLAY_MID,
   HERO_OVERLAY_FADE,
-} from '@presentation/app/recipes/model/web-hero-constants';
+} from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
-import { HeroGradientConstants } from '@presentation/app/recipes/model/hero-gradient-constants';
+import { HeroGradientConstants } from '@presentation/app/recipes/model/hero/hero-gradient-constants';
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummaryEntity;
@@ -63,7 +64,7 @@ export const WebHeroFeaturedCard = ({
         <View style={[styles.badge, { backgroundColor: colors.primary }]}>
           <Ionicons name="flame" size={iconSizes.md} color={colors.primaryText} />
           <ThemedText style={[styles.badgeText, { color: colors.primaryText }]}>
-            {t().recipes.trending}
+            {upperCase(t().recipes.trending)}
           </ThemedText>
         </View>
 
@@ -147,7 +148,6 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.small,
     fontWeight: fontWeights.bold,
     letterSpacing: letterSpacings.wide,
-    textTransform: 'uppercase',
   },
   title: {
     fontSize: fontSizes.hero,

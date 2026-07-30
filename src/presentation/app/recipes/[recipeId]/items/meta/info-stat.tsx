@@ -49,7 +49,6 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: fontSizes.micro,
-    textTransform: 'uppercase',
     textAlign: 'center',
   },
 });

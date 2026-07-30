@@ -14,10 +14,10 @@ import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid'
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
+import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
-import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
@@ -39,7 +39,7 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  */
 export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { state, filteredRecipes, isWebShell, isSearching, gridColumns } = vm;
+  const { state, recipes, isWebShell, isSearching, gridColumns } = vm;
 
   const renderItem = ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
     if (gridColumns > ValueConstants.one) {
@@ -80,9 +80,14 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           </>
         )}
         <WebRecipeGrid
-          recipes={filteredRecipes}
-          isLoading={state.status !== 'loaded'}
-          isRefreshing={isRecipeListRefreshing(state)}
+          recipes={recipes}
+          isLoading={state.status !== 'loaded' || vm.isReloadingResults}
+          // `vm.isRefetching`, not `isRecipeListRefreshing(state)`: the web
+          // header search is debounced too, so the store looks idle for the
+          // first few hundred ms after a keystroke. Once the request itself is
+          // in flight the grid switches to skeletons (`isLoading` above), so
+          // this covers only the debounce window — never both at once.
+          isRefreshing={vm.isRefetching && !vm.isReloadingResults}
           isSearching={isSearching}
           activeCuisineLabel={vm.activeCuisineLabel}
           sortBy={vm.sortBy}
@@ -101,49 +106,36 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   } else if (state.status === 'idle' || state.status === 'loading') {
     body = <LoadingSkeleton />;
   } else if (isSearching) {
-    body = <RecipeSearchOverlay recipes={filteredRecipes} onOpenRecipe={vm.onOpenRecipe} />;
-  } else if (filteredRecipes.length === ValueConstants.zero) {
     body = (
-      // A plain View accepts no pull gesture, and an empty list is exactly when
-      // a user reaches for one — the ScrollView (with flexGrow content) gives
-      // the refresh gesture a surface. No `progressViewOffset` here: the empty
-      // branch renders inside `bodyTopInset`, which already pushes it below the
-      // collapsing header band. `tintColor` (iOS) + `colors` (Android) theme it.
-      <ScrollView
-        style={styles.list}
-        contentContainerStyle={styles.center}
-        refreshControl={
-          <RefreshControl
-            refreshing={vm.isPullRefreshing}
-            onRefresh={vm.onRefresh}
-            tintColor={colors.textMuted}
-            colors={[colors.primary]}
-          />
-        }
-      >
-        <MaterialCommunityIcons name="food-off" size={iconSizes.giant} color={colors.textMuted} />
-        <ThemedText variant="body" muted style={styles.feedbackTitle}>
-          {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
-        </ThemedText>
-        <View style={styles.retryButton}>
-          {vm.activeFilterCount > ValueConstants.zero ? (
-            <PrimaryButton label={t().recipes.clearFilters} onPress={vm.onResetFilters} />
-          ) : (
-            <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
-          )}
-        </View>
-      </ScrollView>
+      <RecipeSearchOverlay
+        recipes={recipes}
+        isLoading={vm.isRefetching}
+        onOpenRecipe={vm.onOpenRecipe}
+      />
     );
   } else {
     body = (
+      // Rendered even with zero rows, deliberately. An empty result used to
+      // swap the whole list out for a centered empty state, which unmounted
+      // `MobileFeedHeader` — and with it the cuisine strip and active-filter
+      // chips. That is exactly the moment a user needs them: the way out of a
+      // filter that matches nothing is to un-tap it, and the only control left
+      // was "Clear all", which throws away the other filters too. So the empty
+      // copy is a `ListEmptyComponent` under the header instead of a
+      // replacement for it. The list's own `contentContainerStyle` keeps
+      // `flexGrow: 1`, so the pull-to-refresh gesture still has a surface.
       <Animated.FlatList
-        data={filteredRecipes}
+        // Emptied on purpose while the next set is fetched: the rows on screen
+        // answer the PREVIOUS filter, and leaving them up read as a second
+        // load. `ListEmptyComponent` carries the loading placeholder, so the
+        // feed header above it (cuisine strip, active-filter chips) stays.
+        data={vm.isReloadingResults ? [] : recipes}
         keyExtractor={(r) => r.id}
         renderItem={renderItem}
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
-            resultCount={filteredRecipes.length}
+            resultCount={recipes.length}
             activeFilterCount={vm.activeFilterCount}
             onOpenCreate={vm.onOpenCreate}
             onToggleCuisine={vm.onToggleCuisineQuick}
@@ -152,6 +144,25 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             onRemoveMaxTime={vm.onRemoveMaxTime}
             onResetFilters={vm.onResetFilters}
           />
+        }
+        ListEmptyComponent={
+          vm.isReloadingResults ? (
+            <FeedReloadingRows />
+          ) : (
+          <View style={styles.emptyState}>
+            <MaterialCommunityIcons name="food-off" size={iconSizes.giant} color={colors.textMuted} />
+            <ThemedText variant="body" muted style={styles.feedbackTitle}>
+              {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
+            </ThemedText>
+            <View style={styles.retryButton}>
+              {vm.activeFilterCount > ValueConstants.zero ? (
+                <PrimaryButton label={t().recipes.clearFilters} onPress={vm.onResetFilters} />
+              ) : (
+                <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
+              )}
+            </View>
+          </View>
+          )
         }
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
@@ -183,8 +194,10 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     );
   }
 
-  const isMobileLoadedFeed =
-    !isWebShell && !isSearching && state.status === 'loaded' && filteredRecipes.length > ValueConstants.zero;
+  // The loaded mobile feed pads for the header band inside its own list content
+  // (`mobileListContent`), so the container must not add the inset a second
+  // time. Every other mobile branch renders a plain surface and needs it.
+  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === 'loaded';
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -257,13 +270,11 @@ const styles = StyleSheet.create({
   separator: {
     height: spacing.md,
   },
-  // flexGrow keeps the empty state pullable: the scroll content must fill the
-  // viewport so the refresh gesture has a surface even with little rendered.
-  center: {
-    flexGrow: ValueConstants.one,
+  emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    padding: spacing.xl,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.xxl,
   },
   feedbackTitle: {
     marginTop: spacing.md,

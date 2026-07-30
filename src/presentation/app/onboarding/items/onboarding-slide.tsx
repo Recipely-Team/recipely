@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, layoutSizes } from '@presentation/base/theme';
 import { OnboardingHero } from '@presentation/app/onboarding/items/onboarding-hero';
@@ -26,7 +27,7 @@ export const OnboardingSlide = ({ slide, width, height, active }: OnboardingSlid
       <View style={styles.copy}>
         <View style={[styles.eyebrow, { backgroundColor: colors.chipBackground }]}>
           <ThemedText style={[styles.eyebrowText, { color: colors.chipText }]}>
-            {slide.eyebrow}
+            {upperCase(slide.eyebrow)}
           </ThemedText>
         </View>
         <ThemedText style={styles.title}>{slide.title}</ThemedText>
@@ -59,7 +60,6 @@ const styles = StyleSheet.create({
   eyebrowText: {
     fontSize: fontSizes.small,
     fontWeight: fontWeights.bold,
-    textTransform: 'uppercase',
     letterSpacing: letterSpacings.subtle,
   },
   title: {

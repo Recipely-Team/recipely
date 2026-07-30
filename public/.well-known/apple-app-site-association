@@ -4,11 +4,25 @@
     "details": [
       {
         "appID": "8PB3FJ7CPA.net.recipely.app",
-        "paths": ["*"]
+        "paths": [
+          "NOT /about",
+          "NOT /about/*",
+          "NOT /privacy",
+          "NOT /terms",
+          "NOT /legal/*",
+          "*"
+        ]
       },
       {
         "appID": "8PB3FJ7CPA.net.recipely.app.dev",
-        "paths": ["*"]
+        "paths": [
+          "NOT /about",
+          "NOT /about/*",
+          "NOT /privacy",
+          "NOT /terms",
+          "NOT /legal/*",
+          "*"
+        ]
       }
     ]
   }

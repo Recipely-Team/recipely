@@ -14,6 +14,10 @@
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
  *      <TextInput multiline> outside the AutoGrowTextInput pair.
  *   I. Folder file counts (CLAUDE.md §14c): warn past 10, block past 15.
+ *   J. PROJECT-MAP.md freshness (CLAUDE.md §15b).
+ *   K. No unguarded console.* in shipped code (CLAUDE.md §22).
+ *   L. No hand-rolled bottom sheets (CLAUDE.md §23) — sheets go through the
+ *      shared BottomSheet, which presents as a dialog on the web shell.
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -243,6 +247,88 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   );
 }
 
+// --- K: no unguarded console.* in shipped code (CLAUDE.md §22) --------------
+// Two problems with an unguarded call. In a dev build `console.error` /
+// `console.warn` raise a LogBox panel over the running app, which is how a
+// batch of leftover favorites tracing ended up looking like a production
+// crash to the user. In a RELEASE build the call still executes — it just
+// writes to logcat / Console.app instead — so anything passed to it leaks,
+// and those calls were logging user ids and saved-recipe ids.
+//
+// The guard must be lexically visible: `__DEV__` on the same line, or an
+// enclosing `if (__DEV__)` / `if (enableLogging)` opened within the previous
+// two non-comment lines. That is a heuristic, not a parser — deliberately, so
+// the rule stays readable. Nest deeper than that and you must repeat the
+// guard on the call's own line.
+{
+  const GUARD = /__DEV__|enableLogging/;
+  const isComment = (line) => /^\s*(\/\/|\/\*|\*)/.test(line);
+
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+
+    lines.forEach((line, i) => {
+      if (isComment(line) || !/\bconsole\.(log|warn|error|info|debug)\s*\(/.test(line)) return;
+      if (GUARD.test(line)) return;
+      // Nearest two preceding lines that are not comments/blank.
+      const preceding = [];
+      for (let j = i - 1; j >= 0 && preceding.length < 2; j--) {
+        if (lines[j].trim() === '' || isComment(lines[j])) continue;
+        preceding.push(lines[j]);
+      }
+      if (preceding.some((p) => GUARD.test(p))) return;
+      errors.push(
+        `${file}:${String(i + 1)}: unguarded console.* — wrap it in \`if (__DEV__)\` or delete it (CLAUDE.md §22)`,
+      );
+    });
+  }
+}
+
+// --- L: sheets come from the shared widget (CLAUDE.md §23) -----------------
+// A bottom sheet is a touch idiom: on a desktop browser a panel glued to the
+// bottom edge has nothing to reach for it, and its grabber promises a drag a
+// mouse never performs. `base/widgets/sheets/bottom-sheet.tsx` is the one
+// place that knows to present as a centred dialog on the web shell, so a
+// hand-rolled `Modal` that slides up from the bottom bypasses the rule for
+// every screen that copies it. Detected by the two things such a modal always
+// carries: a slide animation, or a top-only corner radius on its panel.
+{
+  const SHEET_WIDGET = 'presentation/base/widgets/sheets/';
+
+  for (const file of files) {
+    if (isTest(file) || file.includes(SHEET_WIDGET)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!/<Modal[\s>]/.test(src)) continue;
+    const slides = /animationType=["']slide["']/.test(src);
+    const topOnlyRadius = /borderTopLeftRadius:/.test(src);
+    if (!slides && !topOnlyRadius) continue;
+    errors.push(
+      `${file}: hand-rolled bottom sheet — render it through @presentation/base/widgets/sheets/bottom-sheet (CLAUDE.md §23)`,
+    );
+  }
+}
+
+// --- M: every Modal is status-bar translucent (CLAUDE.md §23b) --------------
+// `edgeToEdgeEnabled` is on, and without this prop Android re-lays-out the
+// window around the status bar as a modal opens — the screen underneath jumps
+// by the inset height and back. It cost a "the layout shifts when I leave a
+// draft" report: the exit dialog was a hand-rolled `Modal` that faded rather
+// than slid, so rule L above never looked at it. Rule L asks whether a modal
+// is a sheet in disguise; this one asks the question that applies to all of
+// them, so nothing gets through by not looking like a sheet.
+{
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!/<Modal[\s>]/.test(src)) continue;
+    if (/statusBarTranslucent/.test(src)) continue;
+    errors.push(
+      `${file}: <Modal> without statusBarTranslucent — the screen under it jumps on Android edge-to-edge (CLAUDE.md §23b)`,
+    );
+  }
+}
+
 // --- J: PROJECT-MAP.md must describe the tree that exists --------------------
 // The map only saves anyone time while it is true. It carries a fingerprint of
 // every folder and file name under src/; if the tree moved and the map did not,
@@ -255,7 +341,7 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     const { fingerprint } = await import('./generate-map.mjs');
     const recorded = /<!-- fingerprint: ([a-f0-9]+) -->/.exec(fs.readFileSync(mapPath, 'utf8'))?.[1];
     if (recorded !== fingerprint()) {
-      errors.push('PROJECT-MAP.md is stale — run `npm run map` (CLAUDE.md §22)');
+      errors.push('PROJECT-MAP.md is stale — run `npm run map` (CLAUDE.md §15b)');
     }
   }
 }

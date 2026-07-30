@@ -32,7 +32,6 @@ export interface MobileRecipeDetailProps {
   onChangeCommentInput: (value: string) => void;
   onFocusCommentInput: () => void;
   onToggleLike: () => void;
-  onEdit: () => void;
   onDelete: () => void;
   onAddComment: () => void;
   onLoadMoreComments: () => void;
@@ -75,7 +74,6 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           onToggleIngredient={props.onToggleIngredient}
           completedSteps={props.completedSteps}
           onToggleStep={props.onToggleStep}
-          onEdit={props.onEdit}
           onDelete={props.onDelete}
         />
 

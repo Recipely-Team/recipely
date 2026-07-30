@@ -154,7 +154,6 @@ first — if either fails, the build cannot be submitted.
 | F12 | Reopen Create | "Resume draft" card appears | | |
 | F13 | Resume the draft | Fields restored | | |
 | F14 | Save | Appears under My Recipes | | |
-| F15 | Edit and re-save | Changes persist | | |
 | F16 | Delete a recipe | Confirmation then removal | | |
 | F17 | Save with an empty title | Field error, no crash | | |
 

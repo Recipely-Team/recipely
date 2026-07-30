@@ -1,6 +1,24 @@
+import Constants from 'expo-constants';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { ValueConstants } from '@core/constants';
+
+/**
+ * Domain that serves the OAuth handler, and the name Google shows the user in
+ * the account chooser ("continue to …"). The default
+ * `recipely-c05fc.firebaseapp.com` told our own users they were signing in to
+ * a Firebase project id. Hosting serves `/__/auth/*` on every domain attached
+ * to the project, so the branded one works with no extra setup — as long as it
+ * is in Firebase Auth's authorized-domains list.
+ *
+ * The dev site is NOT authorized yet, so the dev build keeps the default
+ * rather than trading a cosmetic win for a broken sign-in. Selected by variant
+ * like the API host next door in `infrastructure/constants/api.ts`.
+ */
+const PROD_AUTH_DOMAIN = 'recipely.net';
+const DEV_AUTH_DOMAIN = 'recipely-c05fc.firebaseapp.com';
+
+const IS_DEV_VARIANT: boolean = Constants.expoConfig?.extra?.variant === 'development';
 
 // Web Firebase config is read from EXPO_PUBLIC_FIREBASE_* env vars at build
 // time. Firebase web config strings are technically public (they identify the
@@ -8,9 +26,13 @@ import { ValueConstants } from '@core/constants';
 // through env vars keeps GitHub Secret Scanning happy and lets us swap
 // projects per environment without touching code. Hardening happens server
 // side via Firebase Auth + Security Rules and the GCP API-key restrictions.
+//
+// `authDomain` is the exception: it is user-VISIBLE copy in the Google account
+// chooser, so it is chosen here per variant instead of being whatever a
+// deployment secret happens to hold.
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  authDomain: IS_DEV_VARIANT ? DEV_AUTH_DOMAIN : PROD_AUTH_DOMAIN,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
@@ -32,9 +54,9 @@ export const getFirebaseApp = (): FirebaseApp | null => {
     firebaseConfig.projectId === undefined ||
     firebaseConfig.appId === undefined
   ) {
-    console.warn(
-      '[firebase-init.web] EXPO_PUBLIC_FIREBASE_* env vars missing — skipping init',
-    );
+    if (__DEV__) {
+      console.warn('[firebase-init.web] EXPO_PUBLIC_FIREBASE_* env vars missing — skipping init');
+    }
     return null;
   }
   const existing = getApps();
@@ -58,6 +80,6 @@ export const initFirebase = async (): Promise<void> => {
     const supported = await isAnalyticsSupported();
     if (supported) getAnalytics(app);
   } catch (err) {
-    console.warn('[firebase-init.web] analytics init skipped:', err);
+    if (__DEV__) console.warn('[firebase-init.web] analytics init skipped:', err);
   }
 };
