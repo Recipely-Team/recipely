@@ -1,8 +1,8 @@
-• Recipe steps now grow to fit the whole instruction — no more scrollbar hiding half the text.
-• Comments, steps, your bio and the AI prompt all expand as you type.
-• The app follows your device's text size setting — turn it up, nothing gets clipped.
-• Show/hide password on sign-in and sign-up.
-• New welcome screen for browsing without an account.
-• Smaller, faster app and a smoother feel throughout.
+• Step timers: start one from any step and get an alarm when it is done.
+• Search covers the whole catalogue, and finds Turkish names typed without their accents.
+• Your likes stay liked after you close and reopen the app.
+• Drafts: leaving one no longer re-saves it, and discarding one actually removes it.
+• Ingredient amounts no longer cut a word in half.
+• Turkish wording tidied up throughout.
 
 Thanks for cooking with Recipely!
