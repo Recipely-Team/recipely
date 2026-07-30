@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -62,12 +62,12 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     }, [loadFavoritesUseCase, savedRecipesStore, createdRecipesStore, draftsStore]),
   );
 
-  const items = tab === 'saved' ? savedRecipes : createdRecipes;
+  const items = tab === TabType.Saved ? savedRecipes : createdRecipes;
 
   const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
-    { key: 'saved', label: t().myRecipes.saved, count: savedRecipes.length },
-    { key: 'created', label: t().myRecipes.created, count: createdRecipes.length },
-    { key: 'drafts', label: t().myRecipes.drafts, count: drafts.length },
+    { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },
+    { key: TabType.Created, label: t().myRecipes.created, count: createdRecipes.length },
+    { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
   ];
 
   const openRecipe = (id: string): void => {

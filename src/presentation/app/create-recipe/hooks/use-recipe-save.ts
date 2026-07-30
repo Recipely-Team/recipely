@@ -11,6 +11,7 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/saving/use-recipe-save-args';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 /**
  * Handles publishing a recipe: the required-field guards, the per-field
@@ -79,7 +80,7 @@ export const useRecipeSave = ({
     if (!hasRequiredText()) return;
     // WHY: the backend create endpoint requires a cover image URL, so a recipe
     // cannot be published without at least one photo.
-    if (recipe.media.filter((m) => m.type === 'image').length === ValueConstants.zero) {
+    if (recipe.media.filter((m) => m.type === MediaType.Image).length === ValueConstants.zero) {
       setSaveIssue(t().createRecipe.noImage);
       return;
     }

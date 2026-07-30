@@ -17,6 +17,7 @@ import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, medi
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 const MIN_PASSWORD_LENGTH = 8;
@@ -25,7 +26,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { token } = useLocalSearchParams<{ token?: string }>();
   const tokenValue = typeof token === 'string' ? token.trim() : CharConstants.empty;

@@ -18,7 +18,7 @@ import {
 } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
 import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/generation/use-recipe-generation-args';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -45,7 +45,7 @@ export const useRecipeGeneration = ({
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<PhaseType>('prompt');
+  const [phase, setPhase] = useState<PhaseType>(PhaseType.Prompt);
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
@@ -84,7 +84,7 @@ export const useRecipeGeneration = ({
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
-      setPhase('preview');
+      setPhase(PhaseType.Preview);
     })();
     return () => {
       cancelled = true;
@@ -98,7 +98,7 @@ export const useRecipeGeneration = ({
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
-    if (phase !== 'generating') return;
+    if (phase !== PhaseType.Generating) return;
     setGenStep(ValueConstants.zero);
     const id = setInterval(() => {
       setGenStep((s) => Math.min(GEN_STEP_COUNT - 1, s + 1));
@@ -107,7 +107,7 @@ export const useRecipeGeneration = ({
   }, [phase]);
 
   const cancelAutosave = useDraftAutosave({
-    enabled: phase === 'preview',
+    enabled: phase === PhaseType.Preview,
     draftId: activeDraftId,
     prompt: originalPrompt.current,
     recipe,
@@ -121,7 +121,7 @@ export const useRecipeGeneration = ({
       if (trimmed.length === ValueConstants.zero) return;
       originalPrompt.current = trimmed;
       setGenerateError(null);
-      setPhase('generating');
+      setPhase(PhaseType.Generating);
       await createdRecipesStore.getState().generateRecipe(trimmed);
       const state = createdRecipesStore.getState().generateState;
       if (state.status === 'success') {
@@ -131,7 +131,7 @@ export const useRecipeGeneration = ({
           { role: 'assistant', content: t().createRecipe.aiFirstReply },
         ]);
         createdRecipesStore.getState().resetGenerateState();
-        setPhase('preview');
+        setPhase(PhaseType.Preview);
         return;
       }
       // WHY: the failure lands back on the prompt phase, which does NOT render the
@@ -162,7 +162,7 @@ export const useRecipeGeneration = ({
         setGenerateError(message);
       }
       createdRecipesStore.getState().resetGenerateState();
-      setPhase('prompt');
+      setPhase(PhaseType.Prompt);
     },
     [createdRecipesStore, setRecipe],
   );
@@ -172,7 +172,7 @@ export const useRecipeGeneration = ({
       const trimmed = url.trim();
       if (trimmed.length === ValueConstants.zero) return;
       setImporting(true);
-      setPhase('generating');
+      setPhase(PhaseType.Generating);
       await createdRecipesStore.getState().importInstagram(trimmed);
       const state = createdRecipesStore.getState().importState;
       if (state.status === 'success') {
@@ -180,7 +180,7 @@ export const useRecipeGeneration = ({
         setChatHistory([{ role: 'assistant', content: t().createRecipe.importFirstReply }]);
         createdRecipesStore.getState().resetImportState();
         setImporting(false);
-        setPhase('preview');
+        setPhase(PhaseType.Preview);
         return;
       }
       // The import failure DOES have a transcript to land in (the preview chat),
@@ -195,7 +195,7 @@ export const useRecipeGeneration = ({
       ]);
       createdRecipesStore.getState().resetImportState();
       setImporting(false);
-      setPhase('prompt');
+      setPhase(PhaseType.Prompt);
     },
     [createdRecipesStore, setRecipe],
   );
@@ -259,7 +259,7 @@ export const useRecipeGeneration = ({
     setRecipe(emptyEditable());
     setChatHistory([]);
     originalPrompt.current = CharConstants.empty;
-    setPhase('preview');
+    setPhase(PhaseType.Preview);
   }, [setRecipe]);
 
   const onResumeDraft = useCallback((): void => {
@@ -276,7 +276,7 @@ export const useRecipeGeneration = ({
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe));
-    if (phase === 'preview' && editableHasContent(recipe) && !unchanged) {
+    if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
       return;
     }

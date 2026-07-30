@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import type { ConfigureCommentsStoreOptions } from '@application/comments/configure-comments-store-options';
+import type { CommentsStoreDeps } from '@application/comments/comments-store-deps';
 import type { CommentsStore } from '@application/comments/comments-store';
 import { createLoadCommentsAction } from '@application/comments/list/create-load-comments-action';
 import { createLoadMoreCommentsAction } from '@application/comments/list/create-load-more-comments-action';
@@ -12,7 +12,7 @@ import { createToggleLikeAction } from '@application/comments/like/create-toggle
  * Assembles the comments store from its per-action factories. State is keyed by
  * recipe id so many recipes' comment threads coexist without interference.
  */
-export const configureCommentsStore = (deps: ConfigureCommentsStoreOptions): CommentsStore => {
+export const configureCommentsStore = (deps: CommentsStoreDeps): CommentsStore => {
   const { listComments, addComment, deleteComment, likeComment, unlikeComment } = deps;
 
   return create<CommentsStoreState>((set, get) => ({

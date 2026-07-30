@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';

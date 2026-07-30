@@ -19,7 +19,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';

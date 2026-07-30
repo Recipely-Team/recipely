@@ -22,6 +22,7 @@ import { FieldErrorText } from '@presentation/app/create-recipe/items/field-erro
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
@@ -69,7 +70,7 @@ export const RecipePreviewEditor = ({
   const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
-  const cover = recipe.media.find((m) => m.type === 'image');
+  const cover = recipe.media.find((m) => m.type === MediaType.Image);
   // Group headings are structure, not shopping: three groups do not mean three
   // more things to buy, and the count sits next to the word "Ingredients".
   const ingredientCount = recipe.ingredients.filter(

@@ -2,7 +2,7 @@ import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use
 import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 
-export interface ConfigureFavoritesStoreOptions {
+export interface FavoritesStoreDeps {
   addFavoriteUseCase: AddFavoriteUseCase;
   removeFavoriteUseCase: RemoveFavoriteUseCase;
   savedRecipesStore: SavedRecipesStore;

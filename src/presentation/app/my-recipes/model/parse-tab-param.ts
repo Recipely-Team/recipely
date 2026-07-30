@@ -1,6 +1,6 @@
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
-const TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
+const TABS: readonly TabType[] = [TabType.Saved, TabType.Created, TabType.Drafts];
 
 /**
  * Reads the `?tab=` deep-link parameter, falling back to the saved tab.
@@ -9,4 +9,4 @@ const TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
  * and is shown the saved tab instead reasonably concludes it was not saved.
  */
 export const parseTabParam = (value: string | undefined): TabType =>
-  TABS.find((tab) => tab === value) ?? 'saved';
+  TABS.find((tab) => tab === value) ?? TabType.Saved;

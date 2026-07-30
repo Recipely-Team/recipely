@@ -4,7 +4,7 @@ import type { DeleteCommentUseCase } from '@application/comments/delete/delete-c
 import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 
-export interface ConfigureCommentsStoreOptions {
+export interface CommentsStoreDeps {
   listComments: ListCommentsUseCase;
   addComment: AddCommentUseCase;
   deleteComment: DeleteCommentUseCase;

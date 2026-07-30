@@ -5,6 +5,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 const DEFAULT_PREP = 15;
 const DEFAULT_COOK = 20;
@@ -63,8 +64,8 @@ const isDifficulty = (value: string | undefined): value is Difficulty =>
 export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecipe => {
   const base = emptyEditable();
   const media: MediaItem[] = (snapshot.media ?? [])
-    .filter((m) => m.type === 'image')
-    .map((m) => ({ type: 'image', url: m.url }));
+    .filter((m) => m.type === MediaType.Image)
+    .map((m) => ({ type: MediaType.Image, url: m.url }));
   return {
     name: snapshot.name ?? base.name,
     cuisine: snapshot.cuisine !== undefined ? draftCuisine(snapshot.cuisine) : base.cuisine,
@@ -96,7 +97,7 @@ export const editableToSnapshot = (recipe: EditableRecipe): DraftRecipeSnapshot 
   ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
   instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
   media: recipe.media
-    .filter((m) => m.type === 'image')
+    .filter((m) => m.type === MediaType.Image)
     .map((m) => ({ type: m.type, url: m.url })),
 });
 

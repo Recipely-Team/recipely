@@ -10,6 +10,7 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 export interface DraftCardProps {
   draft: RecipeDraft;
@@ -23,7 +24,7 @@ const THUMB = mediaSizes.draftThumb;
 export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const name = draft.snapshot.name?.trim();
-  const cover = draft.snapshot.media?.find((m) => m.type === 'image');
+  const cover = draft.snapshot.media?.find((m) => m.type === MediaType.Image);
   const ingredientCount = (draft.snapshot.ingredients ?? []).filter((x) => x.trim().length > ValueConstants.zero).length;
 
   return (

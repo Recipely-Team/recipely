@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
-import type { ConfigureFeedbackStoreOptions } from '@application/feedback/configure-feedback-store-options';
+import type { FeedbackStoreDeps } from '@application/feedback/feedback-store-deps';
 import type { FeedbackStore } from '@application/feedback/feedback-store';
 
 /**
@@ -10,7 +10,7 @@ import type { FeedbackStore } from '@application/feedback/feedback-store';
  * `submit` returns a boolean so the UI can trigger navigation on success
  * without reading store state in the same render cycle.
  */
-export const configureFeedbackStore = (deps: ConfigureFeedbackStoreOptions): FeedbackStore => {
+export const configureFeedbackStore = (deps: FeedbackStoreDeps): FeedbackStore => {
   const { submitFeedbackUseCase } = deps;
 
   return create<FeedbackStoreState>((set) => ({

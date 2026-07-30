@@ -7,6 +7,7 @@ import { isHostedMedia } from '@presentation/app/create-recipe/model/saving/is-h
 import { toMediaUpload } from '@presentation/app/create-recipe/model/saving/to-media-upload';
 import { DIFFICULTY_LABELS } from '@presentation/app/create-recipe/model/taxonomy/difficulty-tag-labels';
 import { ValueConstants } from '@core/constants';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 const cleanLines = (lines: readonly string[]): string[] =>
   lines.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero);
@@ -23,7 +24,7 @@ const cleanIngredients = (lines: readonly string[]): string[] =>
 
 /** Builds the create-recipe API payload from the editor state for a given locale. */
 export const buildCreateInput = (recipe: EditableRecipe, locale: string): CreateRecipeInput => {
-  const images = recipe.media.filter((m) => m.type === 'image');
+  const images = recipe.media.filter((m) => m.type === MediaType.Image);
   // An Instagram import arrives with a cover the backend already stored, so it
   // is a URL to hand back rather than a file to upload — see `isHostedMedia`.
   const uploads = images.filter((m) => !isHostedMedia(m));

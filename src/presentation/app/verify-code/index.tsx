@@ -15,6 +15,7 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
@@ -22,7 +23,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
   const email = typeof params.email === 'string' ? params.email : CharConstants.empty;

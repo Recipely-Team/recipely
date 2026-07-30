@@ -4,6 +4,7 @@ import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
 import type { TaxonomyOptions } from '@presentation/app/recipes/model/taxonomy-options';
 import { ValueConstants } from '@core/constants';
+import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
 
 /**
  * Resolves which cuisine/category keys to *offer* as options: the full backend
@@ -19,7 +20,7 @@ export const useTaxonomyOptions = (): TaxonomyOptions => {
   const categories = taxonomyStore((s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === 'ready';
+    const ready = status === TaxonomyStatus.Ready;
     return {
       cuisineKeys:
         ready && cuisines.length > ValueConstants.zero ? cuisines.map((c) => c.key) : CUISINE_KEY_VALUES,

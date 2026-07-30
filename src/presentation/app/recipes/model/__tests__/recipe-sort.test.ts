@@ -8,7 +8,7 @@
  */
 
 import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SortKey } from '@presentation/app/recipes/model/sort-key';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 
 // ─── derive the exhaustive key list from the type itself ──────────────────────

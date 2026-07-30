@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import type { TaxonomyStoreDeps } from '@application/recipes/taxonomy/taxonomy-store-deps';
 import type { TaxonomyStore } from '@application/recipes/taxonomy/taxonomy-store';
+import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
 
 export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): TaxonomyStore => {
   const fetchCatalogs = async (
@@ -16,7 +17,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): TaxonomyStore =
     set({
       cuisines: result.value.cuisines,
       categories: result.value.categories,
-      status: 'ready',
+      status: TaxonomyStatus.Ready,
       failure: null,
     });
   };
@@ -28,7 +29,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): TaxonomyStore =
     failure: null,
     load: async () => {
       const { status } = get();
-      if (status === 'loading' || status === 'ready') {
+      if (status === TaxonomyStatus.Loading || status === TaxonomyStatus.Ready) {
         return;
       }
       await fetchCatalogs(set);

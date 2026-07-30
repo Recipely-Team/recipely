@@ -10,7 +10,7 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
-import type { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
+import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import { ValueConstants } from '@core/constants';
 
 export interface StateViewProps {
@@ -75,7 +75,7 @@ export const StateView = ({
         />
       );
     }
-    case 'empty':
+    case StateViewStatus.Empty:
       return (
         <ErrorState
           severity="neutral"
@@ -86,7 +86,7 @@ export const StateView = ({
           onPrimary={onRetry}
         />
       );
-    case 'content':
+    case StateViewStatus.Content:
       return <>{children}</>;
   }
 };
