@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
+import type { NutritionDto } from '@infrastructure/recipes/dtos/nutrition-dto';
 
 // Wire shape returned by the Recipely backend for a single recipe.
 // Keep in sync with recipely-backend `application/recipes/dtos/recipe.dto.ts`.
@@ -15,12 +16,7 @@ export interface RecipeDto {
   cookTimeMinutes: number;
   servings: number;
   caloriesPerServing: number;
-  nutrition?: {
-    protein?: number;
-    carbs?: number;
-    fat?: number;
-    fiber?: number;
-  };
+  nutrition?: NutritionDto;
   image: string;
   rating: number;
   tags: string[];

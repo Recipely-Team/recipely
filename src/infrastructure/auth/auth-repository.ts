@@ -20,6 +20,8 @@ import {
 import { toChallenge } from '@infrastructure/auth/registration/to-challenge';
 import { expiresAtFromToken } from '@infrastructure/auth/session/expires-at-from-token';
 import { rebuildSessionWithUser } from '@infrastructure/auth/session/rebuild-session-with-user';
+import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
+import type { UserResponseDto } from '@infrastructure/auth/user-response-dto';
 
 /**
  * Implements `IAuthRepository` against the Recipely backend (email/password)
@@ -156,11 +158,8 @@ export class AuthRepository implements IAuthRepository {
     return rebuildSessionWithUser(this.storage, result.value.user);
   }
 
-  async updateProfile(input: {
-    displayName?: string;
-    bio?: string;
-  }): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.request<{ user: RecipelyUserDto }>({
+  async updateProfile(input: UpdateProfileInput): Promise<Result<AuthSessionEntity, Failure>> {
+    const result = await this.http.request<UserResponseDto>({
       method: 'PATCH',
       url: ApiRoutes.me.profile,
       data: input,

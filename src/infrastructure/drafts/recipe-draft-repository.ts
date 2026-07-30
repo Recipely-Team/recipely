@@ -11,6 +11,7 @@ import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
+import { toUpsertDraftRequest } from '@infrastructure/drafts/to-upsert-draft-request';
 
 /**
  * Implements `IRecipeDraftRepository` against the Recipely backend draft
@@ -74,11 +75,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
     const result = await this.http.request<RecipeDraftDto>({
       method: 'PUT',
       url: ApiRoutes.recipes.draft(input.id),
-      data: {
-        prompt: input.prompt,
-        snapshot: input.snapshot,
-        chatHistory: input.chatHistory,
-      },
+      data: toUpsertDraftRequest(input),
     });
     if (!result.ok) {
       return result;
