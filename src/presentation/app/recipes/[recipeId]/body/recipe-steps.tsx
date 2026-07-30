@@ -41,7 +41,7 @@ export const RecipeSteps = ({
 
   return (
     <>
-      <SectionHeader title={`${t().recipes.ingredients} · ${recipe.ingredients.length}`} />
+      <SectionHeader title={t().recipes.ingredients} count={recipe.ingredients.length} />
       <View style={styles.cardsList}>
         {recipe.ingredients.map((item, i) => (
           <IngredientCard
@@ -53,7 +53,7 @@ export const RecipeSteps = ({
         ))}
       </View>
 
-      <SectionHeader title={`${t().recipes.instructions} · ${recipe.instructions.length}`} />
+      <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />
       <View style={styles.cardsList}>
         {recipe.instructions.map((step, i) => (
           <InstructionCard
