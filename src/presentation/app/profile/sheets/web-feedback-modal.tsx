@@ -50,7 +50,13 @@ export const WebFeedbackModal = ({ visible, onClose }: WebFeedbackModalProps): R
   };
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={handleClose}>
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={handleClose}
+      statusBarTranslucent
+    >
       <Pressable
         style={[styles.overlay, { backgroundColor: colors.scrim }]}
         onPress={handleClose}

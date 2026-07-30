@@ -53,10 +53,15 @@ Every agent spawn starts cold and re-derives context; that is the expensive path
 ### Pipelines
 
 - **Feature** → (`ui-designer` first if it has a visual surface) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer`
-- **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test) → `code-reviewer`
+- **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test
+  → guard + [`docs/regressions.md`](docs/regressions.md) row, per **rule 24**) → `code-reviewer`
 
 Both pipelines are subject to **Token economy** above: stages collapse into the lead or
 into a single implementer whenever the context is already in hand.
+
+A bug fix is not finished at the fix. Rule 24 is what turns each one into something the
+gates catch on their own next time — `code-reviewer` blocks a behavioural fix that
+arrives without a test that fails without it.
 
 Match each agent's tool capabilities to the work: read-only agents for research/review,
 full-capability agents for implementation. Run agents in parallel when their files don't overlap.
@@ -242,9 +247,11 @@ blocking.
 
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
     `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming),
-    22 (unguarded `console.*`), 23 (hand-rolled bottom sheets) mechanically and must be
-    green before any commit/PR. Its `KNOWN_DEBT` list only shrinks; never add to it without user
-    approval.
+    22 (unguarded `console.*`), 23 (hand-rolled bottom sheets), 23b (`Modal` without
+    `statusBarTranslucent`) mechanically and must be green before any commit/PR. Its
+    `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
+    here from rule 24** — a bug that a mechanical check could have caught should leave one
+    behind.
 
 17. **Ports over direct infrastructure** — presentation/application consume infrastructure capabilities
     (storage, notifications, audio, …) ONLY through port interfaces resolved via DI, following the
@@ -302,6 +309,34 @@ blocking.
     modal bottom sheets on web**, and no screen re-decides that for itself.
     **Enforced mechanically** by `check:structure` (rule L), which flags a `Modal` outside
     `base/widgets/sheets/` that slides up or carries a top-only corner radius.
+
+23b. **Every `Modal` sets `statusBarTranslucent`** — without it an Android window in
+    edge-to-edge mode re-lays-out around the status bar as the modal opens, and the screen
+    underneath visibly jumps. `edgeToEdgeEnabled` is on, so this is not optional.
+    **Enforced mechanically** by `check:structure` (rule M). If you are writing a raw
+    `Modal` at all, re-read rule 23 first — the shared widgets already set it.
+
+24. **A bug fix ships the test that would have caught it** — this is how the repo gets
+    harder to break instead of merely getting patched. Three steps, in order:
+
+    1. **Write the regression test.** It must fail against the unfixed code — a test that
+       passes either way documents nothing. Name it after the SYMPTOM the user saw
+       ("an ingredient row split 'yumurta' across the badge and the name"), not the
+       mechanism, and say in a comment what was wrong. The next reader is someone deciding
+       whether they may change that line.
+    2. **Ask whether a gate could have caught it.** Prefer, in this order: a
+       `check:structure` rule (mechanical, catches it in every future file — the exit
+       dialog's missing `statusBarTranslucent` is exactly this), a coding standard here, a
+       type that makes the state unrepresentable. Not everything qualifies; a race
+       condition does not become a lint rule.
+    3. **Record the CLASS, not the incident**, in [`docs/regressions.md`](docs/regressions.md)
+       — one line: symptom, root cause, what now prevents a recurrence. Git history already
+       holds the incident; that file holds the lesson, and it stays short enough to read in
+       one sitting.
+
+    Proportionality applies: a typo or a copy tweak needs none of this. A wrong behaviour a
+    user reported needs at least step 1. The goal is that the four gates — lint, `tsc`,
+    `jest`, `check:structure` — find the next one of these BEFORE anyone takes a build.
 
 ### Pre-commit quality gate
 
