@@ -329,6 +329,43 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- N: no background-audio capability in the Expo config (CLAUDE.md §23c) ---
+// App Review rejected two builds under guideline 2.5.4 for declaring background
+// audio with no feature behind it. The first fix deleted the key from
+// `ios.infoPlist` and did nothing: expo-audio's config plugin defaults
+// `enableBackgroundPlayback` to TRUE and re-adds it on every prebuild, so the
+// app.json diff read correctly while the shipped Info.plist was unchanged.
+//
+// CI asserts on the generated Info.plist, which is the complete check — but the
+// iOS jobs are opt-in on `dev`, so without this the regression would surface
+// only at release. This one is cheap and immediate: the plugins that can add
+// the capability must say, in app.json, that they are not adding it.
+{
+  const appJsonPath = path.join(ROOT, 'app.json');
+  if (fs.existsSync(appJsonPath)) {
+    const plugins = JSON.parse(fs.readFileSync(appJsonPath, 'utf8')).expo?.plugins ?? [];
+    const optionsFor = (name) => {
+      const entry = plugins.find((p) => (Array.isArray(p) ? p[0] : p) === name);
+      if (entry === undefined) return null;
+      return Array.isArray(entry) ? (entry[1] ?? {}) : {};
+    };
+
+    const audio = optionsFor('expo-audio');
+    if (audio !== null && audio.enableBackgroundPlayback !== false) {
+      errors.push(
+        'app.json: expo-audio must set "enableBackgroundPlayback": false — it defaults to true and adds UIBackgroundModes:audio, which App Review rejects (CLAUDE.md §23c)',
+      );
+    }
+
+    const video = optionsFor('expo-video');
+    if (video !== null && (video.supportsBackgroundPlayback === true || video.supportsPictureInPicture === true)) {
+      errors.push(
+        'app.json: expo-video background playback / picture-in-picture adds UIBackgroundModes:audio, which App Review rejects without a qualifying feature (CLAUDE.md §23c)',
+      );
+    }
+  }
+}
+
 // --- J: PROJECT-MAP.md must describe the tree that exists --------------------
 // The map only saves anyone time while it is true. It carries a fingerprint of
 // every folder and file name under src/; if the tree moved and the map did not,
