@@ -14,6 +14,11 @@ export interface EditableItemsSectionProps {
   listGap: number;
   onAdd: () => void;
   addLabel: string;
+  /**
+   * Optional second action beside "add", for a row that is not another item of
+   * the same kind — the ingredients section uses it to start a group.
+   */
+  secondaryAction?: { label: string; icon: React.ComponentProps<typeof Ionicons>['name']; onPress: () => void };
   children: React.ReactNode;
 }
 
@@ -30,6 +35,7 @@ export const EditableItemsSection = ({
   listGap,
   onAdd,
   addLabel,
+  secondaryAction,
   children,
 }: EditableItemsSectionProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -54,17 +60,32 @@ export const EditableItemsSection = ({
       >
         {children}
       </View>
-      <Pressable
-        onPress={onAdd}
-        style={[styles.addBtn, { borderColor: colors.primary }]}
-        accessibilityRole="button"
-        accessibilityLabel={addLabel}
-      >
-        <Ionicons name="add" size={iconSizes.md} color={colors.primary} />
-        <ThemedText variant="body" style={[styles.addLabel, { color: colors.primary }]}>
-          {addLabel}
-        </ThemedText>
-      </Pressable>
+      <View style={styles.actions}>
+        <Pressable
+          onPress={onAdd}
+          style={[styles.addBtn, styles.actionGrow, { borderColor: colors.primary }]}
+          accessibilityRole="button"
+          accessibilityLabel={addLabel}
+        >
+          <Ionicons name="add" size={iconSizes.md} color={colors.primary} />
+          <ThemedText variant="body" style={[styles.addLabel, { color: colors.primary }]}>
+            {addLabel}
+          </ThemedText>
+        </Pressable>
+        {secondaryAction !== undefined ? (
+          <Pressable
+            onPress={secondaryAction.onPress}
+            style={[styles.addBtn, styles.actionGrow, { borderColor: colors.border }]}
+            accessibilityRole="button"
+            accessibilityLabel={secondaryAction.label}
+          >
+            <Ionicons name={secondaryAction.icon} size={iconSizes.md} color={colors.textMuted} />
+            <ThemedText variant="body" style={[styles.addLabel, { color: colors.textMuted }]}>
+              {secondaryAction.label}
+            </ThemedText>
+          </Pressable>
+        ) : null}
+      </View>
     </View>
   );
 };
@@ -80,6 +101,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  actions: {
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  actionGrow: {
+    flex: 1,
   },
   addBtn: {
     flexDirection: 'row',

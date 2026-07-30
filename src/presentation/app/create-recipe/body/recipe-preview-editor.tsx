@@ -11,6 +11,8 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
 import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
+import { IngredientGroupRow } from '@presentation/app/create-recipe/items/ingredient-group-row';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/app/create-recipe/sheets/taxonomy-picker-sheet';
@@ -35,6 +37,7 @@ export interface RecipePreviewEditorProps {
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
   onAddIngredient: () => void;
+  onAddIngredientGroup: () => void;
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onAddStep: () => void;
@@ -55,6 +58,7 @@ export const RecipePreviewEditor = ({
   onChangeIngredient,
   onRemoveIngredient,
   onAddIngredient,
+  onAddIngredientGroup,
   onChangeStep,
   onRemoveStep,
   onAddStep,
@@ -66,7 +70,11 @@ export const RecipePreviewEditor = ({
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === 'image');
-  const ingredientCount = recipe.ingredients.filter((s) => s.trim().length > ValueConstants.zero).length;
+  // Group headings are structure, not shopping: three groups do not mean three
+  // more things to buy, and the count sits next to the word "Ingredients".
+  const ingredientCount = recipe.ingredients.filter(
+    (s) => s.trim().length > ValueConstants.zero && !isIngredientGroup(s),
+  ).length;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
@@ -139,16 +147,31 @@ export const RecipePreviewEditor = ({
           listGap={spacing.xxs}
           onAdd={onAddIngredient}
           addLabel={t().createRecipe.addIngredient}
+          secondaryAction={{
+            label: t().createRecipe.addGroup,
+            icon: 'pricetag-outline',
+            onPress: onAddIngredientGroup,
+          }}
         >
-          {recipe.ingredients.map((value, i) => (
-            <IngredientRow
-              key={`ing-${i}`}
-              value={value}
-              onChange={(v) => onChangeIngredient(i, v)}
-              onRemove={() => onRemoveIngredient(i)}
-              removeLabel={t().mediaPicker.remove}
-            />
-          ))}
+          {recipe.ingredients.map((value, i) =>
+            isIngredientGroup(value) ? (
+              <IngredientGroupRow
+                key={`ing-${i}`}
+                value={value}
+                onChange={(v) => onChangeIngredient(i, v)}
+                onRemove={() => onRemoveIngredient(i)}
+                removeLabel={t().mediaPicker.remove}
+              />
+            ) : (
+              <IngredientRow
+                key={`ing-${i}`}
+                value={value}
+                onChange={(v) => onChangeIngredient(i, v)}
+                onRemove={() => onRemoveIngredient(i)}
+                removeLabel={t().mediaPicker.remove}
+              />
+            ),
+          )}
         </EditableItemsSection>
 
         <EditableItemsSection

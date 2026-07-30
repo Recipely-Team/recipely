@@ -5,6 +5,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/re
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
 import { CharConstants } from '@core/constants';
 
 /**
@@ -56,6 +57,11 @@ export const useEditableRecipe = () => {
     setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
+  // Appends the bare marker; the row it renders as edits the label. An unnamed
+  // group is dropped on save rather than published as a blank heading.
+  const onAddIngredientGroup = useCallback((): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, INGREDIENT_GROUP_PREFIX] }));
+  }, []);
   const onChangeStep = useCallback(
     (i: number, value: string): void => {
       setRecipe((r) => ({ ...r, instructions: r.instructions.map((x, idx) => (idx === i ? value : x)) }));
@@ -104,6 +110,7 @@ export const useEditableRecipe = () => {
     onChangeIngredient,
     onRemoveIngredient,
     onAddIngredient,
+    onAddIngredientGroup,
     onChangeStep,
     onRemoveStep,
     onAddStep,

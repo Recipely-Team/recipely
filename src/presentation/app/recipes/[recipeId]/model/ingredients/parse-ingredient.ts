@@ -1,4 +1,5 @@
 import type { ParsedIngredient } from '@presentation/app/recipes/[recipeId]/model/ingredients/parsed-ingredient';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 const FRACTION_RE = /[¼½¾⅓⅔⅛⅜⅝⅞]/;
@@ -34,6 +35,10 @@ const QTY_ONLY_RE = new RegExp(String.raw`^\s*${AMOUNT}`);
 export const parseIngredient = (raw: string): ParsedIngredient => {
   const trimmed = raw.trim();
   if (trimmed.length === ValueConstants.zero) return { qty: CharConstants.empty, name: CharConstants.empty };
+  // A group heading is not an ingredient and has no quantity to lift out of
+  // it. Callers render these separately, but a heading reaching here must come
+  // back whole rather than have "# 2 kat" split into an amount and a name.
+  if (isIngredientGroup(trimmed)) return { qty: CharConstants.empty, name: trimmed };
 
   const withUnit = trimmed.match(QTY_WITH_UNIT_RE);
   if (!withUnit) return { qty: CharConstants.empty, name: trimmed };
