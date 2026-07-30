@@ -1,6 +1,6 @@
 /* Recipely landing — interactions
    theme (light/dark) · language (EN/TR) · cuisine filter · live timers ·
-   AI typing demo · live accent themes · scroll reveal */
+   AI typing demo · live accent themes · open-in-app · scroll reveal */
 (function () {
   'use strict';
   var root = document.documentElement;
@@ -39,18 +39,23 @@
   });
   applyLang(startLang);
 
-  /* ───── Live accent themes (mirrors the app's 20 themes) ───── */
+  /* ───── Live accent themes ─────
+     Exactly the themes the app ships (ALL_THEMES in
+     src/presentation/base/theme/colors/palette/themes.ts), with their real
+     gradient and primary values. This list used to carry ten invented
+     palettes under a "20 themes" headline; the app has four. If a theme is
+     added or removed there, it belongs here too.
+
+     `tangerine` is NOT one of them — it is the Recipely brand orange the page
+     itself is painted in, kept as the load-time tint so the landing matches
+     the logo. It has no swatch, because it is not something you can pick
+     inside the app. */
   var ACCENTS = {
-    tangerine: ['#EC7B41', '#F9B050', '#D5611C'],
-    crimson:   ['#DC2626', '#F87171', '#B91C1C'],
-    golden:    ['#CA8A04', '#FDE047', '#92700A'],
-    emerald:   ['#059669', '#34D399', '#047857'],
-    teal:      ['#0D9488', '#5EEAD4', '#0F766E'],
-    ocean:     ['#0284C7', '#7DD3FC', '#0369A1'],
-    indigo:    ['#4F46E5', '#818CF8', '#4338CA'],
-    violet:    ['#7C3AED', '#A78BFA', '#6D28D9'],
-    rose:      ['#E11D48', '#FB7185', '#BE123C'],
-    coral:     ['#FB7185', '#FDA4AF', '#E11D48']
+    'tangerine':      ['#EC7B41', '#F9B050', '#D5611C'],
+    'pearl-white':    ['#3B82F6', '#60A5FA', '#1D4ED8'],
+    'crimson-ember':  ['#DC2626', '#F87171', '#B91C1C'],
+    'emerald-garden': ['#059669', '#34D399', '#053A29'],
+    'royal-purple':   ['#9333EA', '#C084FC', '#7E22CE']
   };
   var AKEY = 'recipely-landing-accent';
   function applyAccent(key) {
