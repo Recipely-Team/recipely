@@ -385,6 +385,8 @@ export const tr: Translations = {
     ingredients: 'Malzemeler',
     instructions: 'Adımlar',
     addIngredient: 'Malzeme ekle',
+    addGroup: 'Grup ekle',
+    groupPlaceholder: 'Grup adı — örn. Şerbet',
     ingredientPlaceholder: 'örn. 2 yk zeytinyağı',
     addStep: 'Adım ekle',
     stepPlaceholder: 'Bu adımda yapılacaklar…',

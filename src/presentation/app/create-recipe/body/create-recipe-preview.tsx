@@ -58,6 +58,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           onChangeIngredient={vm.onChangeIngredient}
           onRemoveIngredient={vm.onRemoveIngredient}
           onAddIngredient={vm.onAddIngredient}
+          onAddIngredientGroup={vm.onAddIngredientGroup}
           onChangeStep={vm.onChangeStep}
           onRemoveStep={vm.onRemoveStep}
           onAddStep={vm.onAddStep}

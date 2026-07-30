@@ -62,3 +62,36 @@ describe('buildCreateInput — cover from an Instagram import', () => {
     expect(buildCreateInput(withMedia([insecure]), 'tr').imageUrl).toBe(insecure.url);
   });
 });
+
+describe('buildCreateInput — ingredient groups', () => {
+  const withIngredients = (ingredients: string[]): EditableRecipe => ({
+    ...emptyEditable(),
+    name: 'Revani',
+    ingredients,
+    instructions: ['pişir'],
+    media: [LOCAL],
+  });
+
+  it('keeps a named group in place, so the parts stay separated', () => {
+    const input = buildCreateInput(
+      withIngredients(['# Kek', '3 yumurta', '# Şerbet', '2 su bardağı şeker']),
+      'tr',
+    );
+
+    expect(input.ingredients.tr).toEqual(['# Kek', '3 yumurta', '# Şerbet', '2 su bardağı şeker']);
+  });
+
+  it('drops a group the user added but never named', () => {
+    // The editor writes the marker the moment "add a group" is tapped, so an
+    // abandoned one would publish as a blank heading over the lines below it.
+    const input = buildCreateInput(withIngredients(['# ', '3 yumurta']), 'tr');
+
+    expect(input.ingredients.tr).toEqual(['3 yumurta']);
+  });
+
+  it('drops an unnamed group written without a space', () => {
+    expect(buildCreateInput(withIngredients(['#', '3 yumurta']), 'tr').ingredients.tr).toEqual([
+      '3 yumurta',
+    ]);
+  });
+});

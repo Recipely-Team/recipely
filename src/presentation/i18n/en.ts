@@ -386,6 +386,8 @@ export const en = {
     ingredients: 'Ingredients',
     instructions: 'Instructions',
     addIngredient: 'Add ingredient',
+    addGroup: 'Add a group',
+    groupPlaceholder: 'Group name — e.g. Syrup',
     ingredientPlaceholder: 'e.g. 2 tbsp olive oil',
     addStep: 'Add step',
     stepPlaceholder: 'What to do in this step…',

@@ -4,6 +4,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
@@ -57,7 +58,11 @@ export const useRecipeSave = ({
 
   const hasRequiredText = (): boolean => {
     const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
-    const ingredientsEmpty = recipe.ingredients.every((s) => s.trim().length === ValueConstants.zero);
+    // A recipe of nothing but group headings has no ingredients: "# Şerbet"
+    // names a part, it does not put anything in it.
+    const ingredientsEmpty = recipe.ingredients.every(
+      (s) => s.trim().length === ValueConstants.zero || isIngredientGroup(s),
+    );
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;
