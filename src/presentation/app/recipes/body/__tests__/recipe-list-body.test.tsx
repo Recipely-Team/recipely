@@ -92,7 +92,7 @@ const makeStores = (): Stores =>
  * not the web shell, loaded, not searching, non-empty results.
  */
 const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 'scrollHandler'> => ({
-  state: { status: 'loaded', recipes: RECIPES },
+  state: { status: 'loaded', query: '', recipes: RECIPES },
   recipes: RECIPES,
   isWebShell: false,
   isSearching: false,
@@ -189,7 +189,7 @@ const refreshingProp = (overrides: Partial<UseRecipeListResult>): boolean => {
  * or the "empty" + retry button (no filters).
  */
 const emptyVm = (withFilters: boolean): Partial<UseRecipeListResult> => ({
-  state: { status: 'loaded', recipes: [] },
+  state: { status: 'loaded', query: '', recipes: [] },
   recipes: [],
   activeFilterCount: withFilters ? 1 : 0,
   filters: withFilters ? { ...emptyFilters, cuisines: [CuisineKey.Italian] } : emptyFilters,
@@ -212,6 +212,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
   it('leaves the spinner off during a filter refetch, when the store refreshes but the user did not pull', () => {
     const state: UseRecipeListResult['state'] = {
       status: 'loaded',
+      query: '',
       recipes: RECIPES,
       isRefreshing: true,
     };
@@ -227,6 +228,7 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
   it('shows the spinner while a pull-to-refresh is in flight', () => {
     const state: UseRecipeListResult['state'] = {
       status: 'loaded',
+      query: '',
       recipes: RECIPES,
       isRefreshing: true,
     };

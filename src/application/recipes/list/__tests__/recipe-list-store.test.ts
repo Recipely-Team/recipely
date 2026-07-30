@@ -62,7 +62,11 @@ describe('recipe-list-store', () => {
     deferred.resolve(ok([makeRecipe()]));
     await inFlight;
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: [makeRecipe()] });
+    expect(store.getState().state).toEqual({
+      status: 'loaded',
+      recipes: [makeRecipe()],
+      query: '',
+    });
   });
 
   it('a failed first load transitions to the error state', async () => {
@@ -81,7 +85,7 @@ describe('recipe-list-store', () => {
     const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
 
     await store.getState().load();
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '' });
 
     const deferred = makeDeferred();
     useCase.execute.mockReturnValue(deferred.promise);
@@ -90,6 +94,7 @@ describe('recipe-list-store', () => {
     expect(store.getState().state).toEqual({
       status: 'loaded',
       recipes: first,
+      query: '',
       isRefreshing: true,
       refreshFailure: undefined,
     });
@@ -98,7 +103,7 @@ describe('recipe-list-store', () => {
     deferred.resolve(ok(second));
     await inFlight;
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '' });
   });
 
   it('a failed refresh keeps the previous recipes and surfaces refreshFailure instead of blanking the screen', async () => {
@@ -107,7 +112,7 @@ describe('recipe-list-store', () => {
     const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
 
     await store.getState().load();
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '' });
 
     const failure = new NetworkFailure('offline');
     useCase.execute.mockResolvedValue(fail(failure));
@@ -117,6 +122,7 @@ describe('recipe-list-store', () => {
     expect(store.getState().state).toEqual({
       status: 'loaded',
       recipes: first,
+      query: '',
       isRefreshing: false,
       refreshFailure: failure,
     });
@@ -138,6 +144,62 @@ describe('recipe-list-store', () => {
     useCase.execute.mockResolvedValueOnce(ok(second));
     await store.getState().load({ cuisines: [CuisineKey.Italian] });
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '' });
+  });
+
+  it('records the search the loaded recipes answer', async () => {
+    const rows = [makeRecipe({ id: 'r1' })];
+    const useCase = { execute: jest.fn().mockResolvedValue(ok(rows)) };
+    const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
+
+    await store.getState().load({ search: 'kek' });
+
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: rows, query: 'kek' });
+  });
+
+  it('ignores a superseded response so a slow earlier search cannot overwrite a newer one', async () => {
+    const useCase = { execute: jest.fn().mockResolvedValue(ok([])) };
+    const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
+    await store.getState().load();
+
+    const slowFirst = makeDeferred();
+    const fastSecond = makeDeferred();
+    useCase.execute.mockReturnValueOnce(slowFirst.promise).mockReturnValueOnce(fastSecond.promise);
+
+    const first = store.getState().load({ search: 'kek' });
+    const second = store.getState().load({ search: 'kekli' });
+
+    // Out of order on the wire: the newer query answers first.
+    const newer = [makeRecipe({ id: 'newer' })];
+    fastSecond.resolve(ok(newer));
+    await second;
+
+    const older = [makeRecipe({ id: 'older' })];
+    slowFirst.resolve(ok(older));
+    await first;
+
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli' });
+  });
+
+  it('drops a superseded failure instead of reporting it against the newer query', async () => {
+    const useCase = { execute: jest.fn().mockResolvedValue(ok([])) };
+    const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
+    await store.getState().load();
+
+    const slowFirst = makeDeferred();
+    const fastSecond = makeDeferred();
+    useCase.execute.mockReturnValueOnce(slowFirst.promise).mockReturnValueOnce(fastSecond.promise);
+
+    const first = store.getState().load({ search: 'kek' });
+    const second = store.getState().load({ search: 'kekli' });
+
+    const newer = [makeRecipe({ id: 'newer' })];
+    fastSecond.resolve(ok(newer));
+    await second;
+
+    slowFirst.resolve(fail(new NetworkFailure('offline')));
+    await first;
+
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli' });
   });
 });

@@ -287,16 +287,38 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
+  // The query the rows currently in the store are the answer to. Empty both
+  // for the unfiltered feed and while nothing is loaded yet.
+  const answeredQuery = state.status === 'loaded' ? state.query : CharConstants.empty;
+  const answersCurrentQuery = answeredQuery === trimmedSearch;
+
+  // WHY: rows are handed over only while they answer the query being asked.
+  // Search is server-side, so on the first keystroke the store still holds the
+  // unfiltered feed — the old code rendered it under the search field, and
+  // listing the entire catalogue as the match for one letter was the single
+  // weirdest thing about typing here. It cuts the other way too: clearing the
+  // box used to show the last query's handful of results as if they were the
+  // feed. Both surfaces already have a loading state for the gap
+  // (`isRefetching` is true for the whole of it), so handing back nothing is
+  // never an empty screen.
   const recipes = useMemo(
-    () => (state.status === 'loaded' ? state.recipes : []),
-    [state],
+    () => (state.status === 'loaded' && answersCurrentQuery ? state.recipes : []),
+    [state, answersCurrentQuery],
   );
 
-  // Covers the whole round trip the user is waiting on, not just the request:
-  // the window between a keystroke and the debounce firing is also "results
-  // you can see are out of date", and treating it as idle would flash the
-  // previous query's results (or an empty state) mid-typing.
-  const isRefetching = isRecipeListRefreshing(state) || trimmedSearch !== debouncedSearch;
+  // Covers the whole round trip the user is waiting on, not just the request.
+  // Anchoring it on `answersCurrentQuery` rather than on the debounce window
+  // closes a gap the old `trimmedSearch !== debouncedSearch` left open: the
+  // debounce fires during render but `load` only flips `isRefreshing` in the
+  // effect that follows, so for one frame nothing claimed to be loading while
+  // `recipes` was already empty — long enough to flash "no results" at the
+  // start of every single search.
+  //
+  // A failed refresh is deliberately excluded: it leaves the query unanswered
+  // for good, and without this the spinner would never stop. The empty state
+  // takes over and `useRefreshFailureToast` says what went wrong.
+  const hasRefreshFailure = state.status === 'loaded' && state.refreshFailure !== undefined;
+  const isRefetching = isRecipeListRefreshing(state) || (!answersCurrentQuery && !hasRefreshFailure);
   const isReloadingResults = pendingReloads > ValueConstants.zero;
 
   return {
