@@ -13,6 +13,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { enterApp } from '@presentation/navigation/enter-app';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
@@ -27,7 +28,10 @@ export const RegisterScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === 'authenticated') {
-      router.replace(RoutePaths.recipes);
+    // Registration is a one-way door: the account exists now, so the form
+      // that created it — and the login screen it was reached from — must not
+      // stay behind a back gesture.
+      enterApp(router, RoutePaths.recipes);
     }
   }, [state.status, router]);
 
