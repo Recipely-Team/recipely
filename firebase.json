@@ -3,6 +3,7 @@
     {
       "target": "app-recipely",
       "public": "dist",
+      "trailingSlash": false,
       "ignore": [
         "firebase.json",
         "**/.git/**"
@@ -55,6 +56,7 @@
     {
       "target": "app-recipely-dev",
       "public": "dist",
+      "trailingSlash": false,
       "ignore": [
         "firebase.json",
         "**/.git/**"

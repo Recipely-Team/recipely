@@ -144,6 +144,48 @@
     } else { playType(); }
   }
 
+
+  /* ───── Open in app (mobile) ─────
+     "Get started" points at /register, a web route. On a phone the app is the
+     better destination — but a plain link cannot get there. iOS deliberately
+     ignores universal links for SAME-DOMAIN navigation, so tapping a
+     recipely.net link while already on recipely.net stays in Safari no matter
+     what the AASA file says. The custom scheme is the only in-page route into
+     the app, with the store as the fallback for a visitor who does not have it.
+
+     The timer is the "is it installed?" test: opening the scheme backgrounds
+     the page, so if we are still visible ~1.2s later nothing handled it and the
+     store is the right answer. Cancelled on pagehide/visibilitychange, or the
+     store would also open behind the app that just launched. */
+  var APP_SCHEME = 'recipely://';
+  var STORE = {
+    ios: 'https://apps.apple.com/app/recipely/id6787391255',
+    android: 'https://play.google.com/store/apps/details?id=com.recipely.app'
+  };
+  function mobilePlatform() {
+    var ua = navigator.userAgent || '';
+    if (/android/i.test(ua)) return 'android';
+    // iPadOS 13+ reports as Macintosh; the touch check separates it from a Mac.
+    if (/iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)) return 'ios';
+    return null;
+  }
+  var platform = mobilePlatform();
+  if (platform) {
+    document.querySelectorAll('[data-open-app]').forEach(function (el) {
+      el.addEventListener('click', function (ev) {
+        ev.preventDefault();
+        var settled = false;
+        function cancel() { settled = true; }
+        document.addEventListener('visibilitychange', cancel, { once: true });
+        window.addEventListener('pagehide', cancel, { once: true });
+        setTimeout(function () {
+          if (!settled && !document.hidden) window.location.href = STORE[platform];
+        }, 1200);
+        window.location.href = APP_SCHEME;
+      });
+    });
+  }
+
   /* ───── Scroll reveal ───── */
   var rev = document.querySelectorAll('.reveal');
   if ('IntersectionObserver' in window) {
