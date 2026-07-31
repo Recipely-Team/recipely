@@ -10,19 +10,13 @@ export class LikeRepository implements LikeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async like(recipeId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'POST',
-      url: ApiRoutes.recipes.like(recipeId),
-    });
+    const result = await this.http.post(ApiRoutes.recipes.like(recipeId), undefined);
     if (!result.ok) return fail(result.failure);
     return ok(void 0);
   }
 
   async unlike(recipeId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.like(recipeId),
-    });
+    const result = await this.http.delete(ApiRoutes.recipes.like(recipeId));
     if (!result.ok) return fail(result.failure);
     return ok(void 0);
   }

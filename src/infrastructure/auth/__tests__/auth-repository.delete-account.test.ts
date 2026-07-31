@@ -4,6 +4,7 @@ import type { Result } from '@core/result/result';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 interface RequestCall {
   method?: string;
@@ -14,12 +15,10 @@ const makeHttp = (
   result: Result<unknown, unknown>,
 ): { http: HttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const stub = {
-    request: jest.fn((config: RequestCall) => {
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push({ method: config.method, url: config.url });
       return Promise.resolve(result);
-    }),
-  } as unknown as HttpClient;
+    }));
   return { http: stub, calls };
 };
 

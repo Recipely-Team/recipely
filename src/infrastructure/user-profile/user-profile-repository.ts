@@ -15,10 +15,7 @@ export class UserProfileRepository implements UserProfileRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async getById(userId: string): Promise<Result<UserProfileEntity, Failure>> {
-    const result = await this.http.request<UserProfileDto>({
-      method: 'GET',
-      url: ApiRoutes.users.byId(userId),
-    });
+    const result = await this.http.get<UserProfileDto>(ApiRoutes.users.byId(userId));
     if (!result.ok) {
       return result;
     }

@@ -19,10 +19,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'POST',
-      url: ApiRoutes.recipes.favorite(recipeId),
-    });
+    const result = await this.http.post(ApiRoutes.recipes.favorite(recipeId), undefined);
 
     if (!result.ok) {
       return fail(result.failure);
@@ -32,10 +29,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.favorite(recipeId),
-    });
+    const result = await this.http.delete(ApiRoutes.recipes.favorite(recipeId));
 
     if (!result.ok) {
       return fail(result.failure);
@@ -45,11 +39,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.request<FavoritesListResponse>({
-      method: 'GET',
-      url: ApiRoutes.me.favorites,
-      params: { pageSize: FAVORITES_PAGE_SIZE },
-    });
+    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, { params: { pageSize: FAVORITES_PAGE_SIZE } });
 
     if (!result.ok) return fail(result.failure);
 

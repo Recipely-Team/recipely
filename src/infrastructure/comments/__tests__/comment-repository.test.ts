@@ -6,6 +6,7 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 const validDto: CommentDto = {
   id: 'c1',
@@ -32,12 +33,10 @@ const makeHttp = (
   result: Result<unknown, unknown>,
 ): { http: HttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const stub = {
-    request: jest.fn((config: RequestCall) => {
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(result);
-    }),
-  } as unknown as HttpClient;
+    }));
   return { http: stub, calls };
 };
 

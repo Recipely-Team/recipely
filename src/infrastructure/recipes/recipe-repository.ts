@@ -42,11 +42,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.root,
-      params: toRecipeListQuery(filters),
-    });
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
     if (!result.ok) {
       return result;
     }
@@ -54,11 +50,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.trending,
-      params: { limit: limit ?? TRENDING_RECIPES_LIMIT },
-    });
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.trending, { params: { limit: limit ?? TRENDING_RECIPES_LIMIT } });
     if (!result.ok) {
       return result;
     }
@@ -66,11 +58,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   }
 
   async listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>> {
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.me.recipes,
-      params: { page: page ?? FIRST_PAGE, pageSize: MY_RECIPES_PAGE_SIZE },
-    });
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.me.recipes, { params: { page: page ?? FIRST_PAGE, pageSize: MY_RECIPES_PAGE_SIZE } });
     if (!result.ok) {
       return result;
     }
@@ -78,10 +66,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   }
 
   async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.byId(id),
-    });
+    const result = await this.http.get<RecipeDto>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
@@ -105,10 +90,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   }
 
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.byId(id),
-    });
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
@@ -122,12 +104,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   // because the synchronous Gemini call routinely exceeds the client's default
   // 10s JSON timeout, which would abort a request the backend then completes.
   async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.generate,
-      data: { prompt } satisfies GenerateRecipeRequestDto,
-      timeout: AI_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.generate, { prompt } satisfies GenerateRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }
@@ -142,12 +119,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   // interceptor only overrides config.timeout for FormData payloads, so this
   // JSON override is honoured untouched.
   async importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.import,
-      data: { url } satisfies ImportRecipeRequestDto,
-      timeout: IMPORT_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.import, { url } satisfies ImportRecipeRequestDto, { timeout: IMPORT_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }
@@ -165,12 +137,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
   ): Promise<Result<RefinedRecipe, Failure>> {
-    const result = await this.http.request<RefineRecipeResponseDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.refine,
-      data: { currentRecipe, instruction } satisfies RefineRecipeRequestDto,
-      timeout: AI_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RefineRecipeResponseDto>(ApiRoutes.recipes.refine, { currentRecipe, instruction } satisfies RefineRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }

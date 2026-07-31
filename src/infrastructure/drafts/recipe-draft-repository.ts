@@ -25,11 +25,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
     page: number,
     pageSize: number = DRAFTS_PAGE_SIZE,
   ): Promise<Result<PagedDrafts, Failure>> {
-    const result = await this.http.request<DraftsListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.drafts,
-      params: { page, pageSize },
-    });
+    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, { params: { page, pageSize } });
     if (!result.ok) {
       return result;
     }
@@ -47,10 +43,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
    * mapped to `ok(null)` so callers never treat "no draft" as an error.
    */
   async getLatestDraft(): Promise<Result<RecipeDraft | null, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.draftsLatest,
-    });
+    const result = await this.http.get<RecipeDraftDto>(ApiRoutes.recipes.draftsLatest);
     if (!result.ok) {
       if (result.failure instanceof NotFoundFailure) {
         return ok(null);
@@ -61,10 +54,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   }
 
   async getDraft(id: string): Promise<Result<RecipeDraft, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.draft(id),
-    });
+    const result = await this.http.get<RecipeDraftDto>(ApiRoutes.recipes.draft(id));
     if (!result.ok) {
       return result;
     }
@@ -72,11 +62,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   }
 
   async upsertDraft(input: UpsertDraftInput): Promise<Result<RecipeDraft, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'PUT',
-      url: ApiRoutes.recipes.draft(input.id),
-      data: toUpsertDraftRequest(input),
-    });
+    const result = await this.http.put<RecipeDraftDto>(ApiRoutes.recipes.draft(input.id), toUpsertDraftRequest(input));
     if (!result.ok) {
       return result;
     }
@@ -84,10 +70,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   }
 
   async deleteDraft(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.draft(id),
-    });
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.draft(id));
     if (!result.ok) {
       return result;
     }

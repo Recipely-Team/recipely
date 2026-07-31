@@ -43,11 +43,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   ) {}
 
   async signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.request<RecipelyAuthSessionDto>({
-      method: 'POST',
-      url: ApiRoutes.auth.login,
-      data: { email: email.trim(), password } satisfies SignInRequestDto,
-    });
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.login, { email: email.trim(), password } satisfies SignInRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -59,11 +55,7 @@ export class AuthRepository implements AuthRepositoryInterface {
     password: string,
     displayName: string,
   ): Promise<Result<RegistrationChallenge, Failure>> {
-    const result = await this.http.request<RegistrationChallengeDto>({
-      method: 'POST',
-      url: ApiRoutes.auth.register,
-      data: { email: email.trim(), password, displayName } satisfies RegisterRequestDto,
-    });
+    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.register, { email: email.trim(), password, displayName } satisfies RegisterRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -74,11 +66,7 @@ export class AuthRepository implements AuthRepositoryInterface {
     email: string,
     code: string,
   ): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.request<RecipelyAuthSessionDto>({
-      method: 'POST',
-      url: ApiRoutes.auth.registerVerify,
-      data: { email: email.trim(), code: code.trim() } satisfies VerifyRegistrationRequestDto,
-    });
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email: email.trim(), code: code.trim() } satisfies VerifyRegistrationRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -88,11 +76,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   async resendRegistrationCode(
     email: string,
   ): Promise<Result<RegistrationChallenge, Failure>> {
-    const result = await this.http.request<RegistrationChallengeDto>({
-      method: 'POST',
-      url: ApiRoutes.auth.registerResend,
-      data: { email: email.trim() } satisfies EmailOnlyRequestDto,
-    });
+    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.registerResend, { email: email.trim() } satisfies EmailOnlyRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -124,11 +108,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   }
 
   async requestPasswordReset(email: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<void>({
-      method: 'POST',
-      url: ApiRoutes.auth.forgotPassword,
-      data: { email: email.trim() } satisfies EmailOnlyRequestDto,
-    });
+    const result = await this.http.post<void>(ApiRoutes.auth.forgotPassword, { email: email.trim() } satisfies EmailOnlyRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -136,11 +116,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   }
 
   async resetPassword(token: string, newPassword: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<void>({
-      method: 'POST',
-      url: ApiRoutes.auth.resetPassword,
-      data: { token, newPassword } satisfies ResetPasswordRequestDto,
-    });
+    const result = await this.http.post<void>(ApiRoutes.auth.resetPassword, { token, newPassword } satisfies ResetPasswordRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -166,11 +142,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   }
 
   async updateProfile(input: UpdateProfileInput): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.request<UserResponseDto>({
-      method: 'PATCH',
-      url: ApiRoutes.me.profile,
-      data: input satisfies UpdateProfileRequestDto,
-    });
+    const result = await this.http.patch<UserResponseDto>(ApiRoutes.me.profile, input satisfies UpdateProfileRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -178,10 +150,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   }
 
   async deleteAccount(): Promise<Result<void, Failure>> {
-    const result = await this.http.request<void>({
-      method: 'DELETE',
-      url: ApiRoutes.me.root,
-    });
+    const result = await this.http.delete<void>(ApiRoutes.me.root);
     // Keep the session on any HTTP/network failure so the user stays signed in
     // and can retry — only clear local credentials once the server confirms.
     if (!result.ok) {
@@ -196,11 +165,7 @@ export class AuthRepository implements AuthRepositoryInterface {
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */
   private async exchangeFirebaseToken(idToken: string): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.request<RecipelyAuthSessionDto>({
-      method: 'POST',
-      url: ApiRoutes.auth.social,
-      data: { idToken } satisfies SocialSignInRequestDto,
-    });
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.social, { idToken } satisfies SocialSignInRequestDto);
     if (!result.ok) return result;
     return this.persistSession(result.value);
   }
