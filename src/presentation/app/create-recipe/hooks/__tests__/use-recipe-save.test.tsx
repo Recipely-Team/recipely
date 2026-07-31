@@ -44,7 +44,7 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';

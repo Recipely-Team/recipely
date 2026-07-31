@@ -1,6 +1,6 @@
 import { act, create, type ReactTestRenderer } from 'react-test-renderer';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 
 /**

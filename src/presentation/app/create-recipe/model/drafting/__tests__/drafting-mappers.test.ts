@@ -5,13 +5,11 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import {
-  editableHasContent,
-  editableToSnapshot,
-  emptyEditable,
-  recipeToEditable,
-  snapshotToEditable,
-} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
+import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
+import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
+import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({

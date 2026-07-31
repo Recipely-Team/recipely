@@ -1,5 +1,5 @@
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 
