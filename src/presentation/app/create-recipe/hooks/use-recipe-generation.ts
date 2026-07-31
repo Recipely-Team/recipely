@@ -9,13 +9,11 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure } from '@core/failure';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
-import {
-  editableHasContent,
-  editableToSnapshot,
-  emptyEditable,
-  recipeToEditable,
-  snapshotToEditable,
-} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
+import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
+import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
+import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';

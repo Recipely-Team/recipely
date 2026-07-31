@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
-import {
-  editableHasContent,
-  editableToSnapshot,
-} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
+import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
 import type { UseDraftAutosaveArgs } from '@presentation/app/create-recipe/model/drafting/use-draft-autosave-args';
 
 const DEBOUNCE_MS = 500;

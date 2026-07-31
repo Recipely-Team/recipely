@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';

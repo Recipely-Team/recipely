@@ -57,7 +57,7 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/en';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
