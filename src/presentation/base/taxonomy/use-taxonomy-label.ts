@@ -7,11 +7,15 @@ import { CUISINE_EMOJI } from '@presentation/base/taxonomy/cuisine-emoji';
 import { CATEGORY_EMOJI } from '@presentation/base/taxonomy/category-emoji';
 import { TAXONOMY_PLACEHOLDER_EMOJI } from '@presentation/base/taxonomy/taxonomy-placeholder';
 import type { TaxonomyLabel } from '@presentation/base/taxonomy/taxonomy-label';
-import type { UseTaxonomyLabelResult } from '@presentation/base/taxonomy/use-taxonomy-label-result';
 import { ValueConstants } from '@core/constants';
 
 const toMap = (items: readonly TaxonomyItem[]): Map<string, TaxonomyItem> =>
   new Map(items.map((item) => [item.key, item]));
+
+interface UseTaxonomyLabelResult {
+  cuisineLabel: (key: string) => TaxonomyLabel;
+  categoryLabel: (key: string) => TaxonomyLabel;
+}
 
 /** First non-empty value, treating `undefined`/`''` as a miss. */
 const firstNonEmpty = (...values: (string | undefined)[]): string | undefined =>

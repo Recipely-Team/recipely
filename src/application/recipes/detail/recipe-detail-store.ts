@@ -1,7 +1,11 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeDetailStoreDeps } from '@application/recipes/detail/recipe-detail-store-deps';
+import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
+
+interface RecipeDetailStoreDeps {
+  getRecipe: GetRecipeUseCase;
+}
 
 export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
   return create<RecipeDetailStoreState>((set, get) => ({

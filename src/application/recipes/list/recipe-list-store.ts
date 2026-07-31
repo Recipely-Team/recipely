@@ -2,8 +2,13 @@ import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import type { RecipeListStoreDeps } from '@application/recipes/list/recipe-list-store-deps';
 import { CharConstants, ValueConstants } from '@core/constants';
+
+import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
+
+interface RecipeListStoreDeps {
+  listRecipes: ListRecipesUseCase;
+}
 
 export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<RecipeListStoreState> => {
   // Sequence number of the most recent `load`. Responses that do not carry it

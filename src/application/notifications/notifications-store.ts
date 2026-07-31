@@ -1,8 +1,17 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
-import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
 import { ValueConstants } from '@core/constants';
+
+import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
+import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
+import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
+
+interface NotificationsStoreDeps {
+  listNotifications: ListNotificationsUseCase;
+  markAllRead: MarkAllReadUseCase;
+  markOneRead: MarkOneReadUseCase;
+}
 
 /**
  * Owns the in-memory notifications feed for the current session. The store is

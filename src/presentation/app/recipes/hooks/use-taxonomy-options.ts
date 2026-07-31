@@ -2,9 +2,14 @@ import { useMemo } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
-import type { TaxonomyOptions } from '@presentation/app/recipes/model/taxonomy-options';
 import { ValueConstants } from '@core/constants';
 import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
+
+/** The cuisine/category keys to offer as selectable filter/strip options. */
+interface TaxonomyOptions {
+  cuisineKeys: readonly string[];
+  categoryKeys: readonly string[];
+}
 
 /**
  * Resolves which cuisine/category keys to *offer* as options: the full backend

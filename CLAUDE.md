@@ -141,8 +141,16 @@ folder (asset requires are centralised in `src/infrastructure/constants/assets.t
 These rules apply to every agent and every contributor. A `code-reviewer` agent must flag any violation as
 blocking.
 
-1. **One declaration per file** — one class, interface, type alias, or component per `.ts`/`.tsx` file.
-   Barrel `index.ts` files and a component's `Props` interface are the only exceptions.
+1. **One declaration per file** — one EXPORTED class, interface, type alias, or component per
+   `.ts`/`.tsx` file. The rule is about what a file publishes, so three things are exempt:
+   barrel `index.ts` files, a component's `Props` interface, and any **non-exported** type.
+
+   A parameter shape only its own class or hook ever names is a private detail of that
+   declaration. Giving it a file of its own (`use-x-args.ts`, `x-store-deps.ts`,
+   `x-input.ts`) spread one unit of meaning across two or three files and made nothing
+   easier to find — you still had to open the consumer to learn what it was for. Declare it
+   unexported, directly above its consumer. Export it the moment a second file needs it, and
+   it earns its own file again.
    A factory does NOT get an alias for its own return type — `BoundStore<AuthStoreState>`
    says what the handle is without a name to look up, so a store module exports exactly one
    thing: its factory.

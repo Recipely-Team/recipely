@@ -252,28 +252,32 @@ agent must flag any violation as a blocking issue.
 
 ### 1. One Declaration Per File
 
-Each file contains exactly **one** top-level declaration: one class, one interface, one type alias, one
-React component, or one enum. The only exceptions are:
+Each file publishes exactly **one** top-level declaration: one class, one interface, one type alias,
+one React component, or one enum. The rule is about a file's public surface, so the exceptions are:
 
 - Barrel `index.ts` files that only re-export.
 - A `ComponentNameProps` interface that lives in the same file as its component (it must be named
   exactly `<ComponentName>Props` — see Standard 7).
-- A simple helper type that is only meaningful alongside the **class** in the same file (this exception
-  is for classes only — it does not cover hooks, stores, or plain functions).
+- **Any non-exported type or interface.** A parameter shape only its own class or hook ever names is
+  a private detail of that declaration, not a second thing the file offers. `use-x-args.ts`,
+  `x-store-deps.ts` and `x-input.ts` files spread one unit of meaning over two or three files and
+  made nothing easier to find — the reader still had to open the consumer to learn what the type was
+  for. Declare it unexported, directly above its consumer. The moment a second file imports it, it is
+  public and earns its own file again.
 - The merged-enum idiom: a `const X` object plus a same-named `type X` union (and `X_VALUES` arrays),
   or a union type derived via `typeof` from a const in the same file. One concept = one file.
 - Constants-only files (`src/infrastructure/constants/api.ts`, `theme/tokens/spacing.ts`, …) and pure-function
-  collections with **no** type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
+  collections with **no** exported type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
 
 Frequent violations to watch for — all of these must be split:
 
-- A hook's args/result `interface` in the same file as the hook
-  (`use-x.ts` keeps the hook; the type moves to its own file — see Placement below).
-- A Zustand store type next to its factory: `x-store.ts` holds only `type XStore`;
-  the factory lives in `configure-x-store.ts`.
+- A second EXPORTED type in a file that already exports a class, hook or component.
 - A provider component and its `use*` hook in one `*-context.tsx` file — the hook gets its own
   `use-x.ts` file (Standard 8).
 - Logic helpers embedded in a component file — move them to the page's `model/` folder.
+
+A Zustand store is one file: `x-store.ts` exports `configureXStore` and keeps its deps interface
+unexported above it. The state type stays in `x-store-state.ts`, because screens import it.
 
 **Placement of extracted declarations:** inside a page folder, pure types go to that page's `model/`;
 inside `base/*`, the type becomes a sibling file in the same folder. File name = kebab-case of the

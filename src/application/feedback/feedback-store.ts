@@ -3,7 +3,11 @@ import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
-import type { FeedbackStoreDeps } from '@application/feedback/feedback-store-deps';
+import type { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
+
+interface FeedbackStoreDeps {
+  submitFeedbackUseCase: SubmitFeedbackUseCase;
+}
 
 /**
  * Creates the Zustand store for the Help & Feedback screen.

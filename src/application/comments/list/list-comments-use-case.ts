@@ -2,7 +2,12 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 import type { CommentPage } from '@domain/comments/comment-page';
-import type { ListCommentsInput } from '@application/comments/list/list-comments-input';
+
+interface ListCommentsInput {
+  recipeId: string;
+  page: number;
+  pageSize: number;
+}
 
 /**
  * Fetches a paginated page of comments for a given recipe.

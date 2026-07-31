@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 748 source files.
+[architecture.md](architecture.md). 718 source files.
 
 ## Layers
 
@@ -43,21 +43,21 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `audio/` _(2)_
-- `auth/` — password-reset, profile, registration, session, sign-in _(17)_
-- `comments/` — add, delete, like, list _(19)_
+- `auth/` — password-reset, profile, registration, session, sign-in _(16)_
+- `comments/` — add, delete, like, list _(15)_
 - `di/` _(3)_
-- `drafts/` — list, read, write _(11)_
-- `favorites/` _(6)_
-- `feedback/` _(4)_
+- `drafts/` — list, read, write _(10)_
+- `favorites/` _(5)_
+- `feedback/` _(3)_
 - `i18n/` _(4)_
-- `likes/` _(6)_
-- `notifications/` — list, read _(12)_
+- `likes/` _(5)_
+- `notifications/` — list, read _(10)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(40)_
+- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(35)_
 - `storage/` _(2)_
 - `store/` _(1)_
 - `timers/` _(7)_
-- `user-profile/` _(6)_
+- `user-profile/` _(5)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
@@ -66,14 +66,14 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `comments/` — dtos _(4)_
 - `constants/` _(5)_
 - `crypto/` _(3)_
-- `di/` _(2)_
+- `di/` _(1)_
 - `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
 - `firebase/` _(4)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
-- `network/` — envelope, errors, http, jwt, upload _(22)_
+- `network/` — envelope, errors, http, jwt, upload _(21)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, media, refine, taxonomy _(21)_
 - `storage/` _(6)_
@@ -99,9 +99,9 @@ locale list `application/i18n/locale-constants.ts`.
 - `forms/` — shared field limits _(1)_
 - `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(15)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
-- `taxonomy/` — cuisine/category/difficulty display vocabulary _(7)_
+- `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
-- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
+- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(43)_
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
@@ -138,4 +138,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 562eab793f593953 -->
+<!-- fingerprint: 6b91e5cab6b7c3f2 -->

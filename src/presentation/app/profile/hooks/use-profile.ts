@@ -4,9 +4,23 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
-import type { UseProfileResult } from '@presentation/app/profile/model/use-profile-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+
+/** View model returned by {@link useProfile} for the profile screen. */
+interface UseProfileResult {
+  displayName: string;
+  handle: string;
+  bio: string;
+  photoUri: string | undefined;
+  isUploading: boolean;
+  onPickAvatar: () => void;
+  onEditProfile: () => void;
+  stats: ProfileStatsState;
+  /** Localized message for the avatar upload-failure dialog; null when there is none. */
+  uploadError: string | null;
+  onDismissUploadError: () => void;
+}
 
 /**
  * Orchestrates the profile screen: exposes the signed-in user's identity

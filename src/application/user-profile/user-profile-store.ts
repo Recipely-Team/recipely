@@ -1,7 +1,11 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
-import type { UserProfileStoreDeps } from '@application/user-profile/user-profile-store-deps';
+import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
+
+interface UserProfileStoreDeps {
+  getUserProfile: GetUserProfileUseCase;
+}
 
 /**
  * Holds the currently-viewed user profile (typically the signed-in user).
