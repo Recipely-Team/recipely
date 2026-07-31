@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 723 source files.
+[architecture.md](architecture.md). 730 source files.
 
 ## Layers
 
@@ -26,7 +26,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `audio/` _(1)_
-- `auth/` _(4)_
+- `auth/` _(5)_
 - `comments/` _(3)_
 - `common/` _(1)_
 - `drafts/` _(6)_
@@ -61,21 +61,21 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
 - `audio/` _(1)_
-- `auth/` — registration, session, social _(13)_
+- `auth/` — registration, session, social _(14)_
 - `comments/` — dtos _(3)_
 - `constants/` _(5)_
 - `crypto/` _(3)_
 - `di/` _(2)_
-- `drafts/` — dtos _(4)_
+- `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
 - `firebase/` _(4)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
-- `network/` — envelope, errors, http, jwt, upload _(16)_
+- `network/` — envelope, errors, http, jwt, upload _(17)_
 - `notifications/` — dtos _(7)_
-- `recipes/` — create, dtos, media, refine, taxonomy _(14)_
-- `storage/` _(4)_
+- `recipes/` — create, dtos, media, refine, taxonomy _(15)_
+- `storage/` _(5)_
 - `user-profile/` _(3)_
 
 ## `src/core/` — building blocks only
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 4185a56602541524 -->
+<!-- fingerprint: ee3944599e6dbef7 -->

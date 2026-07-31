@@ -9,6 +9,7 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
+import type { RecipelyErrorPayload } from '@infrastructure/network/errors/recipely-error-payload';
 
 /**
  * The Recipely backend wraps every error as
@@ -21,12 +22,7 @@ import {
  * — and everything downstream of it — must tolerate `undefined`.
  */
 interface RecipelyErrorBody {
-  error?: {
-    code?: string;
-    message?: string;
-    messageKey?: string;
-    field?: string;
-  };
+  error?: RecipelyErrorPayload;
 }
 
 const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody =>

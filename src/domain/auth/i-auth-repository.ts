@@ -2,6 +2,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
+import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
 
 export interface IAuthRepository {
   signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>>;
@@ -47,7 +48,7 @@ export interface IAuthRepository {
    * Updates the signed-in user's editable profile fields (display name, bio)
    * and returns the refreshed, persisted session.
    */
-  updateProfile(input: { displayName?: string; bio?: string }): Promise<Result<AuthSessionEntity, Failure>>;
+  updateProfile(input: UpdateProfileInput): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Permanently deletes the signed-in user's account and all of its data on the
    * server, then clears the local session on success. On failure the local
