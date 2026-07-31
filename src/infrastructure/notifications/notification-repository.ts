@@ -2,7 +2,7 @@ import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { NotificationEntity } from '@domain/notifications/notification-entity';
-import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
+import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
@@ -11,10 +11,10 @@ import type { NotificationsResponseDto } from '@infrastructure/notifications/dto
 import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notifications/dtos/register-device-token-request-dto';
 
 /**
- * Implements `INotificationRepository` against the Recipely backend. All
+ * Implements `NotificationRepositoryInterface` against the Recipely backend. All
  * endpoints live under `/me/` and require a valid JWT session.
  */
-export class NotificationRepository implements INotificationRepository {
+export class NotificationRepository implements NotificationRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async list(limit?: number, offset?: number): Promise<Result<NotificationListResult, Failure>> {

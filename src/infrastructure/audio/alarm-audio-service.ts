@@ -9,7 +9,7 @@ import {
   type AudioStatus,
 } from 'expo-audio';
 import { ValueConstants } from '@core/constants';
-import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
+import type { AlarmAudioServiceInterface } from '@domain/audio/alarm-audio-service-interface';
 import { ALARM_SOUND_ASSET } from '@infrastructure/constants/assets';
 
 const ALARM_SOURCE: AudioSource = ALARM_SOUND_ASSET;
@@ -59,7 +59,7 @@ const IDLE_AUDIO_MODE: Partial<AudioMode> = {
  */
 const MAX_PLAY_ATTEMPTS = 3;
 
-export class AlarmAudioService implements IAlarmAudioService {
+export class AlarmAudioService implements AlarmAudioServiceInterface {
   private player: AudioPlayer | null = null;
   private statusSubscription: { remove: () => void } | null = null;
   /** True once the alarm session is in force and still has to be handed back. */

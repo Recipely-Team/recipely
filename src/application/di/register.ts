@@ -1,8 +1,8 @@
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
-import type { IAuthRepository } from '@domain/auth/i-auth-repository';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
-import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
+import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
@@ -49,7 +49,7 @@ import { DeleteCommentUseCase } from '@application/comments/delete/delete-commen
 import { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
 import { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import { configureCommentsStore } from '@application/comments/comments-store';
-import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { configureLikesStore } from '@application/likes/likes-store';
@@ -65,9 +65,9 @@ import type { ApplicationStores } from '@application/di/application-stores';
 
 
 export const registerApplication = (container: Container): ApplicationStores => {
-  const authRepo = container.resolve<IAuthRepository>(TOKENS.AuthRepository);
-  const recipeRepo = container.resolve<IRecipeRepository>(TOKENS.RecipeRepository);
-  const draftRepo = container.resolve<IRecipeDraftRepository>(TOKENS.RecipeDraftRepository);
+  const authRepo = container.resolve<AuthRepositoryInterface>(TOKENS.AuthRepository);
+  const recipeRepo = container.resolve<RecipeRepositoryInterface>(TOKENS.RecipeRepository);
+  const draftRepo = container.resolve<RecipeDraftRepositoryInterface>(TOKENS.RecipeDraftRepository);
   const signIn = new SignInUseCase(authRepo);
   const requestRegistration = new RequestRegistrationUseCase(authRepo);
   const verifyRegistration = new VerifyRegistrationUseCase(authRepo);
@@ -95,7 +95,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const getDraftUseCase = new GetDraftUseCase(draftRepo);
   const upsertDraftUseCase = new UpsertDraftUseCase(draftRepo);
   const deleteDraftUseCase = new DeleteDraftUseCase(draftRepo);
-  const commentRepo = container.resolve<ICommentRepository>(TOKENS.CommentRepository);
+  const commentRepo = container.resolve<CommentRepositoryInterface>(TOKENS.CommentRepository);
   const listCommentsUseCase = new ListCommentsUseCase(commentRepo);
   const addCommentUseCase = new AddCommentUseCase(commentRepo);
   const deleteCommentUseCase = new DeleteCommentUseCase(commentRepo);

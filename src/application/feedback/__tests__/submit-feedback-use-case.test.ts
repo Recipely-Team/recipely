@@ -3,7 +3,7 @@ import { ValidationFailure, NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { IFeedbackRepository } from '@domain/feedback/i-feedback-repository';
+import type { FeedbackRepositoryInterface } from '@domain/feedback/feedback-repository-interface';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 
 interface SubmitCall {
@@ -12,9 +12,9 @@ interface SubmitCall {
 
 const makeRepo = (
   result: Result<void, Failure>,
-): { repo: IFeedbackRepository; calls: SubmitCall[] } => {
+): { repo: FeedbackRepositoryInterface; calls: SubmitCall[] } => {
   const calls: SubmitCall[] = [];
-  const repo: IFeedbackRepository = {
+  const repo: FeedbackRepositoryInterface = {
     submitFeedback: (input: FeedbackSubmission) => {
       calls.push({ input });
       return Promise.resolve(result);

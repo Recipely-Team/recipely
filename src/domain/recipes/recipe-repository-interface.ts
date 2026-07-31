@@ -8,7 +8,7 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 
-export interface IRecipeRepository {
+export interface RecipeRepositoryInterface {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>>;
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
   listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>>;

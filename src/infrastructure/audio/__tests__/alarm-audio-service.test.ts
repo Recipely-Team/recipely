@@ -1,6 +1,6 @@
 /**
  * Contract test for `AlarmAudioService`. It must conform to the
- * `IAlarmAudioService` port, be a no-op on web, and on native start a single
+ * `AlarmAudioServiceInterface` port, be a no-op on web, and on native start a single
  * looping player (idempotent while already playing) and release it on stop.
  * `expo-audio` is mocked so no real audio subsystem is touched.
  */
@@ -62,7 +62,7 @@ describe('AlarmAudioService', () => {
     platform.OS = originalOS;
   });
 
-  it('exposes the IAlarmAudioService port shape', () => {
+  it('exposes the AlarmAudioServiceInterface port shape', () => {
     expect(typeof service.start).toBe('function');
     expect(typeof service.stop).toBe('function');
   });

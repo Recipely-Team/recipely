@@ -1,7 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { CommentEntity } from '@domain/comments/comment-entity';
-import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 import type { AddCommentInput } from '@application/comments/add/add-comment-input';
 
 /**
@@ -9,7 +9,7 @@ import type { AddCommentInput } from '@application/comments/add/add-comment-inpu
  * `CommentEntity` entity.
  */
 export class AddCommentUseCase {
-  constructor(private readonly repo: ICommentRepository) {}
+  constructor(private readonly repo: CommentRepositoryInterface) {}
 
   execute(input: AddCommentInput): Promise<Result<CommentEntity, Failure>> {
     return this.repo.add(input.recipeId, input.body);

@@ -1,5 +1,5 @@
 import type { HealthStatus } from '@domain/network/health-status';
 
-export interface IHealthCheckService {
+export interface HealthCheckServiceInterface {
   check(): Promise<HealthStatus>;
 }

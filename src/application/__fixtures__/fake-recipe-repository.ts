@@ -1,7 +1,7 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
@@ -16,12 +16,12 @@ import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-c
 import { ValueConstants } from '@core/constants';
 
 /**
- * In-memory test double for `IRecipeRepository`. Returns pre-configured
+ * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
  * `Result` values for each operation. The `generateRecipe` method additionally
  * records call arguments in `lastGenerateCall` and increments `generateCallCount`
  * so tests can assert on invocation details without a spy framework.
  */
-export class FakeRecipeRepository implements IRecipeRepository {
+export class FakeRecipeRepository implements RecipeRepositoryInterface {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
   generateCallCount = ValueConstants.zero;

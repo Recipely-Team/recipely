@@ -1,10 +1,10 @@
 /**
  * Contract test for the web `kvStore`: the `.web` variant must satisfy the same
- * `IKeyValueStore` port over `localStorage`, round-tripping writes/reads and
+ * `KeyValueStoreInterface` port over `localStorage`, round-tripping writes/reads and
  * returning `null` for absent keys. A minimal in-memory `localStorage` stands in
  * for the browser global (the jest environment is node, which has none).
  */
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { kvStore } from '@infrastructure/storage/kv-store.web';
 import { ok } from '@core/result/result-helpers';
 
@@ -26,7 +26,7 @@ beforeAll(() => {
 });
 
 describe('kvStore (web)', () => {
-  const webStore: IKeyValueStore = kvStore;
+  const webStore: KeyValueStoreInterface = kvStore;
 
   beforeEach(() => {
     mem.clear();

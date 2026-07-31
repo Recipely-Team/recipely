@@ -1,7 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import type { IAuthRepository } from '@domain/auth/i-auth-repository';
+import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 
 /**
  * Starts registration by requesting a verification code email for the given
@@ -9,7 +9,7 @@ import type { IAuthRepository } from '@domain/auth/i-auth-repository';
  * confirms the emailed code.
  */
 export class RequestRegistrationUseCase {
-  constructor(private readonly repo: IAuthRepository) {}
+  constructor(private readonly repo: AuthRepositoryInterface) {}
 
   execute(
     email: string,

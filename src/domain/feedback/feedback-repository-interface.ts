@@ -7,7 +7,7 @@ import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
  * The implementation is responsible for mapping `FeedbackSubmission` to the
  * wire format and handling transport-level errors.
  */
-export interface IFeedbackRepository {
+export interface FeedbackRepositoryInterface {
   /**
    * Sends a feedback submission to the backend.
    * Returns `ok(void)` on success; the server ignores the response body.

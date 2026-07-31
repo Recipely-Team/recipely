@@ -2,10 +2,10 @@ import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
-const makeStore = (initial: string | null = null): IKeyValueStore & { saved: string | null } => {
+const makeStore = (initial: string | null = null): KeyValueStoreInterface & { saved: string | null } => {
   const store = {
     saved: initial,
     getItem: (): Promise<Result<string | null, Failure>> => Promise.resolve(ok(store.saved)),

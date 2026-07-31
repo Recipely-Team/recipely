@@ -1,7 +1,7 @@
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { toStorageResult } from '@infrastructure/storage/to-storage-result';
 
-export const kvStore: IKeyValueStore = {
+export const kvStore: KeyValueStoreInterface = {
   // `localStorage` throws in private browsing and when a quota is exceeded,
   // so the web backend needs the same folding as the native one.
   getItem: (key: string) => toStorageResult(async () => localStorage.getItem(key)),
