@@ -23,6 +23,9 @@ import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-d
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
+import type { GenerateRecipeRequestDto } from '@infrastructure/recipes/dtos/generate-recipe-request-dto';
+import type { ImportRecipeRequestDto } from '@infrastructure/recipes/dtos/import-recipe-request-dto';
+import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 
 /**
  * Implements `IRecipeRepository` against the Recipely backend. Handles
@@ -126,7 +129,7 @@ export class RecipeRepository implements IRecipeRepository {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: ApiRoutes.recipes.generate,
-      data: { prompt },
+      data: { prompt } satisfies GenerateRecipeRequestDto,
       timeout: AI_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {
@@ -146,7 +149,7 @@ export class RecipeRepository implements IRecipeRepository {
     const result = await this.http.request<RecipeDto>({
       method: 'POST',
       url: ApiRoutes.recipes.import,
-      data: { url },
+      data: { url } satisfies ImportRecipeRequestDto,
       timeout: IMPORT_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {
@@ -169,7 +172,7 @@ export class RecipeRepository implements IRecipeRepository {
     const result = await this.http.request<RefineRecipeResponseDto>({
       method: 'POST',
       url: ApiRoutes.recipes.refine,
-      data: { currentRecipe, instruction },
+      data: { currentRecipe, instruction } satisfies RefineRecipeRequestDto,
       timeout: AI_REQUEST_TIMEOUT_MS,
     });
     if (!result.ok) {

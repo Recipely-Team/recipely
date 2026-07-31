@@ -3,7 +3,7 @@ import type { ValidationFailure } from '@core/failure';
 import type { Mapper } from '@core/mapper/mapper';
 import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 
 /**
  * Maps a `RecipelyUserDto` from the API into a domain `UserEntity` entity. Validates

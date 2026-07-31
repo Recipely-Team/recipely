@@ -9,7 +9,7 @@ import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { RecipelyAuthSessionDto } from '@infrastructure/auth/session/recipely-auth-session-dto';
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration/registration-challenge-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
@@ -21,7 +21,14 @@ import { toChallenge } from '@infrastructure/auth/registration/to-challenge';
 import { expiresAtFromToken } from '@infrastructure/auth/session/expires-at-from-token';
 import { rebuildSessionWithUser } from '@infrastructure/auth/session/rebuild-session-with-user';
 import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
-import type { UserResponseDto } from '@infrastructure/auth/user-response-dto';
+import type { UserResponseDto } from '@infrastructure/auth/dtos/user-response-dto';
+import type { SignInRequestDto } from '@infrastructure/auth/dtos/sign-in-request-dto';
+import type { RegisterRequestDto } from '@infrastructure/auth/dtos/register-request-dto';
+import type { VerifyRegistrationRequestDto } from '@infrastructure/auth/dtos/verify-registration-request-dto';
+import type { EmailOnlyRequestDto } from '@infrastructure/auth/dtos/email-only-request-dto';
+import type { ResetPasswordRequestDto } from '@infrastructure/auth/dtos/reset-password-request-dto';
+import type { SocialSignInRequestDto } from '@infrastructure/auth/dtos/social-sign-in-request-dto';
+import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-profile-request-dto';
 
 /**
  * Implements `IAuthRepository` against the Recipely backend (email/password)
@@ -39,7 +46,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.login,
-      data: { email: email.trim(), password },
+      data: { email: email.trim(), password } satisfies SignInRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -55,7 +62,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<RegistrationChallengeDto>({
       method: 'POST',
       url: ApiRoutes.auth.register,
-      data: { email: email.trim(), password, displayName },
+      data: { email: email.trim(), password, displayName } satisfies RegisterRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -70,7 +77,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.registerVerify,
-      data: { email: email.trim(), code: code.trim() },
+      data: { email: email.trim(), code: code.trim() } satisfies VerifyRegistrationRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -84,7 +91,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<RegistrationChallengeDto>({
       method: 'POST',
       url: ApiRoutes.auth.registerResend,
-      data: { email: email.trim() },
+      data: { email: email.trim() } satisfies EmailOnlyRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -120,7 +127,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<void>({
       method: 'POST',
       url: ApiRoutes.auth.forgotPassword,
-      data: { email: email.trim() },
+      data: { email: email.trim() } satisfies EmailOnlyRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -132,7 +139,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<void>({
       method: 'POST',
       url: ApiRoutes.auth.resetPassword,
-      data: { token, newPassword },
+      data: { token, newPassword } satisfies ResetPasswordRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -162,7 +169,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<UserResponseDto>({
       method: 'PATCH',
       url: ApiRoutes.me.profile,
-      data: input,
+      data: input satisfies UpdateProfileRequestDto,
     });
     if (!result.ok) {
       return result;
@@ -192,7 +199,7 @@ export class AuthRepository implements IAuthRepository {
     const result = await this.http.request<RecipelyAuthSessionDto>({
       method: 'POST',
       url: ApiRoutes.auth.social,
-      data: { idToken },
+      data: { idToken } satisfies SocialSignInRequestDto,
     });
     if (!result.ok) return result;
     return this.persistSession(result.value);

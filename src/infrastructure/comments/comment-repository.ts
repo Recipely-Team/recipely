@@ -9,6 +9,7 @@ import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import { ValueConstants } from '@core/constants';
+import type { AddCommentRequestDto } from '@infrastructure/comments/dtos/add-comment-request-dto';
 
 /**
  * Implements `ICommentRepository` against the Recipely backend. Supports
@@ -50,7 +51,7 @@ export class CommentRepository implements ICommentRepository {
     const result = await this.http.request<CommentDto>({
       method: 'POST',
       url: ApiRoutes.recipes.comments(recipeId),
-      data: { body },
+      data: { body } satisfies AddCommentRequestDto,
     });
     if (!result.ok) {
       return result;
