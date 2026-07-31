@@ -15,6 +15,7 @@ import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
+import { FeedFooter } from '@presentation/app/recipes/items/feed-footer';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
@@ -28,6 +29,14 @@ import { ValueConstants } from '@core/constants';
 export interface RecipeListBodyProps {
   vm: UseRecipeListResult;
 }
+
+/**
+ * How close to the end the feed gets before the next page is asked for, as a
+ * fraction of the visible length. Half a screen ahead is enough for the rows to
+ * arrive before the user reaches them without prefetching pages they may never
+ * scroll to.
+ */
+const END_REACHED_THRESHOLD = 0.5;
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
@@ -167,6 +176,9 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
         scrollEventThrottle={16}
+        onEndReached={vm.onEndReached}
+        onEndReachedThreshold={END_REACHED_THRESHOLD}
+        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
         refreshControl={

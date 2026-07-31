@@ -65,7 +65,12 @@ export const DEFAULT_CODE_TTL_SECONDS = 180;
 // Default size of the trending discover rail (backend caps `limit` at 1–30).
 export const TRENDING_RECIPES_LIMIT = 10;
 
+/** The API is 1-based; this is the page every unqualified request means. */
+export const FIRST_PAGE = 1;
+
 export const RECIPES_PAGE_SIZE = 30;
+
+export const MY_RECIPES_PAGE_SIZE = 20;
 
 export const DRAFTS_PAGE_SIZE = 20;
 

@@ -42,18 +42,18 @@ describe('isRecipeListRefreshing', () => {
   });
 
   it('is false when loaded with no in-flight refresh', () => {
-    expect(isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()] })).toBe(false);
+    expect(isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()], page: 1, hasMore: false })).toBe(false);
   });
 
   it('is false when loaded and isRefreshing is explicitly false', () => {
     expect(
-      isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()], isRefreshing: false }),
+      isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()], page: 1, hasMore: false, isRefreshing: false }),
     ).toBe(false);
   });
 
   it('is true when loaded and a filter/sort refetch is in flight', () => {
     expect(
-      isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()], isRefreshing: true }),
+      isRecipeListRefreshing({ status: 'loaded', query: '', recipes: [makeRecipe()], page: 1, hasMore: false, isRefreshing: true }),
     ).toBe(true);
   });
 
@@ -62,6 +62,8 @@ describe('isRecipeListRefreshing', () => {
       status: 'loaded',
       query: '',
       recipes: [makeRecipe()],
+      page: 1,
+      hasMore: false,
       isRefreshing: false,
       refreshFailure: new NetworkFailure('offline'),
     };
