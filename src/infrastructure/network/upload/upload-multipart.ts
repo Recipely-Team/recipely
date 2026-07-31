@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
-import { RegexConstants, ValueConstants } from '@core/constants';
+import { ValueConstants } from '@core/constants';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
@@ -11,6 +11,7 @@ import { buildCommonHeaders } from '@infrastructure/network/http/build-common-he
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { joinUrl } from '@infrastructure/network/http/join-url';
 
 /**
  * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios
@@ -29,9 +30,7 @@ export const uploadMultipart = async <T>(
   formData: FormData,
   onProgress?: (event: UploadProgressEvent) => void,
 ): Promise<Result<T, Failure>> => {
-  const fullUrl = RegexConstants.absoluteHttpUrl.test(url)
-    ? url
-    : `${options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+  const fullUrl = joinUrl(options.baseUrl, url);
   const commonHeaders = await buildCommonHeaders(options);
   const enableLogging = options.enableLogging === true;
 
