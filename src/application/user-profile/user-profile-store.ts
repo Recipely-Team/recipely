@@ -1,4 +1,4 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
 import type { UserProfileStoreDeps } from '@application/user-profile/user-profile-store-deps';
@@ -10,7 +10,7 @@ import type { UserProfileStoreDeps } from '@application/user-profile/user-profil
  */
 export const configureUserProfileStore = (
   deps: UserProfileStoreDeps,
-): UserProfileStore => {
+): BoundStore<UserProfileStoreState> => {
   return create<UserProfileStoreState>((set) => ({
     state: { status: 'idle' },
     load: async (userId: string) => {
@@ -25,6 +25,3 @@ export const configureUserProfileStore = (
     reset: () => set({ state: { status: 'idle' } }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureUserProfileStore`. */
-export type UserProfileStore = UseBoundStore<StoreApi<UserProfileStoreState>>;

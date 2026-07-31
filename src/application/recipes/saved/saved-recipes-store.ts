@@ -1,8 +1,8 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
-export const configureSavedRecipesStore = (): SavedRecipesStore => {
+export const configureSavedRecipesStore = (): BoundStore<SavedRecipesStoreState> => {
   return create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
     savedIds: new Set<string>(),
@@ -42,6 +42,3 @@ export const configureSavedRecipesStore = (): SavedRecipesStore => {
     clearError: () => set({ error: null }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureSavedRecipesStore`. */
-export type SavedRecipesStore = UseBoundStore<StoreApi<SavedRecipesStoreState>>;

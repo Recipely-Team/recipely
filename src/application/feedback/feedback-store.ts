@@ -1,4 +1,4 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
@@ -10,7 +10,7 @@ import type { FeedbackStoreDeps } from '@application/feedback/feedback-store-dep
  * `submit` returns a boolean so the UI can trigger navigation on success
  * without reading store state in the same render cycle.
  */
-export const configureFeedbackStore = (deps: FeedbackStoreDeps): FeedbackStore => {
+export const configureFeedbackStore = (deps: FeedbackStoreDeps): BoundStore<FeedbackStoreState> => {
   const { submitFeedbackUseCase } = deps;
 
   return create<FeedbackStoreState>((set) => ({
@@ -35,6 +35,3 @@ export const configureFeedbackStore = (deps: FeedbackStoreDeps): FeedbackStore =
     reset: () => set({ isSubmitting: false, error: null }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureFeedbackStore`. */
-export type FeedbackStore = UseBoundStore<StoreApi<FeedbackStoreState>>;

@@ -1,4 +1,4 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { NotificationsStoreDeps } from '@application/notifications/notifications-store-deps';
@@ -13,7 +13,7 @@ import { ValueConstants } from '@core/constants';
  */
 export const configureNotificationsStore = (
   deps: NotificationsStoreDeps,
-): NotificationsStore => {
+): BoundStore<NotificationsStoreState> => {
   return create<NotificationsStoreState>((set, get) => ({
     state: { status: 'idle' },
     unreadCount: ValueConstants.zero,
@@ -83,6 +83,3 @@ export const configureNotificationsStore = (
     clear: () => set({ state: { status: 'idle' }, unreadCount: ValueConstants.zero }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureNotificationsStore`. */
-export type NotificationsStore = UseBoundStore<StoreApi<NotificationsStoreState>>;

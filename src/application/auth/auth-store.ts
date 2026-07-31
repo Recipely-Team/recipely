@@ -1,9 +1,9 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { AuthStoreDeps } from '@application/auth/auth-store-deps';
 
-export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
+export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   return create<AuthStoreState>((set, get) => ({
     state: { status: 'idle' },
 
@@ -178,6 +178,3 @@ export const configureAuthStore = (deps: AuthStoreDeps): AuthStore => {
     },
   }));
 };
-
-/** Bound Zustand store handle produced by `configureAuthStore`. */
-export type AuthStore = UseBoundStore<StoreApi<AuthStoreState>>;

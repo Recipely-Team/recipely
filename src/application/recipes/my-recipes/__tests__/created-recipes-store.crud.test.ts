@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
@@ -5,8 +6,6 @@ import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-rec
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -15,6 +14,8 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
@@ -98,8 +99,8 @@ interface Deps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
-  recipeListStore: RecipeListStore;
-  recipeDetailStore: RecipeDetailStore;
+  recipeListStore: BoundStore<RecipeListStoreState>;
+  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
 }
 
 const makeStore = (overrides: Partial<Deps> = {}) => {
@@ -119,13 +120,13 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
   const recipeListStoreRemove = jest.fn();
   const fakeRecipeListStore = {
     getState: () => ({ replace: recipeListStoreReplace, remove: recipeListStoreRemove }),
-  } as unknown as RecipeListStore;
+  } as unknown as BoundStore<RecipeListStoreState>;
 
   const recipeDetailStoreReplace = jest.fn();
   const recipeDetailStoreRemove = jest.fn();
   const fakeRecipeDetailStore = {
     getState: () => ({ replace: recipeDetailStoreReplace, remove: recipeDetailStoreRemove }),
-  } as unknown as RecipeDetailStore;
+  } as unknown as BoundStore<RecipeDetailStoreState>;
 
   const store = configureCreatedRecipesStore({
     createRecipeUseCase: fakeCreateUseCase,

@@ -1,11 +1,11 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
 import type { TrendingRecipesStoreDeps } from '@application/recipes/trending/trending-recipes-store-deps';
 
 export const configureTrendingRecipesStore = (
   deps: TrendingRecipesStoreDeps,
-): TrendingRecipesStore => {
+): BoundStore<TrendingRecipesStoreState> => {
   return create<TrendingRecipesStoreState>((set) => ({
     state: { status: 'idle' },
     load: async (limit?: number) => {
@@ -19,6 +19,3 @@ export const configureTrendingRecipesStore = (
     },
   }));
 };
-
-/** Bound Zustand store handle produced by `configureTrendingRecipesStore`. */
-export type TrendingRecipesStore = UseBoundStore<StoreApi<TrendingRecipesStoreState>>;

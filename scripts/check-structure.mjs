@@ -116,16 +116,6 @@ for (const file of files) {
     const merged = decls.some((o) => o !== d && o.kind === 'const' && o.name === d.name);
     return !derived && !merged;
   });
-  // Exception: an alias that only names the RETURN TYPE of the one factory in
-  // this file. `configureAuthStore(): AuthStore` and `AuthStore` are a single
-  // idea — the alias has no meaning apart from the function it describes, and
-  // giving it its own file bought fourteen five-line modules whose entire
-  // content was a signature. The test is deliberately narrow: the name has to
-  // appear as this file's return-type annotation, so an unrelated type kept
-  // beside runtime code is still a violation.
-  typeLike = typeLike.filter(
-    (d) => !(d.kind === 'type' && new RegExp(`\\):\\s*${d.name}\\b`).test(src)),
-  );
 
   const primaryCount = typeLike.length + classes.length + Math.max(comps.length, 0);
   if (primaryCount > 1) {

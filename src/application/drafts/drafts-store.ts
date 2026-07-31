@@ -1,10 +1,10 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import type { DraftsStoreDeps } from '@application/drafts/drafts-store-deps';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
 
-export const configureDraftsStore = (deps: DraftsStoreDeps): DraftsStore => {
+export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStoreState> => {
   return create<DraftsStoreState>((set, get) => ({
     drafts: [],
     listState: { status: 'idle' },
@@ -66,6 +66,3 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): DraftsStore => {
     clear: () => set({ drafts: [], listState: { status: 'idle' }, latestDraft: null }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureDraftsStore`. */
-export type DraftsStore = UseBoundStore<StoreApi<DraftsStoreState>>;

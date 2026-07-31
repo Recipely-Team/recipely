@@ -142,13 +142,10 @@ These rules apply to every agent and every contributor. A `code-reviewer` agent 
 blocking.
 
 1. **One declaration per file** — one class, interface, type alias, or component per `.ts`/`.tsx` file.
-   Three exceptions, all narrow: barrel `index.ts` files, a component's `Props` interface, and
-   **a type alias that only names the return type of the one factory in the same file**
-   (`configureAuthStore(): AuthStore`). That last one is not a loophole — the alias has no
-   meaning apart from the function it describes, and splitting it out bought fourteen five-line
-   modules whose entire content was a signature. `check:structure` tests it by requiring the
-   name to appear as that file's return-type annotation, so an unrelated type parked beside
-   runtime code is still a violation.
+   Barrel `index.ts` files and a component's `Props` interface are the only exceptions.
+   A factory does NOT get an alias for its own return type — `BoundStore<AuthStoreState>`
+   says what the handle is without a name to look up, so a store module exports exactly one
+   thing: its factory.
 
 2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities.
    Pure stateless data transformers (mappers, formatters) are plain exported functions.

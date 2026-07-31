@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import type { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import type { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
@@ -12,7 +13,7 @@ import type { UploadAvatarUseCase } from '@application/auth/profile/upload-avata
 import type { UpdateProfileUseCase } from '@application/auth/profile/update-profile-use-case';
 import type { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
 export interface AuthStoreDeps {
   signIn: SignInUseCase;
@@ -22,7 +23,7 @@ export interface AuthStoreDeps {
   signOut: SignOutUseCase;
   getSession: GetSessionUseCase;
   loadFavorites: LoadFavoritesUseCase;
-  savedRecipesStore: SavedRecipesStore;
+  savedRecipesStore: BoundStore<SavedRecipesStoreState>;
   signInWithGoogle: SignInWithGoogleUseCase;
   signInWithApple: SignInWithAppleUseCase;
   requestPasswordReset: RequestPasswordResetUseCase;

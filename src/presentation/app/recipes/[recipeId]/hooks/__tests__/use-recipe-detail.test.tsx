@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Regression tests for `useRecipeDetail`'s comment-submit error copy.
  *
@@ -36,7 +37,6 @@ import { configureCommentsStore } from '@application/comments/comments-store';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
-import type { CommentsStore } from '@application/comments/comments-store';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
@@ -130,7 +130,7 @@ const buildSession = (userId: string): AuthSessionEntity => {
  */
 const makeRealCommentsStore = (
   execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
-): CommentsStore =>
+): BoundStore<CommentsStoreState> =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,
     listComments: { execute: jest.fn() } as unknown as ListCommentsUseCase,
@@ -185,7 +185,7 @@ interface StoreOverrides {
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
 
-const makeStores = (commentsStore: CommentsStore, overrides: StoreOverrides = {}): Stores => {
+const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): Stores => {
   const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
@@ -228,7 +228,7 @@ const makeStores = (commentsStore: CommentsStore, overrides: StoreOverrides = {}
 
 /** Renders a probe that captures the live hook output on every render. */
 const driveHook = (
-  commentsStore: CommentsStore,
+  commentsStore: BoundStore<CommentsStoreState>,
   overrides: StoreOverrides = {},
 ): { latest: () => UseRecipeDetailResult } => {
   let latest: UseRecipeDetailResult | null = null;
@@ -320,7 +320,7 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
       deleteComment: jest.fn(),
       toggleLike: jest.fn(),
       clear: jest.fn(),
-    })) as unknown as CommentsStore;
+    })) as unknown as BoundStore<CommentsStoreState>;
 
     const { latest } = driveHook(commentsStore);
 

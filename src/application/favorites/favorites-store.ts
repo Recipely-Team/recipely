@@ -1,10 +1,10 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { FavoritesStoreDeps } from '@application/favorites/favorites-store-deps';
 
-export const configureFavoritesStore = (deps: FavoritesStoreDeps): FavoritesStore => {
+export const configureFavoritesStore = (deps: FavoritesStoreDeps): BoundStore<FavoritesStoreState> => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;
 
   return create<FavoritesStoreState>((set) => ({
@@ -43,6 +43,3 @@ export const configureFavoritesStore = (deps: FavoritesStoreDeps): FavoritesStor
     clearError: () => set({ error: null }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureFavoritesStore`. */
-export type FavoritesStore = UseBoundStore<StoreApi<FavoritesStoreState>>;

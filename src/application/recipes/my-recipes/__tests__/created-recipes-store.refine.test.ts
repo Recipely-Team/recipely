@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
@@ -6,8 +7,6 @@ import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-rec
 import type { RefineRecipeInput } from '@application/recipes/refine/refine-recipe-input';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -17,6 +16,8 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 const snapshot: DraftRecipeSnapshot = { name: 'Spicy Pasta', ingredients: ['Pasta'] };
 
@@ -72,11 +73,11 @@ const fakeDeleteUseCase = {
 
 const fakeRecipeListStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as RecipeListStore;
+} as unknown as BoundStore<RecipeListStoreState>;
 
 const fakeRecipeDetailStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as RecipeDetailStore;
+} as unknown as BoundStore<RecipeDetailStoreState>;
 
 interface DeferredRefineUseCase {
   useCase: RefineRecipeUseCase;

@@ -1,11 +1,11 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { ok } from '@core/result/result-helpers';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikesStoreDeps } from '@application/likes/likes-store-deps';
 
-export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
+export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> =>
   create<LikesStoreState>((set, get) => ({
     byRecipe: {},
 
@@ -80,6 +80,3 @@ export const configureLikesStore = (deps: LikesStoreDeps): LikesStore =>
 
     clear: () => set({ byRecipe: {} }),
   }));
-
-/** Bound Zustand store handle produced by `configureLikesStore`. */
-export type LikesStore = UseBoundStore<StoreApi<LikesStoreState>>;

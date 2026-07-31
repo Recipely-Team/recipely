@@ -1,11 +1,11 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import type { RecipeListStoreDeps } from '@application/recipes/list/recipe-list-store-deps';
 import { CharConstants, ValueConstants } from '@core/constants';
 
-export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListStore => {
+export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<RecipeListStoreState> => {
   // Sequence number of the most recent `load`. Responses that do not carry it
   // are answers to a question the user has already moved on from — see `load`.
   let latestRequest = ValueConstants.zero;
@@ -70,6 +70,3 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): RecipeListS
       }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureRecipeListStore`. */
-export type RecipeListStore = UseBoundStore<StoreApi<RecipeListStoreState>>;

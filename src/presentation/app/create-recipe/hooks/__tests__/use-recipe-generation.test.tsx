@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Regression tests for the failure path of `useRecipeGeneration.runGenerate`.
  *
@@ -46,8 +47,6 @@ import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
 import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
@@ -61,6 +60,8 @@ import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-r
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/en';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
@@ -202,8 +203,8 @@ const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft):
     refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<RecipeListStore>(),
-    recipeDetailStore: noopCacheStore<RecipeDetailStore>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
+    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
   });
 
   const draftsStore = configureDraftsStore({

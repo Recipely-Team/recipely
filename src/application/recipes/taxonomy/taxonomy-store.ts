@@ -1,10 +1,10 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import type { TaxonomyStoreDeps } from '@application/recipes/taxonomy/taxonomy-store-deps';
 import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
 
-export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): TaxonomyStore => {
+export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<TaxonomyStoreState> => {
   const fetchCatalogs = async (
     set: (partial: Partial<TaxonomyStoreState>) => void,
   ): Promise<void> => {
@@ -42,6 +42,3 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): TaxonomyStore =
     },
   }));
 };
-
-/** Bound Zustand store handle produced by `configureTaxonomyStore`. */
-export type TaxonomyStore = UseBoundStore<StoreApi<TaxonomyStoreState>>;

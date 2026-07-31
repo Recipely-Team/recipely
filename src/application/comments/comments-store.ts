@@ -1,4 +1,4 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { CommentsStoreDeps } from '@application/comments/comments-store-deps';
@@ -12,7 +12,7 @@ import { createToggleLikeAction } from '@application/comments/like/create-toggle
  * Assembles the comments store from its per-action factories. State is keyed by
  * recipe id so many recipes' comment threads coexist without interference.
  */
-export const configureCommentsStore = (deps: CommentsStoreDeps): CommentsStore => {
+export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<CommentsStoreState> => {
   const { listComments, addComment, deleteComment, likeComment, unlikeComment } = deps;
 
   return create<CommentsStoreState>((set, get) => ({
@@ -25,6 +25,3 @@ export const configureCommentsStore = (deps: CommentsStoreDeps): CommentsStore =
     clear: () => set({ byRecipe: {} }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureCommentsStore`. */
-export type CommentsStore = UseBoundStore<StoreApi<CommentsStoreState>>;

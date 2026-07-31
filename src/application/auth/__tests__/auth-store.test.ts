@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
@@ -15,7 +16,6 @@ import { UpdateProfileUseCase } from '@application/auth/profile/update-profile-u
 import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
-import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -23,6 +23,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -67,7 +68,7 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
 
 const makeStore = (
   repo: FakeAuthRepository,
-  overrides: { savedRecipesStore?: SavedRecipesStore; clearSessionCaches?: () => void } = {},
+  overrides: { savedRecipesStore?: BoundStore<SavedRecipesStoreState>; clearSessionCaches?: () => void } = {},
 ) => {
   const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore();
   return configureAuthStore({
