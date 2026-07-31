@@ -7,7 +7,7 @@ import { spacing, fontSizes, controlSizes } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
-import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
+import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface TabBarProps {
@@ -26,7 +26,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
   const bottomPad = Math.max(insets.bottom, 12);
   if (isWebShell) return null;
 
-  const tabs: TabConfig<TabBarKey>[] = [
+  const tabs: TabItem<TabBarKey>[] = [
     { key: 'recipes', label: t().navigation.recipes, icon: 'restaurant-outline' },
     { key: 'myRecipes', label: t().navigation.myRecipes, icon: 'bookmark-outline' },
     { key: 'profile', label: t().navigation.profile, icon: 'person-outline' },
