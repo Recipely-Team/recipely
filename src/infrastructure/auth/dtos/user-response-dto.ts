@@ -1,4 +1,4 @@
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 
 // Wire shape of the endpoints that answer with the caller's own user and
 // nothing else (`PATCH /me/profile`). Named rather than written inline at the

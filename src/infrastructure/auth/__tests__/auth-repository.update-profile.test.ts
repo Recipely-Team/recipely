@@ -5,7 +5,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 

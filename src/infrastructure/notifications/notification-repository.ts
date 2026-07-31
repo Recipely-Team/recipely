@@ -8,6 +8,7 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 import type { NotificationsResponseDto } from '@infrastructure/notifications/dtos/notifications-response-dto';
+import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notifications/dtos/register-device-token-request-dto';
 
 /**
  * Implements `INotificationRepository` against the Recipely backend. All
@@ -76,7 +77,7 @@ export class NotificationRepository implements INotificationRepository {
     const result = await this.http.request<unknown>({
       method: 'POST',
       url: ApiRoutes.me.deviceToken,
-      data: { token, platform },
+      data: { token, platform } satisfies RegisterDeviceTokenRequestDto,
     });
     if (!result.ok) {
       return result;

@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 
