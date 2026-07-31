@@ -31,23 +31,33 @@ const SCROLL_OFFSET = spacing.xxl;
 
 /**
  * Resolves the `?commentId=` deep link on the recipe-detail screen: pages the
- * comment list until the target comment is loaded, then scrolls it into view and
- * flashes it.
+ * comment list until the target comment is loaded, then scrolls it into view
+ * and flashes it.
  *
- * The scroll re-measures on every content-size change rather than once on mount.
- * Mount is NOT layout-settled: when the card first mounts, the hero image and
- * ingredients above it have no height yet, so the comment measures near y=0 — a
- * one-shot scroll lands at the top of the page and the comment is then pushed
- * ~1400px down as images load. `onContentSizeChange` is the reliable "layout
- * moved" signal; the card's own `onLayout` is not, since a card's y relative to
- * its parent doesn't change when an ancestor above it grows.
- *
- * The chase stops as soon as it's pointless (same y twice), spent
- * (MAX_SCROLL_ATTEMPTS), or unwanted (the user scrolled — their position always
- * wins over ours). The flash still fires exactly once.
- *
- * The initial comment load stays owned by `useRecipeDetail`; this hook only ever
- * calls `loadMore`, and only while no other comment request is in flight.
+ * @remarks
+ * - **Re-measures on every content-size change**, not once on mount. Mount is
+ *   not layout-settled: the hero image and ingredients above the card have no
+ *   height yet, so the comment measures near y=0 — a one-shot scroll lands at
+ *   the top of the page and the comment is then pushed ~1400px down as images
+ *   load. `onContentSizeChange` is the reliable "layout moved" signal; the
+ *   card's own `onLayout` is not, since its y relative to its parent doesn't
+ *   change when an ancestor above it grows.
+ * - **Stops** as soon as it's pointless (same y twice), spent
+ *   (`MAX_SCROLL_ATTEMPTS`) or unwanted (the user scrolled — their position
+ *   always wins over ours). The flash still fires exactly once.
+ * - **Unanimated on purpose** — this scroll re-runs as the content above grows,
+ *   and smooth scrolls each interrupt the last, visibly ping-ponging the user
+ *   on the way down. An anchor jumps, it doesn't glide. It also sidesteps
+ *   react-native-web routing `animated: true` through
+ *   `node.scroll({ behavior: 'smooth' })`, which silently does nothing in
+ *   browsers with smooth scrolling turned off.
+ * - **The flash is independent of the scroll**, so a failed measure still
+ *   highlights rather than jumping the user to an arbitrary offset.
+ * - **Only ever calls `loadMore`**, and only while no other comment request is
+ *   in flight; the initial load stays owned by `useRecipeDetail`.
+ * - **A new deep link on a mounted screen** (tapping a notification for the
+ *   recipe already on screen) must scroll and flash again, so the previous
+ *   link's spent one-shots and budgets are retired.
  */
 export const useCommentHighlight = ({
   recipeId,
@@ -76,9 +86,6 @@ export const useCommentHighlight = ({
     if (node !== null) setNodeVersion((v) => v + 1);
   }, []);
 
-  // A new deep link on an already-mounted screen (tapping a comment
-  // notification for the recipe you are already viewing) must scroll and flash
-  // again, so retire the previous link's spent one-shots and budgets.
   useEffect(() => {
     flashedRef.current = false;
     scrollDoneRef.current = false;
@@ -134,19 +141,10 @@ export const useCommentHighlight = ({
         if (previousY !== null && Math.abs(y - previousY) <= SETTLE_EPSILON_PX) {
           scrollDoneRef.current = true;
         }
-        // Unanimated on purpose. This scroll re-runs as the content above the
-        // comment grows, and smooth scrolls would each interrupt the last —
-        // visibly ping-ponging the user on the way down. Landing instantly and
-        // letting the flash draw the eye is both steadier and the usual deep-link
-        // behaviour (an anchor jumps, it doesn't glide). It also sidesteps
-        // react-native-web routing `animated: true` through
-        // `node.scroll({ behavior: 'smooth' })`, which silently does nothing in
-        // browsers with smooth scrolling turned off.
         scrollViewRef.current?.scrollTo({ y: Math.max(ValueConstants.zero, y - SCROLL_OFFSET), animated: false });
       },
       () => {
-        // Measurement failed (card unmounted mid-measure): keep the highlight,
-        // skip the scroll rather than jumping the user to an arbitrary offset.
+        // Card unmounted mid-measure: keep the highlight, skip the scroll.
       },
     );
   }, [targetId, scrollViewRef]);

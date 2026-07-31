@@ -3,18 +3,33 @@ import { create } from 'zustand';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { AuthStoreDeps } from '@application/auth/auth-store-deps';
 
+/**
+ * The session store: hydration on cold start, sign-in / register / confirm, and
+ * expiry.
+ *
+ * @remarks
+ * - **Errors are page-scoped.** `AuthStoreState` has no error variant: an
+ *   action returns the `Failure` and the screen holds it in local state, so a
+ *   wrong password on the login page cannot surface anywhere else. A failed
+ *   action returns the store to its resting status.
+ * - **Only an authenticated session can expire** — a 401 during sign-in must
+ *   not clobber the idle/loading/login flows, so `expireSession` is a no-op
+ *   outside `authenticated`.
+ * - **Sign-out clears the persisted session regardless of the `Result`**; the
+ *   user is logging out either way and the routing decision follows the status.
+ * - **Failures with no listener are dropped on purpose** — an unreadable
+ *   persisted session on cold start is simply "logged out", and the background
+ *   favorites pre-load leaves the saved overlay empty until something else
+ *   loads it. Neither has a screen to report to.
+ */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   return create<AuthStoreState>((set, get) => ({
     state: { status: 'idle' },
 
     expireSession: async () => {
-      // Only an authenticated session can expire — never clobber idle/loading/
-      // login flows (a 401 during sign-in is a harmless no-op here).
       if (get().state.status !== 'authenticated') {
         return;
       }
-      // Clear the persisted session regardless of the Result — we are logging
-      // out either way; the routing decision is driven by the store status.
       await deps.signOut.execute();
       set({ state: { status: 'unauthenticated' } });
       deps.clearSessionCaches();
@@ -24,9 +39,6 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       set({ state: { status: 'loading' } });
       const result = await deps.getSession.execute();
       if (!result.ok) {
-        // Can't read the persisted session — treat it as logged out. The
-        // failure is not surfaced anywhere (there is no screen listening on a
-        // cold start), so it does not need to live in the global state.
         set({ state: { status: 'unauthenticated' } });
         return;
       }
@@ -35,18 +47,14 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return;
       }
       set({ state: { status: 'authenticated', session: result.value } });
-      // Pre-load favorites in the background. A failure here is deliberately
-      // silent: hydration has already succeeded, the saved-recipe overlay simply
-      // stays empty until something else loads it, and there is no user action
-      // to report on. The `catch` guards against a throw escaping into the
-      // caller's `void`ed promise.
+      // Background pre-load; nothing waits on it.
       try {
         const favResult = await deps.loadFavorites.execute();
         if (favResult.ok) {
           deps.savedRecipesStore.getState().setSaved(favResult.value);
         }
       } catch {
-        // Intentionally ignored — see above.
+        // Ignored: nothing is listening.
       }
     },
 
@@ -54,8 +62,6 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       set({ state: { status: 'loading' } });
       const result = await deps.signIn.execute(email, password);
       if (!result.ok) {
-        // Back to the resting login state; the wrong-password error is returned
-        // to the screen, which owns it in local state (page-scoped).
         set({ state: { status: 'unauthenticated' } });
         return result.failure;
       }

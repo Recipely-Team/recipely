@@ -150,8 +150,30 @@ blocking.
 2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities.
    Pure stateless data transformers (mappers, formatters) are plain exported functions.
 
-3. **JSDoc on classes and non-obvious public methods** — `/** ... */` when the signature alone doesn't
-   communicate intent, edge cases, or failure modes. Trivial pass-throughs don't need a comment.
+3. **Comments live at the head of the thing they describe** — a class, hook, component or module
+   gets ONE doc block; the body gets as close to none as the code allows.
+
+   The head block carries the reasoning, under `@remarks` bullets with a bolded label so a
+   reader can find the one that concerns them:
+
+   ```ts
+   /**
+    * Orchestrates the recipe-list screen.
+    *
+    * @remarks
+    * - **Pull-to-refresh** — `isPullRefreshing` tracks only a user-initiated pull. Setting
+    *   `RefreshControl.refreshing` programmatically calls `beginRefreshing` on iOS, which
+    *   animates the list down and back — a visible jump on a filter tap.
+    * - **Stale answers** — rows are handed over only while they answer the query being asked.
+    */
+   ```
+
+   Inline `//` is for the line a reader would otherwise change and break, and then it is ONE
+   short line — never a paragraph, never a restatement of the code. A `use-recipe-list.ts` at
+   400 lines carrying 81 lines of interleaved commentary is not documented, it is obscured:
+   the reader cannot see the shape of the hook through the prose.
+
+   Trivial pass-throughs need nothing. If the signature says it, do not say it again.
 
 4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers. Complex screens
    are split into sub-components in the same feature folder. No nested classes, no deep nesting (> 2 levels).

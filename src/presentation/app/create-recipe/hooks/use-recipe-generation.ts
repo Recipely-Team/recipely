@@ -25,11 +25,26 @@ const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
 
 /**
- * Drives the AI phase flow of the create screen: prompt → generating → preview,
- * the generate/import/refine calls, the generating-checklist ticker, draft
- * resume + autosave, and the exit-with-unsaved-work flow.
- */
-export const useRecipeGeneration = ({
+ * Owns the AI create flow: prompt → generate → preview → refine, the Instagram
+ * import, draft resume + autosave, and the exit-with-unsaved-work flow.
+ *
+ * @remarks
+ * - **Where a failure can be shown decides how it is shown.** A generate
+ *   failure lands back on the prompt phase, which renders no chat transcript,
+ *   so it is surfaced as a toast AND kept inline under the input. An import
+ *   failure does have a transcript to land in, so the assistant bubble carries
+ *   the reason.
+ * - **The backend names its errors** (`failure.messageKey`), so a refused
+ *   prompt (rewording IS the fix) no longer reads the same as an unusable AI
+ *   response (the prompt was fine, generate again) even though both arrive as
+ *   `unprocessable` → `ValidationFailure`. `aiPromptFailed` survives only for a
+ *   4xx with no key — an older backend, or a server key this build predates.
+ * - **A refine outlives the screen**, so publishing or exiting to a draft while
+ *   one is in flight must not pop its "Updated!" over whatever comes next.
+ * - **Drafts round-trip through the same mapper the comparison uses**, or a
+ *   draft that was only opened and closed would compare as changed by whatever
+ *   the mapping normalises.
+ */export const useRecipeGeneration = ({
   recipe,
   setRecipe,
   activeDraftId,
@@ -52,8 +67,6 @@ export const useRecipeGeneration = ({
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
-  // A refine outlives the screen: publishing (or exiting to a draft) while one
-  // is in flight must not pop its "Updated!" over whatever comes next.
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
@@ -75,9 +88,6 @@ export const useRecipeGeneration = ({
       if (cancelled || loaded === null) return;
       const resumed = snapshotToEditable(loaded.snapshot);
       setRecipe(resumed);
-      // Round-tripped through the same mapper the comparison uses, so a draft
-      // that was only opened and closed compares equal rather than differing
-      // by whatever the mapping normalises.
       openedAs.current = JSON.stringify(editableToSnapshot(resumed));
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
@@ -132,22 +142,6 @@ export const useRecipeGeneration = ({
         setPhase(PhaseType.Preview);
         return;
       }
-      // WHY: the failure lands back on the prompt phase, which does NOT render the
-      // chat transcript — so it must be surfaced as a toast AND kept inline under
-      // the input, or the user gets no feedback at all.
-      //
-      // The backend now names its errors (`failure.messageKey`), so the blanket
-      // "rephrase your prompt" copy of PR #157 is gone: a refused prompt
-      // (`errors.ai.prompt_rejected` — rewording IS the fix) no longer reads the
-      // same as an unusable AI response (`errors.ai.invalid_response` — the prompt
-      // was fine, just generate again), even though both arrive as
-      // `unprocessable` → ValidationFailure. `showErrorToast` derives message AND
-      // severity from that key.
-      //
-      // `aiPromptFailed` survives as the fallback for the ONE case left: a 4xx we
-      // have no key for — an older backend, or a new server key this build has no
-      // copy for. Everything else is an infrastructure failure and reads from its
-      // class, exactly as before.
       if (state.status === 'error') {
         const { failure } = state;
         const unnamed4xx =
@@ -181,11 +175,6 @@ export const useRecipeGeneration = ({
         setPhase(PhaseType.Preview);
         return;
       }
-      // The import failure DOES have a transcript to land in (the preview chat),
-      // so the assistant bubble says the useful thing whenever the backend named
-      // the error — "that's not an Instagram link", "no recipe in that post",
-      // "the video is too long" — instead of one flat "couldn't generate".
-      // `aiError` remains the fallback for an unnamed failure.
       if (state.status === 'error') showErrorToast(state.failure);
       const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
       setChatHistory([
