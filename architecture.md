@@ -410,11 +410,11 @@ Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated c
 | Empty string, separators (`,`, `.`, `/`, `\n`) | `src/core/constants/char-constants.ts` |
 | Structural numbers (`0`, `1`, `2`, `-1`) | `src/core/constants/value-constants.ts` |
 | Regexes shared by more than one file | `src/core/constants/regex-constants.ts` |
-| Locale codes (`en`, `tr`) | `src/core/constants/locale-constants.ts` |
+| Locale codes (`en`, `tr`) | `src/application/i18n/locale-constants.ts` |
 | API endpoints, page sizes, timeouts | `src/infrastructure/constants/api.ts` |
 | Storage keys | `src/infrastructure/constants/storage.ts` |
 | Any design measurement (spacing, size, opacity, tracking, z-order, …) | `src/presentation/base/theme/` — see §5a |
-| Colour palettes (light & dark) | `src/presentation/base/theme/colors.ts` / `themes.ts` |
+| Colour palettes (light & dark) | `src/presentation/base/theme/colors/palette/themes.ts` |
 | A value only one page reads | that page's `model/` folder |
 | A value only one shared widget reads | a sibling file next to the widget |
 
@@ -835,7 +835,7 @@ To bypass in an emergency: `git commit --no-verify` (use sparingly; document why
 
 | Package | Purpose |
 |---------|---------|
-| `expo` (SDK 54) | Framework |
+| `expo` (SDK 55) | Framework |
 | `expo-router` | File-based routing |
 | `expo-localization` | Device locale detection |
 | `expo-secure-store` | Secure key-value storage (native) |
@@ -847,10 +847,20 @@ To bypass in an emergency: `git commit --no-verify` (use sparingly; document why
 
 ---
 
-## External API
+## Backend
 
-DummyJSON (`https://dummyjson.com`) — free, public, zero configuration.
+`recipely-backend` — a separate repository (Node + Express + Prisma + PostgreSQL on Oracle Cloud).
+It is the only API this app talks to; there is no public sandbox behind it.
 
-- Auth: `POST /auth/login`
-- Recipes: `GET /recipes`, `GET /recipes/:id`
-- Todos: `GET /todos`, `GET /todos/:id`
+| Environment | Host | Used by |
+|---|---|---|
+| Production | `https://api.recipely.net` | release builds, recipely.net |
+| Development | `https://dev-api.recipely.net` | `APP_VARIANT=development` builds, dev.recipely.net |
+
+The variant is chosen in `src/infrastructure/constants/api.ts`, which also owns every route, page
+size and request timeout — nothing else in the app names a host or an endpoint. Requests under
+`/api/v1` are wrapped in an AES-256-GCM envelope keyed by `API_AES_KEY_HEX`, which must equal the
+backend's `API_AES_KEY`; `/health` and the avatar upload sit outside that prefix.
+
+Because the repos ship independently, a field or filter the UI wants may simply not exist yet —
+check the backend before assuming, and land the backend PR first.
