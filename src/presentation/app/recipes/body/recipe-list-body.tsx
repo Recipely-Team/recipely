@@ -45,6 +45,19 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  * collapsing-header feed) and the state-dependent body (error / loading / search
  * / empty / list). The filter sheets and sign-in prompt are rendered by the
  * screen alongside this.
+ *
+ * @remarks
+ * - **The mobile feed header renders even with zero rows.** An empty result
+ *   used to swap the whole list for a centered empty state, unmounting the
+ *   cuisine strip and the active-filter chips — exactly the controls a user
+ *   needs at that moment, since the way out of a filter that matches nothing is
+ *   to un-tap it, and the only thing left was "Clear all". The empty copy is a
+ *   `ListEmptyComponent` under the header instead of a replacement for it, and
+ *   `contentContainerStyle: flexGrow 1` keeps a surface for pull-to-refresh.
+ * - **Search progress reads `vm.isRefetching`, not the store.** The web header
+ *   search is debounced, so the store looks idle for the first few hundred ms
+ *   after a keystroke; once the request is in flight the grid is already on
+ *   skeletons, so this covers only the debounce window.
  */
 export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -91,11 +104,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         <WebRecipeGrid
           recipes={recipes}
           isLoading={state.status !== 'loaded' || vm.isReloadingResults}
-          // `vm.isRefetching`, not `isRecipeListRefreshing(state)`: the web
-          // header search is debounced too, so the store looks idle for the
-          // first few hundred ms after a keystroke. Once the request itself is
-          // in flight the grid switches to skeletons (`isLoading` above), so
-          // this covers only the debounce window — never both at once.
           isRefreshing={vm.isRefetching && !vm.isReloadingResults}
           isSearching={isSearching}
           activeCuisineLabel={vm.activeCuisineLabel}
@@ -124,15 +132,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     );
   } else {
     body = (
-      // Rendered even with zero rows, deliberately. An empty result used to
-      // swap the whole list out for a centered empty state, which unmounted
-      // `MobileFeedHeader` — and with it the cuisine strip and active-filter
-      // chips. That is exactly the moment a user needs them: the way out of a
-      // filter that matches nothing is to un-tap it, and the only control left
-      // was "Clear all", which throws away the other filters too. So the empty
-      // copy is a `ListEmptyComponent` under the header instead of a
-      // replacement for it. The list's own `contentContainerStyle` keeps
-      // `flexGrow: 1`, so the pull-to-refresh gesture still has a surface.
       <Animated.FlatList
         // Emptied on purpose while the next set is fetched: the rows on screen
         // answer the PREVIOUS filter, and leaving them up read as a second

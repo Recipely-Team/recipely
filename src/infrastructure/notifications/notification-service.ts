@@ -8,11 +8,6 @@ import {
 import { TimeConstants, ValueConstants } from '@core/constants';
 import { ALARM_VIBRATION_PATTERN } from '@infrastructure/constants/notifications';
 
-// WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
-// module load time. ES `import` is hoisted before any code, so suppression
-// registered after the import comes too late. `import type` is erased at
-// runtime (no module loading), so LogBox.ignoreLogs registers first and the
-// pattern is active before `require` triggers expo-notifications initialization.
 if (__DEV__) {
   LogBox.ignoreLogs([
     'expo-notifications: Android Push notifications',
@@ -23,12 +18,6 @@ if (__DEV__) {
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
 
-// WHY: channel ID bumped to v4. v3 was created on devices with sound:'alarm'
-// (custom file that doesn't exist) and then patched to sound:'default' (string).
-// Android channel properties are immutable after creation, AND 'default' as a
-// string looks for a res/raw file named "default" — which doesn't exist, so
-// the channel is silent. v4 uses sound:true (boolean) which is the correct
-// API value for "use the device's default notification sound".
 const ALERT_CHANNEL = 'recipely-timer-alert-v4';
 
 // Notification category identifier — the "Kapat" dismiss action lives under it.
@@ -49,6 +38,19 @@ const REMINDER_COUNT = ValueConstants.zero;
  * Schedules and cancels local timer-completion notifications via the platform
  * notification API. Every method is a no-op on web, where local notifications
  * are unsupported and the in-app alarm overlay is the sole alert.
+ *
+ * @remarks
+ * - **The module is `require`d, not imported.** expo-notifications logs a
+ *   `console.error` on Android Expo Go at module-load time, and an ES `import`
+ *   is hoisted above any suppression. `import type` erases at runtime, so
+ *   `LogBox.ignoreLogs` registers before `require` initialises the module.
+ * - **Channel ID is v4.** Android channel properties are immutable once
+ *   created: v3 shipped with a custom `sound:'alarm'` file that doesn't exist
+ *   and was patched to the string `'default'`, which looks for `res/raw/default`
+ *   — also missing, so the channel was silent. `sound: true` is the correct
+ *   value for "the device's default sound".
+ * - **One notification, not a series.** The in-app expo-audio loop is the
+ *   continuous alert; the follow-up nudges exist only for a backgrounded app.
  */
 export class NotificationService implements NotificationServiceInterface {
   async init(): Promise<void> {

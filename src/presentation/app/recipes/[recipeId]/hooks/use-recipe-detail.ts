@@ -22,6 +22,26 @@ import { MediaType } from '@domain/recipes/media/media-type';
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
  * author, likes, comments, and save/delete flows, and exposes guest-gated
  * handlers plus derived display values for the presentational body components.
+ *
+ * @remarks
+ * - **One source of truth for the like.** A second `likedByMe` without the
+ *   `recipe?.likedByMe` fallback left the floating heart empty until the likes
+ *   store synced, and empty for good whenever the sync was skipped.
+ * - **Failures come from the store's `error` field**, which it records instead
+ *   of throwing, so a dropped connection or an expired session doesn't read as
+ *   a generic "try again". The static copy is only a defensive fallback.
+ * - **A delete failure shows inline in the still-open confirm sheet**; a global
+ *   toast would be occluded by the sheet. Flows on the screen below use toasts.
+ * - **The network sync re-runs on every entry**, not just the first: a cached
+ *   copy's like, comment and view counts have moved on. The store keeps the
+ *   cached recipe on screen meanwhile, so re-entry shows content immediately
+ *   and corrects itself.
+ * - **That effect depends on primitives, not the state object** — the
+ *   local-recipe path builds a fresh wrapper every render, and an object
+ *   dependency re-fired the sync into an infinite update loop.
+ * - **An owned recipe takes its author from the session** plus the shared
+ *   profile store; resolving it through the shared store would clobber the
+ *   signed-in user's cached profile, so other authors load in `useRecipeAuthor`.
  */
 export const useRecipeDetail = (): UseRecipeDetailResult => {
   const router = useRouter();
@@ -49,11 +69,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
   const ownProfileState = userProfileStore((s) => s.state);
   const loadOwnProfile = userProfileStore((s) => s.load);
-  // For an owned recipe the author is the signed-in user: take name/photo from
-  // the session and the recipe count from the shared profile store (the same
-  // source the Profile tab populates). Resolving the author through the shared
-  // store would clobber the signed-in user's cached profile, so other authors
-  // are fetched separately inside useRecipeAuthor.
   const owner: ResolvedAuthor | null =
     isOwner && authState.status === 'authenticated' && ownProfileState.status === 'loaded'
       ? {
@@ -93,9 +108,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(() => router.back(), 300);
     } else if (s.status === 'error') {
-      // WHY: the failure is shown inline inside the (still-open) confirm sheet
-      // rather than as a toast — a global toast would be occluded by the modal
-      // sheet. Other flows on the full screen below use toasts.
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
@@ -120,10 +132,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       setCommentInput(CharConstants.empty);
       setSubmitError(null);
     } else {
-      // WHY: the store records the real failure on its `error` field rather than
-      // throwing — resolve the copy from it so a dropped connection or an expired
-      // session doesn't read as a generic "try again" prompt. The static string is
-      // only a defensive fallback: the store always sets a failure on `false`.
       const failure = commentsStore.getState().byRecipe[recipeId]?.error;
       setSubmitError(failure != null ? failureToastMessage(failure) : t().comments.error);
     }
@@ -136,8 +144,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     } else {
       await favoritesStore.getState().addFavorite(userId, recipeId);
     }
-    // WHY: the store records the failure on its `error` field rather than
-    // throwing — surface it as a toast so a rejected save never passes silently.
     const failure = favoritesStore.getState().error;
     if (failure !== null) {
       showErrorToast(failure);
@@ -167,10 +173,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       ? ({ status: 'loaded' as const, recipe: localRecipe, fetchedAt: ValueConstants.zero })
       : networkState;
 
-  // WHY every entry and not only the first: the cached copy was read at some
-  // earlier point and its like count, comment count and view count have moved
-  // on since. The store keeps the cached recipe on screen while this runs, so
-  // a re-entry shows content immediately and corrects itself.
   useEffect(() => {
     if (!isLocal && recipeId.length > ValueConstants.zero) void load(recipeId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -182,9 +184,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
-  // WHY: use primitives instead of recipeState object — the local-recipe path
-  // creates a fresh wrapper object every render, so an object dependency would
-  // re-fire syncFromApi on every render and trigger an infinite update loop.
   const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
   const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
   const syncFetchedAt = recipeState?.status === 'loaded' ? recipeState.fetchedAt : null;
@@ -247,12 +246,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: MediaType.Image, url: recipe.image }];
   const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
-  // ONE source of truth for the like, deliberately. There used to be a second
-  // `likedByMe` field without the `recipe?.likedByMe` fallback, which the
-  // floating heart consumed — so that heart rendered empty until the likes
-  // store synced, and stayed empty whenever the sync was skipped (it is skipped
-  // while an optimistic toggle is in flight). The store overlay wins when it has
-  // an entry; otherwise the server's answer stands.
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
