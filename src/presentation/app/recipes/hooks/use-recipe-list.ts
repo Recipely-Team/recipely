@@ -57,6 +57,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
+  const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, width } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
@@ -331,6 +332,17 @@ export const useRecipeList = (): UseRecipeListResult => {
   // count: it asks for the same content, so `answersCurrentQuery` stays true.
   const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
 
+  // Paging is only offered for rows that answer the current question — asking
+  // for page 2 of a query the user has already typed past would append results
+  // nobody asked for.
+  const isLoadingMore = state.status === 'loaded' && state.isLoadingMore === true;
+  const canLoadMore =
+    state.status === 'loaded' && state.hasMore && answersCurrentQuery && !isLoadingMore;
+  const onEndReached = useCallback((): void => {
+    if (!canLoadMore) return;
+    void loadMore(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
+  }, [canLoadMore, loadMore, buildApiFilters]);
+
   return {
     state,
     recipes,
@@ -338,6 +350,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     isSearching,
     isRefetching,
     isReloadingResults,
+    isLoadingMore,
+    onEndReached,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
     sortBy,

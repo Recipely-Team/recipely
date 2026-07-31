@@ -10,8 +10,13 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
+import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import {
   AI_REQUEST_TIMEOUT_MS,
+  FIRST_PAGE,
+  MY_RECIPES_PAGE_SIZE,
   IMPORT_REQUEST_TIMEOUT_MS,
   RECIPES_PAGE_SIZE,
   TRENDING_RECIPES_LIMIT,
@@ -36,25 +41,16 @@ import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refi
 export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const params: Record<string, unknown> = { page: 1, pageSize: RECIPES_PAGE_SIZE };
-    if (filters?.search) params['search'] = filters.search;
-    if (filters?.cuisines?.length) params['cuisines'] = filters.cuisines.join(',');
-    if (filters?.categories?.length) params['categories'] = filters.categories.join(',');
-    if (filters?.difficulties?.length) params['difficulties'] = filters.difficulties.join(',');
-    if (filters?.maxTime) params['maxTime'] = filters.maxTime;
-    if (filters?.sort) params['sort'] = filters.sort;
-    if (filters?.sortOrder) params['sortOrder'] = filters.sortOrder;
-
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: ApiRoutes.recipes.root,
-      params,
+      params: toRecipeListQuery(filters),
     });
     if (!result.ok) {
       return result;
     }
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
@@ -69,16 +65,16 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return mapRecipeSummaries(result.value.items);
   }
 
-  async listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  async listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>> {
     const result = await this.http.request<RecipesListDto>({
       method: 'GET',
       url: ApiRoutes.me.recipes,
-      params: { page: 1, pageSize: 20 },
+      params: { page: page ?? FIRST_PAGE, pageSize: MY_RECIPES_PAGE_SIZE },
     });
     if (!result.ok) {
       return result;
     }
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 
   async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {

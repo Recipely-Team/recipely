@@ -7,12 +7,13 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
 
 export interface RecipeRepositoryInterface {
-  listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>>;
+  listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>>;
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
   listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>>;
-  listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>>;
+  listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>>;
   getRecipe(id: string): Promise<Result<RecipeEntity, Failure>>;
   createRecipe(
     input: CreateRecipeInput,

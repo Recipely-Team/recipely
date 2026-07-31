@@ -338,6 +338,15 @@ blocking.
     that asserts on the *generated* Info.plist after `expo prebuild`. Config is not the
     artifact; check the artifact.
 
+23d. **A repository issues requests; it does not build them** — query parameters and
+    request bodies are named DTOs produced by a `RequestMapper`, never assembled inline
+    with a stack of `if`s. And **paging is a parameter, never a literal**: `page: 1`
+    written into a repository method meant the recipe feed fetched the first page for its
+    entire life and no type ever objected. A list endpoint takes the page from its caller,
+    returns the backend's envelope (`total` / `page` / `hasMore`), and its mapper is
+    covered by a test that asserts a requested page reaches the query — the test that was
+    missing when this shipped.
+
 24. **A bug fix ships the test that would have caught it** — this is how the repo gets
     harder to break instead of merely getting patched. Three steps, in order:
 

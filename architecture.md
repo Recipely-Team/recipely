@@ -180,6 +180,10 @@ Implements domain interfaces with concrete I/O.
   `RequestMapper<TInput, TDto>` (returns the DTO directly). These are **type aliases, not base classes** —
   mappers never become classes, and infallible field-copy transformers that fit neither contract stay
   plain functions.
+- **Paging** — list endpoints return the wire envelope mapped to a page read model
+  (`RecipePage`: `items`, `total`, `page`, `hasMore`), not a bare array. Dropping the
+  envelope is what let the app request page 1 forever. The page comes from the caller;
+  the query is built by a `RequestMapper`, not by the repository method.
 - **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).

@@ -92,12 +92,14 @@ const makeStores = (): Stores =>
  * not the web shell, loaded, not searching, non-empty results.
  */
 const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 'scrollHandler'> => ({
-  state: { status: 'loaded', query: '', recipes: RECIPES },
+  state: { status: 'loaded', query: '', recipes: RECIPES, page: 1, hasMore: false },
   recipes: RECIPES,
   isWebShell: false,
   isSearching: false,
   isRefetching: false,
   isReloadingResults: false,
+  isLoadingMore: false,
+  onEndReached: jest.fn(),
   activeFilterCount: 0,
   gridColumns: 1,
   sortBy: 'popular',
@@ -189,7 +191,7 @@ const refreshingProp = (overrides: Partial<UseRecipeListResult>): boolean => {
  * or the "empty" + retry button (no filters).
  */
 const emptyVm = (withFilters: boolean): Partial<UseRecipeListResult> => ({
-  state: { status: 'loaded', query: '', recipes: [] },
+  state: { status: 'loaded', query: '', recipes: [], page: 1, hasMore: false },
   recipes: [],
   activeFilterCount: withFilters ? 1 : 0,
   filters: withFilters ? { ...emptyFilters, cuisines: [CuisineKey.Italian] } : emptyFilters,
@@ -214,6 +216,8 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
       status: 'loaded',
       query: '',
       recipes: RECIPES,
+      page: 1,
+      hasMore: false,
       isRefreshing: true,
     };
 
@@ -230,6 +234,8 @@ describe('RecipeListBody — mobile RefreshControl wiring', () => {
       status: 'loaded',
       query: '',
       recipes: RECIPES,
+      page: 1,
+      hasMore: false,
       isRefreshing: true,
     };
 

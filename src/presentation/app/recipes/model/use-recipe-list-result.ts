@@ -35,6 +35,10 @@ export interface UseRecipeListResult {
    * that is pulling them, the second re-fetches what the user already sees.
    */
   isReloadingResults: boolean;
+  /** True while the NEXT page is being appended below the current rows. */
+  isLoadingMore: boolean;
+  /** Called when the feed nears its end; appends the next page if there is one. */
+  onEndReached: () => void;
   activeFilterCount: number;
   gridColumns: number;
   sortBy: SortKey;

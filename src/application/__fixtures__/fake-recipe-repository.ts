@@ -14,6 +14,7 @@ import type { GenerateRecipeCall } from '@application/__fixtures__/generate-reci
 import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
 import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
 import { ValueConstants } from '@core/constants';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -32,7 +33,7 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -44,7 +45,7 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     );
   }
 
-  listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  listMyRecipes(_page?: number): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
       this.config.listMyRecipesResult ?? fail(new UnknownFailure('not configured')),
     );

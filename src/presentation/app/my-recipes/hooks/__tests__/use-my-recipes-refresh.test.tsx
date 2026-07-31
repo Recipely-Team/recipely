@@ -122,6 +122,7 @@ const makeStores = (loaders: Loaders) => {
   const recipeListStore = create<RecipeListStoreState>(() => ({
     state: IDLE_STATE,
     load: loaders.loadRecipes,
+    loadMore: jest.fn(),
     replace: jest.fn(),
     remove: jest.fn(),
   }));
@@ -322,7 +323,7 @@ describe('useMyRecipesRefresh', () => {
 
       // A store-driven refresh: exactly the state the PR #161 bug turned into a
       // spinner (and an iOS scroll jump) without the user pulling anything.
-      const refreshingState: RecipeListState = { status: 'loaded', query: '', recipes: [], isRefreshing: true };
+      const refreshingState: RecipeListState = { status: 'loaded', query: '', recipes: [], page: 1, hasMore: false, isRefreshing: true };
       act(() => {
         recipeListStore.setState({ state: refreshingState });
       });
@@ -383,7 +384,7 @@ describe('useMyRecipesRefresh', () => {
 
       const beforeStoreRefresh = renders.length;
       act(() => {
-        recipeListStore.setState({ state: { status: 'loaded', query: '', recipes: [], isRefreshing: true } });
+        recipeListStore.setState({ state: { status: 'loaded', query: '', recipes: [], page: 1, hasMore: false, isRefreshing: true } });
       });
 
       expect(rendersSince(beforeStoreRefresh).every((r) => !r.isRefreshing)).toBe(true);

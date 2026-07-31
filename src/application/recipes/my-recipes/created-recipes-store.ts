@@ -50,7 +50,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       if (!result.ok) {
         return;
       }
-      set({ recipes: result.value });
+      set({ recipes: result.value.items });
     },
     generateRecipe: async (prompt) => {
       set({ generateState: { status: 'generating' } });

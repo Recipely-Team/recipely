@@ -16,6 +16,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
@@ -178,7 +179,7 @@ describe('createdRecipesStore CRUD', () => {
   describe('findById', () => {
     it('reads from localRecipes, not from recipes', async () => {
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok([makeSummary({ id: 'network-only' })])),
+        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'network-only' })]))),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       await store.getState().loadMyRecipes();
@@ -262,7 +263,7 @@ describe('createdRecipesStore CRUD', () => {
     it('sets recipes from the lean use case result and leaves localRecipes untouched', async () => {
       const localRecipe = makeRecipe({ id: 'local-survivor' });
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok([makeSummary({ id: 'r-from-network' })])),
+        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r-from-network' })]))),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       store.getState().add(localRecipe);
@@ -280,7 +281,7 @@ describe('createdRecipesStore CRUD', () => {
       const listMyRecipesUseCase = {
         execute: () => {
           callCount += 1;
-          return Promise.resolve(callCount === 1 ? ok([existing]) : fail(new UnknownFailure('down')));
+          return Promise.resolve(callCount === 1 ? ok(recipePageOf([existing])) : fail(new UnknownFailure('down')));
         },
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });

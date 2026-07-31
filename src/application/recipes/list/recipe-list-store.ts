@@ -53,8 +53,47 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       set({
         state: {
           status: 'loaded',
-          recipes: result.value,
+          recipes: result.value.items,
           query: filters?.search ?? CharConstants.empty,
+          page: result.value.page,
+          hasMore: result.value.hasMore,
+        },
+      });
+    },
+
+    /**
+     * Appends the next page to what is already on screen.
+     *
+     * Separate from `load` because it must NOT blank the list or move the
+     * sequence number that `load` guards with: an appending fetch is not a new
+     * question, so a filter change landing mid-append should win, and this
+     * one's answer is dropped if it does. A no-op unless a loaded page says
+     * there is more and nothing is already appending.
+     */
+    loadMore: async (filters?: RecipeFilters) => {
+      const current = get().state;
+      if (current.status !== 'loaded' || !current.hasMore || current.isLoadingMore === true) return;
+
+      const appendingFor = latestRequest;
+      const nextPage = current.page + ValueConstants.one;
+      set({ state: { ...current, isLoadingMore: true } });
+
+      const result = await deps.listRecipes.execute({ ...filters, page: nextPage });
+      if (appendingFor !== latestRequest) return;
+
+      const state = get().state;
+      if (state.status !== 'loaded') return;
+      if (!result.ok) {
+        set({ state: { ...state, isLoadingMore: false, refreshFailure: result.failure } });
+        return;
+      }
+      set({
+        state: {
+          ...state,
+          recipes: [...state.recipes, ...result.value.items],
+          page: result.value.page,
+          hasMore: result.value.hasMore,
+          isLoadingMore: false,
         },
       });
     },

@@ -24,6 +24,12 @@ export type RecipeListState =
        * rendering whatever is loaded as results.
        */
       query: string;
+      /** 1-based page these `recipes` currently reach up to. */
+      page: number;
+      /** True while the backend has more matching recipes than are loaded. */
+      hasMore: boolean;
+      /** True while an appending fetch for the NEXT page is in flight. */
+      isLoadingMore?: boolean;
       isRefreshing?: boolean;
       refreshFailure?: Failure;
     }
