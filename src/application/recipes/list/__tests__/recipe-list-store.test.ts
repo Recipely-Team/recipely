@@ -1,4 +1,4 @@
-import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';

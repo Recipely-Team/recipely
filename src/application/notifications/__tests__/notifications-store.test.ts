@@ -1,4 +1,4 @@
-import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
+import { configureNotificationsStore } from '@application/notifications/notifications-store';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { ListNotificationsResult } from '@application/notifications/list/list-notifications-result';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
