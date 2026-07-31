@@ -6,6 +6,7 @@
  */
 import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 import { kvStore } from '@infrastructure/storage/kv-store.web';
+import { ok } from '@core/result/result-helpers';
 
 const mem = new Map<string, string>();
 
@@ -32,13 +33,13 @@ describe('kvStore (web)', () => {
   });
 
   it('returns null for a key that was never written', async () => {
-    await expect(webStore.getItem('theme_id')).resolves.toBeNull();
+    await expect(webStore.getItem('theme_id')).resolves.toEqual(ok(null));
   });
 
   it('round-trips a written value through localStorage', async () => {
     await webStore.setItem('theme_id', 'royal-purple');
 
-    await expect(webStore.getItem('theme_id')).resolves.toBe('royal-purple');
+    await expect(webStore.getItem('theme_id')).resolves.toEqual(ok('royal-purple'));
   });
 
   it('returns null again after the key is removed', async () => {
@@ -46,6 +47,6 @@ describe('kvStore (web)', () => {
 
     await webStore.removeItem('theme_id');
 
-    await expect(webStore.getItem('theme_id')).resolves.toBeNull();
+    await expect(webStore.getItem('theme_id')).resolves.toEqual(ok(null));
   });
 });

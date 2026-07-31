@@ -50,13 +50,15 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   // Load persisted theme + preference on mount
   useEffect(() => {
-    void getKeyValueStore().getItem('theme_id').then((stored) => {
+    void getKeyValueStore().getItem('theme_id').then((read) => {
+      const stored = read.ok ? read.value : null;
       // A previously-persisted theme may no longer be part of the palette
       // (e.g. after trimming it down) — fall back to the default instead of
       // handing an unknown id to `getThemeColors`, which would crash.
       setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
-    void getKeyValueStore().getItem('theme_preference').then((stored) => {
+    void getKeyValueStore().getItem('theme_preference').then((read) => {
+      const stored = read.ok ? read.value : null;
       if (stored !== null && isThemePreference(stored)) {
         setPreferenceState(stored);
       }

@@ -1,3 +1,6 @@
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 import { LocaleService } from '@application/i18n/locale-service';
 import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
@@ -5,12 +8,12 @@ import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 const makeStore = (initial: string | null = null): IKeyValueStore & { saved: string | null } => {
   const store = {
     saved: initial,
-    getItem: (): Promise<string | null> => Promise.resolve(store.saved),
-    setItem: (_key: string, value: string): Promise<void> => {
+    getItem: (): Promise<Result<string | null, Failure>> => Promise.resolve(ok(store.saved)),
+    setItem: (_key: string, value: string): Promise<Result<void, Failure>> => {
       store.saved = value;
-      return Promise.resolve();
+      return Promise.resolve(ok(undefined));
     },
-    removeItem: (): Promise<void> => Promise.resolve(),
+    removeItem: (): Promise<Result<void, Failure>> => Promise.resolve(ok(undefined)),
   };
   return store;
 };

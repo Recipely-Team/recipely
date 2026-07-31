@@ -14,7 +14,8 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
-    const raw = await getKeyValueStore().getItem(TIMERS_STORAGE_KEY);
+    const read = await getKeyValueStore().getItem(TIMERS_STORAGE_KEY);
+    const raw = read.ok ? read.value : null;
     if (!raw) {
       set({ hydrated: true });
       return;

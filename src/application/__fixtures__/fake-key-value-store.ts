@@ -1,3 +1,6 @@
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 
 /**
@@ -9,18 +12,18 @@ import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 export class FakeKeyValueStore implements IKeyValueStore {
   private readonly entries = new Map<string, string>();
 
-  getItem(key: string): Promise<string | null> {
-    return Promise.resolve(this.entries.get(key) ?? null);
+  getItem(key: string): Promise<Result<string | null, Failure>> {
+    return Promise.resolve(ok(this.entries.get(key) ?? null));
   }
 
-  setItem(key: string, value: string): Promise<void> {
+  setItem(key: string, value: string): Promise<Result<void, Failure>> {
     this.entries.set(key, value);
-    return Promise.resolve();
+    return Promise.resolve(ok(undefined));
   }
 
-  removeItem(key: string): Promise<void> {
+  removeItem(key: string): Promise<Result<void, Failure>> {
     this.entries.delete(key);
-    return Promise.resolve();
+    return Promise.resolve(ok(undefined));
   }
 
   /** Synchronously plants a value, as if it were persisted before the test ran. */
