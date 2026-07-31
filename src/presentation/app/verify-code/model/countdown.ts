@@ -1,4 +1,5 @@
 import { ValueConstants } from '@core/constants';
+import { ClockFormat } from '@presentation/base/utils/clock-format';
 
 export const SECOND_MS = 1000;
 const SECONDS_PER_MINUTE = 60;
@@ -15,5 +16,5 @@ export const computeRemaining = (iso: string): number => {
 export const formatCountdown = (totalSeconds: number): string => {
   const minutes = Math.floor(totalSeconds / SECONDS_PER_MINUTE);
   const seconds = totalSeconds % SECONDS_PER_MINUTE;
-  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  return `${minutes}:${seconds.toString().padStart(ClockFormat.digits, ClockFormat.pad)}`;
 };

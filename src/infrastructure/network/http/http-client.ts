@@ -12,6 +12,7 @@ import { buildRequestInterceptor } from '@infrastructure/network/http/build-requ
 import { buildResponseInterceptor } from '@infrastructure/network/http/build-response-interceptor';
 import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
+import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches
@@ -47,7 +48,7 @@ export class HttpClient {
   async request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
     try {
       const response = await this.instance.request<unknown>(config);
-      if (response.status >= 200 && response.status < 300) {
+      if (isSuccessStatus(response.status)) {
         const dataEnvelope = response.data;
         if (isRecipelyDataBody<T>(dataEnvelope)) {
           return ok(dataEnvelope.data);
