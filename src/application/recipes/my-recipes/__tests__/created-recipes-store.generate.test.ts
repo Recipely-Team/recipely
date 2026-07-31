@@ -1,4 +1,4 @@
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import type {
   CreateRecipeUseCase,
 } from '@application/recipes/create/create-recipe-use-case';

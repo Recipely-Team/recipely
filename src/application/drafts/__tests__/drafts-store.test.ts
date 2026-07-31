@@ -1,4 +1,4 @@
-import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
+import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { ListDraftsInput } from '@application/drafts/list/list-drafts-input';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';

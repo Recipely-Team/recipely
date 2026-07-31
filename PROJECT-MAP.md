@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 742 source files.
+[architecture.md](architecture.md). 728 source files.
 
 ## Layers
 
@@ -43,20 +43,20 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `audio/` _(2)_
-- `auth/` — password-reset, profile, registration, session, sign-in _(18)_
-- `comments/` — add, delete, like, list _(20)_
+- `auth/` — password-reset, profile, registration, session, sign-in _(17)_
+- `comments/` — add, delete, like, list _(19)_
 - `di/` _(3)_
-- `drafts/` — list, read, write _(12)_
-- `favorites/` _(7)_
-- `feedback/` _(5)_
+- `drafts/` — list, read, write _(11)_
+- `favorites/` _(6)_
+- `feedback/` _(4)_
 - `i18n/` _(4)_
-- `likes/` _(7)_
-- `notifications/` — list, read _(13)_
+- `likes/` _(6)_
+- `notifications/` — list, read _(12)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(46)_
+- `recipes/` — create, delete, detail, generate, import, list, my-recipes, refine, saved, taxonomy, trending _(40)_
 - `storage/` _(2)_
 - `timers/` _(7)_
-- `user-profile/` _(7)_
+- `user-profile/` _(6)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
@@ -137,4 +137,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e473e5e9e81ea068 -->
+<!-- fingerprint: c9058358ced6ec8c -->

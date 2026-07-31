@@ -6,7 +6,7 @@
  * newer than what produced it.
  */
 
-import { configureLikesStore } from '@application/likes/configure-likes-store';
+import { configureLikesStore } from '@application/likes/likes-store';
 import type { LikesStore } from '@application/likes/likes-store';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';

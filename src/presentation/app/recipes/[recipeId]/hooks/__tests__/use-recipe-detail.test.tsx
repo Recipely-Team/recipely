@@ -32,7 +32,7 @@ import type { Result } from '@core/result/result';
 import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
-import { configureCommentsStore } from '@application/comments/configure-comments-store';
+import { configureCommentsStore } from '@application/comments/comments-store';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';

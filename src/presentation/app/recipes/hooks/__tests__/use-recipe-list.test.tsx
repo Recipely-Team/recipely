@@ -35,7 +35,7 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
-import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
 import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
