@@ -4,11 +4,11 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, borderWidths, opacities } from '@presentation/base/theme';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
-import type { TabConfig } from '@presentation/base/widgets/navigation/tab-config';
+import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
 
 export interface WebHeaderTabsProps {
   active: WebHeaderTabKey | null;
-  tabs: TabConfig<WebHeaderTabKey>[];
+  tabs: TabItem<WebHeaderTabKey>[];
   onPress: (key: WebHeaderTabKey) => void;
 }
 
