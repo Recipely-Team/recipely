@@ -17,9 +17,19 @@ import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafti
 import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
-import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/generation/use-recipe-generation-args';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+
+import type { Dispatch, SetStateAction } from 'react';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+
+interface UseRecipeGenerationArgs {
+  recipe: EditableRecipe;
+  setRecipe: Dispatch<SetStateAction<EditableRecipe>>;
+  activeDraftId: string;
+  draftId: string | undefined;
+  importUrl: string | undefined;
+}
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;

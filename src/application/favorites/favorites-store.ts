@@ -2,7 +2,15 @@ import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
-import type { FavoritesStoreDeps } from '@application/favorites/favorites-store-deps';
+import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
+import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+
+interface FavoritesStoreDeps {
+  addFavoriteUseCase: AddFavoriteUseCase;
+  removeFavoriteUseCase: RemoveFavoriteUseCase;
+  savedRecipesStore: BoundStore<SavedRecipesStoreState>;
+}
 
 export const configureFavoritesStore = (deps: FavoritesStoreDeps): BoundStore<FavoritesStoreState> => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;

@@ -3,8 +3,6 @@ import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-
 import type { ThemeDefinition } from '@presentation/base/theme/context/theme-definition';
 import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/variant-semantics';
 import type { Palette } from '@presentation/base/theme/colors/palette/palette';
-import type { DarkArgs } from '@presentation/base/theme/colors/palette/dark-args';
-import type { LightArgs } from '@presentation/base/theme/colors/palette/light-args';
 import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
 import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 
@@ -231,6 +229,32 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     }),
   },
 };
+
+interface DarkArgs {
+  primary: string;
+  primaryText: string;
+  primaryLight: string;
+  gradientStart: string;
+  gradientEnd: string;
+  background: string;
+  secondary: string;
+  secondaryText: string;
+  text?: string;
+  textMuted?: string;
+}
+
+interface LightArgs {
+  primary: string;
+  primaryText: string;
+  primaryLight: string;
+  gradientStart: string;
+  gradientEnd: string;
+  background: string;
+  secondary: string;
+  secondaryText: string;
+  text?: string;
+  textMuted?: string;
+}
 
 export const ALL_THEMES: ThemeId[] = [
   'pearl-white', 'crimson-ember', 'emerald-garden', 'royal-purple',

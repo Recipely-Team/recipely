@@ -1,8 +1,13 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
-import type { TaxonomyStoreDeps } from '@application/recipes/taxonomy/taxonomy-store-deps';
 import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
+
+import type { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
+
+interface TaxonomyStoreDeps {
+  loadTaxonomyUseCase: LoadTaxonomyUseCase;
+}
 
 export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<TaxonomyStoreState> => {
   const fetchCatalogs = async (

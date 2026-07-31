@@ -2,7 +2,17 @@ import { useCallback, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import type { UseMyRecipesRefreshResult } from '@presentation/app/my-recipes/model/use-my-recipes-refresh-result';
+
+/** View model returned by `useMyRecipesRefresh` for the My-Recipes tab bodies. */
+interface UseMyRecipesRefreshResult {
+  /**
+   * True only while a user-initiated pull is in flight — safe to bind straight
+   * to `RefreshControl.refreshing`.
+   */
+  isRefreshing: boolean;
+  /** Re-fetches whatever the active tab renders. */
+  onRefresh: () => void;
+}
 
 /**
  * Pull-to-refresh for the My-Recipes screen: re-fetches exactly what the active

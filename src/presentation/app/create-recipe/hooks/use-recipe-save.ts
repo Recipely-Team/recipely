@@ -8,10 +8,17 @@ import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-gro
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
-import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/saving/use-recipe-save-args';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
+
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+
+interface UseRecipeSaveArgs {
+  recipe: EditableRecipe;
+  activeDraftId: string;
+  setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
+}
 
 /**
  * Handles publishing a recipe: the required-field guards, the per-field

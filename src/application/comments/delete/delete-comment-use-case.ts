@@ -1,7 +1,11 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
-import type { DeleteCommentInput } from '@application/comments/delete/delete-comment-input';
+
+interface DeleteCommentInput {
+  recipeId: string;
+  commentId: string;
+}
 
 /**
  * Removes a comment from a recipe, scoped by both `recipeId` and `commentId`

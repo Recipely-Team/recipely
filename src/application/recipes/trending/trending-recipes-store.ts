@@ -1,7 +1,11 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
-import type { TrendingRecipesStoreDeps } from '@application/recipes/trending/trending-recipes-store-deps';
+import type { ListTrendingRecipesUseCase } from '@application/recipes/trending/list-trending-recipes-use-case';
+
+interface TrendingRecipesStoreDeps {
+  listTrendingRecipes: ListTrendingRecipesUseCase;
+}
 
 export const configureTrendingRecipesStore = (
   deps: TrendingRecipesStoreDeps,

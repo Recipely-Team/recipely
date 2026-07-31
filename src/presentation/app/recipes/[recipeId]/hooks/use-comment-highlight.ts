@@ -1,12 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { ScrollViewProps } from 'react-native';
+import type { RefObject } from 'react';
+import type { ScrollView, ScrollViewProps } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { spacing } from '@presentation/base/theme';
 import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
-import type { UseCommentHighlightArgs } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-args';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { ValueConstants } from '@core/constants';
+
+import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+
+/** Inputs {@link useCommentHighlight} needs from the recipe-detail view model. */
+interface UseCommentHighlightArgs {
+  recipeId: string;
+  commentState: RecipeCommentsState | undefined;
+  scrollViewRef: RefObject<ScrollView | null>;
+}
 
 /**
  * Upper bound on `loadMore` calls while hunting for a deep-linked comment. The

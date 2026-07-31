@@ -14,7 +14,26 @@ import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
-import type { RequestConfig } from '@infrastructure/network/http/request-config';
+
+/**
+ * The per-request knobs a caller may set — not the verb, url or body, which
+ * are the arguments of `get` / `post` / `put` / `patch` / `delete`.
+ *
+ * Deliberately narrower than Axios' own config: a repository has no business
+ * swapping the adapter or the status validator, and exposing the whole surface
+ * invites call sites to rebuild the client's behaviour one request at a time.
+ */
+interface RequestConfig {
+  /**
+   * Query string values, serialised by Axios. Typed as `object` rather than
+   * `Record<string, unknown>` so a purpose-built query DTO — the shape a
+   * `RequestMapper` produces — satisfies it without an index signature it has
+   * no reason to carry.
+   */
+  params?: object;
+  /** Overrides the client default — the AI and import calls need far longer. */
+  timeout?: number;
+}
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches
