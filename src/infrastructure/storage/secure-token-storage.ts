@@ -43,7 +43,8 @@ export class SecureTokenStorage {
   async loadSession(): Promise<Result<AuthSessionEntity | null, Failure>> {
     let raw: string | null;
     try {
-      raw = await kvStore.getItem(STORAGE_KEY);
+      const read = await kvStore.getItem(STORAGE_KEY);
+      raw = read.ok ? read.value : null;
     } catch (error: unknown) {
       if (__DEV__) {
         console.error('[SecureTokenStorage] loadSession failed:', error);

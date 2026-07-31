@@ -23,7 +23,8 @@ export const timersBarStore = create<TimersBarStoreState>((set, get) => ({
   hydrate: async () => {
     let stored: string | null = null;
     try {
-      stored = await getKeyValueStore().getItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY);
+      const read = await getKeyValueStore().getItem(TIMERS_BAR_COLLAPSED_STORAGE_KEY);
+      stored = read.ok ? read.value : null;
     } catch {
       return;
     }

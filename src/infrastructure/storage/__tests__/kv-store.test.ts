@@ -23,6 +23,7 @@ jest.mock('expo-secure-store', () => ({
 }));
 
 import { kvStore } from '@infrastructure/storage/kv-store';
+import { ok } from '@core/result/result-helpers';
 
 describe('kvStore (native)', () => {
   beforeEach(() => {
@@ -31,13 +32,13 @@ describe('kvStore (native)', () => {
   });
 
   it('returns null for a key that was never written', async () => {
-    await expect(kvStore.getItem('session')).resolves.toBeNull();
+    await expect(kvStore.getItem('session')).resolves.toEqual(ok(null));
   });
 
   it('round-trips a written value through the secure store', async () => {
     await kvStore.setItem('session', 'token-123');
 
-    await expect(kvStore.getItem('session')).resolves.toBe('token-123');
+    await expect(kvStore.getItem('session')).resolves.toEqual(ok('token-123'));
   });
 
   it('returns null again after the key is removed', async () => {
@@ -45,6 +46,6 @@ describe('kvStore (native)', () => {
 
     await kvStore.removeItem('session');
 
-    await expect(kvStore.getItem('session')).resolves.toBeNull();
+    await expect(kvStore.getItem('session')).resolves.toEqual(ok(null));
   });
 });

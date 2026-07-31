@@ -1,3 +1,4 @@
+import { ok } from '@core/result/result-helpers';
 import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
 
 /**
@@ -7,7 +8,7 @@ import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
  * real platform store is always registered before the UI mounts in the app.
  */
 export const noopKeyValueStore: IKeyValueStore = {
-  getItem: async () => null,
-  setItem: async () => {},
-  removeItem: async () => {},
+  getItem: async () => ok(null),
+  setItem: async () => ok(undefined),
+  removeItem: async () => ok(undefined),
 };
