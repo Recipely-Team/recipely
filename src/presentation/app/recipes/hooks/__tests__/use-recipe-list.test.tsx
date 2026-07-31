@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Regression tests for `useRecipeList`'s `isPullRefreshing` flag.
  *
@@ -38,7 +39,6 @@ import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debou
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
@@ -50,6 +50,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
@@ -129,7 +130,7 @@ const makeSavedRecipesStore = () =>
     setSavedIds: jest.fn(),
   }) as unknown as SavedRecipesStoreState);
 
-const makeStores = (recipeListStore: RecipeListStore): Stores =>
+const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): Stores =>
   ({
     recipeListStore,
     authStore: makeAuthStore(),

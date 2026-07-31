@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Reported: like a recipe on its detail screen, go back, open it again — the
  * heart is empty. Re-entering re-renders the recipe from the detail cache, a
@@ -7,14 +8,14 @@
  */
 
 import { configureLikesStore } from '@application/likes/likes-store';
-import type { LikesStore } from '@application/likes/likes-store';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { ok } from '@core/result/result-helpers';
+import type { LikesStoreState } from '@application/likes/likes-store-state';
 
 const RECIPE_ID = 'r-1';
 
-const makeStore = (): LikesStore =>
+const makeStore = (): BoundStore<LikesStoreState> =>
   configureLikesStore({
     likeRecipe: { execute: () => Promise.resolve(ok(undefined)) } as unknown as LikeRecipeUseCase,
     unlikeRecipe: { execute: () => Promise.resolve(ok(undefined)) } as unknown as UnlikeRecipeUseCase,

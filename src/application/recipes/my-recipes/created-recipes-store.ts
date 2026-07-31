@@ -1,10 +1,10 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { CreatedRecipesStoreDeps } from '@application/recipes/my-recipes/created-recipes-store-deps';
 
-export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): CreatedRecipesStore => {
+export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStoreState> => {
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
     localRecipes: [],
@@ -126,6 +126,3 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Cre
     clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureCreatedRecipesStore`. */
-export type CreatedRecipesStore = UseBoundStore<StoreApi<CreatedRecipesStoreState>>;

@@ -1,9 +1,9 @@
-import type { StoreApi, UseBoundStore } from 'zustand';
+import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeDetailStoreDeps } from '@application/recipes/detail/recipe-detail-store-deps';
 
-export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): RecipeDetailStore => {
+export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
   return create<RecipeDetailStoreState>((set, get) => ({
     byId: {},
     load: async (id: string) => {
@@ -41,6 +41,3 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): RecipeD
     clear: () => set({ byId: {} }),
   }));
 };
-
-/** Bound Zustand store handle produced by `configureRecipeDetailStore`. */
-export type RecipeDetailStore = UseBoundStore<StoreApi<RecipeDetailStoreState>>;
