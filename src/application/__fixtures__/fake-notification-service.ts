@@ -1,14 +1,14 @@
-import type { INotificationService } from '@domain/notifications/i-notification-service';
+import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 import type { ScheduleTimerCompleteCall } from '@application/__fixtures__/schedule-timer-complete-call';
 import { ValueConstants } from '@core/constants';
 
 /**
- * Recording test double for `INotificationService`. It performs no real
+ * Recording test double for `NotificationServiceInterface`. It performs no real
  * scheduling but records every call so tests can assert on invocation counts
  * and arguments without a spy framework. `permissionGranted` and `scheduledIds`
  * are public so a test can arrange the return values it needs.
  */
-export class FakeNotificationService implements INotificationService {
+export class FakeNotificationService implements NotificationServiceInterface {
   initCount = ValueConstants.zero;
   requestPermissionsCount = ValueConstants.zero;
   scheduleCalls: ScheduleTimerCompleteCall[] = [];

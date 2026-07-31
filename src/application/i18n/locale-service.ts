@@ -1,5 +1,5 @@
-import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { toSupportedLocale } from '@application/i18n/supported-locales';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
@@ -25,8 +25,8 @@ export class LocaleService {
   private readonly listeners = new Set<() => void>();
 
   constructor(
-    private readonly store: IKeyValueStore,
-    deviceLocaleProvider: IDeviceLocaleProvider,
+    private readonly store: KeyValueStoreInterface,
+    deviceLocaleProvider: DeviceLocaleProviderInterface,
   ) {
     this.current = toSupportedLocale(deviceLocaleProvider.getDeviceLocale());
   }

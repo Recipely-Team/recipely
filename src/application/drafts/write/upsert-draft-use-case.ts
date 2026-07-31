@@ -1,7 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
 /**
@@ -9,7 +9,7 @@ import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
  * UUID) so a single operation covers both create and update.
  */
 export class UpsertDraftUseCase {
-  constructor(private readonly repo: IRecipeDraftRepository) {}
+  constructor(private readonly repo: RecipeDraftRepositoryInterface) {}
 
   execute(input: UpsertDraftInput): Promise<Result<RecipeDraft, Failure>> {
     return this.repo.upsertDraft(input);

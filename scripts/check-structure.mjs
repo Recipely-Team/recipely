@@ -366,6 +366,21 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- O: port interfaces are *Interface, never I* (CLAUDE.md §21) -----------
+// A leading `I` is Hungarian notation: it reads as noise at the point of use
+// (`repo: IRecipeRepository`) and it sorted every port away from the thing it
+// describes in a file listing. The suffix says the same thing where a reader
+// is already looking — at the end of the name.
+{
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(/^export interface (I[A-Z]\w+)/gm)) {
+      errors.push(`${file}: port interface ${m[1]} — name it ${m[1].slice(1)}Interface in a *-interface.ts file (CLAUDE.md §21)`);
+    }
+  }
+}
+
 // --- J: PROJECT-MAP.md must describe the tree that exists --------------------
 // The map only saves anyone time while it is true. It carries a fingerprint of
 // every folder and file name under src/; if the tree moved and the map did not,

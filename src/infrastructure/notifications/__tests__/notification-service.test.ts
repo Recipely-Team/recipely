@@ -1,6 +1,6 @@
 /**
  * Contract test for `NotificationService`. It must conform to the
- * `INotificationService` port, be a full no-op on web (where local
+ * `NotificationServiceInterface` port, be a full no-op on web (where local
  * notifications are unsupported), and on native delegate permission checks and
  * scheduling to the platform notification API. `expo-notifications` is mocked so
  * nothing touches a real device or push service.
@@ -40,7 +40,7 @@ describe('NotificationService', () => {
     platform.OS = originalOS;
   });
 
-  it('exposes the INotificationService port shape', () => {
+  it('exposes the NotificationServiceInterface port shape', () => {
     expect(typeof service.init).toBe('function');
     expect(typeof service.requestPermissions).toBe('function');
     expect(typeof service.scheduleTimerComplete).toBe('function');

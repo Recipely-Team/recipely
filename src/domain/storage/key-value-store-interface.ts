@@ -13,7 +13,7 @@ import type { Failure } from '@core/failure';
  * stored" and "the read blew up", and callers could not tell a first launch
  * from a broken keychain.
  */
-export interface IKeyValueStore {
+export interface KeyValueStoreInterface {
   /** `ok(null)` when the key is absent — distinct from a failed read. */
   getItem(key: string): Promise<Result<string | null, Failure>>;
   setItem(key: string, value: string): Promise<Result<void, Failure>>;

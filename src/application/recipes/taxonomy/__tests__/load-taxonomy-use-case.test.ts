@@ -1,13 +1,13 @@
 import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import type { ITaxonomyRepository } from '@domain/recipes/taxonomy/i-taxonomy-repository';
+import type { TaxonomyRepositoryInterface } from '@domain/recipes/taxonomy/taxonomy-repository-interface';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 
 const cuisines: TaxonomyItem[] = [{ key: 'TURKISH', name: 'Turkish', emoji: '🥙' }];
 const categories: TaxonomyItem[] = [{ key: 'BREAKFAST', name: 'Breakfast', emoji: '🍳' }];
 
-const makeRepo = (overrides: Partial<ITaxonomyRepository> = {}): ITaxonomyRepository => ({
+const makeRepo = (overrides: Partial<TaxonomyRepositoryInterface> = {}): TaxonomyRepositoryInterface => ({
   listCuisines: jest.fn().mockResolvedValue(ok(cuisines)),
   listCategories: jest.fn().mockResolvedValue(ok(categories)),
   ...overrides,

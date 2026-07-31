@@ -1,5 +1,5 @@
 import type { HealthStatus } from '@domain/network/health-status';
-import type { IHealthCheckService } from '@domain/network/i-health-check-service';
+import type { HealthCheckServiceInterface } from '@domain/network/health-check-service-interface';
 import { HEALTH_URL } from '@infrastructure/constants/api';
 
 /**
@@ -7,7 +7,7 @@ import { HEALTH_URL } from '@infrastructure/constants/api';
  * whether the server is reachable. Returns `'connected'`, `'disconnected'`, or
  * `'unknown'` — never throws.
  */
-export class HealthCheckService implements IHealthCheckService {
+export class HealthCheckService implements HealthCheckServiceInterface {
   async check(): Promise<HealthStatus> {
     try {
       const controller = new AbortController();

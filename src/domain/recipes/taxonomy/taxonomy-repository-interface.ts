@@ -7,7 +7,7 @@ import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
  * Lists are localized server-side via `Accept-Language`; implementations only
  * fetch and map, never translate.
  */
-export interface ITaxonomyRepository {
+export interface TaxonomyRepositoryInterface {
   /** Fetches the full localized cuisine catalog. */
   listCuisines(): Promise<Result<TaxonomyItem[], Failure>>;
 

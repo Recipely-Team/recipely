@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { CommentEntity } from '@domain/comments/comment-entity';
-import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
@@ -12,10 +12,10 @@ import { ValueConstants } from '@core/constants';
 import type { AddCommentRequestDto } from '@infrastructure/comments/dtos/add-comment-request-dto';
 
 /**
- * Implements `ICommentRepository` against the Recipely backend. Supports
+ * Implements `CommentRepositoryInterface` against the Recipely backend. Supports
  * paginated listing, adding, and removing comments scoped to a recipe.
  */
-export class CommentRepository implements ICommentRepository {
+export class CommentRepository implements CommentRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listByRecipe(

@@ -6,7 +6,7 @@
  * The device language is only ever a *seed*: it is used when the user has not
  * picked a language yet. A stored preference always wins over it.
  */
-export interface IDeviceLocaleProvider {
+export interface DeviceLocaleProviderInterface {
   /** The device's language code (e.g. `tr`), unvalidated against the app's supported set. */
   getDeviceLocale(): string;
 }

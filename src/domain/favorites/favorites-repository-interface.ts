@@ -6,7 +6,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
  * Repository interface for favorite/bookmark operations.
  * Defines contract for adding and removing recipes from user's favorites.
  */
-export interface IFavoritesRepository {
+export interface FavoritesRepositoryInterface {
   /**
    * Add a recipe to the user's favorites.
    * @param userId The ID of the user

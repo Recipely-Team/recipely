@@ -1,5 +1,5 @@
 /**
- * Contract test for the native `kvStore`: it must satisfy the `IKeyValueStore`
+ * Contract test for the native `kvStore`: it must satisfy the `KeyValueStoreInterface`
  * port by delegating to `expo-secure-store` and round-tripping writes/reads,
  * returning `null` for absent keys. The platform module is replaced with an
  * in-memory backing because the jest-expo `expo-secure-store` mock does not

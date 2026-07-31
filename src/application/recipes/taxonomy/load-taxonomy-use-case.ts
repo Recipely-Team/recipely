@@ -1,7 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { ITaxonomyRepository } from '@domain/recipes/taxonomy/i-taxonomy-repository';
+import type { TaxonomyRepositoryInterface } from '@domain/recipes/taxonomy/taxonomy-repository-interface';
 import type { TaxonomyCatalog } from '@application/recipes/taxonomy/taxonomy-catalog';
 
 /**
@@ -10,7 +10,7 @@ import type { TaxonomyCatalog } from '@application/recipes/taxonomy/taxonomy-cat
  * partial catalog is surfaced.
  */
 export class LoadTaxonomyUseCase {
-  constructor(private readonly repo: ITaxonomyRepository) {}
+  constructor(private readonly repo: TaxonomyRepositoryInterface) {}
 
   async execute(): Promise<Result<TaxonomyCatalog, Failure>> {
     const [cuisinesResult, categoriesResult] = await Promise.all([

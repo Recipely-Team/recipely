@@ -1,6 +1,6 @@
 import { LogBox, Platform } from 'react-native';
 import type * as NotificationsType from 'expo-notifications';
-import type { INotificationService } from '@domain/notifications/i-notification-service';
+import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 import {
   TIMER_COMPLETE,
   DISMISS_ALARM_ACTION,
@@ -50,7 +50,7 @@ const REMINDER_COUNT = ValueConstants.zero;
  * notification API. Every method is a no-op on web, where local notifications
  * are unsupported and the in-app alarm overlay is the sole alert.
  */
-export class NotificationService implements INotificationService {
+export class NotificationService implements NotificationServiceInterface {
   async init(): Promise<void> {
     if (Platform.OS === 'web') return;
     try {

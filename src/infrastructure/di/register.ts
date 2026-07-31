@@ -31,8 +31,8 @@ import { NotificationService } from '@infrastructure/notifications/notification-
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
 import { API_BASE_URL } from '@infrastructure/constants/api';
 import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
@@ -56,8 +56,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     TOKENS.LocaleService,
     () =>
       new LocaleService(
-        container.resolve<IKeyValueStore>(TOKENS.KeyValueStore),
-        container.resolve<IDeviceLocaleProvider>(TOKENS.DeviceLocaleProvider),
+        container.resolve<KeyValueStoreInterface>(TOKENS.KeyValueStore),
+        container.resolve<DeviceLocaleProviderInterface>(TOKENS.DeviceLocaleProvider),
       ),
   );
 

@@ -1,4 +1,4 @@
-import type { INotificationService } from '@domain/notifications/i-notification-service';
+import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 
 /**
  * Null-object notification service used only when none is registered in the
@@ -6,7 +6,7 @@ import type { INotificationService } from '@domain/notifications/i-notification-
  * Every method is inert — the real service is always registered before the UI
  * mounts in the app.
  */
-export const noopNotificationService: INotificationService = {
+export const noopNotificationService: NotificationServiceInterface = {
   init: async () => {},
   requestPermissions: async () => false,
   scheduleTimerComplete: async () => [],

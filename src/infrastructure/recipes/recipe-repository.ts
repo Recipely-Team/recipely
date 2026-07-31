@@ -3,7 +3,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
@@ -28,12 +28,12 @@ import type { ImportRecipeRequestDto } from '@infrastructure/recipes/dtos/import
 import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 
 /**
- * Implements `IRecipeRepository` against the Recipely backend. Handles
+ * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
  * listing, fetching, creating, updating, deleting, and AI-generating recipes
  * via HTTP. Image uploads are handled as multipart form-data with
  * platform-specific blob construction for web vs. native.
  */
-export class RecipeRepository implements IRecipeRepository {
+export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {

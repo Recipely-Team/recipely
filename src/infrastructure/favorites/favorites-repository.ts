@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { IFavoritesRepository } from '@domain/favorites/i-favorites-repository';
+import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
 import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
@@ -10,12 +10,12 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api';
 
 /**
- * Implements `IFavoritesRepository` against the Recipely backend. Persists
+ * Implements `FavoritesRepositoryInterface` against the Recipely backend. Persists
  * favorite additions and removals per recipe and loads the user's saved
  * recipes as list rows — ids alone would leave the saved grid dependent on
  * some other screen having already loaded the same recipes.
  */
-export class FavoritesRepository implements IFavoritesRepository {
+export class FavoritesRepository implements FavoritesRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async addFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
