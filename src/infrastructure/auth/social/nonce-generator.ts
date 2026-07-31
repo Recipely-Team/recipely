@@ -1,12 +1,15 @@
 import * as Crypto from 'expo-crypto';
 import { digestStringAsync, CryptoDigestAlgorithm } from 'expo-crypto';
-import { CharConstants } from '@core/constants';
+import { CharConstants, RadixConstants } from '@core/constants';
+
+/** Pad character for a single-digit hex byte. */
+const HEX_PAD = '0';
 
 /** Generates a cryptographically random hex nonce of the given byte length. */
 export const generateNonce = (byteLength = 32): string => {
   const bytes = Crypto.getRandomBytes(byteLength);
   return Array.from(bytes)
-    .map((b) => b.toString(16).padStart(2, '0'))
+    .map((b) => b.toString(RadixConstants.hex).padStart(RadixConstants.hexCharsPerByte, HEX_PAD))
     .join(CharConstants.empty);
 };
 

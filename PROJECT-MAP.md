@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 730 source files.
+[architecture.md](architecture.md). 734 source files.
 
 ## Layers
 
@@ -73,7 +73,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `firebase/` _(4)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
-- `network/` — envelope, errors, http, jwt, upload _(17)_
+- `network/` — envelope, errors, http, jwt, upload _(18)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, media, refine, taxonomy _(18)_
 - `storage/` _(6)_
@@ -81,7 +81,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 ## `src/core/` — building blocks only
 
-- `constants/` _(4)_
+- `constants/` _(6)_
 - `di/` _(2)_
 - `entity/` _(1)_
 - `failure/` — kinds _(14)_
@@ -103,7 +103,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` — small pure helpers _(5)_
+- `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(42)_
 
@@ -138,4 +138,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f044955921de5a73 -->
+<!-- fingerprint: 39642a73234c897f -->

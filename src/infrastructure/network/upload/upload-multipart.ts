@@ -10,6 +10,7 @@ import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
+import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 
 /**
  * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios
@@ -76,7 +77,7 @@ export const uploadMultipart = async <T>(
           }
         }
       }
-      if (status >= 200 && status < 300) {
+      if (isSuccessStatus(status)) {
         if (isRecipelyDataBody<T>(body)) {
           resolve(ok(body.data));
           return;

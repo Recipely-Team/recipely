@@ -5,7 +5,7 @@ import {
   TIMER_COMPLETE,
   DISMISS_ALARM_ACTION,
 } from '@domain/notifications/timer-notification-keys';
-import { ValueConstants } from '@core/constants';
+import { TimeConstants, ValueConstants } from '@core/constants';
 import { ALARM_VIBRATION_PATTERN } from '@infrastructure/constants/notifications';
 
 // WHY: expo-notifications logs console.error on Android Expo Go (SDK 53+) at
@@ -38,6 +38,11 @@ const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
 // alarm. Reminder notifications caused repeated dings every 2 min which
 // felt like spam rather than an alarm. User dismisses via the alarm screen
 // or the "Kapat" action on the single notification.
+/** Gap between the alarm and each follow-up nudge. */
+const REMINDER_INTERVAL_MINUTES = 2;
+const REMINDER_INTERVAL_MS =
+  REMINDER_INTERVAL_MINUTES * TimeConstants.secondsPerMinute * TimeConstants.millisecondsPerSecond;
+
 const REMINDER_COUNT = ValueConstants.zero;
 
 /**
@@ -126,7 +131,7 @@ export class NotificationService implements INotificationService {
     const ids: string[] = [];
     const all = [endTimeMs];
     for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
-      all.push(endTimeMs + i * 2 * 60 * 1000);
+      all.push(endTimeMs + i * REMINDER_INTERVAL_MS);
     }
     const results = await Promise.all(all.map((t) => this.scheduleSingle(timerId, recipeName, t)));
     for (const id of results) {
