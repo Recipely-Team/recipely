@@ -4,7 +4,7 @@ import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 
-export interface IRecipeDraftRepository {
+export interface RecipeDraftRepositoryInterface {
   listDrafts(page: number, pageSize: number): Promise<Result<PagedDrafts, Failure>>;
   /**
    * Returns the user's most recently updated draft, or `ok(null)` when they

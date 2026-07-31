@@ -250,7 +250,7 @@ blocking.
 
 16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
     `multiline`), 8, 14, 14c (folder file count), 15, 15b (map freshness), 21 (entity naming),
-    22 (unguarded `console.*`), 23 (hand-rolled bottom sheets), 23b (`Modal` without
+    21 (port interface naming), 22 (unguarded `console.*`), 23 (hand-rolled bottom sheets), 23b (`Modal` without
     `statusBarTranslucent`), 23c (background-audio capability) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
@@ -279,7 +279,13 @@ blocking.
     `architecture.md`; a PR adding an entity must update that table. Cross-aggregate references are by
     id only, never object references (Evans 2003 p.89-93).
 
-21. **Naming suffixes** — two conventions keep declarations self-describing:
+21. **Naming suffixes** — three conventions keep declarations self-describing:
+    - **Port interfaces** — a contract the domain declares and infrastructure implements is named
+      `*Interface` and lives in a `*-interface.ts` file (`RecipeRepositoryInterface` in
+      `recipe-repository-interface.ts`). The suffix goes at the END, spelled out: a leading `I`
+      is Hungarian notation that reads as noise at the point of use, and `i-` sorted every port
+      away from the thing it describes in a file listing. **Enforced mechanically** by
+      `check:structure` (rule O).
     - **Entities** — a class extending `BaseEntity` is named `*Entity` and lives in a `*-entity.ts` file
       (`RecipeEntity` in `recipe-entity.ts`). **Enforced mechanically** by `check:structure` (rule G).
       Value objects (`Email`), DTOs and `*Props` interfaces are NOT entities and take no `Entity` suffix.

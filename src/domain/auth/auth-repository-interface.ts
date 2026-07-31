@@ -4,7 +4,7 @@ import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { UpdateProfileInput } from '@domain/auth/update-profile-input';
 
-export interface IAuthRepository {
+export interface AuthRepositoryInterface {
   signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>>;
   /**
    * Starts registration by sending a verification code to `email`. Does NOT

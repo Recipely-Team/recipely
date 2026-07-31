@@ -4,7 +4,7 @@
  * resolved by consumers through the DI container so no layer above depends on a
  * concrete storage backend.
  */
-export interface IKeyValueStore {
+export interface KeyValueStoreInterface {
   getItem(key: string): Promise<string | null>;
   setItem(key: string, value: string): Promise<void>;
   removeItem(key: string): Promise<void>;

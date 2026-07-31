@@ -2,7 +2,7 @@ import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -14,11 +14,11 @@ import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
 import { toUpsertDraftRequest } from '@infrastructure/drafts/to-upsert-draft-request';
 
 /**
- * Implements `IRecipeDraftRepository` against the Recipely backend draft
+ * Implements `RecipeDraftRepositoryInterface` against the Recipely backend draft
  * endpoints (mounted under `/recipes`). All bodies are sent as JSON; the
  * locale rides the `Accept-Language` header attached by `HttpClient`.
  */
-export class RecipeDraftRepository implements IRecipeDraftRepository {
+export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listDrafts(

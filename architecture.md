@@ -154,7 +154,7 @@ The heart of the application. Pure TypeScript, no framework dependencies.
   methods returning `Result`.
 - **Value Objects** — e.g. `Email` (self-validating class with a factory `create()` returning `Result`).
 - **Enums / Literals** — typed string unions in their own files.
-- **Repository Interfaces** — `IRecipeRepository`, `IAuthRepository`, `ICommentRepository` define contracts;
+- **Repository Interfaces** — `RecipeRepositoryInterface`, `AuthRepositoryInterface`, `CommentRepositoryInterface` define contracts;
   implementations live in `src/infrastructure/`.
 
 ### `src/application/`
@@ -297,7 +297,7 @@ where a class would add no value.
 | Construct | Form |
 |-----------|------|
 | Use case | `class GetRecipeUseCase { execute(...) }` |
-| Repository | `class RecipeRepository implements IRecipeRepository { ... }` |
+| Repository | `class HttpRecipeRepository implements RecipeRepositoryInterface { ... }` |
 | HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
 | Domain entity | `class RecipeEntity extends BaseEntity<RecipeProps> { ... }` |
 | DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ...> => { ... }` |
@@ -325,7 +325,7 @@ Rules:
  * Fails with NotFoundFailure when the recipe does not exist on the server.
  */
 export class GetRecipeUseCase {
-  constructor(private readonly repo: IRecipeRepository) {}
+  constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   // No JSDoc needed — signature is self-explanatory.
   execute(id: string): Promise<Result<Recipe, Failure>> {

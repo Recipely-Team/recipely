@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
+import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { DevicePlatform } from '@domain/notifications/device-platform';
 
 /**
@@ -8,7 +8,7 @@ import type { DevicePlatform } from '@domain/notifications/device-platform';
  * FCM notifications. Safe to call repeatedly — the backend upserts by token.
  */
 export class RegisterDeviceTokenUseCase {
-  constructor(private readonly repo: INotificationRepository) {}
+  constructor(private readonly repo: NotificationRepositoryInterface) {}
 
   execute(token: string, platform: DevicePlatform): Promise<Result<void, Failure>> {
     return this.repo.registerDeviceToken(token, platform);

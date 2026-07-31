@@ -2,7 +2,7 @@ import { fail } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { GenerateRecipeInput } from '@application/recipes/generate/generate-recipe-input';
 import { ValueConstants } from '@core/constants';
 
@@ -13,7 +13,7 @@ import { ValueConstants } from '@core/constants';
  * same rule, so presentation resolves one piece of copy for both.
  */
 export class GenerateRecipeUseCase {
-  constructor(private readonly repo: IRecipeRepository) {}
+  constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   execute(input: GenerateRecipeInput): Promise<Result<RecipeEntity, Failure>> {
     const trimmed = input.prompt.trim();

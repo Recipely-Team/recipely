@@ -1,12 +1,12 @@
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
 /**
- * In-memory test double for `IKeyValueStore`. Backed by a `Map`, it round-trips
+ * In-memory test double for `KeyValueStoreInterface`. Backed by a `Map`, it round-trips
  * writes and reads exactly like the platform store, returning `null` for missing
  * keys. The synchronous `seed`, `peek`, and `clear` helpers let a test arrange
  * and assert on the backing without awaiting the async port surface.
  */
-export class FakeKeyValueStore implements IKeyValueStore {
+export class FakeKeyValueStore implements KeyValueStoreInterface {
   private readonly entries = new Map<string, string>();
 
   getItem(key: string): Promise<string | null> {

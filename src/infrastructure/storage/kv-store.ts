@@ -1,7 +1,7 @@
 import * as SecureStore from 'expo-secure-store';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
-export const kvStore: IKeyValueStore = {
+export const kvStore: KeyValueStoreInterface = {
   getItem: (key: string): Promise<string | null> =>
     SecureStore.getItemAsync(key),
   setItem: (key: string, value: string): Promise<void> =>

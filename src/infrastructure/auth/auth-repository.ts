@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
-import type { IAuthRepository } from '@domain/auth/i-auth-repository';
+import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
 import { ApiRoutes } from '@infrastructure/constants/api-routes';
@@ -31,12 +31,12 @@ import type { SocialSignInRequestDto } from '@infrastructure/auth/dtos/social-si
 import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-profile-request-dto';
 
 /**
- * Implements `IAuthRepository` against the Recipely backend (email/password)
+ * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
  * and Firebase Auth (Google / Apple social sign-in). Social sign-in flows
  * obtain a Firebase ID token then exchange it for a backend JWT via
  * `POST /auth/social`, keeping all user records on the backend.
  */
-export class AuthRepository implements IAuthRepository {
+export class AuthRepository implements AuthRepositoryInterface {
   constructor(
     private readonly http: HttpClient,
     private readonly storage: SecureTokenStorage,

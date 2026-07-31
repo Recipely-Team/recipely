@@ -1,6 +1,6 @@
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
-export const kvStore: IKeyValueStore = {
+export const kvStore: KeyValueStoreInterface = {
   getItem: async (key: string): Promise<string | null> =>
     localStorage.getItem(key),
   setItem: async (key: string, value: string): Promise<void> => {
