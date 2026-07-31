@@ -22,11 +22,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
     if (limit !== undefined) params.limit = limit;
     if (offset !== undefined) params.offset = offset;
 
-    const result = await this.http.request<NotificationsResponseDto>({
-      method: 'GET',
-      url: ApiRoutes.me.notifications,
-      params,
-    });
+    const result = await this.http.get<NotificationsResponseDto>(ApiRoutes.me.notifications, { params });
     if (!result.ok) {
       return result;
     }
@@ -49,10 +45,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
   }
 
   async markAllRead(): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.notificationsReadAll,
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.notificationsReadAll, undefined);
     if (!result.ok) {
       return result;
     }
@@ -60,10 +53,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
   }
 
   async markOneRead(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.notificationRead(id),
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.notificationRead(id), undefined);
     if (!result.ok) {
       return result;
     }
@@ -74,11 +64,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
     token: string,
     platform: 'ios' | 'android' | 'web',
   ): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.deviceToken,
-      data: { token, platform } satisfies RegisterDeviceTokenRequestDto,
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.deviceToken, { token, platform } satisfies RegisterDeviceTokenRequestDto);
     if (!result.ok) {
       return result;
     }

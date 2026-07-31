@@ -16,11 +16,7 @@ export class FeedbackRepository implements FeedbackRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async submitFeedback(input: FeedbackSubmission): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'POST',
-      url: ApiRoutes.feedback,
-      data: toFeedbackRequestDto(input),
-    });
+    const result = await this.http.post(ApiRoutes.feedback, toFeedbackRequestDto(input));
 
     if (!result.ok) {
       return fail(result.failure);

@@ -338,6 +338,12 @@ blocking.
     that asserts on the *generated* Info.plist after `expo prebuild`. Config is not the
     artifact; check the artifact.
 
+23c2. **HTTP verbs are methods, not strings** — call `http.get/post/put/patch/delete`;
+    `method: 'POST'` inside a config object made the verb a literal thirty-odd times over,
+    where a typo compiled and a wrong verb reached the backend. `request(config)` survives
+    for the rare call needing a full Axios config, and `RequestConfig` deliberately exposes
+    only `params` and `timeout` — a repository has no business swapping the adapter.
+
 23d. **A repository issues requests; it does not build them** — query parameters and
     request bodies are named DTOs produced by a `RequestMapper`, never assembled inline
     with a stack of `if`s. And **paging is a parameter, never a literal**: `page: 1`

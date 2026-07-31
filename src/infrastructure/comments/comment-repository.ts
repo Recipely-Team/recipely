@@ -23,11 +23,7 @@ export class CommentRepository implements CommentRepositoryInterface {
     page: number,
     pageSize: number,
   ): Promise<Result<CommentPage, Failure>> {
-    const result = await this.http.request<CommentPageDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.comments(recipeId),
-      params: { page, pageSize },
-    });
+    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), { params: { page, pageSize } });
     if (!result.ok) {
       return result;
     }
@@ -48,11 +44,7 @@ export class CommentRepository implements CommentRepositoryInterface {
   }
 
   async add(recipeId: string, body: string): Promise<Result<CommentEntity, Failure>> {
-    const result = await this.http.request<CommentDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.comments(recipeId),
-      data: { body } satisfies AddCommentRequestDto,
-    });
+    const result = await this.http.post<CommentDto>(ApiRoutes.recipes.comments(recipeId), { body } satisfies AddCommentRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -60,10 +52,7 @@ export class CommentRepository implements CommentRepositoryInterface {
   }
 
   async remove(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.comment(recipeId, commentId),
-    });
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.comment(recipeId, commentId));
     if (!result.ok) {
       return result;
     }
@@ -71,19 +60,13 @@ export class CommentRepository implements CommentRepositoryInterface {
   }
 
   async like(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'POST',
-      url: ApiRoutes.recipes.commentLike(recipeId, commentId),
-    });
+    const result = await this.http.post(ApiRoutes.recipes.commentLike(recipeId, commentId), undefined);
     if (!result.ok) return fail(result.failure);
     return ok(undefined);
   }
 
   async unlike(recipeId: string, commentId: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.commentLike(recipeId, commentId),
-    });
+    const result = await this.http.delete(ApiRoutes.recipes.commentLike(recipeId, commentId));
     if (!result.ok) return fail(result.failure);
     return ok(undefined);
   }

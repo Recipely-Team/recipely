@@ -18,10 +18,7 @@ export class TaxonomyRepository implements TaxonomyRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listCuisines(): Promise<Result<TaxonomyItem[], Failure>> {
-    const result = await this.http.request<CuisinesResponseDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.cuisines,
-    });
+    const result = await this.http.get<CuisinesResponseDto>(ApiRoutes.recipes.cuisines);
     if (!result.ok) {
       return result;
     }
@@ -29,10 +26,7 @@ export class TaxonomyRepository implements TaxonomyRepositoryInterface {
   }
 
   async listCategories(): Promise<Result<TaxonomyItem[], Failure>> {
-    const result = await this.http.request<CategoriesResponseDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.categories,
-    });
+    const result = await this.http.get<CategoriesResponseDto>(ApiRoutes.recipes.categories);
     if (!result.ok) {
       return result;
     }

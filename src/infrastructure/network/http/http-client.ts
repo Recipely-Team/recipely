@@ -13,6 +13,8 @@ import { buildResponseInterceptor } from '@infrastructure/network/http/build-res
 import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { HttpMethod } from '@infrastructure/network/http/http-method';
+import type { RequestConfig } from '@infrastructure/network/http/request-config';
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches
@@ -43,6 +45,34 @@ export class HttpClient {
       buildResponseInterceptor(options, this.aesKey),
       (error: unknown) => Promise.reject(error),
     );
+  }
+
+  /**
+   * The verb is the method you call, not a string you pass.
+   *
+   * Every repository spelled `method: 'POST'` into a config object, so the verb
+   * was a literal thirty-odd times over and nothing stopped one from being
+   * typed `'Post'` or landing on the wrong call. These read as the request they
+   * make; `request` stays for the rare call needing a full Axios config.
+   */
+  get<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Get, url });
+  }
+
+  post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Post, url, data });
+  }
+
+  put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Put, url, data });
+  }
+
+  patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Patch, url, data });
+  }
+
+  delete<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Delete, url });
   }
 
   async request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
