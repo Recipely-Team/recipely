@@ -13,7 +13,7 @@ const mod: AnalyticsModule | null = (() => { try { return require('@react-native
 
 /** Enables or disables analytics collection (kept off in development). */
 export const setAnalyticsEnabled = async (enabled: boolean): Promise<void> => {
-  if (Platform.OS === 'web' || mod === null) return;
+  if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
   try {
     await mod.setAnalyticsCollectionEnabled(mod.getAnalytics(), enabled);
   } catch {
@@ -26,7 +26,7 @@ export const logAnalyticsEvent = async (
   name: string,
   params?: Record<string, string | number | boolean>,
 ): Promise<void> => {
-  if (Platform.OS === 'web' || mod === null) return;
+  if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
   try {
     await mod.logEvent(mod.getAnalytics(), name, params);
   } catch {
@@ -36,7 +36,7 @@ export const logAnalyticsEvent = async (
 
 /** Logs a screen view for screen-flow analytics. */
 export const logScreen = async (screenName: string, screenClass?: string): Promise<void> => {
-  if (Platform.OS === 'web' || mod === null) return;
+  if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
   try {
     await mod.logScreenView(mod.getAnalytics(), {
       screen_name: screenName,

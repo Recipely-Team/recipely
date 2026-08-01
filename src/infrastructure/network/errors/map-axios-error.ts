@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios';
+import { AxiosErrorCode } from '@infrastructure/network/http/http-status';
 import {
   type Failure,
   NetworkFailure,
@@ -23,6 +24,11 @@ import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-er
  * only branch with a decoded envelope. Every other branch is transport- or
  * client-level (no response body, hence no key) and leaves `Failure.messageKey`
  * `undefined`; presentation falls back to `code` for those.
+ *
+ * The English sentences below are diagnostics, not user copy. Nothing renders
+ * `Failure.message`: presentation resolves what the user reads from
+ * `messageKey`, then `code` (`failure-lookups.ts`), so these strings only ever
+ * reach a log or a crash report.
  */
 export const mapAxiosError = (error: unknown): Failure => {
   if (error instanceof EnvelopeDecryptError) {
@@ -32,7 +38,7 @@ export const mapAxiosError = (error: unknown): Failure => {
     return new UnknownFailure('Unexpected error', error);
   }
 
-  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
+  if (error.code === AxiosErrorCode.timedOut || error.code === AxiosErrorCode.connectionTimedOut) {
     return new TimeoutFailure('Request timed out');
   }
 

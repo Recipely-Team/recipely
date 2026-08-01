@@ -6,3 +6,4 @@ export type RefineRecipeState =
   | { status: 'refining' }
   | { status: 'success'; recipe: RecipeEntity }
   | { status: 'error'; failure: Failure };
+// TO DO: static status name problem

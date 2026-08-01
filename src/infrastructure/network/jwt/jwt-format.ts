@@ -28,3 +28,4 @@ export const Base64Url = {
   blockSize: 4,
   padding: '=',
 } as const;
+// TO DO: static chars etc. coredan alınabilir çıplak değerler olarak kalmasınlar

@@ -5,7 +5,7 @@ import { ValueConstants } from '@core/constants';
 export const defaultRecipeCommentsState = (): RecipeCommentsState => ({
   items: [],
   total: ValueConstants.zero,
-  page: 1,
+  page: 1, // TO DO: Static sayı coredaki constants dosyasına taşınabilir.
   isLoading: false,
   isLoadingMore: false,
   isSubmitting: false,

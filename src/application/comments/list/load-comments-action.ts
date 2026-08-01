@@ -21,7 +21,7 @@ export const createLoadCommentsAction = (
     }));
 
     try {
-      const result = await listComments.execute({ recipeId, page: 1, pageSize: COMMENTS_PAGE_SIZE });
+      const result = await listComments.execute({ recipeId, page: 1, pageSize: COMMENTS_PAGE_SIZE }); // TO DO: page backendden gelmeli
       if (!result.ok) {
         set((state) => ({
           byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
@@ -35,7 +35,7 @@ export const createLoadCommentsAction = (
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
           items: result.value.items,
           total: result.value.total,
-          page: 1,
+          page: 1,  // TO DO: page backendden gelmeli
           isLoading: false,
           error: null,
         })),

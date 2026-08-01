@@ -1,8 +1,8 @@
 export const TaxonomyStatus = {
-  Idle: 'idle',
-  Loading: 'loading',
-  Ready: 'ready',
-  Error: 'error',
+  Idle: 'idle', // TO DO: static status name problem
+  Loading: 'loading', // TO DO: static status name problem
+  Ready: 'ready', // TO DO: static status name problem
+  Error: 'error', // TO DO: static status name problem
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing

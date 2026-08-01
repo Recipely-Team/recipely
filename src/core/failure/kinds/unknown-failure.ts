@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Catch-all failure for unexpected errors that do not map to a more specific
@@ -6,7 +7,7 @@ import { Failure } from '@core/failure/failure';
  * never be shown directly to the user.
  */
 export class UnknownFailure extends Failure {
-  readonly code = 'unknown';
+  readonly code = FailureCode.Unknown;
   constructor(
     readonly message: string = 'Unknown error',
     readonly cause?: unknown,

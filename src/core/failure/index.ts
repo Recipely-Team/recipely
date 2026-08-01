@@ -18,3 +18,4 @@ export { ConflictFailure } from '@core/failure/kinds/conflict-failure';
 export { RateLimitFailure } from '@core/failure/kinds/rate-limit-failure';
 export { ServerFailure } from '@core/failure/kinds/server-failure';
 export { UnknownFailure } from '@core/failure/kinds/unknown-failure';
+export { FailureCode } from './failure-code';

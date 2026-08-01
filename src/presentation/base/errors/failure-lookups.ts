@@ -1,4 +1,5 @@
 import type { Failure } from '@presentation/base/types';
+import { FailureCode } from '@core/failure';
 import { t } from '@presentation/i18n';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconName } from '@presentation/base/errors/ionicon-name';
@@ -22,17 +23,20 @@ import { MESSAGE_KEY_TO_CONTENT_KEY } from '@presentation/base/errors/message-ke
 // Everything downstream (content, toast message, severity, icon) is derived from
 // the SAME resolved content key, so a failure can never read as one thing and be
 // coloured as another.
-const CODE_TO_KEY: Record<string, FailureContentKey> = {
-  network: 'network',
-  timeout: 'timeout',
-  server: 'server',
-  not_found: 'notFound',
-  unauthorized: 'unauthorized',
-  forbidden: 'forbidden',
-  conflict: 'conflict',
-  rate_limit: 'rateLimit',
-  validation: 'validation',
-  unknown: 'unknown',
+// Exhaustive by construction: `FailureCode` is a closed union, so a new code
+// that arrives without copy here is a compile error rather than a silent
+// fall-through to the "unknown" wording.
+const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
+  [FailureCode.Network]: 'network',
+  [FailureCode.Timeout]: 'timeout',
+  [FailureCode.Server]: 'server',
+  [FailureCode.NotFound]: 'notFound',
+  [FailureCode.Unauthorized]: 'unauthorized',
+  [FailureCode.Forbidden]: 'forbidden',
+  [FailureCode.Conflict]: 'conflict',
+  [FailureCode.RateLimit]: 'rateLimit',
+  [FailureCode.Validation]: 'validation',
+  [FailureCode.Unknown]: 'unknown',
 };
 
 const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {

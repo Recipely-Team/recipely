@@ -39,7 +39,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, { params: { pageSize: FAVORITES_PAGE_SIZE } });
+    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, { params: { pageSize: FAVORITES_PAGE_SIZE } }); // TO DO: Ayrı DTO olabilir pagination için ayrrıca page değeri eklenmeli
 
     if (!result.ok) return fail(result.failure);
 

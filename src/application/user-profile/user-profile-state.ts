@@ -6,3 +6,4 @@ export type UserProfileState =
   | { status: 'loading' }
   | { status: 'loaded'; profile: UserProfileEntity }
   | { status: 'error'; failure: Failure };
+// TO DO: static status name problem

@@ -11,7 +11,7 @@ export interface UserProps {
   displayName: string;
   photoUrl?: string;
   bio?: string;
-}
+} // TO DO: UserProps interface'i yerine UserEntityProps gibi bir isimlendirme yapılabilir. ayrıca ayrı dosyaya taşınabilir.
 
 /**
  * Domain entity representing an authenticated application user. Validates that

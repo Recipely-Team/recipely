@@ -17,10 +17,10 @@ const VAPID_KEY = process.env.EXPO_PUBLIC_FIREBASE_VAPID_KEY;
  */
 export const registerPushToken = async (register: RegisterTokenFn): Promise<void> => {
   try {
-    if (typeof window === 'undefined' || !('Notification' in window)) return;
+    if (typeof window === 'undefined' || !('Notification' in window)) return; // TO DO: static type check for Notification and undefined
     if (VAPID_KEY === undefined) {
       if (__DEV__) {
-        console.warn('[push-token-registrar] EXPO_PUBLIC_FIREBASE_VAPID_KEY missing — skipping web push registration');
+        console.warn('[push-token-registrar] EXPO_PUBLIC_FIREBASE_VAPID_KEY missing — skipping web push registration'); // TO DO: static message
       }
       return;
     }
@@ -35,7 +35,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
         : await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });
+    const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY }); // TO DO: deprecated `getToken` signature in Firebase v10 — update to `{ serviceWorkerRegistration }` when Expo supports it
     if (token.length === ValueConstants.zero) return;
 
     const result = await register(token, 'web');

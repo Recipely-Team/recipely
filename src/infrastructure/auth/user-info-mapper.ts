@@ -19,7 +19,7 @@ export const toUser: Mapper<RecipelyUserDto, UserEntity, ValidationFailure> = (d
     id: dto.id,
     email: emailResult.value,
     displayName: dto.displayName,
-    ...(dto.photoUrl ? { photoUrl: dto.photoUrl } : {}),
-    ...(dto.bio ? { bio: dto.bio } : {}),
+    ...(dto.photoUrl ? { photoUrl: dto.photoUrl } : {}), // TO DO: Ayrı DTO tanımlanabilir
+    ...(dto.bio ? { bio: dto.bio } : {}), // TO DO: Ayrı DTO tanımlanabilir
   });
 };

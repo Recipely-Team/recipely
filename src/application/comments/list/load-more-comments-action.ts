@@ -18,7 +18,7 @@ export const createLoadMoreCommentsAction = (
       return;
     }
 
-    const nextPage = current.page + 1;
+    const nextPage = current.page + 1; // TO DO: 1 constants dosyasına taşınabilir.
     set((state) => ({
       byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
         isLoadingMore: true,

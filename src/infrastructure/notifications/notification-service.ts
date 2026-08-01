@@ -54,7 +54,7 @@ const REMINDER_COUNT = ValueConstants.zero;
  */
 export class NotificationService implements NotificationServiceInterface {
   async init(): Promise<void> {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web') return; // TO DO: static platform names problem
     try {
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -70,7 +70,7 @@ export class NotificationService implements NotificationServiceInterface {
       await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
         {
           identifier: DISMISS_ALARM_ACTION,
-          buttonTitle: 'Kapat',
+          buttonTitle: 'Kapat', // TO DO: i18n key for this string
           options: {
             isDestructive: true,
             // opensAppToForeground: false lets the action run without bringing
@@ -83,7 +83,7 @@ export class NotificationService implements NotificationServiceInterface {
 
       if (Platform.OS === 'android') {
         await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
-          name: 'Cooking Timer (alarm)',
+          name: 'Cooking Timer (alarm)', // TO DO: i18n key for this string
           importance: Notifications.AndroidImportance.MAX,
           // WHY: omitting `sound` causes the Android channel manager to set
           // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
@@ -109,12 +109,12 @@ export class NotificationService implements NotificationServiceInterface {
   }
 
   async requestPermissions(): Promise<boolean> {
-    if (Platform.OS === 'web') return false;
+    if (Platform.OS === 'web') return false; // TO DO: static platform names problem
     try {
       const { status: existing } = await Notifications.getPermissionsAsync();
-      if (existing === 'granted') return true;
+      if (existing === 'granted') return true; // TO DO: static status names problem
       const { status } = await Notifications.requestPermissionsAsync();
-      return status === 'granted';
+      return status === 'granted'; // TO DO: static status names problem
     } catch {
       return false;
     }
@@ -129,7 +129,7 @@ export class NotificationService implements NotificationServiceInterface {
     recipeName: string,
     endTimeMs: number,
   ): Promise<string[]> {
-    if (Platform.OS === 'web') return [];
+    if (Platform.OS === 'web') return []; // TO DO: static platform names problem
     const ids: string[] = [];
     const all = [endTimeMs];
     for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
@@ -143,7 +143,7 @@ export class NotificationService implements NotificationServiceInterface {
   }
 
   async cancel(notifIds: string[]): Promise<void> {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web') return; // TO DO: static platform names problem
     await Promise.allSettled(
       notifIds.flatMap((id) => [
         Notifications.dismissNotificationAsync(id),
@@ -157,15 +157,15 @@ export class NotificationService implements NotificationServiceInterface {
     recipeName: string,
     fireAtMs: number,
   ): Promise<string | null> {
-    const delaySeconds = Math.max(1, Math.round((fireAtMs - Date.now()) / 1000));
+    const delaySeconds = Math.max(1, Math.round((fireAtMs - Date.now()) / 1000)); // TO DO: static constants for 1, 1000
     try {
       return await Notifications.scheduleNotificationAsync({
         content: {
-          title: `⏰ ${recipeName}`,
-          body: 'Timer is done! Tap to dismiss.',
+          title: `⏰ ${recipeName}`, // TO DO: i18n key for this string
+          body: 'Timer is done! Tap to dismiss.', // TO DO: i18n key for this string
           // iOS reads sound from content; Android ignores it (channel sets sound).
           // Using 'default' until a native build bundles alarm.mp3 in the app.
-          sound: Platform.OS === 'ios' ? 'default' : undefined,
+          sound: Platform.OS === 'ios' ? 'default' : undefined, // TO DO: static platform names problem
           categoryIdentifier: TIMER_ALERT_CATEGORY,
           data: { type: TIMER_COMPLETE, timerId, recipeName },
         },

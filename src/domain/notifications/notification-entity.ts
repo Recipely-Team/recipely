@@ -17,7 +17,7 @@ export interface NotificationProps {
   message: string | null;
   read: boolean;
   createdAt: Date;
-}
+} // TO DO: NotificationProps interface'i yerine NotificationEntityProps gibi bir isimlendirme yapılabilir. ayrıca ayrı dosyaya taşınabilir.
 
 /**
  * Domain entity representing a backend notification (comment, like, follow,

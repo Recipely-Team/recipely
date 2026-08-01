@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when the server itself errored (HTTP 5xx). The fault is on
@@ -7,7 +8,7 @@ import { Failure } from '@core/failure/failure';
  * diagnostics.
  */
 export class ServerFailure extends Failure {
-  readonly code = 'server';
+  readonly code = FailureCode.Server;
   constructor(
     readonly message: string = 'Server error',
     readonly status?: number,

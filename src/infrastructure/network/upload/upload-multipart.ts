@@ -1,4 +1,7 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { HttpStatus , isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { HttpMethod } from '@infrastructure/network/http/http-method';
+import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import type { Result } from '@core/result/result';
 import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
@@ -10,7 +13,6 @@ import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
-import { isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { joinUrl } from '@infrastructure/network/http/join-url';
 
 /**
@@ -36,12 +38,12 @@ export const uploadMultipart = async <T>(
 
   return new Promise<Result<T, Failure>>((resolve) => {
     if (enableLogging) {
-      console.log(`[HTTP → multipart] POST ${fullUrl}`);
+      console.log(`[HTTP → multipart] POST ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
     }
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', fullUrl, true);
+    xhr.open(HttpMethod.Post, fullUrl, true);
     xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
-    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.setRequestHeader(HttpHeader.accept, HttpMediaType.json);
     for (const [name, value] of Object.entries(commonHeaders)) {
       xhr.setRequestHeader(name, value);
     }
@@ -59,7 +61,7 @@ export const uploadMultipart = async <T>(
       const status = xhr.status;
       const responseText = xhr.responseText;
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] ${status} ${fullUrl}`);
+        console.log(`[HTTP ← multipart] ${status} ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const  veya dil doyalarınna taşınabilir
       }
       let body: unknown;
       try {
@@ -72,7 +74,7 @@ export const uploadMultipart = async <T>(
           body = decryptEnvelope(body, aesKey);
         } catch (err) {
           if (enableLogging) {
-            console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`);
+            console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`); // TO DO: i18n key for this message
           }
         }
       }
@@ -84,7 +86,7 @@ export const uploadMultipart = async <T>(
         resolve(ok(body as T));
         return;
       }
-      if (status === 401) {
+      if (status === HttpStatus.unauthorized) {
         options.onUnauthorized?.();
       }
       // `body` is the decrypted error envelope here, so the server's
@@ -96,19 +98,19 @@ export const uploadMultipart = async <T>(
 
     xhr.onerror = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
+        console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
       }
       // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
       // unreadable file URI, cleartext blocked). Surface as NetworkFailure with
       // the status (0 == no response) so the UI can show something concrete.
-      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || ValueConstants.zero})`)));
+      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || ValueConstants.zero})`))); // TO DO: i18n key for this message
     };
 
     xhr.ontimeout = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] timeout ${fullUrl}`);
+        console.log(`[HTTP ← multipart] timeout ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
       }
-      resolve(fail(new TimeoutFailure('Request timed out')));
+      resolve(fail(new TimeoutFailure('Request timed out'))); // TO DO: i18n key for this message
     };
 
     xhr.send(formData);

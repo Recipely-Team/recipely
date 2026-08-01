@@ -7,4 +7,4 @@ import { CharConstants } from '@core/constants';
  * save rather than published as a blank heading.
  */
 export const ingredientGroupLabel = (line: string): string =>
-  line.trimStart().replace(/^#+/, CharConstants.empty).trim();
+  line.trimStart().replace(/^#+/, CharConstants.empty).trim(); // TO DO: static regex problem

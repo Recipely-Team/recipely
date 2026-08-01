@@ -21,4 +21,4 @@ export class Email {
   get value(): string {
     return this.raw;
   }
-}
+} // TO DO: Email sınıfı yerine EmailValueObject gibi bir isimlendirme yapılabilir. Value Object Base sınnıfı varsa ondan türemeli yoksa üretelim ve ondan türetelim

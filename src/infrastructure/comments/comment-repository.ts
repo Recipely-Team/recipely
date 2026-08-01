@@ -23,7 +23,7 @@ export class CommentRepository implements CommentRepositoryInterface {
     page: number,
     pageSize: number,
   ): Promise<Result<CommentPage, Failure>> {
-    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), { params: { page, pageSize } });
+    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), { params: { page, pageSize } }); // TO DO: Ayrı DTO olabilir pagination için
     if (!result.ok) {
       return result;
     }

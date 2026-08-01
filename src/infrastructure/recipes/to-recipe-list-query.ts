@@ -30,3 +30,4 @@ export const toRecipeListQuery: RequestMapper<RecipeFilters | undefined, RecipeL
   ...(filters?.sort ? { sort: filters.sort } : {}),
   ...(filters?.sortOrder ? { sortOrder: filters.sortOrder } : {}),
 });
+// TO DO: Çok fazla alt DTO çıkarılabilir

@@ -29,11 +29,11 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
     localRecipes: [],
-    createState: { status: 'idle' },
-    generateState: { status: 'idle' },
-    importState: { status: 'idle' },
-    deleteState: { status: 'idle' },
-    refineState: { status: 'idle' },
+    createState: { status: 'idle' }, // TO DO: static status name problem
+    generateState: { status: 'idle' }, // TO DO: static status name problem
+    importState: { status: 'idle' }, // TO DO: static status name problem
+    deleteState: { status: 'idle' }, // TO DO: static status name problem
+    refineState: { status: 'idle' }, // TO DO: static status name problem
     aiDraft: null,
     // WHY: localRecipes is the source of truth for `findById`; recipes (the
     // lean "My Recipes" grid data) is kept in sync alongside it via

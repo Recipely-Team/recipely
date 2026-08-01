@@ -25,7 +25,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
     page: number,
     pageSize: number = DRAFTS_PAGE_SIZE,
   ): Promise<Result<PagedDrafts, Failure>> {
-    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, { params: { page, pageSize } });
+    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, { params: { page, pageSize } }); // TO DO: Ayrı DTO olabilir pagination için
     if (!result.ok) {
       return result;
     }

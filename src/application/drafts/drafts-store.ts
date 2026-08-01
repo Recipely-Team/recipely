@@ -25,7 +25,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
     loadDrafts: async () => {
       set({ listState: { status: 'loading' } });
       const result = await deps.listDraftsUseCase.execute({
-        page: 1,
+        page: 1, // TO DO: page backendden gelmeli
         pageSize: DRAFTS_PAGE_SIZE,
       });
       if (!result.ok) {

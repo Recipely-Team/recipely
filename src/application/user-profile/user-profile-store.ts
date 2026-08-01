@@ -16,15 +16,15 @@ export const configureUserProfileStore = (
   deps: UserProfileStoreDeps,
 ): BoundStore<UserProfileStoreState> => {
   return create<UserProfileStoreState>((set) => ({
-    state: { status: 'idle' },
+    state: { status: 'idle' }, // TO DO: static status name problem
     load: async (userId: string) => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: 'loading' } }); // TO DO: static status name problem
       const result = await deps.getUserProfile.execute({ userId });
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        set({ state: { status: 'error', failure: result.failure } }); // TO DO: static status name problem
         return;
       }
-      set({ state: { status: 'loaded', profile: result.value } });
+      set({ state: { status: 'loaded', profile: result.value } }); // TO DO: static status name problem
     },
     reset: () => set({ state: { status: 'idle' } }),
   }));
