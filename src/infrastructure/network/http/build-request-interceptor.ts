@@ -1,4 +1,5 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
+import { LogTag } from '@infrastructure/constants/log-tag';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
@@ -62,7 +63,7 @@ export const buildRequestInterceptor = (
       config.data = encryptEnvelope({ data: bodyData }, aesKey);
     }
     if (options.enableLogging) {
-      console.log(`[HTTP →] ${config.method?.toUpperCase()} ${config.baseURL ?? CharConstants.empty}${config.url ?? CharConstants.empty}`);
+      console.log(`${LogTag.httpRequest} ${config.method?.toUpperCase()} ${config.baseURL ?? CharConstants.empty}${config.url ?? CharConstants.empty}`);
     }
     return config;
   };

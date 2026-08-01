@@ -1,4 +1,5 @@
 import { gcm } from '@noble/ciphers/aes.js';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { randomBytes } from '@noble/ciphers/utils.js';
 import type { Envelope } from '@infrastructure/crypto/envelope';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
@@ -17,7 +18,7 @@ const MIN_SEALED_BYTES = AUTH_TAG_BYTES + ValueConstants.one;
  */
 export function keyFromHex(hex: string): Uint8Array {
   if (!RegexConstants.sha256Hex.test(hex)) {
-    throw new Error('AES key must be 64 hex chars (32 bytes)'); // TO DO: static error message problem
+    throw new Error(DiagnosticMessage.crypto.badKeyLength);
   }
   const out = new Uint8Array(KEY_BYTES);
   for (let i = ValueConstants.zero; i < KEY_BYTES; i++) {
@@ -70,22 +71,22 @@ export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
  */
 export function decryptEnvelope(envelope: Envelope, key: Uint8Array): unknown {
   if (typeof envelope.payload !== 'string' || typeof envelope.iv !== 'string') { // TO DO: stativ type check problem
-    throw new EnvelopeDecryptError('Envelope missing payload or iv'); // TO DO: static error message problem
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.missingEnvelopeFields);
   }
   const iv = fromBase64(envelope.iv);
   if (iv.length !== IV_BYTES) {
-    throw new EnvelopeDecryptError(`IV must decode to ${IV_BYTES} bytes`); // TO DO: static error message problem
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.badIvLength(IV_BYTES));
   }
   const sealed = fromBase64(envelope.payload);
   if (sealed.length < MIN_SEALED_BYTES) {
-    throw new EnvelopeDecryptError('Payload shorter than auth tag'); // TO DO: static error message problem
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.payloadShorterThanTag);
   }
   try {
     const plain = gcm(key, iv).decrypt(sealed);
     return JSON.parse(new TextDecoder().decode(plain));
   } catch (err) {
     throw new EnvelopeDecryptError(
-      `Failed to decrypt: ${err instanceof Error ? err.message : 'unknown'}`, // TO DO: static error message problem
+      DiagnosticMessage.crypto.decryptFailed(err instanceof Error ? err.message : DiagnosticMessage.crypto.unknownReason),
     );
   }
 }

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
@@ -62,7 +63,7 @@ export const useAuthGuard = (): void => {
   const router = useRouter();
 
   useEffect(() => {
-    if (status !== 'unauthenticated') return;
+    if (status !== StoreStatus.Unauthenticated) return;
     if (isPublicPath(pathname)) return;
     // `pathname` is guaranteed non-public here — the isPublicPath early return
     // above already handled `/`, `/login`, and the other public routes — so it

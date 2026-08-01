@@ -1,4 +1,5 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -31,7 +32,7 @@ export class ImportInstagramRecipeUseCase {
       return Promise.resolve(
         fail(
           new ValidationFailure(
-            'Instagram URL is required', // TO DO: i18n key for this message
+            DiagnosticMessage.recipeImport.urlRequired,
             undefined,
             ErrorMessageKey.importInvalidUrl,
           ),

@@ -1,6 +1,7 @@
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
+import type { StoreStatus } from '@application/store/store-status';
 
 export type RecipeAuthorState =
-  | { status: 'loading' }
-  | { status: 'resolved'; author: ResolvedAuthor }
-  | { status: 'unavailable' };
+  | { status: typeof StoreStatus.Loading }
+  | { status: typeof StoreStatus.Resolved; author: ResolvedAuthor }
+  | { status: typeof StoreStatus.Unavailable };

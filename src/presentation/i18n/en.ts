@@ -211,6 +211,7 @@ export const en = {
     },
   },
   splash: {
+    dismiss: 'Dismiss splash screen',
     tagline: 'Recipes, simply yours',
   },
   login: {

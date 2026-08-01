@@ -1,4 +1,5 @@
 import { AxiosError } from 'axios';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { AxiosErrorCode } from '@infrastructure/network/http/http-status';
 import {
   type Failure,
@@ -32,21 +33,21 @@ import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-er
  */
 export const mapAxiosError = (error: unknown): Failure => {
   if (error instanceof EnvelopeDecryptError) {
-    return new ValidationFailure(`Bad envelope: ${error.message}`);
+    return new ValidationFailure(DiagnosticMessage.network.badEnvelope(error.message));
   }
   if (!(error instanceof AxiosError)) {
-    return new UnknownFailure('Unexpected error', error);
+    return new UnknownFailure(DiagnosticMessage.network.unexpected, error);
   }
 
   if (error.code === AxiosErrorCode.timedOut || error.code === AxiosErrorCode.connectionTimedOut) {
-    return new TimeoutFailure('Request timed out');
+    return new TimeoutFailure(DiagnosticMessage.network.timedOut);
   }
 
   if (error.response) {
     return failureFromResponse(error.response.status, error.response.data);
   }
   if (error.request) {
-    return new NetworkFailure(error.message || 'Network unreachable');
+    return new NetworkFailure(error.message || DiagnosticMessage.network.unreachable);
   }
   return new UnknownFailure(error.message, error);
 };

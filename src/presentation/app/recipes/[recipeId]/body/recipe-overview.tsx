@@ -111,7 +111,7 @@ export const RecipeOverview = ({
             <SkeletonLoader width="65%" height={fontSizes.body} />
           </View>
         </View>
-      ) : authorState.status === 'resolved' ? (
+      ) : authorState.status === StoreStatus.Resolved ? (
         <RecipeAuthorCard
           authorName={authorState.author.authorName}
           authorPhotoUrl={authorState.author.authorPhotoUrl}
