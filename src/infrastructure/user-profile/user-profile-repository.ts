@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure';
 import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { toUserProfile } from '@infrastructure/user-profile/user-profile-mapper';
 

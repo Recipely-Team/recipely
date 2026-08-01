@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { KeyboardKey } from '@presentation/base/constants/interaction-constants';
+import { KeyboardKey } from '@presentation/base/constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';

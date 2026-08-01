@@ -1,7 +1,7 @@
 import type { StoreApi } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
-import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api';
+import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';

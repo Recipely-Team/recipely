@@ -1,5 +1,5 @@
 import { StyleSheet, View, Pressable } from 'react-native';
-import { UNREAD_BADGE_MAX, UNREAD_BADGE_OVERFLOW_LABEL } from '@presentation/base/constants/interaction-constants';
+import { UNREAD_BADGE_MAX, UNREAD_BADGE_OVERFLOW_LABEL } from '@presentation/app/recipes/model/unread-badge';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';

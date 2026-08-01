@@ -13,15 +13,9 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
-import {
-  AI_REQUEST_TIMEOUT_MS,
-  FIRST_PAGE,
-  MY_RECIPES_PAGE_SIZE,
-  IMPORT_REQUEST_TIMEOUT_MS,
-  RECIPES_PAGE_SIZE,
-  TRENDING_RECIPES_LIMIT,
-} from '@infrastructure/constants/api';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
+import { AI_REQUEST_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';

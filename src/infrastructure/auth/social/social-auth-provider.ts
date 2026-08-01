@@ -2,7 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
-import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/api';
+import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/build-secrets';
 import { generateNonce, hashNonce } from '@infrastructure/auth/social/nonce-generator';
 import type { GoogleSigninMod } from '@infrastructure/auth/social/google-signin-mod';
 import type { FirebaseAuthMod } from '@infrastructure/auth/social/firebase-auth-mod';

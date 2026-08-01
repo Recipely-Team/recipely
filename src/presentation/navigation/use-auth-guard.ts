@@ -17,7 +17,7 @@ import { RoutePaths } from '@presentation/base/constants';
  * to login on tap; only the gated sub-routes — my-recipes, profile, create,
  * settings, notifications, and the AI generator — remain guarded.
  */
-export const PUBLIC_PATHS = new Set<string>([
+const PUBLIC_PATHS = new Set<string>([
   '/',
   '/onboarding',
   '/login',

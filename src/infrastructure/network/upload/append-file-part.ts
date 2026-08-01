@@ -1,7 +1,7 @@
 import { isWeb } from '@infrastructure/constants/platform';
 
 /** A local file to append to a multipart `FormData` body. */
-export interface FilePart {
+interface FilePart {
   uri: string;
   fileName: string;
   mimeType: string;

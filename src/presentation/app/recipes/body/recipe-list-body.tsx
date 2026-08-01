@@ -1,5 +1,5 @@
 import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { ListConstants } from '@presentation/base/constants/list-constants';
+import { ListConstants } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';

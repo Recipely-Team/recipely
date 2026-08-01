@@ -3,7 +3,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { LikeRepositoryInterface } from '@domain/likes/like-repository-interface';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 
 /** Implements `LikeRepositoryInterface` against the Recipely backend. */
 export class LikeRepository implements LikeRepositoryInterface {

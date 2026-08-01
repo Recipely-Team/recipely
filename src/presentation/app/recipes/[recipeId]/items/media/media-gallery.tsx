@@ -1,16 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { isWeb } from '@infrastructure/constants/platform';
-import {
-  Dimensions,
-  FlatList,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-  type LayoutChangeEvent,
-  type NativeScrollEvent,
-  type NativeSyntheticEvent,
-} from 'react-native';
+import { Dimensions, FlatList, Pressable, StyleSheet, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { MediaSlide } from '@presentation/app/recipes/[recipeId]/items/media/media-slide';

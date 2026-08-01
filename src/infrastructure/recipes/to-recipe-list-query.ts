@@ -2,7 +2,7 @@ import type { RequestMapper } from '@core/mapper/request-mapper';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListQueryDto } from '@infrastructure/recipes/dtos/recipe-list-query-dto';
-import { RECIPES_PAGE_SIZE } from '@infrastructure/constants/api';
+import { RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**

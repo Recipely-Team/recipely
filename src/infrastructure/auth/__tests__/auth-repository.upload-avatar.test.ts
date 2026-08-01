@@ -6,7 +6,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
-import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api';
+import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 

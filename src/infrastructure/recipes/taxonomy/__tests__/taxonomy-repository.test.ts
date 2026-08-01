@@ -2,7 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';

@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { isWeb } from '@infrastructure/constants/platform';
-import {
-  Animated,
-  Easing,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

@@ -1,6 +1,6 @@
 import { HealthStatus } from '@domain/network/health-status';
 import type { HealthCheckServiceInterface } from '@domain/network/health-check-service-interface';
-import { HEALTH_URL } from '@infrastructure/constants/api';
+import { HEALTH_URL } from '@infrastructure/constants/api/api-hosts';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 
 /** A health probe that has not answered in five seconds is not healthy. */

@@ -207,3 +207,28 @@ copy. What catches this class is rule 11 — every user-visible string comes fro
 `t()` — so a bare literal in JSX is already a review finding regardless of what
 it says. Worth remembering: **a comment marker only means "comment" in some
 positions**, and JSX children are not one of them.
+
+---
+
+## A constant nobody read, and a key nobody noticed
+
+**Symptom:** none — and that is what made it dangerous. `SecureTokenStorage`
+persisted the session under `'layerly.session.v1'`, a name left over from an
+earlier project, written as a local `const` inside the class. Meanwhile
+`SESSION_STORAGE_KEY = 'recipely.session.v1'` sat in the shared constants file
+and **nothing imported it**. Every other key in the app is `recipely.*`.
+
+**Root cause:** the implementation bypassed its own constants file, so the two
+could not disagree loudly — one was simply unused. A dead-code sweep is exactly
+the moment this gets "tidied up" by pointing the class at the constant, which
+would have **signed out every user holding a session**, with nothing failing in
+CI to say so.
+
+*Guard:* `session-key-migration.test.ts` — a session written under the legacy key
+is still readable, is moved to the current key on first read, is not consulted
+once a current session exists, and both keys are cleared on sign-out.
+
+**The lesson is that an unused export is a question, not a verdict.** Deleting
+it is one answer; the other is that something is reading a value it should have
+imported. Ask which before reaching for the delete key — the dangerous
+duplicates are the ones where only one copy is live.

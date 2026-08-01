@@ -1,4 +1,8 @@
 import { useCallback, useState } from 'react';
+import {
+  MIME_BY_EXTENSION,
+  DEFAULT_IMAGE_MIME,
+} from '@infrastructure/constants/image-mime';
 import { isIos, isWeb } from '@infrastructure/constants/platform';
 import { ActionSheetIOS, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
@@ -9,14 +13,6 @@ import { t } from '@presentation/i18n';
 import type { AvatarUpload } from '@presentation/base/hooks/profile/avatar-upload';
 import { PickSource } from '@presentation/base/hooks/profile/pick-source';
 import { ValueConstants } from '@core/constants';
-
-const MIME_BY_EXT: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  heic: 'image/heic',
-};
 
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
@@ -31,7 +27,7 @@ const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
   const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
   return {
     fileName: `avatar-${Date.now()}.${safeExt}`,
-    mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
+    mimeType: MIME_BY_EXTENSION[safeExt] ?? DEFAULT_IMAGE_MIME,
   };
 };
 

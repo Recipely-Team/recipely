@@ -1,17 +1,11 @@
 import { StyleSheet, View } from 'react-native';
+import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { spacing, radii, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
-
-const SEVERITY_ICON: Record<SeverityType, keyof typeof Ionicons.glyphMap> = {
-  danger: 'alert-circle',
-  warning: 'warning',
-  success: 'checkmark-circle',
-  neutral: 'information-circle',
-};
 
 export interface FormBannerProps {
   message: string;

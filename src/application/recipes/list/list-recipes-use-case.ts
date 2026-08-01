@@ -1,6 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';

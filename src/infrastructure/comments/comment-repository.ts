@@ -8,7 +8,7 @@ import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
 import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { ValueConstants } from '@core/constants';
 import type { AddCommentRequestDto } from '@infrastructure/comments/dtos/add-comment-request-dto';
 
