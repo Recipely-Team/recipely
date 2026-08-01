@@ -1,3 +1,4 @@
+import type { FailureCode } from '@core/failure/failure-code';
 /**
  * Base of the failure hierarchy. Every failing operation resolves to a
  * `Result<T, Failure>` carrying one of these — failures are values, never
@@ -22,7 +23,7 @@
  * `undefined` and fall back to `code`.
  */
 export abstract class Failure {
-  abstract readonly code: string;
+  abstract readonly code: FailureCode;
   abstract readonly message: string;
 
   /**

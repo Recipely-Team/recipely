@@ -18,14 +18,14 @@ import { getFirebaseApp } from '@infrastructure/firebase/firebase-init';
 export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   const app = getFirebaseApp();
   if (app === null) {
-    return fail(new UnknownFailure('Firebase is not configured for web'));
+    return fail(new UnknownFailure('Firebase is not configured for web')); // TO DO: static error message problem
   }
   try {
     const provider = new GoogleAuthProvider();
     const { user } = await signInWithPopup(getAuth(app), provider);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Google sign-in failed';
+    const msg = e instanceof Error ? e.message : 'Google sign-in failed'; // TO DO: static error message problem
     return fail(new UnknownFailure(msg));
   }
 };
@@ -39,16 +39,16 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
 export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   const app = getFirebaseApp();
   if (app === null) {
-    return fail(new UnknownFailure('Firebase is not configured for web'));
+    return fail(new UnknownFailure('Firebase is not configured for web')); // TO DO: static error message problem
   }
   try {
-    const provider = new OAuthProvider('apple.com');
-    provider.addScope('email');
-    provider.addScope('name');
+    const provider = new OAuthProvider('apple.com'); // TO DO: static provider ID problem
+    provider.addScope('email'); // TO DO: static scope problem
+    provider.addScope('name'); // TO DO: static scope problem
     const { user } = await signInWithPopup(getAuth(app), provider);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Apple sign-in failed';
+    const msg = e instanceof Error ? e.message : 'Apple sign-in failed'; // TO DO: static error message problem
     return fail(new UnknownFailure(msg));
   }
 };

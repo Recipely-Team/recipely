@@ -62,7 +62,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
 
   async registerDeviceToken(
     token: string,
-    platform: 'ios' | 'android' | 'web',
+    platform: 'ios' | 'android' | 'web', // TO DO: static platform names problem
   ): Promise<Result<void, Failure>> {
     const result = await this.http.post<unknown>(ApiRoutes.me.deviceToken, { token, platform } satisfies RegisterDeviceTokenRequestDto);
     if (!result.ok) {

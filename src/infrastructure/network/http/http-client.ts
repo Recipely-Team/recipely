@@ -52,7 +52,7 @@ export class HttpClient {
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {
-        Accept: 'application/json',
+        Accept: 'application/json', // TO DO: static key for this header name header isimleri bir dosyaya toplanır
         // Content-Type is set per-request in the interceptor so FormData uploads
         // can omit it and let the XHR runtime auto-set multipart + boundary.
       },

@@ -6,3 +6,4 @@ export type RecipeSortType =
   | 'mostLiked'
   | 'alphabetical'
   | 'mostCommented';
+// TO DO: static sort type name problem

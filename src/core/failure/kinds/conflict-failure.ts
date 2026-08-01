@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when the request conflicts with the current server state
@@ -8,7 +9,7 @@ import { Failure } from '@core/failure/failure';
  * conflict it is.
  */
 export class ConflictFailure extends Failure {
-  readonly code = 'conflict';
+  readonly code = FailureCode.Conflict;
   constructor(
     readonly message: string = 'Conflict',
     readonly field?: string,

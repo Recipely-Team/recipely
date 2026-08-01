@@ -14,7 +14,7 @@ export interface CommentProps {
   authorPhotoUrl: string | null;
   likeCount: number;
   likedByMe: boolean;
-}
+} // TO DO: CommentProps interface'i yerine CommentEntityProps gibi bir isimlendirme yapılabilir. ayrıca ayrı dosyaya taşınabilir.
 
 /**
  * Domain entity representing a user comment on a recipe. Validates that `id`,

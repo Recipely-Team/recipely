@@ -19,26 +19,26 @@ import { ValueConstants } from '@core/constants';
  * Firebase JS SDK.
  */
 export const registerPushToken = async (register: RegisterTokenFn): Promise<void> => {
-  if (Platform.OS !== 'android') return;
+  if (Platform.OS !== 'android') return; // TO DO: static platform names problem
   try {
     const Notifications = await import('expo-notifications');
 
     const { status: existing } = await Notifications.getPermissionsAsync();
     const status =
-      existing === 'granted'
+      existing === 'granted' // TO DO: static status names problem
         ? existing
         : (await Notifications.requestPermissionsAsync()).status;
-    if (status !== 'granted') return;
+    if (status !== 'granted') return; // TO DO: static status names problem
 
     const token = await Notifications.getDevicePushTokenAsync();
-    if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return;
+    if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return; // TO DO: static type check for string
 
     const result = await register(token.data, 'android');
     if (!result.ok && __DEV__) {
-      console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
+      console.warn('[push-token-registrar] backend rejected device token:', result.failure.code); // TO DO: static messega
     }
   } catch (err) {
     // Expo Go or a device without push support — the polled badge still works.
-    if (__DEV__) console.warn('[push-token-registrar] android push registration skipped:', err);
+    if (__DEV__) console.warn('[push-token-registrar] android push registration skipped:', err); // TO DO: static message
   }
 };

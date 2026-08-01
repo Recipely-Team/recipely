@@ -29,7 +29,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
   allowsRecording: false,
   shouldPlayInBackground: false,
   playsInSilentMode: true,
-  interruptionMode: 'doNotMix',
+  interruptionMode: 'doNotMix', // TO DO: static interruption mode name problem
   shouldRouteThroughEarpiece: false,
 };
 
@@ -40,7 +40,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
  */
 const IDLE_AUDIO_MODE: Partial<AudioMode> = {
   shouldPlayInBackground: false,
-  interruptionMode: 'mixWithOthers',
+  interruptionMode: 'mixWithOthers', // TO DO: static interruption mode name problem
 };
 
 /**
@@ -72,7 +72,7 @@ export class AlarmAudioService implements AlarmAudioServiceInterface {
   private generation = ValueConstants.zero;
 
   async start(): Promise<void> {
-    if (Platform.OS === 'web') return;
+    if (Platform.OS === 'web') return; // TO DO: STATİC platform name problem
     if (this.player !== null) return;
 
     this.generation += ValueConstants.one;

@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when a request was sent but the server did not respond
@@ -11,7 +12,7 @@ import { Failure } from '@core/failure/failure';
  * design.
  */
 export class TimeoutFailure extends Failure {
-  readonly code = 'timeout';
+  readonly code = FailureCode.Timeout;
   constructor(readonly message: string = 'Request timed out') {
     super();
   }

@@ -11,4 +11,4 @@ import type { RecipeListState } from '@application/recipes/list/recipe-list-stat
  * pull-to-refresh spinner tracks its own pull-initiated flag instead.
  */
 export const isRecipeListRefreshing = (state: RecipeListState): boolean =>
-  state.status === 'loaded' && state.isRefreshing === true;
+  state.status === 'loaded' && state.isRefreshing === true; // TO DO: static status name problem

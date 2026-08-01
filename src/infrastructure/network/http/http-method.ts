@@ -6,6 +6,6 @@ export const HttpMethod = {
   Patch: 'PATCH',
   Delete: 'DELETE',
 } as const;
-
+// TO DO: static list of methods with body, single source of truth for this
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
 export type HttpMethod = (typeof HttpMethod)[keyof typeof HttpMethod];

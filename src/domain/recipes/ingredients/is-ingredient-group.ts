@@ -12,4 +12,4 @@
  * The cost of that choice is this predicate: every place that counts,
  * validates, parses or renders an ingredient has to ask first.
  */
-export const isIngredientGroup = (line: string): boolean => line.trimStart().startsWith('#');
+export const isIngredientGroup = (line: string): boolean => line.trimStart().startsWith('#'); // TO DO: static char problem

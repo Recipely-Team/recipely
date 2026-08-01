@@ -19,12 +19,12 @@ export const buildResponseInterceptor = (
         response.data = decryptEnvelope(response.data, aesKey);
       } catch (err) {
         if (options.enableLogging) {
-          console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`);
+          console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`); // TO DO: i18n key for this message
         }
       }
     }
     if (options.enableLogging) {
-      console.log(`[HTTP ←] ${response.status} ${response.config.url ?? CharConstants.empty}`);
+      console.log(`[HTTP ←] ${response.status} ${response.config.url ?? CharConstants.empty}`); // TO DO: http yazan alan const dosyasına taşınabilir
     }
     return response;
   };

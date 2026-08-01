@@ -4,7 +4,7 @@
  * can render it distinctly. Mirrors the backend `ChatMessage` wire shape.
  */
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: 'user' | 'assistant'; // TO DO: role enum gibi bir şey olabilir static isimler olmasın artık
   content: string;
   error?: boolean;
 }

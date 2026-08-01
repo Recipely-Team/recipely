@@ -9,7 +9,7 @@ const FALLBACK_EXPIRES_MS = 3_600_000;
  */
 export const expiresAtFromToken = (token: string): Date => {
   const claims = decodeJwtPayload(token);
-  if (claims.ok && typeof claims.value.exp === 'number') {
+  if (claims.ok && typeof claims.value.exp === 'number') { // TO DO: static claim name problem
     // `exp` is a Unix time in SECONDS; `Date` wants milliseconds.
     return new Date(claims.value.exp * TimeConstants.millisecondsPerSecond);
   }

@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 import type { ValidationFieldError } from '@core/failure/validation-field-error';
 
 /**
@@ -18,7 +19,7 @@ import type { ValidationFieldError } from '@core/failure/validation-field-error'
  * vs. `errors.ai.prompt_rejected` vs. `errors.ai.invalid_response`.
  */
 export class ValidationFailure extends Failure {
-  readonly code = 'validation';
+  readonly code = FailureCode.Validation;
   constructor(
     readonly message: string,
     readonly field?: string,

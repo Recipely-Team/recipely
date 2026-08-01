@@ -6,3 +6,4 @@ export type TrendingRecipesState =
   | { status: 'loading' }
   | { status: 'loaded'; recipes: RecipeSummaryEntity[] }
   | { status: 'error'; failure: Failure };
+// TO DO: static status name problem

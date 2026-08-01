@@ -13,10 +13,10 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
   const fetchCatalogs = async (
     set: (partial: Partial<TaxonomyStoreState>) => void,
   ): Promise<void> => {
-    set({ status: 'loading', failure: null });
+    set({ status: 'loading', failure: null }); // TO DO: static status name problem
     const result = await deps.loadTaxonomyUseCase.execute();
     if (!result.ok) {
-      set({ status: 'error', failure: result.failure });
+      set({ status: 'error', failure: result.failure }); // TO DO: static status name problem
       return;
     }
     set({
@@ -30,7 +30,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
   return create<TaxonomyStoreState>((set, get) => ({
     cuisines: [],
     categories: [],
-    status: 'idle',
+    status: 'idle', // TO DO: static status name problem
     failure: null,
     load: async () => {
       const { status } = get();

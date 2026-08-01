@@ -39,13 +39,13 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(scale, {
-          toValue: 1.2,
+          toValue: 1.2, // TO DO: 1.2 constants dosyasına taşınabilir.
           duration: PULSE_DURATION,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
-          toValue: 1,
+          toValue: 1, // TO DO: 1 constants dosyasına taşınabilir.
           duration: PULSE_DURATION,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
@@ -98,7 +98,7 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
           importantForAccessibility="no"
           style={[styles.bell, { transform: [{ scale }] }]}
         >
-          ⏰
+          ⏰ // TO DO: 1 emoji constants dosyasına taşınabilir.
         </Animated.Text>
 
         <ThemedText variant="headline" style={styles.centered}>
