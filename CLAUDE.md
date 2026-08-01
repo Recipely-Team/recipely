@@ -200,6 +200,18 @@ blocking.
    - Storage keys → `src/infrastructure/constants/storage.ts`
    - Colours → `src/presentation/base/theme/colors/palette/themes.ts`
 
+   **A vocabulary is defined once and referenced everywhere else.** A word the app
+   discriminates on — a store status, an error code, a platform, a role, a notification
+   kind — gets ONE const-object definition and every other site points at it, including
+   the discriminated union that consumes it (`| { status: typeof StoreStatus.Loaded }`).
+   The test is whether the string appears twice: `'idle'` in eleven stores and
+   `Platform.OS === 'web'` in 33 files were each individually correct and could only ever
+   drift. Where the library already publishes the vocabulary (expo's `PermissionStatus`),
+   use theirs rather than re-spelling it. Sentences that populate `Failure.message` live in
+   `DiagnosticMessage` (`@core/failure`) — they are diagnostics, never user copy, but that
+   is not a licence to type them at the throw site. **Enforced mechanically** by
+   `check:structure` (rule P).
+
    **`@core/constants` is the default for structural literals.** New code writes
    `CharConstants.empty` instead of `''` and `ValueConstants.zero` instead of a standalone `0`
    (`useState(CharConstants.empty)`, `items.length === ValueConstants.zero`, `arr[ValueConstants.zero]`).
@@ -283,7 +295,8 @@ blocking.
     file count), 15 (alias imports + the layer line), 15b (map freshness), 18 (`.tsx` over 300
     lines), 21 (entity naming AND `*Interface` port naming), 22 (unguarded `console.*`),
     23 (hand-rolled bottom sheets), 23b (`Modal` without `statusBarTranslucent`),
-    23c (background-audio capability) mechanically and must be green before any commit/PR. Its
+    23c (background-audio capability), and the one-definition-per-vocabulary half of
+    rule 5 (rule P) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.

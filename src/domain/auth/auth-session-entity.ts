@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -25,13 +26,13 @@ export class AuthSessionEntity extends BaseEntity<AuthSessionProps> {
 
   static create(props: AuthSessionProps): Result<AuthSessionEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Session id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.session.idRequired, 'id'));
     }
     if (props.accessToken.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('accessToken must be non-empty', 'accessToken'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.session.accessTokenRequired, 'accessToken'));
     }
     if (Number.isNaN(props.expiresAt.getTime())) {
-      return fail(new ValidationFailure('expiresAt must be a valid Date', 'expiresAt'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.session.expiresAtInvalid, 'expiresAt'));
     }
     return ok(new AuthSessionEntity(props));
   }

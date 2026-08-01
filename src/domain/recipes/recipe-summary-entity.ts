@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -37,10 +38,10 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryProps> {
 
   static create(props: RecipeSummaryProps): Result<RecipeSummaryEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }
     if (props.name.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.nameRequired, 'name'));
     }
     return ok(new RecipeSummaryEntity(props));
   }

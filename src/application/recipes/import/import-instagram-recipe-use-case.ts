@@ -58,7 +58,7 @@ export class ImportInstagramRecipeUseCase {
    */
   private notInstagram(url: string): ValidationFailure {
     return new ValidationFailure(
-      `Not an Instagram URL (${url})`,
+      DiagnosticMessage.recipeImport.notAnInstagramUrl(url),
       undefined,
       ErrorMessageKey.importNotInstagram,
     );

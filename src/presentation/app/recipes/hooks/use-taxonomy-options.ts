@@ -3,7 +3,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { RECIPE_CATEGORY_VALUES } from '@domain/recipes/taxonomy/recipe-category';
 import { ValueConstants } from '@core/constants';
-import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
+import { StoreStatus } from '@application/store/store-status';
 
 /** The cuisine/category keys to offer as selectable filter/strip options. */
 interface TaxonomyOptions {
@@ -25,7 +25,7 @@ export const useTaxonomyOptions = (): TaxonomyOptions => {
   const categories = taxonomyStore((s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === TaxonomyStatus.Ready;
+    const ready = status === StoreStatus.Ready;
     return {
       cuisineKeys:
         ready && cuisines.length > ValueConstants.zero ? cuisines.map((c) => c.key) : CUISINE_KEY_VALUES,

@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -23,7 +24,7 @@ export const rebuildSessionWithUser = async (
   }
   const current = sessionResult.value;
   if (current === null) {
-    return fail(new UnauthorizedFailure('No active session to update'));
+    return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noActiveSession));
   }
 
   const userResult = toUser(userDto);

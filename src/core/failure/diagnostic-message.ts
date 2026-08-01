@@ -52,6 +52,54 @@ export const DiagnosticMessage = {
   },
   recipeImport: {
     urlRequired: 'Instagram URL is required',
+    notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
+  },
+  ai: {
+    promptRequired: 'Prompt is required',
+    refineInstructionRequired: 'Refine instruction is required',
+  },
+  feedback: {
+    messageRequired: 'Message is required',
+  },
+  auth: {
+    invalidEmail: 'Invalid email format',
+    noActiveSession: 'No active session to update',
+    appleUnavailableInBuild: 'Apple Sign-In is not available in this build',
+    googleUnavailableInBuild: 'Google Sign-In is not available in this build',
+  },
+  /**
+   * Entity invariants. Each names the field it guards, because a caller reading
+   * a `Result` has only this sentence to tell which rule it broke.
+   */
+  entity: {
+    session: {
+      idRequired: 'Session id must be non-empty',
+      accessTokenRequired: 'accessToken must be non-empty',
+      expiresAtInvalid: 'expiresAt must be a valid Date',
+    },
+    user: {
+      idRequired: 'User id must be non-empty',
+      displayNameRequired: 'User displayName must be non-empty',
+    },
+    userProfile: {
+      idRequired: 'UserProfile id must be non-empty',
+      displayNameRequired: 'UserProfile displayName must be non-empty',
+    },
+    comment: {
+      idRequired: 'Comment id must be non-empty',
+      recipeIdRequired: 'Comment recipeId must be non-empty',
+      authorIdRequired: 'Comment authorId must be non-empty',
+      bodyRequired: 'Comment body must be non-empty',
+    },
+    notification: {
+      idRequired: 'Notification id must be non-empty',
+    },
+    recipe: {
+      idRequired: 'Recipe id must be non-empty',
+      nameRequired: 'Recipe name must be non-empty',
+      servingsTooLow: 'Servings must be at least 1',
+      caloriesNegative: 'Calories must be non-negative',
+    },
   },
 } as const;
 

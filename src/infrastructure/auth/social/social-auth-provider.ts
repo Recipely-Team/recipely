@@ -27,7 +27,7 @@ let googleConfigured = false;
  */
 export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   if (googleSigninMod === null || firebaseAuthMod === null) {
-    return fail(new UnknownFailure('Google Sign-In is not available in this build'));
+    return fail(new UnknownFailure(DiagnosticMessage.auth.googleUnavailableInBuild));
   }
   const { GoogleSignin, isSuccessResponse } = googleSigninMod;
   const auth = firebaseAuthMod.default;
@@ -61,7 +61,7 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
  */
 export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   if (firebaseAuthMod === null) {
-    return fail(new UnknownFailure('Apple Sign-In is not available in this build'));
+    return fail(new UnknownFailure(DiagnosticMessage.auth.appleUnavailableInBuild));
   }
   const auth = firebaseAuthMod.default;
   try {

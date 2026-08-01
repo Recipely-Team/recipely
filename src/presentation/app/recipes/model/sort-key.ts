@@ -1,6 +1,7 @@
+import { RecipeSort } from '@domain/recipes/list/recipe-sort-type';
 /** Sort options offered in the recipe list UI. */
 export const SortKey = {
-  Popular: 'popular',
+  Popular: RecipeSort.Popular,
   Rating: 'rating',
   Time: 'time',
   Newest: 'newest',
