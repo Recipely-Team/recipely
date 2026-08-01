@@ -10,6 +10,9 @@ import { spacing, radii, mediaSizes } from '@presentation/base/theme';
 import { useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
+/** The hero lays out one large card beside two small ones; fewer than three leaves a gap. */
+const HERO_MIN_RECIPES = 3;
+
 /** Window width (px) below which the hero collapses to the featured card only. */
 const STACK_WIDTH = 700;
 /** Height of each mini-card skeleton so two fill the hero column. */
@@ -74,7 +77,7 @@ export const WebHeroSection = ({
     );
   }
 
-  if (state.status === StoreStatus.Error || state.recipes.length < 3) {
+  if (state.status === StoreStatus.Error || state.recipes.length < HERO_MIN_RECIPES) {
     return null;
   }
 

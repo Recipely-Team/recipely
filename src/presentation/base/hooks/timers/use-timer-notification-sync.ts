@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { AppStateStatusValue } from '@presentation/base/constants/interaction-constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { AppState, type AppStateStatus } from 'react-native';
 import { timerStore } from '@application/timers/timer-store';
@@ -61,7 +62,7 @@ export const useTimerNotificationSync = (): void => {
     const unsubscribeTick = subscribeToTick(checkForCompletedTimers);
 
     const handleAppState = (nextState: AppStateStatus): void => {
-      if (nextState === 'active') checkForCompletedTimers();
+      if (nextState === AppStateStatusValue.active) checkForCompletedTimers();
     };
     const appStateSub = AppState.addEventListener('change', handleAppState);
 

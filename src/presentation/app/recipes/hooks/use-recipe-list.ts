@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -6,17 +7,17 @@ import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
-import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
-import { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SORT_TO_FILTER } from '@presentation/app/recipes/model/sorting/recipe-sort';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
-import * as mutate from '@presentation/app/recipes/model/filter-mutations';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
+import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
+import * as mutate from '@presentation/app/recipes/model/filtering/filter-mutations';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
@@ -156,7 +157,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
   const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
-  const [sheetOpen, setSheetOpen] = useState<'filter' | null>(null);
+  const [sheetOpen, setSheetOpen] = useState<RecipeSheet | null>(null);
 
   // Web home shows a Save bookmark on each card, so the saved set must be populated.
   useEffect(() => {
@@ -277,7 +278,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const onOpenFilter = (): void => {
     setPendingFilters(filters);
     setPendingSort(sortBy);
-    setSheetOpen('filter');
+    setSheetOpen(RecipeSheet.Filter);
   };
 
   const onResetFilters = (): void => {

@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { GeneratingVariant } from '@presentation/app/create-recipe/model/generation/generating-variant';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
@@ -9,7 +10,6 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
 import { t } from '@presentation/i18n';
-import type { GeneratingVariant } from '@presentation/app/create-recipe/model/generation/generating-variant';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 
@@ -50,7 +50,7 @@ export const GeneratingView = ({
   const { orbitStyle, ringStyle, coreStyle } = useGeneratingAnimation();
 
   const copy = t().createRecipe;
-  const isImport = variant === 'import';
+  const isImport = variant === GeneratingVariant.Import;
   const steps = isImport
     ? IMPORT_STEP_KEYS.map((key) => copy[key])
     : GENERATE_STEP_KEYS.map((key) => copy[key]);
@@ -58,11 +58,11 @@ export const GeneratingView = ({
   const sub = isImport ? copy.importSub : copy.genSub;
   // Import runs long; clamp the spotlight to the final step so it keeps pulsing
   // instead of "completing" and sitting idle while the backend finishes.
-  const lastStep = steps.length - 1;
+  const lastStep = steps.length - ValueConstants.one;
   const spotlight = isImport ? Math.min(activeStep, lastStep) : activeStep;
   const progress = isImport
-    ? Math.min(IMPORT_PROGRESS_CAP, (spotlight + 1) / steps.length)
-    : Math.min(AnimationConstants.progressMax, (activeStep + 1) / steps.length);
+    ? Math.min(IMPORT_PROGRESS_CAP, (spotlight + ValueConstants.one) / steps.length)
+    : Math.min(AnimationConstants.progressMax, (activeStep + ValueConstants.one) / steps.length);
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

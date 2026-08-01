@@ -209,8 +209,16 @@ blocking.
    drift. Where the library already publishes the vocabulary (expo's `PermissionStatus`),
    use theirs rather than re-spelling it. Sentences that populate `Failure.message` live in
    `DiagnosticMessage` (`@core/failure`) — they are diagnostics, never user copy, but that
-   is not a licence to type them at the throw site. **Enforced mechanically** by
-   `check:structure` (rule P).
+   is not a licence to type them at the throw site. Narrowing questions about values the
+   app did not create go through `@core/guards/type-guards` rather than a hand-written
+   `typeof` — the `x !== null` half of `typeof x === 'object'` is the half a reader skims,
+   and `typeof null` is `'object'`. **Enforced mechanically** by `check:structure` (rule P).
+
+   **This applies to presentation too.** A screen's own vocabulary — which sheet is open,
+   which field has focus, which provider a button signs in with — is a const object in that
+   page's `model/`, not a literal compared against a `useState<string | null>`. That type
+   accepted any string, so a mistyped field name compiled and simply never highlighted
+   anything.
 
    **`@core/constants` is the default for structural literals.** New code writes
    `CharConstants.empty` instead of `''` and `ValueConstants.zero` instead of a standalone `0`

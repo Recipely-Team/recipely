@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
 import { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
@@ -48,7 +49,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const router = useRouter();
   const pathname = usePathname();
   const params = useLocalSearchParams<{ recipeId: string }>();
-  const recipeId = typeof params.recipeId === 'string' ? params.recipeId : CharConstants.empty;
+  const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
   const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();

@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
@@ -27,8 +28,8 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
-  const email = typeof params.email === 'string' ? params.email : CharConstants.empty;
-  const initialExpiresAt = typeof params.expiresAt === 'string' ? params.expiresAt : CharConstants.empty;
+  const email = isString(params.email) ? params.email : CharConstants.empty;
+  const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);

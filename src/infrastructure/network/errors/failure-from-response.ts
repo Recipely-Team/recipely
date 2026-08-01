@@ -10,6 +10,7 @@ import {
   ValidationFailure,
 } from '@core/failure';
 import type { RecipelyErrorPayload } from '@infrastructure/network/errors/recipely-error-payload';
+import { isObject } from '@core/guards/type-guards';
 import { HttpStatus } from '@infrastructure/network/http/http-status';
 import { ApiErrorCode } from '@infrastructure/constants/api-error-code';
 
@@ -28,7 +29,7 @@ interface RecipelyErrorBody {
 }
 
 const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody =>
-  typeof body === 'object' && body !== null && 'error' in body;
+  isObject(body) && 'error' in body;
 
 /**
  * Maps a non-2xx HTTP response to the domain `Failure` hierarchy. The backend's

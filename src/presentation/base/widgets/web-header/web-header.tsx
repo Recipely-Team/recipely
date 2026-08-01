@@ -9,7 +9,7 @@ import { spacing, zIndices } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
 import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
-import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
+import { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 import { ValueConstants } from '@core/constants';
@@ -69,7 +69,7 @@ export const WebHeader = (): React.JSX.Element => {
 
   const goRecipes = (): void => router.replace(RoutePaths.recipes);
   const goTab = (key: WebHeaderTabKey): void => {
-    if (key === 'recipes') router.replace(RoutePaths.recipes);
+    if (key === WebHeaderTabKey.Recipes) router.replace(RoutePaths.recipes);
     else router.replace(RoutePaths.myRecipes);
   };
   const goCreate = (): void => router.push(RoutePaths.createRecipe);
@@ -80,11 +80,11 @@ export const WebHeader = (): React.JSX.Element => {
   // The Discover entry to the welcome/onboarding screen is a guest-only affordance
   // and — per the prototype — lives on the Recipes tab alone.
   const isAuthenticated = authState.status === StoreStatus.Authenticated;
-  const showDiscover = activeTab === 'recipes' && !isAuthenticated;
+  const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
   // Search input only appears on the Recipes listing — that's where the recipe
   // list reads `useWebShellState().searchQuery` and folds it into its filter.
-  const showSearch = activeTab === 'recipes';
+  const showSearch = activeTab === WebHeaderTabKey.Recipes;
 
   return (
     <View

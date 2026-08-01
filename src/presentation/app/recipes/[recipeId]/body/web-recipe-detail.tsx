@@ -118,7 +118,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
                   key={`${item.url}:${String(i)}`}
                   onPress={() => setActiveImage(i)}
                   accessibilityRole="button"
-                  accessibilityLabel={`${recipe.name} ${String(i + 1)}`}
+                  accessibilityLabel={`${recipe.name} ${String(i + ValueConstants.one)}`}
                   style={[
                     styles.thumb,
                     { borderColor: i === activeImage ? colors.primary : colors.cardBorder },

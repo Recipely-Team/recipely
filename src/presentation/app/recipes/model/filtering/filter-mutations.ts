@@ -1,4 +1,5 @@
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
+import { ALL_CUISINES_KEY } from '@presentation/app/recipes/model/filtering/cuisine-filter';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -51,7 +52,7 @@ export const removeMaxTime = (f: UiFilters): UiFilters => ({ ...f, maxTime: Valu
 export const toggleCuisineQuick = (f: UiFilters, cuisine: string): UiFilters => ({
   ...f,
   cuisines:
-    cuisine === 'ALL'
+    cuisine === ALL_CUISINES_KEY
       ? []
       : f.cuisines.includes(cuisine)
         ? f.cuisines.filter((x) => x !== cuisine)

@@ -6,7 +6,7 @@ import { radii, opacities } from '@presentation/base/theme';
 import { HeroRecipes } from '@presentation/app/onboarding/items/hero-recipes';
 import { HeroAI } from '@presentation/app/onboarding/items/hero-ai';
 import { HeroTimer } from '@presentation/app/onboarding/items/hero-timer';
-import type { OnboardingSlideKind } from '@presentation/app/onboarding/model/onboarding-slide-kind';
+import { OnboardingSlideKind } from '@presentation/app/onboarding/model/onboarding-slide-kind';
 import { ValueConstants } from '@core/constants';
 
 const BLOB_LARGE = 300;
@@ -29,8 +29,8 @@ export interface OnboardingHeroProps {
 }
 
 const HeroContent = ({ kind, active }: { kind: OnboardingSlideKind; active: boolean }): React.JSX.Element => {
-  if (kind === 'recipes') return <HeroRecipes active={active} />;
-  if (kind === 'ai') return <HeroAI active={active} />;
+  if (kind === OnboardingSlideKind.Recipes) return <HeroRecipes active={active} />;
+  if (kind === OnboardingSlideKind.Ai) return <HeroAI active={active} />;
   return <HeroTimer active={active} />;
 };
 

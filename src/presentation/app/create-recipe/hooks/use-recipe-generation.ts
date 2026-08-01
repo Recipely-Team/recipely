@@ -121,7 +121,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     if (phase !== PhaseType.Generating) return;
     setGenStep(ValueConstants.zero);
     const id = setInterval(() => {
-      setGenStep((s) => Math.min(GEN_STEP_COUNT - 1, s + 1));
+      setGenStep((s) => Math.min(GEN_STEP_COUNT - ValueConstants.one, s + ValueConstants.one));
     }, GEN_STEP_INTERVAL_MS);
     return () => clearInterval(id);
   }, [phase]);

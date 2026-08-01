@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { ALL_CUISINES_KEY } from '@presentation/app/recipes/model/filtering/cuisine-filter';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
@@ -14,7 +15,7 @@ const TILE_SHRINK_WIDTH = 500;
 /** Emoji shown on the "All" reset tile. */
 const ALL_EMOJI = '🍽️';
 /** Sentinel toggle key the parent maps to "clear cuisine filters". */
-const ALL_KEY = 'ALL';
+
 
 export interface WebCuisineGridProps {
   selectedCuisines: string[];
@@ -62,7 +63,7 @@ export const WebCuisineGrid = ({ selectedCuisines, onToggle }: WebCuisineGridPro
     <View style={styles.section}>
       <WebSectionHead title={t().recipes.browseCuisines} sub={t().recipes.filterByCuisine} />
       <View style={styles.grid}>
-        {tile(ALL_KEY, t().recipes.cuisineAll, ALL_EMOJI, selectedCuisines.length === ValueConstants.zero)}
+        {tile(ALL_CUISINES_KEY, t().recipes.cuisineAll, ALL_EMOJI, selectedCuisines.length === ValueConstants.zero)}
         {cuisineKeys.map((key) => {
           const { name, emoji } = cuisineLabel(key);
           return tile(key, name, emoji, selectedCuisines.includes(key));

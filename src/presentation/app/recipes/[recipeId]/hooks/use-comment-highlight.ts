@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { isString } from '@core/guards/type-guards';
 import type { RefObject } from 'react';
 import type { ScrollView, ScrollViewProps } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
@@ -74,7 +75,7 @@ export const useCommentHighlight = ({
   scrollViewRef,
 }: UseCommentHighlightArgs): UseCommentHighlightResult => {
   const params = useLocalSearchParams<{ commentId?: string }>();
-  const targetId = typeof params.commentId === 'string' && params.commentId.length > ValueConstants.zero
+  const targetId = isString(params.commentId) && params.commentId.length > ValueConstants.zero
     ? params.commentId
     : null;
 
@@ -92,7 +93,7 @@ export const useCommentHighlight = ({
 
   const registerTargetNode = useCallback((node: CommentNode | null): void => {
     nodeRef.current = node;
-    if (node !== null) setNodeVersion((v) => v + 1);
+    if (node !== null) setNodeVersion((v) => v + ValueConstants.one);
   }, []);
 
   useEffect(() => {

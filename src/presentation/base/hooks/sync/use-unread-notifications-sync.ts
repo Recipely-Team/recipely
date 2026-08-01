@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { AppStateStatusValue } from '@presentation/base/constants/interaction-constants';
 import { StoreStatus } from '@application/store/store-status';
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
@@ -30,7 +31,7 @@ export const useUnreadNotificationsSync = (
     tick();
     const interval = setInterval(tick, POLL_INTERVAL_MS);
     const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
-      if (next === 'active') tick();
+      if (next === AppStateStatusValue.active) tick();
     });
 
     return () => {

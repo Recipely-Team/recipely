@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { AuthField } from '@presentation/app/login/model/auth-field';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -17,8 +18,8 @@ interface ResetPasswordFormViewProps {
   onToggleNew: () => void;
   showConfirm: boolean;
   onToggleConfirm: () => void;
-  focusField: string | null;
-  onFocus: (field: string) => void;
+  focusField: AuthField | null;
+  onFocus: (field: AuthField | null) => void;
   onBlur: () => void;
   confirmRef: React.RefObject<TextInput | null>;
   loading: boolean;
@@ -61,7 +62,7 @@ export const ResetPasswordFormView = ({
             {
               backgroundColor: colors.inputBackground,
               color: colors.text,
-              borderColor: focusField === 'new' ? colors.inputBorderFocused : colors.inputBorder,
+              borderColor: focusField === AuthField.NewPassword ? colors.inputBorderFocused : colors.inputBorder,
             },
           ]}
           placeholder={t().resetPassword.newPasswordPlaceholder}
@@ -103,7 +104,7 @@ export const ResetPasswordFormView = ({
               backgroundColor: colors.inputBackground,
               color: colors.text,
               borderColor:
-                focusField === 'confirm' ? colors.inputBorderFocused : colors.inputBorder,
+                focusField === AuthField.ConfirmPassword ? colors.inputBorderFocused : colors.inputBorder,
             },
           ]}
           placeholder={t().resetPassword.confirmPlaceholder}

@@ -47,7 +47,7 @@ export const StepRow = ({
           maxFontSizeMultiplier={maxFontScales.badge}
           style={[styles.badgeLabel, { color: colors.primaryText }]}
         >
-          {index + 1}
+          {index + ValueConstants.one}
         </ThemedText>
       </LinearGradient>
       <AutoGrowTextInput

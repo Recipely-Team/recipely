@@ -387,17 +387,23 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 // back, so they are checked rather than remembered:
 //   - a status literal outside the one file that defines the vocabulary;
 //   - a `Failure` built from a sentence typed at the call site instead of the
-//     `DiagnosticMessage` catalogue.
+//     `DiagnosticMessage` catalogue;
+//   - a hand-written `typeof x === 'object'`, whose companion `x !== null` is the
+//     half a reader skims past — `typeof null` is 'object'.
 {
   const STATUS_DEF = 'application/store/store-status.ts';
   const MESSAGE_DEF = 'core/failure/diagnostic-message.ts';
+  const GUARDS_DEF = 'core/guards/type-guards.ts';
   for (const file of files) {
     // Fixtures and mocks exist to stand in for real failures; their strings are the test data.
     if (isTest(file) || /__fixtures__|__mocks__/.test(file)) continue;
-    if (file.endsWith(STATUS_DEF) || file.endsWith(MESSAGE_DEF)) continue;
+    if (file.endsWith(STATUS_DEF) || file.endsWith(MESSAGE_DEF) || file.endsWith(GUARDS_DEF)) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     for (const m of src.matchAll(/status(?::| ===| !==) '([a-z]+)'/g)) {
       errors.push(`${file}: status literal '${m[1]}' — use StoreStatus (CLAUDE.md §5)`);
+    }
+    for (const m of src.matchAll(/typeof \w[\w.]* === '(string|object)'/g)) {
+      errors.push(`${file}: ${m[0]} — use the guards in @core/guards/type-guards (CLAUDE.md §5)`);
     }
     for (const m of src.matchAll(/new (\w*Failure)\(\s*['"`]([^'"`]{4,})/g)) {
       errors.push(`${file}: ${m[1]} built from an inline message "${m[2].slice(0, 32)}…" — add it to DiagnosticMessage (CLAUDE.md §5)`);

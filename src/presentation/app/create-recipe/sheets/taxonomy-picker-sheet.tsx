@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -24,7 +25,7 @@ import { ValueConstants } from '@core/constants';
 export interface TaxonomyPickerSheetProps {
   visible: boolean;
   onClose: () => void;
-  kind: 'cuisine' | 'category';
+  kind: TaxonomyPickerKind;
   selected: string | null;
   onSelect: (value: string) => void;
 }
@@ -48,7 +49,7 @@ const localItems = (
  * `ready`, otherwise the bundled local enum catalog (emoji maps + i18n names)
  * so the picker is never empty before the store loads, while offline, or on error.
  */
-const useCatalog = (kind: 'cuisine' | 'category'): Catalog => {
+const useCatalog = (kind: TaxonomyPickerKind): Catalog => {
   const tr = t();
   const { taxonomyStore } = useStores();
   const status = taxonomyStore((s) => s.status);
@@ -57,7 +58,7 @@ const useCatalog = (kind: 'cuisine' | 'category'): Catalog => {
 
   return useMemo(() => {
     const ready = status === StoreStatus.Ready;
-    if (kind === 'cuisine') {
+    if (kind === TaxonomyPickerKind.Cuisine) {
       const items =
         ready && cuisines.length > ValueConstants.zero
           ? cuisines
