@@ -83,6 +83,8 @@ const baseProps = (): MyRecipesListProps => ({
   onDeleteDraft: jest.fn(),
   isRefreshing: false,
   onRefresh: jest.fn(),
+  onDraftsEndReached: jest.fn(),
+  isLoadingMoreDrafts: false,
 });
 
 const render = (overrides: Partial<MyRecipesListProps>): ReactTestInstance => {

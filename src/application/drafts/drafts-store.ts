@@ -2,7 +2,8 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
+import { DRAFTS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api';
+import { ValueConstants } from '@core/constants';
 
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -26,14 +27,52 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
     loadDrafts: async () => {
       set({ listState: { status: StoreStatus.Loading } });
       const result = await deps.listDraftsUseCase.execute({
-        page: 1, // TO DO: page backendden gelmeli
+        page: FIRST_PAGE,
         pageSize: DRAFTS_PAGE_SIZE,
       });
       if (!result.ok) {
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ drafts: result.value.items, listState: { status: StoreStatus.Loaded } });
+      const { items, total, page } = result.value;
+      set({
+        drafts: items,
+        listState: {
+          status: StoreStatus.Loaded,
+          page,
+          hasMore: items.length < total,
+        },
+      });
+    },
+    loadMoreDrafts: async () => {
+      const current = get().listState;
+      if (
+        current.status !== StoreStatus.Loaded ||
+        !current.hasMore ||
+        current.isLoadingMore === true
+      ) {
+        return;
+      }
+      set({ listState: { ...current, isLoadingMore: true } });
+      const result = await deps.listDraftsUseCase.execute({
+        page: current.page + ValueConstants.one,
+        pageSize: DRAFTS_PAGE_SIZE,
+      });
+      if (!result.ok) {
+        // The rows already on screen stay; only the append failed.
+        set({ listState: { ...current, isLoadingMore: false } });
+        return;
+      }
+      const { items, total, page } = result.value;
+      const merged = [...get().drafts, ...items];
+      set({
+        drafts: merged,
+        listState: {
+          status: StoreStatus.Loaded,
+          page,
+          hasMore: merged.length < total,
+        },
+      });
     },
     loadLatestDraft: async () => {
       const result = await deps.getLatestDraftUseCase.execute();

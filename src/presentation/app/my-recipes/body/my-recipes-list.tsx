@@ -1,4 +1,6 @@
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ListConstants } from '@presentation/base/constants/list-constants';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
@@ -25,6 +27,9 @@ export interface MyRecipesListProps {
   onOpenRecipe: (id: string) => void;
   onOpenDraft: (id: string) => void;
   onDeleteDraft: (id: string) => void;
+  /** Asks for the next page of drafts; the list pages like the recipe feed does. */
+  onDraftsEndReached: () => void;
+  isLoadingMoreDrafts: boolean;
   isRefreshing: boolean;
   onRefresh: () => void;
 }
@@ -48,6 +53,8 @@ export const MyRecipesList = ({
   onOpenRecipe,
   onOpenDraft,
   onDeleteDraft,
+  onDraftsEndReached,
+  isLoadingMoreDrafts,
   isRefreshing,
   onRefresh,
 }: MyRecipesListProps): React.JSX.Element => {
@@ -95,6 +102,9 @@ export const MyRecipesList = ({
         ItemSeparatorComponent={() => <View style={styles.separator} />}
         contentContainerStyle={styles.listContent}
         style={styles.list}
+        onEndReached={onDraftsEndReached}
+        onEndReachedThreshold={ListConstants.endReachedThreshold}
+        ListFooterComponent={<FeedFooter isLoadingMore={isLoadingMoreDrafts} />}
       />
     );
   }

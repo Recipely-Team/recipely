@@ -24,6 +24,13 @@ export interface AlarmScreenProps {
   recipeName: string;
 }
 
+/** The bell grows to this and back; big enough to read as a pulse, small enough not to reflow. */
+const PULSE_SCALE_PEAK = 1.2;
+const PULSE_SCALE_REST = 1;
+
+/** Shown instead of an icon so the alarm reads the same on every platform. */
+const ALARM_EMOJI = '⏰';
+
 const PULSE_DURATION = 600;
 // Haptic fires every 1.5 s so the phone buzzes repeatedly while the alarm
 // overlay is visible — useful when the device is on silent mode.
@@ -39,13 +46,13 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(scale, {
-          toValue: 1.2, // TO DO: 1.2 constants dosyasına taşınabilir.
+          toValue: PULSE_SCALE_PEAK,
           duration: PULSE_DURATION,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
         }),
         Animated.timing(scale, {
-          toValue: 1, // TO DO: 1 constants dosyasına taşınabilir.
+          toValue: PULSE_SCALE_REST,
           duration: PULSE_DURATION,
           easing: Easing.inOut(Easing.ease),
           useNativeDriver: true,
@@ -98,7 +105,7 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
           importantForAccessibility="no"
           style={[styles.bell, { transform: [{ scale }] }]}
         >
-          ⏰ // TO DO: 1 emoji constants dosyasına taşınabilir.
+          {ALARM_EMOJI}
         </Animated.Text>
 
         <ThemedText variant="headline" style={styles.centered}>

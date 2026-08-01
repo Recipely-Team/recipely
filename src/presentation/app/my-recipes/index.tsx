@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -34,6 +35,8 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const savedRecipes = savedRecipesStore((s) => s.savedRecipes);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const drafts = draftsStore((s) => s.drafts);
+  const draftsListState = draftsStore((s) => s.listState);
+  const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   // Deep-linked tab: publishing a recipe lands here on `created`, so the thing
   // the user just made is the thing they are looking at.
@@ -118,6 +121,11 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
             onDeleteDraft={(id) => void deleteDraft(id)}
+            onDraftsEndReached={() => void loadMoreDrafts()}
+            isLoadingMoreDrafts={
+              draftsListState.status === StoreStatus.Loaded &&
+              draftsListState.isLoadingMore === true
+            }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
           />

@@ -1,4 +1,5 @@
 import { LogBox } from 'react-native';
+import type { NotificationCopy } from '@domain/notifications/notification-copy';
 import { PermissionStatus } from 'expo-modules-core';
 import { isAndroid, isIos, isWeb } from '@infrastructure/constants/platform';
 import type * as NotificationsType from 'expo-notifications';
@@ -37,6 +38,16 @@ const REMINDER_INTERVAL_MS =
 const REMINDER_COUNT = ValueConstants.zero;
 
 /**
+ * The soonest a notification may be scheduled. A timer that has already elapsed
+ * computes a non-positive delay, which the OS rejects outright; one second in
+ * the future fires immediately and is accepted.
+ */
+const MIN_NOTIFICATION_DELAY_SECONDS = 1;
+
+/** Prefixes the alarm title so it reads as a timer at a glance in the tray. */
+const ALARM_EMOJI = '⏰';
+
+/**
  * Schedules and cancels local timer-completion notifications via the platform
  * notification API. Every method is a no-op on web, where local notifications
  * are unsupported and the in-app alarm overlay is the sole alert.
@@ -55,7 +66,7 @@ const REMINDER_COUNT = ValueConstants.zero;
  *   continuous alert; the follow-up nudges exist only for a backgrounded app.
  */
 export class NotificationService implements NotificationServiceInterface {
-  async init(): Promise<void> {
+  async init(copy: NotificationCopy): Promise<void> {
     if (isWeb()) return;
     try {
       Notifications.setNotificationHandler({
@@ -72,7 +83,7 @@ export class NotificationService implements NotificationServiceInterface {
       await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
         {
           identifier: DISMISS_ALARM_ACTION,
-          buttonTitle: 'Kapat', // TO DO: i18n key for this string
+          buttonTitle: copy.dismissAction,
           options: {
             isDestructive: true,
             // opensAppToForeground: false lets the action run without bringing
@@ -85,7 +96,7 @@ export class NotificationService implements NotificationServiceInterface {
 
       if (isAndroid()) {
         await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
-          name: 'Cooking Timer (alarm)', // TO DO: i18n key for this string
+          name: copy.channelName,
           importance: Notifications.AndroidImportance.MAX,
           // WHY: omitting `sound` causes the Android channel manager to set
           // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
@@ -130,6 +141,7 @@ export class NotificationService implements NotificationServiceInterface {
     timerId: string,
     recipeName: string,
     endTimeMs: number,
+    body: string,
   ): Promise<string[]> {
     if (isWeb()) return [];
     const ids: string[] = [];
@@ -137,7 +149,9 @@ export class NotificationService implements NotificationServiceInterface {
     for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
       all.push(endTimeMs + i * REMINDER_INTERVAL_MS);
     }
-    const results = await Promise.all(all.map((t) => this.scheduleSingle(timerId, recipeName, t)));
+    const results = await Promise.all(
+      all.map((t) => this.scheduleSingle(timerId, recipeName, t, body)),
+    );
     for (const id of results) {
       if (id !== null) ids.push(id);
     }
@@ -158,13 +172,17 @@ export class NotificationService implements NotificationServiceInterface {
     timerId: string,
     recipeName: string,
     fireAtMs: number,
+    body: string,
   ): Promise<string | null> {
-    const delaySeconds = Math.max(1, Math.round((fireAtMs - Date.now()) / 1000)); // TO DO: static constants for 1, 1000
+    const delaySeconds = Math.max(
+      MIN_NOTIFICATION_DELAY_SECONDS,
+      Math.round((fireAtMs - Date.now()) / TimeConstants.millisecondsPerSecond),
+    );
     try {
       return await Notifications.scheduleNotificationAsync({
         content: {
-          title: `⏰ ${recipeName}`, // TO DO: i18n key for this string
-          body: 'Timer is done! Tap to dismiss.', // TO DO: i18n key for this string
+          title: `${ALARM_EMOJI} ${recipeName}`,
+          body,
           // iOS reads sound from content; Android ignores it (channel sets sound).
           // Using 'default' until a native build bundles alarm.mp3 in the app.
           sound: isIos() ? 'default' : undefined,

@@ -1,4 +1,5 @@
 import { create, type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
@@ -52,7 +53,7 @@ export class HttpClient {
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {
-        Accept: 'application/json', // TO DO: static key for this header name header isimleri bir dosyaya toplanır
+        [HttpHeader.accept]: HttpMediaType.json,
         // Content-Type is set per-request in the interceptor so FormData uploads
         // can omit it and let the XHR runtime auto-set multipart + boundary.
       },

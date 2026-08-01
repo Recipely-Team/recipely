@@ -1,4 +1,5 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
+import { HttpMethod, METHODS_WITH_BODY } from '@infrastructure/network/http/http-method';
 import { LogTag } from '@infrastructure/constants/log-tag';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
@@ -55,8 +56,7 @@ export const buildRequestInterceptor = (
 
     // Encrypt body for POST/PUT/PATCH. For requests with no data send an empty
     // encrypted envelope so the backend's decryptBody middleware accepts it.
-    const methodsWithBody = ['POST', 'PUT', 'PATCH']; // TO DO: static list of methods with body, single source of truth for this
-    if (methodsWithBody.includes(config.method?.toUpperCase() ?? CharConstants.empty)) {
+    if (METHODS_WITH_BODY.includes((config.method?.toUpperCase() ?? CharConstants.empty) as HttpMethod)) {
       const bodyData = config.data ?? {};
       // WHY: backend's decryptBody middleware expects plaintext `{ data: <T> }`
       // (mirroring the response side). Wrap before encrypt so it is symmetric.
