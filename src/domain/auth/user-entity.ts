@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -24,10 +25,10 @@ export class UserEntity extends BaseEntity<UserProps> {
 
   static create(props: UserProps): Result<UserEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('User id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.user.idRequired, 'id'));
     }
     if (props.displayName.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('User displayName must be non-empty', 'displayName'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.user.displayNameRequired, 'displayName'));
     }
     return ok(new UserEntity(props));
   }

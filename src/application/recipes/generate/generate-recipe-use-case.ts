@@ -1,4 +1,5 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -19,7 +20,7 @@ export class GenerateRecipeUseCase {
     const trimmed = input.prompt.trim();
     if (trimmed.length === ValueConstants.zero) {
       return Promise.resolve(
-        fail(new ValidationFailure('Prompt is required', undefined, ErrorMessageKey.promptRequired)),
+        fail(new ValidationFailure(DiagnosticMessage.ai.promptRequired, undefined, ErrorMessageKey.promptRequired)),
       );
     }
     return this.repo.generateRecipe(trimmed);

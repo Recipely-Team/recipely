@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -146,8 +147,8 @@ const GEN_STEP_INTERVAL_MS = 620;
       if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([
-          { role: 'user', content: trimmed },
-          { role: 'assistant', content: t().createRecipe.aiFirstReply },
+          { role: ChatRole.User, content: trimmed },
+          { role: ChatRole.Assistant, content: t().createRecipe.aiFirstReply },
         ]);
         createdRecipesStore.getState().resetGenerateState();
         setPhase(PhaseType.Preview);
@@ -180,7 +181,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       const state = createdRecipesStore.getState().importState;
       if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
-        setChatHistory([{ role: 'assistant', content: t().createRecipe.importFirstReply }]);
+        setChatHistory([{ role: ChatRole.Assistant, content: t().createRecipe.importFirstReply }]);
         createdRecipesStore.getState().resetImportState();
         setImporting(false);
         setPhase(PhaseType.Preview);
@@ -189,7 +190,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       if (state.status === StoreStatus.Error) showErrorToast(state.failure);
       const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory([
-        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
+        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
       ]);
       createdRecipesStore.getState().resetImportState();
       setImporting(false);
@@ -212,12 +213,12 @@ const GEN_STEP_INTERVAL_MS = 620;
       if (trimmed.length === ValueConstants.zero || refining) return;
       setChatInput(CharConstants.empty);
       setChatExpanded(true);
-      setChatHistory((h) => [...h, { role: 'user', content: trimmed }]);
+      setChatHistory((h) => [...h, { role: ChatRole.User, content: trimmed }]);
       const refined = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
       if (refined !== null) {
         setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
         const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
-        setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
+        setChatHistory((h) => [...h, { role: ChatRole.Assistant, content: reply }]);
         // The answer landed with the assistant closed: the recipe has just
         // rewritten itself under the user, and the bubble explaining it is
         // behind a panel they cannot see. Say it out loud instead.
@@ -234,7 +235,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory((h) => [
         ...h,
-        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
+        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
       ]);
       createdRecipesStore.getState().resetRefineState();
     },

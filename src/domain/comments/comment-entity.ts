@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -27,16 +28,16 @@ export class CommentEntity extends BaseEntity<CommentProps> {
 
   static create(props: CommentProps): Result<CommentEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Comment id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.comment.idRequired, 'id'));
     }
     if (props.body.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Comment body must be non-empty', 'body'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.comment.bodyRequired, 'body'));
     }
     if (props.authorId.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Comment authorId must be non-empty', 'authorId'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.comment.authorIdRequired, 'authorId'));
     }
     if (props.recipeId.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Comment recipeId must be non-empty', 'recipeId'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.comment.recipeIdRequired, 'recipeId'));
     }
     return ok(new CommentEntity(props));
   }

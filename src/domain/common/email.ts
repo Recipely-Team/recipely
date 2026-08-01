@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { RegexConstants } from '@core/constants';
@@ -13,7 +14,7 @@ export class Email {
 
   static create(raw: string): Result<Email, ValidationFailure> {
     if (!RegexConstants.email.test(raw)) {
-      return fail(new ValidationFailure('Invalid email format', 'email'));
+      return fail(new ValidationFailure(DiagnosticMessage.auth.invalidEmail, 'email'));
     }
     return ok(new Email(raw));
   }

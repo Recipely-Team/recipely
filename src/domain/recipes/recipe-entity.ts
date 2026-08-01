@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -47,16 +48,16 @@ export class RecipeEntity extends BaseEntity<RecipeProps> {
 
   static create(props: RecipeProps): Result<RecipeEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Recipe id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }
     if (props.name.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Recipe name must be non-empty', 'name'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.nameRequired, 'name'));
     }
     if (props.caloriesPerServing < ValueConstants.zero) {
-      return fail(new ValidationFailure('Calories must be non-negative', 'caloriesPerServing'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.caloriesNegative, 'caloriesPerServing'));
     }
     if (props.servings < 1) {
-      return fail(new ValidationFailure('Servings must be at least 1', 'servings'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.servingsTooLow, 'servings'));
     }
     return ok(new RecipeEntity(props));
   }

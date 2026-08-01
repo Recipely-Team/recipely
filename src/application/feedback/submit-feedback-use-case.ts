@@ -1,4 +1,5 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ValidationFailure, type Failure } from '@core/failure';
 import type { FeedbackRepositoryInterface } from '@domain/feedback/feedback-repository-interface';
@@ -16,7 +17,7 @@ export class SubmitFeedbackUseCase {
 
   async execute(input: FeedbackSubmission): Promise<Result<void, Failure>> {
     if (input.message.trim() === CharConstants.empty) {
-      return fail(new ValidationFailure('Message is required', 'message'));
+      return fail(new ValidationFailure(DiagnosticMessage.feedback.messageRequired, 'message'));
     }
 
     return this.repo.submitFeedback({

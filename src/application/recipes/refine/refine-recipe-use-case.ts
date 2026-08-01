@@ -1,4 +1,5 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
@@ -24,7 +25,7 @@ export class RefineRecipeUseCase {
       return Promise.resolve(
         fail(
           new ValidationFailure(
-            'Refine instruction is required',
+            DiagnosticMessage.ai.refineInstructionRequired,
             undefined,
             ErrorMessageKey.refineInstructionRequired,
           ),

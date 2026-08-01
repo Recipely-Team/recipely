@@ -1,4 +1,6 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -30,7 +32,7 @@ export class NotificationEntity extends BaseEntity<NotificationProps> {
 
   static create(props: NotificationProps): Result<NotificationEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Notification id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.notification.idRequired, 'id'));
     }
     return ok(new NotificationEntity(props));
   }
@@ -87,10 +89,10 @@ export class NotificationEntity extends BaseEntity<NotificationProps> {
    */
   get target(): NotificationTarget | null {
     if (this.props.commentId !== null && this.props.recipeId !== null) {
-      return { kind: 'comment', recipeId: this.props.recipeId, commentId: this.props.commentId };
+      return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }
     if (this.props.recipeId !== null) {
-      return { kind: 'recipe', recipeId: this.props.recipeId };
+      return { kind: NotificationTargetKind.Recipe, recipeId: this.props.recipeId };
     }
     return null;
   }

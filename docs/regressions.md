@@ -136,3 +136,34 @@ compared against its own output.
 build tool transforms your input, the guard belongs on the output — anything else
 verifies your intent rather than what ships. Also worth naming: a fix that cannot be
 observed anywhere except in the diff has not been verified at all.
+
+---
+
+## One word, written down in three places
+
+**Symptom:** none visible — which is the point. `Failure.code` was typed `string`,
+and the same vocabulary was spelled out independently by the failure classes
+(`readonly code = 'conflict'`), the response mapper (`case 'conflict':`) and the
+presentation copy table (`CODE_TO_KEY`). A typo in any of the three compiled
+cleanly and fell through to the generic "something went wrong" wording at
+runtime. The same shape repeated for store statuses (`'idle'` in eleven stores),
+platform checks (`Platform.OS === 'web'` 33 times) and failure messages typed
+inline at the point they were thrown.
+
+**Root cause:** a vocabulary with no single definition. Each site was individually
+correct, so nothing ever failed; the copies could only drift, never disagree
+loudly.
+
+*Guard:* `check:structure` rule **P** rejects a status literal outside
+`store-status.ts` and a `Failure` built from an inline sentence instead of
+`DiagnosticMessage`. `CODE_TO_KEY` is a `Record<FailureCode, …>`, so a code
+without copy is now a compile error. `every-failure-has-copy.test.ts` asserts
+every code and every backend `messageKey` resolves to a non-empty title and body
+**in both languages** — the compiler can see that a row exists, not that it has
+words in it.
+
+**The lesson is about what "correct" hides.** Duplicated knowledge does not
+announce itself the way a bug does: there is no failing case to find, only a
+future edit that will update two of the three copies. Type the vocabulary so the
+compiler holds the copies together, and where it cannot reach — a translation
+file, a generated artifact — put a test on the output rather than the intent.

@@ -2,7 +2,6 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
-import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
 
 import type { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
 
@@ -23,7 +22,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
     set({
       cuisines: result.value.cuisines,
       categories: result.value.categories,
-      status: TaxonomyStatus.Ready,
+      status: StoreStatus.Ready,
       failure: null,
     });
   };
@@ -35,7 +34,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
     failure: null,
     load: async () => {
       const { status } = get();
-      if (status === TaxonomyStatus.Loading || status === TaxonomyStatus.Ready) {
+      if (status === StoreStatus.Loading || status === StoreStatus.Ready) {
         return;
       }
       await fetchCatalogs(set);
