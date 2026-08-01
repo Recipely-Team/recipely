@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
@@ -47,7 +48,7 @@ export const WebRecipeDetailHeader = ({
 }: WebRecipeDetailHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
-  const author = authorState.status === 'resolved' ? authorState.author : null;
+  const author = authorState.status === StoreStatus.Resolved ? authorState.author : null;
 
   return (
     <View style={styles.row}>

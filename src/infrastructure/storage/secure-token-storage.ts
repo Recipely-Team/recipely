@@ -1,4 +1,6 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { LogTag } from '@infrastructure/constants/log-tag';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { type Failure, UnknownFailure, ValidationFailure } from '@core/failure';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -34,9 +36,9 @@ export class SecureTokenStorage {
       return ok(undefined);
     } catch (error: unknown) {
       if (__DEV__) {
-        console.error('[SecureTokenStorage] saveSession failed:', error); // TO DO: static message
+        console.error(`${LogTag.secureTokenStorage} saveSession failed:`, error);
       }
-      return fail(new UnknownFailure('Failed to persist session', error)); // TO DO: static message
+      return fail(new UnknownFailure(DiagnosticMessage.storage.persistFailed, error));
     }
   }
 
@@ -47,9 +49,9 @@ export class SecureTokenStorage {
       raw = read.ok ? read.value : null;
     } catch (error: unknown) {
       if (__DEV__) {
-        console.error('[SecureTokenStorage] loadSession failed:', error); // TO DO: static message
+        console.error(`${LogTag.secureTokenStorage} loadSession failed:`, error);
       }
-      return fail(new UnknownFailure('Failed to read session', error)); // TO DO: static message
+      return fail(new UnknownFailure(DiagnosticMessage.storage.readFailed, error));
     }
     if (raw === null) {
       return ok(null);
@@ -58,7 +60,7 @@ export class SecureTokenStorage {
     try {
       parsed = JSON.parse(raw) as SerializedSession;
     } catch {
-      return fail(new ValidationFailure('Stored session is malformed JSON')); // TO DO: static message
+      return fail(new ValidationFailure(DiagnosticMessage.storage.malformedJson));
     }
     const emailResult = Email.create(parsed.user.email);
     if (!emailResult.ok) {
@@ -92,7 +94,7 @@ export class SecureTokenStorage {
       await kvStore.removeItem(STORAGE_KEY);
       return ok(undefined);
     } catch (error: unknown) {
-      return fail(new UnknownFailure('Failed to clear session', error)); // TO DO: static message
+      return fail(new UnknownFailure(DiagnosticMessage.storage.clearFailed, error));
     }
   }
 }

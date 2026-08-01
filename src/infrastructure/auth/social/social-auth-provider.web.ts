@@ -5,6 +5,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { fail, ok } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init';
@@ -18,14 +19,14 @@ import { getFirebaseApp } from '@infrastructure/firebase/firebase-init';
 export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   const app = getFirebaseApp();
   if (app === null) {
-    return fail(new UnknownFailure('Firebase is not configured for web')); // TO DO: static error message problem
+    return fail(new UnknownFailure(DiagnosticMessage.socialAuth.firebaseNotConfiguredOnWeb));
   }
   try {
     const provider = new GoogleAuthProvider();
     const { user } = await signInWithPopup(getAuth(app), provider);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Google sign-in failed'; // TO DO: static error message problem
+    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.googleFailed;
     return fail(new UnknownFailure(msg));
   }
 };
@@ -39,7 +40,7 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
 export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   const app = getFirebaseApp();
   if (app === null) {
-    return fail(new UnknownFailure('Firebase is not configured for web')); // TO DO: static error message problem
+    return fail(new UnknownFailure(DiagnosticMessage.socialAuth.firebaseNotConfiguredOnWeb));
   }
   try {
     const provider = new OAuthProvider('apple.com'); // TO DO: static provider ID problem
@@ -48,7 +49,7 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     const { user } = await signInWithPopup(getAuth(app), provider);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Apple sign-in failed'; // TO DO: static error message problem
+    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.appleFailed;
     return fail(new UnknownFailure(msg));
   }
 };

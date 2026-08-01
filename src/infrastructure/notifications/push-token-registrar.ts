@@ -1,4 +1,5 @@
 import { isAndroid } from '@infrastructure/constants/platform';
+import { PermissionStatus } from 'expo-modules-core';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { ValueConstants } from '@core/constants';
 
@@ -25,10 +26,10 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
 
     const { status: existing } = await Notifications.getPermissionsAsync();
     const status =
-      existing === 'granted' // TO DO: static status names problem
+      existing === PermissionStatus.GRANTED
         ? existing
         : (await Notifications.requestPermissionsAsync()).status;
-    if (status !== 'granted') return; // TO DO: static status names problem
+    if (status !== PermissionStatus.GRANTED) return;
 
     const token = await Notifications.getDevicePushTokenAsync();
     if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return; // TO DO: static type check for string

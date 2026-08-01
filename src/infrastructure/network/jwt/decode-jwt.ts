@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { DiagnosticMessage, FailureField } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { JwtClaims } from '@infrastructure/network/jwt/jwt-claims';
@@ -15,21 +16,21 @@ const PERCENT = '%';
 export const decodeJwtPayload = (token: string): Result<JwtClaims, ValidationFailure> => {
   const parts = token.split(JwtFormat.separator);
   if (parts.length !== JwtFormat.segmentCount) {
-    return fail(new ValidationFailure('Malformed JWT', 'token')); // TO DO: i18n key for this message and static key for the field name
+    return fail(new ValidationFailure(DiagnosticMessage.jwt.malformed, FailureField.token));
   }
   const payloadB64 = parts[JwtFormat.payloadIndex];
   if (!payloadB64) {
-    return fail(new ValidationFailure('Malformed JWT', 'token')); // TO DO: i18n key for this message and static key for the field name
+    return fail(new ValidationFailure(DiagnosticMessage.jwt.malformed, FailureField.token));
   }
   try {
     const json = base64UrlDecode(payloadB64);
     const parsed = JSON.parse(json) as unknown;
     if (typeof parsed !== 'object' || parsed === null) { // TO DO: static type check for this object shape, single source of truth for the JWT payload
-      return fail(new ValidationFailure('JWT payload is not an object', 'token')); // TO DO: i18n key for this message and static key for the field name
+      return fail(new ValidationFailure(DiagnosticMessage.jwt.payloadNotAnObject, FailureField.token));
     }
     return ok(parsed as JwtClaims);
   } catch {
-    return fail(new ValidationFailure('Could not decode JWT payload', 'token')); // TO DO: i18n key for this message and static key for the field name
+    return fail(new ValidationFailure(DiagnosticMessage.jwt.payloadUndecodable, FailureField.token));
   }
 };
 

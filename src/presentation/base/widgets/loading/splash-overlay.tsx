@@ -60,7 +60,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
         style={StyleSheet.absoluteFill}
         onPress={dismiss}
         accessibilityRole="button"
-        accessibilityLabel="Dismiss splash"
+        accessibilityLabel={t().splash.dismiss}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}

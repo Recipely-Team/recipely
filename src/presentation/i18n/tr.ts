@@ -210,6 +210,7 @@ export const tr: Translations = {
     },
   },
   splash: {
+    dismiss: 'Açılış ekranını kapat',
     tagline: 'Tariflerin senin elinde',
   },
   login: {

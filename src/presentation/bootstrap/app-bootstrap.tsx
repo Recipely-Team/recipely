@@ -1,4 +1,5 @@
 import '@presentation/bootstrap/crypto-polyfill';
+import { StoreStatus } from '@application/store/store-status';
 import { type ReactNode, useEffect } from 'react';
 import { timerStore } from '@application/timers/timer-store';
 import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
@@ -81,7 +82,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     let registered = false;
     const maybeRegister = (): void => {
       if (registered) return;
-      if (stores.authStore.getState().state.status !== 'authenticated') return;
+      if (stores.authStore.getState().state.status !== StoreStatus.Authenticated) return;
       registered = true;
       const useCase = container.resolve<RegisterDeviceTokenUseCase>(
         TOKENS.RegisterDeviceTokenUseCase,

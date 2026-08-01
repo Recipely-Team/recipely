@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
@@ -22,7 +23,7 @@ export const useUnreadNotificationsSync = (
 ): void => {
   useEffect(() => {
     const tick = (): void => {
-      if (authStore.getState().state.status !== 'authenticated') return;
+      if (authStore.getState().state.status !== StoreStatus.Authenticated) return;
       void notificationsStore.getState().refreshUnread();
     };
 

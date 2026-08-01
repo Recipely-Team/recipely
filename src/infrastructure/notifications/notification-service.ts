@@ -1,4 +1,5 @@
 import { LogBox } from 'react-native';
+import { PermissionStatus } from 'expo-modules-core';
 import { isAndroid, isIos, isWeb } from '@infrastructure/constants/platform';
 import type * as NotificationsType from 'expo-notifications';
 import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
@@ -115,7 +116,7 @@ export class NotificationService implements NotificationServiceInterface {
       const { status: existing } = await Notifications.getPermissionsAsync();
       if (existing === 'granted') return true; // TO DO: static status names problem
       const { status } = await Notifications.requestPermissionsAsync();
-      return status === 'granted'; // TO DO: static status names problem
+      return status === PermissionStatus.GRANTED;
     } catch {
       return false;
     }

@@ -1,4 +1,6 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { LogTag, DECRYPT_FAILED_LOG } from '@infrastructure/constants/log-tag';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { HttpStatus , isSuccessStatus } from '@infrastructure/network/http/http-status';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
@@ -38,7 +40,7 @@ export const uploadMultipart = async <T>(
 
   return new Promise<Result<T, Failure>>((resolve) => {
     if (enableLogging) {
-      console.log(`[HTTP → multipart] POST ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
+      console.log(`${LogTag.multipartRequest} ${HttpMethod.Post} ${fullUrl}`);
     }
     const xhr = new XMLHttpRequest();
     xhr.open(HttpMethod.Post, fullUrl, true);
@@ -61,7 +63,7 @@ export const uploadMultipart = async <T>(
       const status = xhr.status;
       const responseText = xhr.responseText;
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] ${status} ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const  veya dil doyalarınna taşınabilir
+        console.log(`${LogTag.multipartResponse} ${status} ${fullUrl}`);
       }
       let body: unknown;
       try {
@@ -74,7 +76,7 @@ export const uploadMultipart = async <T>(
           body = decryptEnvelope(body, aesKey);
         } catch (err) {
           if (enableLogging) {
-            console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`); // TO DO: i18n key for this message
+            console.log(`${LogTag.multipartResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
           }
         }
       }
@@ -98,19 +100,19 @@ export const uploadMultipart = async <T>(
 
     xhr.onerror = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
+        console.log(`${LogTag.multipartResponse} network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
       }
       // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
       // unreadable file URI, cleartext blocked). Surface as NetworkFailure with
       // the status (0 == no response) so the UI can show something concrete.
-      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || ValueConstants.zero})`))); // TO DO: i18n key for this message
+      resolve(fail(new NetworkFailure(DiagnosticMessage.network.uploadFailed(xhr.status || ValueConstants.zero))));
     };
 
     xhr.ontimeout = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] timeout ${fullUrl}`); // TO DO: bu satırdaki çoğu şey const veya dil doyalarınna taşınabilir
+        console.log(`${LogTag.multipartResponse} timeout ${fullUrl}`);
       }
-      resolve(fail(new TimeoutFailure('Request timed out'))); // TO DO: i18n key for this message
+      resolve(fail(new TimeoutFailure(DiagnosticMessage.network.timedOut)));
     };
 
     xhr.send(formData);
