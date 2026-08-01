@@ -1,4 +1,5 @@
 import type { StoreApi } from 'zustand';
+import { ValueConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
@@ -36,7 +37,7 @@ export const createAddCommentAction = (
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, (existing) => ({
           items: [result.value, ...existing.items],
-          total: existing.total + 1, // TO DO: this is a bit of a hack, but we don't have the total count from the server
+          total: existing.total + ValueConstants.one,
           isSubmitting: false,
           error: null,
         })),

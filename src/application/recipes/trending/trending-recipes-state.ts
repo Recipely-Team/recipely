@@ -7,4 +7,3 @@ export type TrendingRecipesState =
   | { status: typeof StoreStatus.Loading }
   | { status: typeof StoreStatus.Loaded; recipes: RecipeSummaryEntity[] }
   | { status: typeof StoreStatus.Error; failure: Failure };
-// TO DO: static status name problem

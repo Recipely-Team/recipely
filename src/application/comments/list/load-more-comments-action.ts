@@ -1,4 +1,5 @@
 import type { StoreApi } from 'zustand';
+import { ValueConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
 import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
@@ -18,7 +19,7 @@ export const createLoadMoreCommentsAction = (
       return;
     }
 
-    const nextPage = current.page + 1; // TO DO: 1 constants dosyasına taşınabilir.
+    const nextPage = current.page + ValueConstants.one;
     set((state) => ({
       byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
         isLoadingMore: true,

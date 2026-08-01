@@ -1,4 +1,5 @@
 import { gcm } from '@noble/ciphers/aes.js';
+import { isString } from '@core/guards/type-guards';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { randomBytes } from '@noble/ciphers/utils.js';
 import type { Envelope } from '@infrastructure/crypto/envelope';
@@ -70,7 +71,7 @@ export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
  * payload are malformed, or if the GCM auth tag check fails.
  */
 export function decryptEnvelope(envelope: Envelope, key: Uint8Array): unknown {
-  if (typeof envelope.payload !== 'string' || typeof envelope.iv !== 'string') { // TO DO: stativ type check problem
+  if (!isString(envelope.payload) || !isString(envelope.iv)) {
     throw new EnvelopeDecryptError(DiagnosticMessage.crypto.missingEnvelopeFields);
   }
   const iv = fromBase64(envelope.iv);

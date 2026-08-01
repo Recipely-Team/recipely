@@ -1,31 +1,22 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { UserProfileEntityProps } from '@domain/user-profile/user-profile-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 
-export interface UserProfileProps {
-  id: string;
-  displayName: string;
-  bio: string | null;
-  photoUrl: string | null;
-  recipeCount: number;
-  totalLikes: number;
-  totalViews: number;
-  joinedAt: Date;
-}
 
 /**
  * Domain entity representing a public user profile. Validates that `id`
  * and `displayName` are non-empty before construction.
  */
-export class UserProfileEntity extends BaseEntity<UserProfileProps> {
-  private constructor(props: UserProfileProps) {
+export class UserProfileEntity extends BaseEntity<UserProfileEntityProps> {
+  private constructor(props: UserProfileEntityProps) {
     super(props);
   }
 
-  static create(props: UserProfileProps): Result<UserProfileEntity, ValidationFailure> {
+  static create(props: UserProfileEntityProps): Result<UserProfileEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.userProfile.idRequired, 'id'));
     }

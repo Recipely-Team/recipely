@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { NotificationEntityProps } from '@domain/notifications/notification-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { fail, ok } from '@core/result/result-helpers';
@@ -7,30 +8,17 @@ import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import { ValueConstants } from '@core/constants';
 
-export interface NotificationProps {
-  id: string;
-  type: string;
-  senderId: string | null;
-  senderDisplayName: string | null;
-  senderPhotoUrl: string | null;
-  recipeId: string | null;
-  recipeTitle: string | null;
-  commentId: string | null;
-  message: string | null;
-  read: boolean;
-  createdAt: Date;
-} // TO DO: NotificationProps interface'i yerine NotificationEntityProps gibi bir isimlendirme yapılabilir. ayrıca ayrı dosyaya taşınabilir.
 
 /**
  * Domain entity representing a backend notification (comment, like, follow,
  * AI completion, etc.). Validates that `id` is non-empty before construction.
  */
-export class NotificationEntity extends BaseEntity<NotificationProps> {
-  private constructor(props: NotificationProps) {
+export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
+  private constructor(props: NotificationEntityProps) {
     super(props);
   }
 
-  static create(props: NotificationProps): Result<NotificationEntity, ValidationFailure> {
+  static create(props: NotificationEntityProps): Result<NotificationEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.notification.idRequired, 'id'));
     }

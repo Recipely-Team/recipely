@@ -3,7 +3,7 @@
  * service when the composition root wired one, and fall back to the inert no-op
  * service (never throw) when nothing is registered.
  */
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { noopNotificationService } from '@application/notifications/noop-notification-service';

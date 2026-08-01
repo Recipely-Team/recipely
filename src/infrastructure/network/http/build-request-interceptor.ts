@@ -1,4 +1,5 @@
 import { type InternalAxiosRequestConfig, AxiosHeaders } from 'axios';
+import { isFormData } from '@core/guards/type-guards';
 import { HttpMethod, METHODS_WITH_BODY } from '@infrastructure/network/http/http-method';
 import { LogTag } from '@infrastructure/constants/log-tag';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
@@ -35,7 +36,7 @@ export const buildRequestInterceptor = (
     }
 
     const isFormDataPayload =
-      typeof FormData !== 'undefined' && config.data instanceof FormData; // TO DO: Static type check
+      isFormData(config.data);
 
     if (isFormDataPayload) {
       // WHY: AxiosHeaders uses internal storage — plain JS `delete` on the cast

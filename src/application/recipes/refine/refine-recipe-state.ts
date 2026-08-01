@@ -7,4 +7,3 @@ export type RefineRecipeState =
   | { status: typeof StoreStatus.Refining }
   | { status: typeof StoreStatus.Success; recipe: RecipeEntity }
   | { status: typeof StoreStatus.Error; failure: Failure };
-// TO DO: static status name problem

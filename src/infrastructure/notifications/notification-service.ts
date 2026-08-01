@@ -125,7 +125,7 @@ export class NotificationService implements NotificationServiceInterface {
     if (isWeb()) return false;
     try {
       const { status: existing } = await Notifications.getPermissionsAsync();
-      if (existing === 'granted') return true; // TO DO: static status names problem
+      if (existing === PermissionStatus.GRANTED) return true;
       const { status } = await Notifications.requestPermissionsAsync();
       return status === PermissionStatus.GRANTED;
     } catch {

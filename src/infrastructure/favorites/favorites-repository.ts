@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -39,7 +40,9 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, { params: { pageSize: FAVORITES_PAGE_SIZE } }); // TO DO: Ayrı DTO olabilir pagination için ayrrıca page değeri eklenmeli
+    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, {
+      params: toPageQuery({ pageSize: FAVORITES_PAGE_SIZE }),
+    });
 
     if (!result.ok) return fail(result.failure);
 

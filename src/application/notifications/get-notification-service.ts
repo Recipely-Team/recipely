@@ -1,4 +1,4 @@
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 import { noopNotificationService } from '@application/notifications/noop-notification-service';

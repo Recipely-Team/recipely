@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -8,45 +9,17 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
 
-export interface RecipeProps {
-  id: string;
-  name: string;
-  // Opaque taxonomy keys; the backend owns the full catalog and validates
-  // them. Kept as `string` rather than the local enums (which mirror only a
-  // curated subset) so recipes using newer backend keys round-trip intact.
-  cuisine: string;
-  category: string;
-  difficulty: Difficulty;
-  ingredients: string[];
-  instructions: string[];
-  prepTimeMinutes: number;
-  cookTimeMinutes: number;
-  servings: number;
-  caloriesPerServing: number;
-  nutrition?: RecipeNutrition;
-  image: string;
-  media: MediaItem[];
-  rating: number;
-  tags: string[];
-  mealType: string[];
-  ownerId: string;
-  likeCount: number;
-  likedByMe: boolean;
-  viewCount: number;
-  moderationStatus: string;
-  commentCount: number;
-}
 
 /**
  * Domain entity representing a recipe. Validates that `id` and `name` are
  * non-empty before construction; use `RecipeEntity.create` to obtain an instance.
  */
-export class RecipeEntity extends BaseEntity<RecipeProps> {
-  private constructor(props: RecipeProps) {
+export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
+  private constructor(props: RecipeEntityProps) {
     super(props);
   }
 
-  static create(props: RecipeProps): Result<RecipeEntity, ValidationFailure> {
+  static create(props: RecipeEntityProps): Result<RecipeEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }

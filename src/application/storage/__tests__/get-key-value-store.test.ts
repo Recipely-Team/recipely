@@ -3,7 +3,7 @@
  * store when the composition root wired one, and fall back to the inert no-op
  * store (never throw) when nothing is registered — the DI-less unit-test mount.
  */
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';

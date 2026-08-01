@@ -1,6 +1,7 @@
-import { UserProfileEntity, type UserProfileProps } from '@domain/user-profile/user-profile-entity';
+import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
+import type { UserProfileEntityProps } from '@domain/user-profile/user-profile-entity-props';
 
-const makeProps = (overrides: Partial<UserProfileProps> = {}): UserProfileProps => ({
+const makeProps = (overrides: Partial<UserProfileEntityProps> = {}): UserProfileEntityProps => ({
   id: 'u-1',
   displayName: 'Ada Lovelace',
   bio: 'Home kitchen, small steps.',

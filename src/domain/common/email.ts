@@ -1,25 +1,28 @@
+import { BaseValueObject } from '@core/value-object/base-value-object';
 import { fail, ok } from '@core/result/result-helpers';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { DiagnosticMessage, FailureField } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { RegexConstants } from '@core/constants';
 
 /**
- * Value object wrapping a validated email address string. Use `Email.create` to
- * parse and validate; the constructor is intentionally private to prevent
- * unvalidated instances from being created.
+ * A validated email address.
+ *
+ * @remarks
+ * Equality and `value` come from {@link BaseValueObject}: two `Email`s holding
+ * the same address ARE the same email, which is what separates a value object
+ * from an entity. `create` is the only way in — the constructor is private so
+ * an unvalidated address cannot exist.
  */
-export class Email {
-  private constructor(private readonly raw: string) {}
+export class Email extends BaseValueObject<string> {
+  private constructor(raw: string) {
+    super(raw);
+  }
 
   static create(raw: string): Result<Email, ValidationFailure> {
     if (!RegexConstants.email.test(raw)) {
-      return fail(new ValidationFailure(DiagnosticMessage.auth.invalidEmail, 'email'));
+      return fail(new ValidationFailure(DiagnosticMessage.auth.invalidEmail, FailureField.email));
     }
     return ok(new Email(raw));
   }
-
-  get value(): string {
-    return this.raw;
-  }
-} // TO DO: Email sınıfı yerine EmailValueObject gibi bir isimlendirme yapılabilir. Value Object Base sınnıfı varsa ondan türemeli yoksa üretelim ve ondan türetelim
+}

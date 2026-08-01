@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
 import { ValueConstants } from '@core/constants';
@@ -55,7 +56,7 @@ export const getFirebaseApp = (): FirebaseApp | null => {
     firebaseConfig.appId === undefined
   ) {
     if (__DEV__) {
-      console.warn('[firebase-init.web] EXPO_PUBLIC_FIREBASE_* env vars missing — skipping init'); // TO DO: static MESSAGE problem
+      console.warn(`${LogTag.firebaseInitWeb} ${LogMessage.firebaseEnvMissing}`);
     }
     return null;
   }
@@ -80,6 +81,6 @@ export const initFirebase = async (): Promise<void> => {
     const supported = await isAnalyticsSupported();
     if (supported) getAnalytics(app);
   } catch (err) {
-    if (__DEV__) console.warn('[firebase-init.web] analytics init skipped:', err); // TO DO: static MESSAGE problem
+    if (__DEV__) console.warn(`${LogTag.firebaseInitWeb} ${LogMessage.analyticsInitSkipped}`, err);
   }
 };

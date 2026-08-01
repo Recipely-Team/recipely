@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { AuthSessionEntityProps } from '@domain/auth/auth-session-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -6,25 +7,18 @@ import { ValidationFailure } from '@core/failure';
 import { UserEntity } from '@domain/auth/user-entity';
 import { ValueConstants } from '@core/constants';
 
-export interface AuthSessionProps {
-  id: string;
-  accessToken: string;
-  refreshToken?: string;
-  expiresAt: Date;
-  user: UserEntity;
-}
 
 /**
  * Domain entity that represents an authenticated user session, bundling the
  * access token, its expiry, and the associated `UserEntity`. Validates that `id`,
  * `accessToken`, and `expiresAt` are well-formed before construction.
  */
-export class AuthSessionEntity extends BaseEntity<AuthSessionProps> {
-  private constructor(props: AuthSessionProps) {
+export class AuthSessionEntity extends BaseEntity<AuthSessionEntityProps> {
+  private constructor(props: AuthSessionEntityProps) {
     super(props);
   }
 
-  static create(props: AuthSessionProps): Result<AuthSessionEntity, ValidationFailure> {
+  static create(props: AuthSessionEntityProps): Result<AuthSessionEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.session.idRequired, 'id'));
     }

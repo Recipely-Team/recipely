@@ -110,4 +110,5 @@ export const DiagnosticMessage = {
  */
 export const FailureField = {
   token: 'token',
+  email: 'email',
 } as const;

@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 731 source files.
+[architecture.md](architecture.md). 741 source files.
 
 ## Layers
 
@@ -26,8 +26,8 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `audio/` _(1)_
-- `auth/` _(5)_
-- `comments/` _(3)_
+- `auth/` _(7)_
+- `comments/` _(4)_
 - `common/` _(1)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
@@ -35,10 +35,10 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `likes/` _(1)_
 - `network/` _(2)_
-- `notifications/` _(9)_
-- `recipes/` — create, ingredients, list, media, refine, taxonomy _(22)_
+- `notifications/` _(10)_
+- `recipes/` — create, ingredients, list, media, refine, taxonomy _(24)_
 - `storage/` _(1)_
-- `user-profile/` _(2)_
+- `user-profile/` _(3)_
 
 ## `src/application/` — use cases, stores, DI
 
@@ -73,7 +73,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `firebase/` _(4)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
-- `network/` — envelope, errors, http, jwt, upload _(23)_
+- `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, media, refine, taxonomy _(21)_
 - `storage/` _(6)_
@@ -82,11 +82,13 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/core/` — building blocks only
 
 - `constants/` _(6)_
-- `di/` _(2)_
+- `di/` _(1)_
 - `entity/` _(1)_
 - `failure/` — kinds _(16)_
+- `guards/` _(1)_
 - `mapper/` _(2)_
 - `result/` _(2)_
+- `value-object/` _(1)_
 
 No app catalogues here: the DI token list is `application/di/tokens.ts`, the
 locale list `application/i18n/locale-constants.ts`.
@@ -138,4 +140,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 6f1ae14efda6a524 -->
+<!-- fingerprint: 0e20983b395e3530 -->
