@@ -660,6 +660,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - run: npm ci
+      # A release artifact must not ship a placeholder secret. `API_AES_KEY_HEX`
+      # falls back to 64 zeros when unset — nothing fails, the app just encrypts
+      # every request with a key anyone can guess. Fail here instead.
+      - run: npm run check:secrets
 
       - name: Restore google-services.json
         env:
@@ -811,6 +815,10 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+      # A release artifact must not ship a placeholder secret. `API_AES_KEY_HEX`
+      # falls back to 64 zeros when unset — nothing fails, the app just encrypts
+      # every request with a key anyone can guess. Fail here instead.
+      - run: npm run check:secrets
 
       - name: Restore GoogleService-Info.plist
         env:
