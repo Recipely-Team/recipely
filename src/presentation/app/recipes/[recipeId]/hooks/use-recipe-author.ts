@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';

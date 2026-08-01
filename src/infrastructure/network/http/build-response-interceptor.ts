@@ -20,7 +20,7 @@ export const buildResponseInterceptor = (
         response.data = decryptEnvelope(response.data, aesKey);
       } catch (err) {
         if (options.enableLogging) {
-          console.log(`${LogTag.httpResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`); // TO DO: i18n key for this message
+          console.log(`${LogTag.httpResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
         }
       }
     }

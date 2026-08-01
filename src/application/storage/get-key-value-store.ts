@@ -1,4 +1,4 @@
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';

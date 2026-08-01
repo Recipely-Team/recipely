@@ -1,4 +1,5 @@
 import { ok } from '@core/result/result-helpers';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -25,7 +26,9 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
     page: number,
     pageSize: number = DRAFTS_PAGE_SIZE,
   ): Promise<Result<PagedDrafts, Failure>> {
-    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, { params: { page, pageSize } }); // TO DO: Ayrı DTO olabilir pagination için
+    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, {
+      params: toPageQuery({ page, pageSize }),
+    });
     if (!result.ok) {
       return result;
     }

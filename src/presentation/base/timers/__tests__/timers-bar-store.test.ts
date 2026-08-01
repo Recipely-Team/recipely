@@ -10,7 +10,7 @@ jest.mock('@infrastructure/constants/storage', () => ({
   TIMERS_BAR_COLLAPSED_STORAGE_KEY: 'recipely.timers.bar.collapsed.v1',
 }));
 
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { timersBarStore } from '@presentation/base/timers/timers-bar-store';

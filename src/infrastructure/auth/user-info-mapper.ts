@@ -1,4 +1,5 @@
 import { fail } from '@core/result/result-helpers';
+import { optional } from '@core/guards/type-guards';
 import type { ValidationFailure } from '@core/failure';
 import type { Mapper } from '@core/mapper/mapper';
 import { Email } from '@domain/common/email';
@@ -19,7 +20,7 @@ export const toUser: Mapper<RecipelyUserDto, UserEntity, ValidationFailure> = (d
     id: dto.id,
     email: emailResult.value,
     displayName: dto.displayName,
-    ...(dto.photoUrl ? { photoUrl: dto.photoUrl } : {}), // TO DO: Ayrı DTO tanımlanabilir
-    ...(dto.bio ? { bio: dto.bio } : {}), // TO DO: Ayrı DTO tanımlanabilir
+    ...optional('photoUrl', dto.photoUrl),
+    ...optional('bio', dto.bio),
   });
 };

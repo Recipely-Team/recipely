@@ -1,32 +1,22 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 
-export interface CommentProps {
-  id: string;
-  body: string;
-  authorId: string;
-  recipeId: string;
-  createdAt: Date;
-  authorDisplayName: string;
-  authorPhotoUrl: string | null;
-  likeCount: number;
-  likedByMe: boolean;
-} // TO DO: CommentProps interface'i yerine CommentEntityProps gibi bir isimlendirme yapılabilir. ayrıca ayrı dosyaya taşınabilir.
 
 /**
  * Domain entity representing a user comment on a recipe. Validates that `id`,
  * `body`, `authorId`, and `recipeId` are all non-empty before construction.
  */
-export class CommentEntity extends BaseEntity<CommentProps> {
-  private constructor(props: CommentProps) {
+export class CommentEntity extends BaseEntity<CommentEntityProps> {
+  private constructor(props: CommentEntityProps) {
     super(props);
   }
 
-  static create(props: CommentProps): Result<CommentEntity, ValidationFailure> {
+  static create(props: CommentEntityProps): Result<CommentEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.comment.idRequired, 'id'));
     }

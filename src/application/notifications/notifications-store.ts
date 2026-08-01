@@ -80,7 +80,7 @@ export const configureNotificationsStore = (
       const target = current.items.find((n) => n.id === id);
       if (target === undefined || target.read) return;
       const optimisticItems = current.items.map((n) => (n.id === id ? n.asRead() : n));
-      const nextUnread = Math.max(ValueConstants.zero, current.unreadCount - 1); // TO DO: 1 constants dosyasına taşınabilir.
+      const nextUnread = Math.max(ValueConstants.zero, current.unreadCount - ValueConstants.one);
       set({
         state: { ...current, items: optimisticItems, unreadCount: nextUnread },
         unreadCount: nextUnread,

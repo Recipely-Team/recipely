@@ -1,4 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { RecipeSummaryEntityProps } from '@domain/recipes/recipe-summary-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -6,23 +7,6 @@ import { ValidationFailure } from '@core/failure';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
-export interface RecipeSummaryProps {
-  id: string;
-  name: string;
-  image: string;
-  // Opaque taxonomy keys — see `RecipeProps.cuisine` in `recipe.ts` for why
-  // these stay `string` rather than the local curated enums.
-  cuisine: string;
-  category: string;
-  difficulty: Difficulty;
-  totalTimeMinutes: number;
-  rating: number;
-  moderationStatus: string;
-  likeCount: number;
-  likedByMe: boolean;
-  commentCount: number;
-  viewCount: number;
-}
 
 /**
  * Lightweight domain entity for list contexts (discover feed, my-recipes,
@@ -31,12 +15,12 @@ export interface RecipeSummaryProps {
  * construction; use `RecipeSummaryEntity.create` to obtain an instance. The full
  * `Recipe` entity remains the detail-only shape and is unaffected by this type.
  */
-export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryProps> {
-  private constructor(props: RecipeSummaryProps) {
+export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
+  private constructor(props: RecipeSummaryEntityProps) {
     super(props);
   }
 
-  static create(props: RecipeSummaryProps): Result<RecipeSummaryEntity, ValidationFailure> {
+  static create(props: RecipeSummaryEntityProps): Result<RecipeSummaryEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }

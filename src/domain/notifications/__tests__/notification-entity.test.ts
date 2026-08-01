@@ -1,6 +1,7 @@
-import { NotificationEntity, type NotificationProps } from '@domain/notifications/notification-entity';
+import { NotificationEntity } from '@domain/notifications/notification-entity';
+import type { NotificationEntityProps } from '@domain/notifications/notification-entity-props';
 
-const makeProps = (overrides: Partial<NotificationProps> = {}): NotificationProps => ({
+const makeProps = (overrides: Partial<NotificationEntityProps> = {}): NotificationEntityProps => ({
   id: 'n1',
   type: 'like',
   senderId: 'sender-1',
@@ -15,7 +16,7 @@ const makeProps = (overrides: Partial<NotificationProps> = {}): NotificationProp
   ...overrides,
 });
 
-const build = (overrides: Partial<NotificationProps> = {}): NotificationEntity => {
+const build = (overrides: Partial<NotificationEntityProps> = {}): NotificationEntity => {
   const result = NotificationEntity.create(makeProps(overrides));
   if (!result.ok) {
     throw new Error('Test setup expected a valid Notification');

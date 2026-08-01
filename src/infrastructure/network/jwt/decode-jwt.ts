@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { isObject } from '@core/guards/type-guards';
 import { DiagnosticMessage, FailureField } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
@@ -25,7 +26,7 @@ export const decodeJwtPayload = (token: string): Result<JwtClaims, ValidationFai
   try {
     const json = base64UrlDecode(payloadB64);
     const parsed = JSON.parse(json) as unknown;
-    if (typeof parsed !== 'object' || parsed === null) { // TO DO: static type check for this object shape, single source of truth for the JWT payload
+    if (!isObject(parsed)) {
       return fail(new ValidationFailure(DiagnosticMessage.jwt.payloadNotAnObject, FailureField.token));
     }
     return ok(parsed as JwtClaims);

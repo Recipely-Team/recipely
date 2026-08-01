@@ -1,4 +1,6 @@
 import { isAndroid } from '@infrastructure/constants/platform';
+import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
+import { isNonEmptyString } from '@core/guards/type-guards';
 import { PermissionStatus } from 'expo-modules-core';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { ValueConstants } from '@core/constants';
@@ -32,14 +34,14 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     if (status !== PermissionStatus.GRANTED) return;
 
     const token = await Notifications.getDevicePushTokenAsync();
-    if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return; // TO DO: static type check for string
+    if (!isNonEmptyString(token.data)) return;
 
     const result = await register(token.data, 'android');
     if (!result.ok && __DEV__) {
-      console.warn('[push-token-registrar] backend rejected device token:', result.failure.code); // TO DO: static messega
+      console.warn(`${LogTag.pushTokenRegistrar} ${LogMessage.deviceTokenRejected}`, result.failure.code);
     }
   } catch (err) {
     // Expo Go or a device without push support — the polled badge still works.
-    if (__DEV__) console.warn('[push-token-registrar] android push registration skipped:', err); // TO DO: static message
+    if (__DEV__) console.warn(`${LogTag.pushTokenRegistrar} ${LogMessage.androidPushSkipped}`, err);
   }
 };

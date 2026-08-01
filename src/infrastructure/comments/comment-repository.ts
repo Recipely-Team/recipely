@@ -1,4 +1,5 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { CommentEntity } from '@domain/comments/comment-entity';
@@ -23,7 +24,9 @@ export class CommentRepository implements CommentRepositoryInterface {
     page: number,
     pageSize: number,
   ): Promise<Result<CommentPage, Failure>> {
-    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), { params: { page, pageSize } }); // TO DO: Ayrı DTO olabilir pagination için
+    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), {
+      params: toPageQuery({ page, pageSize }),
+    });
     if (!result.ok) {
       return result;
     }

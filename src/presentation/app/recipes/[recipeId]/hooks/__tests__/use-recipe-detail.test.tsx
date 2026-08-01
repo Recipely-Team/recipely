@@ -30,7 +30,8 @@ import { create } from 'zustand';
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
+import { CommentEntity } from '@domain/comments/comment-entity';
+import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { configureCommentsStore } from '@application/comments/comments-store';
@@ -87,7 +88,7 @@ jest.mock('@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keybo
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
 
-const makeComment = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity => {
   const result = CommentEntity.create({
     id: 'c1',
     body: 'Looks delicious!',

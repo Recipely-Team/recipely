@@ -1,3 +1,4 @@
+import type { PageQueryDto } from '@infrastructure/network/paging/page-query-dto';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeSortType } from '@domain/recipes/list/recipe-sort-type';
 
@@ -9,9 +10,7 @@ import type { RecipeSortType } from '@domain/recipes/list/recipe-sort-type';
  * `string[]`, and why building it belongs in a mapper rather than in the
  * repository method that was assembling it with a stack of `if`s.
  */
-export interface RecipeListQueryDto {
-  page: number;
-  pageSize: number;
+export interface RecipeListQueryDto extends PageQueryDto {
   search?: string;
   /** Comma-joined cuisine keys. */
   cuisines?: string;

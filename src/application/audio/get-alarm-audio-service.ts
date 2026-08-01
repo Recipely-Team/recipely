@@ -1,4 +1,4 @@
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { AlarmAudioServiceInterface } from '@domain/audio/alarm-audio-service-interface';
 import { noopAlarmAudioService } from '@application/audio/noop-alarm-audio-service';

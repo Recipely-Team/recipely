@@ -8,7 +8,7 @@ import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';

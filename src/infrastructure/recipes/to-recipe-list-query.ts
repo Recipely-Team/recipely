@@ -1,7 +1,8 @@
 import type { RequestMapper } from '@core/mapper/request-mapper';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListQueryDto } from '@infrastructure/recipes/dtos/recipe-list-query-dto';
-import { FIRST_PAGE, RECIPES_PAGE_SIZE } from '@infrastructure/constants/api';
+import { RECIPES_PAGE_SIZE } from '@infrastructure/constants/api';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -16,8 +17,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const toRecipeListQuery: RequestMapper<RecipeFilters | undefined, RecipeListQueryDto> = (
   filters,
 ) => ({
-  page: filters?.page ?? FIRST_PAGE,
-  pageSize: RECIPES_PAGE_SIZE,
+  ...toPageQuery({ page: filters?.page, pageSize: RECIPES_PAGE_SIZE }),
   ...(filters?.search ? { search: filters.search } : {}),
   ...(filters?.cuisines?.length ? { cuisines: filters.cuisines.join(CharConstants.comma) } : {}),
   ...(filters?.categories?.length ? { categories: filters.categories.join(CharConstants.comma) } : {}),
@@ -30,4 +30,3 @@ export const toRecipeListQuery: RequestMapper<RecipeFilters | undefined, RecipeL
   ...(filters?.sort ? { sort: filters.sort } : {}),
   ...(filters?.sortOrder ? { sortOrder: filters.sortOrder } : {}),
 });
-// TO DO: Çok fazla alt DTO çıkarılabilir

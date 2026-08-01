@@ -2,6 +2,11 @@
  * Lightweight dependency-injection container that maps symbol tokens to lazy
  * singleton factories. Resolving an unregistered token throws immediately
  * because that is always a programmer error, not a recoverable runtime failure.
+ *
+ * @remarks
+ * The app's single instance lives at the bottom of this file. It had a file of
+ * its own, which meant the class and the only thing anyone ever constructs from
+ * it were two hops apart; `container` is not a second concept, it is this one.
  */
 export class Container {
   private factories = new Map<symbol, () => unknown>();
@@ -37,3 +42,6 @@ export class Container {
     this.instances.clear();
   }
 }
+
+/** The app's container. Composition roots register into it; call sites resolve from it. */
+export const container = new Container();

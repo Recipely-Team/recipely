@@ -1,4 +1,4 @@
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { LocaleService } from '@application/i18n/locale-service';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';

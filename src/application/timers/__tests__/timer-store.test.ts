@@ -8,7 +8,7 @@ jest.mock('@infrastructure/constants/storage', () => ({
   TIMERS_STORAGE_KEY: 'recipely.timers.v1',
 }));
 
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { timerStore } from '@application/timers/timer-store';

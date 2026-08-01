@@ -7,4 +7,3 @@ export type UserProfileState =
   | { status: typeof StoreStatus.Loading }
   | { status: typeof StoreStatus.Loaded; profile: UserProfileEntity }
   | { status: typeof StoreStatus.Error; failure: Failure };
-// TO DO: static status name problem

@@ -331,6 +331,15 @@ blocking.
       is Hungarian notation that reads as noise at the point of use, and `i-` sorted every port
       away from the thing it describes in a file listing. **Enforced mechanically** by
       `check:structure` (rule O).
+    - **Entity props** — the shape an entity is built from is `<Entity>EntityProps` in a
+      `*-entity-props.ts` file (`RecipeEntityProps` in `recipe-entity-props.ts`). It is
+      exported (tests and mappers construct entities), so rule 1 gives it its own file;
+      `RecipeProps` next to `RecipeEntity` read as a different concept than it was.
+    - **Value objects** — a class wrapping a validated primitive extends `BaseValueObject`
+      (`@core/value-object`), which supplies value equality and `value`. It keeps its bare
+      name (`Email`, not `EmailValueObject`): the base class already says what it is, and
+      the suffix would repeat it at every use. Private constructor + static
+      `create(): Result`, same as an entity.
     - **Entities** — a class extending `BaseEntity` is named `*Entity` and lives in a `*-entity.ts` file
       (`RecipeEntity` in `recipe-entity.ts`). **Enforced mechanically** by `check:structure` (rule G).
       Value objects (`Email`), DTOs and `*Props` interfaces are NOT entities and take no `Entity` suffix.
