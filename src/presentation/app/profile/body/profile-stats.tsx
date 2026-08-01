@@ -1,4 +1,5 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths } from '@presentation/base/theme';
@@ -27,7 +28,7 @@ export interface ProfileStatsProps {
 export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
 
-  if (stats.status === 'loading') {
+  if (stats.status === StoreStatus.Loading) {
     return (
       <View style={styles.statsLoading}>
         <ActivityIndicator color={colors.primary} />
@@ -35,7 +36,7 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
     );
   }
 
-  if (stats.status === 'error') {
+  if (stats.status === StoreStatus.Error) {
     return (
       <Pressable
         onPress={stats.onRetry}
@@ -56,7 +57,7 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
     );
   }
 
-  if (stats.status === 'loaded') {
+  if (stats.status === StoreStatus.Loaded) {
     const cells = [
       { value: String(stats.recipeCount), label: t().profile.recipes },
       { value: formatStat(stats.totalLikes), label: t().profile.likes },

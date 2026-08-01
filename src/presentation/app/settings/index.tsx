@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -59,11 +60,11 @@ export const SettingsScreen = (): React.JSX.Element => {
   };
 
   const displayName =
-    authState.status === 'authenticated' ? authState.session.user.displayName : CharConstants.empty;
+    authState.status === StoreStatus.Authenticated ? authState.session.user.displayName : CharConstants.empty;
   const email =
-    authState.status === 'authenticated' ? authState.session.user.email.value : CharConstants.empty;
+    authState.status === StoreStatus.Authenticated ? authState.session.user.email.value : CharConstants.empty;
   const photoUrl =
-    authState.status === 'authenticated' ? authState.session.user.photoUrl : undefined;
+    authState.status === StoreStatus.Authenticated ? authState.session.user.photoUrl : undefined;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

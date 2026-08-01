@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
@@ -13,10 +14,10 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
   const fetchCatalogs = async (
     set: (partial: Partial<TaxonomyStoreState>) => void,
   ): Promise<void> => {
-    set({ status: 'loading', failure: null }); // TO DO: static status name problem
+    set({ status: StoreStatus.Loading, failure: null });
     const result = await deps.loadTaxonomyUseCase.execute();
     if (!result.ok) {
-      set({ status: 'error', failure: result.failure }); // TO DO: static status name problem
+      set({ status: StoreStatus.Error, failure: result.failure });
       return;
     }
     set({
@@ -30,7 +31,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
   return create<TaxonomyStoreState>((set, get) => ({
     cuisines: [],
     categories: [],
-    status: 'idle', // TO DO: static status name problem
+    status: StoreStatus.Idle,
     failure: null,
     load: async () => {
       const { status } = get();
@@ -40,7 +41,7 @@ export const configureTaxonomyStore = (deps: TaxonomyStoreDeps): BoundStore<Taxo
       await fetchCatalogs(set);
     },
     reload: async () => {
-      if (get().status === 'loading') {
+      if (get().status === StoreStatus.Loading) {
         return;
       }
       await fetchCatalogs(set);

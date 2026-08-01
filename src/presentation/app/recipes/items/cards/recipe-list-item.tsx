@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
@@ -19,7 +20,7 @@ export const RecipeListItem = ({ recipe, onPress, hoverEffect }: RecipeListItemP
   const { likesStore, authStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const authState = authStore((s) => s.state);
-  const isAuthenticated = authState.status === 'authenticated';
+  const isAuthenticated = authState.status === StoreStatus.Authenticated;
 
   const likeState = likesStore((s) => s.byRecipe[recipe.id]);
   const seed = likesStore((s) => s.seed);

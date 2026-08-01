@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
@@ -39,7 +40,7 @@ export const WebHeroSection = ({
   const language = useLocale();
 
   useEffect(() => {
-    if (state.status === 'idle') {
+    if (state.status === StoreStatus.Idle) {
       void load();
     }
   }, [state.status, load]);
@@ -57,7 +58,7 @@ export const WebHeroSection = ({
 
   const stacked = width < STACK_WIDTH;
 
-  if (state.status === 'idle' || state.status === 'loading') {
+  if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     return (
       <View style={[styles.row, stacked ? styles.stacked : null]}>
         <View style={styles.featured}>
@@ -73,7 +74,7 @@ export const WebHeroSection = ({
     );
   }
 
-  if (state.status === 'error' || state.recipes.length < 3) {
+  if (state.status === StoreStatus.Error || state.recipes.length < 3) {
     return null;
   }
 

@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import { Redirect } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { onboardingStore } from '@application/onboarding/onboarding-store';
@@ -24,12 +25,12 @@ export const IndexRedirect = (): React.JSX.Element | null => {
   const onboardingHydrated = onboardingStore((s) => s.hydrated);
   const onboardingDismissed = onboardingStore((s) => s.dismissed);
 
-  if (authState.status === 'idle' || authState.status === 'loading') {
+  if (authState.status === StoreStatus.Idle || authState.status === StoreStatus.Loading) {
     return null;
   }
 
   const isNativeGuest =
-    Platform.OS !== 'web' && authState.status === 'unauthenticated';
+    Platform.OS !== 'web' && authState.status === StoreStatus.Unauthenticated;
 
   if (isNativeGuest) {
     if (!onboardingHydrated) return null;

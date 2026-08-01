@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
@@ -93,7 +94,7 @@ export const useRecipeSave = ({
     }
     await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
     const state = createdRecipesStore.getState().createState;
-    if (state.status === 'success') {
+    if (state.status === StoreStatus.Success) {
       // Capture the new recipe's id before the store state is reset so the
       // success dialog can deep-link straight to its detail page.
       const newRecipeId = state.recipe.id;
@@ -104,7 +105,7 @@ export const useRecipeSave = ({
       setSaveSuccess({ recipeId: newRecipeId });
       return;
     }
-    if (state.status === 'error') {
+    if (state.status === StoreStatus.Error) {
       surfaceSaveFailure(state.failure);
       createdRecipesStore.getState().resetCreateState();
     }
@@ -136,9 +137,9 @@ export const useRecipeSave = ({
   }, [router]);
 
   const headerTitle = t().createRecipe.previewTitle;
-  const isSaving = createState.status === 'creating';
+  const isSaving = createState.status === StoreStatus.Creating;
   const saveLabel =
-    createState.status === 'creating' ? t().createRecipe.publishing : t().createRecipe.save;
+    createState.status === StoreStatus.Creating ? t().createRecipe.publishing : t().createRecipe.save;
 
   return {
     onSave,

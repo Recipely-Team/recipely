@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -33,7 +34,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const state = authStore((s) => s.state);
 
   useEffect(() => {
-    if (state.status === 'authenticated') {
+    if (state.status === StoreStatus.Authenticated) {
     // The code has been accepted, so the whole sign-up detour behind this
       // screen is spent. Landing on the feed with it still stacked let one back
       // gesture return to a code entry that can no longer be used.

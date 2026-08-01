@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import { ValueConstants } from '@core/constants';
@@ -24,18 +25,18 @@ export const configureNotificationsStore = (
   deps: NotificationsStoreDeps,
 ): BoundStore<NotificationsStoreState> => {
   return create<NotificationsStoreState>((set, get) => ({
-    state: { status: 'idle' },
+    state: { status: StoreStatus.Idle },
     unreadCount: ValueConstants.zero,
     load: async () => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.listNotifications.execute();
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } });
+        set({ state: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       set({
         state: {
-          status: 'loaded',
+          status: StoreStatus.Loaded,
           items: result.value.items,
           total: result.value.total,
           unreadCount: result.value.unreadCount,
@@ -52,7 +53,7 @@ export const configureNotificationsStore = (
     },
     markAllRead: async () => {
       const current = get().state;
-      if (current.status !== 'loaded') {
+      if (current.status !== StoreStatus.Loaded) {
         // List not loaded — still clear the badge optimistically and persist.
         set({ unreadCount: ValueConstants.zero });
         const earlyResult = await deps.markAllRead.execute();
@@ -75,7 +76,7 @@ export const configureNotificationsStore = (
     },
     markOneRead: async (id: string) => {
       const current = get().state;
-      if (current.status !== 'loaded') return;
+      if (current.status !== StoreStatus.Loaded) return;
       const target = current.items.find((n) => n.id === id);
       if (target === undefined || target.read) return;
       const optimisticItems = current.items.map((n) => (n.id === id ? n.asRead() : n));
@@ -89,6 +90,6 @@ export const configureNotificationsStore = (
         await get().load();
       }
     },
-    clear: () => set({ state: { status: 'idle' }, unreadCount: ValueConstants.zero }),
+    clear: () => set({ state: { status: StoreStatus.Idle }, unreadCount: ValueConstants.zero }),
   }));
 };

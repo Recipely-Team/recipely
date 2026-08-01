@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
@@ -102,7 +103,7 @@ export const RecipeOverview = ({
       a large empty gap in this spot with the author card
       stranded far below; closing that gap here also reads
       better since "who made this" belongs near the title. */}
-      {authorState.status === 'loading' ? (
+      {authorState.status === StoreStatus.Loading ? (
         <View style={styles.authorSkeleton}>
           <SkeletonLoader width={avatarSizes.md} height={avatarSizes.md} borderRadius={radii.round} />
           <View style={styles.authorSkeletonText}>

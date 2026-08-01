@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
@@ -16,7 +17,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
   let latestRequest = ValueConstants.zero;
 
   return create<RecipeListStoreState>((set, get) => ({
-    state: { status: 'idle' },
+    state: { status: StoreStatus.Idle },
     // WHY: a filter change while a list is already `loaded` re-fetches in
     // place — the previous `recipes` stay on screen (with `isRefreshing:
     // true`) instead of resetting to a data-less `loading` state, so the
@@ -39,25 +40,25 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       latestRequest = requestId;
 
       const current = get().state;
-      if (current.status === 'loaded') {
+      if (current.status === StoreStatus.Loaded) {
         set({ state: { ...current, isRefreshing: true, refreshFailure: undefined } });
       } else {
-        set({ state: { status: 'loading' } });
+        set({ state: { status: StoreStatus.Loading } });
       }
       const result = await deps.listRecipes.execute(filters);
       if (requestId !== latestRequest) return;
       if (!result.ok) {
         set((s) => ({
           state:
-            s.state.status === 'loaded'
+            s.state.status === StoreStatus.Loaded
               ? { ...s.state, isRefreshing: false, refreshFailure: result.failure }
-              : { status: 'error', failure: result.failure },
+              : { status: StoreStatus.Error, failure: result.failure },
         }));
         return;
       }
       set({
         state: {
-          status: 'loaded',
+          status: StoreStatus.Loaded,
           recipes: result.value.items,
           query: filters?.search ?? CharConstants.empty,
           page: result.value.page,
@@ -77,7 +78,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
      */
     loadMore: async (filters?: RecipeFilters) => {
       const current = get().state;
-      if (current.status !== 'loaded' || !current.hasMore || current.isLoadingMore === true) return;
+      if (current.status !== StoreStatus.Loaded || !current.hasMore || current.isLoadingMore === true) return;
 
       const appendingFor = latestRequest;
       const nextPage = current.page + ValueConstants.one;
@@ -87,7 +88,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       if (appendingFor !== latestRequest) return;
 
       const state = get().state;
-      if (state.status !== 'loaded') return;
+      if (state.status !== StoreStatus.Loaded) return;
       if (!result.ok) {
         set({ state: { ...state, isLoadingMore: false, refreshFailure: result.failure } });
         return;
@@ -104,7 +105,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
     },
     remove: (id) =>
       set((s) => {
-        if (s.state.status !== 'loaded') return s;
+        if (s.state.status !== StoreStatus.Loaded) return s;
         return {
           state: {
             ...s.state,

@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
@@ -20,19 +21,19 @@ interface DraftsStoreDeps {
 export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStoreState> => {
   return create<DraftsStoreState>((set, get) => ({
     drafts: [],
-    listState: { status: 'idle' },
+    listState: { status: StoreStatus.Idle },
     latestDraft: null,
     loadDrafts: async () => {
-      set({ listState: { status: 'loading' } });
+      set({ listState: { status: StoreStatus.Loading } });
       const result = await deps.listDraftsUseCase.execute({
         page: 1, // TO DO: page backendden gelmeli
         pageSize: DRAFTS_PAGE_SIZE,
       });
       if (!result.ok) {
-        set({ listState: { status: 'error', failure: result.failure } });
+        set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ drafts: result.value.items, listState: { status: 'loaded' } });
+      set({ drafts: result.value.items, listState: { status: StoreStatus.Loaded } });
     },
     loadLatestDraft: async () => {
       const result = await deps.getLatestDraftUseCase.execute();
@@ -76,6 +77,6 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       }
       return result.value;
     },
-    clear: () => set({ drafts: [], listState: { status: 'idle' }, latestDraft: null }),
+    clear: () => set({ drafts: [], listState: { status: StoreStatus.Idle }, latestDraft: null }),
   }));
 };
