@@ -1,4 +1,5 @@
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -54,7 +55,7 @@ export const RecipeCard = ({
 
   // Web-only hover lift: scale up slightly when the pointer enters the card.
   const hoverProps =
-    hoverEffect && Platform.OS === 'web'
+    hoverEffect && isWeb()
       ? {
           onMouseEnter: () => {
             scale.value = withTiming(1.02, { duration: 160 });

@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 import { StoreStatus } from '@application/store/store-status';
 import { Redirect } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -30,7 +30,7 @@ export const IndexRedirect = (): React.JSX.Element | null => {
   }
 
   const isNativeGuest =
-    Platform.OS !== 'web' && authState.status === StoreStatus.Unauthenticated;
+    !isWeb() && authState.status === StoreStatus.Unauthenticated;
 
   if (isNativeGuest) {
     if (!onboardingHydrated) return null;

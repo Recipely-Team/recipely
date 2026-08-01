@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { useColorScheme } from 'react-native';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
@@ -83,7 +84,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // React Native 0.83 widened `ColorSchemeName` with 'unspecified' (the system
   // reports no preference); like a null scheme it resolves to light, so every
   // non-'dark' value collapses to the same branch.
-  const ignoreSystemScheme = Platform.OS === 'web' && !hydrated;
+  const ignoreSystemScheme = isWeb() && !hydrated;
   const effectiveSystemScheme: ThemeVariant =
     !ignoreSystemScheme && systemScheme === 'dark' ? 'dark' : 'light';
 

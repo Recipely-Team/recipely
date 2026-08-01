@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Platform } from 'react-native';
+import { isAndroid } from '@infrastructure/constants/platform';
 import { useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -32,7 +32,7 @@ export const useInstagramShareImport = (): void => {
   const handledRef = useRef(false);
 
   useEffect(() => {
-    if (Platform.OS !== 'android') return;
+    if (!isAndroid()) return;
     if (!hasShareIntent) {
       handledRef.current = false;
       return;

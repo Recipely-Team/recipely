@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { Platform, StyleSheet, type ViewStyle } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { StyleSheet, type ViewStyle } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -49,7 +50,7 @@ export const SkeletonLoader = ({
   const translateX = useSharedValue(-SHIMMER_SWEEP_WIDTH);
 
   useEffect(() => {
-    if (Platform.OS === 'web') return;
+    if (isWeb()) return;
     translateX.value = withRepeat(
       withTiming(SHIMMER_SWEEP_WIDTH, { duration: 1200 }),
       -1,
@@ -61,7 +62,7 @@ export const SkeletonLoader = ({
     transform: [{ translateX: translateX.value }],
   }));
 
-  if (Platform.OS === 'web') {
+  if (isWeb()) {
     ensureShimmerKeyframes();
     return (
       <div

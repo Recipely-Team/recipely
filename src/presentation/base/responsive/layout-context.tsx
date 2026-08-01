@@ -1,5 +1,6 @@
 import { createContext, useMemo, type ReactNode } from 'react';
-import { Platform, useWindowDimensions } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { useWindowDimensions } from 'react-native';
 import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import type { BreakpointType } from '@presentation/base/responsive/breakpoint-type';
@@ -44,13 +45,13 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
   // render (DEFAULT_VALUE) and only adopt the real dimensions after hydration,
   // otherwise the desktop shell mounts mid-hydration and React throws #418.
   // Native has no hydration step, so it always uses the live dimensions.
-  const gated = Platform.OS === 'web' && !hydrated;
+  const gated = isWeb() && !hydrated;
 
   const value = useMemo<LayoutContextValue>(() => {
     if (gated) return DEFAULT_VALUE;
     const breakpoint = resolveBreakpoint(width);
     const orientation: OrientationType = width >= height ? OrientationType.Landscape : OrientationType.Portrait;
-    const isWebShell = Platform.OS === 'web' && width >= BREAKPOINTS.desktop;
+    const isWebShell = isWeb() && width >= BREAKPOINTS.desktop;
     const isCompact = breakpoint === 'mobile';
     const aspectRatio = height === ValueConstants.zero ? 1 : width / height;
     return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isCompact };

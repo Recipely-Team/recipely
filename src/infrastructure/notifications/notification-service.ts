@@ -1,4 +1,5 @@
-import { LogBox, Platform } from 'react-native';
+import { LogBox } from 'react-native';
+import { isAndroid, isIos, isWeb } from '@infrastructure/constants/platform';
 import type * as NotificationsType from 'expo-notifications';
 import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 import {
@@ -54,7 +55,7 @@ const REMINDER_COUNT = ValueConstants.zero;
  */
 export class NotificationService implements NotificationServiceInterface {
   async init(): Promise<void> {
-    if (Platform.OS === 'web') return; // TO DO: static platform names problem
+    if (isWeb()) return;
     try {
       Notifications.setNotificationHandler({
         handleNotification: async () => ({
@@ -81,7 +82,7 @@ export class NotificationService implements NotificationServiceInterface {
         },
       ]);
 
-      if (Platform.OS === 'android') {
+      if (isAndroid()) {
         await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
           name: 'Cooking Timer (alarm)', // TO DO: i18n key for this string
           importance: Notifications.AndroidImportance.MAX,
@@ -109,7 +110,7 @@ export class NotificationService implements NotificationServiceInterface {
   }
 
   async requestPermissions(): Promise<boolean> {
-    if (Platform.OS === 'web') return false; // TO DO: static platform names problem
+    if (isWeb()) return false;
     try {
       const { status: existing } = await Notifications.getPermissionsAsync();
       if (existing === 'granted') return true; // TO DO: static status names problem
@@ -129,7 +130,7 @@ export class NotificationService implements NotificationServiceInterface {
     recipeName: string,
     endTimeMs: number,
   ): Promise<string[]> {
-    if (Platform.OS === 'web') return []; // TO DO: static platform names problem
+    if (isWeb()) return [];
     const ids: string[] = [];
     const all = [endTimeMs];
     for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
@@ -143,7 +144,7 @@ export class NotificationService implements NotificationServiceInterface {
   }
 
   async cancel(notifIds: string[]): Promise<void> {
-    if (Platform.OS === 'web') return; // TO DO: static platform names problem
+    if (isWeb()) return;
     await Promise.allSettled(
       notifIds.flatMap((id) => [
         Notifications.dismissNotificationAsync(id),
@@ -165,14 +166,14 @@ export class NotificationService implements NotificationServiceInterface {
           body: 'Timer is done! Tap to dismiss.', // TO DO: i18n key for this string
           // iOS reads sound from content; Android ignores it (channel sets sound).
           // Using 'default' until a native build bundles alarm.mp3 in the app.
-          sound: Platform.OS === 'ios' ? 'default' : undefined, // TO DO: static platform names problem
+          sound: isIos() ? 'default' : undefined,
           categoryIdentifier: TIMER_ALERT_CATEGORY,
           data: { type: TIMER_COMPLETE, timerId, recipeName },
         },
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
           seconds: delaySeconds,
-          ...(Platform.OS === 'android' && { channelId: ALERT_CHANNEL }),
+          ...(isAndroid() && { channelId: ALERT_CHANNEL }),
         },
       });
     } catch {

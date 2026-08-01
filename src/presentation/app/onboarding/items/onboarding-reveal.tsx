@@ -1,5 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
-import { Animated, Easing, Platform, type StyleProp, type ViewStyle } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { Animated, Easing, type StyleProp, type ViewStyle } from 'react-native';
 import { useReducedMotion } from 'react-native-reanimated';
 import { AnimationConstants } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
@@ -8,7 +9,7 @@ const RISE_DISTANCE = 14;
 const FLOAT_DISTANCE = 7;
 const ENTER_DURATION_MS = 520;
 const FLOAT_HALF_DURATION_MS = 2000;
-const USE_NATIVE_DRIVER = Platform.OS !== 'web';
+const USE_NATIVE_DRIVER = !isWeb();
 // cubic-bezier(.2,.7,.3,1) — the prototype's `obRise` easing.
 const ENTER_EASING = Easing.bezier(0.2, 0.7, 0.3, 1);
 

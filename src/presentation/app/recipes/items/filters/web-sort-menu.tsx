@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -36,7 +37,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   // The anchor's DOM id (RN-web maps `nativeID` → `id`) scopes the outside
   // check without reaching into the View's host node.
   useEffect(() => {
-    if (!open || Platform.OS !== 'web') return;
+    if (!open || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {
       if (event.key === 'Escape') setOpen(false);
     };

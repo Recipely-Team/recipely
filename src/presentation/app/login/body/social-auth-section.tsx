@@ -1,4 +1,5 @@
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { isAndroid } from '@infrastructure/constants/platform';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -45,7 +46,7 @@ export const SocialAuthSection = ({
         borderColor={colors.inputBorder}
       />
 
-      {Platform.OS !== 'android' && (
+      {!isAndroid() && (
         <SocialSignInButton
           provider="apple"
           label={t().login.signInWithApple}

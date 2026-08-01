@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 import {
   createAudioPlayer,
   setAudioModeAsync,
@@ -72,7 +72,7 @@ export class AlarmAudioService implements AlarmAudioServiceInterface {
   private generation = ValueConstants.zero;
 
   async start(): Promise<void> {
-    if (Platform.OS === 'web') return; // TO DO: STATİC platform name problem
+    if (isWeb()) return;
     if (this.player !== null) return;
 
     this.generation += ValueConstants.one;
