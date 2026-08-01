@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { isWeb } from '@infrastructure/constants/platform';
 import {
   Dimensions,
   FlatList,
@@ -43,9 +44,8 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
   // narrow phone, a landscape phone and a wide web column each get a photo in
   // proportion instead of the same 280pt strip. The cap stops a very wide
   // container from pushing the recipe itself below the fold.
-  const isWeb = Platform.OS === 'web';
-  const aspect = isWeb ? aspectRatios.heroWide : aspectRatios.hero;
-  const cap = isWeb ? mediaSizes.heroImageHeightWeb : mediaSizes.heroImageHeightMax;
+  const aspect = isWeb() ? aspectRatios.heroWide : aspectRatios.hero;
+  const cap = isWeb() ? mediaSizes.heroImageHeightWeb : mediaSizes.heroImageHeightMax;
   const resolvedHeight = height ?? Math.min(Math.round(width / aspect), cap);
 
   const onLayout = (e: LayoutChangeEvent): void => {
@@ -73,7 +73,7 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
     listRef.current?.scrollToIndex({ index: active, animated: false });
   }, [width, active]);
 
-  const showArrows = Platform.OS === 'web' && media.length > 1;
+  const showArrows = isWeb() && media.length > 1;
 
   return (
     <View style={{ height: resolvedHeight }} onLayout={onLayout}>

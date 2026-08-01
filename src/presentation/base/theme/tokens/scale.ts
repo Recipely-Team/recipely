@@ -1,4 +1,5 @@
-import { Dimensions, PixelRatio, Platform } from 'react-native';
+import { Dimensions, PixelRatio } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 
 /**
  * Logical width of the device the visual design was drawn against
@@ -45,7 +46,7 @@ const clamp = (value: number, min: number, max: number): number =>
  * UI (and a module-load read cannot follow a browser resize anyway).
  */
 export const SCALE_FACTOR: number = ((): number => {
-  if (Platform.OS === 'web') return NEUTRAL_FACTOR;
+  if (isWeb()) return NEUTRAL_FACTOR;
   const { width, height } = Dimensions.get('window');
   return clamp(Math.min(width, height) / BASELINE_WIDTH, MIN_FACTOR, MAX_FACTOR);
 })();

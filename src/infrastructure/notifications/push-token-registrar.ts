@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isAndroid } from '@infrastructure/constants/platform';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
 import { ValueConstants } from '@core/constants';
 
@@ -19,7 +19,7 @@ import { ValueConstants } from '@core/constants';
  * Firebase JS SDK.
  */
 export const registerPushToken = async (register: RegisterTokenFn): Promise<void> => {
-  if (Platform.OS !== 'android') return; // TO DO: static platform names problem
+  if (!isAndroid()) return;
   try {
     const Notifications = await import('expo-notifications');
 

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Keyboard, Platform } from 'react-native';
+import { isIos, isWeb } from '@infrastructure/constants/platform';
+import { Keyboard } from 'react-native';
 
 /**
  * Tracks whether the software keyboard is currently visible.
@@ -18,9 +19,9 @@ export const useKeyboardVisible = (): boolean => {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (Platform.OS === 'web') return;
-    const showEvent = Platform.OS === 'ios' ? 'keyboardWillShow' : 'keyboardDidShow';
-    const hideEvent = Platform.OS === 'ios' ? 'keyboardWillHide' : 'keyboardDidHide';
+    if (isWeb()) return;
+    const showEvent = isIos() ? 'keyboardWillShow' : 'keyboardDidShow';
+    const hideEvent = isIos() ? 'keyboardWillHide' : 'keyboardDidHide';
     const showSub = Keyboard.addListener(showEvent, () => setVisible(true));
     const hideSub = Keyboard.addListener(hideEvent, () => setVisible(false));
     return () => {

@@ -1,4 +1,5 @@
 import { ok } from '@core/result/result-helpers';
+import type { DevicePlatform } from '@domain/notifications/device-platform';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { NotificationEntity } from '@domain/notifications/notification-entity';
@@ -62,7 +63,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
 
   async registerDeviceToken(
     token: string,
-    platform: 'ios' | 'android' | 'web', // TO DO: static platform names problem
+    platform: DevicePlatform,
   ): Promise<Result<void, Failure>> {
     const result = await this.http.post<unknown>(ApiRoutes.me.deviceToken, { token, platform } satisfies RegisterDeviceTokenRequestDto);
     if (!result.ok) {

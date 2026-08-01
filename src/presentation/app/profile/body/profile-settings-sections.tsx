@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Platform, StyleSheet, View, Linking } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { StyleSheet, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -133,7 +134,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         />
       </View>
 
-      {Platform.OS === 'web' ? (
+      {isWeb() ? (
         <WebFeedbackModal visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       ) : (
         <FeedbackSheet visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />

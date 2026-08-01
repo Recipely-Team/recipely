@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
-import { AppState, Platform, type AppStateStatus } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { AppState, type AppStateStatus } from 'react-native';
 import { timerStore } from '@application/timers/timer-store';
 import { alarmStore } from '@application/timers/alarm-store';
 import {
@@ -67,7 +68,7 @@ export const useTimerNotificationSync = (): void => {
     // Check on mount in case a timer already expired before this hook ran.
     checkForCompletedTimers();
 
-    if (Platform.OS === 'web') {
+    if (isWeb()) {
       return () => {
         unsubscribeTick();
         appStateSub.remove();

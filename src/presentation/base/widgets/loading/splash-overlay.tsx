@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isWeb } from '@infrastructure/constants/platform';
 import {
   Animated,
   Easing,
@@ -37,7 +38,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
       toValue: ValueConstants.zero,
       duration: FADE_MS,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: Platform.OS !== 'web',
+      useNativeDriver: !isWeb(),
     }).start(({ finished }) => {
       if (finished) setVisible(false);
     });

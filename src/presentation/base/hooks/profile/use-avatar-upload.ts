@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react';
-import { ActionSheetIOS, Alert, Platform } from 'react-native';
+import { isIos, isWeb } from '@infrastructure/constants/platform';
+import { ActionSheetIOS, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
@@ -88,12 +89,12 @@ export const useAvatarUpload = (): AvatarUpload => {
   const pickAndUpload = useCallback(async (): Promise<void> => {
     if (isUploading) return;
 
-    if (Platform.OS === 'web') {
+    if (isWeb()) {
       await launch(PickSource.Library);
       return;
     }
 
-    if (Platform.OS === 'ios') {
+    if (isIos()) {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           title: t().profile.changePhoto,

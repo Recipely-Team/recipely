@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 
 // WHY: same lazy-require pattern as analytics-service — see that file for rationale.
 type CrashlyticsModule = typeof import('@react-native-firebase/crashlytics');
@@ -8,7 +8,7 @@ const mod: CrashlyticsModule | null = (() => { try { return require('@react-nati
 
 /** Enables or disables crash reporting collection (kept off in development). */
 export const setCrashReportingEnabled = async (enabled: boolean): Promise<void> => {
-  if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
+  if (isWeb() || mod === null) return;
   try {
     await mod.setCrashlyticsCollectionEnabled(mod.getCrashlytics(), enabled);
   } catch {
@@ -18,7 +18,7 @@ export const setCrashReportingEnabled = async (enabled: boolean): Promise<void> 
 
 /** Records a non-fatal error to Crashlytics, optionally preceded by a context breadcrumb. */
 export const recordCrash = (error: unknown, context?: string): void => {
-if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
+if (isWeb() || mod === null) return;
   try {
     const crashlytics = mod.getCrashlytics();
     if (context !== undefined) mod.log(crashlytics, context);
@@ -30,7 +30,7 @@ if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform che
 
 /** Adds a breadcrumb attached to the next crash report. */
 export const logCrashBreadcrumb = (message: string): void => {
-  if (Platform.OS === 'web' || mod === null) return; // TO DO: static platform check problem
+  if (isWeb() || mod === null) return;
   try {
     mod.log(mod.getCrashlytics(), message);
   } catch {
