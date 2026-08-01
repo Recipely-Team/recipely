@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 726 source files.
+[architecture.md](architecture.md). 731 source files.
 
 ## Layers
 
@@ -35,7 +35,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `likes/` _(1)_
 - `network/` _(2)_
-- `notifications/` _(8)_
+- `notifications/` _(9)_
 - `recipes/` — create, ingredients, list, media, refine, taxonomy _(22)_
 - `storage/` _(1)_
 - `user-profile/` _(2)_
@@ -61,10 +61,10 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
-- `audio/` _(1)_
+- `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(21)_
 - `comments/` — dtos _(4)_
-- `constants/` _(8)_
+- `constants/` _(9)_
 - `crypto/` _(3)_
 - `di/` _(1)_
 - `drafts/` — dtos _(6)_
@@ -73,7 +73,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `firebase/` _(4)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
-- `network/` — envelope, errors, http, jwt, upload _(22)_
+- `network/` — envelope, errors, http, jwt, upload _(23)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, media, refine, taxonomy _(21)_
 - `storage/` _(6)_
@@ -93,7 +93,7 @@ locale list `application/i18n/locale-constants.ts`.
 
 ## `src/presentation/base/` — shared UI
 
-- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(3)_
+- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(4)_
 - `errors/` — Failure → user-facing copy/severity lookups _(6)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
@@ -105,7 +105,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(42)_
+- `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(43)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -138,4 +138,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: d35794be77591b18 -->
+<!-- fingerprint: 6f1ae14efda6a524 -->

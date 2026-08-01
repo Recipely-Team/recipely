@@ -5,6 +5,7 @@ import {
   signInWithPopup,
 } from 'firebase/auth';
 import { fail, ok } from '@core/result/result-helpers';
+import { AppleAuth } from '@infrastructure/constants/apple-auth';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { UnknownFailure, type Failure } from '@core/failure';
@@ -43,9 +44,8 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     return fail(new UnknownFailure(DiagnosticMessage.socialAuth.firebaseNotConfiguredOnWeb));
   }
   try {
-    const provider = new OAuthProvider('apple.com'); // TO DO: static provider ID problem
-    provider.addScope('email'); // TO DO: static scope problem
-    provider.addScope('name'); // TO DO: static scope problem
+    const provider = new OAuthProvider(AppleAuth.providerId);
+    for (const scope of AppleAuth.scopes) provider.addScope(scope);
     const { user } = await signInWithPopup(getAuth(app), provider);
     return ok(await user.getIdToken());
   } catch (e) {

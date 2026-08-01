@@ -1,4 +1,5 @@
 import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { ListConstants } from '@presentation/base/constants/list-constants';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,7 +17,7 @@ import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
-import { FeedFooter } from '@presentation/app/recipes/items/feed-footer';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
@@ -37,7 +38,6 @@ export interface RecipeListBodyProps {
  * arrive before the user reaches them without prefetching pages they may never
  * scroll to.
  */
-const END_REACHED_THRESHOLD = 0.5;
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
@@ -177,7 +177,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         onScroll={vm.scrollHandler}
         scrollEventThrottle={16}
         onEndReached={vm.onEndReached}
-        onEndReachedThreshold={END_REACHED_THRESHOLD}
+        onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}

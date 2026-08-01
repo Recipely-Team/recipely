@@ -167,3 +167,43 @@ announce itself the way a bug does: there is no failing case to find, only a
 future edit that will update two of the three copies. Type the vocabulary so the
 compiler holds the copies together, and where it cannot reach — a translation
 file, a generated artifact — put a test on the output rather than the intent.
+
+---
+
+## A list that stops at one page, twice
+
+**Symptom:** a user with more than 20 drafts saw 20 and no sign the rest existed —
+no spinner, no end-of-list, nothing to scroll toward. Identical in shape to the
+recipe feed, which had shipped the same defect and been fixed one layer down.
+
+**Root cause:** `page: 1` written as a literal in the store, and the `total` the
+repository returned thrown away on arrival. The repository was already correct;
+the caller simply never asked for anything else, and no type objected because
+`page` is a number and 1 is a number.
+
+*Guard:* `drafts-paging.test.ts` asserts the SECOND request carries page 2, that
+the rows append rather than replace, that `hasMore` closes when the list is
+complete, and that a failed append leaves the loaded rows on screen. Verified
+against the unfixed store: four of the six go red.
+
+**The lesson is that fixing an instance is not fixing the class.** The recipe
+feed was fixed by moving paging into the repository's caller; nobody asked which
+*other* lists had the same shape. When a defect is found, grep for its shape
+before closing it — every list, every `page:`, every discarded envelope.
+
+---
+
+## A TODO comment that shipped as UI text
+
+**Symptom:** the alarm screen rendered `⏰ // TO DO: 1 emoji constants
+dosyasına taşınabilir.` to the user.
+
+**Root cause:** the note was added inside JSX children, where `//` is not a
+comment — it is literal text. It type-checked, linted and tested clean, because
+by every tool's reckoning it was a perfectly valid string.
+
+*Guard:* none mechanical; a JSX text node cannot be distinguished from intended
+copy. What catches this class is rule 11 — every user-visible string comes from
+`t()` — so a bare literal in JSX is already a review finding regardless of what
+it says. Worth remembering: **a comment marker only means "comment" in some
+positions**, and JSX children are not one of them.

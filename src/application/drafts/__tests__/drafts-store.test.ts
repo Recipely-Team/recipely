@@ -85,7 +85,7 @@ describe('draftsStore.loadDrafts', () => {
 
     const s = store.getState();
     expect(s.drafts.map((d) => d.id)).toEqual(['a', 'b']);
-    expect(s.listState).toEqual({ status: 'loaded' });
+    expect(s.listState).toEqual({ status: 'loaded', page: 1, hasMore: false });
   });
 
   it('sets listState error and leaves drafts empty on failure', async () => {

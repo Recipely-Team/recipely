@@ -14,7 +14,7 @@ export const CuisineKey = {
   Korean: 'KOREAN',
   MiddleEastern: 'MIDDLE_EASTERN',
   Other: 'OTHER',
-} as const; // TO DO: static cuisine key name problem
+} as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
 export type CuisineKey = (typeof CuisineKey)[keyof typeof CuisineKey];

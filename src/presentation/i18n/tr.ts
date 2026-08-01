@@ -552,6 +552,9 @@ export const tr: Translations = {
     more: 'Ekle',
   },
   timer: {
+    notificationChannel: 'Pişirme zamanlayıcısı (alarm)',
+    notificationBody: 'Süre doldu! Kapatmak için dokun.',
+    notificationDismiss: 'Kapat',
     done: 'Bitti',
     start: 'Başlat',
     pause: 'Duraklat',

@@ -11,6 +11,8 @@
  * matches. A pattern needing `g` must be constructed per use, not added here.
  */
 export const RegexConstants = {
+  /** Every leading `#` on an ingredient line, so a heading strips to its label. */
+  leadingIngredientGroupMarkers: /^#+/,
   /** Pragmatic e-mail shape check: non-space local@domain.tld. */
   email: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
   /** `#RGB`, `#RRGGBB` or `#RRGGBBAA`. */

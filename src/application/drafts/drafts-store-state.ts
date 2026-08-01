@@ -9,6 +9,8 @@ export interface DraftsStoreState {
   listState: DraftsListState;
   latestDraft: RecipeDraft | null;
   loadDrafts: () => Promise<void>;
+  /** Appends the next page. No-op while one is in flight or the list is complete. */
+  loadMoreDrafts: () => Promise<void>;
   loadLatestDraft: () => Promise<void>;
   upsertDraft: (input: UpsertDraftStoreInput) => Promise<RecipeDraft | null>;
   deleteDraft: (id: string) => Promise<Result<void, Failure>>;

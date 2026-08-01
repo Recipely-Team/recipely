@@ -1,4 +1,5 @@
 import { isWeb } from '@infrastructure/constants/platform';
+import { InterruptionMode } from '@infrastructure/audio/interruption-mode';
 import {
   createAudioPlayer,
   setAudioModeAsync,
@@ -29,7 +30,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
   allowsRecording: false,
   shouldPlayInBackground: false,
   playsInSilentMode: true,
-  interruptionMode: 'doNotMix', // TO DO: static interruption mode name problem
+  interruptionMode: InterruptionMode.DoNotMix,
   shouldRouteThroughEarpiece: false,
 };
 
@@ -40,7 +41,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
  */
 const IDLE_AUDIO_MODE: Partial<AudioMode> = {
   shouldPlayInBackground: false,
-  interruptionMode: 'mixWithOthers', // TO DO: static interruption mode name problem
+  interruptionMode: InterruptionMode.MixWithOthers,
 };
 
 /**

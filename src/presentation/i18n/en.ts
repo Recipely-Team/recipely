@@ -553,6 +553,9 @@ export const en = {
     more: 'Add more',
   },
   timer: {
+    notificationChannel: 'Cooking timer (alarm)',
+    notificationBody: 'Timer is done! Tap to dismiss.',
+    notificationDismiss: 'Dismiss',
     done: 'Done',
     start: 'Start',
     pause: 'Pause',

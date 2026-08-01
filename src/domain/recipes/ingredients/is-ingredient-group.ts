@@ -1,3 +1,4 @@
+import { INGREDIENT_GROUP_MARKER } from '@domain/recipes/ingredients/ingredient-group-prefix';
 /**
  * True when an ingredient line is a GROUP HEADING rather than an ingredient.
  *
@@ -12,4 +13,5 @@
  * The cost of that choice is this predicate: every place that counts,
  * validates, parses or renders an ingredient has to ask first.
  */
-export const isIngredientGroup = (line: string): boolean => line.trimStart().startsWith('#'); // TO DO: static char problem
+export const isIngredientGroup = (line: string): boolean =>
+  line.trimStart().startsWith(INGREDIENT_GROUP_MARKER);

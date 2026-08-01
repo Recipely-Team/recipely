@@ -1,4 +1,5 @@
 import { decodeJwtPayload } from '@infrastructure/network/jwt/decode-jwt';
+import { JwtClaim } from '@infrastructure/network/jwt/jwt-claim';
 import { TimeConstants } from '@core/constants';
 
 const FALLBACK_EXPIRES_MS = 3_600_000;
@@ -9,9 +10,10 @@ const FALLBACK_EXPIRES_MS = 3_600_000;
  */
 export const expiresAtFromToken = (token: string): Date => {
   const claims = decodeJwtPayload(token);
-  if (claims.ok && typeof claims.value.exp === 'number') { // TO DO: static claim name problem
+  const expiresAt = claims.ok ? claims.value[JwtClaim.expiresAt] : undefined;
+  if (typeof expiresAt === 'number') {
     // `exp` is a Unix time in SECONDS; `Date` wants milliseconds.
-    return new Date(claims.value.exp * TimeConstants.millisecondsPerSecond);
+    return new Date(expiresAt * TimeConstants.millisecondsPerSecond);
   }
   return new Date(Date.now() + FALLBACK_EXPIRES_MS);
 };

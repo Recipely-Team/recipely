@@ -58,12 +58,14 @@ describe('NotificationService', () => {
     });
 
     it('schedules nothing and returns no ids', async () => {
-      await expect(service.scheduleTimerComplete('t1', 'Pasta', Date.now() + 60_000)).resolves.toEqual([]);
+      await expect(
+        service.scheduleTimerComplete('t1', 'Pasta', Date.now() + 60_000, 'Timer is done!'),
+      ).resolves.toEqual([]);
       expect(notifications.scheduleNotificationAsync).not.toHaveBeenCalled();
     });
 
     it('init and cancel resolve without touching the platform API', async () => {
-      await expect(service.init()).resolves.toBeUndefined();
+      await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!' })).resolves.toBeUndefined();
       await expect(service.cancel(['id'])).resolves.toBeUndefined();
       expect(notifications.dismissNotificationAsync).not.toHaveBeenCalled();
     });
@@ -90,7 +92,12 @@ describe('NotificationService', () => {
     });
 
     it('schedules the completion notification and returns its id', async () => {
-      const ids = await service.scheduleTimerComplete('t1', 'Pasta', Date.now() + 60_000);
+      const ids = await service.scheduleTimerComplete(
+        't1',
+        'Pasta',
+        Date.now() + 60_000,
+        'Timer is done!',
+      );
 
       expect(ids).toEqual(['scheduled-id']);
       expect(notifications.scheduleNotificationAsync).toHaveBeenCalledTimes(1);
