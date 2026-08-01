@@ -34,7 +34,7 @@ import { LocaleService } from '@application/i18n/locale-service';
 import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
 import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
-import { API_BASE_URL } from '@infrastructure/constants/api';
+import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
 interface InfrastructureOptions {

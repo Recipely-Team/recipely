@@ -3,7 +3,6 @@ import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import { PermissionStatus } from 'expo-modules-core';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
-import { ValueConstants } from '@core/constants';
 
 /**
  * Native push registration. Android: `expo-notifications` (already in the

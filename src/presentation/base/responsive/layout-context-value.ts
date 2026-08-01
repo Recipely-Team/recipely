@@ -1,5 +1,5 @@
 import type { BreakpointType } from '@presentation/base/responsive/breakpoint-type';
-import { isWeb } from '@infrastructure/constants/platform';
+
 import type { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 export interface LayoutContextValue {

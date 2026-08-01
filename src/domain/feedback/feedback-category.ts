@@ -12,7 +12,5 @@ export const FeedbackCategory = {
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
 export type FeedbackCategory = (typeof FeedbackCategory)[keyof typeof FeedbackCategory];
 
-export const FEEDBACK_CATEGORIES: readonly FeedbackCategory[] = Object.values(FeedbackCategory);
-
 /** Fixed category sent for all submissions from this client (no category picker in the UI). */
 export const DEFAULT_FEEDBACK_CATEGORY: FeedbackCategory = FeedbackCategory.Other;

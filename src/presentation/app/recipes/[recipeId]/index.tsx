@@ -13,7 +13,7 @@ import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/re
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
-import { recipeWebUrl } from '@infrastructure/constants/api';
+import { recipeWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -59,7 +59,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               isWebShell ? (
                 <WebRecipeDetail
                   recipe={vm.recipe}
-                  recipeId={vm.recipeId}
                   media={vm.media}
                   isOwner={vm.isOwner}
                   authorState={vm.authorState}
@@ -88,8 +87,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                 />
               ) : (
                 <MobileRecipeDetail
-                  recipe={vm.recipe}
                   recipeId={vm.recipeId}
+                  recipe={vm.recipe}
                   media={vm.media}
                   isOwner={vm.isOwner}
                   isWebShell={isWebShell}

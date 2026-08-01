@@ -5,7 +5,7 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { FeedbackRepositoryInterface } from '@domain/feedback/feedback-repository-interface';
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import { toFeedbackRequestDto } from '@infrastructure/feedback/feedback-mapper';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 
 /**
  * Implements `FeedbackRepositoryInterface` against the Recipely backend.

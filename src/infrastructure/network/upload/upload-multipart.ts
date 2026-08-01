@@ -7,7 +7,7 @@ import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-hea
 import type { Result } from '@core/result/result';
 import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
-import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
 import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';

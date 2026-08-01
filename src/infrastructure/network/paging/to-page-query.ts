@@ -1,6 +1,6 @@
 import type { RequestMapper } from '@core/mapper/request-mapper';
 import type { PageQueryDto } from '@infrastructure/network/paging/page-query-dto';
-import { FIRST_PAGE } from '@infrastructure/constants/api';
+import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
 
 /** What a caller knows: how big a page is, and possibly which one it wants. */
 interface PageRequest {

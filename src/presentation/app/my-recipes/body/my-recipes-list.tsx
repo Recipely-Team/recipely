@@ -1,5 +1,5 @@
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
-import { ListConstants } from '@presentation/base/constants/list-constants';
+import { ListConstants } from '@presentation/base/constants';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

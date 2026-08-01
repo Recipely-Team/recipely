@@ -5,7 +5,7 @@ import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';

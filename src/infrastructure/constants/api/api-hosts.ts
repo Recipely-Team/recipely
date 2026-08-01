@@ -1,8 +1,7 @@
 import Constants from "expo-constants";
 
 /**
- * Every host, endpoint, page size and request budget the app talks to the
- * backend with.
+ * Which backend the app talks to, and the URLs that sit outside `/api/v1`.
  *
  * @remarks
  * - **Variant** — `app.config.ts` injects `extra.variant` from `APP_VARIANT` at
@@ -12,13 +11,9 @@ import Constants from "expo-constants";
  * - **Overrides** — `EXPO_PUBLIC_API_BASE_URL` / `EXPO_PUBLIC_WEB_APP_URL` win
  *   over both defaults; the first keeps its historical name so devices already
  *   shipping with that override keep working.
- * - **Timeouts** — the 10s JSON default aborts requests the backend would have
- *   completed, and the user reads that as "Network error". Anything slow by
- *   nature gets its own budget: video import (~120s server-side), the
- *   synchronous Gemini calls, and multipart on cellular.
- * - **`API_AES_KEY_HEX`** — must equal the backend's `API_AES_KEY`. It ships
- *   inside the binary and is extractable by reverse engineering; TLS is the
- *   real transport-layer protection, this envelope is not.
+ * - **Paging, timeouts and build secrets** have their own modules beside this
+ *   one — `api-paging`, `api-timeouts`, `build-secrets` — so a reader looking
+ *   for "how big is a page" is not scrolling past host resolution to find it.
  */
 const IS_DEV_VARIANT: boolean =
   Constants.expoConfig?.extra?.variant === "development";
@@ -47,7 +42,7 @@ const DEFAULT_WEB_APP_BASE_URL = IS_DEV_VARIANT
   : PROD_WEB_APP_BASE_URL;
 
 /** Public web origin (the universal-link domain), not the API server. */
-export const WEB_APP_BASE_URL: string =
+const WEB_APP_BASE_URL: string =
   process.env.EXPO_PUBLIC_WEB_APP_URL?.replace(/\/$/, "") ??
   DEFAULT_WEB_APP_BASE_URL;
 
@@ -61,42 +56,3 @@ export const recipeWebUrl = (recipeId: string): string =>
 
 /** Used only when the response omits both `expiresAt` and `expiresInSeconds`. */
 export const DEFAULT_CODE_TTL_SECONDS = 180;
-
-/** Backend caps `limit` at 1–30. */
-export const TRENDING_RECIPES_LIMIT = 10;
-
-/** The API is 1-based; this is the page every unqualified request means. */
-export const FIRST_PAGE = 1;
-
-export const RECIPES_PAGE_SIZE = 30;
-
-export const MY_RECIPES_PAGE_SIZE = 20;
-
-export const DRAFTS_PAGE_SIZE = 20;
-
-/** The saved grid has no paging UI, so this is the ceiling on what a user can see. */
-export const FAVORITES_PAGE_SIZE = 100;
-
-export const COMMENTS_PAGE_SIZE = 20;
-
-export const DEFAULT_REQUEST_TIMEOUT_MS = 10_000;
-
-/** 10s of headroom over the backend's ~120s yt-dlp + Whisper + vision budget. */
-export const IMPORT_REQUEST_TIMEOUT_MS = 130_000;
-
-/** Generate/refine call Gemini synchronously; no download, so below the import budget. */
-export const AI_REQUEST_TIMEOUT_MS = 90_000;
-
-/** A 3 MB JPEG at 1 Mbps is ~25s — multipart needs its own budget. */
-export const MULTIPART_UPLOAD_TIMEOUT_MS = 60_000;
-
-const DEFAULT_AES_KEY_HEX =
-  "0000000000000000000000000000000000000000000000000000000000000000";
-
-/** Override at build time via `EXPO_PUBLIC_API_AES_KEY` (`openssl rand -hex 32`). */
-export const API_AES_KEY_HEX: string =
-  process.env.EXPO_PUBLIC_API_AES_KEY?.toLowerCase() ?? DEFAULT_AES_KEY_HEX;
-
-/** Firebase Console → Authentication → Sign-in method → Google, "Web client". */
-export const GOOGLE_WEB_CLIENT_ID: string =
-  process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "";

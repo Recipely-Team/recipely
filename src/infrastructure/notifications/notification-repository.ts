@@ -6,7 +6,7 @@ import { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 import type { NotificationsResponseDto } from '@infrastructure/notifications/dtos/notifications-response-dto';
 import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notifications/dtos/register-device-token-request-dto';

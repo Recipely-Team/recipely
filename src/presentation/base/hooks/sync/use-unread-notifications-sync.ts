@@ -1,5 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
-import { AppStateStatusValue } from '@presentation/base/constants/interaction-constants';
+import { AppStateStatusValue } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';

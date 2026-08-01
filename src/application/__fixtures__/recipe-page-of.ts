@@ -1,7 +1,7 @@
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
-import { FIRST_PAGE } from '@infrastructure/constants/api';
+import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
 
 /**
  * Wraps items as a single complete page — what a test means when it does not

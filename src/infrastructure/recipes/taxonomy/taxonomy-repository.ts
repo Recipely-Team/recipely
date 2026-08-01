@@ -4,7 +4,7 @@ import type { Failure } from '@core/failure';
 import type { TaxonomyRepositoryInterface } from '@domain/recipes/taxonomy/taxonomy-repository-interface';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { CategoriesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/categories-response-dto';
 import type { CuisinesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/cuisines-response-dto';
 import { toTaxonomyItems } from '@infrastructure/recipes/taxonomy/taxonomy-mapper';

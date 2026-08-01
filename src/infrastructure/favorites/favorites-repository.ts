@@ -4,11 +4,11 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api';
+import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 
 /**
  * Implements `FavoritesRepositoryInterface` against the Recipely backend. Persists

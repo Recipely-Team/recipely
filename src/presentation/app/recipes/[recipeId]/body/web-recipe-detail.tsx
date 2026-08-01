@@ -21,7 +21,6 @@ import { ValueConstants } from '@core/constants';
 
 export interface WebRecipeDetailProps {
   recipe: RecipeEntity;
-  recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;
   authorState: RecipeAuthorState;
@@ -69,7 +68,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
   const backLabel = useBackLabel();
   const { width } = useLayout();
   const [activeImage, setActiveImage] = useState(ValueConstants.zero);
-  const { recipe, recipeId, media } = props;
+  const { recipe, media } = props;
   const twoColumn = width >= layoutSizes.webDetailTwoColMin;
   const activeUrl = media[activeImage]?.url ?? recipe.image;
 

@@ -12,7 +12,7 @@ import {
 import type { RecipelyErrorPayload } from '@infrastructure/network/errors/recipely-error-payload';
 import { isObject } from '@core/guards/type-guards';
 import { HttpStatus } from '@infrastructure/network/http/http-status';
-import { ApiErrorCode } from '@infrastructure/constants/api-error-code';
+import { ApiErrorCode } from '@infrastructure/constants/api/api-error-code';
 
 /**
  * The Recipely backend wraps every error as

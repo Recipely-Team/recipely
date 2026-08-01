@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 748 source files.
+[architecture.md](architecture.md). 755 source files.
 
 ## Layers
 
@@ -64,7 +64,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(21)_
 - `comments/` — dtos _(4)_
-- `constants/` _(9)_
+- `constants/` — api _(13)_
 - `crypto/` _(3)_
 - `di/` _(1)_
 - `drafts/` — dtos _(6)_
@@ -99,11 +99,11 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(6)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(15)_
+- `hooks/` (auth, interaction, profile, recipes, sync, timers) — shared hooks, grouped by capability _(16)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
-- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(43)_
+- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(44)_
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
@@ -140,4 +140,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 79016f04599ed02c -->
+<!-- fingerprint: ab13ed09b0b4e326 -->

@@ -7,8 +7,8 @@ import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';

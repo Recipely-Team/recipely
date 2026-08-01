@@ -1,7 +1,7 @@
 import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
 import { t } from '@presentation/i18n';
-import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconName } from '@presentation/base/errors/ionicon-name';
 import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
 import type { FailureContent } from '@presentation/base/errors/failure-content';
@@ -40,19 +40,19 @@ const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
 };
 
 const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
-  notFound: 'neutral',
-  rateLimit: 'warning',
+  notFound: SeverityType.Neutral,
+  rateLimit: SeverityType.Warning,
   // Nothing is broken and nothing was refused — the user just has to wait, look
   // elsewhere, or start the step again. Danger red would overstate all of these.
-  aiCooldown: 'warning',
-  codeCooldown: 'warning',
-  importBusy: 'warning',
-  importNoRecipeFound: 'neutral',
-  registrationExpired: 'neutral',
-  resetLinkInvalid: 'warning',
-  resetLinkExpired: 'warning',
-  resetLinkUsed: 'warning',
-  codeExpired: 'warning',
+  aiCooldown: SeverityType.Warning,
+  codeCooldown: SeverityType.Warning,
+  importBusy: SeverityType.Warning,
+  importNoRecipeFound: SeverityType.Neutral,
+  registrationExpired: SeverityType.Neutral,
+  resetLinkInvalid: SeverityType.Warning,
+  resetLinkExpired: SeverityType.Warning,
+  resetLinkUsed: SeverityType.Warning,
+  codeExpired: SeverityType.Warning,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {

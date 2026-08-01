@@ -1,5 +1,5 @@
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import { DEFAULT_CODE_TTL_SECONDS } from '@infrastructure/constants/api';
+import { DEFAULT_CODE_TTL_SECONDS } from '@infrastructure/constants/api/api-hosts';
 import type { RegistrationChallengeDto } from '@infrastructure/auth/registration/registration-challenge-dto';
 import { TimeConstants } from '@core/constants';
 

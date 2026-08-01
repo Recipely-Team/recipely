@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-account';
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -10,7 +11,7 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+
 import { RoutePaths } from '@presentation/base/constants';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
@@ -20,7 +21,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { appVersion } from '@presentation/base/utils/app-version';
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export const SettingsScreen = (): React.JSX.Element => {
@@ -29,34 +30,16 @@ export const SettingsScreen = (): React.JSX.Element => {
   const { authStore } = useStores();
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
-  const deleteAccount = authStore((s) => s.deleteAccount);
 
   const language = useLocale() as 'en' | 'tr';
 
   const [signOutVisible, setSignOutVisible] = useState(false);
-  const [deleteVisible, setDeleteVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
+  const deleteAccountFlow = useDeleteAccount();
 
   const handleSignOut = async () => {
     setSignOutVisible(false);
     await signOut();
     router.replace(RoutePaths.login);
-  };
-
-  const handleDeleteAccount = async (): Promise<void> => {
-    setDeleteError(undefined);
-    setDeleting(true);
-    const failure = await deleteAccount();
-    setDeleting(false);
-    if (failure === null) {
-      setDeleteVisible(false);
-      router.replace(RoutePaths.login);
-      return;
-    }
-    // WHY: the session stays intact on failure, so keep the sheet open and show
-    // the error inline rather than navigating away.
-    setDeleteError(failureToastMessage(failure));
   };
 
   const displayName =
@@ -131,10 +114,7 @@ export const SettingsScreen = (): React.JSX.Element => {
             icon="trash-outline"
             label={t().settings.deleteAccount}
             destructive
-            onPress={() => {
-              setDeleteError(undefined);
-              setDeleteVisible(true);
-            }}
+            onPress={deleteAccountFlow.open}
           />
         </View>
 
@@ -177,15 +157,15 @@ export const SettingsScreen = (): React.JSX.Element => {
         onClose={() => setSignOutVisible(false)}
       />
       <ConfirmSheet
-        visible={deleteVisible}
+        visible={deleteAccountFlow.visible}
         title={t().settings.deleteAccountConfirmTitle}
         message={t().settings.deleteAccountConfirmMessage}
         confirmLabel={t().settings.deleteAccount}
         destructive
-        loading={deleting}
-        error={deleteError}
-        onConfirm={() => void handleDeleteAccount()}
-        onClose={() => setDeleteVisible(false)}
+        loading={deleteAccountFlow.deleting}
+        error={deleteAccountFlow.error}
+        onConfirm={() => void deleteAccountFlow.confirm()}
+        onClose={deleteAccountFlow.close}
       />
     </View>
   );

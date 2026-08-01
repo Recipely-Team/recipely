@@ -2,7 +2,7 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
-import { DRAFTS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api';
+import { DRAFTS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
 import { ValueConstants } from '@core/constants';
 
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';

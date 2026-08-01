@@ -9,7 +9,7 @@ import { ok , fail } from '@core/result/result-helpers';
 import { UnknownFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { StoreStatus } from '@application/store/store-status';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
+import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 
 /**
  * The symptom: a user with more than one page of drafts saw the first 20 and

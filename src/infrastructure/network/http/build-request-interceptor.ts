@@ -3,7 +3,7 @@ import { isFormData } from '@core/guards/type-guards';
 import { HttpMethod, METHODS_WITH_BODY } from '@infrastructure/network/http/http-method';
 import { LogTag } from '@infrastructure/constants/log-tag';
 import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
-import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
