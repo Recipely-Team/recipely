@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text } from 'react-native';
+import { SocialProvider } from '@presentation/app/login/model/social-provider';
 import { GoogleLogo } from '@presentation/app/login/items/google-logo';
 import { AppleLogo } from '@presentation/app/login/items/apple-logo';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
@@ -6,7 +7,7 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, border
 const LOGO_SIZE = iconSizes.lg;
 
 export interface SocialSignInButtonProps {
-  provider: 'google' | 'apple';
+  provider: SocialProvider;
   label: string;
   onPress: () => void;
   disabled?: boolean;
@@ -26,7 +27,7 @@ export const SocialSignInButton = ({
   disabled = false,
   borderColor,
 }: SocialSignInButtonProps): React.JSX.Element => {
-  const isGoogle = provider === 'google';
+  const isGoogle = provider === SocialProvider.Google;
 
   return (
     <Pressable

@@ -1,6 +1,6 @@
 import { DarkTheme, DefaultTheme, type Theme } from '@react-navigation/native';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import type { ThemeColors } from '@presentation/base/theme';
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 
 /**
  * React Navigation's theme, repainted in the app's own palette.
@@ -20,7 +20,7 @@ import type { ThemeVariant } from '@presentation/base/theme/context/theme-varian
  * the app's headers are flat on the page rather than a raised bar.
  */
 export const navigationTheme = (scheme: ThemeVariant, colors: ThemeColors): Theme => {
-  const base = scheme === 'dark' ? DarkTheme : DefaultTheme;
+  const base = scheme === ThemeVariant.Dark ? DarkTheme : DefaultTheme;
   return {
     ...base,
     colors: {

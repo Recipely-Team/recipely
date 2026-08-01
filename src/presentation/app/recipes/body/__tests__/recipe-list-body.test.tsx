@@ -30,7 +30,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
-import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
+import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import { t } from '@presentation/i18n';

@@ -101,18 +101,18 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.previousPhoto}
-          onPress={() => goTo(active - 1)}
+          onPress={() => goTo(active - ValueConstants.one)}
           style={[styles.arrow, styles.arrowLeft, { backgroundColor: colors.overlay }]}
         >
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
 
-      {showArrows && active < media.length - 1 ? (
+      {showArrows && active < media.length - ValueConstants.one ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.nextPhoto}
-          onPress={() => goTo(active + 1)}
+          onPress={() => goTo(active + ValueConstants.one)}
           style={[styles.arrow, styles.arrowRight, { backgroundColor: colors.overlay }]}
         >
           <Ionicons name="chevron-forward" size={iconSizes.xl} color={colors.onOverlay} />
@@ -142,7 +142,7 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
                 variant="caption"
                 style={[styles.counterText, { color: colors.onOverlay }]}
               >
-                {active + 1} / {media.length}
+                {active + ValueConstants.one} / {media.length}
               </ThemedText>
             </View>
           </View>

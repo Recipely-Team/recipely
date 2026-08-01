@@ -1,4 +1,4 @@
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { ValueConstants } from '@core/constants';
 
 /** An empty {@link UiFilters} selection (nothing applied). */

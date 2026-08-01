@@ -15,7 +15,7 @@ const initialsFor = (name: string): string => {
   if (trimmed.length === ValueConstants.zero) return '?';
   const parts = trimmed.split(/\s+/);
   const first = parts[ValueConstants.zero]?.[ValueConstants.zero] ?? CharConstants.empty;
-  const second = parts.length > 1 ? (parts[parts.length - 1]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;
+  const second = parts.length > 1 ? (parts[parts.length - ValueConstants.one]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;
   return (first + second).toUpperCase();
 };
 

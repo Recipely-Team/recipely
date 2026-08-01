@@ -7,8 +7,8 @@
  * `currentLang` to 'en').
  */
 
-import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
-import { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SORT_TO_FILTER, sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 
 // ─── derive the exhaustive key list from the type itself ──────────────────────

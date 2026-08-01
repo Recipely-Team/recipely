@@ -1,4 +1,5 @@
 import { StyleSheet, Text, type TextProps, type TextStyle } from 'react-native';
+import { isString } from '@core/guards/type-guards';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { themedTextVariants } from '@presentation/base/widgets/text/themed-text-variants';
@@ -33,7 +34,7 @@ export const ThemedText = ({
   // style without knowing the app's language — which turns Turkish "Beğeni"
   // into "BEĞENI". Non-string children are left alone; they carry their own.
   const content =
-    variant === 'label' && typeof children === 'string' ? upperCase(children) : children;
+    variant === 'label' && isString(children) ? upperCase(children) : children;
   return (
     <Text {...rest} style={[styles[variant], { color, lineHeight }, style]}>
       {content}

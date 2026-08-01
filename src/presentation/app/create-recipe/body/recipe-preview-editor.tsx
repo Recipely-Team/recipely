@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -67,7 +68,7 @@ export const RecipePreviewEditor = ({
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
-  const [picker, setPicker] = useState<'cuisine' | 'category' | null>(null);
+  const [picker, setPicker] = useState<TaxonomyPickerKind | null>(null);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
@@ -117,7 +118,7 @@ export const RecipePreviewEditor = ({
               emoji={cuisine?.emoji ?? TAXONOMY_PLACEHOLDER_EMOJI}
               value={cuisine?.name ?? null}
               placeholder={t().createRecipe.selectCuisine}
-              onPress={() => setPicker('cuisine')}
+              onPress={() => setPicker(TaxonomyPickerKind.Cuisine)}
               error={fieldErrors.cuisine}
             />
             <SelectTile
@@ -125,7 +126,7 @@ export const RecipePreviewEditor = ({
               emoji={category.emoji}
               value={category.name}
               placeholder={t().createRecipe.selectCategory}
-              onPress={() => setPicker('category')}
+              onPress={() => setPicker(TaxonomyPickerKind.Category)}
               error={fieldErrors.category}
             />
           </View>
@@ -198,14 +199,14 @@ export const RecipePreviewEditor = ({
       </View>
 
       <TaxonomyPickerSheet
-        visible={picker === 'cuisine'}
+        visible={picker === TaxonomyPickerKind.Cuisine}
         kind="cuisine"
         selected={recipe.cuisine}
         onSelect={onChangeCuisine}
         onClose={() => setPicker(null)}
       />
       <TaxonomyPickerSheet
-        visible={picker === 'category'}
+        visible={picker === TaxonomyPickerKind.Category}
         kind="category"
         selected={recipe.category}
         onSelect={onChangeCategory}

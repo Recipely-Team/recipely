@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
+import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -58,8 +60,8 @@ const toNotifItem = (n: NotificationEntity): NotifItem => ({
   target: n.target,
 });
 
-const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
-  const visible = filter === 'unread' ? items.filter((n) => !n.read) : items;
+const buildSections = (items: NotifItem[], filter: NotificationFilter): SectionData[] => {
+  const visible = filter === NotificationFilter.Unread ? items.filter((n) => !n.read) : items;
   const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
   const yesterday = visible.filter((n) => n.daysAgo === ValueConstants.one);
   const earlier = visible.filter((n) => n.daysAgo > ValueConstants.one);
@@ -107,7 +109,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const openTarget = (target: NotificationTarget): void => {
     const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
-      (target.kind === 'comment'
+      (target.kind === NotificationTargetKind.Comment
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
         : path) as Href,
     );
@@ -152,7 +154,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
       <View style={styles.filterRow}>
         {(['all', 'unread'] as const).map((f) => {
           const isActive = filter === f;
-          const label = f === 'all'
+          const label = f === NotificationFilter.All
             ? `${t().notifications.all} (${items.length})`
             : `${t().notifications.unread} (${unreadCount})`;
           return (

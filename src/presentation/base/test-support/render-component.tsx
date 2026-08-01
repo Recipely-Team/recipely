@@ -1,4 +1,5 @@
 import type { ReactElement } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
@@ -34,7 +35,7 @@ export const textContent = (root: ReactTestInstance): string[] =>
   root
     .findAllByType('Text')
     .map((node: ReactTestInstance) =>
-      node.children.filter((child): child is string => typeof child === 'string').join(CharConstants.empty),
+      node.children.filter((child): child is string => isString(child)).join(CharConstants.empty),
     )
     .filter((text: string) => text.length > ValueConstants.zero);
 

@@ -7,4 +7,10 @@
  * `ThemePreference` of `'system'` is turned into a concrete variant before it
  * reaches any component, so there is no third state to handle downstream.
  */
-export type ThemeVariant = 'light' | 'dark';
+export const ThemeVariant = {
+  Light: 'light',
+  Dark: 'dark',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
+export type ThemeVariant = (typeof ThemeVariant)[keyof typeof ThemeVariant];

@@ -1,4 +1,5 @@
 import { RoutePaths } from '@presentation/base/constants';
+import { isString } from '@core/guards/type-guards';
 
 /**
  * Resolves the post-login redirect target from the `redirect` search param.
@@ -9,7 +10,7 @@ import { RoutePaths } from '@presentation/base/constants';
  */
 export const resolveRedirect = (redirect: string | string[] | undefined): string => {
   if (
-    typeof redirect === 'string' &&
+    isString(redirect) &&
     redirect.startsWith('/') &&
     !redirect.startsWith('//') &&
     redirect !== RoutePaths.login &&

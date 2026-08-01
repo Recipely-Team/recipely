@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { KeyboardKey } from '@presentation/base/constants/interaction-constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,8 +8,8 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, layoutSizes, borderWidths, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
-import { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { ValueConstants } from '@core/constants';
 
 /** DOM id of the anchor wrapper, used to scope the web outside-press check. */
@@ -39,7 +40,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   useEffect(() => {
     if (!open || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') setOpen(false);
+      if (event.key === KeyboardKey.escape) setOpen(false);
     };
     const onMouseDown = (event: MouseEvent): void => {
       const anchor = document.getElementById(ANCHOR_ID);

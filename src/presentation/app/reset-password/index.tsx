@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
+import { isString } from '@core/guards/type-guards';
+import { AuthField } from '@presentation/app/login/model/auth-field';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,7 +31,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { token } = useLocalSearchParams<{ token?: string }>();
-  const tokenValue = typeof token === 'string' ? token.trim() : CharConstants.empty;
+  const tokenValue = isString(token) ? token.trim() : CharConstants.empty;
 
   const { authStore } = useStores();
   const resetPassword = authStore((s) => s.resetPassword);
@@ -38,7 +40,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [focusField, setFocusField] = useState<string | null>(null);
+  const [focusField, setFocusField] = useState<AuthField | null>(null);
   const [loading, setLoading] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);

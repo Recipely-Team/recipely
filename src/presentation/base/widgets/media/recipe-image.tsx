@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { Image, type ImageStyle, type StyleProp } from 'react-native';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
 import { ValueConstants } from '@core/constants';
@@ -35,7 +36,7 @@ export const RecipeImage = ({
     setFailed(false);
   }, [uri]);
 
-  const hasImage = typeof uri === 'string' && uri.trim().length > ValueConstants.zero;
+  const hasImage = isString(uri) && uri.trim().length > ValueConstants.zero;
 
   if (!hasImage || failed) {
     return <RecipePlaceholder label={placeholderLabel} compact={placeholderCompact} />;

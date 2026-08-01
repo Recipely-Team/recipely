@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
@@ -19,8 +20,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const { isWebShell } = useLayout();
 
   const params = useLocalSearchParams<{ draftId?: string; importUrl?: string }>();
-  const draftId = typeof params.draftId === 'string' ? params.draftId : undefined;
-  const importUrl = typeof params.importUrl === 'string' ? params.importUrl : undefined;
+  const draftId = isString(params.draftId) ? params.draftId : undefined;
+  const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
 
   // A stable draft id for the lifetime of a NEW draft. A real UUID is required
   // by the backend; resumed drafts reuse their own id.

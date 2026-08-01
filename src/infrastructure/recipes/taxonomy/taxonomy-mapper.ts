@@ -1,4 +1,5 @@
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
+import { isString } from '@core/guards/type-guards';
 import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -18,8 +19,8 @@ export function toTaxonomyItem(dto: TaxonomyItemDto | null | undefined): Taxonom
   }
   return {
     key: dto.key,
-    name: typeof dto.name === 'string' ? dto.name : CharConstants.empty,
-    emoji: typeof dto.emoji === 'string' ? dto.emoji : CharConstants.empty,
+    name: isString(dto.name) ? dto.name : CharConstants.empty,
+    emoji: isString(dto.emoji) ? dto.emoji : CharConstants.empty,
   };
 }
 
