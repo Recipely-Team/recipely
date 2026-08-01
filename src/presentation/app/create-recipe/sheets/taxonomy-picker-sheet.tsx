@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
@@ -55,7 +56,7 @@ const useCatalog = (kind: 'cuisine' | 'category'): Catalog => {
   const categories = taxonomyStore((s) => s.categories);
 
   return useMemo(() => {
-    const ready = status === 'ready';
+    const ready = status === StoreStatus.Ready;
     if (kind === 'cuisine') {
       const items =
         ready && cuisines.length > ValueConstants.zero

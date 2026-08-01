@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { type Href, useRouter } from 'expo-router';
@@ -93,12 +94,12 @@ export const NotificationsScreen = (): React.JSX.Element => {
   }, []);
 
   const items: NotifItem[] = useMemo(() => {
-    if (state.status !== 'loaded') return [];
+    if (state.status !== StoreStatus.Loaded) return [];
     return state.items.map(toNotifItem);
   }, [state]);
 
   const unreadCount =
-    state.status === 'loaded' ? state.unreadCount : ValueConstants.zero;
+    state.status === StoreStatus.Loaded ? state.unreadCount : ValueConstants.zero;
   const sections = buildSections(items, filter);
 
   // Cast: a dynamic recipe path can't be statically verified against
@@ -179,11 +180,11 @@ export const NotificationsScreen = (): React.JSX.Element => {
         })}
       </View>
 
-      {state.status === 'loading' || state.status === 'idle' ? (
+      {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
         <View style={styles.empty}>
           <ActivityIndicator color={colors.primary} />
         </View>
-      ) : state.status === 'error' ? (
+      ) : state.status === StoreStatus.Error ? (
         <ErrorState
           severity={failureSeverity(state.failure)}
           icon={failureIcon(state.failure)}

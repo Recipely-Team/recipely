@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -29,7 +30,7 @@ export const LoginScreen = (): React.JSX.Element => {
   const state = authStore((s) => s.state);
 
   useEffect(() => {
-    if (state.status === 'authenticated') {
+    if (state.status === StoreStatus.Authenticated) {
       router.replace(resolveRedirect(redirect) as Href);
     }
   }, [state.status, router, redirect]);

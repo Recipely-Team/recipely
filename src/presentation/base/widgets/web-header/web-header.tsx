@@ -1,4 +1,5 @@
 import { StyleSheet, View } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import { useRouter, usePathname } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -62,7 +63,7 @@ export const WebHeader = (): React.JSX.Element => {
     },
   ];
 
-  const user = authState.status === 'authenticated' ? authState.session.user : null;
+  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
   const displayName = user?.displayName ?? 'Recipely User';
   const avatarUri = user?.photoUrl ?? undefined;
 
@@ -78,7 +79,7 @@ export const WebHeader = (): React.JSX.Element => {
 
   // The Discover entry to the welcome/onboarding screen is a guest-only affordance
   // and — per the prototype — lives on the Recipes tab alone.
-  const isAuthenticated = authState.status === 'authenticated';
+  const isAuthenticated = authState.status === StoreStatus.Authenticated;
   const showDiscover = activeTab === 'recipes' && !isAuthenticated;
 
   // Search input only appears on the Recipes listing — that's where the recipe

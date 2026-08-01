@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
@@ -77,7 +78,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const pathname = usePathname();
   const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
-  const userId = authStore((s) => (s.state.status === 'authenticated' ? s.state.session.user.id : null));
+  const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
@@ -178,7 +179,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   );
 
   useEffect(() => {
-    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy, debouncedSearch));
+    if (state.status === StoreStatus.Idle) void load(buildApiFilters(filters, sortBy, debouncedSearch));
   }, [state.status, load, buildApiFilters, filters, sortBy, debouncedSearch]);
 
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
@@ -248,7 +249,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     }, [load, buildApiFilters]),
   );
 
-  useRefreshFailureToast(state.status === 'loaded' ? state.refreshFailure : undefined);
+  useRefreshFailureToast(state.status === StoreStatus.Loaded ? state.refreshFailure : undefined);
 
   const onOpenRecipe = useCallback(
     (id: string) => router.push(RoutePaths.recipeDetail(id) as Href),
@@ -287,23 +288,23 @@ export const useRecipeList = (): UseRecipeListResult => {
   };
 
   // The query the stored rows answer — empty for the feed and before any load.
-  const answeredQuery = state.status === 'loaded' ? state.query : CharConstants.empty;
+  const answeredQuery = state.status === StoreStatus.Loaded ? state.query : CharConstants.empty;
   const answersCurrentQuery = answeredQuery === trimmedSearch;
 
   const recipes = useMemo(
-    () => (state.status === 'loaded' && answersCurrentQuery ? state.recipes : []),
+    () => (state.status === StoreStatus.Loaded && answersCurrentQuery ? state.recipes : []),
     [state, answersCurrentQuery],
   );
 
-  const hasRefreshFailure = state.status === 'loaded' && state.refreshFailure !== undefined;
+  const hasRefreshFailure = state.status === StoreStatus.Loaded && state.refreshFailure !== undefined;
   // The window in which rows are withheld for not answering the current query.
   const isAwaitingAnswer = !answersCurrentQuery && !hasRefreshFailure;
   const isRefetching = isRecipeListRefreshing(state) || isAwaitingAnswer;
   const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
 
-  const isLoadingMore = state.status === 'loaded' && state.isLoadingMore === true;
+  const isLoadingMore = state.status === StoreStatus.Loaded && state.isLoadingMore === true;
   const canLoadMore =
-    state.status === 'loaded' && state.hasMore && answersCurrentQuery && !isLoadingMore;
+    state.status === StoreStatus.Loaded && state.hasMore && answersCurrentQuery && !isLoadingMore;
   const onEndReached = useCallback((): void => {
     if (!canLoadMore) return;
     void loadMore(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));

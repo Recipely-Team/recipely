@@ -1,4 +1,5 @@
 import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -75,7 +76,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   };
 
   let body: React.JSX.Element;
-  if (state.status === 'error') {
+  if (state.status === StoreStatus.Error) {
     const content = failureContent(state.failure);
     body = (
       <ErrorState
@@ -103,7 +104,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         )}
         <WebRecipeGrid
           recipes={recipes}
-          isLoading={state.status !== 'loaded' || vm.isReloadingResults}
+          isLoading={state.status !== StoreStatus.Loaded || vm.isReloadingResults}
           isRefreshing={vm.isRefetching && !vm.isReloadingResults}
           isSearching={isSearching}
           activeCuisineLabel={vm.activeCuisineLabel}
@@ -120,7 +121,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         />
       </ScrollView>
     );
-  } else if (state.status === 'idle' || state.status === 'loading') {
+  } else if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     body = <LoadingSkeleton />;
   } else if (isSearching) {
     body = (
@@ -208,7 +209,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   // The loaded mobile feed pads for the header band inside its own list content
   // (`mobileListContent`), so the container must not add the inset a second
   // time. Every other mobile branch renders a plain surface and needs it.
-  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === 'loaded';
+  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === StoreStatus.Loaded;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -229,7 +230,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             searchValue={vm.search}
             onSearchChange={vm.onSearchChange}
           />
-          {state.status === 'loaded' ? (
+          {state.status === StoreStatus.Loaded ? (
             <FilterSortFab
               scrollY={vm.scrollY}
               reduceMotion={vm.reduceMotion}

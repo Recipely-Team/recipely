@@ -1,4 +1,5 @@
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
+import { StoreStatus } from '@application/store/store-status';
 
 /**
  * True while an already-`loaded` recipe list is being refetched in the
@@ -11,4 +12,4 @@ import type { RecipeListState } from '@application/recipes/list/recipe-list-stat
  * pull-to-refresh spinner tracks its own pull-initiated flag instead.
  */
 export const isRecipeListRefreshing = (state: RecipeListState): boolean =>
-  state.status === 'loaded' && state.isRefreshing === true; // TO DO: static status name problem
+  state.status === StoreStatus.Loaded && state.isRefreshing === true;

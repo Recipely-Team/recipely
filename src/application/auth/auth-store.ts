@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
@@ -63,29 +64,29 @@ interface AuthStoreDeps {
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   return create<AuthStoreState>((set, get) => ({
-    state: { status: 'idle' },
+    state: { status: StoreStatus.Idle },
 
     expireSession: async () => {
-      if (get().state.status !== 'authenticated') {
+      if (get().state.status !== StoreStatus.Authenticated) {
         return;
       }
       await deps.signOut.execute();
-      set({ state: { status: 'unauthenticated' } });
+      set({ state: { status: StoreStatus.Unauthenticated } });
       deps.clearSessionCaches();
     },
 
     hydrate: async () => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.getSession.execute();
       if (!result.ok) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return;
       }
       if (result.value === null || result.value.isExpired()) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       // Background pre-load; nothing waits on it.
       try {
         const favResult = await deps.loadFavorites.execute();
@@ -98,34 +99,34 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
     },
 
     signIn: async (email: string, password: string) => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.signIn.execute(email, password);
       if (!result.ok) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
     register: async (email: string, password: string, displayName: string) => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.requestRegistration.execute(email, password, displayName);
       // Account is not created yet — the user must confirm the emailed code.
       // On failure the Result carries the failure back to the screen; either
       // way the session stays unauthenticated.
-      set({ state: { status: 'unauthenticated' } });
+      set({ state: { status: StoreStatus.Unauthenticated } });
       return result;
     },
 
     verifyRegistration: async (email: string, code: string) => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.verifyRegistration.execute(email, code);
       if (!result.ok) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
@@ -143,30 +144,30 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       if (!result.ok) {
         return result.failure;
       }
-      set({ state: { status: 'unauthenticated' } });
+      set({ state: { status: StoreStatus.Unauthenticated } });
       deps.clearSessionCaches();
       return null;
     },
 
     signInWithGoogle: async () => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.signInWithGoogle.execute();
       if (!result.ok) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
     signInWithApple: async () => {
-      set({ state: { status: 'loading' } });
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.signInWithApple.execute();
       if (!result.ok) {
-        set({ state: { status: 'unauthenticated' } });
+        set({ state: { status: StoreStatus.Unauthenticated } });
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
@@ -195,7 +196,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         // without clobbering the session state.
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
@@ -206,7 +207,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         // without clobbering the session state.
         return result.failure;
       }
-      set({ state: { status: 'authenticated', session: result.value } });
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     },
 
@@ -217,7 +218,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         // failure to the screen without clobbering the session state.
         return result.failure;
       }
-      set({ state: { status: 'unauthenticated' } });
+      set({ state: { status: StoreStatus.Unauthenticated } });
       deps.clearSessionCaches();
       return null;
     },

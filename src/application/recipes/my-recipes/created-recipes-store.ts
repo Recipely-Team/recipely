@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
@@ -29,11 +30,11 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
     localRecipes: [],
-    createState: { status: 'idle' }, // TO DO: static status name problem
-    generateState: { status: 'idle' }, // TO DO: static status name problem
-    importState: { status: 'idle' }, // TO DO: static status name problem
-    deleteState: { status: 'idle' }, // TO DO: static status name problem
-    refineState: { status: 'idle' }, // TO DO: static status name problem
+    createState: { status: StoreStatus.Idle },
+    generateState: { status: StoreStatus.Idle },
+    importState: { status: StoreStatus.Idle },
+    deleteState: { status: StoreStatus.Idle },
+    refineState: { status: StoreStatus.Idle },
     aiDraft: null,
     // WHY: localRecipes is the source of truth for `findById`; recipes (the
     // lean "My Recipes" grid data) is kept in sync alongside it via
@@ -56,15 +57,15 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
     createRecipe: async (input, onProgress) => {
-      set({ createState: { status: 'creating' } });
+      set({ createState: { status: StoreStatus.Creating } });
       const result = await deps.createRecipeUseCase.execute(input, onProgress);
       if (!result.ok) {
-        set({ createState: { status: 'error', failure: result.failure } });
+        set({ createState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       const recipe = result.value;
       get().add(recipe);
-      set({ createState: { status: 'success', recipe } });
+      set({ createState: { status: StoreStatus.Success, recipe } });
     },
     loadMyRecipes: async () => {
       const result = await deps.listMyRecipesUseCase.execute();
@@ -74,10 +75,10 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       set({ recipes: result.value.items });
     },
     generateRecipe: async (prompt) => {
-      set({ generateState: { status: 'generating' } });
+      set({ generateState: { status: StoreStatus.Generating } });
       const result = await deps.generateRecipeUseCase.execute({ prompt });
       if (!result.ok) {
-        set({ generateState: { status: 'error', failure: result.failure } });
+        set({ generateState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       const recipe = result.value;
@@ -88,15 +89,15 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
       // that does not exist on the server until the user publishes it.
       set({
-        generateState: { status: 'success', recipe },
+        generateState: { status: StoreStatus.Success, recipe },
         aiDraft: recipe,
       });
     },
     importInstagram: async (url) => {
-      set({ importState: { status: 'generating' } });
+      set({ importState: { status: StoreStatus.Generating } });
       const result = await deps.importInstagramRecipeUseCase.execute({ url });
       if (!result.ok) {
-        set({ importState: { status: 'error', failure: result.failure } });
+        set({ importState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       const recipe = result.value;
@@ -106,15 +107,15 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
       // that does not exist on the server until the user publishes it.
       set({
-        importState: { status: 'success', recipe },
+        importState: { status: StoreStatus.Success, recipe },
         aiDraft: recipe,
       });
     },
     refineRecipe: async (currentRecipe, instruction) => {
-      set({ refineState: { status: 'refining' } });
+      set({ refineState: { status: StoreStatus.Refining } });
       const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction });
       if (!result.ok) {
-        set({ refineState: { status: 'error', failure: result.failure } });
+        set({ refineState: { status: StoreStatus.Error, failure: result.failure } });
         return null;
       }
       const refined = result.value;
@@ -123,26 +124,26 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       // `recipes`, which would create a phantom "My Recipes" entry. The full
       // RefinedRecipe (recipe + AI summary/suggestion) is returned so the
       // caller can surface the natural-language commentary.
-      set({ refineState: { status: 'success', recipe: refined.recipe } });
+      set({ refineState: { status: StoreStatus.Success, recipe: refined.recipe } });
       return refined;
     },
     deleteRecipe: async (id) => {
-      set({ deleteState: { status: 'deleting' } });
+      set({ deleteState: { status: StoreStatus.Deleting } });
       const result = await deps.deleteRecipeUseCase.execute(id);
       if (!result.ok) {
-        set({ deleteState: { status: 'error', failure: result.failure } });
+        set({ deleteState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       get().remove(id);
       deps.recipeListStore.getState().remove(id);
       deps.recipeDetailStore.getState().remove(id);
-      set({ deleteState: { status: 'success' } });
+      set({ deleteState: { status: StoreStatus.Success } });
     },
-    resetCreateState: () => set({ createState: { status: 'idle' } }),
-    resetGenerateState: () => set({ generateState: { status: 'idle' } }),
-    resetImportState: () => set({ importState: { status: 'idle' } }),
-    resetRefineState: () => set({ refineState: { status: 'idle' } }),
-    resetDeleteState: () => set({ deleteState: { status: 'idle' } }),
+    resetCreateState: () => set({ createState: { status: StoreStatus.Idle } }),
+    resetGenerateState: () => set({ generateState: { status: StoreStatus.Idle } }),
+    resetImportState: () => set({ importState: { status: StoreStatus.Idle } }),
+    resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
+    resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
     clearAiDraft: () => set({ aiDraft: null }),
     clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),
   }));

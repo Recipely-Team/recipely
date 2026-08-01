@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -57,7 +58,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
   const isLoading = favoritesStore((s) => s.isLoading);
   const authState = authStore((s) => s.state);
-  const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
@@ -65,12 +66,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     // expo-router's typed-routes union — same pattern as useAuthGuard.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
-  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === 'loaded' ? networkState.recipe.ownerId : null);
+  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe.ownerId : null);
   const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
   const ownProfileState = userProfileStore((s) => s.state);
   const loadOwnProfile = userProfileStore((s) => s.load);
   const owner: ResolvedAuthor | null =
-    isOwner && authState.status === 'authenticated' && ownProfileState.status === 'loaded'
+    isOwner && authState.status === StoreStatus.Authenticated && ownProfileState.status === StoreStatus.Loaded
       ? {
           authorName: authState.session.user.displayName,
           authorPhotoUrl: authState.session.user.photoUrl,
@@ -81,7 +82,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const authorState = useRecipeAuthor({ ownerId: recipeOwnerId, owner, isOwner });
 
   useEffect(() => {
-    if (isOwner && userId !== null && ownProfileState.status === 'idle') {
+    if (isOwner && userId !== null && ownProfileState.status === StoreStatus.Idle) {
       void loadOwnProfile(userId);
     }
   }, [isOwner, userId, ownProfileState.status, loadOwnProfile]);
@@ -89,7 +90,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
   const commentState = commentsStore((s) => s.byRecipe[recipeId]);
   const deleteState = createdRecipesStore((s) => s.deleteState);
-  const isDeleting = deleteState.status === 'deleting';
+  const isDeleting = deleteState.status === StoreStatus.Deleting;
   const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
@@ -102,12 +103,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     setDeleteError(null);
     await createdRecipesStore.getState().deleteRecipe(recipeId);
     const { deleteState: s } = createdRecipesStore.getState();
-    if (s.status === 'success') {
+    if (s.status === StoreStatus.Success) {
       createdRecipesStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
       setTimeout(() => router.back(), 300);
-    } else if (s.status === 'error') {
+    } else if (s.status === StoreStatus.Error) {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
@@ -170,7 +171,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const isLocal = localRecipe !== undefined;
   const recipeState =
     localRecipe !== undefined
-      ? ({ status: 'loaded' as const, recipe: localRecipe, fetchedAt: ValueConstants.zero })
+      ? ({ status: StoreStatus.Loaded, recipe: localRecipe, fetchedAt: ValueConstants.zero })
       : networkState;
 
   useEffect(() => {
@@ -179,14 +180,14 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [isLocal, recipeId]);
 
   useEffect(() => {
-    if (recipeState?.status === 'loaded' && commentState === undefined) {
+    if (recipeState?.status === StoreStatus.Loaded && commentState === undefined) {
       void commentsStore.getState().load(recipeId);
     }
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
-  const syncLikeCount = recipeState?.status === 'loaded' ? recipeState.recipe.likeCount : null;
-  const syncLikedByMe = recipeState?.status === 'loaded' ? recipeState.recipe.likedByMe : null;
-  const syncFetchedAt = recipeState?.status === 'loaded' ? recipeState.fetchedAt : null;
+  const syncLikeCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likeCount : null;
+  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likedByMe : null;
+  const syncFetchedAt = recipeState?.status === StoreStatus.Loaded ? recipeState.fetchedAt : null;
 
   useEffect(() => {
     if (syncLikeCount !== null && syncLikedByMe !== null && syncFetchedAt !== null) {
@@ -194,8 +195,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     }
   }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
-  const ingredientCount = recipeState?.status === 'loaded' ? recipeState.recipe.ingredients.length : ValueConstants.zero;
-  const instructionCount = recipeState?.status === 'loaded' ? recipeState.recipe.instructions.length : ValueConstants.zero;
+  const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
+  const instructionCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.instructions.length : ValueConstants.zero;
 
   useEffect(() => {
     if (ingredientCount > ValueConstants.zero) {
@@ -231,16 +232,16 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     });
   }, []);
 
-  const current = recipeState ?? { status: 'loading' as const };
+  const current = recipeState ?? { status: StoreStatus.Loading };
   const status: StateViewStatus =
-    current.status === 'loading' || current.status === 'idle'
+    current.status === StoreStatus.Loading || current.status === StoreStatus.Idle
       ? 'loading'
-      : current.status === 'error'
+      : current.status === StoreStatus.Error
         ? 'error'
         : StateViewStatus.Content;
-  const failure: Failure | undefined = current.status === 'error' ? current.failure : undefined;
+  const failure: Failure | undefined = current.status === StoreStatus.Error ? current.failure : undefined;
 
-  const recipe = current.status === 'loaded' ? current.recipe : null;
+  const recipe = current.status === StoreStatus.Loaded ? current.recipe : null;
   const images = recipe !== null ? recipe.media.filter((m) => m.type === MediaType.Image) : [];
   const media: readonly MediaItem[] =
     recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: MediaType.Image, url: recipe.image }];

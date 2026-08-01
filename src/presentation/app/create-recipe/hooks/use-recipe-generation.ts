@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
@@ -87,7 +88,7 @@ const GEN_STEP_INTERVAL_MS = 620;
    */
   const openedAs = useRef<string | null>(null);
 
-  const refining = refineState.status === 'refining';
+  const refining = refineState.status === StoreStatus.Refining;
 
   // Resume a draft passed via ?draftId once on mount.
   useEffect(() => {
@@ -142,7 +143,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       setPhase(PhaseType.Generating);
       await createdRecipesStore.getState().generateRecipe(trimmed);
       const state = createdRecipesStore.getState().generateState;
-      if (state.status === 'success') {
+      if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([
           { role: 'user', content: trimmed },
@@ -152,7 +153,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         setPhase(PhaseType.Preview);
         return;
       }
-      if (state.status === 'error') {
+      if (state.status === StoreStatus.Error) {
         const { failure } = state;
         const unnamed4xx =
           failure instanceof ValidationFailure && failureKeyMessage(failure) === undefined;
@@ -177,7 +178,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       setPhase(PhaseType.Generating);
       await createdRecipesStore.getState().importInstagram(trimmed);
       const state = createdRecipesStore.getState().importState;
-      if (state.status === 'success') {
+      if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([{ role: 'assistant', content: t().createRecipe.importFirstReply }]);
         createdRecipesStore.getState().resetImportState();
@@ -185,8 +186,8 @@ const GEN_STEP_INTERVAL_MS = 620;
         setPhase(PhaseType.Preview);
         return;
       }
-      if (state.status === 'error') showErrorToast(state.failure);
-      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
+      if (state.status === StoreStatus.Error) showErrorToast(state.failure);
+      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory([
         { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
       ]);
@@ -229,8 +230,8 @@ const GEN_STEP_INTERVAL_MS = 620;
       // as generate, so it needs the same disambiguation: a refused instruction
       // must not read like an unusable AI response.
       const state = createdRecipesStore.getState().refineState;
-      if (state.status === 'error') showErrorToast(state.failure);
-      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
+      if (state.status === StoreStatus.Error) showErrorToast(state.failure);
+      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory((h) => [
         ...h,
         { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },

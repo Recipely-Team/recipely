@@ -1,4 +1,5 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
@@ -16,16 +17,16 @@ export const configureUserProfileStore = (
   deps: UserProfileStoreDeps,
 ): BoundStore<UserProfileStoreState> => {
   return create<UserProfileStoreState>((set) => ({
-    state: { status: 'idle' }, // TO DO: static status name problem
+    state: { status: StoreStatus.Idle },
     load: async (userId: string) => {
-      set({ state: { status: 'loading' } }); // TO DO: static status name problem
+      set({ state: { status: StoreStatus.Loading } });
       const result = await deps.getUserProfile.execute({ userId });
       if (!result.ok) {
-        set({ state: { status: 'error', failure: result.failure } }); // TO DO: static status name problem
+        set({ state: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ state: { status: 'loaded', profile: result.value } }); // TO DO: static status name problem
+      set({ state: { status: StoreStatus.Loaded, profile: result.value } });
     },
-    reset: () => set({ state: { status: 'idle' } }),
+    reset: () => set({ state: { status: StoreStatus.Idle } }),
   }));
 };

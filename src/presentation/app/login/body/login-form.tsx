@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -25,7 +26,7 @@ export const LoginForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === 'loading');
+  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
   const signIn = authStore((s) => s.signIn);
   const signInWithGoogle = authStore((s) => s.signInWithGoogle);
   const signInWithApple = authStore((s) => s.signInWithApple);

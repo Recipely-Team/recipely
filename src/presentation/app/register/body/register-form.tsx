@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -29,7 +30,7 @@ export const RegisterForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === 'loading');
+  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
   const register = authStore((s) => s.register);
 
   const [name, setName] = useState(CharConstants.empty);

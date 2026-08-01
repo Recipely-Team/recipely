@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
@@ -23,7 +24,7 @@ export const useEditProfile = (): UseEditProfileResult => {
   const authState = authStore((s) => s.state);
   const updateProfile = authStore((s) => s.updateProfile);
 
-  const user = authState.status === 'authenticated' ? authState.session.user : null;
+  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
   const initialDisplayName = user?.displayName ?? CharConstants.empty;
   const initialBio = user?.bio ?? CharConstants.empty;
   const photoUri = user?.photoUrl ?? undefined;

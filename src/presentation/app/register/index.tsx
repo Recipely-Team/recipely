@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -28,7 +29,7 @@ export const RegisterScreen = (): React.JSX.Element => {
   const state = authStore((s) => s.state);
 
   useEffect(() => {
-    if (state.status === 'authenticated') {
+    if (state.status === StoreStatus.Authenticated) {
     // Registration is a one-way door: the account exists now, so the form
       // that created it — and the login screen it was reached from — must not
       // stay behind a back gesture.
