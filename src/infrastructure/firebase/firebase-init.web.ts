@@ -1,4 +1,5 @@
 import Constants from 'expo-constants';
+import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
 import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
@@ -16,7 +17,7 @@ import { ValueConstants } from '@core/constants';
  * rather than trading a cosmetic win for a broken sign-in. Selected by variant
  * like the API host next door in `infrastructure/constants/api.ts`.
  */
-const PROD_AUTH_DOMAIN = 'recipely.net';
+const PROD_AUTH_DOMAIN = PROD_WEB_APP_DOMAIN;
 const DEV_AUTH_DOMAIN = 'recipely-c05fc.firebaseapp.com';
 
 const IS_DEV_VARIANT: boolean = Constants.expoConfig?.extra?.variant === 'development';
