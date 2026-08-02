@@ -49,56 +49,52 @@ forged by reimplementing client code. `expo-app-integrity` exposes both. The
 rule that makes or breaks it: **verify on the server, never trust the client's
 own verdict.**
 
-## Dev environment
+## What is deployed
 
-`dev.recipely.net` and `dev-api.recipely.net` are closed with **Cloudflare
-Access**, so the dev database is not writable by the open internet.
+Measured after the work, not planned before it.
 
-- **People** (dev site, and browser access to the dev API) authenticate with an
-  email one-time code. No client software, any device.
-- **The dev app** cannot complete an email login, so it authenticates with an
-  Access **service token** — two headers checked at the edge
-  (`CF-Access-Client-Id` / `CF-Access-Client-Secret`), supplied to the build via
-  `EXPO_PUBLIC_CF_ACCESS_*` and attached in `build-common-headers.ts`.
+| hostname | Cloudflare | protection |
+|---|---|---|
+| `api.recipely.net` | **DNS only** | authentication + authorisation. `/admin` returns 404 here. |
+| `admin.recipely.net` | Proxied | Cloudflare Access (email code) → AdminJS password → rate limit |
+| `dev-api.recipely.net` | Proxied | `/admin` behind Access; the API routes are open by decision |
+| `dev.recipely.net` | Proxied | Access on the whole hostname |
 
-Those header values are in the dev bundle and are therefore readable by anyone
-holding the dev APK. That is accepted: the goal is that the open internet cannot
-reach the dev database, not that a holder of an unreleased build cannot.
-Production sends no Access headers — `api.recipely.net` is public by design and
-is protected by authentication and authorisation.
+**`api.recipely.net` is direct on purpose, and that closes off a defence.**
+Cloudflare's origin timeout is 100 s, fixed on Free/Pro/Business, while the
+Instagram import measures ~119 s — proxying it returns 524 on long imports. The
+cost of going direct is that the origin cannot be firewalled to Cloudflare
+ranges, because real users connect to it. That is a deliberate trade, not an
+oversight. The way out, if it ever matters, is making the import asynchronous
+(POST → job id → poll) so no request runs longer than 100 s.
 
-### DNS migration (one-time, done by hand)
+**The admin panel is the part worth protecting**, and it has four independent
+layers now. When this work started it had one: a password, guessable without
+limit, over a plain-HTTP port open to the internet.
 
-Cloudflare Access requires the hostname to be proxied through Cloudflare, which
-requires the zone's nameservers to point there. Record the current state first —
-this is the whole zone as of the migration:
+- **Origin CA certificate**, valid to 2041. Let's Encrypt could not be used:
+  Access intercepts the HTTP-01 challenge, so every renewal would fail and the
+  panel would go dark 90 days later. The private key was generated on the box
+  and has never left it — Cloudflare signed a CSR and never saw the key.
+- **Zone-level Authenticated Origin Pulls** with our own CA. Global AOP was the
+  first step, but the certificate Cloudflare presents there is shared across all
+  its customers: it proves a request came *through Cloudflare*, not through
+  *this account*. Zone-level closes that. Verified: a direct request to the
+  origin answers `400 No required SSL certificate was sent`.
+- **Access**, then the panel's own password, then 10 attempts per 15 minutes.
 
-| Name | Type | Value | Proxy |
-|---|---|---|---|
-| `recipely.net` | A | `199.36.158.100` (Firebase Hosting) | DNS only |
-| `recipely.net` | TXT | `hosting-site=app-recipely` | — |
-| `dev` | CNAME | `app-recipely-dev.web.app` | **Proxied** |
-| `dev-api` | A | `140.238.216.129` (Oracle dev) | **Proxied** |
-| `api` | A | `144.24.239.155` (Oracle prod) | DNS only |
+**No Access service token is used.** An earlier version of this document planned
+one, on the assumption the whole dev API would sit behind Access. It does not —
+only `/admin` does — so the client code that sent those headers was removed
+rather than left to imply a protection that was not there.
 
-There is **no MX record and no `www`** — the domain carries no mail, so the
-migration cannot break email.
+### DNS
 
-1. Add `recipely.net` to Cloudflare, let it import, then **compare against the
-   table above** and add anything missing before switching nameservers.
-2. Change nameservers at Namecheap to the pair Cloudflare gives.
-3. Set SSL/TLS mode to **Full (strict)** before proxying anything — Flexible
-   would talk plain HTTP to the origin.
-4. Leave `recipely.net` and `api` **DNS only**. Only `dev` and `dev-api` get the
-   orange cloud; production keeps its current path and certificates.
-5. Zero Trust → Access → add an application per protected hostname, with a
-   policy allowing the two team email addresses.
-6. For `dev-api`, add a **service token** and a second policy accepting it, so
-   the app is not asked to log in.
-
-Firebase Hosting already holds a valid certificate for `dev.recipely.net`;
-proxying after that is issued is what makes Full (strict) work. If the
-certificate ever needs reissuing, grey-cloud the record first.
+The zone moved to Cloudflare. `recipely.net` and `api.recipely.net` are DNS-only;
+`admin`, `dev` and `dev-api` are proxied. There is no MX record and no `www`, so
+the migration could not break mail. nginx configuration for the boxes lives in
+the backend repo under `deploy/nginx/`, pulled back off the host after the
+change rather than written as an intention.
 
 ## Build-time checks
 
@@ -110,11 +106,18 @@ is deliberately a no-op for `APP_VARIANT=development`.
 
 ## Open items
 
-- **CORS is `origin: true, credentials: true`** on the backend, which reflects
-  any origin. It should be an allowlist of the app's own web origins.
-- **No certificate pinning.** Worth adding as a speed bump, with the caveat that
-  a pin outliving its certificate takes the app down for everyone — it needs a
-  backup pin and a rotation plan before it is safe to ship.
-- **Attestation** (Play Integrity / App Attest) is the answer to "only my app
-  may call this", and needs a backend verification endpoint before the client
-  side is worth writing.
+- **Certificate pinning** is NOT implemented, deliberately. `api.recipely.net`
+  uses Let's Encrypt, which rotates the leaf roughly every 60 days: pinning it
+  breaks the app for every user on that cycle, pinning the intermediate breaks
+  when Let's Encrypt rotates one, and pinning the root ties the app to that CA
+  for good. Recovery from a bad pin needs a store release — days on iOS, with
+  the app unusable throughout. Against that, the attacker it stops is one who
+  can already disable the pin on a device they control. If it is ever done, the
+  safe shape is the root SPKI plus a backup pin plus a remote kill switch.
+- **Attestation** (Play Integrity / App Attest) is the real answer to "only my
+  app may call this" and is not built. It needs a Google Cloud service account
+  with the Play Integrity API enabled and an Apple App Attest key before the
+  client side is worth writing, and the verdict must be verified server-side —
+  never trusted from the client.
+- **The AES envelope** still ships its key in the binary. See above: it adds
+  nothing over TLS, and a key exchange would not change that.
