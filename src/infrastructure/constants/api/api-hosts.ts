@@ -35,7 +35,17 @@ export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;
 /** Absolute, because avatar upload sits at the server root and must bypass `baseURL`. */
 export const AVATAR_UPLOAD_URL: string = `${SERVER_URL}/me/avatar`;
 
-const PROD_WEB_APP_BASE_URL = "https://recipely.net";
+/**
+ * The canonical public origin. Exported because three unrelated places need to
+ * name it — the API host resolution here, the SEO meta tags in the web shell,
+ * and Firebase's auth domain — and each of them used to spell it out on its
+ * own. It is not a secret and cannot be one (see docs/security.md); the point
+ * is that a domain change should be one edit, not three.
+ */
+export const PROD_WEB_APP_BASE_URL = "https://recipely.net";
+
+/** The same origin without its scheme, which is the form Firebase auth wants. */
+export const PROD_WEB_APP_DOMAIN = PROD_WEB_APP_BASE_URL.replace('https://', '');
 const DEV_WEB_APP_BASE_URL = "https://app-recipely-dev.web.app";
 const DEFAULT_WEB_APP_BASE_URL = IS_DEV_VARIANT
   ? DEV_WEB_APP_BASE_URL

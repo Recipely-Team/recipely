@@ -1,7 +1,8 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
+import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import type { PropsWithChildren } from 'react';
 
-const SITE_URL = 'https://recipely.net';
+const SITE_URL = PROD_WEB_APP_BASE_URL;
 const SITE_TITLE = 'Recipely — AI Recipe Generator & Cooking Community';
 const SITE_DESCRIPTION =
   'Discover, create, and share recipes with an AI sous-chef. Generate a full recipe from a craving, browse by cuisine, track nutrition, and cook smarter with Recipely.';
