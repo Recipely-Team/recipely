@@ -28,6 +28,7 @@ export const DiagnosticMessage = {
     googleCancelled: 'Google sign-in was cancelled',
     googleNoIdToken: 'Google did not return an ID token',
     googleFailed: 'Google sign-in failed',
+    appleCancelled: 'Apple sign-in was cancelled',
     appleUnavailable: 'Apple Sign-In is not available on this device',
     appleNoIdentityToken: 'Apple did not return an identity token',
     appleFailed: 'Apple sign-in failed',

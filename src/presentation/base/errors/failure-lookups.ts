@@ -36,6 +36,7 @@ const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
   [FailureCode.Conflict]: 'conflict',
   [FailureCode.RateLimit]: 'rateLimit',
   [FailureCode.Validation]: 'validation',
+  [FailureCode.Cancelled]: 'cancelled',
   [FailureCode.Unknown]: 'unknown',
 };
 
@@ -44,6 +45,7 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   rateLimit: SeverityType.Warning,
   // Nothing is broken and nothing was refused — the user just has to wait, look
   // elsewhere, or start the step again. Danger red would overstate all of these.
+  cancelled: SeverityType.Neutral,
   aiCooldown: SeverityType.Warning,
   codeCooldown: SeverityType.Warning,
   importBusy: SeverityType.Warning,
@@ -65,6 +67,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   conflict: 'alert-circle-outline',
   rateLimit: 'hourglass-outline',
   validation: 'alert-circle-outline',
+  cancelled: 'close-circle-outline',
   unknown: 'sad-outline',
 
   aiPromptRejected: 'alert-circle-outline',

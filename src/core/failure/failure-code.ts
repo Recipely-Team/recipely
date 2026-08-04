@@ -9,6 +9,9 @@
  *   of the three compiled and simply fell through to the "unknown" copy at
  *   runtime. Typing it here makes the presentation table exhaustive, so adding
  *   a code without giving it copy is a compile error.
+ * - **Not every code is an error.** `Cancelled` says the user ended the flow
+ *   themselves. It travels here because the operation produced no value, but a
+ *   screen must read it as "say nothing" — see `CancelledFailure`.
  * - **Not the backend's vocabulary.** The wire codes are a separate, larger set
  *   (`unprocessable`, `too_many_requests`, `internal`, …) and live in
  *   `@infrastructure/constants/api-error-code`. Several of them map onto one
@@ -24,6 +27,7 @@ export const FailureCode = {
   Server: 'server',
   Network: 'network',
   Timeout: 'timeout',
+  Cancelled: 'cancelled',
   Unknown: 'unknown',
 } as const;
 

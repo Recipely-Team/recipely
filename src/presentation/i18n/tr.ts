@@ -67,6 +67,11 @@ export const tr: Translations = {
       body: 'Bazı bilgileri kontrol etmek gerek. İşaretli alanlara bakıp tekrar dene.',
       short: 'İşaretli alanları kontrol et',
     },
+    cancelled: {
+      title: 'İptal edildi',
+      body: 'İşlem tamamlanmadan durdu. Hiçbir şey değişmedi — dilediğin zaman tekrar başlayabilirsin.',
+      short: 'İptal edildi',
+    },
     unknown: {
       title: 'Bir şeyler ters gitti',
       body: 'Beklenmedik bir aksilik oldu. Lütfen tekrar dene.',

@@ -9,6 +9,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import type { Failure } from '@presentation/base/types';
+import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
@@ -42,11 +43,13 @@ export const LoginForm = (): React.JSX.Element => {
 
   const passwordRef = useRef<TextInput>(null);
 
+  // Closing the Google / Apple sheet without finishing is an answer, not an
+  // error — the form stays exactly as the user left it and says nothing.
   const runSocial = useCallback(
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);
       const failure = await signInWith();
-      if (failure) {
+      if (failure && failure.code !== FailureCode.Cancelled) {
         setErrorMessage(authFormMessage(failure, {}));
       }
     },
