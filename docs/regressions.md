@@ -232,3 +232,28 @@ once a current session exists, and both keys are cleared on sign-out.
 it is one answer; the other is that something is reading a value it should have
 imported. Ask which before reaching for the delete key — the dangerous
 duplicates are the ones where only one copy is live.
+
+---
+
+## A user's own "no" reported as an error
+
+**Symptom:** tapping "Continue with Google" (or Apple) on the login screen and then
+dismissing the sheet without picking an account showed the form's error banner —
+*"Bir şeyler ters gitti."* Nothing had failed; the user had simply changed their mind.
+
+**Root cause:** the sign-in providers answered every non-success outcome with
+`UnknownFailure`, so a dismissed sheet was indistinguishable from a broken one by the
+time it reached the screen. Presentation had no channel on which to tell them apart
+and did the only thing it could — render the generic "something went wrong" copy.
+
+*Guard:* the vocabulary itself. `CancelledFailure` / `FailureCode.Cancelled` is now a
+member of the failure vocabulary in its own right, the providers map both SDKs'
+cancellation signals onto it, and `FailureCode` is a closed union — so a screen that
+wants to stay silent has something to ask about, and nothing can quietly collapse back
+into `unknown`.
+
+**The lesson: an outcome the user chose is not an error, and the layer that knows
+which it was has to say so.** Whenever an SDK, sheet, or picker can be dismissed, ask
+what the abandoned path returns before assuming the `Failure` channel means something
+broke. No mechanical rule can spot this one — the shapes are identical and only the
+meaning differs.

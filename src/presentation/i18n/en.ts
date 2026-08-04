@@ -65,6 +65,13 @@ export const en = {
       body: 'Some details need another look. Check the highlighted fields and try again.',
       short: 'Check the highlighted fields',
     },
+    // A cancellation is normally swallowed by the screen that asked for it —
+    // this copy is the safety net, never the expected outcome.
+    cancelled: {
+      title: 'Cancelled',
+      body: 'You stopped before it finished. Nothing changed — start again whenever you like.',
+      short: 'Cancelled',
+    },
     unknown: {
       title: 'Something went wrong',
       body: 'We hit an unexpected snag. Please try again.',
