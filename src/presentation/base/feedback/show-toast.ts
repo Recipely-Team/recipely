@@ -7,6 +7,7 @@ import {
 import { t } from '@presentation/i18n';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import type { ToastRetry } from '@presentation/base/feedback/toast-retry';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 
 /**
  * Surfaces a `Failure` as a toast. The message and severity are selected from
@@ -14,13 +15,18 @@ import type { ToastRetry } from '@presentation/base/feedback/toast-retry';
  * the same way. This is the default "the user must never get no feedback" path
  * for action failures (save / delete / like / comment).
  */
-export const showErrorToast = (failure: Failure, retry?: ToastRetry): string =>
-  toastStore.getState().show({
+export const showErrorToast = (failure: Failure, retry?: ToastRetry): string => {
+  // Every user-visible failure funnels through here, which makes it the one
+  // place worth reporting from: no call site has to remember to, and the
+  // reporter itself decides what is worth keeping.
+  FailureReporter.report(failure, 'showErrorToast');
+  return toastStore.getState().show({
     severity: failureSeverity(failure),
     message: failureToastMessage(failure),
     actionLabel: retry ? (retry.label ?? t().errors.retry) : undefined,
     onAction: retry?.onRetry,
   });
+};
 
 /**
  * Surfaces a plain danger toast for an error the caller has already turned into
