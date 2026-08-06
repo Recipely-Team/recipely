@@ -8,6 +8,7 @@ import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { registerInfrastructure } from '@infrastructure/di/register';
@@ -54,6 +55,11 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
   useEffect(() => {
     // Never rejects — a storage failure falls back to the device seed inside
     // LocaleService, because a rejection here would hang every request.
+    // Fill the hole presentation declares: it may not reach into
+    // infrastructure itself (rule 17), so the composition root hands it the
+    // sink. Before this runs, reporting is a no-op — which is correct, since
+    // Firebase is not initialised yet either.
+    FailureReporter.setSink(recordCrash);
     void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
