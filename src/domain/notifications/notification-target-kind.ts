@@ -2,6 +2,8 @@
 export const NotificationTargetKind = {
   Recipe: 'recipe',
   Comment: 'comment',
+  /** A background import finished; tapping opens the draft it produced. */
+  Draft: 'draft',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing

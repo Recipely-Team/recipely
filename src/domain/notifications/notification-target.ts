@@ -10,4 +10,5 @@ export type NotificationTarget =
       readonly kind: typeof NotificationTargetKind.Comment;
       readonly recipeId: string;
       readonly commentId: string;
-    };
+    }
+  | { readonly kind: typeof NotificationTargetKind.Draft; readonly draftId: string };

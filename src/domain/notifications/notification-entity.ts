@@ -76,6 +76,11 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * route yet — so it has no destination and this returns `null`.
    */
   get target(): NotificationTarget | null {
+    // Checked first because it is the one target that carries no `recipeId`:
+    // the import has not produced a recipe yet, only a draft to finish.
+    if (this.props.draftId !== null) {
+      return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
+    }
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }

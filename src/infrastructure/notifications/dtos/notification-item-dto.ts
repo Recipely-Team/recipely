@@ -16,6 +16,10 @@ export interface NotificationItemDto {
    * plain recipe link rather than breaking it.
    */
   commentId?: string | null;
+  /** Optional for the same reason `commentId` is: a server that predates the
+   *  background-import work omits it, and a missing value must degrade to a
+   *  notification with no destination rather than break the list. */
+  draftId?: string | null;
   message: string | null;
   read: boolean;
   createdAt: string;
