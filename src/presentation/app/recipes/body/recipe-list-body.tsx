@@ -1,4 +1,5 @@
-import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback } from 'react';
+import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import { ListConstants } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
@@ -10,10 +11,6 @@ import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-sea
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { FilterSortFab } from '@presentation/app/recipes/items/filters/filter-sort-fab';
-import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
-import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
-import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
-import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
@@ -21,6 +18,7 @@ import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
+import { WebRecipeFeed } from '@presentation/app/recipes/body/web-recipe-feed';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
@@ -64,16 +62,31 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const colors = useTheme().colors;
   const { state, recipes, isWebShell, isSearching, gridColumns } = vm;
 
-  const renderItem = ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
-    if (gridColumns > ValueConstants.one) {
-      return (
-        <View style={styles.gridCell}>
-          <RecipeListItem recipe={item} onPress={() => vm.onOpenRecipe(item.id)} />
-        </View>
-      );
-    }
-    return <RecipeListItem recipe={item} onPress={() => vm.onOpenRecipe(item.id)} />;
-  };
+  // Stable across renders so `RecipeListItem`'s memo actually holds. A fresh
+  // arrow per row per render defeats memoisation completely — the rows would
+  // re-render on every scroll frame the parent reacts to, which is what they
+  // were doing.
+  const { onOpenRecipe } = vm;
+  const openRecipe = useCallback(
+    (id: string) => () => onOpenRecipe(id),
+    [onOpenRecipe],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
+      if (gridColumns > ValueConstants.one) {
+        return (
+          <View style={styles.gridCell}>
+            <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />
+          </View>
+        );
+      }
+      return <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />;
+    },
+    [gridColumns, openRecipe],
+  );
+
+  const keyExtractor = useCallback((r: RecipeSummaryEntity): string => r.id, []);
 
   let body: React.JSX.Element;
   if (state.status === StoreStatus.Error) {
@@ -89,38 +102,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       />
     );
   } else if (isWebShell) {
-    body = (
-      <ScrollView
-        style={styles.list}
-        contentContainerStyle={styles.webContent}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={vm.onRefresh} />}
-      >
-        {isSearching ? null : (
-          <>
-            <WebHeroSection onOpenRecipe={vm.onOpenRecipe} isSaved={vm.isSaved} onToggleSave={vm.onToggleSave} />
-            <WebAiBanner onPress={vm.onOpenCreate} />
-            <WebCuisineGrid selectedCuisines={vm.filters.cuisines} onToggle={vm.onToggleCuisineQuick} />
-          </>
-        )}
-        <WebRecipeGrid
-          recipes={recipes}
-          isLoading={state.status !== StoreStatus.Loaded || vm.isReloadingResults}
-          isRefreshing={vm.isRefetching && !vm.isReloadingResults}
-          isSearching={isSearching}
-          activeCuisineLabel={vm.activeCuisineLabel}
-          sortBy={vm.sortBy}
-          onChangeSort={vm.onChangeSort}
-          onOpenFilter={vm.onOpenFilter}
-          activeFilterCount={vm.activeFilterCount}
-          activeDifficulty={vm.filters.difficulties[ValueConstants.zero] ?? null}
-          onDifficultyChange={vm.onDifficultyChange}
-          gridColumns={gridColumns}
-          onOpenRecipe={vm.onOpenRecipe}
-          isSaved={vm.isSaved}
-          onToggleSave={vm.onToggleSave}
-        />
-      </ScrollView>
-    );
+    body = <WebRecipeFeed vm={vm} />;
   } else if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     body = <LoadingSkeleton />;
   } else if (isSearching) {
@@ -139,8 +121,18 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         // load. `ListEmptyComponent` carries the loading placeholder, so the
         // feed header above it (cuisine strip, active-filter chips) stays.
         data={vm.isReloadingResults ? [] : recipes}
-        keyExtractor={(r) => r.id}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
+        // Windowing defaults are tuned for short rows; these are tall photo
+        // cards, so the defaults kept ~21 screens of them mounted. Measured
+        // against a full feed: fewer mounted rows, less memory, and the scroll
+        // stops dropping frames on the mid-range Android box the app targets.
+        initialNumToRender={ListConstants.initialRows}
+        maxToRenderPerBatch={ListConstants.rowsPerBatch}
+        windowSize={ListConstants.windowSize}
+        // Android only: detaches off-screen views from the native hierarchy.
+        // A no-op-to-harmful on iOS, where it has caused blank cells.
+        removeClippedSubviews={Platform.OS === 'android'}
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}

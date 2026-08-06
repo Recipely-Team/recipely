@@ -1,7 +1,8 @@
-import { Image, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { fontWeights } from '@presentation/base/theme';
+import { fontWeights, durations } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AvatarImageProps {
@@ -26,7 +27,16 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
 
   if (uri !== undefined && uri.length > ValueConstants.zero) {
     return (
-      <Image source={{ uri }} style={{ width: size, height: size, borderRadius }} />
+      <Image
+        source={{ uri }}
+        style={{ width: size, height: size, borderRadius }}
+        contentFit="cover"
+        // Avatars repeat across every comment and every card in a list, so the
+        // same handful of photos was being fetched dozens of times per screen.
+        cachePolicy="memory-disk"
+        transition={durations.imageFade}
+        recyclingKey={uri}
+      />
     );
   }
 

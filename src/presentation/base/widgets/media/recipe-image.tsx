@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { isString } from '@core/guards/type-guards';
-import { Image, type ImageStyle, type StyleProp } from 'react-native';
+import { Image } from 'expo-image';
+import type { ImageStyle, StyleProp } from 'react-native';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
 import { ValueConstants } from '@core/constants';
+import { durations } from '@presentation/base/theme';
 
 export interface RecipeImageProps {
   /** Remote recipe / media URI. Empty, missing, or failed shows the placeholder. */
@@ -20,6 +22,18 @@ export interface RecipeImageProps {
  * is missing and when the remote file fails to load (e.g. a deleted upload that
  * now 404s). Without the `onError` fallback those rows render a broken-image box.
  * Fills its parent, so the placeholder lines up with the image it replaces.
+ *
+ * @remarks
+ * - **`expo-image`, not React Native's `Image`.** RN's has no disk cache, so
+ *   every scroll back up and every navigation re-fetched and re-decoded photos
+ *   that had not changed — the single most expensive thing the feed did, on a
+ *   screen that is mostly photos. `memory-disk` keeps them across screens and
+ *   across app launches.
+ * - **`recyclingKey` is what makes reuse safe.** A FlatList row is recycled for
+ *   a different recipe, and without it the previous photo stays on screen until
+ *   the new one decodes — the wrong recipe under the right title.
+ * - **`transition` is deliberately short.** It hides the decode step; long
+ *   enough to read as a fade, short enough not to feel like a delay.
  */
 export const RecipeImage = ({
   uri,
@@ -47,6 +61,10 @@ export const RecipeImage = ({
       source={{ uri }}
       style={style}
       accessibilityLabel={accessibilityLabel}
+      contentFit="cover"
+      cachePolicy="memory-disk"
+      transition={durations.imageFade}
+      recyclingKey={uri}
       onError={() => setFailed(true)}
     />
   );

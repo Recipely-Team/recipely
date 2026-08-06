@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { memo, useEffect } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -15,8 +15,16 @@ export interface RecipeListItemProps {
 /**
  * Wraps `RecipeCard` with reactive per-recipe like state from `likesStore`.
  * Seeding happens on mount so the store is populated before the card renders.
+ *
+ * @remarks
+ * **Memoised, and the callers keep their props stable to match.** The feed's
+ * parent re-renders on scroll, on every filter change and on every store
+ * update, and each of those re-rendered EVERY visible row — each row re-reading
+ * the likes store and re-resolving its taxonomy labels. `memo` is only half of
+ * it: a row whose `onPress` is a fresh arrow on every render is not memoised at
+ * all, which is why `RecipeListBody` builds its handlers with `useCallback`.
  */
-export const RecipeListItem = ({ recipe, onPress, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
+const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
   const { likesStore, authStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const authState = authStore((s) => s.state);
@@ -45,3 +53,5 @@ export const RecipeListItem = ({ recipe, onPress, hoverEffect }: RecipeListItemP
     />
   );
 };
+
+export const RecipeListItem = memo(RecipeListItemComponent);
