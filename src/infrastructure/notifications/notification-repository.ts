@@ -83,6 +83,7 @@ function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEnti
     recipeId: dto.recipeId,
     recipeTitle: dto.recipeTitle,
     commentId: dto.commentId ?? null,
+    draftId: dto.draftId ?? null,
     message: dto.message ?? null,
     read: dto.read,
     createdAt: new Date(dto.createdAt),

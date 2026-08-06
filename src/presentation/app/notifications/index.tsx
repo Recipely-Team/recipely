@@ -107,6 +107,14 @@ export const NotificationsScreen = (): React.JSX.Element => {
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
   const openTarget = (target: NotificationTarget): void => {
+    // A draft is the one target with no recipe behind it: the import produced
+    // something to finish, not something to read. It opens the editor the same
+    // way My Recipes does, so a resumed import and a resumed draft are the same
+    // screen in the same state.
+    if (target.kind === NotificationTargetKind.Draft) {
+      router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
+      return;
+    }
     const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
       (target.kind === NotificationTargetKind.Comment

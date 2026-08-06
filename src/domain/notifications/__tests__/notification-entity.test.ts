@@ -10,6 +10,7 @@ const makeProps = (overrides: Partial<NotificationEntityProps> = {}): Notificati
   recipeId: 'recipe-1',
   recipeTitle: 'Panna Cotta',
   commentId: null,
+  draftId: null,
   message: null,
   read: false,
   createdAt: new Date('2026-06-01T12:00:00.000Z'),

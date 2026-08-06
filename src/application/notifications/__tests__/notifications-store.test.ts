@@ -18,6 +18,7 @@ const makeNotification = (id: string, read: boolean): NotificationEntity => {
     recipeId: 'recipe-1',
     recipeTitle: 'Panna Cotta',
     commentId: null,
+    draftId: null,
     message: null,
     read,
     createdAt: new Date('2026-06-01T12:00:00.000Z'),
