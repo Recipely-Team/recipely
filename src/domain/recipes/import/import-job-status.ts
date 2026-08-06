@@ -1,3 +1,5 @@
+import { isString } from '@core/guards/type-guards';
+
 /**
  * Where a queued Instagram import currently is.
  *
@@ -20,4 +22,4 @@ export type ImportJobStatus = (typeof ImportJobStatus)[keyof typeof ImportJobSta
 const IMPORT_JOB_STATUS_SET: ReadonlySet<string> = new Set(Object.values(ImportJobStatus));
 
 export const isImportJobStatus = (v: unknown): v is ImportJobStatus =>
-  typeof v === 'string' && IMPORT_JOB_STATUS_SET.has(v);
+  isString(v) && IMPORT_JOB_STATUS_SET.has(v);
