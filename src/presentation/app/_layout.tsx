@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { ShareIntentProvider } from 'expo-share-intent';
 import { useInstagramShareImport } from '@presentation/navigation/use-instagram-share-import';
+import { usePushNotificationTap } from '@presentation/base/hooks/notifications/use-push-notification-tap';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -104,6 +105,7 @@ const RootStack = (): React.JSX.Element => {
   const { scheme, colors } = useTheme();
   useAuthGuard();
   useInstagramShareImport();
+  usePushNotificationTap();
 
   const reactNavTheme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
   const headerBg = colors.background;
