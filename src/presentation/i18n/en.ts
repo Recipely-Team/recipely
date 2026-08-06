@@ -462,6 +462,8 @@ export const en = {
     gen3: 'Writing the steps',
     gen4: 'Plating & final touches',
     importFirstReply: 'I turned that Instagram video into a recipe — tweak anything below.',
+    importQueuedTitle: 'Import queued',
+    importQueuedBody: "Your recipe is being prepared. We'll send a notification when it's ready — you can close the app.",
     importTitle: 'Turning the reel into a recipe',
     importSub: 'This can take a minute or two — hang tight while the chef works.',
     import0: 'Downloading the video',

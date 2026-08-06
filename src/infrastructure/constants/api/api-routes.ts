@@ -31,6 +31,9 @@ export const ApiRoutes = {
     categories: '/recipes/categories',
     generate: '/recipes/generate',
     import: '/recipes/import',
+    /** Queues a background import and returns a job id, instead of waiting ~2 min. */
+    importJobs: '/recipes/import/jobs',
+    importJob: (id: string): string => `/recipes/import/jobs/${encodeURIComponent(id)}`,
     refine: '/recipes/refine',
     withMedia: '/recipes/with-media',
     drafts: '/recipes/drafts',

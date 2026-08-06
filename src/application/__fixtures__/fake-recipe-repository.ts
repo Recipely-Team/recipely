@@ -6,6 +6,7 @@ import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-inp
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
@@ -79,6 +80,22 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     this.importInstagramCallCount += 1;
     return Promise.resolve(
       this.config.importInstagramRecipeResult ?? ok(undefined as unknown as RecipeEntity),
+    );
+  }
+
+  /** Records the URL so a test can assert the queue was asked, not the pipeline. */
+  lastEnqueueImportCall: { url: string } | null = null;
+
+  enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>> {
+    this.lastEnqueueImportCall = { url };
+    return Promise.resolve(
+      this.config.enqueueInstagramImportResult ?? ok(undefined as unknown as ImportJob),
+    );
+  }
+
+  getImportJob(id: string): Promise<Result<ImportJob, Failure>> {
+    return Promise.resolve(
+      this.config.getImportJobResult ?? ok({ id, status: 'queued', draftId: null, errorKey: null } as ImportJob),
     );
   }
 
