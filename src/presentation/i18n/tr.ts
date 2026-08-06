@@ -459,7 +459,6 @@ export const tr: Translations = {
     gen3: 'Adımlar yazılıyor',
     gen4: 'Son rötuşlar yapılıyor',
     importFirstReply: 'O Instagram videosunu tarife dönüştürdüm — aşağıda dilediğini değiştir.',
-    importQueuedTitle: 'İçe aktarma sıraya alındı',
     importQueuedBody: 'Tarifin hazırlanıyor. Bittiğinde bildirim göndereceğiz — uygulamayı kapatabilirsin.',
     importTitle: 'Reel tarife dönüştürülüyor',
     importSub: 'Bu bir iki dakika sürebilir — şef çalışırken biraz bekle.',
