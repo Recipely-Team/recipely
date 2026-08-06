@@ -34,6 +34,7 @@ export { decorSizes } from '@presentation/base/theme/tokens/sizing/decor-sizes';
 export { layoutSizes } from '@presentation/base/theme/tokens/sizing/layout-sizes';
 export { borderWidths } from '@presentation/base/theme/tokens/sizing/border-widths';
 export { opacities } from '@presentation/base/theme/tokens/effects/opacities';
+export { durations } from '@presentation/base/theme/tokens/effects/durations';
 export { colorAlphas } from '@presentation/base/theme/tokens/effects/color-alphas';
 export { zIndices } from '@presentation/base/theme/tokens/effects/z-indices';
 export { maxFontScales } from '@presentation/base/theme/tokens/typography/max-font-scales';
