@@ -435,7 +435,6 @@ export const tr: Translations = {
     done: 'Tamam',
     publish: 'Tarifi yayınla',
     publishing: 'Yayınlanıyor…',
-    noImage: 'Lütfen en az bir fotoğraf ekle.',
     stepBasics: 'Temel bilgiler',
     stepMedia: 'Medya',
     stepIngredients: 'Malzemeler',

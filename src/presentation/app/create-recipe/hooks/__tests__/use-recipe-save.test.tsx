@@ -209,15 +209,6 @@ describe('useRecipeSave — pre-submit guards', () => {
     expect(driver.fieldErrors().fields.ingredients).toBe(en.createRecipe.ingredientsRequired);
     expect(driver.latest().saveSuccess).toBeNull();
   });
-
-  it('sets the no-image dialog when text is complete but no photo was added', async () => {
-    const driver = driveHook({}, { ...publishable(), media: [] });
-
-    await driver.save();
-
-    expect(driver.latest().saveIssue).toBe(en.createRecipe.noImage);
-    expect(driver.latest().saveSuccess).toBeNull();
-  });
 });
 
 describe('useRecipeSave — publish', () => {
