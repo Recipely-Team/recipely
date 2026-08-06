@@ -44,6 +44,17 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
   }
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    // Clear the SDK's cached account before asking, so the chooser always
+    // appears. Without this `signIn()` silently reuses whichever account was
+    // used last: someone with a personal and a work Google account cannot pick,
+    // and anyone who signed in with the wrong one the first time has no way
+    // back — the app just logs them straight into it again, every time.
+    //
+    // This is a LOCAL cache clear, not a revoke: no consent is withdrawn and
+    // the next sign-in still skips the permission screen. Failing here must not
+    // block sign-in — nothing cached is not an error, it is the normal state on
+    // a fresh install.
+    await GoogleSignin.signOut().catch(() => undefined);
     const response = await GoogleSignin.signIn();
     if (!isSuccessResponse(response)) {
       return fail(new CancelledFailure(DiagnosticMessage.socialAuth.googleCancelled));
