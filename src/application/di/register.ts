@@ -23,6 +23,7 @@ import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-u
 import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
+import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -88,6 +89,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
   const importInstagramRecipeUseCase = new ImportInstagramRecipeUseCase(recipeRepo);
+  const enqueueInstagramImportUseCase = new EnqueueInstagramImportUseCase(recipeRepo);
   const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
   const listDraftsUseCase = new ListDraftsUseCase(draftRepo);
@@ -122,6 +124,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     listMyRecipesUseCase,
     generateRecipeUseCase,
     importInstagramRecipeUseCase,
+    enqueueInstagramImportUseCase,
     refineRecipeUseCase,
     deleteRecipeUseCase,
     recipeListStore,

@@ -24,6 +24,9 @@ import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
 import type { GenerateRecipeRequestDto } from '@infrastructure/recipes/dtos/generate-recipe-request-dto';
 import type { ImportRecipeRequestDto } from '@infrastructure/recipes/dtos/import-recipe-request-dto';
+import type { ImportJobDto } from '@infrastructure/recipes/dtos/import-job-dto';
+import type { ImportJob } from '@domain/recipes/import/import-job';
+import { toImportJob } from '@infrastructure/recipes/import/to-import-job';
 import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 
 /**
@@ -118,6 +121,25 @@ export class RecipeRepository implements RecipeRepositoryInterface {
       return result;
     }
     return this.mapRecipe(result.value);
+  }
+
+  async enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>> {
+    const result = await this.http.post<ImportJobDto>(
+      ApiRoutes.recipes.importJobs,
+      { url } satisfies ImportRecipeRequestDto,
+    );
+    if (!result.ok) {
+      return result;
+    }
+    return toImportJob(result.value);
+  }
+
+  async getImportJob(id: string): Promise<Result<ImportJob, Failure>> {
+    const result = await this.http.get<ImportJobDto>(ApiRoutes.recipes.importJob(id));
+    if (!result.ok) {
+      return result;
+    }
+    return toImportJob(result.value);
   }
 
   // WHY: like generateRecipe, refine returns a NOT-persisted preview recipe —

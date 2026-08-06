@@ -1,6 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
@@ -30,6 +31,24 @@ export interface RecipeRepositoryInterface {
    * up to ~120s), so the implementation uses an extended request timeout.
    */
   importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>>;
+
+  /**
+   * Queues an Instagram import and returns immediately with a receipt.
+   *
+   * The synchronous {@link importInstagramRecipe} holds a request open for the
+   * 59-128 s the pipeline takes, which a backgrounded app loses outright. This
+   * hands the work to a worker instead; the user is told by notification.
+   */
+  enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>>;
+
+  /**
+   * Reads a queued import back.
+   *
+   * A push is not a delivery guarantee — notifications can be off, the token
+   * stale, the phone offline — so a screen that is open needs a way to see the
+   * result without one.
+   */
+  getImportJob(id: string): Promise<Result<ImportJob, Failure>>;
   /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * `RefinedRecipe` read model: the full preview `Recipe` plus the AI's
