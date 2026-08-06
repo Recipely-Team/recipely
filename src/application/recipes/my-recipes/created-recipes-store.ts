@@ -1,5 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
+import { UnknownFailure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { create } from 'zustand';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
@@ -56,16 +58,33 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         recipes: s.recipes.filter((r) => r.id !== id),
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
+    // The try/catch is not defensive dressing: this action owns the only state
+    // the publish button reads, so ANY throw between `Creating` and a terminal
+    // status leaves the button saying "Publishing…" with no way back. That is
+    // what a revoked `blob:` URL did — `fetch()` on it rejects while building
+    // the multipart body, the rejection escaped, and the screen sat there for
+    // as long as the user was willing to wait. Everything here is `Result`-based
+    // by convention, so a throw is by definition something nobody predicted,
+    // which is exactly when a stuck spinner is least acceptable.
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: StoreStatus.Creating } });
-      const result = await deps.createRecipeUseCase.execute(input, onProgress);
-      if (!result.ok) {
-        set({ createState: { status: StoreStatus.Error, failure: result.failure } });
-        return;
+      try {
+        const result = await deps.createRecipeUseCase.execute(input, onProgress);
+        if (!result.ok) {
+          set({ createState: { status: StoreStatus.Error, failure: result.failure } });
+          return;
+        }
+        const recipe = result.value;
+        get().add(recipe);
+        set({ createState: { status: StoreStatus.Success, recipe } });
+      } catch (error) {
+        set({
+          createState: {
+            status: StoreStatus.Error,
+            failure: new UnknownFailure(DiagnosticMessage.recipeCreate.threw, error),
+          },
+        });
       }
-      const recipe = result.value;
-      get().add(recipe);
-      set({ createState: { status: StoreStatus.Success, recipe } });
     },
     loadMyRecipes: async () => {
       const result = await deps.listMyRecipesUseCase.execute();

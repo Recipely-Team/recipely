@@ -11,7 +11,6 @@ import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presenta
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
-import { MediaType } from '@domain/recipes/media/media-type';
 
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 
@@ -86,12 +85,12 @@ export const useRecipeSave = ({
   const handlePublish = useCallback(async (): Promise<void> => {
     clearSaveFeedback();
     if (!hasRequiredText()) return;
-    // WHY: the backend create endpoint requires a cover image URL, so a recipe
-    // cannot be published without at least one photo.
-    if (recipe.media.filter((m) => m.type === MediaType.Image).length === ValueConstants.zero) {
-      setSaveIssue(t().createRecipe.noImage);
-      return;
-    }
+    // A photo is no longer required. It was only ever a guard mirroring the
+    // backend's own `image` requirement, and that requirement cost more than it
+    // bought: a recipe someone had written out in full could not be published
+    // because they had no photo to hand, and a resumed draft — whose cover was
+    // a device URI that no longer resolved — hit it with no way to understand
+    // why. Publishing without a cover is now allowed on both sides.
     await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
     const state = createdRecipesStore.getState().createState;
     if (state.status === StoreStatus.Success) {

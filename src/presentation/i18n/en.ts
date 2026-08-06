@@ -438,7 +438,6 @@ export const en = {
     done: 'Done',
     publish: 'Publish Recipe',
     publishing: 'Publishing…',
-    noImage: 'Please add at least one photo.',
     stepBasics: 'Basics',
     stepMedia: 'Media',
     stepIngredients: 'Ingredients',

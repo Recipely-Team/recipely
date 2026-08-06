@@ -55,6 +55,10 @@ export const DiagnosticMessage = {
     urlRequired: 'Instagram URL is required',
     notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
   },
+  recipeCreate: {
+    /** Publishing threw instead of returning a Result; the UI must not hang. */
+    threw: 'Recipe creation threw',
+  },
   ai: {
     promptRequired: 'Prompt is required',
     refineInstructionRequired: 'Refine instruction is required',

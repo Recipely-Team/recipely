@@ -2,6 +2,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { isHostedMedia } from '@presentation/app/create-recipe/model/saving/is-hosted-media';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { ValueConstants } from '@core/constants';
@@ -28,8 +29,13 @@ const draftCuisine = (text: string): string | null => {
  */
 export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecipe => {
   const base = emptyEditable();
+  // Only media the backend hosts survives a resume. Drafts saved before
+  // `editableToSnapshot` stopped writing device URIs still hold `blob:` and
+  // `file:` addresses that no longer resolve, so restoring one would put a
+  // broken image in the editor and fail at publish time instead of here.
+  // Filtering on read is what repairs those rows without a migration.
   const media: MediaItem[] = (snapshot.media ?? [])
-    .filter((m) => m.type === MediaType.Image)
+    .filter((m) => m.type === MediaType.Image && isHostedMedia({ type: MediaType.Image, url: m.url }))
     .map((m) => ({ type: MediaType.Image, url: m.url }));
   return {
     name: snapshot.name ?? base.name,
