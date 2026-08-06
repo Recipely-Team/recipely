@@ -14,10 +14,12 @@ import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 
 const mockReplace = jest.fn();
 let mockPathname = '/';
+let mockParams: Record<string, unknown> = {};
 let mockStatus: 'idle' | 'loading' | 'authenticated' | 'unauthenticated' = 'idle';
 
 jest.mock('expo-router', () => ({
   usePathname: jest.fn(() => mockPathname),
+  useGlobalSearchParams: jest.fn(() => mockParams),
   useRouter: jest.fn(() => ({ replace: mockReplace })),
 }));
 
@@ -40,6 +42,7 @@ const renderGuard = (): void => {
 
 beforeEach(() => {
   mockReplace.mockClear();
+  mockParams = {};
 });
 
 describe('useAuthGuard', () => {
@@ -122,5 +125,23 @@ describe('useAuthGuard', () => {
     renderGuard();
 
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  // REGRESSION. The redirect was built from `usePathname()` alone, which drops
+  // the query string — so sharing an Instagram link to a signed-out app bounced
+  // to `/login?redirect=%2Fcreate-recipe` and the shared URL was simply gone.
+  // The user signed in and landed on an empty create screen.
+  it('keeps the query string of the gated path it bounced from', () => {
+    mockStatus = 'unauthenticated';
+    mockPathname = '/create-recipe';
+    mockParams = { importUrl: 'https://www.instagram.com/reel/abc/' };
+
+    renderGuard();
+
+    // Decoded twice on purpose: the path is encoded once as the `redirect`
+    // value and the shared URL is encoded again inside it.
+    const target = decodeURIComponent(decodeURIComponent(String(mockReplace.mock.calls[0]?.[0])));
+    expect(target).toContain('importUrl=');
+    expect(target).toContain('instagram.com/reel/abc');
   });
 });
