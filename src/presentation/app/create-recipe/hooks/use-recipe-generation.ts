@@ -194,19 +194,18 @@ const GEN_STEP_INTERVAL_MS = 620;
       createdRecipesStore.getState().resetEnqueueImportState();
       setImporting(false);
 
+      // A TOAST, not a chat message. The prompt phase does not render
+      // `chatHistory` — it never receives it — so the confirmation written
+      // there was invisible: sharing a link opened a blank create screen and
+      // said nothing, which read as the import having silently failed.
       if (job !== null) {
-        setChatHistory([
-          { role: ChatRole.Assistant, content: t().createRecipe.importQueuedBody },
-        ]);
+        showSuccessToast(t().createRecipe.importQueuedBody);
         setPhase(PhaseType.Prompt);
         return;
       }
 
       if (state.status === StoreStatus.Error) showErrorToast(state.failure);
-      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
-      setChatHistory([
-        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
-      ]);
+      else showDangerToast(t().createRecipe.aiError);
       setPhase(PhaseType.Prompt);
     },
     [createdRecipesStore],
