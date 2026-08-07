@@ -3,12 +3,11 @@
  *
  * Two things are pinned here.
  *
- * 1. Per-tab dispatch. The saved grid renders `recipeList.recipes` filtered by
- *    `savedIds`, so a refresh that reloaded only one of the two would render a
- *    stale intersection — the suite asserts both loads start CONCURRENTLY (the
- *    favorites call is made while the recipe load is still in flight, which a
- *    sequential `await` would fail). The created and drafts tabs each own a
- *    single load, and every case asserts the other tabs' loaders stay untouched.
+ * 1. Per-tab dispatch. Each tab owns exactly one load — the saved grid renders
+ *    the favourites response directly — and every case asserts the other tabs'
+ *    loaders stay untouched. The saved load itself lives in the store (it owns
+ *    the status the skeleton reads), so the hook's job there is to call it and
+ *    surface a failure it finds in `listState`.
  *
  * 2. The PR #161 invariant: `isRefreshing` tracks ONLY a user-initiated pull.
  *    It is bound straight to `RefreshControl.refreshing`, and setting that
@@ -37,44 +36,18 @@ import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
+import type { BoundStore } from '@application/store/bound-store';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import { NetworkFailure } from '@core/failure';
-import { ok, fail } from '@core/result/result-helpers';
-import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { Difficulty } from '@domain/recipes/difficulty';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
 }));
 
 const showErrorToastMock = showErrorToast as jest.MockedFunction<typeof showErrorToast>;
-
-type FavoritesResult = Result<RecipeSummaryEntity[], Failure>;
-
-/** Minimal saved row — only the id matters to these tests. */
-const makeSummary = (id: string): RecipeSummaryEntity => {
-  const result = RecipeSummaryEntity.create({
-    id,
-    name: `Recipe ${id}`,
-    image: 'https://cdn.example.com/r.webp',
-    cuisine: 'ITALIAN',
-    category: 'DINNER',
-    difficulty: Difficulty.Easy,
-    totalTimeMinutes: 30,
-    rating: 0,
-    moderationStatus: 'approved',
-    likeCount: 0,
-    likedByMe: false,
-    commentCount: 0,
-    viewCount: 0,
-  });
-  if (!result.ok) throw new Error('fixture summary invalid');
-  return result.value;
-};
 
 /** A promise plus the handle to settle it, so a load can be held in flight. */
 interface Deferred<T> {
@@ -96,16 +69,14 @@ const makeDeferred = <T,>(): Deferred<T> => {
 /** Every loader the hook can reach, so each test can assert on the road not taken. */
 interface Loaders {
   loadRecipes: jest.Mock<Promise<void>, []>;
-  loadFavorites: jest.Mock<Promise<FavoritesResult>, []>;
-  setSaved: jest.Mock<void, [readonly RecipeSummaryEntity[]]>;
+  loadSaved: jest.Mock<Promise<void>, []>;
   loadMyRecipes: jest.Mock<Promise<void>, []>;
   loadDrafts: jest.Mock<Promise<void>, []>;
 }
 
 const makeLoaders = (): Loaders => ({
   loadRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
-  loadFavorites: jest.fn<Promise<FavoritesResult>, []>().mockResolvedValue(ok([])),
-  setSaved: jest.fn<void, [readonly RecipeSummaryEntity[]]>(),
+  loadSaved: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
   loadMyRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
   loadDrafts: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
 });
@@ -129,7 +100,9 @@ const makeStores = (loaders: Loaders) => {
 
   const savedRecipesStore = create<SavedRecipesStoreState>(() => ({
     savedIds: new Set<string>(),
-    setSaved: loaders.setSaved,
+    listState: { status: 'idle' },
+    setSaved: jest.fn(),
+    loadSaved: loaders.loadSaved,
   }) as unknown as SavedRecipesStoreState);
 
   const createdRecipesStore = create<CreatedRecipesStoreState>(() => ({
@@ -147,10 +120,24 @@ const makeStores = (loaders: Loaders) => {
     savedRecipesStore,
     createdRecipesStore,
     draftsStore,
-    loadFavoritesUseCase: { execute: loaders.loadFavorites },
   } as unknown as Stores;
 
-  return { stores, recipeListStore };
+  return { stores, recipeListStore, savedRecipesStore };
+};
+
+/**
+ * Drives a saved load to the failure the hook reads back off `listState` — the
+ * real store folds its failure in there rather than returning it.
+ */
+const failLoadSaved = (
+  loaders: Loaders,
+  savedRecipesStore: BoundStore<SavedRecipesStoreState>,
+  failure: Failure,
+): void => {
+  loaders.loadSaved.mockImplementationOnce(async () => {
+    savedRecipesStore.setState({ listState: { status: 'error', failure } });
+    await Promise.resolve();
+  });
 };
 
 /** One render of the hook: the spinner flag next to what the store reports. */
@@ -184,7 +171,7 @@ describe('useMyRecipesRefresh', () => {
   /** Mounts the hook on `tab` and returns the loaders + the live recipe-list store. */
   const mount = (tab: TabType) => {
     const loaders = makeLoaders();
-    const { stores, recipeListStore } = makeStores(loaders);
+    const { stores, recipeListStore, savedRecipesStore } = makeStores(loaders);
     useStoreState = () => recipeListStore((s) => s.state);
 
     renderComponent(
@@ -193,7 +180,7 @@ describe('useMyRecipesRefresh', () => {
       </StoresProvider>,
     );
 
-    return { loaders, recipeListStore };
+    return { loaders, recipeListStore, savedRecipesStore };
   };
 
   /** Everything rendered after the given index — the in-flight window. */
@@ -224,24 +211,10 @@ describe('useMyRecipesRefresh', () => {
 
       // The saved grid renders the favourites response directly now, so the
       // discover feed's page is not part of this refresh at all.
-      expect(loaders.loadFavorites).toHaveBeenCalledTimes(1);
+      expect(loaders.loadSaved).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.setSaved).toHaveBeenCalledTimes(1);
       expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
-    });
-
-    it('hands the loaded saved recipes to the store', async () => {
-      const { loaders } = mount('saved');
-      const rows = [makeSummary('r1'), makeSummary('r2')];
-      loaders.loadFavorites.mockResolvedValueOnce(ok(rows));
-
-      await act(async () => {
-        vm.onRefresh();
-        await Promise.resolve();
-      });
-
-      expect(loaders.setSaved).toHaveBeenCalledWith(rows);
     });
 
     it('reloads only the created recipes when the created tab is pulled', async () => {
@@ -254,7 +227,7 @@ describe('useMyRecipesRefresh', () => {
 
       expect(loaders.loadMyRecipes).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.loadFavorites).not.toHaveBeenCalled();
+      expect(loaders.loadSaved).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
     });
 
@@ -268,7 +241,7 @@ describe('useMyRecipesRefresh', () => {
 
       expect(loaders.loadDrafts).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.loadFavorites).not.toHaveBeenCalled();
+      expect(loaders.loadSaved).not.toHaveBeenCalled();
       expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
     });
 
@@ -286,7 +259,7 @@ describe('useMyRecipesRefresh', () => {
       // Guards a stale `tab` closure in `onRefresh`'s dependency list.
       expect(loaders.loadDrafts).toHaveBeenCalledTimes(1);
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.loadFavorites).not.toHaveBeenCalled();
+      expect(loaders.loadSaved).not.toHaveBeenCalled();
     });
   });
 
@@ -346,7 +319,7 @@ describe('useMyRecipesRefresh', () => {
       expect(renders.every((r) => !r.isRefreshing)).toBe(true);
       // A tab switch must not refetch either — only a pull loads.
       expect(loaders.loadRecipes).not.toHaveBeenCalled();
-      expect(loaders.loadFavorites).not.toHaveBeenCalled();
+      expect(loaders.loadSaved).not.toHaveBeenCalled();
       expect(loaders.loadMyRecipes).not.toHaveBeenCalled();
       expect(loaders.loadDrafts).not.toHaveBeenCalled();
 
@@ -420,7 +393,7 @@ describe('useMyRecipesRefresh', () => {
 
     it('clears isRefreshing when the favorites load rejects on the saved tab', async () => {
       const { loaders } = mount('saved');
-      loaders.loadFavorites.mockRejectedValueOnce(new Error('boom'));
+      loaders.loadSaved.mockRejectedValueOnce(new Error('boom'));
 
       const unhandled = jest.fn();
       process.on('unhandledRejection', unhandled);
@@ -440,8 +413,8 @@ describe('useMyRecipesRefresh', () => {
     });
 
     it('clears isRefreshing when the favorites load settles into a failure', async () => {
-      const { loaders } = mount('saved');
-      loaders.loadFavorites.mockResolvedValueOnce(fail(new NetworkFailure('offline')));
+      const { loaders, savedRecipesStore } = mount('saved');
+      failLoadSaved(loaders, savedRecipesStore, new NetworkFailure('offline'));
 
       await act(async () => {
         vm.onRefresh();
@@ -453,24 +426,22 @@ describe('useMyRecipesRefresh', () => {
   });
 
   describe('failure surfacing', () => {
-    it('shows an error toast and keeps the saved grid untouched when loading favorites fails', async () => {
-      const { loaders } = mount('saved');
+    it('shows an error toast when the saved load ends in a failure', async () => {
+      const { loaders, savedRecipesStore } = mount('saved');
       const failure = new NetworkFailure('offline');
-      loaders.loadFavorites.mockResolvedValueOnce(fail(failure));
+      failLoadSaved(loaders, savedRecipesStore, failure);
 
       await act(async () => {
         vm.onRefresh();
         await Promise.resolve();
       });
 
+      // The store keeps the rows it already had; the hook's job is to say so.
       expect(showErrorToastMock).toHaveBeenCalledWith(failure);
-      // A failed load must not clobber the grid with an empty list.
-      expect(loaders.setSaved).not.toHaveBeenCalled();
     });
 
-    it('shows no toast when the favorites load succeeds', async () => {
-      const { loaders } = mount('saved');
-      loaders.loadFavorites.mockResolvedValueOnce(ok([makeSummary('r1')]));
+    it('shows no toast when the saved load succeeds', async () => {
+      mount('saved');
 
       await act(async () => {
         vm.onRefresh();

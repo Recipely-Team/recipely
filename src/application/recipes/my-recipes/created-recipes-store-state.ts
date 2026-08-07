@@ -10,6 +10,7 @@ import type { EnqueueImportState } from '@application/recipes/import/enqueue-imp
 import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
+import type { MyRecipesListState } from '@application/recipes/my-recipes/my-recipes-list-state';
 
 export interface CreatedRecipesStoreState {
   // WHY: `recipes` and `localRecipes` split the two jobs this used to do as
@@ -19,6 +20,8 @@ export interface CreatedRecipesStoreState {
   // `findById` (the detail screen falls back to a network fetch when an id
   // isn't present here) and is kept fresh by create/delete.
   recipes: readonly RecipeSummaryEntity[];
+  /** Load status of `recipes` — what the My-Recipes grid shows a skeleton for. */
+  myRecipesState: MyRecipesListState;
   localRecipes: readonly RecipeEntity[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;

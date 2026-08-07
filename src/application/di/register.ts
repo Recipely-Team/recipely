@@ -110,7 +110,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const likeRecipeUseCase = container.resolve<LikeRecipeUseCase>(TOKENS.LikeRecipeUseCase);
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
 
-  const savedRecipesStore = configureSavedRecipesStore();
+  const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
@@ -181,7 +181,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   // survives an account switch shows the previous user's data (stale comments,
   // likes, notifications) until a manual refresh.
   const clearSessionCaches = (): void => {
-    savedRecipesStore.getState().setSaved([]);
+    savedRecipesStore.getState().clear();
     commentsStore.getState().clear();
     likesStore.getState().clear();
     recipeDetailStore.getState().clear();

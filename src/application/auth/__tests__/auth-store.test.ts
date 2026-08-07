@@ -66,11 +66,20 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
   return result.value;
 };
 
+/**
+ * The saved store's own fetch, stubbed out. These tests drive it through
+ * `setSaved` / `clear`; a real use case here would only add a network seam
+ * nothing asserts on.
+ */
+const neverLoadsFavorites = {
+  execute: () => Promise.resolve(ok([])),
+} as unknown as LoadFavoritesUseCase;
+
 const makeStore = (
   repo: FakeAuthRepository,
   overrides: { savedRecipesStore?: BoundStore<SavedRecipesStoreState>; clearSessionCaches?: () => void } = {},
 ) => {
-  const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore();
+  const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
   return configureAuthStore({
     signIn: new SignInUseCase(repo),
     requestRegistration: new RequestRegistrationUseCase(repo),
@@ -384,7 +393,7 @@ describe('auth-store', () => {
         signOutResult: ok(undefined),
       });
       const signOutSpy = jest.spyOn(repo, 'signOut');
-      const savedRecipesStore = configureSavedRecipesStore();
+      const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
@@ -468,7 +477,7 @@ describe('auth-store', () => {
         signInResult: ok(session),
         deleteAccountResult: ok(undefined),
       });
-      const savedRecipesStore = configureSavedRecipesStore();
+      const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');

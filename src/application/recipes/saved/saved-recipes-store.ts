@@ -1,13 +1,20 @@
 import type { BoundStore } from '@application/store/bound-store';
+import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
+import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
-export const configureSavedRecipesStore = (): BoundStore<SavedRecipesStoreState> => {
+interface SavedRecipesStoreDeps {
+  loadFavoritesUseCase: LoadFavoritesUseCase;
+}
+
+export const configureSavedRecipesStore = (
+  deps: SavedRecipesStoreDeps,
+): BoundStore<SavedRecipesStoreState> => {
   return create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
     savedIds: new Set<string>(),
-    isLoading: false,
-    error: null,
+    listState: { status: StoreStatus.Idle },
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -36,9 +43,27 @@ export const configureSavedRecipesStore = (): BoundStore<SavedRecipesStoreState>
         return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
       }),
     setSaved: (recipes) =>
-      set({ savedRecipes: recipes, savedIds: new Set(recipes.map((r) => r.id)) }),
-    setLoading: (loading) => set({ isLoading: loading }),
-    setError: (error) => set({ error }),
-    clearError: () => set({ error: null }),
+      set({
+        savedRecipes: recipes,
+        savedIds: new Set(recipes.map((r) => r.id)),
+        listState: { status: StoreStatus.Loaded },
+      }),
+    loadSaved: async () => {
+      set({ listState: { status: StoreStatus.Loading } });
+      const result = await deps.loadFavoritesUseCase.execute();
+      if (!result.ok) {
+        // The rows already on screen stay: a failed reload must not blank the
+        // grid the user is looking at.
+        set({ listState: { status: StoreStatus.Error, failure: result.failure } });
+        return;
+      }
+      get().setSaved(result.value);
+    },
+    clear: () =>
+      set({
+        savedRecipes: [],
+        savedIds: new Set<string>(),
+        listState: { status: StoreStatus.Idle },
+      }),
   }));
 };

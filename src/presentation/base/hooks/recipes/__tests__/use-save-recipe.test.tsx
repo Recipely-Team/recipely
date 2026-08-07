@@ -43,8 +43,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
   create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
     savedIds: initial,
-    isLoading: false,
-    error: null,
+    listState: { status: 'idle' },
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -66,9 +65,8 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    setLoading: (loading) => set({ isLoading: loading }),
-    setError: (error) => set({ error }),
-    clearError: () => set({ error: null }),
+    loadSaved: (): Promise<void> => Promise.resolve(),
+    clear: (): void => undefined,
   }));
 
 interface FavoritesStoreOptions {

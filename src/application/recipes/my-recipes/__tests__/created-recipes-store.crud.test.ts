@@ -299,5 +299,64 @@ describe('createdRecipesStore CRUD', () => {
 
       expect(store.getState().recipes.map((r) => r.id)).toEqual(['kept']);
     });
+
+    /**
+     * The status exists so the My-Recipes grid can tell "you have published
+     * nothing" from "the answer has not arrived". Without it the screen showed
+     * its empty state for the whole of every cold load.
+     */
+    describe('myRecipesState', () => {
+      it('starts idle — nothing has been asked for yet', () => {
+        const { store } = makeStore({});
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
+
+      it('is loading while the request is in flight and loaded once it answers', async () => {
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            await held;
+            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        const inFlight = store.getState().loadMyRecipes();
+        expect(store.getState().myRecipesState).toEqual({ status: 'loading' });
+
+        release();
+        await inFlight;
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+      });
+
+      it('records the failure without blanking the grid', async () => {
+        const failure = new UnknownFailure('down');
+        const listMyRecipesUseCase = {
+          execute: () => Promise.resolve(fail(failure)),
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        await store.getState().loadMyRecipes();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'error', failure });
+      });
+
+      it('returns to idle when the session ends, so the next user gets a skeleton', async () => {
+        const listMyRecipesUseCase = {
+          execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r1' })]))),
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+        await store.getState().loadMyRecipes();
+
+        store.getState().clear();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
+    });
   });
 });

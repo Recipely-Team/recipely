@@ -260,6 +260,31 @@ meaning differs.
 
 ---
 
+## "Nothing here yet" said before the answer arrived
+
+**Symptom:** opening My Recipes on a cold start showed an empty screen — the icon and
+*"No saved recipes yet"* — for a moment, then filled in with the rows. The screen told
+the user they had nothing and then contradicted itself. Nothing shimmered in between.
+
+**Root cause:** the screen decided what to render by asking `items.length === 0`, a
+question with the same answer before the request comes back and after it comes back
+empty. Two of the three tabs had no load status to ask instead: `createdRecipesStore`
+tracked no state for `loadMyRecipes`, and the saved grid was fetched by the screen
+itself through a use case, so the store never knew a load was in flight.
+
+*Guard:* the type. Both stores now carry an `Idle | Loading | Loaded | Error` state,
+the fetch moved into the store that owns the rows, and `isFirstLoad(status, count)` is
+the single predicate the list branches on — so "unanswered" and "empty" can no longer
+be spelled the same way. `my-recipes-list.test.tsx` pins the skeleton branch over the
+empty one for all three tabs.
+
+**The lesson: an empty array is not an answer.** Any list that can render an empty
+state needs a status that separates *nothing yet* from *nothing at all* — and the
+status belongs to the store that owns the data, not to the screen that happens to
+call the use case. A screen that fetches for itself cannot tell the difference.
+
+---
+
 ## A tap that opened the wrong screen and sat there
 
 **Symptom:** tapping a draft — in the My Recipes drafts tab, or the "pick up where you

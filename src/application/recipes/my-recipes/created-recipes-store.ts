@@ -33,6 +33,7 @@ interface CreatedRecipesStoreDeps {
 export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStoreState> => {
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
+    myRecipesState: { status: StoreStatus.Idle },
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
@@ -90,11 +91,15 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       }
     },
     loadMyRecipes: async () => {
+      set({ myRecipesState: { status: StoreStatus.Loading } });
       const result = await deps.listMyRecipesUseCase.execute();
       if (!result.ok) {
+        // The rows already on screen stay: a failed reload must not blank the
+        // grid the user is looking at.
+        set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ recipes: result.value.items });
+      set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded } });
     },
     generateRecipe: async (prompt) => {
       set({ generateState: { status: StoreStatus.Generating } });
@@ -181,6 +186,12 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
     clearAiDraft: () => set({ aiDraft: null }),
-    clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),
+    clear: () =>
+      set({
+        recipes: [],
+        myRecipesState: { status: StoreStatus.Idle },
+        localRecipes: [],
+        aiDraft: null,
+      }),
   }));
 };

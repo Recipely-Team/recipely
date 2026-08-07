@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -20,7 +21,7 @@ interface UseMyRecipesRefreshResult {
  * they filter against, the created and drafts tabs each own a single store load.
  */
 export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => {
-  const { savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
+  const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
 
   // WHY: mirrors the recipe feed (`useRecipeList`) — `RefreshControl.refreshing`
   // must reflect ONLY a user-initiated pull. A store's generic refreshing flag
@@ -30,15 +31,14 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // The saved grid renders the favourites response directly, so this is the one
-  // request it needs — it no longer borrows rows from the discover feed.
+  // request it needs — it no longer borrows rows from the discover feed. The
+  // load itself lives in the store (it owns the status the skeleton reads); the
+  // outcome is read back off `listState` to surface a failure the user pulled for.
   const refreshSaved = useCallback(async (): Promise<void> => {
-    const favorites = await loadFavoritesUseCase.execute();
-    if (favorites.ok) {
-      savedRecipesStore.getState().setSaved(favorites.value);
-    } else {
-      showErrorToast(favorites.failure);
-    }
-  }, [loadFavoritesUseCase, savedRecipesStore]);
+    await savedRecipesStore.getState().loadSaved();
+    const state = savedRecipesStore.getState().listState;
+    if (state.status === StoreStatus.Error) showErrorToast(state.failure);
+  }, [savedRecipesStore]);
 
   const onRefresh = useCallback((): void => {
     setIsRefreshing(true);
