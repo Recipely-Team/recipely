@@ -51,6 +51,9 @@ const GEN_STEP_INTERVAL_MS = 620;
  *   response (the prompt was fine, generate again) even though both arrive as
  *   `unprocessable` → `ValidationFailure`. `aiPromptFailed` survives only for a
  *   4xx with no key — an older backend, or a server key this build predates.
+ * - **Resuming is its own phase.** Opening `?draftId=` has to fetch before it
+ *   can show anything, and the phase it waits in is what the user sees — so it
+ *   waits in `Resuming` (a skeleton of the editor), never in `Prompt`.
  * - **A refine outlives the screen**, so publishing or exiting to a draft while
  *   one is in flight must not pop its "Updated!" over whatever comes next.
  * - **Drafts round-trip through the same mapper the comparison uses**, or a
@@ -70,7 +73,13 @@ const GEN_STEP_INTERVAL_MS = 620;
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<PhaseType>(PhaseType.Prompt);
+  // Opening a draft starts in `Resuming`, NOT `Prompt`: the draft is fetched
+  // asynchronously, and defaulting to the prompt phase parked the user on the
+  // AI-generate screen for the length of that request — tapping a draft looked
+  // like it had opened the wrong screen, or like nothing had happened at all.
+  const [phase, setPhase] = useState<PhaseType>(
+    draftId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
+  );
   const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
@@ -95,9 +104,20 @@ const GEN_STEP_INTERVAL_MS = 620;
   useEffect(() => {
     if (draftId === undefined) return;
     let cancelled = false;
+    // Also set here, not just in the initial state: the resume card navigates
+    // with `router.replace`, which changes the param on an already-mounted
+    // screen sitting in `Prompt`.
+    setPhase(PhaseType.Resuming);
     void (async () => {
       const loaded = await draftsStore.getState().getDraft(draftId);
-      if (cancelled || loaded === null) return;
+      if (cancelled) return;
+      // A draft that cannot be read (deleted elsewhere, offline) must not leave
+      // the screen shimmering forever — fall back to the prompt phase and say why.
+      if (loaded === null) {
+        showDangerToast(t().drafts.openFailed);
+        setPhase(PhaseType.Prompt);
+        return;
+      }
       const resumed = snapshotToEditable(loaded.snapshot);
       setRecipe(resumed);
       openedAs.current = JSON.stringify(editableToSnapshot(resumed));

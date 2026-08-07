@@ -257,3 +257,28 @@ which it was has to say so.** Whenever an SDK, sheet, or picker can be dismissed
 what the abandoned path returns before assuming the `Failure` channel means something
 broke. No mechanical rule can spot this one — the shapes are identical and only the
 meaning differs.
+
+---
+
+## A tap that opened the wrong screen and sat there
+
+**Symptom:** tapping a draft — in the My Recipes drafts tab, or the "pick up where you
+left off" card — landed on the AI-generate prompt screen and waited there before the
+draft finally appeared. It read as the wrong screen having opened, or as the tap not
+having registered; on a slow connection it lasted seconds.
+
+**Root cause:** `useRecipeGeneration` initialised every mount to the `prompt` phase and
+only moved to `preview` after the `getDraft` request resolved. The phase a screen waits
+in is the screen the user sees, and this one was waiting in a phase that means
+something else entirely — an unrelated, fully interactive AI form.
+
+*Guard:* `Resuming` is now a phase of its own, entered from the initial state when
+`?draftId=` is present (and again inside the effect, for the `router.replace` the
+resume card does), rendering a skeleton of the editor. A draft that cannot be read
+falls back to `prompt` with a toast, so the wait always ends.
+
+**The lesson: an async load must not borrow another state's screen while it waits.**
+When a mount has to fetch before it can show its real content, the loading phase is
+part of the state machine, not a gap in it — and the `?param=` that triggers the fetch
+is known synchronously, so the first frame already has everything it needs to say
+"loading" instead of guessing.

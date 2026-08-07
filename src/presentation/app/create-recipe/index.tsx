@@ -7,6 +7,7 @@ import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-creat
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
+import { ResumingView } from '@presentation/app/create-recipe/body/resuming-view';
 import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create-recipe-preview';
 import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
@@ -36,6 +37,16 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
           />
         </ResponsiveContainer>
       </KeyboardAvoider>
+    );
+  }
+
+  if (vm.phase === PhaseType.Resuming) {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+        <ResponsiveContainer route="createRecipe" gutter={false} fill>
+          <ResumingView isWebShell={vm.isWebShell} topInset={vm.insets.top} onClose={vm.onClose} />
+        </ResponsiveContainer>
+      </View>
     );
   }
 
