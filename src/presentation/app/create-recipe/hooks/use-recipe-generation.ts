@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import {
   failureKeyMessage,
   failureToastMessage,
@@ -106,12 +107,16 @@ const GEN_STEP_INTERVAL_MS = 620;
     // screen sitting in `Prompt`.
     setPhase(PhaseType.Resuming);
     void (async () => {
-      const loaded = await draftsStore.getState().getDraft(draftId);
+      const result = await draftsStore.getState().getDraft(draftId);
       if (cancelled) return;
-      // A draft that cannot be read (deleted elsewhere, offline) must not leave
-      // the screen shimmering forever — fall back to the prompt phase and say why.
-      if (loaded === null) {
-        showDangerToast(t().drafts.openFailed);
+      // A draft that cannot be read must not leave the screen shimmering
+      // forever — fall back to the prompt phase and say WHY. The failure's own
+      // copy distinguishes a deleted draft from an expired session from a dead
+      // connection; "couldn't open that draft" said none of them, and reporting
+      // saw nothing at all.
+      if (!result.ok) {
+        showErrorToast(result.failure);
+        FailureReporter.report(result.failure, 'CreateRecipe.resumeDraft');
         // Drop the param as well as the phase. `activeDraftId` is `draftId ??
         // newDraftId`, so staying on it would point the autosave at the draft
         // that FAILED to load — an offline read leaves that draft intact on the
@@ -120,6 +125,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         setPhase(PhaseType.Prompt);
         return;
       }
+      const loaded = result.value;
       const resumed = snapshotToEditable(loaded.snapshot);
       setRecipe(resumed);
       openedAs.current = JSON.stringify(editableToSnapshot(resumed));

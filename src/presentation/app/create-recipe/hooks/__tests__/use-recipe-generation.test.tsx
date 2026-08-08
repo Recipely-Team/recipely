@@ -802,6 +802,9 @@ describe('useRecipeGeneration — opening a draft', () => {
     await settle();
 
     expect(latest().phase).toBe('prompt');
-    expect(showDangerToast).toHaveBeenCalledWith(en.drafts.openFailed);
+    // The FAILURE is surfaced, not a single catch-all sentence: a deleted
+    // draft, an expired session and a dead connection each read differently,
+    // and the reporter now sees which one it was.
+    expect(showErrorToast).toHaveBeenCalledTimes(1);
   });
 });

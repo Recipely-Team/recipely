@@ -14,7 +14,15 @@ export interface DraftsStoreState {
   loadLatestDraft: () => Promise<void>;
   upsertDraft: (input: UpsertDraftStoreInput) => Promise<RecipeDraft | null>;
   deleteDraft: (id: string) => Promise<Result<void, Failure>>;
-  getDraft: (id: string) => Promise<RecipeDraft | null>;
+  /**
+   * Reads one draft, and says why when it cannot.
+   *
+   * Returns the `Result`, not `null`: collapsing every failure to "nothing"
+   * left the screen with one sentence — "couldn't open that draft" — for a
+   * missing draft, an expired session and a dead connection alike, and left
+   * crash reporting with nothing at all.
+   */
+  getDraft: (id: string) => Promise<Result<RecipeDraft, Failure>>;
   /** Drops the signed-in user's drafts and resume card. Called when the session ends. */
   clear: () => void;
 }
