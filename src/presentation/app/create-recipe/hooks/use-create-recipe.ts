@@ -50,6 +50,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onAppendChip: generation.onAppendChip,
     onGenerate: generation.onGenerate,
     onStartBlank: generation.onStartBlank,
+    onImportFromInstagram: generation.onImportFromInstagram,
     onClose: generation.onClose,
     latestDraft: generation.latestDraft,
     onResumeDraft: generation.onResumeDraft,
