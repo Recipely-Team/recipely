@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { isAndroid } from '@infrastructure/constants/platform';
+import { isWeb } from '@infrastructure/constants/platform';
 import { usePathname, useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -19,13 +19,18 @@ const extractInstagramUrl = (text?: string | null, webUrl?: string | null): stri
 };
 
 /**
- * Bridges an incoming Android "Share to Recipely" intent into the import flow.
- * When the shared content is an Instagram link it routes to
- * `/import-recipe?importUrl=…` — the queue screen, NOT the create form: the
- * work happens on a worker and there is nothing to edit until it lands — and
- * clears the native share intent so the same share never re-fires. Cold-start (app launched by the share) and warm
- * (already running) are both covered by reacting to `hasShareIntent`. No-op
- * outside Android and for non-Instagram shares.
+ * Bridges an incoming "Share to Recipely" into the import flow.
+ *
+ * @remarks
+ * An Instagram link routes to `/import-recipe?importUrl=…` — the queue screen,
+ * NOT the create form: the work happens on a worker and there is nothing to
+ * edit until it lands. The native share intent is cleared so the same share
+ * never re-fires, and both cold start (the app launched BY the share) and warm
+ * are covered by reacting to `hasShareIntent`.
+ *
+ * Both native platforms reach here now: iOS gained the share extension when
+ * `disableIOS` came off the `expo-share-intent` plugin. The web has no share
+ * sheet at all, which is what the paste screen is for.
  */
 export const useInstagramShareImport = (): void => {
   const router = useRouter();
@@ -34,7 +39,7 @@ export const useInstagramShareImport = (): void => {
   const handledRef = useRef(false);
 
   useEffect(() => {
-    if (!isAndroid()) return;
+    if (isWeb()) return;
     if (!hasShareIntent) {
       handledRef.current = false;
       return;

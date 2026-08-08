@@ -7,7 +7,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-recipe/model/import-stage';
 import { ValueConstants } from '@core/constants';
-import { ErrorMessageKey, UnknownFailure, ValidationFailure, type Failure } from '@core/failure';
+import { UnknownFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 
 /** How often the screen asks the backend where the job has got to. */
@@ -19,6 +19,8 @@ const STAGE_TICK_MS = 9000;
 interface UseImportRecipeResult {
   /** True while the enqueue request itself is in flight. */
   isQueueing: boolean;
+  /** True when the screen is still asking for a link — the paste branch. */
+  isAwaitingLink: boolean;
   /**
    * Why the import cannot continue, or null. Covers BOTH ends: the enqueue
    * request that never produced a job, and a job the worker gave up on — the
@@ -32,9 +34,9 @@ interface UseImportRecipeResult {
   /** 0..1 for the ring. */
   progress: number;
   isDone: boolean;
-  /** False when there is nothing to retry WITH — no URL ever arrived. */
-  canRetry: boolean;
   onRetry: () => void;
+  /** Queues a link the user pasted. */
+  onSubmitLink: (url: string) => void;
   onClose: () => void;
   /** Opens the finished draft. No-op until the job reports one. */
   onOpenDraft: () => void;
@@ -60,13 +62,23 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const { importJobStore } = useStores();
   const state = importJobStore((s) => s.state);
   const [ticks, setTicks] = useState(ValueConstants.zero);
+  // The link this screen is working on: the shared one, or the pasted one.
+  const [pastedUrl, setPastedUrl] = useState<string | null>(null);
   const startedRef = useRef(false);
+  const activeUrl = importUrl ?? pastedUrl;
+
+  const startWith = useCallback(
+    (url: string): void => {
+      setTicks(ValueConstants.zero);
+      void importJobStore.getState().startImport(url);
+    },
+    [importJobStore],
+  );
 
   const start = useCallback((): void => {
-    if (importUrl === undefined) return;
-    setTicks(ValueConstants.zero);
-    void importJobStore.getState().startImport(importUrl);
-  }, [importUrl, importJobStore]);
+    if (activeUrl === null || activeUrl === undefined) return;
+    startWith(activeUrl);
+  }, [activeUrl, startWith]);
 
   // Queue once per arrival. A re-render must not re-submit the same reel — but
   // the guard is only spent on a call that can actually run: setting it for a
@@ -74,8 +86,16 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   useEffect(() => {
     if (startedRef.current || importUrl === undefined) return;
     startedRef.current = true;
-    start();
-  }, [start, importUrl]);
+    startWith(importUrl);
+  }, [startWith, importUrl]);
+
+  const onSubmitLink = useCallback(
+    (url: string): void => {
+      setPastedUrl(url);
+      startWith(url);
+    },
+    [startWith],
+  );
 
   const job = state.status === StoreStatus.Loaded ? state.job : null;
   const isSettled =
@@ -123,16 +143,10 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
   }, [job, importJobStore, router]);
 
-  // Arriving with no URL is not a spinner, it is a dead end: the screen has
-  // nothing to queue and no way to get one. Say so instead of queueing forever.
-  const missingUrl =
-    importUrl === undefined
-      ? new ValidationFailure(
-          DiagnosticMessage.recipeImport.urlRequired,
-          undefined,
-          ErrorMessageKey.importInvalidUrl,
-        )
-      : null;
+  // Arriving with no URL is not a dead end any more: it is the paste screen.
+  // (This is also every web visit, where no share sheet exists to arrive from.)
+  const isAwaitingLink =
+    (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
 
   const jobStatus = job?.status ?? null;
   // A job the worker failed is not a failed REQUEST, but it reaches the user as
@@ -147,16 +161,15 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const isDone = jobStatus === ImportJobStatus.Done;
 
   return {
-    isQueueing:
-      missingUrl === null &&
-      (state.status === StoreStatus.Loading || state.status === StoreStatus.Idle),
-    failure: missingUrl ?? (state.status === StoreStatus.Error ? state.failure : jobFailure),
+    isQueueing: state.status === StoreStatus.Loading,
+    isAwaitingLink,
+    failure: state.status === StoreStatus.Error ? state.failure : jobFailure,
     jobStatus,
     activeStage,
     progress: activeStage / IMPORT_STAGE_COUNT,
     isDone,
-    canRetry: missingUrl === null,
     onRetry: start,
+    onSubmitLink,
     onClose,
     onOpenDraft,
   };
