@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [main, dev]
   # Manual entry point for the dev mobile builds. Run it from the Actions tab or
-  # with `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+  # with `gh workflow run ci.yml --ref dev -f android=true`. iOS is opt-in:
+  # add `-f ios=true` when an IPA is actually wanted.
   workflow_dispatch:
     inputs:
       android:
@@ -14,9 +15,13 @@ on:
         type: boolean
         default: true
       ios:
+        # Defaults to FALSE, unlike android. A dispatch that meant to ship only
+        # Android shipped an IPA too, because leaving this input alone left it
+        # at `true` — an opt-out that has to be remembered is one that will be
+        # forgotten. iOS dev builds are now explicitly asked for, every time.
         description: 'Build & ship the iOS dev IPA to Firebase App Distribution'
         type: boolean
-        default: true
+        default: false
 
 # Tag-and-deploy on main needs write access to push the new annotated tag.
 permissions:
