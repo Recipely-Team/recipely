@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { isAndroid } from '@infrastructure/constants/platform';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -19,15 +19,17 @@ const extractInstagramUrl = (text?: string | null, webUrl?: string | null): stri
 };
 
 /**
- * Bridges an incoming Android "Share to Recipely" intent into the create-recipe
- * import flow. When the shared content is an Instagram link it routes to
- * `/create-recipe?importUrl=…` and clears the native share intent so the same
- * share never re-fires. Cold-start (app launched by the share) and warm
+ * Bridges an incoming Android "Share to Recipely" intent into the import flow.
+ * When the shared content is an Instagram link it routes to
+ * `/import-recipe?importUrl=…` — the queue screen, NOT the create form: the
+ * work happens on a worker and there is nothing to edit until it lands — and
+ * clears the native share intent so the same share never re-fires. Cold-start (app launched by the share) and warm
  * (already running) are both covered by reacting to `hasShareIntent`. No-op
  * outside Android and for non-Instagram shares.
  */
 export const useInstagramShareImport = (): void => {
   const router = useRouter();
+  const pathname = usePathname();
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntentContext();
   const handledRef = useRef(false);
 
@@ -49,6 +51,11 @@ export const useInstagramShareImport = (): void => {
     resetShareIntent();
     // expo-router serializes/deserializes object-form params itself, so the raw
     // URL rides through without a manual encode/decode pair on either side.
-    router.push({ pathname: RoutePaths.createRecipe, params: { importUrl: url } });
-  }, [hasShareIntent, shareIntent, resetShareIntent, router]);
+    // REPLACE when the import screen is already up. Pushing stacked a second
+    // copy: both instances stayed mounted, both polled the one job at 4 s, and
+    // popping back revealed a screen reporting the other share's progress.
+    const target = { pathname: RoutePaths.importRecipe, params: { importUrl: url } };
+    if (pathname === RoutePaths.importRecipe) router.replace(target);
+    else router.push(target);
+  }, [hasShareIntent, shareIntent, resetShareIntent, router, pathname]);
 };

@@ -30,22 +30,19 @@ interface UseRecipeGenerationArgs {
   setRecipe: Dispatch<SetStateAction<EditableRecipe>>;
   activeDraftId: string;
   draftId: string | undefined;
-  importUrl: string | undefined;
 }
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
 
 /**
- * Owns the AI create flow: prompt → generate → preview → refine, the Instagram
- * import, draft resume + autosave, and the exit-with-unsaved-work flow.
+ * Owns the AI create flow: prompt → generate → preview → refine, draft resume +
+ * autosave, and the exit-with-unsaved-work flow.
  *
  * @remarks
  * - **Where a failure can be shown decides how it is shown.** A generate
  *   failure lands back on the prompt phase, which renders no chat transcript,
- *   so it is surfaced as a toast AND kept inline under the input. An import
- *   failure does have a transcript to land in, so the assistant bubble carries
- *   the reason.
+ *   so it is surfaced as a toast AND kept inline under the input.
  * - **The backend names its errors** (`failure.messageKey`), so a refused
  *   prompt (rewording IS the fix) no longer reads the same as an unusable AI
  *   response (the prompt was fine, generate again) even though both arrive as
@@ -64,7 +61,6 @@ const GEN_STEP_INTERVAL_MS = 620;
   setRecipe,
   activeDraftId,
   draftId,
-  importUrl,
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const { createdRecipesStore, draftsStore } = useStores();
@@ -80,7 +76,6 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [phase, setPhase] = useState<PhaseType>(
     draftId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
   );
-  const [importing, setImporting] = useState(false);
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -196,54 +191,6 @@ const GEN_STEP_INTERVAL_MS = 620;
     [createdRecipesStore, setRecipe],
   );
 
-  /**
-   * Hands the import to the queue and returns.
-   *
-   * @remarks
-   * The synchronous import held the screen for the 59-128 s the pipeline takes,
-   * and a phone that backgrounded the app lost the result outright — the work
-   * ran to completion and was thrown away. Now the request is over in a moment
-   * and the recipe arrives as a notification that opens the draft.
-   *
-   * The screen deliberately returns to the prompt phase rather than showing a
-   * preview: there is nothing to preview yet, and a spinner that says "almost
-   * done" about work nobody is waiting on is worse than no spinner at all.
-   */
-  const runImport = useCallback(
-    async (url: string): Promise<void> => {
-      const trimmed = url.trim();
-      if (trimmed.length === ValueConstants.zero) return;
-      setImporting(true);
-      const job = await createdRecipesStore.getState().enqueueInstagramImport(trimmed);
-      const state = createdRecipesStore.getState().enqueueImportState;
-      createdRecipesStore.getState().resetEnqueueImportState();
-      setImporting(false);
-
-      // A TOAST, not a chat message. The prompt phase does not render
-      // `chatHistory` — it never receives it — so the confirmation written
-      // there was invisible: sharing a link opened a blank create screen and
-      // said nothing, which read as the import having silently failed.
-      if (job !== null) {
-        showSuccessToast(t().createRecipe.importQueuedBody);
-        setPhase(PhaseType.Prompt);
-        return;
-      }
-
-      if (state.status === StoreStatus.Error) showErrorToast(state.failure);
-      else showDangerToast(t().createRecipe.aiError);
-      setPhase(PhaseType.Prompt);
-    },
-    [createdRecipesStore],
-  );
-
-  // Kick off an Instagram import once when arriving via a share intent.
-  const importHandledRef = useRef(false);
-  useEffect(() => {
-    if (importUrl === undefined || importHandledRef.current) return;
-    importHandledRef.current = true;
-    void runImport(importUrl);
-  }, [importUrl, runImport]);
-
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
       const trimmed = instruction.trim();
@@ -345,7 +292,6 @@ const GEN_STEP_INTERVAL_MS = 620;
 
   return {
     phase,
-    importing,
     genStep,
     refining,
     prompt,

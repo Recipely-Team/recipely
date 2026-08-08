@@ -18,11 +18,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import type { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 
-// The queue path is exercised in its own test; these suites only need the
-// dependency to exist so the store can be built.
-const unusedEnqueue = {} as EnqueueInstagramImportUseCase;
 
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
@@ -123,7 +119,6 @@ const makeStoreWithGenerateResult = (result: Result<RecipeEntity, Failure>) => {
     generateRecipeUseCase: generateUseCase,
     refineRecipeUseCase: fakeRefineUseCase,
     importInstagramRecipeUseCase: fakeImportUseCase,
-    enqueueInstagramImportUseCase: unusedEnqueue,
     deleteRecipeUseCase: fakeDeleteUseCase,
     recipeListStore: fakeRecipeListStore,
     recipeDetailStore: fakeRecipeDetailStore,
@@ -147,7 +142,6 @@ describe('createdRecipesStore.generateRecipe', () => {
       generateRecipeUseCase: deferred.useCase,
       refineRecipeUseCase: fakeRefineUseCase,
       importInstagramRecipeUseCase: fakeImportUseCase,
-      enqueueInstagramImportUseCase: unusedEnqueue,
       deleteRecipeUseCase: fakeDeleteUseCase,
       recipeListStore: fakeRecipeListStore,
       recipeDetailStore: fakeRecipeDetailStore,

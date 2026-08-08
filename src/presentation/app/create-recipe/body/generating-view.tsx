@@ -1,5 +1,4 @@
 import { StyleSheet, View } from 'react-native';
-import { GeneratingVariant } from '@presentation/app/create-recipe/model/generation/generating-variant';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import Animated from 'react-native-reanimated';
@@ -16,20 +15,12 @@ import { AnimationConstants } from '@presentation/base/constants';
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
   activeStep: number;
-  /** Which flow's copy + step labels to show. Defaults to `generate`. */
-  variant?: GeneratingVariant;
 }
 
 const STAGE = 188;
 const CORE = 104;
 const ORBIT_RADIUS = 90;
 const ORBIT_COUNT = 6;
-/**
- * Import never reports 100%: the backend keeps working after the last named
- * step, so the bar parks just short of full and keeps pulsing rather than
- * claiming to be done.
- */
-const IMPORT_PROGRESS_CAP = 0.92;
 /** Even spacing of the orbiting dots around the full circle. */
 const ORBIT_STEP_DEG = 360 / ORBIT_COUNT;
 /** Faintest orbiting dot, and the step that fans the rest brighter. */
@@ -38,31 +29,25 @@ const ORBIT_DOT_OPACITY_STEP = 0.22;
 /** Dots repeat their brightness every third position. */
 const ORBIT_DOT_OPACITY_CYCLE = 3;
 const GENERATE_STEP_KEYS = ['gen0', 'gen1', 'gen2', 'gen3', 'gen4'] as const;
-const IMPORT_STEP_KEYS = ['import0', 'import1', 'import2', 'import3'] as const;
 const LOGO_SIZE = 60;
 
-/** The eye-catching "AI is cooking" showpiece shown while a recipe generates. */
-export const GeneratingView = ({
-  activeStep,
-  variant = 'generate',
-}: GeneratingViewProps): React.JSX.Element => {
+/**
+ * The eye-catching "AI is cooking" showpiece shown while a recipe generates.
+ *
+ * Generation only — the Instagram import is a QUEUED job with its own screen
+ * (`app/import-recipe/`), because nobody is waiting on it.
+ */
+export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { orbitStyle, ringStyle, coreStyle } = useGeneratingAnimation();
 
   const copy = t().createRecipe;
-  const isImport = variant === GeneratingVariant.Import;
-  const steps = isImport
-    ? IMPORT_STEP_KEYS.map((key) => copy[key])
-    : GENERATE_STEP_KEYS.map((key) => copy[key]);
-  const title = isImport ? copy.importTitle : copy.genTitle;
-  const sub = isImport ? copy.importSub : copy.genSub;
-  // Import runs long; clamp the spotlight to the final step so it keeps pulsing
-  // instead of "completing" and sitting idle while the backend finishes.
-  const lastStep = steps.length - ValueConstants.one;
-  const spotlight = isImport ? Math.min(activeStep, lastStep) : activeStep;
-  const progress = isImport
-    ? Math.min(IMPORT_PROGRESS_CAP, (spotlight + ValueConstants.one) / steps.length)
-    : Math.min(AnimationConstants.progressMax, (activeStep + ValueConstants.one) / steps.length);
+  const steps = GENERATE_STEP_KEYS.map((key) => copy[key]);
+  const spotlight = activeStep;
+  const progress = Math.min(
+    AnimationConstants.progressMax,
+    (activeStep + ValueConstants.one) / steps.length,
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -106,10 +91,10 @@ export const GeneratingView = ({
 
       <View style={styles.heading}>
         <ThemedText variant="title" style={styles.title}>
-          {title}
+          {copy.genTitle}
         </ThemedText>
         <ThemedText variant="body" style={[styles.sub, { color: colors.textMuted }]}>
-          {sub}
+          {copy.genSub}
         </ThemedText>
       </View>
 

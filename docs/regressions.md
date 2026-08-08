@@ -341,3 +341,30 @@ about — and "the user signed out" is the version of that question with teeth, 
 the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) — a new
 user-scoped store must be registered in `clearSessionCaches`, and now also needs this
 guard.
+
+---
+
+## Two timers, one effect, and a checklist that never moved
+
+**Symptom:** caught in review before shipping. The Instagram import screen's
+four-stage checklist — the thing that exists to prove a two-minute wait is alive —
+would have sat frozen at stage zero for the entire import.
+
+**Root cause:** the 4 s status poll and the 9 s stage tick were created in ONE
+`useEffect` keyed on the job object. Every successful poll stores a freshly built
+`ImportJob` (the mapper allocates a new object even when nothing changed), so the
+object's identity changed every 4 s, the effect tore itself down, and the 9 s
+interval was destroyed before it ever fired. The perverse tell: it only advanced
+when polling *failed*, because a failed poll writes nothing.
+
+*Guard:* the effect is keyed on the job's `id` and `status` — the fields it
+actually cares about — not on the object. `use-import-recipe.test.tsx` drives it
+with fake timers through a fixture that deliberately returns a **new object from
+every poll**, because that churn is the entire mechanism; a fixture reusing one
+reference passes against the broken code.
+
+**The lesson: an effect keyed on a value from the network is keyed on a new
+object every response.** Depend on the fields you branch on, not the payload
+they arrived in — and when an effect owns a timer, ask what happens to that timer
+on the re-render you did not think about. Two timers with different periods in
+one effect is the shape to distrust: the shorter one silently starves the longer.

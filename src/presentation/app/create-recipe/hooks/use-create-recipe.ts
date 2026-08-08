@@ -19,9 +19,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
 
-  const params = useLocalSearchParams<{ draftId?: string; importUrl?: string }>();
+  const params = useLocalSearchParams<{ draftId?: string }>();
   const draftId = isString(params.draftId) ? params.draftId : undefined;
-  const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
 
   // A stable draft id for the lifetime of a NEW draft. A real UUID is required
   // by the backend; resumed drafts reuse their own id.
@@ -34,7 +33,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     setRecipe: editable.setRecipe,
     activeDraftId,
     draftId,
-    importUrl,
   });
   const save = useRecipeSave({
     recipe: editable.recipe,
@@ -56,7 +54,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     latestDraft: generation.latestDraft,
     onResumeDraft: generation.onResumeDraft,
     genStep: generation.genStep,
-    importing: generation.importing,
     headerTitle: save.headerTitle,
     saveLabel: save.saveLabel,
     isSaving: save.isSaving,

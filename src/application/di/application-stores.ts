@@ -5,6 +5,7 @@ import type { CommentsStoreState } from '@application/comments/comments-store-st
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
+import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
 import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
@@ -24,6 +25,7 @@ export interface ApplicationStores {
   savedRecipesStore: BoundStore<SavedRecipesStoreState>;
   createdRecipesStore: BoundStore<CreatedRecipesStoreState>;
   draftsStore: BoundStore<DraftsStoreState>;
+  importJobStore: BoundStore<ImportJobStoreState>;
   favoritesStore: BoundStore<FavoritesStoreState>;
   commentsStore: BoundStore<CommentsStoreState>;
   likesStore: BoundStore<LikesStoreState>;

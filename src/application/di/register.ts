@@ -24,6 +24,7 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
+import { GetImportJobUseCase } from '@application/recipes/import/get-import-job-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -31,6 +32,7 @@ import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
 import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
+import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
@@ -90,6 +92,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
   const importInstagramRecipeUseCase = new ImportInstagramRecipeUseCase(recipeRepo);
   const enqueueInstagramImportUseCase = new EnqueueInstagramImportUseCase(recipeRepo);
+  const getImportJobUseCase = new GetImportJobUseCase(recipeRepo);
   const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
   const listDraftsUseCase = new ListDraftsUseCase(draftRepo);
@@ -124,11 +127,14 @@ export const registerApplication = (container: Container): ApplicationStores => 
     listMyRecipesUseCase,
     generateRecipeUseCase,
     importInstagramRecipeUseCase,
-    enqueueInstagramImportUseCase,
     refineRecipeUseCase,
     deleteRecipeUseCase,
     recipeListStore,
     recipeDetailStore,
+  });
+  const importJobStore = configureImportJobStore({
+    enqueueInstagramImportUseCase,
+    getImportJobUseCase,
   });
   const draftsStore = configureDraftsStore({
     listDraftsUseCase,
@@ -188,6 +194,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     notificationsStore.getState().clear();
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
+    importJobStore.getState().clear();
     userProfileStore.getState().reset();
   };
   const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
@@ -199,6 +206,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     savedRecipesStore,
     createdRecipesStore,
     draftsStore,
+    importJobStore,
     favoritesStore,
     commentsStore,
     likesStore,

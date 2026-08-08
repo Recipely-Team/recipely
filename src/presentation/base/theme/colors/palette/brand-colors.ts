@@ -16,4 +16,8 @@ export const BrandColors = {
   googleRed: '#EA4335',
   googleGreen: '#34A853',
   googleYellow: '#FBBC05',
+  /** Instagram's gradient, for the "from Instagram" source badge on an import. */
+  instagramGradientStart: '#F9CE34',
+  instagramGradientMid: '#EE2A7B',
+  instagramGradientEnd: '#6228D7',
 } as const;

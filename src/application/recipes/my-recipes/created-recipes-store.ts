@@ -10,7 +10,6 @@ import type { CreateRecipeUseCase } from '@application/recipes/create/create-rec
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
-import type { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
@@ -21,7 +20,6 @@ interface CreatedRecipesStoreDeps {
   listMyRecipesUseCase: ListMyRecipesUseCase;
   generateRecipeUseCase: GenerateRecipeUseCase;
   importInstagramRecipeUseCase: ImportInstagramRecipeUseCase;
-  enqueueInstagramImportUseCase: EnqueueInstagramImportUseCase;
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
   // WHY: owner-mutation flows must keep the public feed and detail cache in
@@ -46,7 +44,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
     importState: { status: StoreStatus.Idle },
-    enqueueImportState: { status: StoreStatus.Idle },
     deleteState: { status: StoreStatus.Idle },
     refineState: { status: StoreStatus.Idle },
     aiDraft: null,
@@ -153,19 +150,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         aiDraft: recipe,
       });
     },
-    // Deliberately does NOT set aiDraft or touch importState: nothing has been
-    // imported yet. The screen this returns to must say "we'll tell you when
-    // it's done", not show a recipe that does not exist.
-    enqueueInstagramImport: async (url) => {
-      set({ enqueueImportState: { status: StoreStatus.Loading } });
-      const result = await deps.enqueueInstagramImportUseCase.execute({ url });
-      if (!result.ok) {
-        set({ enqueueImportState: { status: StoreStatus.Error, failure: result.failure } });
-        return null;
-      }
-      set({ enqueueImportState: { status: StoreStatus.Success, job: result.value } });
-      return result.value;
-    },
     refineRecipe: async (currentRecipe, instruction) => {
       set({ refineState: { status: StoreStatus.Refining } });
       const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction });
@@ -197,7 +181,6 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     resetCreateState: () => set({ createState: { status: StoreStatus.Idle } }),
     resetGenerateState: () => set({ generateState: { status: StoreStatus.Idle } }),
     resetImportState: () => set({ importState: { status: StoreStatus.Idle } }),
-    resetEnqueueImportState: () => set({ enqueueImportState: { status: StoreStatus.Idle } }),
     resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
     clearAiDraft: () => set({ aiDraft: null }),
