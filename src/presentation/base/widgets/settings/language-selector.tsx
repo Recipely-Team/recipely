@@ -1,61 +1,104 @@
-import { Pressable, StyleSheet, View } from 'react-native';
-import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { radii, fontWeights, controlSizes } from '@presentation/base/theme';
+import { useState } from 'react';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { ValueConstants } from '@core/constants';
+import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
 
 export interface LanguageSelectorProps {
-  value: 'en' | 'tr';
-  onChange: (value: 'en' | 'tr') => void;
+  value: string;
+  onChange: (value: string) => void;
 }
 
-const options: { key: 'en' | 'tr'; label: string }[] = [
-  { key: 'en', label: 'EN' },
-  { key: 'tr', label: 'TR' },
-];
-
-/** Segmented EN / TR language picker that highlights the active locale. */
+/**
+ * Opens the language list and reports the choice.
+ *
+ * @remarks
+ * A sheet, not the segmented EN/TR control this replaces: two languages fit in
+ * a pill and ten do not, and squeezing them in would have produced a row of
+ * unreadable two-letter codes. The trigger shows the ACTIVE language in its own
+ * name, so the setting reads correctly whatever the app is currently in.
+ */
 export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const [open, setOpen] = useState(false);
+
+  const select = (locale: string): void => {
+    onChange(locale);
+    setOpen(false);
+  };
 
   return (
-    <View style={[styles.container, { backgroundColor: colors.inputBackground }]}>
-      {options.map((opt) => {
-        const active = value === opt.key;
-        return (
-          <Pressable
-            key={opt.key}
-            onPress={() => onChange(opt.key)}
-            style={[
-              styles.segment,
-              active ? { backgroundColor: colors.primary } : undefined,
-            ]}
-          >
-            <ThemedText
-              variant="caption"
-              style={{ color: active ? colors.primaryText : colors.textMuted, fontWeight: fontWeights.semibold }}
-            >
-              {opt.label}
-            </ThemedText>
-          </Pressable>
-        );
-      })}
-    </View>
+    <>
+      <Pressable
+        onPress={() => setOpen(true)}
+        style={[styles.trigger, { backgroundColor: colors.inputBackground }]}
+        accessibilityRole="button"
+        accessibilityLabel={t().settings.language}
+      >
+        <ThemedText variant="caption" style={styles.triggerLabel}>
+          {LANGUAGE_NAMES[value] ?? value}
+        </ThemedText>
+        <Ionicons name="chevron-down" size={iconSizes.sm} color={colors.textMuted} />
+      </Pressable>
+
+      <BottomSheet visible={open} title={t().settings.language} onClose={() => setOpen(false)}>
+        <ScrollView contentContainerStyle={styles.list}>
+          {SUPPORTED_LOCALE_LIST.map((locale) => {
+            const active = locale === value;
+            return (
+              <Pressable
+                key={locale}
+                onPress={() => select(locale)}
+                style={[styles.row, active ? { backgroundColor: colors.chipBackground } : null]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: active }}
+                accessibilityLabel={LANGUAGE_NAMES[locale] ?? locale}
+              >
+                <ThemedText variant="body" style={active ? styles.activeLabel : undefined}>
+                  {LANGUAGE_NAMES[locale] ?? locale}
+                </ThemedText>
+                {active ? (
+                  <Ionicons name="checkmark" size={iconSizes.lg} color={colors.primary} />
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+      </BottomSheet>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  trigger: {
     flexDirection: 'row',
-    borderRadius: radii.round,
-    minHeight: controlSizes.selector,
-    width: controlSizes.languageSelectorWidth,
-    overflow: 'hidden',
-  },
-  segment: {
-    flex: ValueConstants.one,
     alignItems: 'center',
-    justifyContent: 'center',
+    gap: spacing.xs,
+    minHeight: controlSizes.selector,
+    paddingHorizontal: spacing.md,
     borderRadius: radii.round,
+  },
+  triggerLabel: {
+    fontWeight: fontWeights.semibold,
+  },
+  list: {
+    paddingBottom: spacing.md,
+    gap: spacing.xxs,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: controlSizes.settingsRow,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.lg,
+  },
+  activeLabel: {
+    fontWeight: fontWeights.bold,
   },
 });

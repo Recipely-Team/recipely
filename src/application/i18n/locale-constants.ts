@@ -8,6 +8,11 @@
  * Lives in `application/`, not `core/`: which languages this product ships is a
  * decision about THIS app, not a reusable building block — the same reason the
  * DI token list sits in `application/di/` (see `architecture.md` §core).
+ *
+ * A code lands here in the SAME commit as its catalogue in `@presentation/i18n`,
+ * never before: a locale listed without a catalogue is offered in the picker and
+ * then silently renders English, which reads as a broken translation rather than
+ * a missing one.
  */
 export const LocaleConstants = {
   en: 'en',

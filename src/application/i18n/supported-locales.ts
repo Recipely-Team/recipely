@@ -1,8 +1,19 @@
 import { CharConstants, ValueConstants } from '@core/constants';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 
-/** Language codes the app ships translations for. Keep in sync with `@presentation/i18n`. */
-const SUPPORTED_LOCALES: readonly string[] = [LocaleConstants.en, LocaleConstants.tr];
+/**
+ * Language codes the app ships translations for.
+ *
+ * Derived from {@link LocaleConstants} rather than listed again: a hand-kept
+ * second list is a list that eventually disagrees with the first, and the
+ * failure is silent — an unlisted locale simply falls back to English forever.
+ * `@presentation/i18n` holds the matching catalogue for each of these, and a
+ * test asserts the two sides agree.
+ */
+const SUPPORTED_LOCALES: readonly string[] = Object.values(LocaleConstants);
+
+/** The same list, exported for the language picker to render. */
+export const SUPPORTED_LOCALE_LIST: readonly string[] = SUPPORTED_LOCALES;
 
 /** Locale used when neither a stored preference nor the device language is supported. */
 export const DEFAULT_LOCALE = LocaleConstants.en;
