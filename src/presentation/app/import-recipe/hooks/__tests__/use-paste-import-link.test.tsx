@@ -102,6 +102,59 @@ describe('usePasteImportLink', () => {
     expect(vm().value).toBe(REEL);
   });
 
+  /**
+   * THE REGRESSION: the field showed `https://www.instagram.com/p/` and cut the
+   * rest off, so the user could not tell whether the part that identifies the
+   * post had come along — and went back to Instagram to copy it again.
+   *
+   * The field wraps now, and this is the other half: a positive confirmation
+   * naming the link we understood, so "did I copy the right thing?" has an
+   * answer on screen.
+   */
+  it('confirms the link it understood after a paste', async () => {
+    getStringAsync.mockResolvedValue(REEL);
+    const vm = drive();
+
+    await act(async () => {
+      vm().onPaste();
+      await Promise.resolve();
+    });
+
+    // The identifying half, which is exactly what a truncated field hid.
+    expect(vm().recognised).toBe('instagram.com/reel/Cx1y2z3');
+  });
+
+  it('confirms a link the user typed once they leave the field', () => {
+    const vm = drive();
+    act(() => vm().onChangeValue(REEL));
+
+    act(() => vm().onBlur());
+
+    expect(vm().recognised).toBe('instagram.com/reel/Cx1y2z3');
+  });
+
+  it('says nothing while the link is still being typed', () => {
+    // Checking on every keystroke would shout "invalid" at someone halfway
+    // through a URL. Confirmation belongs at the end of an action.
+    const vm = drive();
+
+    act(() => vm().onChangeValue('https://www.instagram.com/re'));
+
+    expect(vm().recognised).toBeNull();
+    expect(vm().failure).toBeNull();
+  });
+
+  it('withdraws the confirmation when the link is edited away', () => {
+    const vm = drive();
+    act(() => vm().onChangeValue(REEL));
+    act(() => vm().onBlur());
+    expect(vm().recognised).not.toBeNull();
+
+    act(() => vm().onChangeValue('https://www.instagram.com/somechef/'));
+
+    expect(vm().recognised).toBeNull();
+  });
+
   it('tells the user to paste by hand when the clipboard is denied', async () => {
     // Reads are refused in plenty of contexts, and the web denies them outright
     // without a gesture. A button that appears to do nothing is the worst answer.

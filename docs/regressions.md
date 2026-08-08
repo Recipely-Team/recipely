@@ -416,3 +416,58 @@ about what it knows. When adding a channel for errors, enumerate the ways an
 error can reach a user and check each one — and give handled-but-frequent
 failures somewhere to go that is not the crash inbox, or the filter that keeps
 crashes readable will be the filter that hides the trend.
+
+---
+
+## A field that hid the half that mattered
+
+**Symptom:** pasting an Instagram link on a phone showed
+`https://www.instagram.com/p/` and nothing else. The part that identifies the
+post — the only part worth checking — had scrolled out of the single-line field,
+so users went back to Instagram to copy it again, twice, before trusting it.
+
+**Root cause:** a one-line `TextInput` in a row that also holds an icon and a
+Paste button. A URL is longer than what is left, and a single-line field solves
+that by scrolling, which silently chooses to show the *beginning* — the part
+that is identical for every Instagram link and therefore carries no information.
+
+*Guard:* the field auto-grows and wraps, so the whole link is readable at once,
+and a validated paste is echoed back in short form (`instagram.com/reel/Cx1y2z3`)
+under the field. `use-paste-import-link.test.tsx` pins the echo, including that
+it stays silent mid-typing and withdraws when the link is edited away.
+
+**The lesson: truncation is a decision about which half to hide.** A field that
+scrolls shows the start; a filename, an id or a URL usually carries its meaning
+at the END. Before pinning a text box to one line, ask which half a user would
+check — and if the answer is "the end", let it wrap or echo what was understood.
+
+---
+
+## "Taslağı aç" opened a blank AI prompt screen
+
+**Symptom:** a finished Instagram import offered *Open draft*; tapping it — or
+tapping the completion notification — parked the user on the empty
+create-with-AI screen for a moment and left them there. It read as if the import
+had failed, and the recipe it had actually produced was nowhere in sight.
+
+**Root cause:** a dead pointer that nothing kept honest. The import job stores
+`draftId` for good, and its notification carries the same id — but **publishing
+a draft deletes it** (`recipe_drafts` has no soft delete). So a user who opened
+the import, published the recipe, and later returned by either route read a 404
+on `GET /recipes/drafts/:id`. The screen treated that like any other read
+failure — toast, drop the param, fall back to `Prompt` — which is right for an
+offline read and wrong for a row that is gone: there is nothing to retry, and
+the blank prompt answers a question the user did not ask. Two dev jobs on
+2026-08-08 pointed at drafts that had already become recipes.
+
+*Guard:* the resume path branches on `FailureCode.NotFound` and lands on My
+Recipes' drafts tab with copy that says the draft is gone, instead of the AI
+prompt; a deleted draft is normal use and is no longer reported as a crash.
+`use-recipe-generation.test.tsx` → "a draft that no longer exists" pins all
+three, and fails against the unfixed hook.
+
+**The lesson: a stored id is a claim about the past, not a promise about the
+present.** Any pointer that outlives the thing it names — a job row, a
+notification, a deep link, a cached route param — will eventually be followed
+after the target is deleted. Decide what "it is gone" should DO before shipping
+the pointer, and make sure that answer is different from "it could not be read".

@@ -22,6 +22,8 @@ export const RoutePaths = {
   recipesRouteName: 'recipes/index',
   /** The My Recipes tab a publish lands on — the one holding the new recipe. */
   myRecipesCreatedTab: 'created',
+  /** Where a pointer to a draft that no longer exists lands. */
+  myRecipesDraftsTab: 'drafts',
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',

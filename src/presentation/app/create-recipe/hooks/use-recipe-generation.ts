@@ -11,6 +11,7 @@ import {
   failureToastMessage,
 } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure } from '@core/failure';
+import { FailureCode } from '@core/failure/failure-code';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
 import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
@@ -53,6 +54,13 @@ const GEN_STEP_INTERVAL_MS = 620;
  * - **Resuming is its own phase.** Opening `?draftId=` has to fetch before it
  *   can show anything, and the phase it waits in is what the user sees — so it
  *   waits in `Resuming` (a skeleton of the editor), never in `Prompt`.
+ * - **A dead pointer is its own answer.** Publishing a draft DELETES it, while
+ *   the import job and its completion notification go on naming that id for
+ *   good — so `?draftId=` routinely points at a draft that no longer exists.
+ *   Treating that 404 like any other read failure dropped the user on a blank
+ *   AI prompt, which says "your draft failed to open" about a draft they had
+ *   already turned into a recipe. Nothing here can be retried, so it says so
+ *   and leaves them among the drafts that DO exist.
  * - **A refine outlives the screen**, so publishing or exiting to a draft while
  *   one is in flight must not pop its "Updated!" over whatever comes next.
  * - **Drafts round-trip through the same mapper the comparison uses**, or a
@@ -115,6 +123,15 @@ const GEN_STEP_INTERVAL_MS = 620;
       // connection; "couldn't open that draft" said none of them, and reporting
       // saw nothing at all.
       if (!result.ok) {
+        // Gone is not unreadable — see the "dead pointer" remark above.
+        if (result.failure.code === FailureCode.NotFound) {
+          showDangerToast(t().createRecipe.draftGone);
+          router.replace({
+            pathname: RoutePaths.myRecipes,
+            params: { tab: RoutePaths.myRecipesDraftsTab },
+          });
+          return;
+        }
         showErrorToast(result.failure);
         FailureReporter.report(result.failure, 'CreateRecipe.resumeDraft');
         // Drop the param as well as the phase. `activeDraftId` is `draftId ??

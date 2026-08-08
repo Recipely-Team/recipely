@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -19,6 +20,7 @@ import {
 } from '@presentation/base/theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { t } from '@presentation/i18n';
+import { ImportPasteSteps } from '@presentation/app/import-recipe/body/import-paste-steps';
 import { usePasteImportLink } from '@presentation/app/import-recipe/hooks/use-paste-import-link';
 import { ValueConstants } from '@core/constants';
 
@@ -28,7 +30,6 @@ export interface ImportPasteViewProps {
   onCancel: () => void;
 }
 
-const STEP_KEYS = ['pasteStep0', 'pasteStep1', 'pasteStep2'] as const;
 const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.zero };
 const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.one };
 const GRADIENT_STOPS = [
@@ -99,9 +100,14 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
         ]}
       >
         <Ionicons name="link-outline" size={iconSizes.md} color={colors.textMuted} />
-        <TextInput
+        {/* Auto-grow, not a single line: a pasted URL is longer than the field
+            and scrolled its own identifying half out of sight, leaving the user
+            staring at `https://www.instagram.com/p/` wondering what they had
+            copied. It wraps now, and the whole link is readable at once. */}
+        <AutoGrowTextInput
           value={vm.value}
           onChangeText={vm.onChangeValue}
+          onBlur={vm.onBlur}
           onSubmitEditing={handleSubmit}
           placeholder={copy.pastePlaceholder}
           placeholderTextColor={colors.textMuted}
@@ -109,6 +115,7 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
           autoCapitalize="none"
           autoCorrect={false}
           returnKeyType="go"
+          minHeight={controlSizes.input}
           accessibilityLabel={copy.pasteLabel}
           style={[styles.input, { color: colors.text, lineHeight: inputLineHeight }]}
         />
@@ -123,6 +130,18 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
           </ThemedText>
         </Pressable>
       </View>
+
+      {vm.recognised !== null && vm.failure === null ? (
+        <View style={styles.hint}>
+          <Ionicons name="checkmark-circle" size={iconSizes.sm} color={colors.success} />
+          <ThemedText variant="caption" style={{ color: colors.success }}>
+            {copy.pasteRecognised}
+          </ThemedText>
+          <ThemedText variant="caption" style={[styles.recognised, { color: colors.textMuted }]}>
+            {vm.recognised}
+          </ThemedText>
+        </View>
+      ) : null}
 
       {vm.isEmpty ? (
         <View style={styles.hint}>
@@ -152,23 +171,7 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
         </View>
       ) : null}
 
-      <View style={[styles.howTo, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        <ThemedText variant="caption" style={[styles.label, { color: colors.textMuted }]}>
-          {copy.pasteHowTo}
-        </ThemedText>
-        {STEP_KEYS.map((key, index) => (
-          <View key={key} style={styles.step}>
-            <View style={[styles.stepNumber, { backgroundColor: colors.chipBackground }]}>
-              <ThemedText variant="caption" style={[styles.stepNumberText, { color: colors.chipText }]}>
-                {index + ValueConstants.one}
-              </ThemedText>
-            </View>
-            <ThemedText variant="caption" style={styles.stepText}>
-              {copy[key]}
-            </ThemedText>
-          </View>
-        ))}
-      </View>
+      <ImportPasteSteps />
 
       <View style={styles.footer}>
         <PrimaryButton label={copy.pasteSubmit} onPress={handleSubmit} />
@@ -225,7 +228,7 @@ const styles = StyleSheet.create({
   },
   field: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     gap: spacing.sm,
     minHeight: controlSizes.input,
     paddingLeft: spacing.md,
@@ -255,32 +258,11 @@ const styles = StyleSheet.create({
   banner: {
     marginTop: spacing.xs,
   },
-  howTo: {
-    padding: spacing.md,
-    borderRadius: radii.xl,
-    borderWidth: borderWidths.hairline,
-    gap: spacing.sm,
-  },
-  step: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: spacing.sm,
-  },
-  stepNumber: {
-    width: decorSizes.notifBadge,
-    height: decorSizes.notifBadge,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  stepNumberText: {
-    fontWeight: fontWeights.bold,
-  },
-  stepText: {
-    flex: ValueConstants.one,
-  },
   note: {
     flex: ValueConstants.one,
+  },
+  recognised: {
+    flexShrink: ValueConstants.one,
   },
   footer: {
     marginTop: spacing.md,
