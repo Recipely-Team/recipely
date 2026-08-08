@@ -88,9 +88,11 @@ dev web deploy (dev.recipely.net) still run on every dev push; the Gradle APK an
 macOS IPA only run when explicitly asked for — the user gives the order, you never add
 the flag on your own initiative:
 
-- **Flag the merge commit**: `[dist]` (both platforms), `[dist:android]`, or `[dist:ios]`
-  anywhere in the squash-merge message. CI reads the merge commit's message, so put it in
-  the PR title or the `--squash` body.
+- **Flag the merge commit**: a marker (both platforms / android-only / ios-only) in the
+  **subject line** of the squash-merge commit — i.e. the PR title. Only the first line is
+  scanned: the body used to be read too, and a commit whose body merely EXPLAINED what the
+  markers do asked for both builds and shipped an IPA nobody wanted. Writing about a
+  marker in the body is inert, which is what lets this paragraph exist.
 - **Or trigger by hand**: `gh workflow run ci.yml --ref dev -f android=true`. The
   `ios` input defaults to **false** — an iOS dev IPA is only built when you pass
   `-f ios=true` explicitly. It used to default to true, and an Android-only
