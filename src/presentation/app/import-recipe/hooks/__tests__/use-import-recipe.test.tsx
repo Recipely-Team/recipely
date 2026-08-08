@@ -190,7 +190,7 @@ describe('useImportRecipe — arriving with no URL', () => {
     jest.useRealTimers();
   });
 
-  it('reports a failure instead of queueing forever', async () => {
+  it('asks for a link instead of queueing forever', async () => {
     const { stores } = makeStores(ImportJobStatus.Queued);
     let latest!: ViewModel;
     const Probe = (): null => {
@@ -208,10 +208,11 @@ describe('useImportRecipe — arriving with no URL', () => {
       await Promise.resolve();
     });
 
-    // The old shape left `isQueueing` true forever behind a spinning button
-    // with nothing behind it and no way back.
-    expect(latest.failure).not.toBeNull();
+    // The first cut left `isQueueing` true forever behind a spinning button with
+    // nothing behind it. Now no URL simply means "we have not been given one" —
+    // which is every web visit, where there is no share sheet to arrive from.
+    expect(latest.isAwaitingLink).toBe(true);
+    expect(latest.failure).toBeNull();
     expect(latest.isQueueing).toBe(false);
-    expect(latest.canRetry).toBe(false);
   });
 });

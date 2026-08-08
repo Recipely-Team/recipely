@@ -20,6 +20,7 @@ export interface UseCreateRecipeResult {
   onAppendChip: (chip: string) => void;
   onGenerate: () => void;
   onStartBlank: () => void;
+  onImportFromInstagram: () => void;
   onClose: () => void;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;

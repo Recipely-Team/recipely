@@ -240,6 +240,10 @@ const GEN_STEP_INTERVAL_MS = 620;
     setGenerateError(null);
   }, []);
 
+  const onImportFromInstagram = useCallback((): void => {
+    router.push(RoutePaths.importRecipe);
+  }, [router]);
+
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
@@ -302,6 +306,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     onAppendChip,
     onGenerate: () => void runGenerate(prompt),
     onStartBlank,
+    onImportFromInstagram,
     onClose,
     latestDraft,
     onResumeDraft,

@@ -31,6 +31,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             onAppendChip={vm.onAppendChip}
             onGenerate={vm.onGenerate}
             onStartBlank={vm.onStartBlank}
+            onImportFromInstagram={vm.onImportFromInstagram}
             onClose={vm.onClose}
             latestDraft={vm.latestDraft}
             onResumeDraft={vm.onResumeDraft}

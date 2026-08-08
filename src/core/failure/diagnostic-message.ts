@@ -54,6 +54,8 @@ export const DiagnosticMessage = {
   recipeImport: {
     urlRequired: 'Instagram URL is required',
     notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
+    /** Right host, wrong page — a profile or an explore link has no video behind it. */
+    notAPostUrl: (url: string): string => `Not a link to a post or reel (${url})`,
     /** The queued job came back `failed`; the reason rides on its `errorKey`. */
     jobFailed: 'Instagram import job failed',
   },
