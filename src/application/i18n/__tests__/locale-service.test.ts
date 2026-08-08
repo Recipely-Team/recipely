@@ -20,6 +20,13 @@ const makeStore = (initial: string | null = null): KeyValueStoreInterface & { sa
 
 const deviceLocale = (locale: string) => ({ getDeviceLocale: () => locale });
 
+/**
+ * A code the app will never ship, used wherever a test needs "a language we do
+ * not have". It was `de` until German was added — pick something reserved, or
+ * the next language to land quietly turns these assertions inside out.
+ */
+const UNSUPPORTED = 'zz';
+
 describe('LocaleService', () => {
   it('seeds from the device language when nothing is stored', async () => {
     const service = new LocaleService(makeStore(null), deviceLocale('tr-TR'));
@@ -30,7 +37,7 @@ describe('LocaleService', () => {
   });
 
   it('falls back to the default locale when the device language is unsupported', () => {
-    expect(new LocaleService(makeStore(), deviceLocale('de')).getLocale()).toBe('en');
+    expect(new LocaleService(makeStore(), deviceLocale(UNSUPPORTED)).getLocale()).toBe('en');
     expect(new LocaleService(makeStore(), deviceLocale('')).getLocale()).toBe('en');
   });
 
@@ -109,7 +116,7 @@ describe('LocaleService', () => {
     service.subscribe(listener);
 
     service.setLocale('en');
-    service.setLocale('de');
+    service.setLocale(UNSUPPORTED);
 
     expect(service.getLocale()).toBe('en');
     expect(store.saved).toBeNull();

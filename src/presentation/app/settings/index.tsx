@@ -31,7 +31,7 @@ export const SettingsScreen = (): React.JSX.Element => {
   const authState = authStore((s) => s.state);
   const signOut = authStore((s) => s.signOut);
 
-  const language = useLocale() as 'en' | 'tr';
+  const language = useLocale();
 
   const [signOutVisible, setSignOutVisible] = useState(false);
   const deleteAccountFlow = useDeleteAccount();

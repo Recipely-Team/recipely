@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 791 source files.
+[architecture.md](architecture.md). 808 source files.
 
 ## Layers
 
@@ -49,7 +49,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
-- `i18n/` _(4)_
+- `i18n/` _(5)_
 - `likes/` _(5)_
 - `notifications/` — list, read _(10)_
 - `onboarding/` _(2)_
@@ -107,7 +107,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(45)_
+- `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(46)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -140,4 +140,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 0ad6b1653b6afa36 -->
+<!-- fingerprint: 3fbdc38cb31dae94 -->

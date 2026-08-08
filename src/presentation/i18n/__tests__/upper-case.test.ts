@@ -8,7 +8,7 @@
 
 import { setLocale } from '@presentation/i18n/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { tr } from '@presentation/i18n/tr';
+import { tr } from '@presentation/i18n/locales/tr';
 import { LocaleConstants } from '@application/i18n/locale-constants';
 
 describe('upperCase', () => {

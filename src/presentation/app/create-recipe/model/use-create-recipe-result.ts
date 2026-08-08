@@ -42,6 +42,9 @@ export interface UseCreateRecipeResult {
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
   onAddIngredient: () => void;
+  onAddIngredientAt: (index: number) => void;
+  onMoveIngredient: (from: number, to: number) => void;
+  onRemoveIngredientGroup: (headerIndex: number, itemIndices: readonly number[], keepItems: boolean) => void;
   /** Appends an unnamed ingredient group heading for the user to label. */
   onAddIngredientGroup: () => void;
   onChangeStep: (index: number, value: string) => void;

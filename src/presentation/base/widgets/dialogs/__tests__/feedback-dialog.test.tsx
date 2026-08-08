@@ -4,7 +4,10 @@
  * omitted entirely when not provided, and the danger severity variant.
  */
 
+import { StyleSheet } from 'react-native';
+import type { ViewStyle } from 'react-native';
 import { act } from 'react-test-renderer';
+import type { ReactTestInstance } from 'react-test-renderer';
 import {
   renderComponent,
   textContent,
@@ -12,6 +15,7 @@ import {
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { Ionicons } from '@expo/vector-icons';
+import { t } from '@presentation/i18n';
 
 const PRIMARY_LABEL = 'View recipe';
 const SECONDARY_LABEL = 'Done';
@@ -75,10 +79,55 @@ describe('FeedbackDialog', () => {
   });
 
   it('renders a checkmark disc by default and an alert disc for danger', () => {
-    const success = renderSheet();
-    expect(success.root.findByType(Ionicons).props.name).toBe('checkmark');
+    // The ✕ is an icon too, so the disc is the one that is NOT the close mark —
+    // addressing it by position would break the next time the order changes.
+    const discIcon = (r: ReturnType<typeof renderSheet>): string | undefined =>
+      r.root
+        .findAllByType(Ionicons)
+        .map((node) => String(node.props.name))
+        .find((name) => name !== 'close');
 
-    const danger = renderSheet({ severity: 'danger' });
-    expect(danger.root.findByType(Ionicons).props.name).toBe('alert');
+    expect(discIcon(renderSheet())).toBe('checkmark');
+    expect(discIcon(renderSheet({ severity: 'danger' }))).toBe('alert');
+  });
+
+  /**
+   * The dialog reports an outcome; the one thing a user must always be able to
+   * do is leave. That used to be a second button labelled "OK" sitting under
+   * the real action — which made the user choose between two ways to do
+   * nothing. Leaving is the ✕ now, and the action row is only for actions.
+   */
+  it('always offers a way out, even with a single action', () => {
+    const onClose = jest.fn();
+    const { root } = renderSheet({ onClose });
+
+    const close = buttonByLabel(root, t().common.close);
+    expect(close).toBeDefined();
+
+    (close?.props.onPress as () => void)();
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('puts two actions side by side rather than stacking them', () => {
+    // Peers, not a primary with an escape hatch beneath it.
+    const { root } = renderSheet({ secondaryLabel: SECONDARY_LABEL, onSecondary: jest.fn() });
+
+    const primary = buttonByLabel(root, PRIMARY_LABEL);
+    const secondary = buttonByLabel(root, SECONDARY_LABEL);
+    expect(primary).toBeDefined();
+    expect(secondary).toBeDefined();
+
+    // Both stretch to equal halves of the same row. `Pressable.style` is a
+    // FUNCTION of the press state, so it has to be resolved before flattening.
+    const flexOf = (node: ReactTestInstance | undefined): unknown => {
+      const style = node?.props.style as
+        | ViewStyle
+        | ((state: { pressed: boolean }) => ViewStyle)
+        | undefined;
+      const resolved = typeof style === 'function' ? style({ pressed: false }) : style;
+      return (StyleSheet.flatten(resolved) as ViewStyle | undefined)?.flex;
+    };
+    expect(flexOf(primary)).toBe(1);
+    expect(flexOf(secondary)).toBe(1);
   });
 });

@@ -1,5 +1,5 @@
-import { en } from '@presentation/i18n/en';
-import { tr } from '@presentation/i18n/tr';
+import { en } from '@presentation/i18n/locales/en';
+import { tr } from '@presentation/i18n/locales/tr';
 
 type Bundle = Record<string, unknown>;
 
