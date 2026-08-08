@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
@@ -27,6 +28,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
+  useReportFailure(vm.failure ?? null, 'RecipeDetailScreen');
   // Composed here rather than inside useRecipeDetail: the deep-link concern is
   // self-contained (it only needs the comment state + scroll ref the vm already
   // exposes), and useRecipeDetail is at its size budget already.

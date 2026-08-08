@@ -25,6 +25,7 @@ import {
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
 import { ImportSourceChip } from '@presentation/app/import-recipe/body/import-source-chip';
 import { ImportProgressRing } from '@presentation/app/import-recipe/body/import-progress-ring';
@@ -46,6 +47,7 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
   const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
   const vm = useImportRecipe(importUrl);
   const copy = t().importRecipe;
+  useReportFailure(vm.failure, 'ImportRecipeScreen');
 
   if (vm.failure !== null) {
     const content = failureContent(vm.failure);

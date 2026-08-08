@@ -8,6 +8,9 @@ import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import { AppErrorBoundary } from '@presentation/base/widgets/feedback/app-error-boundary';
+import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
+import { AnalyticsEvent } from '@infrastructure/constants/analytics';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
@@ -60,6 +63,12 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     // sink. Before this runs, reporting is a no-op — which is correct, since
     // Firebase is not initialised yet either.
     FailureReporter.setSink(recordCrash);
+    // Every failure the user is shown is also COUNTED, whether or not it is
+    // crash-worthy: a rise in handled network failures is a real signal, and it
+    // has nowhere to live in Crashlytics.
+    FailureReporter.setEventSink((code, context) => {
+      void logAnalyticsEvent(AnalyticsEvent.failureShown, { code, context });
+    });
     void hydrateLocale();
     void initFirebase();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
@@ -106,7 +115,13 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
 
   return (
     <StoresProvider value={stores}>
-      <AppSyncs stores={stores}>{children}</AppSyncs>
+      {/* The boundary lives HERE rather than in the root layout because it
+          needs `recordCrash`, and only the composition root may reach into
+          infrastructure (rule 17). It sits inside the providers so the screen
+          it falls back to has the theme and stores it renders against. */}
+      <AppErrorBoundary onError={recordCrash}>
+        <AppSyncs stores={stores}>{children}</AppSyncs>
+      </AppErrorBoundary>
     </StoresProvider>
   );
 };
