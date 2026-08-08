@@ -91,7 +91,10 @@ the flag on your own initiative:
 - **Flag the merge commit**: `[dist]` (both platforms), `[dist:android]`, or `[dist:ios]`
   anywhere in the squash-merge message. CI reads the merge commit's message, so put it in
   the PR title or the `--squash` body.
-- **Or trigger by hand**: `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+- **Or trigger by hand**: `gh workflow run ci.yml --ref dev -f android=true`. The
+  `ios` input defaults to **false** — an iOS dev IPA is only built when you pass
+  `-f ios=true` explicitly. It used to default to true, and an Android-only
+  dispatch shipped an IPA nobody asked for.
 
 `IOS_CI_ENABLED` (repo variable) remains the iOS kill switch — `0` pauses iOS builds even
 when one is requested. Production (`main`) distribution is unchanged: every push to `main`

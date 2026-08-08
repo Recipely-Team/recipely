@@ -24,8 +24,13 @@ import type { ImportJobStoreState } from '@application/recipes/import/import-job
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
 import { RoutePaths } from '@presentation/base/constants';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 
 const mockRouter = { replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
+
+jest.mock('@presentation/base/errors/failure-reporter', () => ({
+  FailureReporter: { report: jest.fn() },
+}));
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => mockRouter),
@@ -264,5 +269,55 @@ describe('useImportRecipe — where in the queue', () => {
     });
 
     expect(latest().queuePosition).toBeNull();
+  });
+});
+
+// ─── the regression: "Taslağı aç" did nothing, and back exited to Instagram ──
+// A share-launched app is the root of its own task, so the back gesture
+// finishes it and returns to Instagram. That made a silently no-op primary
+// button look like the app was throwing the user out: tap, nothing, back, gone.
+// A finished job without a draft id should not be possible — the backend writes
+// one before reporting `done` — but "should not" is not "does not", and the
+// button has to move either way.
+describe('useImportRecipe — a finished job with no draft to open', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  it('sends the user to their drafts instead of doing nothing', async () => {
+    const { latest } = drive(ImportJobStatus.Done);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      latest().onOpenDraft();
+    });
+
+    expect(mockRouter.replace).toHaveBeenCalledWith({
+      pathname: RoutePaths.myRecipes,
+      params: { tab: RoutePaths.myRecipesDraftsTab },
+    });
+  });
+
+  it('reports it, so the next occurrence arrives with a code', async () => {
+    const { latest } = drive(ImportJobStatus.Done);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      latest().onOpenDraft();
+    });
+
+    expect(FailureReporter.report).toHaveBeenCalledWith(
+      expect.anything(),
+      'ImportRecipe.openDraft',
+    );
   });
 });

@@ -9,6 +9,7 @@ import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-rec
 import { ValueConstants } from '@core/constants';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 
 /** How often the screen asks the backend where the job has got to. */
 const POLL_INTERVAL_MS = 4000;
@@ -140,8 +141,28 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
 
   const onOpenDraft = useCallback((): void => {
     const draftId = job?.draftId;
-    if (draftId === null || draftId === undefined) return;
     importJobStore.getState().clear();
+
+    // A finished job without a draft id should not happen — the backend writes
+    // one before it reports `done`. It DID happen, and the button answered by
+    // doing nothing at all: the user tapped, the screen sat there, and the only
+    // way out of a share-launched app is the back gesture, which finishes the
+    // task and lands them back in Instagram. Whatever the cause, a primary
+    // action must move; this one goes where the drafts actually are and leaves
+    // a report behind so the next occurrence arrives with a code instead of a
+    // description.
+    if (draftId === null || draftId === undefined) {
+      FailureReporter.report(
+        new UnknownFailure(DiagnosticMessage.recipeImport.doneWithoutDraft),
+        'ImportRecipe.openDraft',
+      );
+      router.replace({
+        pathname: RoutePaths.myRecipes,
+        params: { tab: RoutePaths.myRecipesDraftsTab },
+      });
+      return;
+    }
+
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
   }, [job, importJobStore, router]);
 
