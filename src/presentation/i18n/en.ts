@@ -461,7 +461,6 @@ export const en = {
     gen2: 'Gathering ingredients',
     gen3: 'Writing the steps',
     gen4: 'Plating & final touches',
-    importFirstReply: 'I turned that Instagram video into a recipe — tweak anything below.',
     aiBadge: 'AI draft',
     refinePlaceholder: 'Tell the AI what to change…',
     regenerate: 'Try again',

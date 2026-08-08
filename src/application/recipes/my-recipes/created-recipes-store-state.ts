@@ -6,8 +6,6 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { CreateRecipeState } from '@application/recipes/create/create-recipe-state';
 import type { GenerateRecipeState } from '@application/recipes/generate/generate-recipe-state';
-import type { EnqueueImportState } from '@application/recipes/import/enqueue-import-state';
-import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { MyRecipesListState } from '@application/recipes/my-recipes/my-recipes-list-state';
@@ -29,14 +27,6 @@ export interface CreatedRecipesStoreState {
   // idle/generating/success/error shape (it produces the same preview Recipe),
   // so a near-duplicate state union would only drift over time.
   importState: GenerateRecipeState;
-  /**
-   * The background import the user last asked for.
-   *
-   * Distinct from `importState`, which tracks the SYNCHRONOUS import the user
-   * waits through. This one is a receipt: the request is already over, and the
-   * result arrives later as a notification.
-   */
-  enqueueImportState: EnqueueImportState;
   deleteState: DeleteRecipeState;
   refineState: RefineRecipeState;
   aiDraft: RecipeEntity | null;
@@ -47,12 +37,6 @@ export interface CreatedRecipesStoreState {
   loadMyRecipes: () => Promise<void>;
   generateRecipe: (prompt: string) => Promise<void>;
   importInstagram: (url: string) => Promise<void>;
-  /**
-   * Queues an import and returns as soon as it is accepted. Returns the job so
-   * a caller can show its id or poll it; the result itself arrives later, as a
-   * notification.
-   */
-  enqueueInstagramImport: (url: string) => Promise<ImportJob | null>;
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
@@ -61,7 +45,6 @@ export interface CreatedRecipesStoreState {
   resetCreateState: () => void;
   resetGenerateState: () => void;
   resetImportState: () => void;
-  resetEnqueueImportState: () => void;
   resetRefineState: () => void;
   resetDeleteState: () => void;
   clearAiDraft: () => void;

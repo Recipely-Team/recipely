@@ -56,10 +56,10 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
           icon={failureIcon(vm.failure)}
           title={copy.failTitle}
           body={content.body}
-          primaryLabel={t().common.retry}
-          onPrimary={vm.onRetry}
-          secondaryLabel={t().common.cancel}
-          onSecondary={vm.onClose}
+          primaryLabel={vm.canRetry ? t().common.retry : t().common.cancel}
+          onPrimary={vm.canRetry ? vm.onRetry : vm.onClose}
+          secondaryLabel={vm.canRetry ? t().common.cancel : undefined}
+          onSecondary={vm.canRetry ? vm.onClose : undefined}
         />
       </ScreenContainer>
     );

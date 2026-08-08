@@ -458,7 +458,6 @@ export const tr: Translations = {
     gen2: 'Malzemeler toplanıyor',
     gen3: 'Adımlar yazılıyor',
     gen4: 'Son rötuşlar yapılıyor',
-    importFirstReply: 'O Instagram videosunu tarife dönüştürdüm — aşağıda dilediğini değiştir.',
     aiBadge: 'Yapay zekâ taslağı',
     refinePlaceholder: 'Neyi değiştirelim? Buraya yaz…',
     regenerate: 'Tekrar dene',

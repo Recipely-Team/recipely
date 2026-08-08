@@ -127,7 +127,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
     listMyRecipesUseCase,
     generateRecipeUseCase,
     importInstagramRecipeUseCase,
-    enqueueInstagramImportUseCase,
     refineRecipeUseCase,
     deleteRecipeUseCase,
     recipeListStore,

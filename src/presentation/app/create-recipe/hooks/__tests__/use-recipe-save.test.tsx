@@ -32,7 +32,6 @@ import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
-import type { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
@@ -128,7 +127,6 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     generateRecipeUseCase: unusedUseCase<GenerateRecipeUseCase>(),
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
-    enqueueInstagramImportUseCase: unusedUseCase<EnqueueInstagramImportUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
     recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
     recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),

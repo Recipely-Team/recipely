@@ -1,0 +1,168 @@
+/**
+ * THE REGRESSION: the import checklist sat frozen at zero for the whole import.
+ *
+ * The screen runs two timers — a 4 s poll and a 9 s stage tick — and both lived
+ * in ONE effect keyed on the job object. Every successful poll stores a freshly
+ * built `ImportJob` (the mapper makes a new object even when nothing changed),
+ * so the object's identity changed every 4 s, the effect tore itself down, and
+ * the 9 s tick was destroyed before it ever fired. The checklist that exists to
+ * prove the wait is alive never moved — and it only moved at all when polling
+ * FAILED, because a failed poll writes nothing.
+ *
+ * So the fixture below deliberately returns a NEW object from every poll: that
+ * churn is the bug's whole mechanism, and a fixture that returned the same
+ * reference would pass against the broken code.
+ */
+
+import { act } from 'react-test-renderer';
+import { create } from 'zustand';
+import { renderComponent } from '@presentation/base/test-support/render-component';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
+import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
+import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
+import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
+import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
+
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(() => ({ replace: jest.fn(), back: jest.fn() })),
+}));
+
+const REEL = 'https://www.instagram.com/reel/abc/';
+const POLL_MS = 4000;
+const TICK_MS = 9000;
+
+/** A store whose `refreshJob` behaves like the real one: a new object each time. */
+const makeStores = (status: ImportJobStatus) => {
+  let polls = 0;
+  const importJobStore = create<ImportJobStoreState>((set) => ({
+    state: { status: 'idle' },
+    startImport: async () => {
+      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null } } });
+      await Promise.resolve();
+    },
+    refreshJob: async () => {
+      polls += 1;
+      // A FRESH object, exactly as `toImportJob` produces on every response.
+      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null } } });
+      await Promise.resolve();
+    },
+    clear: () => set({ state: { status: 'idle' } }),
+  }));
+
+  return { stores: { importJobStore } as unknown as Stores, pollCount: () => polls };
+};
+
+type ViewModel = ReturnType<typeof useImportRecipe>;
+
+const drive = (status: ImportJobStatus) => {
+  const { stores, pollCount } = makeStores(status);
+  let latest!: ViewModel;
+
+  const Probe = (): null => {
+    latest = useImportRecipe(REEL);
+    return null;
+  };
+
+  renderComponent(
+    <StoresProvider value={stores}>
+      <Probe />
+    </StoresProvider>,
+  );
+
+  return { latest: () => latest, pollCount };
+};
+
+/** Advances time in poll-sized slices so the polls genuinely interleave. */
+const advance = async (ms: number): Promise<void> => {
+  const slices = Math.ceil(ms / POLL_MS);
+  for (let i = 0; i < slices; i += 1) {
+    await act(async () => {
+      jest.advanceTimersByTime(POLL_MS);
+      await Promise.resolve();
+    });
+  }
+};
+
+describe('useImportRecipe — the wait has to keep moving', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+    jest.clearAllMocks();
+  });
+
+  it('advances the checklist while the job runs, even though every poll rewrites the job', async () => {
+    const { latest } = drive(ImportJobStatus.Running);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(latest().activeStage).toBe(0);
+
+    await advance(TICK_MS + POLL_MS);
+
+    // Against the unfixed code this is still 0: the tick never survived a poll.
+    expect(latest().activeStage).toBeGreaterThan(0);
+  });
+
+  it('keeps polling while the job runs', async () => {
+    const { pollCount } = drive(ImportJobStatus.Running);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await advance(POLL_MS * 3);
+
+    expect(pollCount()).toBeGreaterThanOrEqual(2);
+  });
+
+  it('stops polling once the job is done, and fills every stage', async () => {
+    const { latest, pollCount } = drive(ImportJobStatus.Done);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    await advance(POLL_MS * 3);
+
+    expect(pollCount()).toBe(0);
+    expect(latest().isDone).toBe(true);
+    expect(latest().activeStage).toBe(IMPORT_STAGE_COUNT);
+  });
+});
+
+describe('useImportRecipe — arriving with no URL', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it('reports a failure instead of queueing forever', async () => {
+    const { stores } = makeStores(ImportJobStatus.Queued);
+    let latest!: ViewModel;
+    const Probe = (): null => {
+      // A deep link or a restored route can land here with no param at all.
+      latest = useImportRecipe(undefined);
+      return null;
+    };
+
+    renderComponent(
+      <StoresProvider value={stores}>
+        <Probe />
+      </StoresProvider>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // The old shape left `isQueueing` true forever behind a spinning button
+    // with nothing behind it and no way back.
+    expect(latest.failure).not.toBeNull();
+    expect(latest.isQueueing).toBe(false);
+    expect(latest.canRetry).toBe(false);
+  });
+});

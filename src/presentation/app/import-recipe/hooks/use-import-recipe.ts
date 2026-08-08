@@ -6,7 +6,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-recipe/model/import-stage';
 import { ValueConstants } from '@core/constants';
-import { UnknownFailure, type Failure } from '@core/failure';
+import { ErrorMessageKey, UnknownFailure, ValidationFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 
 /** How often the screen asks the backend where the job has got to. */
@@ -31,6 +31,8 @@ interface UseImportRecipeResult {
   /** 0..1 for the ring. */
   progress: number;
   isDone: boolean;
+  /** False when there is nothing to retry WITH — no URL ever arrived. */
+  canRetry: boolean;
   onRetry: () => void;
   onClose: () => void;
   /** Opens the finished draft. No-op until the job reports one. */
@@ -64,26 +66,45 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     void importJobStore.getState().startImport(importUrl);
   }, [importUrl, importJobStore]);
 
-  // Queue once per arrival. A re-render must not re-submit the same reel.
+  // Queue once per arrival. A re-render must not re-submit the same reel — but
+  // the guard is only spent on a call that can actually run: setting it for a
+  // param that has not arrived yet left the screen queueing forever.
   useEffect(() => {
-    if (startedRef.current) return;
+    if (startedRef.current || importUrl === undefined) return;
     startedRef.current = true;
     start();
-  }, [start]);
+  }, [start, importUrl]);
 
   const job = state.status === StoreStatus.Loaded ? state.job : null;
   const isSettled =
     job !== null && (job.status === ImportJobStatus.Done || job.status === ImportJobStatus.Failed);
 
+  // WHY these are keyed on the job's ID and STATUS, not on `job` itself: every
+  // successful poll builds a fresh `ImportJob` object even when nothing changed,
+  // so an effect that depended on the object tore itself down every 4 s. The
+  // 9 s stage tick never survived long enough to fire once — the checklist that
+  // exists to prove the wait is alive sat frozen at zero for the whole import.
+  const jobId = job?.id ?? null;
+  const isWatchable = jobId !== null && !isSettled;
+
   useEffect(() => {
-    if (job === null || isSettled) return;
+    if (!isWatchable) return;
     const poll = setInterval(() => void importJobStore.getState().refreshJob(), POLL_INTERVAL_MS);
+    return () => clearInterval(poll);
+  }, [isWatchable, jobId, importJobStore]);
+
+  useEffect(() => {
+    if (!isWatchable) return;
     const tick = setInterval(() => setTicks((n) => n + ValueConstants.one), STAGE_TICK_MS);
-    return () => {
-      clearInterval(poll);
-      clearInterval(tick);
-    };
-  }, [job, isSettled, importJobStore]);
+    return () => clearInterval(tick);
+  }, [isWatchable, jobId]);
+
+  // --- finding: leaving by gesture is still leaving ---
+  // Android back and the iOS swipe unmount this screen without going through
+  // `onClose`, and the receipt they left behind was rendered by the NEXT
+  // import's first frame — including an "Open draft" button wired to the
+  // previous reel. Dropping our copy is never cancelling; the job runs on.
+  useEffect(() => () => importJobStore.getState().clear(), [importJobStore]);
 
   const onClose = useCallback((): void => {
     // The job outlives the screen; dropping our copy of the receipt is all that
@@ -99,6 +120,17 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
   }, [job, importJobStore, router]);
 
+  // Arriving with no URL is not a spinner, it is a dead end: the screen has
+  // nothing to queue and no way to get one. Say so instead of queueing forever.
+  const missingUrl =
+    importUrl === undefined
+      ? new ValidationFailure(
+          DiagnosticMessage.recipeImport.urlRequired,
+          undefined,
+          ErrorMessageKey.importInvalidUrl,
+        )
+      : null;
+
   const jobStatus = job?.status ?? null;
   // A job the worker failed is not a failed REQUEST, but it reaches the user as
   // the same thing: a stop with a reason. Wearing it as a `Failure` lets the
@@ -112,12 +144,15 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const isDone = jobStatus === ImportJobStatus.Done;
 
   return {
-    isQueueing: state.status === StoreStatus.Loading || state.status === StoreStatus.Idle,
-    failure: state.status === StoreStatus.Error ? state.failure : jobFailure,
+    isQueueing:
+      missingUrl === null &&
+      (state.status === StoreStatus.Loading || state.status === StoreStatus.Idle),
+    failure: missingUrl ?? (state.status === StoreStatus.Error ? state.failure : jobFailure),
     jobStatus,
     activeStage,
     progress: activeStage / IMPORT_STAGE_COUNT,
     isDone,
+    canRetry: missingUrl === null,
     onRetry: start,
     onClose,
     onOpenDraft,

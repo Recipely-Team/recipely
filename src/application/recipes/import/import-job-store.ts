@@ -26,6 +26,12 @@ interface ImportJobStoreDeps {
 export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<ImportJobStoreState> => {
   /** Bumped by `clear()`, so an answer from a previous import cannot land in the next one. */
   let session = ValueConstants.zero;
+  /**
+   * True while a poll is out. The screen re-asks on a fixed interval, so a slow
+   * or hanging request would otherwise stack two or three at a time on exactly
+   * the connection that is already struggling.
+   */
+  let isPolling = false;
 
   return create<ImportJobStoreState>((set, get) => ({
     state: { status: StoreStatus.Idle },
@@ -42,21 +48,28 @@ export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<Im
     },
     refreshJob: async () => {
       const current = get().state;
-      if (current.status !== StoreStatus.Loaded) return;
+      if (isPolling || current.status !== StoreStatus.Loaded) return;
       const { job } = current;
       if (job.status !== ImportJobStatus.Queued && job.status !== ImportJobStatus.Running) return;
 
       const requested = session;
-      const result = await deps.getImportJobUseCase.execute(job.id);
-      if (requested !== session || !result.ok) {
-        // A failed poll is not a failed import: the job is still on the worker,
-        // and the notification remains the promise. Keep the last good answer.
-        return;
+      isPolling = true;
+      try {
+        const result = await deps.getImportJobUseCase.execute(job.id);
+        if (requested !== session || !result.ok) {
+          // A failed poll is not a failed import: the job is still on the
+          // worker, and the notification remains the promise. Keep the last
+          // good answer.
+          return;
+        }
+        set({ state: { status: StoreStatus.Loaded, job: result.value } });
+      } finally {
+        isPolling = false;
       }
-      set({ state: { status: StoreStatus.Loaded, job: result.value } });
     },
     clear: () => {
       session += ValueConstants.one;
+      isPolling = false;
       set({ state: { status: StoreStatus.Idle } });
     },
   }));

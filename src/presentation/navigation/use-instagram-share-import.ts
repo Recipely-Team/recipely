@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { isAndroid } from '@infrastructure/constants/platform';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
 import { useShareIntentContext } from 'expo-share-intent';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -29,6 +29,7 @@ const extractInstagramUrl = (text?: string | null, webUrl?: string | null): stri
  */
 export const useInstagramShareImport = (): void => {
   const router = useRouter();
+  const pathname = usePathname();
   const { hasShareIntent, shareIntent, resetShareIntent } = useShareIntentContext();
   const handledRef = useRef(false);
 
@@ -50,6 +51,11 @@ export const useInstagramShareImport = (): void => {
     resetShareIntent();
     // expo-router serializes/deserializes object-form params itself, so the raw
     // URL rides through without a manual encode/decode pair on either side.
-    router.push({ pathname: RoutePaths.importRecipe, params: { importUrl: url } });
-  }, [hasShareIntent, shareIntent, resetShareIntent, router]);
+    // REPLACE when the import screen is already up. Pushing stacked a second
+    // copy: both instances stayed mounted, both polled the one job at 4 s, and
+    // popping back revealed a screen reporting the other share's progress.
+    const target = { pathname: RoutePaths.importRecipe, params: { importUrl: url } };
+    if (pathname === RoutePaths.importRecipe) router.replace(target);
+    else router.push(target);
+  }, [hasShareIntent, shareIntent, resetShareIntent, router, pathname]);
 };
