@@ -11,9 +11,9 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
-import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
-import { IngredientGroupRow } from '@presentation/app/create-recipe/items/ingredient-group-row';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
+import { IngredientGroupCard } from '@presentation/app/create-recipe/items/ingredient-group-card';
+import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
+import { parseIngredientGroups } from '@presentation/app/create-recipe/model/ingredients/parse-ingredient-groups';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/app/create-recipe/sheets/taxonomy-picker-sheet';
@@ -39,7 +39,10 @@ export interface RecipePreviewEditorProps {
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
   onAddIngredient: () => void;
+  onAddIngredientAt: (index: number) => void;
+  onMoveIngredient: (from: number, to: number) => void;
   onAddIngredientGroup: () => void;
+  onRemoveIngredientGroup: (headerIndex: number, itemIndices: readonly number[], keepItems: boolean) => void;
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onAddStep: () => void;
@@ -60,7 +63,10 @@ export const RecipePreviewEditor = ({
   onChangeIngredient,
   onRemoveIngredient,
   onAddIngredient,
+  onAddIngredientAt,
+  onMoveIngredient,
   onAddIngredientGroup,
+  onRemoveIngredientGroup,
   onChangeStep,
   onRemoveStep,
   onAddStep,
@@ -74,9 +80,12 @@ export const RecipePreviewEditor = ({
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
   // Group headings are structure, not shopping: three groups do not mean three
   // more things to buy, and the count sits next to the word "Ingredients".
-  const ingredientCount = recipe.ingredients.filter(
-    (s) => s.trim().length > ValueConstants.zero && !isIngredientGroup(s),
-  ).length;
+  const ingredientGroups = parseIngredientGroups(recipe.ingredients);
+  const ingredientCount = ingredientGroups.reduce(
+    (total, group) =>
+      total + group.items.filter((item) => item.value.trim().length > ValueConstants.zero).length,
+    ValueConstants.zero,
+  );
   const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
@@ -146,34 +155,40 @@ export const RecipePreviewEditor = ({
           title={t().recipes.ingredients}
           count={ingredientCount}
           error={fieldErrors.ingredients}
-          listGap={spacing.xxs}
-          onAdd={onAddIngredient}
-          addLabel={t().createRecipe.addIngredient}
-          secondaryAction={{
-            label: t().createRecipe.addGroup,
-            icon: 'pricetag-outline',
-            onPress: onAddIngredientGroup,
-          }}
+          listGap={spacing.sm}
+          // Adding an ingredient belongs to a CARD now — a single button at the
+          // bottom could only ever append to the last group, which is what made
+          // adding to the right one a chore. The section keeps "add group".
+          onAdd={onAddIngredientGroup}
+          addLabel={t().createRecipe.addGroup}
         >
-          {recipe.ingredients.map((value, i) =>
-            isIngredientGroup(value) ? (
-              <IngredientGroupRow
-                key={`ing-${i}`}
-                value={value}
-                onChange={(v) => onChangeIngredient(i, v)}
-                onRemove={() => onRemoveIngredient(i)}
-                removeLabel={t().mediaPicker.remove}
-              />
-            ) : (
-              <IngredientRow
-                key={`ing-${i}`}
-                value={value}
-                onChange={(v) => onChangeIngredient(i, v)}
-                onRemove={() => onRemoveIngredient(i)}
-                removeLabel={t().mediaPicker.remove}
-              />
-            ),
-          )}
+          {ingredientGroups.map((group) => (
+            <IngredientGroupCard
+              key={group.headerIndex}
+              group={group}
+              onChangeItem={onChangeIngredient}
+              onRemoveItem={onRemoveIngredient}
+              onMoveItem={(index, direction) => onMoveIngredient(index, index + direction)}
+              onAddItem={() =>
+                onAddIngredientAt(
+                  group.items.length > ValueConstants.zero
+                    ? (group.items[group.items.length - ValueConstants.one]?.index ?? ValueConstants.zero) +
+                      ValueConstants.one
+                    : group.headerIndex + ValueConstants.one,
+                )
+              }
+              onRenameGroup={(label) =>
+                onChangeIngredient(group.headerIndex, `${INGREDIENT_GROUP_PREFIX}${label}`)
+              }
+              onDeleteGroup={(keepItems) =>
+                onRemoveIngredientGroup(
+                  group.headerIndex,
+                  group.items.map((item) => item.index),
+                  keepItems,
+                )
+              }
+            />
+          ))}
         </EditableItemsSection>
 
         <EditableItemsSection
