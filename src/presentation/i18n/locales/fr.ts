@@ -324,6 +324,7 @@ export const fr = {
     themeDark: 'Sombre',
     chooseTheme: 'Choisissez votre thème',
     language: 'Langue',
+    languageComingSoon: 'Bientôt',
     account: 'Compte',
     signOut: 'Se déconnecter',
     signOutConfirm: 'Voulez-vous vraiment vous déconnecter ?',

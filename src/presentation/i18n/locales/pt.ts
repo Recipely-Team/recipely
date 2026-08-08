@@ -324,6 +324,7 @@ export const pt = {
     themeDark: 'Escuro',
     chooseTheme: 'Escolha seu tema',
     language: 'Idioma',
+    languageComingSoon: 'Em breve',
     account: 'Conta',
     signOut: 'Sair',
     signOutConfirm: 'Tem certeza de que deseja sair?',

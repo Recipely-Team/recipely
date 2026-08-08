@@ -327,6 +327,7 @@ export const tr: Translations = {
     themeDark: 'Koyu',
     chooseTheme: 'Temayı seç',
     language: 'Dil',
+    languageComingSoon: 'Yakında',
     account: 'Hesap',
     signOut: 'Çıkış yap',
     signOutConfirm: 'Çıkış yapmak istediğine emin misin?',

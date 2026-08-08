@@ -324,6 +324,7 @@ export const es = {
     themeDark: 'Oscuro',
     chooseTheme: 'Elige tu tema',
     language: 'Idioma',
+    languageComingSoon: 'Muy pronto',
     account: 'Cuenta',
     signOut: 'Cerrar sesión',
     signOutConfirm: '¿Seguro que quieres cerrar sesión?',

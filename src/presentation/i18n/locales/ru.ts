@@ -324,6 +324,7 @@ export const ru = {
     themeDark: 'Темная',
     chooseTheme: 'Выберите тему',
     language: 'Язык',
+    languageComingSoon: 'Скоро',
     account: 'Аккаунт',
     signOut: 'Выйти',
     signOutConfirm: 'Точно хотите выйти?',

@@ -26,18 +26,21 @@ import { de } from '@presentation/i18n/locales/de';
 import { en } from '@presentation/i18n/locales/en';
 import { es } from '@presentation/i18n/locales/es';
 import { fr } from '@presentation/i18n/locales/fr';
+import { hi } from '@presentation/i18n/locales/hi';
 import { id } from '@presentation/i18n/locales/id';
 // Aliased: the Italian catalogue is called `it`, which would shadow jest's own `it()`.
 import { it as itCatalogue } from '@presentation/i18n/locales/it';
 import { ja } from '@presentation/i18n/locales/ja';
+import { ko } from '@presentation/i18n/locales/ko';
 import { pt } from '@presentation/i18n/locales/pt';
 import { ru } from '@presentation/i18n/locales/ru';
 import { tr } from '@presentation/i18n/locales/tr';
+import { zh } from '@presentation/i18n/locales/zh';
 import type { Translations } from '@presentation/i18n/translations';
 
 /** Every catalogue the app ships, by locale code. Add a language here when it lands. */
 const CATALOGUES: Readonly<Record<string, Translations>> = {
-  en, tr, es, pt, fr, de, it: itCatalogue, ru, id, ja, ar,
+  en, tr, es, pt, fr, de, it: itCatalogue, ru, id, ja, ar, zh, ko, hi,
 };
 
 const PLACEHOLDER = /\{[a-zA-Z]+\}/g;

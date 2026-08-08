@@ -25,8 +25,8 @@ export const LocaleConstants = {
   it: 'it',
   ru: 'ru',
   id: 'id',
-  ja: 'ja',
-  // `ar` is translated and sitting in `@presentation/i18n/locales`, but is NOT
-  // listed until the app has an RTL layout: offering Arabic in a left-to-right
-  // interface is worse for an Arabic reader than leaving them on English.
+  // Latin and Cyrillic only, deliberately. Everything else the app has been
+  // translated into is listed in `preview-locales.ts` with the reason it is not
+  // selectable yet — a complete catalogue is not the same as a screen that
+  // renders it correctly, and nobody has read those on a device.
 } as const;

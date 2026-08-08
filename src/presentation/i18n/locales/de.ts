@@ -324,6 +324,7 @@ export const de = {
     themeDark: 'Dunkel',
     chooseTheme: 'Wähle dein Design',
     language: 'Sprache',
+    languageComingSoon: 'Demnächst',
     account: 'Konto',
     signOut: 'Abmelden',
     signOutConfirm: 'Möchtest du dich wirklich abmelden?',

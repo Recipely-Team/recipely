@@ -324,6 +324,7 @@ export const ar = {
     themeDark: "داكن",
     chooseTheme: "اختر السمة",
     language: "اللغة",
+    languageComingSoon: 'قريبًا',
     account: "الحساب",
     signOut: "تسجيل الخروج",
     signOutConfirm: "هل أنت متأكد من رغبتك في تسجيل الخروج؟",

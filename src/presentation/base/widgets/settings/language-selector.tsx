@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
+import { ALL_LOCALE_LIST, isPreviewLocale } from '@application/i18n/supported-locales';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface LanguageSelectorProps {
@@ -48,21 +48,35 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
 
       <BottomSheet visible={open} title={t().settings.language} onClose={() => setOpen(false)}>
         <ScrollView contentContainerStyle={styles.list}>
-          {SUPPORTED_LOCALE_LIST.map((locale) => {
+          {ALL_LOCALE_LIST.map((locale) => {
             const active = locale === value;
+            // Translated but not yet verified on a device: shown, so a user
+            // finds their language and learns it is coming, but not selectable.
+            const preview = isPreviewLocale(locale);
             return (
               <Pressable
                 key={locale}
                 onPress={() => select(locale)}
-                style={[styles.row, active ? { backgroundColor: colors.chipBackground } : null]}
+                disabled={preview}
+                style={[
+                  styles.row,
+                  active ? { backgroundColor: colors.chipBackground } : null,
+                  preview ? styles.previewRow : null,
+                ]}
                 accessibilityRole="button"
-                accessibilityState={{ selected: active }}
+                accessibilityState={{ selected: active, disabled: preview }}
                 accessibilityLabel={LANGUAGE_NAMES[locale] ?? locale}
               >
                 <ThemedText variant="body" style={active ? styles.activeLabel : undefined}>
                   {LANGUAGE_NAMES[locale] ?? locale}
                 </ThemedText>
-                {active ? (
+                {preview ? (
+                  <View style={[styles.badge, { backgroundColor: colors.chipBackground }]}>
+                    <ThemedText variant="caption" style={[styles.badgeLabel, { color: colors.chipText }]}>
+                      {t().settings.languageComingSoon}
+                    </ThemedText>
+                  </View>
+                ) : active ? (
                   <Ionicons name="checkmark" size={iconSizes.lg} color={colors.primary} />
                 ) : null}
               </Pressable>
@@ -100,5 +114,16 @@ const styles = StyleSheet.create({
   },
   activeLabel: {
     fontWeight: fontWeights.bold,
+  },
+  previewRow: {
+    opacity: opacities.disabled,
+  },
+  badge: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.round,
+  },
+  badgeLabel: {
+    fontWeight: fontWeights.semibold,
   },
 });

@@ -324,6 +324,7 @@ export const id = {
     themeDark: 'Gelap',
     chooseTheme: 'Pilih tema kamu',
     language: 'Bahasa',
+    languageComingSoon: 'Segera hadir',
     account: 'Akun',
     signOut: 'Keluar',
     signOutConfirm: 'Yakin ingin keluar?',

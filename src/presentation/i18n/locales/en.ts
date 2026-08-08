@@ -330,6 +330,7 @@ export const en = {
     themeDark: 'Dark',
     chooseTheme: 'Choose Your Theme',
     language: 'Language',
+    languageComingSoon: 'Coming soon',
     account: 'Account',
     signOut: 'Sign out',
     signOutConfirm: 'Are you sure you want to sign out?',

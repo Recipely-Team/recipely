@@ -324,6 +324,7 @@ export const ja = {
     themeDark: 'ダーク',
     chooseTheme: 'テーマを選択',
     language: '言語',
+    languageComingSoon: '近日対応',
     account: 'アカウント',
     signOut: 'ログアウト',
     signOutConfirm: 'ログアウトしますか？',
