@@ -103,8 +103,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         message={t().createRecipe.successPublished}
         primaryLabel={t().createRecipe.viewRecipe}
         onPrimary={vm.onSuccessPrimary}
-        secondaryLabel={t().createRecipe.successDone}
-        onSecondary={vm.onCloseSuccess}
         onClose={vm.onCloseSuccess}
       />
     </KeyboardAvoider>
