@@ -503,3 +503,36 @@ deletes the rest, silently and on open rather than on save. If the editor cannot
 show a field, it still has to carry it; and a type that omits the field is what
 makes the deletion invisible to the compiler, so the type is the first thing to
 fix.
+
+---
+
+## A lighter orange square on the dark-mode splash
+
+**Symptom:** launching in dark mode showed the Recipely mark sitting on a
+lighter orange SQUARE, floating on a darker orange screen. Light mode was fine.
+
+**Root cause:** two things that were each correct alone. `expo-splash-screen`
+bakes the configured `backgroundColor` into the generated `splashscreen_logo.png`
+as an opaque plate — the source asset's corner is fully transparent, the
+generated one's is opaque `rgba(238,137,65,255)`. Separately, `Theme.SplashScreen`
+descends from a light theme, so Android's **Force Dark** algorithmically darkened
+the splash WINDOW in dark mode — and Force Dark does not touch bitmaps. Sampled
+from a device screenshot: the square was `#EE8941`, the surround `#A14900`, a
+colour that appears nowhere in this repo. Both `values/colors.xml` and
+`values-night/colors.xml` carried the right colour, which is why reading the
+config proved nothing.
+
+*Guard:* `plugins/withAndroidSplashForceDark.js` writes a `values-night/styles.xml`
+that opts both launch themes out of Force Dark. It is a night override rather
+than a patch to `values/styles.xml` because two earlier attempts —
+`withAndroidStyles`, then a dangerous mod rewriting that file — both patched
+`AppTheme` and both silently lost the item on `Theme.App.SplashScreen`:
+expo-splash-screen writes that style after every mod a config plugin can
+register. `plugins/__tests__` pins every item the override must carry, since an
+Android style override replaces the whole style.
+
+**The lesson: verify the generated file, not the plugin.** Every attempt here
+looked right in its own return value and was wrong in `android/`, twice in a row.
+A build-time transform is only as true as the artifact it produces — so read the
+artifact, and when the thing you are patching is written by someone else's mod,
+stop fighting the ordering and pick a file they do not own.
