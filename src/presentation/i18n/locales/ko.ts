@@ -556,6 +556,7 @@ export const ko: Translations = {
     pasteStep2: '여기로 돌아와 붙여넣습니다.',
     pasteNote: '공개 게시물과 90초 미만 릴스에서 작동합니다.',
     pasteEmpty: '먼저 링크를 붙여넣어 주세요.',
+    pasteRecognised: '링크를 인식했어요',
     pasteManual: '링크를 입력란에 붙여넣어 주세요.',
     pasteEntry: 'Instagram에서 가져오기',
     pasteEntryHint: '릴스 링크 붙여넣기',

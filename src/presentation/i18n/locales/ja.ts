@@ -560,6 +560,7 @@ export const ja = {
     pasteStep2: 'ここに戻って貼り付けます。',
     pasteNote: '公開の投稿と90秒未満のリールに対応しています。',
     pasteEmpty: 'まずリンクを貼り付けてください。',
+    pasteRecognised: 'リンクを認識しました',
     pasteManual: 'リンクを入力欄に貼り付けてください。',
     pasteEntry: 'Instagramから取り込む',
     pasteEntryHint: 'リールのリンクを貼り付け',

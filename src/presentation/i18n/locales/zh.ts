@@ -564,6 +564,7 @@ export const zh = {
     pasteStep2: '回到这里并粘贴。',
     pasteNote: '适用于 90 秒以内的公开帖子和 Reel。',
     pasteEmpty: '请先粘贴链接。',
+    pasteRecognised: '已识别链接',
     pasteManual: '请将链接粘贴到输入框。',
     pasteEntry: '从 Instagram 导入',
     pasteEntryHint: '粘贴 Reel 链接',

@@ -14,6 +14,15 @@ interface UsePasteImportLinkResult {
   failure: Failure | null;
   /** Shown when the clipboard could not be read — the field is the fallback. */
   showManualHint: boolean;
+  /**
+   * `instagram.com/reel/Cx1y2z3` once the field holds a real post link.
+   *
+   * A pasted URL overflows the field, so the user sees `https://www.instagram.com/p/`
+   * and cannot tell whether the identifying part came along. This is the
+   * positive confirmation that it did.
+   */
+  recognised: string | null;
+  onBlur: () => void;
   onPaste: () => void;
   onDismissFailure: () => void;
   /** Validates and hands back the URL to import, or null when it is not usable. */
@@ -38,12 +47,25 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
   const [isEmpty, setIsEmpty] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [showManualHint, setShowManualHint] = useState(false);
+  const [recognised, setRecognised] = useState<string | null>(null);
+
+  /**
+   * Checks the link WITHOUT complaining. Used after a paste and on blur: the
+   * user has finished an action, so confirming is welcome — but the same check
+   * on every keystroke would shout "invalid link" at someone halfway through
+   * typing one.
+   */
+  const inspect = useCallback((raw: string): void => {
+    const url = InstagramUrl.create(raw);
+    setRecognised(url.ok ? url.value.shortForm : null);
+  }, []);
 
   const onChangeValue = useCallback((next: string): void => {
     setValue(next);
     setIsEmpty(false);
     setFailure(null);
     setShowManualHint(false);
+    setRecognised(null);
   }, []);
 
   const onPaste = useCallback((): void => {
@@ -55,12 +77,14 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
           setShowManualHint(true);
           return;
         }
-        onChangeValue(text.trim());
+        const pasted = text.trim();
+        onChangeValue(pasted);
+        inspect(pasted);
       } catch {
         setShowManualHint(true);
       }
     })();
-  }, [onChangeValue]);
+  }, [onChangeValue, inspect]);
 
   const submit = useCallback((): string | null => {
     setShowManualHint(false);
@@ -73,9 +97,11 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
     if (!url.ok) {
       setIsEmpty(false);
       setFailure(url.failure);
+      setRecognised(null);
       return null;
     }
     setFailure(null);
+    setRecognised(url.value.shortForm);
     return url.value.value;
   }, [value]);
 
@@ -86,6 +112,8 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
     failure,
     showManualHint,
     onPaste,
+    recognised,
+    onBlur: () => inspect(value),
     onDismissFailure: () => setFailure(null),
     submit,
   };

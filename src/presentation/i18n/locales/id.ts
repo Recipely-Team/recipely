@@ -560,6 +560,7 @@ export const id = {
     pasteStep2: 'Kembali ke sini dan tempel.',
     pasteNote: 'Berfungsi untuk postingan dan reel publik di bawah 90 detik.',
     pasteEmpty: 'Tempel tautan dulu.',
+    pasteRecognised: 'Tautan dikenali',
     pasteManual: 'Tempel tautannya ke kolom.',
     pasteEntry: 'Impor dari Instagram',
     pasteEntryHint: 'Tempel tautan sebuah reel',

@@ -560,6 +560,7 @@ export const de = {
     pasteStep2: 'Komm zurück und füge ihn ein.',
     pasteNote: 'Funktioniert mit öffentlichen Beiträgen und Reels unter 90 Sekunden.',
     pasteEmpty: 'Füge zuerst einen Link ein.',
+    pasteRecognised: 'Link erkannt',
     pasteManual: 'Füge den Link in das Feld ein.',
     pasteEntry: 'Aus Instagram importieren',
     pasteEntryHint: 'Link zu einem Reel einfügen',

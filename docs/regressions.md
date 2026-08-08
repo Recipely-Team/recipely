@@ -416,3 +416,27 @@ about what it knows. When adding a channel for errors, enumerate the ways an
 error can reach a user and check each one — and give handled-but-frequent
 failures somewhere to go that is not the crash inbox, or the filter that keeps
 crashes readable will be the filter that hides the trend.
+
+---
+
+## A field that hid the half that mattered
+
+**Symptom:** pasting an Instagram link on a phone showed
+`https://www.instagram.com/p/` and nothing else. The part that identifies the
+post — the only part worth checking — had scrolled out of the single-line field,
+so users went back to Instagram to copy it again, twice, before trusting it.
+
+**Root cause:** a one-line `TextInput` in a row that also holds an icon and a
+Paste button. A URL is longer than what is left, and a single-line field solves
+that by scrolling, which silently chooses to show the *beginning* — the part
+that is identical for every Instagram link and therefore carries no information.
+
+*Guard:* the field auto-grows and wraps, so the whole link is readable at once,
+and a validated paste is echoed back in short form (`instagram.com/reel/Cx1y2z3`)
+under the field. `use-paste-import-link.test.tsx` pins the echo, including that
+it stays silent mid-typing and withdraws when the link is edited away.
+
+**The lesson: truncation is a decision about which half to hide.** A field that
+scrolls shows the start; a filename, an id or a URL usually carries its meaning
+at the END. Before pinning a text box to one line, ask which half a user would
+check — and if the answer is "the end", let it wrap or echo what was understood.

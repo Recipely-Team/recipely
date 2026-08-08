@@ -8,7 +8,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 /** Hosts that serve an Instagram post, including the short domain. */
 const INSTAGRAM_HOSTS: readonly string[] = ['instagram.com', 'instagr.am'];
 /** The four path shapes that address a single post: post, reel, reels, TV. */
-const POST_PATH = /^\/(p|reel|reels|tv)\/[^/]+/;
+const POST_PATH = /^\/(p|reel|reels|tv)\/([^/?#]+)/;
 const WWW_PREFIX = /^www\./;
 const HTTP_PREFIX = /^https?:\/\//i;
 
@@ -30,8 +30,25 @@ const HTTP_PREFIX = /^https?:\/\//i;
  *   always comes back with the scheme the backend needs.
  */
 export class InstagramUrl extends BaseValueObject<string> {
-  private constructor(raw: string) {
+  private constructor(
+    raw: string,
+    /** `p`, `reel`, `reels` or `tv` — Instagram's own word for the post kind. */
+    readonly kind: string,
+    /** The post's short code, the part that identifies it. */
+    readonly shortcode: string,
+  ) {
     super(raw);
+  }
+
+  /**
+   * The link as a person can check it at a glance: `instagram.com/reel/Cx1y2z3`.
+   *
+   * A pasted URL is long enough to overflow a single-line field, so the user
+   * sees `https://www.instagram.com/p/` and has no way to tell whether the part
+   * that identifies the post came along. This is the part they need to see.
+   */
+  get shortForm(): string {
+    return `instagram.com/${this.kind}/${this.shortcode}`;
   }
 
   static create(raw: string): Result<InstagramUrl, ValidationFailure> {
@@ -58,10 +75,15 @@ export class InstagramUrl extends BaseValueObject<string> {
     if (!INSTAGRAM_HOSTS.includes(host)) {
       return fail(InstagramUrl.notInstagram(trimmed));
     }
-    if (!POST_PATH.test(url.pathname)) {
+    const post = POST_PATH.exec(url.pathname);
+    if (post === null) {
       return fail(InstagramUrl.invalid(trimmed));
     }
-    return ok(new InstagramUrl(url.toString()));
+    const [, kind, shortcode] = post;
+    if (kind === undefined || shortcode === undefined) {
+      return fail(InstagramUrl.invalid(trimmed));
+    }
+    return ok(new InstagramUrl(url.toString(), kind, shortcode));
   }
 
   /**

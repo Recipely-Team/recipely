@@ -560,6 +560,7 @@ export const ar = {
     pasteStep2: 'ارجع إلى هنا والصقه.',
     pasteNote: 'يعمل مع المنشورات والريلز العامة الأقصر من 90 ثانية.',
     pasteEmpty: 'الصق رابطًا أولًا.',
+    pasteRecognised: 'تم التعرّف على الرابط',
     pasteManual: 'الصق الرابط في الحقل.',
     pasteEntry: 'الاستيراد من إنستغرام',
     pasteEntryHint: 'الصق رابط ريلز',

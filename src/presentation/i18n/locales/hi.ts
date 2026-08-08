@@ -556,6 +556,7 @@ export const hi: Translations = {
     pasteStep2: 'यहाँ लौटें और पेस्ट करें।',
     pasteNote: '90 सेकंड से छोटी सार्वजनिक पोस्ट और रील के साथ काम करता है।',
     pasteEmpty: 'पहले कोई लिंक पेस्ट करें।',
+    pasteRecognised: 'लिंक पहचाना गया',
     pasteManual: 'लिंक को फ़ील्ड में पेस्ट करें।',
     pasteEntry: 'Instagram से इंपोर्ट करें',
     pasteEntryHint: 'रील का लिंक पेस्ट करें',

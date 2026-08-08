@@ -560,6 +560,7 @@ export const ru = {
     pasteStep2: 'Вернитесь сюда и вставьте её.',
     pasteNote: 'Работает с публичными постами и reels короче 90 секунд.',
     pasteEmpty: 'Сначала вставьте ссылку.',
+    pasteRecognised: 'Ссылка распознана',
     pasteManual: 'Вставьте ссылку в поле.',
     pasteEntry: 'Импорт из Instagram',
     pasteEntryHint: 'Вставьте ссылку на reels',

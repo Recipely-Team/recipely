@@ -560,6 +560,7 @@ export const es = {
     pasteStep2: 'Vuelve aquí y pégalo.',
     pasteNote: 'Funciona con publicaciones y reels públicos de menos de 90 segundos.',
     pasteEmpty: 'Pega un enlace primero.',
+    pasteRecognised: 'Enlace reconocido',
     pasteManual: 'Pega el enlace en el campo.',
     pasteEntry: 'Importar desde Instagram',
     pasteEntryHint: 'Pega el enlace de un reel',

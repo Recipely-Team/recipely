@@ -563,6 +563,7 @@ export const tr: Translations = {
     pasteStep2: 'Buraya dön ve yapıştır.',
     pasteNote: 'Herkese açık, 90 saniyeden kısa gönderi ve reel’lerle çalışır.',
     pasteEmpty: 'Önce bir bağlantı yapıştır.',
+    pasteRecognised: 'Bağlantı tanındı',
     pasteManual: 'Bağlantıyı alana uzun basıp yapıştır.',
     pasteEntry: 'Instagram’dan yükle',
     pasteEntryHint: 'Reel bağlantısını yapıştır',

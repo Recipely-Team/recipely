@@ -560,6 +560,7 @@ export const it = {
     pasteStep2: 'Torna qui e incollalo.',
     pasteNote: 'Funziona con post e reel pubblici sotto i 90 secondi.',
     pasteEmpty: 'Incolla prima un link.',
+    pasteRecognised: 'Link riconosciuto',
     pasteManual: 'Incolla il link nel campo.',
     pasteEntry: 'Importa da Instagram',
     pasteEntryHint: 'Incolla il link di un reel',

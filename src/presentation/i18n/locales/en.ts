@@ -566,6 +566,7 @@ export const en = {
     pasteStep2: 'Come back here and paste it.',
     pasteNote: 'Works with public posts and reels under 90 seconds.',
     pasteEmpty: 'Paste a link first.',
+    pasteRecognised: 'Link recognised',
     pasteManual: 'Paste the link into the field.',
     pasteEntry: 'Import from Instagram',
     pasteEntryHint: 'Paste a link to a reel',
