@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { type Href, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -86,6 +87,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const markOneRead = notificationsStore((s) => s.markOneRead);
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
+
+  useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
 
   // Load the latest feed once per mount. Notifications stay unread until the
   // user taps them individually or presses the explicit "mark all read" button —

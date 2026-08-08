@@ -21,6 +21,7 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 
 import type { Dispatch, SetStateAction } from 'react';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
@@ -63,6 +64,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   draftId,
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
   const { createdRecipesStore, draftsStore } = useStores();
   const refineState = createdRecipesStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
@@ -263,8 +265,8 @@ const GEN_STEP_INTERVAL_MS = 620;
       setExitOpen(true);
       return;
     }
-    router.back();
-  }, [phase, recipe, router]);
+    goBackOrHome();
+  }, [phase, recipe, goBackOrHome]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({
@@ -274,8 +276,8 @@ const GEN_STEP_INTERVAL_MS = 620;
       chatHistory,
     });
     setExitOpen(false);
-    router.back();
-  }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
+    goBackOrHome();
+  }, [upsertDraft, activeDraftId, recipe, chatHistory, goBackOrHome]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
     // Stop autosaving BEFORE the delete, not after: the timer armed by the
@@ -287,8 +289,8 @@ const GEN_STEP_INTERVAL_MS = 620;
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
-    router.back();
-  }, [cancelAutosave, draftsStore, activeDraftId, router]);
+    goBackOrHome();
+  }, [cancelAutosave, draftsStore, activeDraftId, goBackOrHome]);
 
   return {
     phase,

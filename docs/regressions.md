@@ -368,3 +368,51 @@ object every response.** Depend on the fields you branch on, not the payload
 they arrived in — and when an effect owns a timer, ask what happens to that timer
 on the re-render you did not think about. Two timers with different periods in
 one effect is the shape to distrust: the shorter one silently starves the longer.
+
+---
+
+## The close button that closed the app
+
+**Symptom:** on a dev build, leaving a screen reached from a share intent or a
+notification quit Recipely instead of returning to it.
+
+**Root cause:** `router.back()` on the ONLY screen in the stack closes the app on
+Android. Every close button in the app used it, which is correct for a screen you
+pushed yourself — and wrong for one the OS pushed for you. A share intent or a
+notification tap on a cold start makes that screen the entire stack, so its X was
+an exit door.
+
+*Guard:* `useGoBackOrHome` asks `router.canGoBack()` and lands on the feed when
+the answer is no. Both entry-point screens (import, create-recipe) use it, and
+both suites hold a "nothing to go back to" case.
+
+**The lesson: a screen the OS can open is a screen that may be the whole stack.**
+Anything reachable from a share intent, a notification, or a deep link cannot
+assume there is a behind to go back to — and the failure mode is not a stuck
+screen, it is the app disappearing, which reads to the user as a crash.
+
+---
+
+## Errors the user saw and Firebase never did
+
+**Symptom:** none visible — which was the problem. A crash report existed for
+`unknown` and `server` failures raised through **toasts only**, so a failure
+shown as a full-screen error state (the feed, notifications, recipe detail, an
+import) reached the user and nobody else. A render-time throw was worse: it
+unmounted the tree, showed a blank screen or closed the app, and reported
+nothing at all.
+
+*Guard:* three things. `AppErrorBoundary` catches render throws, records them
+with their component stack, and offers a retry instead of a dead end.
+`useReportFailure` reports at every surface that shows a failure, once per
+failure rather than once per render. And `FailureReporter` gained a second sink:
+**every** failure is counted as an analytics event while only the unforeseen ones
+become crashes — so "how often does this happen" has a home that is not the
+inbox for "what did we not predict".
+
+**The lesson: coverage is a property of the SURFACES, not of the reporter.** A
+reporting helper wired into one of five places is a reporting helper that lies
+about what it knows. When adding a channel for errors, enumerate the ways an
+error can reach a user and check each one — and give handled-but-frequent
+failures somewhere to go that is not the crash inbox, or the filter that keeps
+crashes readable will be the filter that hides the trend.

@@ -1,11 +1,13 @@
 import { FailureCode } from '@core/failure';
 import type { Failure } from '@presentation/base/types';
 
-/** Failure sink, filled by the composition root. */
+/** Crash sink, filled by the composition root. */
 type Sink = (error: unknown, context: string) => void;
+/** Counting sink for every failure, crash-worthy or not. */
+type EventSink = (code: string, context: string) => void;
 
 /**
- * Codes worth reporting.
+ * Codes worth a CRASH REPORT.
  *
  * @remarks
  * Everything else is a failure the app already ANSWERED: a validation message
@@ -15,6 +17,11 @@ type Sink = (error: unknown, context: string) => void;
  *
  * `network` and `timeout` are deliberately absent for the same reason: a user
  * on a train produces them by the dozen and there is nothing to fix.
+ *
+ * They are not lost, though: EVERY failure that reaches a user is counted as an
+ * analytics event. Crashlytics answers "what broke that we did not foresee",
+ * analytics answers "how often does this happen, and to whom" — and a spike in
+ * handled `network` failures is a real signal that belongs on the second one.
  */
 const REPORTED_CODES: ReadonlySet<string> = new Set([FailureCode.Unknown, FailureCode.Server]);
 
@@ -64,14 +71,31 @@ export const FailureReporter = {
     current = sink;
   },
 
+  setEventSink(sink: EventSink | null): void {
+    events = sink;
+  },
+
+  /**
+   * Called wherever a failure becomes something the user can see.
+   *
+   * Every failure is counted; only the unforeseen ones are also reported as
+   * crashes. Both sinks are wrapped: reporting a failure must never itself
+   * surface one.
+   */
   report(failure: Failure, context: string): void {
+    try {
+      events?.(failure.code, context);
+    } catch {
+      // no-op
+    }
     if (current === null || !REPORTED_CODES.has(failure.code)) return;
     try {
       current(new Error(`${failure.code}: ${redact(failure.message)}`), context);
     } catch {
-      // Reporting a failure must never itself surface one.
+      // no-op
     }
   },
 };
 
 let current: Sink | null = null;
+let events: EventSink | null = null;

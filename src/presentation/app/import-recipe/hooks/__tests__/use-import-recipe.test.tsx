@@ -23,9 +23,12 @@ import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-impor
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
+import { RoutePaths } from '@presentation/base/constants';
+
+const mockRouter = { replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
 
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: jest.fn(), back: jest.fn() })),
+  useRouter: jest.fn(() => mockRouter),
 }));
 
 const REEL = 'https://www.instagram.com/reel/abc/';
@@ -129,6 +132,52 @@ describe('useImportRecipe — the wait has to keep moving', () => {
     expect(pollCount()).toBe(0);
     expect(latest().isDone).toBe(true);
     expect(latest().activeStage).toBe(IMPORT_STAGE_COUNT);
+  });
+});
+
+describe('useImportRecipe — leaving', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    mockRouter.back.mockClear();
+    mockRouter.replace.mockClear();
+    mockRouter.canGoBack.mockReturnValue(true);
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  /**
+   * THE REGRESSION: "app kapandı". A share intent on a cold start makes this
+   * screen the entire navigation stack, and `router.back()` on the only screen
+   * closes the app on Android — so "Got it, notify me" quit Recipely.
+   */
+  it('goes home rather than out of the app when there is nothing to go back to', async () => {
+    mockRouter.canGoBack.mockReturnValue(false);
+    const { latest } = drive(ImportJobStatus.Queued);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.recipes);
+  });
+
+  it('goes back normally when a screen is behind it', async () => {
+    const { latest } = drive(ImportJobStatus.Queued);
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 });
 

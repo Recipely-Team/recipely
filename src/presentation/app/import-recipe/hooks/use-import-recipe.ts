@@ -4,6 +4,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-recipe/model/import-stage';
 import { ValueConstants } from '@core/constants';
 import { ErrorMessageKey, UnknownFailure, ValidationFailure, type Failure } from '@core/failure';
@@ -55,6 +56,7 @@ interface UseImportRecipeResult {
  */
 export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeResult => {
   const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
   const { importJobStore } = useStores();
   const state = importJobStore((s) => s.state);
   const [ticks, setTicks] = useState(ValueConstants.zero);
@@ -108,10 +110,11 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
 
   const onClose = useCallback((): void => {
     // The job outlives the screen; dropping our copy of the receipt is all that
-    // leaving means.
+    // leaving means. `goBackOrHome`, not `back`: a share intent on a cold start
+    // makes this screen the entire stack, and backing out of it QUIT THE APP.
     importJobStore.getState().clear();
-    router.back();
-  }, [importJobStore, router]);
+    goBackOrHome();
+  }, [importJobStore, goBackOrHome]);
 
   const onOpenDraft = useCallback((): void => {
     const draftId = job?.draftId;

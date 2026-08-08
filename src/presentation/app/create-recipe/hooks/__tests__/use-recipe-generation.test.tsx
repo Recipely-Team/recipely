@@ -75,7 +75,13 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 // A STABLE router object, so a test can assert on the navigation a flow
 // performs — `useRouter` handing back a fresh mock per render made that
 // impossible to observe.
-const mockRouter = { replace: jest.fn(), back: jest.fn() };
+const mockRouter = {
+  replace: jest.fn(),
+  back: jest.fn(),
+  // Default: there IS somewhere to go back to. The screen opened by a
+  // share intent on a cold start is the case where there is not.
+  canGoBack: jest.fn(() => true),
+};
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => mockRouter),
@@ -667,6 +673,36 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     });
 
     expect(latest().exitOpen).toBe(true);
+  });
+
+  /**
+   * THE REGRESSION: "app kapandı" — closing the screen quit the app.
+   *
+   * `router.back()` on the only screen in the stack closes the app on Android,
+   * and this screen IS the whole stack when it was opened by a share intent or
+   * a notification tap on a cold start. The X button, and every exit-dialog
+   * answer, walked the user out of Recipely instead of back into it.
+   */
+  it('goes home rather than out of the app when there is nothing to go back to', async () => {
+    mockRouter.canGoBack.mockReturnValueOnce(false);
+    const { latest } = await driveResumed();
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.recipes);
+  });
+
+  it('goes back normally when there is a screen behind it', async () => {
+    const { latest } = await driveResumed();
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
   });
 
   it('still asks for a recipe started here, which is in no drafts list yet', async () => {

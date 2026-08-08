@@ -16,6 +16,7 @@ import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-r
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { parseTabParam } from '@presentation/app/my-recipes/model/parse-tab-param';
 import { isFirstLoad } from '@presentation/app/my-recipes/model/is-first-load';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -80,6 +81,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // A failed load must not read as "you have nothing" — that is the same lie
   // the empty-state-while-loading bug told, just with a different cause.
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
+  useReportFailure(loadFailure, 'MyRecipesScreen');
 
   const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
     { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },

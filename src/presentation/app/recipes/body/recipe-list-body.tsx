@@ -12,6 +12,7 @@ import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-hea
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { FilterSortFab } from '@presentation/app/recipes/items/filters/filter-sort-fab';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
@@ -87,6 +88,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   );
 
   const keyExtractor = useCallback((r: RecipeSummaryEntity): string => r.id, []);
+
+  useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'RecipeListBody');
 
   let body: React.JSX.Element;
   if (state.status === StoreStatus.Error) {
