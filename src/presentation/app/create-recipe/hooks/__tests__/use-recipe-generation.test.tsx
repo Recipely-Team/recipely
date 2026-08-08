@@ -29,7 +29,14 @@ import type { BoundStore } from '@application/store/bound-store';
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
+import {
+  ErrorMessageKey,
+  type Failure,
+  NetworkFailure,
+  NotFoundFailure,
+  UnknownFailure,
+  ValidationFailure,
+} from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -61,6 +68,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/locales/en';
 import { RoutePaths } from '@presentation/base/constants';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
@@ -70,6 +78,10 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
   showDangerToast: jest.fn(),
   showErrorToast: jest.fn(),
   showSuccessToast: jest.fn(),
+}));
+
+jest.mock('@presentation/base/errors/failure-reporter', () => ({
+  FailureReporter: { report: jest.fn() },
 }));
 
 // A STABLE router object, so a test can assert on the navigation a flow
@@ -211,6 +223,7 @@ const makeStores = (
   config: FakeRecipeRepositoryConfig,
   getDraft?: RecipeDraft,
   hold?: Promise<void>,
+  draftFailure?: Failure,
 ): Stores => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
@@ -232,7 +245,8 @@ const makeStores = (
     getDraftUseCase: {
       execute: async () => {
         if (hold !== undefined) await hold;
-        return getDraft === undefined ? fail(new UnknownFailure('no draft')) : ok(getDraft);
+        if (getDraft !== undefined) return ok(getDraft);
+        return fail(draftFailure ?? new UnknownFailure('no draft'));
       },
     } as unknown as GetDraftUseCase,
     upsertDraftUseCase: unusedUseCase<UpsertDraftUseCase>(),
@@ -262,6 +276,8 @@ interface ResumeOptions {
   getDraft?: RecipeDraft;
   /** Held open to inspect the screen WHILE the draft is still being fetched. */
   hold?: Promise<void>;
+  /** Which failure the read answers with. Defaults to an unreadable draft. */
+  draftFailure?: Failure;
 }
 
 /**
@@ -285,7 +301,7 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(config, resume?.getDraft, resume?.hold)}>
+    <StoresProvider value={makeStores(config, resume?.getDraft, resume?.hold, resume?.draftFailure)}>
       <Probe />
     </StoresProvider>,
   );
@@ -744,7 +760,9 @@ describe('useRecipeGeneration — opening a draft', () => {
   });
 
   /** A resume whose fetch is held open until the returned `release` is called. */
-  const driveHeldResume = ({ draft }: { draft?: RecipeDraft } = { draft: savedDraft() }) => {
+  const driveHeldResume = (
+    { draft, failure }: { draft?: RecipeDraft; failure?: Failure } = { draft: savedDraft() },
+  ) => {
     let release!: () => void;
     const hold = new Promise<void>((resolve) => {
       release = resolve;
@@ -753,6 +771,7 @@ describe('useRecipeGeneration — opening a draft', () => {
       draftId: 'draft-1',
       getDraft: draft,
       hold,
+      draftFailure: failure,
     });
     const settle = async (): Promise<void> => {
       release();
@@ -806,5 +825,49 @@ describe('useRecipeGeneration — opening a draft', () => {
     // draft, an expired session and a dead connection each read differently,
     // and the reporter now sees which one it was.
     expect(showErrorToast).toHaveBeenCalledTimes(1);
+  });
+
+  // ─── the regression: "Taslağı aç" dropped the user on a blank AI prompt ────
+  // A finished import's queue button and its completion notification both open
+  // `?draftId=`, and both keep naming that id for good — but PUBLISHING a draft
+  // DELETES it. Tapping either one after publishing therefore read a 404, which
+  // the screen handled like any other read failure: blank AI prompt, "couldn't
+  // open" toast. Two dev jobs on 2026-08-08 pointed at drafts that had already
+  // become recipes, and it looked to the user like the import had broken.
+  describe('a draft that no longer exists', () => {
+    const gone = (): { failure: Failure } => ({ failure: new NotFoundFailure('draft deleted') });
+
+    it('sends the user to their drafts instead of a blank AI prompt screen', async () => {
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        pathname: RoutePaths.myRecipes,
+        params: { tab: RoutePaths.myRecipesDraftsTab },
+      });
+      expect(mockRouter.replace).not.toHaveBeenCalledWith(RoutePaths.createRecipe);
+    });
+
+    it('says the draft is gone rather than offering a retry that cannot work', async () => {
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      // `showErrorToast` carries a retry affordance; there is nothing to retry
+      // when the row is deleted, so this one is a plain danger toast.
+      expect(showDangerToast).toHaveBeenCalledWith(en.createRecipe.draftGone);
+      expect(showErrorToast).not.toHaveBeenCalled();
+    });
+
+    it('does not report a deleted draft as a crash', async () => {
+      // Publishing your own draft is normal use, not an incident. Reporting it
+      // would bury the read failures that ARE worth looking at.
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      expect(FailureReporter.report).not.toHaveBeenCalled();
+    });
   });
 });

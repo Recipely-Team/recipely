@@ -456,6 +456,7 @@ export const de = {
     generate: 'Rezept generieren',
     startBlank: 'Mit leerem Rezept starten',
     resumeDraft: 'Entwurf fortsetzen',
+    draftGone: 'Dieser Entwurf existiert nicht mehr – vielleicht hast du ihn schon veröffentlicht.',
     genTitle: 'Dein Rezept wird zubereitet',
     genSub: 'Der KI-Koch richtet gerade alles nur für dich an.',
     gen0: 'Deine Anfrage wird gelesen',

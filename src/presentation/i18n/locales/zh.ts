@@ -460,6 +460,7 @@ export const zh = {
     generate: '生成食谱',
     startBlank: '从空白食谱开始',
     resumeDraft: '继续编辑草稿',
+    draftGone: '该草稿已不存在，你可能已经发布了它。',
     genTitle: '正在准备你的食谱',
     genSub: '食材、步骤和最后的细节都在安排中。',
     gen0: '理解你的需求',

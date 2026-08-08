@@ -460,6 +460,7 @@ export const tr: Translations = {
     generate: 'Tarifi oluştur',
     startBlank: 'Boş tariften başla',
     resumeDraft: 'Taslağına devam et',
+    draftGone: 'O taslak artık yok — daha önce yayımlamış olabilirsin.',
     genTitle: 'Tarifin hazırlanıyor',
     genSub: 'Tarifin hazırlanıyor, son dokunuşlar yapılıyor.',
     gen0: 'İsteğin okunuyor',

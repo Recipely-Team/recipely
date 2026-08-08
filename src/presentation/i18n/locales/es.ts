@@ -456,6 +456,7 @@ export const es = {
     generate: 'Generar receta',
     startBlank: 'Empezar con una receta en blanco',
     resumeDraft: 'Continuar tu borrador',
+    draftGone: 'Ese borrador ya no existe: puede que ya lo hayas publicado.',
     genTitle: 'Preparando tu receta',
     genSub: 'El chef de IA está emplatando todo especialmente para ti.',
     gen0: 'Leyendo tu solicitud',

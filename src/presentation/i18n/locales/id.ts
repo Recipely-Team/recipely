@@ -456,6 +456,7 @@ export const id = {
     generate: 'Buat resep',
     startBlank: 'Mulai dari resep kosong',
     resumeDraft: 'Lanjutkan draf',
+    draftGone: 'Draf itu sudah tidak ada — mungkin kamu sudah menerbitkannya.',
     genTitle: 'Sedang memasak resep kamu',
     genSub: 'Chef AI sedang menata semuanya khusus untuk kamu.',
     gen0: 'Membaca permintaan kamu',

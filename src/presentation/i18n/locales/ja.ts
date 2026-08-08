@@ -456,6 +456,7 @@ export const ja = {
     generate: 'レシピを生成',
     startBlank: '空のレシピから始める',
     resumeDraft: '下書きを続ける',
+    draftGone: 'その下書きはもうありません。すでに公開した可能性があります。',
     genTitle: 'レシピを調理中',
     genSub: 'AIシェフがあなたのために仕上げています。',
     gen0: 'リクエストを確認中',

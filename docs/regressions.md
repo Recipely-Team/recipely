@@ -440,3 +440,34 @@ it stays silent mid-typing and withdraws when the link is edited away.
 scrolls shows the start; a filename, an id or a URL usually carries its meaning
 at the END. Before pinning a text box to one line, ask which half a user would
 check — and if the answer is "the end", let it wrap or echo what was understood.
+
+---
+
+## "Taslağı aç" opened a blank AI prompt screen
+
+**Symptom:** a finished Instagram import offered *Open draft*; tapping it — or
+tapping the completion notification — parked the user on the empty
+create-with-AI screen for a moment and left them there. It read as if the import
+had failed, and the recipe it had actually produced was nowhere in sight.
+
+**Root cause:** a dead pointer that nothing kept honest. The import job stores
+`draftId` for good, and its notification carries the same id — but **publishing
+a draft deletes it** (`recipe_drafts` has no soft delete). So a user who opened
+the import, published the recipe, and later returned by either route read a 404
+on `GET /recipes/drafts/:id`. The screen treated that like any other read
+failure — toast, drop the param, fall back to `Prompt` — which is right for an
+offline read and wrong for a row that is gone: there is nothing to retry, and
+the blank prompt answers a question the user did not ask. Two dev jobs on
+2026-08-08 pointed at drafts that had already become recipes.
+
+*Guard:* the resume path branches on `FailureCode.NotFound` and lands on My
+Recipes' drafts tab with copy that says the draft is gone, instead of the AI
+prompt; a deleted draft is normal use and is no longer reported as a crash.
+`use-recipe-generation.test.tsx` → "a draft that no longer exists" pins all
+three, and fails against the unfixed hook.
+
+**The lesson: a stored id is a claim about the past, not a promise about the
+present.** Any pointer that outlives the thing it names — a job row, a
+notification, a deep link, a cached route param — will eventually be followed
+after the target is deleted. Decide what "it is gone" should DO before shipping
+the pointer, and make sure that answer is different from "it could not be read".

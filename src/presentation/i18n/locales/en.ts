@@ -463,6 +463,7 @@ export const en = {
     generate: 'Generate recipe',
     startBlank: 'Start from a blank recipe',
     resumeDraft: 'Continue your draft',
+    draftGone: 'That draft is gone — you may have already published it.',
     genTitle: 'Cooking up your recipe',
     genSub: 'The AI chef is plating everything up just for you.',
     gen0: 'Reading your request',

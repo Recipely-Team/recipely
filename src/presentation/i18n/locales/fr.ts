@@ -456,6 +456,7 @@ export const fr = {
     generate: 'Générer la recette',
     startBlank: 'Commencer avec une recette vierge',
     resumeDraft: 'Continuer votre brouillon',
+    draftGone: 'Ce brouillon n\'existe plus — vous l\'avez peut-être déjà publié.',
     genTitle: 'Votre recette mijote',
     genSub: 'Le chef IA prépare les dernières touches rien que pour vous.',
     gen0: 'Lecture de votre demande',

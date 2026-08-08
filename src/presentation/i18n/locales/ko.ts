@@ -452,6 +452,7 @@ export const ko: Translations = {
     generate: '레시피 생성',
     startBlank: '빈 레시피로 시작',
     resumeDraft: '임시저장 이어서 작성',
+    draftGone: '그 초안은 더 이상 없어요. 이미 게시했을 수 있어요.',
     genTitle: '레시피를 만들고 있어요',
     genSub: 'AI가 재료부터 조리 순서까지 차근차근 준비하고 있어요.',
     gen0: '요청 내용 확인 중',
