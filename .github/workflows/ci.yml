@@ -533,13 +533,19 @@ jobs:
           ruby - <<'RUBY'
           require 'xcodeproj'
           project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
-          app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
-          app or abort('no application target found in the generated project')
-          app.build_configurations.each do |config|
-            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
-            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
-            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          # The share extension is a SECOND signed target with its own bundle id.
+          # Signing only the app left it on automatic signing, and the archive
+          # fails on a runner that has no account to resolve it with.
+          signable = %w[com.apple.product-type.application com.apple.product-type.app-extension]
+          targets = project.targets.select { |t| signable.include?(t.product_type) }
+          targets.any? or abort('no signable target found in the generated project')
+          targets.each do |target|
+            target.build_configurations.each do |config|
+              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+              config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+              config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+            end
           end
           project.save
           RUBY
@@ -918,13 +924,19 @@ jobs:
           ruby - <<'RUBY'
           require 'xcodeproj'
           project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
-          app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
-          app or abort('no application target found in the generated project')
-          app.build_configurations.each do |config|
-            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
-            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
-            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          # The share extension is a SECOND signed target with its own bundle id.
+          # Signing only the app left it on automatic signing, and the archive
+          # fails on a runner that has no account to resolve it with.
+          signable = %w[com.apple.product-type.application com.apple.product-type.app-extension]
+          targets = project.targets.select { |t| signable.include?(t.product_type) }
+          targets.any? or abort('no signable target found in the generated project')
+          targets.each do |target|
+            target.build_configurations.each do |config|
+              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+              config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+              config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+            end
           end
           project.save
           RUBY
