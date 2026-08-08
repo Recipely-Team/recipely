@@ -115,6 +115,11 @@ const GEN_STEP_INTERVAL_MS = 620;
       // the screen shimmering forever — fall back to the prompt phase and say why.
       if (loaded === null) {
         showDangerToast(t().drafts.openFailed);
+        // Drop the param as well as the phase. `activeDraftId` is `draftId ??
+        // newDraftId`, so staying on it would point the autosave at the draft
+        // that FAILED to load — an offline read leaves that draft intact on the
+        // server, and the next thing typed here would overwrite it.
+        router.replace(RoutePaths.createRecipe);
         setPhase(PhaseType.Prompt);
         return;
       }
@@ -129,7 +134,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     return () => {
       cancelled = true;
     };
-  }, [draftId, draftsStore, setRecipe]);
+  }, [draftId, draftsStore, setRecipe, router]);
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {

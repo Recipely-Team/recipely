@@ -1,5 +1,4 @@
 import { useCallback, useState } from 'react';
-import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -32,12 +31,12 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
 
   // The saved grid renders the favourites response directly, so this is the one
   // request it needs — it no longer borrows rows from the discover feed. The
-  // load itself lives in the store (it owns the status the skeleton reads); the
-  // outcome is read back off `listState` to surface a failure the user pulled for.
+  // load itself lives in the store (it owns the status the skeleton reads), and
+  // hands its own outcome back — reading the shared `listState` instead would
+  // toast the wrong answer whenever the focus load and a pull overlap.
   const refreshSaved = useCallback(async (): Promise<void> => {
-    await savedRecipesStore.getState().loadSaved();
-    const state = savedRecipesStore.getState().listState;
-    if (state.status === StoreStatus.Error) showErrorToast(state.failure);
+    const result = await savedRecipesStore.getState().loadSaved();
+    if (!result.ok) showErrorToast(result.failure);
   }, [savedRecipesStore]);
 
   const onRefresh = useCallback((): void => {

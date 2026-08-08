@@ -278,6 +278,15 @@ the single predicate the list branches on — so "unanswered" and "empty" can no
 be spelled the same way. `my-recipes-list.test.tsx` pins the skeleton branch over the
 empty one for all three tabs.
 
+*And the trap inside the fix:* a status that is re-entered on EVERY call cannot say
+"first load". The first cut set `Loading` unconditionally, and this screen reloads all
+three tabs on focus — so an empty tab flashed empty → skeleton → empty on every visit,
+and a pull-to-refresh swapped out the `ScrollView` carrying the `RefreshControl`
+mid-gesture. A list that is already `Loaded` now stays `Loaded` while it reloads, which
+is the convention the recipe feed already used (`isRefreshing` / `isLoadingMore` live
+INSIDE `Loaded`). An `Error` with nothing to fall back on renders the failure, not the
+empty state — otherwise an offline cold open tells the same lie for a different reason.
+
 **The lesson: an empty array is not an answer.** Any list that can render an empty
 state needs a status that separates *nothing yet* from *nothing at all* — and the
 status belongs to the store that owns the data, not to the screen that happens to
@@ -307,3 +316,28 @@ When a mount has to fetch before it can show its real content, the loading phase
 part of the state machine, not a gap in it — and the `?param=` that triggers the fetch
 is known synchronously, so the first frame already has everything it needs to say
 "loading" instead of guessing.
+
+---
+
+## An answer that outlived the session that asked for it
+
+**Symptom:** none reported — found while reviewing the fix above, which is the only
+reason it is here.
+
+**Root cause:** `loadSaved` / `loadMyRecipes` / `loadDrafts` publish whatever comes
+back, whenever it comes back. Signing out while one is in flight runs
+`clearSessionCaches()` — and then the late response repopulates the store it just
+emptied. For favourites that is the worst case: `savedIds` drives the bookmark on
+every recipe card in the app, so the signed-out session (and the next user, until
+their own load answers) shows the previous account's saves.
+
+*Guard:* each of the three stores keeps a session counter that `clear()` bumps; a load
+captures it before awaiting and drops its answer if it no longer matches. Each store's
+suite holds a "discards a response that started before the session ended" case.
+
+**The lesson: `await` is a place where the world can change.** Any store write after an
+await has to ask whether the thing it is writing into is still the thing it was asked
+about — and "the user signed out" is the version of that question with teeth, because
+the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) — a new
+user-scoped store must be registered in `clearSessionCaches`, and now also needs this
+guard.

@@ -64,7 +64,7 @@ export const ResumingView = ({ isWebShell, topInset, onClose }: ResumingViewProp
         <View style={styles.iconBtn} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} accessibilityLabel={t().drafts.continue}>
+      <ScrollView contentContainerStyle={styles.content} accessibilityLabel={t().common.loading}>
         <SkeletonLoader width="100%" height={mediaSizes.coverMaxHeight} borderRadius={radii.xl} />
         <SkeletonLoader width="70%" height={fontSizes.title} borderRadius={radii.sm} />
 

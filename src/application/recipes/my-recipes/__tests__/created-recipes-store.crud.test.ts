@@ -346,6 +346,54 @@ describe('createdRecipesStore CRUD', () => {
         expect(store.getState().myRecipesState).toEqual({ status: 'error', failure });
       });
 
+      it('stays loaded while a grid that is already on screen reloads', async () => {
+        // Found in review: `Loading` was set on every call, and the screen
+        // re-loads on every focus — so a skeleton replaced rows the user was
+        // already reading, and tore the RefreshControl out mid-pull.
+        let release!: () => void;
+        let call = 0;
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            call += 1;
+            if (call > 1) await new Promise<void>((resolve) => (release = resolve));
+            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+        await store.getState().loadMyRecipes();
+
+        const reload = store.getState().loadMyRecipes();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+        release();
+        await reload;
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+      });
+
+      it('discards a response that started before the session ended', async () => {
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            await held;
+            return ok(recipePageOf([makeSummary({ id: 'r-previous-user' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        const inFlight = store.getState().loadMyRecipes();
+        // Signing out mid-request. The late answer must not put the previous
+        // account's recipes back into the grid.
+        store.getState().clear();
+        release();
+        await inFlight;
+
+        expect(store.getState().recipes).toEqual([]);
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
+
       it('returns to idle when the session ends, so the next user gets a skeleton', async () => {
         const listMyRecipesUseCase = {
           execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r1' })]))),

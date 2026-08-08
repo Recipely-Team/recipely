@@ -61,6 +61,7 @@ import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-r
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/en';
+import { RoutePaths } from '@presentation/base/constants';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
@@ -72,8 +73,13 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),
 }));
 
+// A STABLE router object, so a test can assert on the navigation a flow
+// performs — `useRouter` handing back a fresh mock per render made that
+// impossible to observe.
+const mockRouter = { replace: jest.fn(), back: jest.fn() };
+
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: jest.fn(), back: jest.fn() })),
+  useRouter: jest.fn(() => mockRouter),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -742,6 +748,17 @@ describe('useRecipeGeneration — opening a draft', () => {
 
     expect(latest().phase).toBe('preview');
     expect(latest().prompt).toBe(PROMPT);
+  });
+
+  it('drops the draft param on failure, so autosave cannot overwrite the draft that failed to load', async () => {
+    // `activeDraftId` is `draftId ?? newDraftId`. Staying on a draft whose read
+    // failed — an offline read leaves it intact on the server — pointed the
+    // autosave at it, and the next thing typed here would have overwritten it.
+    const { settle } = driveHeldResume({});
+
+    await settle();
+
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.createRecipe);
   });
 
   it('falls back to the prompt phase and says so when the draft cannot be read', async () => {

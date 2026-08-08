@@ -36,11 +36,13 @@ import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
-import type { BoundStore } from '@application/store/bound-store';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import { NetworkFailure } from '@core/failure';
+import { ok, fail } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Failure } from '@core/failure';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
@@ -69,14 +71,16 @@ const makeDeferred = <T,>(): Deferred<T> => {
 /** Every loader the hook can reach, so each test can assert on the road not taken. */
 interface Loaders {
   loadRecipes: jest.Mock<Promise<void>, []>;
-  loadSaved: jest.Mock<Promise<void>, []>;
+  loadSaved: jest.Mock<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>;
   loadMyRecipes: jest.Mock<Promise<void>, []>;
   loadDrafts: jest.Mock<Promise<void>, []>;
 }
 
 const makeLoaders = (): Loaders => ({
   loadRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
-  loadSaved: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
+  loadSaved: jest
+    .fn<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>()
+    .mockResolvedValue(ok([])),
   loadMyRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
   loadDrafts: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
 });
@@ -126,18 +130,11 @@ const makeStores = (loaders: Loaders) => {
 };
 
 /**
- * Drives a saved load to the failure the hook reads back off `listState` — the
- * real store folds its failure in there rather than returning it.
+ * Drives a saved load to a failure. The store hands its own outcome back — a
+ * shared `listState` could not say how THIS load ended once two overlap.
  */
-const failLoadSaved = (
-  loaders: Loaders,
-  savedRecipesStore: BoundStore<SavedRecipesStoreState>,
-  failure: Failure,
-): void => {
-  loaders.loadSaved.mockImplementationOnce(async () => {
-    savedRecipesStore.setState({ listState: { status: 'error', failure } });
-    await Promise.resolve();
-  });
+const failLoadSaved = (loaders: Loaders, failure: Failure): void => {
+  loaders.loadSaved.mockResolvedValueOnce(fail(failure));
 };
 
 /** One render of the hook: the spinner flag next to what the store reports. */
@@ -413,8 +410,8 @@ describe('useMyRecipesRefresh', () => {
     });
 
     it('clears isRefreshing when the favorites load settles into a failure', async () => {
-      const { loaders, savedRecipesStore } = mount('saved');
-      failLoadSaved(loaders, savedRecipesStore, new NetworkFailure('offline'));
+      const { loaders } = mount('saved');
+      failLoadSaved(loaders, new NetworkFailure('offline'));
 
       await act(async () => {
         vm.onRefresh();
@@ -427,9 +424,9 @@ describe('useMyRecipesRefresh', () => {
 
   describe('failure surfacing', () => {
     it('shows an error toast when the saved load ends in a failure', async () => {
-      const { loaders, savedRecipesStore } = mount('saved');
+      const { loaders } = mount('saved');
       const failure = new NetworkFailure('offline');
-      failLoadSaved(loaders, savedRecipesStore, failure);
+      failLoadSaved(loaders, failure);
 
       await act(async () => {
         vm.onRefresh();

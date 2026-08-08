@@ -17,6 +17,7 @@
 
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
+import { ok } from '@core/result/result-helpers';
 import { UnknownFailure } from '@core/failure';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -65,7 +66,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    loadSaved: (): Promise<void> => Promise.resolve(),
+    loadSaved: () => Promise.resolve(ok([])),
     clear: (): void => undefined,
   }));
 

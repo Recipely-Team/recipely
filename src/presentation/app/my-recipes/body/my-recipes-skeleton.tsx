@@ -4,6 +4,7 @@ import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -31,7 +32,9 @@ export const MyRecipesSkeleton = ({ tab, gridColumns }: MyRecipesSkeletonProps):
 
   if (tab === TabType.Drafts) {
     return (
-      <View style={styles.list} testID={MY_RECIPES_SKELETON_TEST_ID} accessibilityRole="progressbar">
+      <View style={styles.list} testID={MY_RECIPES_SKELETON_TEST_ID}
+      accessibilityRole="progressbar"
+      accessibilityLabel={t().common.loading}>
         {placeholders.map((i) => (
           <View
             key={i}
@@ -61,7 +64,9 @@ export const MyRecipesSkeleton = ({ tab, gridColumns }: MyRecipesSkeletonProps):
   }
 
   return (
-    <View style={styles.list} testID={MY_RECIPES_SKELETON_TEST_ID} accessibilityRole="progressbar">
+    <View style={styles.list} testID={MY_RECIPES_SKELETON_TEST_ID}
+      accessibilityRole="progressbar"
+      accessibilityLabel={t().common.loading}>
       {rows.map((row) => (
         <View key={row[ValueConstants.zero]} style={styles.gridRow}>
           {row.map((i) => (

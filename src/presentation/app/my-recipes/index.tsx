@@ -67,18 +67,19 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
   const items = tab === TabType.Saved ? savedRecipes : createdRecipes;
 
-  // Which tab is still waiting on its first answer — the skeleton branch. Each
-  // tab owns its own load, so the status is read from the one being shown.
-  const activeStatus =
+  // Each tab owns its own load, so both the skeleton branch and the error
+  // branch read the state of the tab actually being shown.
+  const activeState =
     tab === TabType.Saved
-      ? savedListState.status
+      ? savedListState
       : tab === TabType.Created
-        ? createdListState.status
-        : draftsListState.status;
-  const isTabFirstLoad = isFirstLoad(
-    activeStatus,
-    tab === TabType.Drafts ? drafts.length : items.length,
-  );
+        ? createdListState
+        : draftsListState;
+  const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
+  const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
+  // A failed load must not read as "you have nothing" — that is the same lie
+  // the empty-state-while-loading bug told, just with a different cause.
+  const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
 
   const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
     { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },
@@ -135,6 +136,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onOpenDraft={openDraft}
             onDeleteDraft={(id) => void deleteDraft(id)}
             isFirstLoad={isTabFirstLoad}
+            loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             isLoadingMoreDrafts={
               draftsListState.status === StoreStatus.Loaded &&

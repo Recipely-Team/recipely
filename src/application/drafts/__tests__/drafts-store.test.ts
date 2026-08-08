@@ -101,6 +101,67 @@ describe('draftsStore.loadDrafts', () => {
     }
     expect(s.drafts).toEqual([]);
   });
+
+  // Both guards were added after review of the My-Recipes skeleton work: the
+  // drafts tab shares that screen and had the same two holes.
+  it('stays loaded while a list that is already on screen reloads', async () => {
+    // Otherwise a re-focus swaps the rows the user is reading for a skeleton,
+    // and a pull-to-refresh tears out the RefreshControl mid-gesture.
+    let release!: () => void;
+    let call = 0;
+    const listDraftsUseCase = {
+      execute: async () => {
+        call += 1;
+        if (call > 1) await new Promise<void>((resolve) => (release = resolve));
+        return ok(makePage([makeDraft('a')]));
+      },
+    } as unknown as ListDraftsUseCase;
+    const store = configureDraftsStore({
+      listDraftsUseCase,
+      getLatestDraftUseCase: { execute: () => Promise.resolve(ok(null)) } as unknown as GetLatestDraftUseCase,
+      getDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as GetDraftUseCase,
+      upsertDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as UpsertDraftUseCase,
+      deleteDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as DeleteDraftUseCase,
+    });
+    await store.getState().loadDrafts();
+
+    const reload = store.getState().loadDrafts();
+
+    expect(store.getState().listState.status).toBe('loaded');
+    release();
+    await reload;
+    expect(store.getState().listState.status).toBe('loaded');
+  });
+
+  it('discards a page that started before the session ended', async () => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const listDraftsUseCase = {
+      execute: async () => {
+        await held;
+        return ok(makePage([makeDraft('previous-user')]));
+      },
+    } as unknown as ListDraftsUseCase;
+    const store = configureDraftsStore({
+      listDraftsUseCase,
+      getLatestDraftUseCase: { execute: () => Promise.resolve(ok(null)) } as unknown as GetLatestDraftUseCase,
+      getDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as GetDraftUseCase,
+      upsertDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as UpsertDraftUseCase,
+      deleteDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as DeleteDraftUseCase,
+    });
+
+    const inFlight = store.getState().loadDrafts();
+    // Signing out mid-request must not leave the previous account's drafts in
+    // the list once the answer lands.
+    store.getState().clear();
+    release();
+    await inFlight;
+
+    expect(store.getState().drafts).toEqual([]);
+    expect(store.getState().listState).toEqual({ status: 'idle' });
+  });
 });
 
 describe('draftsStore.loadLatestDraft', () => {

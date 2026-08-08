@@ -104,6 +104,54 @@ describe('savedRecipesStore.loadSaved', () => {
     expect(store.getState().listState).toEqual({ status: 'error', failure });
   });
 
+  /**
+   * Found in review of the fix above: `Loading` was set on EVERY call, and the
+   * screen re-loads all three tabs on focus. So a user with an empty tab saw
+   * empty state → skeleton → empty state on every visit, and a pull-to-refresh
+   * swapped the ScrollView carrying the RefreshControl out mid-gesture.
+   */
+  it('stays loaded while a grid that is already on screen reloads', async () => {
+    let release!: () => void;
+    let call = 0;
+    const store = makeStore(async () => {
+      call += 1;
+      if (call > 1) await new Promise<void>((resolve) => (release = resolve));
+      return ok([makeSummary('r1')]);
+    });
+    await store.getState().loadSaved();
+
+    const reload = store.getState().loadSaved();
+
+    // The frame that used to render a skeleton over rows the user was reading.
+    expect(store.getState().listState).toEqual({ status: 'loaded' });
+    release();
+    await reload;
+    expect(store.getState().listState).toEqual({ status: 'loaded' });
+  });
+
+  it('discards a response that started before the session ended', async () => {
+    let release!: () => void;
+    const held = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const store = makeStore(async () => {
+      await held;
+      return ok([makeSummary('r1')]);
+    });
+
+    const inFlight = store.getState().loadSaved();
+    // Signing out mid-request: `clearSessionCaches` wipes the store, and the
+    // late answer must not put the previous account's saves back — `savedIds`
+    // drives the bookmark on every recipe card in the app.
+    store.getState().clear();
+    release();
+    await inFlight;
+
+    expect(store.getState().savedRecipes).toEqual([]);
+    expect([...store.getState().savedIds]).toEqual([]);
+    expect(store.getState().listState).toEqual({ status: 'idle' });
+  });
+
   it('returns to idle when the session ends, so the next user gets a skeleton', async () => {
     const store = makeStore(() => Promise.resolve(ok([makeSummary('r1')])));
     await store.getState().loadSaved();
