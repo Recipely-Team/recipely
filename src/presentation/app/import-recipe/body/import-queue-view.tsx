@@ -12,12 +12,13 @@ import {
   letterSpacings,
   iconSizes,
   borderWidths,
+  BrandColors,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { ImportSourceChip } from '@presentation/app/import-recipe/body/import-source-chip';
 import { ImportProgressRing } from '@presentation/app/import-recipe/body/import-progress-ring';
 import { ImportStageList } from '@presentation/app/import-recipe/body/import-stage-list';
+import { LinearGradient } from 'expo-linear-gradient';
 import type { ImportJobStatus as ImportJobStatusType } from '@domain/recipes/import/import-job-status';
 import { ValueConstants } from '@core/constants';
 
@@ -31,6 +32,14 @@ export interface ImportQueueViewProps {
 }
 
 const STATUS_DOT = 6;
+const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.one };
+const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
+const INSTAGRAM_STOPS = [
+  BrandColors.instagramGradientStart,
+  BrandColors.instagramGradientWarm,
+  BrandColors.instagramGradientMid,
+  BrandColors.instagramGradientEnd,
+] as const;
 
 /**
  * The queue receipt: what a reel is doing, for a user who chose to watch.
@@ -58,27 +67,32 @@ export const ImportQueueView = ({
   return (
     <>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
-        <ImportSourceChip />
-
         <ImportProgressRing progress={progress} done={isDone} />
 
         <View style={styles.heading}>
-          <View
-            style={[
-              styles.statusPill,
-              { backgroundColor: isDone ? colors.successLight : colors.chipBackground },
-            ]}
-          >
-            <View
-              style={[styles.statusDot, { backgroundColor: isDone ? colors.success : colors.primary }]}
-            />
-            <ThemedText
-              variant="caption"
-              style={[styles.statusLabel, { color: isDone ? colors.success : colors.chipText }]}
+          {isDone ? (
+            <View style={[styles.statusPill, { backgroundColor: colors.successLight }]}>
+              <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
+              <ThemedText variant="caption" style={[styles.statusLabel, { color: colors.success }]}>
+                {upperCase(statusLabel)}
+              </ThemedText>
+            </View>
+          ) : (
+            <LinearGradient
+              colors={[...INSTAGRAM_STOPS]}
+              start={GRADIENT_START}
+              end={GRADIENT_END}
+              style={styles.statusPill}
             >
-              {upperCase(statusLabel)}
-            </ThemedText>
-          </View>
+              <View style={[styles.statusDot, { backgroundColor: BrandColors.white }]} />
+              <ThemedText
+                variant="caption"
+                style={[styles.statusLabel, { color: BrandColors.white }]}
+              >
+                {upperCase(statusLabel)}
+              </ThemedText>
+            </LinearGradient>
+          )}
 
           <ThemedText variant="title" style={styles.title}>
             {isDone ? copy.ready : copy.title}
