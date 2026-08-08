@@ -24,17 +24,46 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   in memory, so publishing in the same session is unaffected. Dropping it
  *   here makes a resumed draft honest about having no photo, at the point where
  *   the user can just pick another one.
+ * - **What the editor does not model, it must not delete.** An imported draft
+ *   arrives carrying `category`, `tags`, `mealType`, `tips`, `nutrition`,
+ *   `caloriesPerServing` and a cover `image` — none of which this editor has a
+ *   field for. Projecting the editor alone therefore did not merely omit them,
+ *   it OVERWROTE them: autosave fires on open, so simply looking at an imported
+ *   draft destroyed everything the AI had extracted beyond the basics, cover
+ *   included. `carried` is the snapshot the editor was opened with, and those
+ *   fields pass through untouched.
+ * - **`image` follows the cover the user can actually see.** The editor's first
+ *   hosted photo wins, because that is what they chose; with no photo the
+ *   carried cover stands. The two must never disagree — a draft whose `image`
+ *   said one thing and whose `media` said another is how this started.
  */
-export const editableToSnapshot = (recipe: EditableRecipe): DraftRecipeSnapshot => ({
-  name: recipe.name,
-  cuisine: recipe.cuisine ?? CharConstants.empty,
-  difficulty: recipe.difficulty,
-  prepTimeMinutes: recipe.prepTimeMinutes,
-  cookTimeMinutes: recipe.cookTimeMinutes,
-  servings: recipe.servings,
-  ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
-  instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
-  media: recipe.media
+export const editableToSnapshot = (
+  recipe: EditableRecipe,
+  carried?: DraftRecipeSnapshot,
+): DraftRecipeSnapshot => {
+  const media = recipe.media
     .filter((m) => m.type === MediaType.Image && isHostedMedia(m))
-    .map((m) => ({ type: m.type, url: m.url })),
-});
+    .map((m) => ({ type: m.type, url: m.url }));
+  const cover = media[ValueConstants.zero]?.url ?? carried?.image;
+
+  return {
+    name: recipe.name,
+    cuisine: recipe.cuisine ?? CharConstants.empty,
+    difficulty: recipe.difficulty,
+    prepTimeMinutes: recipe.prepTimeMinutes,
+    cookTimeMinutes: recipe.cookTimeMinutes,
+    servings: recipe.servings,
+    ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
+    instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
+    media,
+    ...(cover !== undefined ? { image: cover } : {}),
+    ...(carried?.category !== undefined ? { category: carried.category } : {}),
+    ...(carried?.tags !== undefined ? { tags: carried.tags } : {}),
+    ...(carried?.mealType !== undefined ? { mealType: carried.mealType } : {}),
+    ...(carried?.tips !== undefined ? { tips: carried.tips } : {}),
+    ...(carried?.nutrition !== undefined ? { nutrition: carried.nutrition } : {}),
+    ...(carried?.caloriesPerServing !== undefined
+      ? { caloriesPerServing: carried.caloriesPerServing }
+      : {}),
+  };
+};

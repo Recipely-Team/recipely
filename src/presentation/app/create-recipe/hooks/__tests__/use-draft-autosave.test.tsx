@@ -31,6 +31,7 @@ const drive = (recipe: EditableRecipe = withContent()): Driver => {
       draftId: 'draft-1',
       prompt: 'a quick garlic pasta',
       recipe,
+      carried: undefined,
       chatHistory: [],
       upsertDraft: upsert,
     });

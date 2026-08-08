@@ -471,3 +471,35 @@ present.** Any pointer that outlives the thing it names — a job row, a
 notification, a deep link, a cached route param — will eventually be followed
 after the target is deleted. Decide what "it is gone" should DO before shipping
 the pointer, and make sure that answer is different from "it could not be read".
+
+---
+
+## Opening an imported draft deleted most of it
+
+**Symptom:** an Instagram import finished, the recipe opened — and the cover was
+missing, with the editor saying "no photo yet". The frame existed: it had been
+extracted, converted and written to disk, and was being served.
+
+**Root cause:** the editor's projection was treated as the whole truth. An import
+writes `image`, `category`, `tags`, `mealType`, `tips`, `nutrition` and
+`caloriesPerServing`; the create screen models none of them, and the app's own
+`DraftRecipeSnapshot` type did not even declare them. So `snapshotToEditable`
+read only `media` — never `image` — which is why the cover was invisible, and
+`editableToSnapshot` wrote only the nine fields the editor knows. **Autosave
+fires on open**, so simply LOOKING at an imported draft overwrote the rich
+snapshot with the narrow one. Measured on dev: imported drafts that had been
+opened held 9 snapshot keys, untouched ones held 16.
+
+*Guard:* the snapshot type declares the import's fields; `editableToSnapshot`
+takes the snapshot the editor was opened with and passes them through untouched;
+`snapshotToEditable` seeds media from `image` when the editor has none, so the
+cover is visible and can be replaced. `drafting-mappers.test.ts` → "an imported
+draft opened in the editor" pins all of it and fails nine ways against the
+unfixed mappers.
+
+**The lesson: a partial view must not be saved as if it were the whole record.**
+Any screen that edits a subset of a document — and then persists the subset —
+deletes the rest, silently and on open rather than on save. If the editor cannot
+show a field, it still has to carry it; and a type that omits the field is what
+makes the deletion invisible to the compiler, so the type is the first thing to
+fix.

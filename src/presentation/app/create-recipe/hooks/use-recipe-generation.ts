@@ -20,6 +20,7 @@ import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting
 import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -103,6 +104,13 @@ const GEN_STEP_INTERVAL_MS = 620;
    * decide — see {@link onClose}.
    */
   const openedAs = useRef<string | null>(null);
+  /**
+   * The snapshot this screen adopted, kept whole. The editor has no field for
+   * an import's `category`, `tags`, `tips`, `nutrition` or cover, and autosave
+   * fires on open — so without carrying the original forward, merely LOOKING at
+   * an imported draft overwrote everything the AI had extracted.
+   */
+  const carried = useRef<DraftRecipeSnapshot | undefined>(undefined);
 
   const refining = refineState.status === StoreStatus.Refining;
 
@@ -144,8 +152,9 @@ const GEN_STEP_INTERVAL_MS = 620;
       }
       const loaded = result.value;
       const resumed = snapshotToEditable(loaded.snapshot);
+      carried.current = loaded.snapshot;
       setRecipe(resumed);
-      openedAs.current = JSON.stringify(editableToSnapshot(resumed));
+      openedAs.current = JSON.stringify(editableToSnapshot(resumed, loaded.snapshot));
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
@@ -172,6 +181,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [phase]);
 
   const cancelAutosave = useDraftAutosave({
+    carried: carried.current,
     enabled: phase === PhaseType.Preview,
     draftId: activeDraftId,
     prompt: originalPrompt.current,
@@ -287,7 +297,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const onClose = useCallback((): void => {
     const unchanged =
       openedAs.current !== null &&
-      openedAs.current === JSON.stringify(editableToSnapshot(recipe));
+      openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
     if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
       return;
@@ -299,7 +309,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     await upsertDraft({
       id: activeDraftId,
       prompt: originalPrompt.current,
-      snapshot: editableToSnapshot(recipe),
+      snapshot: editableToSnapshot(recipe, carried.current),
       chatHistory,
     });
     setExitOpen(false);
