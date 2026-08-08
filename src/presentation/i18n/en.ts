@@ -544,6 +544,7 @@ export const en = {
     continue: 'Continue',
     resume: 'Pick up where you left off',
     delete: 'Delete draft',
+    openFailed: "Couldn't open that draft. Please try again.",
   },
   relativeTime: {
     justNow: 'just now',

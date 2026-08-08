@@ -20,7 +20,7 @@ interface UseMyRecipesRefreshResult {
  * they filter against, the created and drafts tabs each own a single store load.
  */
 export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => {
-  const { savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
+  const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
 
   // WHY: mirrors the recipe feed (`useRecipeList`) — `RefreshControl.refreshing`
   // must reflect ONLY a user-initiated pull. A store's generic refreshing flag
@@ -30,15 +30,14 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // The saved grid renders the favourites response directly, so this is the one
-  // request it needs — it no longer borrows rows from the discover feed.
+  // request it needs — it no longer borrows rows from the discover feed. The
+  // load itself lives in the store (it owns the status the skeleton reads), and
+  // hands its own outcome back — reading the shared `listState` instead would
+  // toast the wrong answer whenever the focus load and a pull overlap.
   const refreshSaved = useCallback(async (): Promise<void> => {
-    const favorites = await loadFavoritesUseCase.execute();
-    if (favorites.ok) {
-      savedRecipesStore.getState().setSaved(favorites.value);
-    } else {
-      showErrorToast(favorites.failure);
-    }
-  }, [loadFavoritesUseCase, savedRecipesStore]);
+    const result = await savedRecipesStore.getState().loadSaved();
+    if (!result.ok) showErrorToast(result.failure);
+  }, [savedRecipesStore]);
 
   const onRefresh = useCallback((): void => {
     setIsRefreshing(true);

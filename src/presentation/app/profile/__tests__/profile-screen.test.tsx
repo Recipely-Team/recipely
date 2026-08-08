@@ -102,16 +102,14 @@ const makeSavedRecipesStore = () =>
   create<SavedRecipesStoreState>(() => ({
     savedRecipes: [],
     savedIds: new Set<string>(),
-    isLoading: false,
-    error: null,
+    listState: { status: 'idle' },
     has: () => false,
     toggle: jest.fn(),
     addLocal: jest.fn(),
     removeLocal: jest.fn(),
     setSaved: jest.fn(),
-    setLoading: jest.fn(),
-    setError: jest.fn(),
-    clearError: jest.fn(),
+    loadSaved: jest.fn(),
+    clear: jest.fn(),
   }));
 
 const renderProfile = (bio: string | undefined): ReturnType<typeof renderComponent> => {

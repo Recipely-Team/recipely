@@ -5,12 +5,20 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
+import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
 import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes } from '@presentation/base/theme';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import {
+  failureContent,
+  failureIcon,
+  failureSeverity,
+} from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
+import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
@@ -27,6 +35,13 @@ export interface MyRecipesListProps {
   onOpenRecipe: (id: string) => void;
   onOpenDraft: (id: string) => void;
   onDeleteDraft: (id: string) => void;
+  /**
+   * True while the active tab is loading its FIRST page — the skeleton branch.
+   * Distinct from `isRefreshing`, which reloads a list that is already on screen.
+   */
+  isFirstLoad: boolean;
+  /** Why the active tab's load failed, or null. Rendered instead of the empty state. */
+  loadFailure: Failure | null;
   /** Asks for the next page of drafts; the list pages like the recipe feed does. */
   onDraftsEndReached: () => void;
   isLoadingMoreDrafts: boolean;
@@ -41,6 +56,10 @@ export interface MyRecipesListProps {
  * Every branch is pull-to-refreshable — the empty states are wrapped in a
  * scroll view because a plain `View` accepts no pull gesture, and an empty tab
  * is exactly when a user reaches for one.
+ *
+ * The skeleton branch comes FIRST: an unanswered tab is not an empty one, and
+ * rendering "you have saved nothing yet" while the request was still in flight
+ * is what made every cold open flash an empty screen before filling in.
  */
 export const MyRecipesList = ({
   tab,
@@ -53,6 +72,8 @@ export const MyRecipesList = ({
   onOpenRecipe,
   onOpenDraft,
   onDeleteDraft,
+  isFirstLoad,
+  loadFailure,
   onDraftsEndReached,
   isLoadingMoreDrafts,
   isRefreshing,
@@ -69,6 +90,26 @@ export const MyRecipesList = ({
       colors={[colors.primary]}
     />
   );
+
+  if (isFirstLoad) {
+    return <MyRecipesSkeleton tab={tab} gridColumns={gridColumns} />;
+  }
+
+  // Only when there is nothing to fall back on: a failed RELOAD leaves the rows
+  // the user was already reading exactly where they are.
+  if (loadFailure !== null && (tab === TabType.Drafts ? drafts.length : items.length) === ValueConstants.zero) {
+    const content = failureContent(loadFailure);
+    return (
+      <ErrorState
+        severity={failureSeverity(loadFailure)}
+        icon={failureIcon(loadFailure)}
+        title={content.title}
+        body={content.body}
+        primaryLabel={t().errors.retry}
+        onPrimary={onRefresh}
+      />
+    );
+  }
 
   if (tab === TabType.Drafts) {
     if (drafts.length === ValueConstants.zero) {

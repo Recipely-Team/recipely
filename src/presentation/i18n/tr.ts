@@ -541,6 +541,7 @@ export const tr: Translations = {
     continue: 'Devam et',
     resume: 'Kaldığın yerden devam et',
     delete: 'Taslağı sil',
+    openFailed: 'Taslak açılamadı. Lütfen tekrar dene.',
   },
   relativeTime: {
     justNow: 'az önce',

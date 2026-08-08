@@ -5,7 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
 import { WebSortMenu } from '@presentation/app/recipes/items/filters/web-sort-menu';
-import { SkeletonCard } from '@presentation/app/recipes/items/cards/skeleton-card';
+import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

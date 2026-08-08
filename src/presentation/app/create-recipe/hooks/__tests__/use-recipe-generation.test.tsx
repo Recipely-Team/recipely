@@ -61,6 +61,7 @@ import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-r
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/en';
+import { RoutePaths } from '@presentation/base/constants';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
@@ -72,8 +73,13 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),
 }));
 
+// A STABLE router object, so a test can assert on the navigation a flow
+// performs — `useRouter` handing back a fresh mock per render made that
+// impossible to observe.
+const mockRouter = { replace: jest.fn(), back: jest.fn() };
+
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: jest.fn(), back: jest.fn() })),
+  useRouter: jest.fn(() => mockRouter),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -196,7 +202,11 @@ const noopCacheStore = <T,>(): T =>
  * the real `GenerateRecipeUseCase` down to a `FakeRecipeRepository` reading
  * `config` on every call.
  */
-const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft): Stores => {
+const makeStores = (
+  config: FakeRecipeRepositoryConfig,
+  getDraft?: RecipeDraft,
+  hold?: Promise<void>,
+): Stores => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -216,7 +226,10 @@ const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft):
       execute: () => Promise.resolve(ok(null)),
     } as unknown as GetLatestDraftUseCase,
     getDraftUseCase: {
-      execute: () => Promise.resolve(getDraft === undefined ? fail(new UnknownFailure('no draft')) : ok(getDraft)),
+      execute: async () => {
+        if (hold !== undefined) await hold;
+        return getDraft === undefined ? fail(new UnknownFailure('no draft')) : ok(getDraft);
+      },
     } as unknown as GetDraftUseCase,
     upsertDraftUseCase: unusedUseCase<UpsertDraftUseCase>(),
     deleteDraftUseCase: unusedUseCase<DeleteDraftUseCase>(),
@@ -241,7 +254,10 @@ interface HookDriver {
 /** Resuming an existing draft, as `?draftId=` does on the real route. */
 interface ResumeOptions {
   draftId: string;
-  getDraft: RecipeDraft;
+  /** Omitted for a draft that cannot be read — `getDraft` then answers null. */
+  getDraft?: RecipeDraft;
+  /** Held open to inspect the screen WHILE the draft is still being fetched. */
+  hold?: Promise<void>;
 }
 
 /**
@@ -266,7 +282,7 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(config, resume?.getDraft)}>
+    <StoresProvider value={makeStores(config, resume?.getDraft, resume?.hold)}>
       <Probe />
     </StoresProvider>,
   );
@@ -665,5 +681,94 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     });
 
     expect(latest().exitOpen).toBe(true);
+  });
+});
+
+/**
+ * THE REGRESSION: tapping a draft "opened the AI screen and sat there".
+ *
+ * The hook started every mount in the `prompt` phase and only moved to
+ * `preview` once `getDraft` came back. So opening a draft — from the My Recipes
+ * drafts tab, or from the "pick up where you left off" card — showed the
+ * AI-generate prompt screen for the length of that request. It read as the wrong
+ * screen having opened, or as the tap not having registered at all; on a slow
+ * connection it lasted seconds.
+ *
+ * What must hold: a mount that carries a `draftId` NEVER renders the prompt
+ * phase. It waits in `resuming` (the editor's skeleton) and moves to `preview`
+ * with the draft in hand — or back to `prompt` if the draft cannot be read, so
+ * the wait always ends.
+ */
+describe('useRecipeGeneration — opening a draft', () => {
+  const savedDraft = (): RecipeDraft => ({
+    id: 'draft-1',
+    ownerId: 'owner-1',
+    prompt: PROMPT,
+    snapshot: { name: 'Garlic Pasta', ingredients: ['pasta'], instructions: ['boil'] },
+    chatHistory: [],
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+  });
+
+  /** A resume whose fetch is held open until the returned `release` is called. */
+  const driveHeldResume = ({ draft }: { draft?: RecipeDraft } = { draft: savedDraft() }) => {
+    let release!: () => void;
+    const hold = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const driver = driveHook(generated(), {
+      draftId: 'draft-1',
+      getDraft: draft,
+      hold,
+    });
+    const settle = async (): Promise<void> => {
+      release();
+      await act(async () => {
+        await hold;
+        await Promise.resolve();
+      });
+    };
+    return { ...driver, settle };
+  };
+
+  it('waits in the resuming phase instead of showing the AI prompt screen', async () => {
+    const { latest, settle } = driveHeldResume();
+
+    // The frame the user actually saw while the draft was in flight.
+    expect(latest().phase).toBe('resuming');
+    expect(latest().phase).not.toBe('prompt');
+
+    await settle();
+  });
+
+  it('lands on the preview with the draft once the fetch returns', async () => {
+    const { latest, settle } = driveHeldResume();
+
+    await settle();
+
+    expect(latest().phase).toBe('preview');
+    expect(latest().prompt).toBe(PROMPT);
+  });
+
+  it('drops the draft param on failure, so autosave cannot overwrite the draft that failed to load', async () => {
+    // `activeDraftId` is `draftId ?? newDraftId`. Staying on a draft whose read
+    // failed — an offline read leaves it intact on the server — pointed the
+    // autosave at it, and the next thing typed here would have overwritten it.
+    const { settle } = driveHeldResume({});
+
+    await settle();
+
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.createRecipe);
+  });
+
+  it('falls back to the prompt phase and says so when the draft cannot be read', async () => {
+    // `getDraft` collapses a failure to null — a draft deleted on another
+    // device, or an offline read. The wait has to END, not shimmer forever.
+    const { latest, settle } = driveHeldResume({});
+
+    await settle();
+
+    expect(latest().phase).toBe('prompt');
+    expect(showDangerToast).toHaveBeenCalledWith(en.drafts.openFailed);
   });
 });

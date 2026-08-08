@@ -20,16 +20,30 @@ interface DraftsStoreDeps {
 }
 
 export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStoreState> => {
+  /**
+   * Bumped by `clear()`. A page that started under an earlier session must not
+   * publish its answer — signing out mid-request put the previous account's
+   * drafts back into the list.
+   */
+  let session = ValueConstants.zero;
+
   return create<DraftsStoreState>((set, get) => ({
     drafts: [],
     listState: { status: StoreStatus.Idle },
     latestDraft: null,
     loadDrafts: async () => {
-      set({ listState: { status: StoreStatus.Loading } });
+      const requested = session;
+      // Only the FIRST load announces itself: a reload of a list that is
+      // already on screen keeps its `Loaded` state, or every re-focus — and
+      // every pull-to-refresh — would swap the rows for a skeleton.
+      if (get().listState.status !== StoreStatus.Loaded) {
+        set({ listState: { status: StoreStatus.Loading } });
+      }
       const result = await deps.listDraftsUseCase.execute({
         page: FIRST_PAGE,
         pageSize: DRAFTS_PAGE_SIZE,
       });
+      if (requested !== session) return;
       if (!result.ok) {
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return;
@@ -116,6 +130,9 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       }
       return result.value;
     },
-    clear: () => set({ drafts: [], listState: { status: StoreStatus.Idle }, latestDraft: null }),
+    clear: () => {
+      session += ValueConstants.one;
+      set({ drafts: [], listState: { status: StoreStatus.Idle }, latestDraft: null });
+    },
   }));
 };

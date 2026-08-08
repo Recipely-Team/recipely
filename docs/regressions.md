@@ -257,3 +257,87 @@ which it was has to say so.** Whenever an SDK, sheet, or picker can be dismissed
 what the abandoned path returns before assuming the `Failure` channel means something
 broke. No mechanical rule can spot this one — the shapes are identical and only the
 meaning differs.
+
+---
+
+## "Nothing here yet" said before the answer arrived
+
+**Symptom:** opening My Recipes on a cold start showed an empty screen — the icon and
+*"No saved recipes yet"* — for a moment, then filled in with the rows. The screen told
+the user they had nothing and then contradicted itself. Nothing shimmered in between.
+
+**Root cause:** the screen decided what to render by asking `items.length === 0`, a
+question with the same answer before the request comes back and after it comes back
+empty. Two of the three tabs had no load status to ask instead: `createdRecipesStore`
+tracked no state for `loadMyRecipes`, and the saved grid was fetched by the screen
+itself through a use case, so the store never knew a load was in flight.
+
+*Guard:* the type. Both stores now carry an `Idle | Loading | Loaded | Error` state,
+the fetch moved into the store that owns the rows, and `isFirstLoad(status, count)` is
+the single predicate the list branches on — so "unanswered" and "empty" can no longer
+be spelled the same way. `my-recipes-list.test.tsx` pins the skeleton branch over the
+empty one for all three tabs.
+
+*And the trap inside the fix:* a status that is re-entered on EVERY call cannot say
+"first load". The first cut set `Loading` unconditionally, and this screen reloads all
+three tabs on focus — so an empty tab flashed empty → skeleton → empty on every visit,
+and a pull-to-refresh swapped out the `ScrollView` carrying the `RefreshControl`
+mid-gesture. A list that is already `Loaded` now stays `Loaded` while it reloads, which
+is the convention the recipe feed already used (`isRefreshing` / `isLoadingMore` live
+INSIDE `Loaded`). An `Error` with nothing to fall back on renders the failure, not the
+empty state — otherwise an offline cold open tells the same lie for a different reason.
+
+**The lesson: an empty array is not an answer.** Any list that can render an empty
+state needs a status that separates *nothing yet* from *nothing at all* — and the
+status belongs to the store that owns the data, not to the screen that happens to
+call the use case. A screen that fetches for itself cannot tell the difference.
+
+---
+
+## A tap that opened the wrong screen and sat there
+
+**Symptom:** tapping a draft — in the My Recipes drafts tab, or the "pick up where you
+left off" card — landed on the AI-generate prompt screen and waited there before the
+draft finally appeared. It read as the wrong screen having opened, or as the tap not
+having registered; on a slow connection it lasted seconds.
+
+**Root cause:** `useRecipeGeneration` initialised every mount to the `prompt` phase and
+only moved to `preview` after the `getDraft` request resolved. The phase a screen waits
+in is the screen the user sees, and this one was waiting in a phase that means
+something else entirely — an unrelated, fully interactive AI form.
+
+*Guard:* `Resuming` is now a phase of its own, entered from the initial state when
+`?draftId=` is present (and again inside the effect, for the `router.replace` the
+resume card does), rendering a skeleton of the editor. A draft that cannot be read
+falls back to `prompt` with a toast, so the wait always ends.
+
+**The lesson: an async load must not borrow another state's screen while it waits.**
+When a mount has to fetch before it can show its real content, the loading phase is
+part of the state machine, not a gap in it — and the `?param=` that triggers the fetch
+is known synchronously, so the first frame already has everything it needs to say
+"loading" instead of guessing.
+
+---
+
+## An answer that outlived the session that asked for it
+
+**Symptom:** none reported — found while reviewing the fix above, which is the only
+reason it is here.
+
+**Root cause:** `loadSaved` / `loadMyRecipes` / `loadDrafts` publish whatever comes
+back, whenever it comes back. Signing out while one is in flight runs
+`clearSessionCaches()` — and then the late response repopulates the store it just
+emptied. For favourites that is the worst case: `savedIds` drives the bookmark on
+every recipe card in the app, so the signed-out session (and the next user, until
+their own load answers) shows the previous account's saves.
+
+*Guard:* each of the three stores keeps a session counter that `clear()` bumps; a load
+captures it before awaiting and drops its answer if it no longer matches. Each store's
+suite holds a "discards a response that started before the session ended" case.
+
+**The lesson: `await` is a place where the world can change.** Any store write after an
+await has to ask whether the thing it is writing into is still the thing it was asked
+about — and "the user signed out" is the version of that question with teeth, because
+the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) — a new
+user-scoped store must be registered in `clearSessionCaches`, and now also needs this
+guard.

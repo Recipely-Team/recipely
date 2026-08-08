@@ -3,6 +3,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { UnknownFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { create } from 'zustand';
+import { ValueConstants } from '@core/constants';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
@@ -31,8 +32,16 @@ interface CreatedRecipesStoreDeps {
 }
 
 export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStoreState> => {
+  /**
+   * Bumped by `clear()`. A list load that started under an earlier session must
+   * not publish its answer — signing out mid-request put the previous account's
+   * recipes back into the grid.
+   */
+  let session = ValueConstants.zero;
+
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
+    myRecipesState: { status: StoreStatus.Idle },
     localRecipes: [],
     createState: { status: StoreStatus.Idle },
     generateState: { status: StoreStatus.Idle },
@@ -90,11 +99,22 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
       }
     },
     loadMyRecipes: async () => {
+      const requested = session;
+      // Only the FIRST load announces itself: a reload of a grid that is
+      // already on screen keeps its `Loaded` state, or every re-focus — and
+      // every pull-to-refresh — would swap the rows for a skeleton.
+      if (get().myRecipesState.status !== StoreStatus.Loaded) {
+        set({ myRecipesState: { status: StoreStatus.Loading } });
+      }
       const result = await deps.listMyRecipesUseCase.execute();
+      if (requested !== session) return;
       if (!result.ok) {
+        // The rows already on screen stay: a failed reload must not blank the
+        // grid the user is looking at.
+        set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
-      set({ recipes: result.value.items });
+      set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded } });
     },
     generateRecipe: async (prompt) => {
       set({ generateState: { status: StoreStatus.Generating } });
@@ -181,6 +201,14 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     resetRefineState: () => set({ refineState: { status: StoreStatus.Idle } }),
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
     clearAiDraft: () => set({ aiDraft: null }),
-    clear: () => set({ recipes: [], localRecipes: [], aiDraft: null }),
+    clear: () => {
+      session += ValueConstants.one;
+      set({
+        recipes: [],
+        myRecipesState: { status: StoreStatus.Idle },
+        localRecipes: [],
+        aiDraft: null,
+      });
+    },
   }));
 };
