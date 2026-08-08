@@ -11,6 +11,7 @@ import {
   decorSizes,
   borderWidths,
   opacities,
+  BrandColors,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -42,10 +43,13 @@ export const ImportStageList = ({ activeStage }: ImportStageListProps): React.JS
               style={[
                 styles.marker,
                 {
+                  // The active step wears Instagram's pink, matching the ring
+                  // above it — the whole screen says where this came from
+                  // without a badge repeating it.
                   backgroundColor: isDone
                     ? colors.success
                     : isActive
-                      ? colors.primary
+                      ? BrandColors.instagramGradientMid
                       : colors.skeleton,
                 },
               ]}

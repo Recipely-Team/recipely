@@ -123,13 +123,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       }));
       return result;
     },
-    getDraft: async (id) => {
-      const result = await deps.getDraftUseCase.execute(id);
-      if (!result.ok) {
-        return null;
-      }
-      return result.value;
-    },
+    getDraft: (id) => deps.getDraftUseCase.execute(id),
     clear: () => {
       session += ValueConstants.one;
       set({ drafts: [], listState: { status: StoreStatus.Idle }, latestDraft: null });
