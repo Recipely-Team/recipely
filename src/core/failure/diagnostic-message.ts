@@ -58,6 +58,8 @@ export const DiagnosticMessage = {
     notAPostUrl: (url: string): string => `Not a link to a post or reel (${url})`,
     /** The queued job came back `failed`; the reason rides on its `errorKey`. */
     jobFailed: 'Instagram import job failed',
+    /** `done` with no draft to open — the backend writes one before reporting done. */
+    doneWithoutDraft: 'Instagram import reported done with no draft id',
   },
   recipeCreate: {
     /** Publishing threw instead of returning a Result; the UI must not hang. */
