@@ -734,6 +734,8 @@ export const tr: Translations = {
     liked: 'şu tarifi beğendi:',
     saved: 'şu tarifi kaydetti:',
     aiDoneLabel: 'Yapay zekâ tarifini tamamladı',
+    genericLabel: 'Yeni bildirim',
+    importDoneLabel: 'Instagram tarifin hazır',
     modOk: 'tarifini onayladı:',
     modPending: 'şu tarif incelemede:',
     followed: 'seni takip etti',

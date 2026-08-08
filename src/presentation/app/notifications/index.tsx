@@ -35,6 +35,7 @@ const KNOWN_KINDS = new Set<NotifKind>([
   'like',
   'favorite',
   'ai_done',
+  'import_done',
   'moderation_approved',
   'moderation_pending',
   'follow',

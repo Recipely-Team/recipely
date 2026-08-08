@@ -15,10 +15,14 @@ const actionText = (n: NotifItem): string => {
     case 'like': return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
     case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
     case 'ai_done': return labels.aiDoneLabel;
+    case 'import_done': return labels.importDoneLabel;
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;
-    case 'generic': return n.recipeName ?? CharConstants.empty;
+    // NEVER empty. An unknown type degrades to `generic`, and this used to
+    // return '' for anything with no recipe behind it — which is how an
+    // `import_done` the app did not know about rendered as a blank row.
+    case 'generic': return n.recipeName ?? labels.genericLabel;
   }
 };
 
