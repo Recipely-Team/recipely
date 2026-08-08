@@ -26,7 +26,6 @@ export interface UseCreateRecipeResult {
 
   // Generating phase.
   genStep: number;
-  importing: boolean;
 
   // Header.
   headerTitle: string;

@@ -11,4 +11,9 @@
 export const durations = {
   /** Cross-fade when a cached or freshly decoded image appears. */
   imageFade: 180,
+  /**
+   * One breath of a waiting pulse. Long enough to read as "alive, not stuck"
+   * without pulling the eye back every second of a two-minute wait.
+   */
+  pulse: 1100,
 } as const;

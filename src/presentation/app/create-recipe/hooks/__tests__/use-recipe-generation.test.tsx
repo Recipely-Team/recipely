@@ -276,7 +276,6 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
       setRecipe: setRecipeState,
       activeDraftId: resume?.draftId ?? 'draft-1',
       draftId: resume?.draftId,
-      importUrl: undefined,
     });
     return null;
   };

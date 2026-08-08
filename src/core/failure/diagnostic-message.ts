@@ -54,6 +54,8 @@ export const DiagnosticMessage = {
   recipeImport: {
     urlRequired: 'Instagram URL is required',
     notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
+    /** The queued job came back `failed`; the reason rides on its `errorKey`. */
+    jobFailed: 'Instagram import job failed',
   },
   recipeCreate: {
     /** Publishing threw instead of returning a Result; the UI must not hang. */

@@ -12,6 +12,7 @@ export const RoutePaths = {
   verifyCode: '/verify-code',
   recipes: '/recipes',
   createRecipe: '/create-recipe',
+  importRecipe: '/import-recipe',
   myRecipes: '/my-recipes',
   /**
    * The feed's name in the root navigator's state (not a path) — expo-router
