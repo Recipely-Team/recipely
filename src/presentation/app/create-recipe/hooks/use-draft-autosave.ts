@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { UpsertDraftStoreInput } from '@application/drafts/write/upsert-draft-store-input';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 const DEBOUNCE_MS = 500;
@@ -11,6 +12,12 @@ interface UseDraftAutosaveArgs {
   draftId: string;
   prompt: string;
   recipe: EditableRecipe;
+  /**
+   * The snapshot the editor was opened with, so fields it has no field for
+   * survive a save. Autosave fires on OPEN, so without this, looking at an
+   * imported draft was enough to erase its cover and everything the AI found.
+   */
+  carried: DraftRecipeSnapshot | undefined;
   chatHistory: ChatMessage[];
   upsertDraft: (input: UpsertDraftStoreInput) => Promise<unknown>;
 }
@@ -33,13 +40,14 @@ export const useDraftAutosave = ({
   draftId,
   prompt,
   recipe,
+  carried,
   chatHistory,
   upsertDraft,
 }: UseDraftAutosaveArgs): (() => void) => {
   // Keep the latest values in a ref so the timer always reads fresh data
   // without re-arming on every keystroke beyond the debounce window.
-  const latest = useRef({ prompt, recipe, chatHistory });
-  latest.current = { prompt, recipe, chatHistory };
+  const latest = useRef({ prompt, recipe, carried, chatHistory });
+  latest.current = { prompt, recipe, carried, chatHistory };
 
   const cancelled = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -50,7 +58,7 @@ export const useDraftAutosave = ({
       void upsertDraft({
         id: draftId,
         prompt: latest.current.prompt,
-        snapshot: editableToSnapshot(latest.current.recipe),
+        snapshot: editableToSnapshot(latest.current.recipe, latest.current.carried),
         chatHistory: latest.current.chatHistory,
       });
     }, DEBOUNCE_MS);

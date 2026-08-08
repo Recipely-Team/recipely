@@ -1,4 +1,5 @@
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
+import { MediaType } from '@domain/recipes/media/media-type';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -298,5 +299,85 @@ describe('editableHasContent', () => {
     const editable = makeEditable({ instructions: ['   ', 'stir'] });
 
     expect(editableHasContent(editable)).toBe(true);
+  });
+});
+
+// ─── the regression: opening an imported draft destroyed it ──────────────────
+// An Instagram import writes a full recipe — category, tags, mealType, tips,
+// nutrition, caloriesPerServing — and stores its chosen cover frame in `image`,
+// leaving `media` empty. The editor models none of that. Autosave fires on
+// OPEN, so merely looking at an imported draft saved the editor's narrow
+// projection over the rich one: the cover and everything the AI had extracted
+// were gone, and the screen said "no photo yet" about a frame that existed and
+// was being served. Measured on dev 2026-08-08: imported drafts that had been
+// opened held 9 snapshot keys, untouched ones held 16.
+describe('an imported draft opened in the editor', () => {
+  const imported = (): DraftRecipeSnapshot => ({
+    name: 'Menemen',
+    cuisine: 'TURKISH',
+    difficulty: 'EASY',
+    prepTimeMinutes: 5,
+    cookTimeMinutes: 10,
+    servings: 2,
+    ingredients: ['eggs', 'tomato'],
+    instructions: ['cook'],
+    media: [],
+    image: 'https://dev-api.recipely.net/uploads/imports/cover.webp',
+    category: 'BREAKFAST',
+    tags: ['quick'],
+    mealType: ['breakfast'],
+    tips: ['use a wide pan'],
+    caloriesPerServing: 300,
+    nutrition: { protein: 12, carbs: 8, fat: 20, fiber: 1 },
+  });
+
+  it('shows the imported cover instead of claiming there is no photo', () => {
+    const editable = snapshotToEditable(imported());
+
+    expect(editable.media).toEqual([
+      { type: 'image', url: 'https://dev-api.recipely.net/uploads/imports/cover.webp' },
+    ]);
+  });
+
+  it('keeps the cover when the draft is saved straight back', () => {
+    const snapshot = editableToSnapshot(snapshotToEditable(imported()), imported());
+
+    expect(snapshot.image).toBe('https://dev-api.recipely.net/uploads/imports/cover.webp');
+  });
+
+  it.each(['category', 'tags', 'mealType', 'tips', 'caloriesPerServing', 'nutrition'] as const)(
+    'does not delete %s, which the editor has no field for',
+    (field) => {
+      const base = imported();
+
+      const snapshot = editableToSnapshot(snapshotToEditable(base), base);
+
+      expect(snapshot[field]).toEqual(base[field]);
+    },
+  );
+
+  it('lets a photo the user picks replace the imported cover', () => {
+    // The cover must follow what is on screen. A draft whose `image` said one
+    // thing and whose `media` said another is how this bug started.
+    const base = imported();
+    const editable = snapshotToEditable(base);
+    const chosen = { type: MediaType.Image, url: 'https://cdn.recipely.net/u/mine.jpg' };
+
+    const snapshot = editableToSnapshot({ ...editable, media: [chosen] }, base);
+
+    expect(snapshot.image).toBe(chosen.url);
+    expect(snapshot.media).toEqual([chosen]);
+  });
+
+  it('leaves a draft that never had these fields exactly as narrow as before', () => {
+    // A draft started in the editor carries no import fields, and must not grow
+    // empty ones — an `image: undefined` key would round-trip as a change and
+    // make the exit dialog ask about work nobody did.
+    const editable = snapshotToEditable({ name: 'Plain', ingredients: ['x'], instructions: ['y'] });
+
+    const snapshot = editableToSnapshot(editable, undefined);
+
+    expect(Object.keys(snapshot)).not.toContain('image');
+    expect(Object.keys(snapshot)).not.toContain('category');
   });
 });

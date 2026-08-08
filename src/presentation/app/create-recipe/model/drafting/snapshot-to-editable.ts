@@ -24,8 +24,16 @@ const draftCuisine = (text: string): string | null => {
 /**
  * Rebuilds the editor from a saved draft.
  *
- * The snapshot has no `category` — it only matters at publish time — so a
- * resumed draft takes the default rather than inventing one.
+ * @remarks
+ * - The snapshot's `category` is not read: it only matters at publish time, so
+ *   a resumed draft takes the default rather than inventing one.
+ * - **`image` is a cover the editor never saw.** An Instagram import stores its
+ *   chosen frame there and leaves `media` empty, and this mapper only ever read
+ *   `media` — so an imported draft opened in the editor said "no photo yet"
+ *   about a cover that existed and was being served. Seeding media from it is
+ *   what puts the imported frame in front of the user, and it is a fallback
+ *   rather than an override: once the editor has hosted media of its own, that
+ *   is the newer answer.
  */
 export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecipe => {
   const base = emptyEditable();
@@ -34,9 +42,16 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
   // `file:` addresses that no longer resolve, so restoring one would put a
   // broken image in the editor and fail at publish time instead of here.
   // Filtering on read is what repairs those rows without a migration.
-  const media: MediaItem[] = (snapshot.media ?? [])
+  const hosted: MediaItem[] = (snapshot.media ?? [])
     .filter((m) => m.type === MediaType.Image && isHostedMedia({ type: MediaType.Image, url: m.url }))
     .map((m) => ({ type: MediaType.Image, url: m.url }));
+  const cover = snapshot.image;
+  const media: MediaItem[] =
+    hosted.length > ValueConstants.zero ||
+    cover === undefined ||
+    !isHostedMedia({ type: MediaType.Image, url: cover })
+      ? hosted
+      : [{ type: MediaType.Image, url: cover }];
   return {
     name: snapshot.name ?? base.name,
     cuisine: snapshot.cuisine !== undefined ? draftCuisine(snapshot.cuisine) : base.cuisine,
