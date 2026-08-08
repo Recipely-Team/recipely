@@ -17,4 +17,16 @@
 export const LocaleConstants = {
   en: 'en',
   tr: 'tr',
+  es: 'es',
+  /** Written as Brazilian Portuguese — the larger market; `pt-BR` narrows to `pt`. */
+  pt: 'pt',
+  fr: 'fr',
+  de: 'de',
+  it: 'it',
+  ru: 'ru',
+  id: 'id',
+  ja: 'ja',
+  // `ar` is translated and sitting in `@presentation/i18n/locales`, but is NOT
+  // listed until the app has an RTL layout: offering Arabic in a left-to-right
+  // interface is worse for an Arabic reader than leaving them on English.
 } as const;

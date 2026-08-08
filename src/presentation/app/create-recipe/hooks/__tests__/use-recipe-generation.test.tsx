@@ -59,7 +59,7 @@ import { showDangerToast, showErrorToast } from '@presentation/base/feedback/sho
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { en } from '@presentation/i18n/en';
+import { en } from '@presentation/i18n/locales/en';
 import { RoutePaths } from '@presentation/base/constants';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';

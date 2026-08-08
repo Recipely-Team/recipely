@@ -15,7 +15,7 @@ import {
   failureSeverity,
   failureToastMessage,
 } from '@presentation/base/errors/failure-lookups';
-import { en } from '@presentation/i18n/en';
+import { en } from '@presentation/i18n/locales/en';
 
 // The reason the key channel exists: both of these are `unprocessable` → 422 →
 // ValidationFailure, and their fixes are opposite (reword vs. just retry).
