@@ -532,6 +532,7 @@ export const ko: Translations = {
     title: '가져오기를 시작했어요',
     body: '릴을 대기열에 추가했어요. 영상을 레시피로 바꾸는 데 1~2분 정도 걸릴 수 있어요. 앱을 닫아도 괜찮아요. 준비되면 바로 알려드릴게요.',
     queued: '대기 중',
+    queuePosition: '대기열 · {position}',
     working: '처리 중',
     ready: '레시피 준비 완료',
     readyBody: '릴이 임시저장 레시피로 만들어졌어요. 내 레시피에서 확인해 보세요.',

@@ -36,18 +36,20 @@ const POLL_MS = 4000;
 const TICK_MS = 9000;
 
 /** A store whose `refreshJob` behaves like the real one: a new object each time. */
-const makeStores = (status: ImportJobStatus) => {
+const makeStores = (status: ImportJobStatus, positions: readonly (number | null)[] = [null]) => {
   let polls = 0;
+  // The queue moves under a waiting job, so each poll may answer differently.
+  const positionAt = (n: number): number | null => positions[Math.min(n, positions.length - 1)] ?? null;
   const importJobStore = create<ImportJobStoreState>((set) => ({
     state: { status: 'idle' },
     startImport: async () => {
-      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null } } });
+      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null, queuePosition: positionAt(0) } } });
       await Promise.resolve();
     },
     refreshJob: async () => {
       polls += 1;
       // A FRESH object, exactly as `toImportJob` produces on every response.
-      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null } } });
+      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null, queuePosition: positionAt(polls) } } });
       await Promise.resolve();
     },
     clear: () => set({ state: { status: 'idle' } }),
@@ -58,8 +60,8 @@ const makeStores = (status: ImportJobStatus) => {
 
 type ViewModel = ReturnType<typeof useImportRecipe>;
 
-const drive = (status: ImportJobStatus) => {
-  const { stores, pollCount } = makeStores(status);
+const drive = (status: ImportJobStatus, positions?: readonly (number | null)[]) => {
+  const { stores, pollCount } = makeStores(status, positions);
   let latest!: ViewModel;
 
   const Probe = (): null => {
@@ -214,5 +216,53 @@ describe('useImportRecipe — arriving with no URL', () => {
     expect(latest.isAwaitingLink).toBe(true);
     expect(latest.failure).toBeNull();
     expect(latest.isQueueing).toBe(false);
+  });
+});
+
+describe('useImportRecipe — where in the queue', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  it('surfaces the position the backend reported', async () => {
+    const { latest } = drive(ImportJobStatus.Queued, [4]);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(latest().queuePosition).toBe(4);
+  });
+
+  it('follows the queue forward as jobs ahead finish', async () => {
+    // The number is only worth showing if it MOVES. A position frozen at 4
+    // through a two-minute wait reads as a queue that has stopped.
+    const { latest } = drive(ImportJobStatus.Queued, [4, 3, 2, 1]);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(latest().queuePosition).toBe(4);
+
+    await advance(POLL_MS * 3);
+
+    expect(latest().queuePosition).toBe(1);
+  });
+
+  it('reports nothing when the backend sends no position', async () => {
+    // An older backend, or a job that has started. Either way the screen shows
+    // no badge rather than inventing a place in a line.
+    const { latest } = drive(ImportJobStatus.Queued, [null]);
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(latest().queuePosition).toBeNull();
   });
 });

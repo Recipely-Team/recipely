@@ -68,6 +68,7 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
               activeStage={vm.activeStage}
               progress={vm.progress}
               isDone={vm.isDone}
+              queuePosition={vm.queuePosition}
               isQueueing={vm.isQueueing}
               onPrimary={vm.isDone ? vm.onOpenDraft : vm.onClose}
             />

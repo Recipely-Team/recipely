@@ -536,6 +536,7 @@ export const fr = {
     title: 'On s’en occupe',
     body: 'Votre reel est dans la file. Transformer une vidéo en recette prend une ou deux minutes — vous pouvez fermer l’app, nous vous enverrons une notification dès qu’elle sera prête.',
     queued: 'En attente',
+    queuePosition: 'Dans la file · {position}',
     working: 'En cours',
     ready: 'Recette prête',
     readyBody: 'Votre reel est maintenant un brouillon qui vous attend dans Mes recettes.',

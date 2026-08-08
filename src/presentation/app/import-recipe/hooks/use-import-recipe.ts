@@ -34,6 +34,8 @@ interface UseImportRecipeResult {
   /** 0..1 for the ring. */
   progress: number;
   isDone: boolean;
+  /** 1-based place in the queue, or null when the job is not waiting. */
+  queuePosition: number | null;
   onRetry: () => void;
   /** Queues a link the user pasted. */
   onSubmitLink: (url: string) => void;
@@ -149,6 +151,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
 
   const jobStatus = job?.status ?? null;
+  const queuePosition = job?.queuePosition ?? null;
   // A job the worker failed is not a failed REQUEST, but it reaches the user as
   // the same thing: a stop with a reason. Wearing it as a `Failure` lets the
   // screen resolve its copy through the one lookup every other error uses —
@@ -168,6 +171,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     activeStage,
     progress: activeStage / IMPORT_STAGE_COUNT,
     isDone,
+    queuePosition,
     onRetry: start,
     onSubmitLink,
     onClose,

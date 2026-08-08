@@ -536,6 +536,7 @@ export const es = {
     title: 'Nos ponemos con ello',
     body: 'Tu reel está en la cola. Convertir un vídeo en una receta tarda uno o dos minutos — puedes cerrar la app y te enviaremos una notificación en cuanto esté lista.',
     queued: 'En cola',
+    queuePosition: 'En cola · {position}',
     working: 'Procesando',
     ready: 'Receta lista',
     readyBody: 'Tu reel ya es un borrador y te espera en Mis recetas.',

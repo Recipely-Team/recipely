@@ -536,6 +536,7 @@ export const pt = {
     title: 'Pode deixar com a gente',
     body: 'Seu reel está na fila. Transformar um vídeo em receita leva um ou dois minutos — você pode fechar o app e enviaremos uma notificação assim que ficar pronta.',
     queued: 'Na fila',
+    queuePosition: 'Na fila · {position}',
     working: 'Processando',
     ready: 'Receita pronta',
     readyBody: 'Seu reel agora é um rascunho esperando em Minhas receitas.',
