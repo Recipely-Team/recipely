@@ -540,6 +540,7 @@ export const zh = {
     title: '已经开始处理',
     body: '你的 Reel 已加入队列。把视频整理成食谱通常需要一两分钟，你可以先关掉应用，准备好后我们会第一时间通知你。',
     queued: '已排队',
+    queuePosition: '排队中 · {position}',
     working: '处理中',
     ready: '食谱已准备好',
     readyBody: '这条 Reel 已经变成草稿，在“我的食谱”里等你。',

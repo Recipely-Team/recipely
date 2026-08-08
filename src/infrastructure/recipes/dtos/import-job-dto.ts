@@ -5,6 +5,8 @@ export interface ImportJobDto {
   status: string;
   draftId: string | null;
   errorKey: string | null;
+  /** 1-based place in the queue, or null once the job is no longer waiting. */
+  queuePosition: number | null;
   createdAt: string;
   updatedAt: string;
 }

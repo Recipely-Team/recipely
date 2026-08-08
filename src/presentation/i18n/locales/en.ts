@@ -543,6 +543,7 @@ export const en = {
     title: 'We’re on it',
     body: 'Your reel is in the queue. Turning a video into a recipe takes a minute or two — you can close the app, we’ll send you a notification the moment it’s ready.',
     queued: 'Queued',
+    queuePosition: 'In queue · {position}',
     working: 'Working on it',
     ready: 'Recipe ready',
     readyBody: 'Your reel is now a draft, waiting in My Recipes.',

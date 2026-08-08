@@ -536,6 +536,7 @@ export const de = {
     title: 'Wir kümmern uns darum',
     body: 'Dein Reel ist in der Warteschlange. Ein Video in ein Rezept zu verwandeln dauert ein bis zwei Minuten — du kannst die App schließen; wir schicken dir eine Benachrichtigung, sobald es fertig ist.',
     queued: 'In Warteschlange',
+    queuePosition: 'In der Warteschlange · {position}',
     working: 'In Bearbeitung',
     ready: 'Rezept fertig',
     readyBody: 'Dein Reel ist jetzt ein Entwurf und wartet unter Meine Rezepte.',

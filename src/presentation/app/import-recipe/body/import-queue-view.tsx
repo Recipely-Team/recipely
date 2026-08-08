@@ -28,10 +28,14 @@ export interface ImportQueueViewProps {
   progress: number;
   isDone: boolean;
   isQueueing: boolean;
+  /** 1-based place in the queue, or null when the job is not waiting. */
+  queuePosition: number | null;
   onPrimary: () => void;
 }
 
 const STATUS_DOT = 6;
+/** Placeholder the queue-position sentence carries in every catalogue. */
+const POSITION_TOKEN = '{position}';
 const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.one };
 const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
 const INSTAGRAM_STOPS = [
@@ -53,6 +57,7 @@ export const ImportQueueView = ({
   progress,
   isDone,
   isQueueing,
+  queuePosition,
   onPrimary,
 }: ImportQueueViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -63,6 +68,11 @@ export const ImportQueueView = ({
     : jobStatus === ImportJobStatus.Running
       ? copy.working
       : copy.queued;
+
+  // Only while genuinely waiting. A position on a job that has already started
+  // is a number about a line the user has left, and it is the difference
+  // between "four ahead of you" and "yours is being made right now".
+  const showsPosition = !isDone && jobStatus === ImportJobStatus.Queued && queuePosition !== null;
 
   return (
     <>
@@ -93,6 +103,15 @@ export const ImportQueueView = ({
               </ThemedText>
             </LinearGradient>
           )}
+
+          {showsPosition ? (
+            <View style={[styles.positionChip, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+              <Ionicons name="people-outline" size={iconSizes.sm} color={colors.textMuted} />
+              <ThemedText variant="caption" style={{ color: colors.textMuted }}>
+                {copy.queuePosition.replace(POSITION_TOKEN, String(queuePosition))}
+              </ThemedText>
+            </View>
+          ) : null}
 
           <ThemedText variant="title" style={styles.title}>
             {isDone ? copy.ready : copy.title}
@@ -163,6 +182,15 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.nano,
     fontWeight: fontWeights.bold,
     letterSpacing: letterSpacings.wider,
+  },
+  positionChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingHorizontal: spacing.sm2,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.hairline,
   },
   title: {
     textAlign: 'center',

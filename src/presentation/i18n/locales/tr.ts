@@ -540,6 +540,7 @@ export const tr: Translations = {
     title: 'İşleme aldık',
     body: 'Reel’in sıraya alındı. Videodan tarif çıkarmak birkaç dakika sürebilir. Uygulamayı kapatabilirsin; hazır olduğunda sana bildirim göndereceğiz.',
     queued: 'Sıraya alındı',
+    queuePosition: 'Sırada · {position}',
     working: 'İşleniyor',
     ready: 'Tarif hazır',
     readyBody: 'Tarif taslağın hazır. Tariflerim’de bulabilirsin.',

@@ -22,6 +22,7 @@ const job = (overrides: Partial<ImportJob> = {}): ImportJob => ({
   status: ImportJobStatus.Queued,
   draftId: null,
   errorKey: null,
+  queuePosition: null,
   ...overrides,
 });
 

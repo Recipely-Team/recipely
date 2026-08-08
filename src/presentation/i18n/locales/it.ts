@@ -536,6 +536,7 @@ export const it = {
     title: 'Ci pensiamo noi',
     body: 'Il tuo reel è in coda. Trasformare un video in una ricetta richiede uno o due minuti — puoi chiudere l’app e ti invieremo una notifica appena sarà pronta.',
     queued: 'In coda',
+    queuePosition: 'In coda · {position}',
     working: 'In lavorazione',
     ready: 'Ricetta pronta',
     readyBody: 'Il tuo reel ora è una bozza che ti aspetta in Le mie ricette.',

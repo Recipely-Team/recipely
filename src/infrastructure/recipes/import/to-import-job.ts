@@ -21,4 +21,8 @@ export const toImportJob: Mapper<ImportJobDto, ImportJob> = (dto) =>
     status: isImportJobStatus(dto.status) ? dto.status : ImportJobStatus.Running,
     draftId: dto.draftId,
     errorKey: dto.errorKey,
+    // `?? null` rather than trusting the field: this build can talk to a
+    // backend that predates it, and an undefined reaching the screen would
+    // render "position undefined" instead of simply no badge.
+    queuePosition: dto.queuePosition ?? null,
   });

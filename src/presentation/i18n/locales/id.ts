@@ -536,6 +536,7 @@ export const id = {
     title: 'Sedang kami kerjakan',
     body: 'Reel kamu sudah masuk antrean. Mengubah video menjadi resep perlu satu atau dua menit — kamu boleh menutup aplikasi, dan kami akan mengirim notifikasi begitu selesai.',
     queued: 'Dalam antrean',
+    queuePosition: 'Dalam antrean · {position}',
     working: 'Sedang diproses',
     ready: 'Resep siap',
     readyBody: 'Reel kamu sekarang menjadi draf yang menunggu di Resep Saya.',
