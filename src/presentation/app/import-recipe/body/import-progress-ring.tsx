@@ -152,9 +152,17 @@ export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps):
 };
 
 const styles = StyleSheet.create({
+  // The bloom is positioned OUTSIDE this box — `BLOOM_SPREAD` past every edge —
+  // so the box alone understates what the ring occupies by 10pt on each side.
+  // The screen's own `spacing.md` gaps are 12, which left the glow 2pt from the
+  // safe-area edge above it and 2pt from the status pill below: the ring read as
+  // stuck to the top of the screen and the pill as stuck to the ring. The margin
+  // is what makes the reserved space match the drawn thing, so every gap the
+  // layout asks for is the gap that appears.
   root: {
     width: RING_SIZE,
     height: RING_SIZE,
+    margin: BLOOM_SPREAD,
     alignSelf: 'center',
   },
   bloom: {

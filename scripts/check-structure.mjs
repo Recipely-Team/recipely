@@ -18,6 +18,8 @@
  *   K. No unguarded console.* in shipped code (CLAUDE.md §22).
  *   L. No hand-rolled bottom sheets (CLAUDE.md §23) — sheets go through the
  *      shared BottomSheet, which presents as a dialog on the web shell.
+ *   Q. The custom route context must admit every root `+file` expo-router reads
+ *      from it (`+native-intent` carries `redirectSystemPath`).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -407,6 +409,37 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     }
     for (const m of src.matchAll(/new (\w*Failure)\(\s*['"`]([^'"`]{4,})/g)) {
       errors.push(`${file}: ${m[1]} built from an inline message "${m[2].slice(0, 32)}…" — add it to DiagnosticMessage (CLAUDE.md §5)`);
+    }
+  }
+}
+
+// --- Q: the custom route context must not hide a `+file` from expo-router ----
+// `route-context.js` replaces `expo-router/_ctx` so co-located page code does
+// not become routes. But expo-router reads more than routes out of that
+// context: `getLinkingConfig` looks up `./+native-intent` in it to find
+// `redirectSystemPath`. Excluding that file therefore did not skip a route, it
+// silently unplugged the hook that rewrites the iOS share-extension URL — and
+// every "Share to Recipely" landed on Unmatched Route with nothing logged.
+//
+// So: every root-level `+file` the STOCK native context would admit must be
+// admitted by ours too. The three names below are the ones upstream's
+// `_ctx.ios.js` / `_ctx.android.js` exclude; anything else is ours to pass on.
+{
+  const CTX = 'presentation/navigation/route-context.js';
+  const APP_DIR = path.join(SRC, 'presentation/app');
+  const STOCK_EXCLUDES = /^\+(html|middleware)\.[tj]sx?$|\+api\.[tj]sx?$/;
+  const ctxPath = path.join(SRC, CTX);
+  const literal = /require\.context\([\s\S]*?,\s*(?:true|false),\s*(\/.*\/)[gimsuy]*\s*,/.exec(
+    fs.readFileSync(ctxPath, 'utf8'),
+  )?.[1];
+  if (literal === undefined) {
+    errors.push(`${CTX}: cannot read the require.context regex — rule Q cannot check it`);
+  } else {
+    const admits = new RegExp(literal.slice(1, -1));
+    for (const name of fs.readdirSync(APP_DIR)) {
+      if (!/^\+[\w-]+\.[tj]sx?$/.test(name) || STOCK_EXCLUDES.test(name)) continue;
+      if (admits.test(`./${name}`)) continue;
+      errors.push(`${CTX}: excludes app/${name}, which expo-router reads from the context`);
     }
   }
 }
