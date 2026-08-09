@@ -133,9 +133,15 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         initialNumToRender={ListConstants.initialRows}
         maxToRenderPerBatch={ListConstants.rowsPerBatch}
         windowSize={ListConstants.windowSize}
-        // Android only: detaches off-screen views from the native hierarchy.
-        // A no-op-to-harmful on iOS, where it has caused blank cells.
-        removeClippedSubviews={Platform.OS === 'android'}
+        // NO `removeClippedSubviews` HERE — see check:structure rule R.
+        // It detaches and re-attaches child views behind Fabric's back, and on
+        // the New Architecture that crashed the app: opening a finished
+        // Instagram import threw `addViewAt: failed to insert view [332] into
+        // parent [338]` from `ReactClippingViewManager.addView`, the class that
+        // exists to implement this very prop. The feed sits UNDER the import
+        // screen, so it re-clipped as the stack transition finished and handed
+        // Fabric a child it had already parented elsewhere. The windowing props
+        // above are what actually bound how many rows stay mounted.
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
