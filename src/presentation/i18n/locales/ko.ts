@@ -102,6 +102,11 @@ export const ko: Translations = {
       body: '먹고 싶은 요리를 알려 주세요. 몇 단어만 적어도 충분해요.',
       short: '먼저 원하는 요리를 적어 주세요',
     },
+    promptTooLong: {
+      title: '설명을 줄여 주세요',
+      body: '이 설명은 AI가 처리할 수 있는 길이를 넘습니다. 조금 줄인 뒤 다시 시도해 주세요.',
+      short: '설명이 너무 깁니다',
+    },
     refineInstructionRequired: {
       title: '무엇을 바꿔 볼까요?',
       body: '바꾸고 싶은 내용을 알려 주세요. 재료를 바꾸거나, 양을 줄이거나, 더 맵게 만들 수 있어요.',

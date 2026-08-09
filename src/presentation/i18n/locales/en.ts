@@ -106,6 +106,11 @@ export const en = {
       body: 'Describe the dish you have in mind — a few words is enough.',
       short: 'Write a prompt first',
     },
+    promptTooLong: {
+      title: 'Shorten your prompt',
+      body: 'That description is longer than the AI can take. Trim it a little and try again.',
+      short: 'Prompt is too long',
+    },
     refineInstructionRequired: {
       title: 'What should we change?',
       body: 'Tell the chef what to tweak — swap an ingredient, halve the servings, make it spicier.',

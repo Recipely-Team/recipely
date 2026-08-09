@@ -100,6 +100,11 @@ export const de = {
       body: 'Beschreibe das Gericht, das du im Kopf hast — ein paar Wörter reichen.',
       short: 'Schreib zuerst eine Anfrage',
     },
+    promptTooLong: {
+      title: 'Kürze deine Eingabe',
+      body: 'Diese Beschreibung ist länger, als die KI verarbeiten kann. Kürze sie etwas und versuche es erneut.',
+      short: 'Eingabe zu lang',
+    },
     refineInstructionRequired: {
       title: 'Was sollen wir ändern?',
       body: 'Sag dem Küchenchef, was angepasst werden soll — eine Zutat austauschen, Portionen halbieren oder mehr Schärfe hinzufügen.',

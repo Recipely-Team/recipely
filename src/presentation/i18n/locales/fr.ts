@@ -100,6 +100,11 @@ export const fr = {
       body: 'Décrivez le plat que vous avez en tête — quelques mots suffisent.',
       short: 'Écrivez d’abord une demande',
     },
+    promptTooLong: {
+      title: "Raccourcis ta description",
+      body: "Cette description dépasse ce que l'IA peut traiter. Raccourcis-la un peu et réessaie.",
+      short: "Description trop longue",
+    },
     refineInstructionRequired: {
       title: 'Que faut-il changer ?',
       body: 'Dites au chef quoi ajuster — remplacez un ingrédient, divisez les portions par deux ou relevez le plat.',

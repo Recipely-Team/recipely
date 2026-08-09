@@ -28,6 +28,7 @@ export type FailureContentKey =
   | 'aiUpstreamFailed'
   | 'aiCooldown'
   | 'promptRequired'
+  | 'promptTooLong'
   | 'refineInstructionRequired'
   // ── key-tier: Instagram import ─────────────────────────────────────────────
   | 'importInvalidUrl'

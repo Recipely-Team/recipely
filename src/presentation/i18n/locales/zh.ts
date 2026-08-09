@@ -103,6 +103,11 @@ export const zh = {
       body: '描述一下你想做的菜，几个词就够了。',
       short: '先写点想法吧',
     },
+    promptTooLong: {
+      title: '请缩短描述',
+      body: '该描述超出了 AI 能处理的长度。请稍微缩短后重试。',
+      short: '描述过长',
+    },
     refineInstructionRequired: {
       title: '想改哪里？',
       body: '告诉 AI 你想怎么调整，比如替换食材、减少份量，或做得更辣一些。',
