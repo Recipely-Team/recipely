@@ -586,3 +586,31 @@ answer "what is a route" was also answering "where is the linking hook", and the
 second question had no error path — the feature simply behaved as if it had
 never been written. Before narrowing a framework-owned collection, grep the
 framework for who else reads it.
+
+---
+
+## The crash reporter was installed after the app had already started
+
+**Symptom:** none visible — which is the point. Crashes were being lost with no
+sign that anything was missing.
+
+**Root cause:** three holes at once. `@react-native-firebase/crashlytics`
+installs its global `ErrorUtils` handler and unhandled-promise-rejection
+tracking inside its **module constructor**, and nothing constructed it until
+`AppBootstrap`'s effect ran — so every throw before the first render went to
+React Native's default handler and reached Firebase as nothing. On iOS the
+library's config plugin is Android-only, so no dSYMs were ever uploaded and any
+report that did arrive was unsymbolicated hex. And a process the system kills
+outright — OOM, an ANR resolved by a kill, `SIGKILL` — runs no handler at all,
+so it produced no report by construction.
+
+*Guard:* `installCrashHandlers()` runs from `index.js` before
+`expo-router/entry`; `plugins/withIosCrashlyticsDsym.js` adds the upload phase;
+`CrashSentinel` reports a session that vanished without backgrounding, naming
+the breadcrumb it died on, at the next launch.
+
+**The lesson: instrumentation that is not itself verified is indistinguishable
+from working instrumentation.** An empty Crashlytics dashboard reads as "no
+crashes" and means "no reports". Anything whose job is to notice failure needs a
+deliberate test that it fires — install it at the entry point, and prove a
+report arrives before trusting the silence.
