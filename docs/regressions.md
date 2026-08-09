@@ -647,3 +647,28 @@ The trail stopped at `import: draft fetch started`, which placed the crash insid
 a stack transition rather than in the fetch or the editor render, and that is what
 turned attention to the screen below. Instrument the flow before theorising about
 it, and suspect the neighbours of the screen you are looking at.
+
+---
+
+## The app sent a request the server was always going to refuse
+
+**Symptom:** publishing a recipe with a photo from the camera roll failed with
+"file too large".
+
+**Root cause:** nothing between the picker and the multipart body ever looked at
+the size. `ImagePicker` hands back the original capture — 4032px and several
+megabytes on a recent phone — and `quality: 0.85` re-encoded it without touching
+the dimensions, which is where the bytes are. Ten of those in one recipe cleared
+any per-file limit and the proxy's whole-request cap as well.
+
+*Guard:* `shrinkForUpload` bounds the long edge and re-encodes once, before the
+URI ever reaches the editor — so the file the draft carries is the file that gets
+uploaded. Covered by tests for both orientations, the already-small case, and the
+failure path (which returns the original rather than losing the photo).
+
+**The lesson: a client-side limit is not a duplicate of the server's, it is the
+only one that can produce a good outcome.** The server can only refuse; the
+client is the only place that can make the request acceptable in the first place.
+Any upload path needs its own ceiling, chosen to sit under every limit along the
+way — per-file, whole-request, and proxy — rather than matching whichever one
+happened to reject it first.

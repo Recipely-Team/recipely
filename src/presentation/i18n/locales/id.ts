@@ -439,6 +439,7 @@ export const id = {
     back: 'Kembali',
     done: 'Selesai',
     publish: 'Publikasikan Resep',
+    publishShort: 'Publikasikan',
     publishing: 'Mempublikasikan…',
     stepBasics: 'Dasar',
     stepMedia: 'Media',

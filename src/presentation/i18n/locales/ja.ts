@@ -439,6 +439,7 @@ export const ja = {
     back: '戻る',
     done: '完了',
     publish: 'レシピを公開',
+    publishShort: '公開',
     publishing: '公開中…',
     stepBasics: '基本情報',
     stepMedia: 'メディア',

@@ -443,6 +443,7 @@ export const tr: Translations = {
     back: 'Geri',
     done: 'Tamam',
     publish: 'Tarifi yayınla',
+    publishShort: 'Paylaş',
     publishing: 'Yayınlanıyor…',
     stepBasics: 'Temel bilgiler',
     stepMedia: 'Medya',

@@ -439,6 +439,7 @@ export const it = {
     back: 'Indietro',
     done: 'Fatto',
     publish: 'Pubblica ricetta',
+    publishShort: 'Pubblica',
     publishing: 'Pubblicazione…',
     stepBasics: 'Informazioni base',
     stepMedia: 'Media',

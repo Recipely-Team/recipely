@@ -446,6 +446,7 @@ export const en = {
     back: 'Back',
     done: 'Done',
     publish: 'Publish Recipe',
+    publishShort: 'Publish',
     publishing: 'Publishing…',
     stepBasics: 'Basics',
     stepMedia: 'Media',

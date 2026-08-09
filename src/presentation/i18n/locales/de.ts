@@ -439,6 +439,7 @@ export const de = {
     back: 'Zurück',
     done: 'Fertig',
     publish: 'Rezept veröffentlichen',
+    publishShort: 'Veröffentlichen',
     publishing: 'Wird veröffentlicht…',
     stepBasics: 'Grundlagen',
     stepMedia: 'Medien',

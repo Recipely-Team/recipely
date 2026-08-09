@@ -435,6 +435,7 @@ export const ko: Translations = {
     back: '뒤로',
     done: '완료',
     publish: '레시피 게시',
+    publishShort: '게시',
     publishing: '게시 중…',
     stepBasics: '기본 정보',
     stepMedia: '사진',
