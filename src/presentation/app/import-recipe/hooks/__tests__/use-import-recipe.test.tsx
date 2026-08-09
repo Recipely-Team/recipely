@@ -25,11 +25,12 @@ import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
 import { RoutePaths } from '@presentation/base/constants';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { ImportTrail } from '@presentation/base/errors/import-trail';
 
 const mockRouter = { replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
 
 jest.mock('@presentation/base/errors/failure-reporter', () => ({
-  FailureReporter: { report: jest.fn() },
+  FailureReporter: { report: jest.fn(), trail: jest.fn() },
 }));
 
 jest.mock('expo-router', () => ({
@@ -319,5 +320,55 @@ describe('useImportRecipe — a finished job with no draft to open', () => {
       expect.anything(),
       'ImportRecipe.openDraft',
     );
+  });
+});
+
+// A crash report says where the process died, not what it had been asked to do.
+// Opening a finished import has ended with the app gone — returned to Instagram
+// and unopenable without a force-close — and the reports carried no trail at
+// all: the same blank page for "died navigating", "died fetching the draft" and
+// "died rendering the editor". These marks are what make the next report name
+// the step, so they are worth pinning.
+describe('useImportRecipe — the trail it leaves for a crash report', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+  afterEach(() => {
+    jest.runOnlyPendingTimers();
+    jest.useRealTimers();
+  });
+
+  const tapOpenDraft = async (): Promise<void> => {
+    const { latest } = drive(ImportJobStatus.Done);
+    await act(async () => {
+      await Promise.resolve();
+    });
+    await act(async () => {
+      latest().onOpenDraft();
+    });
+  };
+
+  it('marks the tap before anything else can go wrong', async () => {
+    await tapOpenDraft();
+
+    expect(FailureReporter.trail).toHaveBeenCalledWith(ImportTrail.openDraftTapped);
+  });
+
+  it('marks a missing draft id distinctly from a navigation', async () => {
+    // The fixture job has no draftId, so this is the missing-id branch: the
+    // trail must say so rather than implying the app got as far as navigating.
+    await tapOpenDraft();
+
+    expect(FailureReporter.trail).toHaveBeenCalledWith(ImportTrail.openDraftMissing);
+    expect(FailureReporter.trail).not.toHaveBeenCalledWith(ImportTrail.navigatingToEditor);
+  });
+
+  it('carries no ids or urls — a breadcrumb is a place, not a value', () => {
+    // Rule 22: user ids and recipe ids have leaked into logs once already.
+    for (const mark of Object.values(ImportTrail)) {
+      expect(mark).not.toMatch(/https?:\/\//);
+      expect(mark).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}/);
+    }
   });
 });

@@ -7,7 +7,7 @@ import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
 import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
-import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { AppErrorBoundary } from '@presentation/base/widgets/feedback/app-error-boundary';
 import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
 import { AnalyticsEvent } from '@infrastructure/constants/analytics';
@@ -63,6 +63,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     // sink. Before this runs, reporting is a no-op — which is correct, since
     // Firebase is not initialised yet either.
     FailureReporter.setSink(recordCrash);
+    FailureReporter.setTrailSink(logCrashBreadcrumb);
     // Every failure the user is shown is also COUNTED, whether or not it is
     // crash-worthy: a rise in handled network failures is a real signal, and it
     // has nowhere to live in Crashlytics.

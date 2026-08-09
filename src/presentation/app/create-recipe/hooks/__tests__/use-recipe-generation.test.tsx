@@ -81,7 +81,7 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 }));
 
 jest.mock('@presentation/base/errors/failure-reporter', () => ({
-  FailureReporter: { report: jest.fn() },
+  FailureReporter: { report: jest.fn(), trail: jest.fn() },
 }));
 
 // A STABLE router object, so a test can assert on the navigation a flow

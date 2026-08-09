@@ -6,6 +6,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { ImportTrail } from '@presentation/base/errors/import-trail';
 import {
   failureKeyMessage,
   failureToastMessage,
@@ -122,7 +123,9 @@ const GEN_STEP_INTERVAL_MS = 620;
     // with `router.replace`, which changes the param on an already-mounted
     // screen sitting in `Prompt`.
     setPhase(PhaseType.Resuming);
+    FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
+      FailureReporter.trail(ImportTrail.draftFetchStarted);
       const result = await draftsStore.getState().getDraft(draftId);
       if (cancelled) return;
       // A draft that cannot be read must not leave the screen shimmering
@@ -131,6 +134,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       // connection; "couldn't open that draft" said none of them, and reporting
       // saw nothing at all.
       if (!result.ok) {
+        FailureReporter.trail(ImportTrail.draftFetchFailed);
         // Gone is not unreadable — see the "dead pointer" remark above.
         if (result.failure.code === FailureCode.NotFound) {
           showDangerToast(t().createRecipe.draftGone);
@@ -150,6 +154,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         setPhase(PhaseType.Prompt);
         return;
       }
+      FailureReporter.trail(ImportTrail.draftFetchOk);
       const loaded = result.value;
       const resumed = snapshotToEditable(loaded.snapshot);
       carried.current = loaded.snapshot;
@@ -159,6 +164,7 @@ const GEN_STEP_INTERVAL_MS = 620;
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
       setPhase(PhaseType.Preview);
+      FailureReporter.trail(ImportTrail.editorReady);
     })();
     return () => {
       cancelled = true;
