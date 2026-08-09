@@ -504,6 +504,7 @@ short version.
 | [`docs/regressions.md`](docs/regressions.md) | One line per bug *class*: symptom, root cause, what now prevents a recurrence |
 | [`docs/security.md`](docs/security.md) | Threat model, the request envelope, and what the shipped secrets do and do not protect |
 | [`fastlane/README.md`](fastlane/README.md) | Store listing copy and assets for both stores, and how they get uploaded |
+| [`fastlane/store-hub/`](fastlane/store-hub/) | The page that *generates* those assets — screenshot set, icon, feature graphic, metadata copy |
 | [`docs/roadmap.md`](docs/roadmap.md) | Planned features — the reasoning behind each, and what is still open |
 | [`docs/qa/android.md`](docs/qa/android.md) · [`docs/qa/ios.md`](docs/qa/ios.md) | Step-by-step manual QA passes, per platform |
 | [`TODO.md`](TODO.md) | Closed-out record of the backend-contract parity work |
