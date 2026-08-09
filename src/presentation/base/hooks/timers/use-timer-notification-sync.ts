@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { AppStateStatusValue } from '@presentation/base/constants';
+import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { isWeb } from '@infrastructure/constants/platform';
 import { AppState, type AppStateStatus } from 'react-native';
 import { timerStore } from '@application/timers/timer-store';

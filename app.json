@@ -127,6 +127,7 @@
           "iosUrlScheme": "com.googleusercontent.apps.421167568469-hl9tkgpi61p1rrir349b9ild9h976kgd"
         }
       ],
+      "./plugins/withIosCrashlyticsDsym",
       "./plugins/withAndroidSplashForceDark",
       "./plugins/withAndroidReleaseSigning",
       "./plugins/withAndroidR8Optimization"

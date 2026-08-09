@@ -16,4 +16,4 @@
 export { AnimationConstants } from './animation-constants';
 export { RoutePaths } from './route-paths';
 export { ListConstants } from './list-constants';
-export { AppStateStatusValue, KeyboardKey } from './platform-events';
+export { KeyboardKey } from './platform-events';
