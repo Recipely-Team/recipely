@@ -5,6 +5,8 @@ import type { Failure } from '@presentation/base/types';
 type Sink = (error: unknown, context: string) => void;
 /** Counting sink for every failure, crash-worthy or not. */
 type EventSink = (code: string, context: string) => void;
+/** Trail sink: notes what the app was DOING, whether or not it goes wrong. */
+type TrailSink = (message: string) => void;
 
 /**
  * Codes worth a CRASH REPORT.
@@ -75,6 +77,33 @@ export const FailureReporter = {
     events = sink;
   },
 
+  setTrailSink(sink: TrailSink | null): void {
+    trailSink = sink;
+  },
+
+  /**
+   * Leaves a breadcrumb on the crash report, for a step that has not failed.
+   *
+   * @remarks
+   * A crash report says where the process died; it does not say what the user
+   * had just asked for. An import that ends with the app disappearing produced
+   * reports with no trail at all — the same blank page for "died navigating",
+   * "died fetching the draft" and "died rendering the editor", which are three
+   * different bugs. Mark the steps of a flow that has gone wrong for someone,
+   * and the next report names the step instead of the file.
+   *
+   * Deliberately no user data: a breadcrumb is a place in the code, never a
+   * value. `report` redacts because it carries developer messages; this one has
+   * nothing to redact because nothing variable goes in.
+   */
+  trail(message: string): void {
+    try {
+      trailSink?.(message);
+    } catch {
+      // no-op
+    }
+  },
+
   /**
    * Called wherever a failure becomes something the user can see.
    *
@@ -99,3 +128,4 @@ export const FailureReporter = {
 
 let current: Sink | null = null;
 let events: EventSink | null = null;
+let trailSink: TrailSink | null = null;

@@ -10,6 +10,7 @@ import { ValueConstants } from '@core/constants';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { ImportTrail } from '@presentation/base/errors/import-trail';
 
 /** How often the screen asks the backend where the job has got to. */
 const POLL_INTERVAL_MS = 4000;
@@ -140,6 +141,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   }, [importJobStore, goBackOrHome]);
 
   const onOpenDraft = useCallback((): void => {
+    FailureReporter.trail(ImportTrail.openDraftTapped);
     const draftId = job?.draftId;
     importJobStore.getState().clear();
 
@@ -152,6 +154,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     // a report behind so the next occurrence arrives with a code instead of a
     // description.
     if (draftId === null || draftId === undefined) {
+      FailureReporter.trail(ImportTrail.openDraftMissing);
       FailureReporter.report(
         new UnknownFailure(DiagnosticMessage.recipeImport.doneWithoutDraft),
         'ImportRecipe.openDraft',
@@ -163,6 +166,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
       return;
     }
 
+    FailureReporter.trail(ImportTrail.navigatingToEditor);
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
   }, [job, importJobStore, router]);
 
