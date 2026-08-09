@@ -125,13 +125,19 @@ jobs:
             android="$INPUT_ANDROID"
             ios="$INPUT_IOS"
           else
-            case "$COMMIT_MESSAGE" in
+            # SUBJECT LINE ONLY. Scanning the whole message meant a commit that
+            # merely MENTIONED the markers — a note in the body explaining what
+            # they do — asked for both builds, and shipped an IPA nobody wanted.
+            # A tag belongs where tags go; prose lives in the body and must stay
+            # inert there.
+            subject="$(printf '%s' "$COMMIT_MESSAGE" | head -n 1)"
+            case "$subject" in
               *'[dist]'*) android=true; ios=true ;;
             esac
-            case "$COMMIT_MESSAGE" in
+            case "$subject" in
               *'[dist:android]'*) android=true ;;
             esac
-            case "$COMMIT_MESSAGE" in
+            case "$subject" in
               *'[dist:ios]'*) ios=true ;;
             esac
           fi
@@ -141,7 +147,7 @@ jobs:
             echo "Android dev APK: $android"
             echo "iOS dev IPA: $ios"
             echo ""
-            echo "Opt in with \`[dist]\` / \`[dist:android]\` / \`[dist:ios]\` in the merge commit, or run the workflow manually on dev."
+            echo "Opt in with a marker in the merge commit SUBJECT line, or run the workflow manually on dev."
           } >>"$GITHUB_STEP_SUMMARY"
 
   lint-and-typecheck:

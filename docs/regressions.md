@@ -536,3 +536,27 @@ looked right in its own return value and was wrong in `android/`, twice in a row
 A build-time transform is only as true as the artifact it produces — so read the
 artifact, and when the thing you are patching is written by someone else's mod,
 stop fighting the ordering and pick a file they do not own.
+
+---
+
+## Writing about the build marker triggered a build
+
+**Symptom:** a merge to `dev` built and shipped both an Android APK and an iOS
+IPA, minutes after being told to stop building iOS. The merge was a bug fix; no
+one had asked for either build.
+
+**Root cause:** the dev-distribution gate scanned the ENTIRE merge commit message
+for `[dist]` / `[dist:android]` / `[dist:ios]`. The commit in question was the
+one that made iOS opt-in, and its body explained the markers by name — so a
+sentence *about* the feature was read as an *instruction* to use it. The same
+paragraph that documented the change requested the thing it was documenting.
+
+*Guard:* only the commit's **subject line** is scanned now, which is where a tag
+belongs; a body can discuss the markers without invoking them. `CLAUDE.md` states
+the narrower rule, and says why.
+
+**The lesson: a trigger that matches free text will eventually match prose about
+itself.** Anything scanned for a magic token — commit messages, PR bodies, chat
+text, log lines — needs the token confined to a position that carries intent, not
+merely a substring match. The failure is silent, arrives later, and looks like
+someone else's mistake.
