@@ -100,6 +100,11 @@ export const pt = {
       body: 'Descreva o prato que você tem em mente — poucas palavras já bastam.',
       short: 'Escreva um pedido primeiro',
     },
+    promptTooLong: {
+      title: 'Encurte a descrição',
+      body: 'Essa descrição é maior do que a IA consegue processar. Reduza um pouco e tente de novo.',
+      short: 'Descrição muito longa',
+    },
     refineInstructionRequired: {
       title: 'O que devemos mudar?',
       body: 'Diga ao chef o que ajustar — troque um ingrediente, reduza as porções pela metade ou deixe mais picante.',

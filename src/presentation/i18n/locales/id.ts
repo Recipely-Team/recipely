@@ -100,6 +100,11 @@ export const id = {
       body: 'Jelaskan hidangan yang kamu inginkan — beberapa kata saja sudah cukup.',
       short: 'Tulis permintaan dulu',
     },
+    promptTooLong: {
+      title: 'Persingkat deskripsimu',
+      body: 'Deskripsi ini lebih panjang dari yang bisa diproses AI. Persingkat sedikit lalu coba lagi.',
+      short: 'Deskripsi terlalu panjang',
+    },
     refineInstructionRequired: {
       title: 'Apa yang ingin diubah?',
       body: 'Beri tahu chef apa yang perlu disesuaikan — ganti bahan, kurangi porsi setengah, atau buat lebih pedas.',

@@ -103,6 +103,11 @@ export const tr: Translations = {
       body: 'Aklındaki yemeği anlat — birkaç kelime yeterli.',
       short: 'Önce bir şeyler yaz',
     },
+    promptTooLong: {
+      title: 'Metni biraz kısalt',
+      body: 'Bu açıklama yapay zekânın alabileceğinden uzun. Biraz kısaltıp tekrar dene.',
+      short: 'Metin çok uzun',
+    },
     refineInstructionRequired: {
       title: 'Neyi değiştirelim?',
       body: 'Neyi değiştirmek istediğini söyle — bir malzemeyi değiştir, porsiyonu azalt ya da daha acılı yap.',

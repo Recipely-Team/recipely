@@ -75,6 +75,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   aiUpstreamFailed: 'sparkles-outline',
   aiCooldown: 'hourglass-outline',
   promptRequired: 'create-outline',
+  promptTooLong: 'cut-outline',
   refineInstructionRequired: 'chatbubble-ellipses-outline',
 
   importInvalidUrl: 'link-outline',
