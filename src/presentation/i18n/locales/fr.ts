@@ -439,6 +439,7 @@ export const fr = {
     back: 'Retour',
     done: 'Terminé',
     publish: 'Publier la recette',
+    publishShort: 'Publier',
     publishing: 'Publication…',
     stepBasics: 'Bases',
     stepMedia: 'Médias',

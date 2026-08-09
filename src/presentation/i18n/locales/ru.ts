@@ -439,6 +439,7 @@ export const ru = {
     back: 'Назад',
     done: 'Готово',
     publish: 'Опубликовать рецепт',
+    publishShort: 'Опубликовать',
     publishing: 'Публикация…',
     stepBasics: 'Основное',
     stepMedia: 'Медиа',

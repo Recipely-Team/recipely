@@ -443,6 +443,7 @@ export const zh = {
     back: '返回',
     done: '完成',
     publish: '发布食谱',
+    publishShort: '发布',
     publishing: '发布中…',
     stepBasics: '基本信息',
     stepMedia: '照片',

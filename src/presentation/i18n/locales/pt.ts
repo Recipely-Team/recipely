@@ -439,6 +439,7 @@ export const pt = {
     back: 'Voltar',
     done: 'Concluído',
     publish: 'Publicar receita',
+    publishShort: 'Publicar',
     publishing: 'Publicando…',
     stepBasics: 'Informações básicas',
     stepMedia: 'Mídia',

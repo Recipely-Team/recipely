@@ -10,6 +10,7 @@ import { upperCase } from '@presentation/i18n/upper-case';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { shrinkForUpload } from '@presentation/app/create-recipe/model/saving/shrink-for-upload';
 
 export interface MediaPickerProps {
   media: readonly MediaItem[];
@@ -24,10 +25,19 @@ const pickImages = async (): Promise<MediaItem[]> => {
   const result = await ImagePicker.launchImageLibraryAsync({
     allowsMultipleSelection: true,
     mediaTypes: 'images',
-    quality: 0.85,
+    // No `quality` here on purpose: `shrinkForUpload` owns the one re-encode.
+    // Two lossy passes cost detail and saved nothing — the picker's pass ran
+    // before the resize that actually removes the bytes.
   });
   if (result.canceled) return [];
-  return result.assets.map((a) => ({ type: MediaType.Image, url: a.uri }));
+  // Shrink BEFORE the picker's result reaches the editor, so the URI the draft
+  // carries is already the one that will be uploaded. Doing it at publish time
+  // instead would leave autosave holding a multi-megabyte device path and the
+  // preview rendering a different file from the one that gets sent.
+  const shrunk = await Promise.all(
+    result.assets.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
+  );
+  return shrunk.map((url) => ({ type: MediaType.Image, url }));
 };
 
 export const MediaPicker = ({

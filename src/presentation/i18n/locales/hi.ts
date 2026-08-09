@@ -435,6 +435,7 @@ export const hi: Translations = {
     back: 'वापस',
     done: 'पूरा हुआ',
     publish: 'रेसिपी प्रकाशित करें',
+    publishShort: 'प्रकाशित करें',
     publishing: 'प्रकाशित हो रही है…',
     stepBasics: 'बुनियादी जानकारी',
     stepMedia: 'फ़ोटो',

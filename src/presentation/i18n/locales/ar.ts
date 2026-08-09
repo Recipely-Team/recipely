@@ -439,6 +439,7 @@ export const ar = {
     back: "رجوع",
     done: "تم",
     publish: "نشر الوصفة",
+    publishShort: "نشر",
     publishing: "جارٍ النشر…",
     stepBasics: "الأساسيات",
     stepMedia: "الوسائط",

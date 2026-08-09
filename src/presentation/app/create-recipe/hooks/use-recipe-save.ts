@@ -137,8 +137,15 @@ export const useRecipeSave = ({
 
   const headerTitle = t().createRecipe.previewTitle;
   const isSaving = createState.status === StoreStatus.Creating;
+  // `publishShort`, not `save`: the button does not save anything private — it
+  // puts the recipe out where other people can find it, and the in-flight label
+  // has always said "Publishing…". Reading "Kaydet" and then "Yayınlanıyor…" on
+  // the same press described two different actions, and the first one was the
+  // wrong one.
   const saveLabel =
-    createState.status === StoreStatus.Creating ? t().createRecipe.publishing : t().createRecipe.save;
+    createState.status === StoreStatus.Creating
+      ? t().createRecipe.publishing
+      : t().createRecipe.publishShort;
 
   return {
     onSave,

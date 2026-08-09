@@ -439,6 +439,7 @@ export const es = {
     back: 'Atrás',
     done: 'Listo',
     publish: 'Publicar receta',
+    publishShort: 'Publicar',
     publishing: 'Publicando…',
     stepBasics: 'Datos básicos',
     stepMedia: 'Contenido multimedia',
