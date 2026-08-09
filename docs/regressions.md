@@ -560,3 +560,29 @@ itself.** Anything scanned for a magic token — commit messages, PR bodies, cha
 text, log lines — needs the token confined to a position that carries intent, not
 merely a substring match. The failure is silent, arrives later, and looks like
 someone else's mistake.
+
+---
+
+## A replaced framework context hid the file the framework reads
+
+**Symptom:** on iOS, "Share to Recipely" from Instagram opened the app on
+expo-router's **Unmatched Route** page showing
+`recipely-dev://dataUrl=recipely-devShareKey?nonce=…`. The import never started.
+
+**Root cause:** `+native-intent.tsx` — whose entire job is rewriting exactly that
+URL — was correct and never ran. `route-context.js` replaces `expo-router/_ctx`
+so co-located page code does not become routes, and its exclusion list was
+copied from upstream's **web** context, which excludes `+native-intent`. The
+native contexts admit it, because expo-router reads `redirectSystemPath` back
+out of the context by key (`getLinkingConfig`). Excluding the file did not skip
+a route; it unplugged a hook, silently, with nothing logged.
+
+*Guard:* `check:structure` rule Q — every root `+file` the stock native context
+would admit must be admitted by ours. Plus a unit test on the regex itself.
+
+**The lesson: when you replace a framework's module, you inherit every use the
+framework has for it, not the one you replaced it for.** A filter written to
+answer "what is a route" was also answering "where is the linking hook", and the
+second question had no error path — the feature simply behaved as if it had
+never been written. Before narrowing a framework-owned collection, grep the
+framework for who else reads it.
