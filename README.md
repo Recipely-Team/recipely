@@ -1,51 +1,106 @@
+<div align="center">
+
+<img src="assets/images/icon.png" width="112" alt="Recipely" />
+
 # Recipely
 
-A cross-platform recipe app — **iOS, Android and web from one codebase** — built with Expo and
-React Native, and structured with **Domain-Driven Design** on a **Clean Architecture** layering.
+**One codebase. iOS, Android and the web.**
+A recipe app that puts the recipe first — and writes one for you when you only have a video.
 
-Recipely lets you discover recipes, generate new ones with AI (from a prompt or an imported
-Instagram video), cook along with inline step timers, and keep your own collection. It talks to a
-first-party backend at `api.recipely.net`, ships to the App Store and Play Store, and deploys the
-same code to `recipely.net` as a static web export.
+[![Expo SDK 55](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native 0.83](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
+[![React 19.2](https://img.shields.io/badge/React-19.2-149ECA?logo=react&logoColor=white)](https://react.dev)
+[![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tests](https://img.shields.io/badge/tests-1516%20in%20180%20suites-3FB950)](#testing)
+[![Architecture](https://img.shields.io/badge/DDD%20%2F%20Clean%20Architecture-17%20mechanical%20rules-8957E5)](#quality-gates)
+[![License MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
+
+[**recipely.net**](https://recipely.net) · [About](https://recipely.net/about) · [dev.recipely.net](https://dev.recipely.net)
+
+</div>
+
+---
+
+<table>
+<tr><td width="50%" valign="top">
+
+### What it is
+
+Recipely lets you **discover** recipes, **generate** new ones with AI — from a prompt or an
+imported Instagram video — **cook along** with timers that live inside the step that mentions them,
+and keep your own collection.
+
+It talks to a first-party backend at `api.recipely.net`, ships to the App Store and Play Store, and
+deploys the same source to `recipely.net` as a static web export.
+
+</td><td width="50%" valign="top">
+
+### At a glance
 
 | | |
 |---|---|
-| **Platforms** | iOS · Android · Web (responsive: mobile shell + desktop shell) |
+| **Platforms** | iOS · Android · Web |
+| **Shells** | Mobile + a real desktop shell |
 | **Languages** | English · Turkish |
-| **Backend** | `recipely-backend` — separate repository, `api.recipely.net` |
-| **Web** | recipely.net (prod) · dev.recipely.net (dev) |
+| **Backend** | [`recipely-backend`](https://api.recipely.net) (separate repo) |
+| **Architecture** | DDD on Clean Architecture, 5 layers |
+| **Enforcement** | 17 mechanical rules + 4 gates |
+
+</td></tr>
+</table>
 
 ---
 
 ## Table of contents
 
+<table>
+<tr>
+<td valign="top">
+
+**Understanding it**
 - [Purpose & scope](#purpose--scope)
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Architecture](#architecture)
 - [Repository layout](#repository-layout)
+
+</td>
+<td valign="top">
+
+**Working on it**
 - [Getting started](#getting-started)
 - [Build variants](#build-variants)
 - [Quality gates](#quality-gates)
 - [Testing](#testing)
+
+</td>
+<td valign="top">
+
+**Shipping it**
+- [Observability](#observability)
 - [CI/CD](#cicd)
 - [Conventions cheat-sheet](#conventions-cheat-sheet)
 - [Documentation map](#documentation-map)
+
+</td>
+</tr>
+</table>
 
 ---
 
 ## Purpose & scope
 
-**The problem.** Recipes online are optimised for ad impressions, not for cooking. You scroll past a
-life story to reach the ingredients, you lose your place mid-step, and you have no good way to keep
-the handful of recipes you actually make.
+> **The problem.** Recipes online are optimised for ad impressions, not for cooking. You scroll past
+> a life story to reach the ingredients, you lose your place mid-step, and you have no good way to
+> keep the handful of recipes you actually make.
 
 **What Recipely does.** It puts the recipe first: ingredients and steps as checklists, timers that
 live inside the step that mentions them, and a personal collection that follows you across devices.
 If a recipe only exists in your head or in a video someone sent you, the AI generator turns it into
 a structured recipe you can edit and save.
 
-**In scope**
+<details open>
+<summary><b>In scope</b></summary>
 
 - Recipe discovery, search, filtering and sorting; detail view with ingredients, steps and photos.
 - Authoring: manual creation, AI generation from a prompt, and import from an Instagram video
@@ -55,7 +110,10 @@ a structured recipe you can edit and save.
 - Accounts: email/password, Google and Apple sign-in, password reset, account deletion.
 - A full responsive web build with its own desktop shell and SEO-indexable public pages.
 
-**Out of scope** (deliberately, for now)
+</details>
+
+<details>
+<summary><b>Out of scope</b> — deliberately, for now</summary>
 
 - Meal planning, shopping lists and pantry tracking.
 - Offline-first sync — the app reads from the network and caches in memory; it is not a local-first
@@ -63,21 +121,24 @@ a structured recipe you can edit and save.
 - Nutrition as medical guidance: values are informational and come from the source data.
 - Real-time collaboration or messaging between users.
 
+</details>
+
 ---
 
 ## Features
 
 | Area | What it covers |
 |------|----------------|
-| **Discover** | Collapsing home feed, cuisine strip, trending rail, search, filter & sort, AI banner. Guests can browse without an account. |
-| **Recipe detail** | Photo gallery, ingredient checklist, numbered steps with inline timers, nutrition card, author card, comments, likes, saves, share sheet. |
-| **Authoring** | Multi-phase editor (prompt → generating → preview → edit), AI refine chat, media picker, taxonomy pickers, draft autosave and resume. |
-| **My recipes** | Own recipes and saved recipes in one place, plus resumable drafts. |
-| **Timers** | Named per-step countdowns, a docked active-timers bar, notifications, and a full-screen alarm takeover. |
-| **Account** | Email/password, Google, Apple; verification codes, password reset, profile editing, avatar upload, soft-delete account removal. |
-| **Notifications** | In-app centre with unread badges, push registration, deep links back into the app. |
-| **Personalisation** | Multiple themes with light/dark variants, EN/TR language switch, contrast-checked palettes. |
-| **Web** | Desktop shell with its own header, grids and two-column recipe detail; static export with SEO metadata and public legal pages. |
+| 🔍 **Discover** | Collapsing home feed, cuisine strip, trending rail, search, filter & sort, AI banner. Guests can browse without an account. |
+| 📖 **Recipe detail** | Photo gallery, ingredient checklist, numbered steps with inline timers, nutrition card, author card, comments, likes, saves, share sheet. |
+| ✍️ **Authoring** | Multi-phase editor (prompt → generating → preview → edit), AI refine chat, media picker, taxonomy pickers, draft autosave and resume. |
+| 📷 **Instagram import** | Share a reel into the app; a worker transcribes and reads the video, and hands back a draft recipe. |
+| 🗂️ **My recipes** | Own recipes and saved recipes in one place, plus resumable drafts. |
+| ⏱️ **Timers** | Named per-step countdowns, a docked active-timers bar, notifications, and a full-screen alarm takeover. |
+| 👤 **Account** | Email/password, Google, Apple; verification codes, password reset, profile editing, avatar upload, soft-delete account removal. |
+| 🔔 **Notifications** | In-app centre with unread badges, push registration, deep links back into the app. |
+| 🎨 **Personalisation** | Multiple themes with light/dark variants, EN/TR language switch, contrast-checked palettes. |
+| 🖥️ **Web** | Desktop shell with its own header, grids and two-column recipe detail; static export with SEO metadata and public legal pages. |
 
 ---
 
@@ -85,20 +146,20 @@ a structured recipe you can edit and save.
 
 | Concern | Choice | Version / note |
 |---------|--------|----------------|
-| Framework | Expo | SDK 55 |
-| Runtime | React Native | 0.83 |
-| UI library | React | 19.2 |
-| Language | TypeScript | strict mode |
-| Routing | expo-router | file-based, with a custom route context |
-| State | Zustand | 5 |
-| HTTP | Axios | + AES-256-GCM request envelope |
-| Web renderer | react-native-web | 0.21 |
-| Animation | react-native-reanimated | 4 |
-| Vector art | react-native-svg | 15 |
-| Auth / analytics | Firebase (native + web SDKs) | Google & Apple sign-in |
-| i18n | expo-localization + in-repo dictionaries | EN, TR |
-| Testing | Jest + jest-expo | 1002 tests across 137 suites |
-| Tooling | ESLint (eslint-config-expo), Husky, lint-staged | |
+| Framework | **Expo** | SDK 55 |
+| Runtime | **React Native** | 0.83 · New Architecture (Fabric) |
+| UI library | **React** | 19.2 |
+| Language | **TypeScript** | strict mode |
+| Routing | **expo-router** | file-based, with a custom route context |
+| State | **Zustand** | 5 |
+| HTTP | **Axios** | + AES-256-GCM request envelope |
+| Web renderer | **react-native-web** | 0.21 |
+| Animation | **react-native-reanimated** | 4 |
+| Vector art | **react-native-svg** | 15 |
+| Auth / analytics / crash | **Firebase** (native + web SDKs) | Google & Apple sign-in, Crashlytics |
+| i18n | **expo-localization** + in-repo dictionaries | EN, TR |
+| Testing | **Jest + jest-expo** | 1516 tests across 180 suites |
+| Tooling | ESLint (`eslint-config-expo`), Husky, lint-staged | |
 | CI/CD | GitHub Actions → Play internal track, TestFlight, Firebase Hosting | |
 
 ---
@@ -152,6 +213,11 @@ app/recipes/
   [recipeId]/    nested detail page, same anatomy
 ```
 
+> [!NOTE]
+> That custom context replaces a framework-owned module, so it inherits every use the framework has
+> for it — including looking `+native-intent` up by key to find `redirectSystemPath`. Rule **Q**
+> exists because hiding that file once unplugged the iOS share extension in complete silence.
+
 ### Design system
 
 `presentation/base/theme/` is split by what a file is *for*:
@@ -172,6 +238,7 @@ rules in [`architecture.md` §5a](architecture.md).
 ## Repository layout
 
 ```
+index.js           entry point — installs the crash net, then hands off to expo-router
 src/
   presentation/    UI — app/ (pages), base/ (widgets, theme, hooks), navigation/, i18n/, bootstrap/
   application/     use cases, stores, DI registration, test fixtures
@@ -180,12 +247,17 @@ src/
   core/            Result, Failure, BaseEntity, the DI Container, named literals
 assets/            images, fonts, sounds (reached via @assets/*)
 public/            static web assets (about page, legal pages)
-scripts/           check-structure, prune-web-export, apply-variant-robots
+plugins/           Expo config plugins (splash force-dark, release signing, R8, iOS dSYM upload)
+scripts/           check-structure, generate-map, prune-web-export, apply-variant-robots
 .github/workflows/ ci.yml — the whole pipeline
 ```
 
 Path aliases: `@core/*`, `@domain/*`, `@application/*`, `@infrastructure/*`, `@presentation/*`,
 `@assets/*`, `@/*` (repo root). Relative imports are allowed only inside barrel `index.ts` files.
+
+> [!TIP]
+> **Looking for where something lives?** [`PROJECT-MAP.md`](PROJECT-MAP.md) is a generated ~1k-token
+> index of the whole tree, and `check:structure` fails while it is stale — so it is never wrong.
 
 ---
 
@@ -222,6 +294,7 @@ EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID=
 EXPO_PUBLIC_FIREBASE_VAPID_KEY=      # web push only
 ```
 
+> [!WARNING]
 > The AES key ships inside the binary and is extractable by reverse engineering. It hardens the
 > request envelope; TLS is what actually protects the transport.
 
@@ -269,24 +342,37 @@ npm run check:structure  # architectural rules (also checks PROJECT-MAP.md is fr
 npm run map              # regenerate PROJECT-MAP.md after moving files
 ```
 
-`check:structure` (`scripts/check-structure.mjs`) is what keeps the architecture from drifting. It
-is not a linter — it encodes the rules a linter cannot see:
+`check:structure` ([`scripts/check-structure.mjs`](scripts/check-structure.mjs)) is what keeps the
+architecture from drifting. It is not a linter — it encodes the rules a linter cannot see, and most
+of them were added the day a bug proved they were needed:
 
 | Rule | Enforces |
-|------|----------|
-| A | One class / interface / type / component per file; one hook per file |
-| B, C | Layer dependency direction; `@layer/*` aliases instead of relative imports |
-| D | No loose files at the `base/widgets/` root — category folders only |
-| E | Page code lives in `body/ items/ sheets/ hooks/ model/ shared/ __tests__/` |
-| F | No `.tsx` over 300 lines (the Smart-UI guard) |
-| G | A class extending `BaseEntity` is named `*Entity` in a `*-entity.ts` file |
-| H | No absolute `lineHeight`; no bare `<TextInput multiline>` outside `AutoGrowTextInput` |
-| I | Folder file counts — soft warning past 10, blocking past 15 |
-| J | `PROJECT-MAP.md` still describes the tree (`npm run map` to refresh) |
-| K | No unguarded `console.*` — it raises a LogBox in dev and leaks to logcat in release |
+|:---:|------|
+| **A** | One class / interface / type / component per file; one hook per file |
+| **B**, **C** | Layer dependency direction; `@layer/*` aliases instead of relative imports |
+| **D** | No loose files at the `base/widgets/` root — category folders only |
+| **E** | Page code lives in `body/ items/ sheets/ hooks/ model/ shared/ __tests__/` |
+| **F** | No `.tsx` over 300 lines (the Smart-UI guard) |
+| **G** | A class extending `BaseEntity` is named `*Entity` in a `*-entity.ts` file |
+| **H** | No absolute `lineHeight`; no bare `<TextInput multiline>` outside `AutoGrowTextInput` |
+| **I** | Folder file counts — soft warning past 10, blocking past 15 |
+| **J** | `PROJECT-MAP.md` still describes the tree (`npm run map` to refresh) |
+| **K** | No unguarded `console.*` — it raises a LogBox in dev and leaks to logcat in release |
+| **L** | No hand-rolled bottom sheets — they come from `base/widgets/sheets/` |
+| **M** | Every `Modal` sets `statusBarTranslucent` (edge-to-edge Android jumps without it) |
+| **N** | No background-audio capability in the Expo config (App Review rejected two builds) |
+| **O** | Port interfaces are `*Interface`, never `I*` |
+| **P** | A vocabulary is defined once — no status literals, inline `Failure` messages or hand-written `typeof` |
+| **Q** | The custom route context must admit every root `+file` expo-router reads from it |
 
 A Husky pre-commit hook runs `lint-staged` → `tsc --noEmit` → `check:structure` on every commit.
 The emergency bypass is `git commit --no-verify`, and the reason belongs in the commit message.
+
+> [!IMPORTANT]
+> **A bug fix ships the test that would have caught it.** Every behavioural fix lands with a
+> regression test that fails without it, a mechanical guard where one is possible, and a one-line
+> entry in [`docs/regressions.md`](docs/regressions.md) recording the *class* of mistake — not the
+> incident. That file is why this table keeps growing.
 
 ---
 
@@ -309,9 +395,29 @@ immediately rather than at the next redesign.
 
 ---
 
+## Observability
+
+Crash reporting is installed at the **entry point**, before the app starts — `index.js` calls
+`installCrashHandlers()` and only then hands off to `expo-router/entry`. Three layers, because no
+one of them sees everything:
+
+| Layer | Catches | Where |
+|-------|---------|-------|
+| **JS catch-all** | Uncaught errors and unhandled promise rejections | `@react-native-firebase/crashlytics` installs an `ErrorUtils` handler inside its module constructor — the entry point forces that construction so it is not late |
+| **Native handlers** | Signals, ANRs, NDK crashes | Crashlytics SDK, automatic. Android mapping via the Gradle plugin; iOS dSYMs via [`plugins/withIosCrashlyticsDsym.js`](plugins/withIosCrashlyticsDsym.js) |
+| **`CrashSentinel`** | Deaths that run **no code at all** — OOM, an ANR resolved by a kill, `SIGKILL` | A foreground marker erased on `background`; still present at the next launch ⇒ the last session vanished. Reported with the breadcrumb it died on |
+| **`AppErrorBoundary`** | Render-time throws | Shows the user a screen instead of taking the app down, and reports through the same sink |
+
+Two rules keep the reports readable: `FailureReporter.report` only escalates the *unforeseen* codes
+to Crashlytics (a validation message the product already answers is counted as an analytics event
+instead), and breadcrumbs are **places in the code, never values** — an id or URL on a crash report
+is user data leaving the device.
+
+---
+
 ## CI/CD
 
-`.github/workflows/ci.yml`, on every push:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml), on every push:
 
 | Job | Runs on | Does |
 |-----|---------|------|
@@ -320,14 +426,18 @@ immediately rather than at the next redesign.
 | `build-web-dev` | `dev` | Builds and deploys dev.recipely.net |
 | `build-web-prod` | `main` | Builds and deploys recipely.net |
 | `tag-release` | `main` | Computes and pushes the next version tag |
-| `distribute-dev` / `distribute-ios-dev` | `dev`, **opt-in** | Gradle APK / TestFlight build |
+| `distribute-dev` / `distribute-ios-dev` | `dev`, **opt-in** | Gradle APK / IPA to Firebase App Distribution |
 | `distribute-prod` / `distribute-ios-prod` | `main` | Play internal track + TestFlight |
 
-**Merging to `dev` does not ship a mobile build.** Lint, tests and the dev web deploy always run; the
-Android and iOS builds run only when explicitly requested — either by putting `[dist]`,
-`[dist:android]` or `[dist:ios]` in the merge commit message, or with
-`gh workflow run ci.yml --ref dev -f android=true -f ios=true`. The `IOS_CI_ENABLED` repository
-variable is the iOS kill switch.
+> [!CAUTION]
+> **Merging to `dev` does not ship a mobile build.** Lint, tests and the dev web deploy always run;
+> the Android and iOS builds run only when explicitly requested — either by putting `[dist]`,
+> `[dist:android]` or `[dist:ios]` in the **subject line** of the merge commit, or with
+> `gh workflow run ci.yml --ref dev -f android=true`. The `ios` input defaults to **false**.
+> `IOS_CI_ENABLED` is the iOS kill switch.
+>
+> Only the subject line is scanned. It used to be the whole message, and a commit whose body merely
+> *explained* the markers shipped an IPA nobody wanted.
 
 Branch flow: feature branch → PR → `dev` → (release PR) → `main`. `main` is release-only.
 
@@ -337,6 +447,9 @@ Branch flow: feature branch → PR → `dev` → (release PR) → `main`. `main`
 
 Full rules live in [`CLAUDE.md`](CLAUDE.md) and [`architecture.md`](architecture.md); this is the
 short version.
+
+<table>
+<tr><td valign="top" width="50%">
 
 **Files & folders**
 
@@ -352,11 +465,13 @@ short version.
 - Every user-visible string goes through `t()`, with EN and TR kept in sync.
 - Platform differences use `*.web.ts` / `*.ts` extension resolution, with shared types in one file.
 
+</td><td valign="top" width="50%">
+
 **Values**
 
-- No magic numbers, hex codes or bare string keys — that includes `fontWeight: '600'`. Structural literals (`''`, `0`) live in
-  `@core/constants`; every design measurement lives in `@presentation/base/theme`; API limits and
-  storage keys live in `src/infrastructure/constants/`.
+- No magic numbers, hex codes or bare string keys — that includes `fontWeight: '600'`. Structural
+  literals (`''`, `0`) live in `@core/constants`; every design measurement lives in
+  `@presentation/base/theme`; API limits and storage keys live in `src/infrastructure/constants/`.
 - A value only one page reads belongs in that page's `model/` — the test is reuse, not type.
 
 **Responsive UI**
@@ -370,8 +485,10 @@ short version.
 
 - Every `Pressable` carries `accessibilityRole`, and an `accessibilityLabel` when the visible label
   is not plain text.
-- Theme palettes are contrast-checked. `maxFontSizeMultiplier` is a last resort, used only where a
-  shape genuinely cannot grow.
+- Theme palettes are contrast-checked. `maxFontSizeMultiplier` is a last resort.
+
+</td></tr>
+</table>
 
 ---
 
@@ -379,11 +496,13 @@ short version.
 
 | Document | What it is for |
 |----------|----------------|
-| [`PROJECT-MAP.md`](PROJECT-MAP.md) | Generated index of the tree — where every kind of thing lives. Start here when looking for something |
+| [`PROJECT-MAP.md`](PROJECT-MAP.md) | Generated index of the tree — where every kind of thing lives. **Start here** when looking for something |
 | `README.md` | This file — what the project is, how to run it, how it is shaped |
 | [`architecture.md`](architecture.md) | Full architecture: layers, DDD guardrails, every coding standard with its rationale |
 | [`CLAUDE.md`](CLAUDE.md) | The mandatory rule list, agent workflow and git flow |
 | [`WORKFLOW.md`](WORKFLOW.md) | Step-by-step contribution workflow |
+| [`docs/regressions.md`](docs/regressions.md) | One line per bug *class*: symptom, root cause, what now prevents a recurrence |
+| [`docs/security.md`](docs/security.md) | Threat model, the request envelope, and what the shipped secrets do and do not protect |
 | [`fastlane/README.md`](fastlane/README.md) | Store listing copy and assets for both stores, and how they get uploaded |
 | [`docs/roadmap.md`](docs/roadmap.md) | Planned features — the reasoning behind each, and what is still open |
 | [`docs/qa/android.md`](docs/qa/android.md) · [`docs/qa/ios.md`](docs/qa/ios.md) | Step-by-step manual QA passes, per platform |
@@ -391,6 +510,8 @@ short version.
 
 ---
 
-## License
+<div align="center">
 
-MIT
+**MIT** · Built with [Expo](https://expo.dev) · Designed in [Claude Design](https://claude.ai/design)
+
+</div>
