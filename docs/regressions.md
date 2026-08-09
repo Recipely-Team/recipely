@@ -614,3 +614,36 @@ from working instrumentation.** An empty Crashlytics dashboard reads as "no
 crashes" and means "no reports". Anything whose job is to notice failure needs a
 deliberate test that it fires — install it at the entry point, and prove a
 report arrives before trusting the silence.
+
+---
+
+## The screen that crashed was not the screen with the bug
+
+**Symptom:** on Android, tapping "Taslağı aç" on a finished Instagram import
+closed the app — back to Instagram, and unopenable without force-quitting it.
+Three sessions of reading the import and editor code found nothing, because the
+defect was in neither.
+
+**Root cause:** `removeClippedSubviews={Platform.OS === 'android'}` on the recipe
+feed's `FlatList`. The prop moves child views in and out of the native hierarchy
+outside React's reconciliation, which the New Architecture does not tolerate:
+`IllegalStateException: addViewAt: failed to insert view [332] into parent [338]`,
+thrown from `ReactClippingViewManager.addView` — the class that exists to
+implement this prop, and the only code path in RN that re-parents behind Fabric's
+back. The feed is the screen *underneath*: a share intent pushes the import over
+`/recipes`, so when the stack transition to the editor finished, the feed
+re-laid-out, re-clipped, and handed Fabric a child it had already parented
+elsewhere. Opening the same draft from My Recipes never crashed — a different
+list, without the prop, sits under that route.
+
+*Guard:* `check:structure` rule R bans the prop outright; a regression test pins
+the feed, asserted with `Platform.OS` forced to `'android'` — under Jest's default
+`'ios'` the expression is already `false` and the test passes against the unfixed
+code.
+
+**The lesson: a crash names where the process died, never what was asked of it.**
+What broke the three-session deadlock was not more reading — it was breadcrumbs.
+The trail stopped at `import: draft fetch started`, which placed the crash inside
+a stack transition rather than in the fetch or the editor render, and that is what
+turned attention to the screen below. Instrument the flow before theorising about
+it, and suspect the neighbours of the screen you are looking at.

@@ -250,6 +250,23 @@ blocking.
    - `maxFontSizeMultiplier` only where a shape genuinely cannot grow (digits in a badge); it
      overrides an accessibility setting, so making the box flexible always comes first.
 
+6c. **No `removeClippedSubviews`** — the prop detaches and re-attaches child views
+   directly in the native hierarchy, outside React's reconciliation. The New
+   Architecture does not tolerate that: the app died with
+   `IllegalStateException: addViewAt: failed to insert view [332] into parent [338]`
+   thrown from `ReactClippingViewManager.addView` — the class that exists to
+   implement this prop. It was set on the recipe feed, which is not even the
+   screen that crashed: it is the screen UNDERNEATH. A share intent pushes the
+   import over `/recipes`, so when the stack transition to the draft editor
+   finished, the feed re-laid-out, recalculated its clipping, and handed Fabric a
+   child it had already parented elsewhere. Opening the same draft from My
+   Recipes never crashed, because a different list sits under that route.
+
+   `FlatList`'s own windowing — `windowSize`, `maxToRenderPerBatch`,
+   `initialNumToRender` — is the supported way to bound how many rows stay
+   mounted, and it was already tuned on the one list that carried this.
+   **Enforced mechanically** by `check:structure` (rule R).
+
 7. **Component props interface** — every component's props typed as `ComponentNameProps`, exported,
    placed above the component in the same file.
 

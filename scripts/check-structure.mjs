@@ -20,6 +20,8 @@
  *      shared BottomSheet, which presents as a dialog on the web shell.
  *   Q. The custom route context must admit every root `+file` expo-router reads
  *      from it (`+native-intent` carries `redirectSystemPath`).
+ *   R. No `removeClippedSubviews` — it re-parents views behind Fabric's back and
+ *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -410,6 +412,34 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     for (const m of src.matchAll(/new (\w*Failure)\(\s*['"`]([^'"`]{4,})/g)) {
       errors.push(`${file}: ${m[1]} built from an inline message "${m[2].slice(0, 32)}…" — add it to DiagnosticMessage (CLAUDE.md §5)`);
     }
+  }
+}
+
+// --- R: no removeClippedSubviews (CLAUDE.md §6c) ------------------------------
+// The prop detaches and re-attaches child views behind Fabric's back, and on the
+// New Architecture that is a crash, not an optimisation: opening a finished
+// Instagram import killed the app with `addViewAt: failed to insert view [332]
+// into parent [338]` thrown from `ReactClippingViewManager.addView` — the class
+// that exists to implement this prop. The feed carrying it was the screen UNDER
+// the import, so it re-clipped as the stack transition finished and handed
+// Fabric a child it had already parented somewhere else.
+//
+// FlatList's own windowing (`windowSize`, `maxToRenderPerBatch`,
+// `initialNumToRender`) is the supported way to bound mounted rows, and it was
+// already tuned on the one list that had this.
+{
+  // Matches the prop being SET (`removeClippedSubviews={…}` / `: …`), not the
+  // word. Comment lines are dropped first, so the note at the one call site
+  // explaining why it must never come back does not itself trip the rule —
+  // which is exactly what happened the first time this ran.
+  const SET_PROP = /removeClippedSubviews\s*[=:]/;
+  const isComment = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
+    if (!SET_PROP.test(code)) continue;
+    errors.push(`${file}: removeClippedSubviews — crashes Fabric mounting (CLAUDE.md §6c)`);
   }
 }
 

@@ -24,7 +24,7 @@ import { act } from 'react-test-renderer';
 import { Platform, RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
-import { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native-reanimated';
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
@@ -35,6 +35,7 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import { t } from '@presentation/i18n';
 import { layoutSizes } from '@presentation/base/theme';
+import { ListConstants } from '@presentation/base/constants';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -435,5 +436,58 @@ describe('RecipeListBody — reloading the results', () => {
 
     expect(texts).toContain(t().recipes.empty);
     expect(texts).not.toContain(t().common.loading);
+  });
+});
+
+describe('RecipeListBody — the feed does not clip its own children', () => {
+  // Same async-storage settle as the sibling body suites (see above).
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  // The symptom: on Android, opening a finished Instagram import closed the app
+  // — back to Instagram, and unopenable without force-quitting it. The crash was
+  // `IllegalStateException: addViewAt: failed to insert view [332] into parent
+  // [338]`, thrown from `ReactClippingViewManager.addView`: the class that
+  // exists to implement `removeClippedSubviews`.
+  //
+  // This feed is not the screen that crashed — it is the screen UNDERNEATH it.
+  // A share intent pushes the import over `/recipes`, so when the stack
+  // transition to the editor finished, the feed re-laid-out, recalculated its
+  // clipping, and handed Fabric a child view it had already parented elsewhere.
+  // That is also why opening the same draft from My Recipes never crashed:
+  // a different list, without this prop, sits under that route.
+  //
+  // The prop moves views in and out of the native hierarchy outside React's
+  // reconciliation, which the New Architecture does not tolerate. Windowing —
+  // `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`, all still set
+  // above — is the supported way to bound how many rows stay mounted.
+  // Asserted with `Platform.OS` forced to 'android', which is the whole point:
+  // the prop was written as `Platform.OS === 'android'`, so under Jest's default
+  // 'ios' it evaluates to false and a test that just reads it back passes
+  // against the unfixed code. It has to be checked where it was true.
+  it('never sets removeClippedSubviews on the mobile feed, on Android', () => {
+    const platform = jest.replaceProperty(Platform, 'OS', 'android');
+
+    try {
+      const list = render({}).findByType(Animated.FlatList);
+
+      expect(list.props.removeClippedSubviews).toBeFalsy();
+    } finally {
+      platform.restore();
+    }
+  });
+
+  // The windowing that actually bounds mounted rows must survive: dropping the
+  // clipping prop is only safe while these are the thing doing the work.
+  it('still bounds the mounted rows with windowing props', () => {
+    const list = render({}).findByType(Animated.FlatList);
+
+    expect(list.props.windowSize).toBe(ListConstants.windowSize);
+    expect(list.props.maxToRenderPerBatch).toBe(ListConstants.rowsPerBatch);
+    expect(list.props.initialNumToRender).toBe(ListConstants.initialRows);
   });
 });
