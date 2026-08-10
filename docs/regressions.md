@@ -672,3 +672,32 @@ client is the only place that can make the request acceptable in the first place
 Any upload path needs its own ceiling, chosen to sit under every limit along the
 way — per-file, whole-request, and proxy — rather than matching whichever one
 happened to reject it first.
+
+---
+
+## A build that only production ever ran
+
+**The iOS release died in `pod install`, before compiling anything.**
+A config plugin added the Crashlytics dSYM upload phase with
+`inputPaths: ['${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}']`. `xcode` writes an
+inputPaths entry into the pbxproj **verbatim**, and unquoted `${A}/${B}` is not one
+plist token — CocoaPods stopped with `Array missing ',' in between objects`. The same
+file already used the nested-quote form twice (`'"dwarf-with-dsym"'`, and every path in
+the shell script); this one line missed it.
+
+The interesting part is not the quoting, it is *why it reached production*. Dev iOS
+builds are opt-in and default to false, so between the day the plugin landed and the
+day it shipped to TestFlight, **no iOS job ever ran it**. Every gate was green the
+whole time because no gate exercised that path. A branch that CI does not walk is not
+covered by CI, however green the checkmarks are.
+
+*Guard:* `plugins/__tests__/withIosCrashlyticsDsym.test.js` asserts every emitted value
+interpolating a build setting arrives quoted — it fails against the unfixed plugin. And
+because config is not the artifact, both iOS jobs now run `plutil -lint` on the
+**generated** `project.pbxproj` right after prebuild, so a malformed project is one line
+of CI output instead of a CocoaPods stack trace. Same reasoning as the Info.plist
+background-audio assertion that sits beside it.
+
+*Class:* when a platform's build is opt-in, its plugins are untested until a release
+runs them. Anything that rewrites a generated native project needs a check on the
+generated file, in the job that generates it.

@@ -464,6 +464,23 @@ jobs:
       - name: Expo prebuild (iOS)
         run: npx expo prebuild --platform ios --no-install
 
+      # A config plugin writes pbxproj values verbatim, so an unquoted
+      # `${A}/${B}` lands as two plist tokens and `pod install` dies with
+      # "Array missing ',' in between objects" — before a single file compiles.
+      # That is exactly how the Crashlytics dSYM phase broke the TestFlight
+      # build, and it reached production because dev iOS builds are opt-in, so
+      # no iOS job had run that plugin since the day it landed. Lint the
+      # GENERATED project here, where the failure is one line of output rather
+      # than a CocoaPods stack trace.
+      - name: Assert the generated Xcode project parses
+        run: |
+          set -euo pipefail
+          proj="$(ls -d ios/*.xcodeproj | head -n1)/project.pbxproj"
+          if ! plutil -lint "$proj"; then
+            echo "::error file=plugins/withIosCrashlyticsDsym.js::$proj is not parseable. A config plugin most likely emitted an unquoted value — pbxproj entries containing \${...} or / must arrive already wrapped in double quotes."
+            exit 1
+          fi
+
       # App Review rejected 1.0.38 and 1.0.39 under guideline 2.5.4 for
       # declaring background audio with no feature behind it. Deleting the key
       # from app.json's ios.infoPlist did NOT fix it: expo-audio's config
@@ -899,6 +916,23 @@ jobs:
 
       - name: Expo prebuild (iOS)
         run: npx expo prebuild --platform ios --no-install
+
+      # A config plugin writes pbxproj values verbatim, so an unquoted
+      # `${A}/${B}` lands as two plist tokens and `pod install` dies with
+      # "Array missing ',' in between objects" — before a single file compiles.
+      # That is exactly how the Crashlytics dSYM phase broke the TestFlight
+      # build, and it reached production because dev iOS builds are opt-in, so
+      # no iOS job had run that plugin since the day it landed. Lint the
+      # GENERATED project here, where the failure is one line of output rather
+      # than a CocoaPods stack trace.
+      - name: Assert the generated Xcode project parses
+        run: |
+          set -euo pipefail
+          proj="$(ls -d ios/*.xcodeproj | head -n1)/project.pbxproj"
+          if ! plutil -lint "$proj"; then
+            echo "::error file=plugins/withIosCrashlyticsDsym.js::$proj is not parseable. A config plugin most likely emitted an unquoted value — pbxproj entries containing \${...} or / must arrive already wrapped in double quotes."
+            exit 1
+          fi
 
       # App Review rejected 1.0.38 and 1.0.39 under guideline 2.5.4 for
       # declaring background audio with no feature behind it. Deleting the key
