@@ -685,19 +685,30 @@ plist token — CocoaPods stopped with `Array missing ',' in between objects`. T
 file already used the nested-quote form twice (`'"dwarf-with-dsym"'`, and every path in
 the shell script); this one line missed it.
 
-The interesting part is not the quoting, it is *why it reached production*. Dev iOS
+**Then quoting it revealed the actual bug.** With the entry finally parseable, Xcode
+honoured it — and the archive failed with `Cycle inside Recipely`: embedding
+`ShareExtension.appex` waits on the dSYM phase, the dSYM phase waits on the app's dSYM,
+and the dSYM waits on the app being linked with the extension embedded. The fix was not
+to quote the input but to **not declare one**: the upload script already receives the
+dSYM path in its own arguments, so the declaration bought nothing and cost a dependency
+edge. The plugin's own comment had said so all along — "the phase has to read it
+afterwards rather than declare it as an input file" — while the code did the opposite.
+A comment that contradicts the line beneath it is a bug report nobody filed.
+
+The interesting part is neither failure, it is *why they reached production*. Dev iOS
 builds are opt-in and default to false, so between the day the plugin landed and the
 day it shipped to TestFlight, **no iOS job ever ran it**. Every gate was green the
 whole time because no gate exercised that path. A branch that CI does not walk is not
 covered by CI, however green the checkmarks are.
 
-*Guard:* `plugins/__tests__/withIosCrashlyticsDsym.test.js` asserts every emitted value
-interpolating a build setting arrives quoted — it fails against the unfixed plugin. And
-because config is not the artifact, both iOS jobs now run `plutil -lint` on the
-**generated** `project.pbxproj` right after prebuild, so a malformed project is one line
-of CI output instead of a CocoaPods stack trace. Same reasoning as the Info.plist
-background-audio assertion that sits beside it.
+*Guard:* `plugins/__tests__/withIosCrashlyticsDsym.test.js` pins the phase to zero build
+inputs and still asserts every emitted value is quoted; both fail against their
+respective unfixed versions. And because config is not the artifact, both iOS jobs run
+`plutil -lint` on the **generated** `project.pbxproj` right after prebuild, so a
+malformed project is one line of CI output instead of a CocoaPods stack trace. Same
+reasoning as the Info.plist background-audio assertion beside it.
 
 *Class:* when a platform's build is opt-in, its plugins are untested until a release
 runs them. Anything that rewrites a generated native project needs a check on the
-generated file, in the job that generates it.
+generated file, in the job that generates it — and a run-script phase that declares a
+build product as its input will deadlock any target that embeds an extension.
