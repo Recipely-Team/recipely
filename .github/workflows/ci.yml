@@ -970,13 +970,17 @@ jobs:
           IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
           IOS_DIST_CERT_P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_P12_PASSWORD }}
           IOS_APPSTORE_PROFILE_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_BASE64 }}
+          IOS_APPSTORE_PROFILE_EXT_BASE64: ${{ secrets.IOS_APPSTORE_PROFILE_EXT_BASE64 }}
         run: |
           # Same throwaway-keychain dance as distribute-ios-dev, with the prod
-          # App Store profile (net.recipely.app) instead of an ad-hoc one.
+          # App Store profiles instead of ad-hoc ones. TWO of them: the app
+          # (net.recipely.app) and the share extension
+          # (net.recipely.app.share-extension), which is a separate bundle id
+          # with its own App ID — exactly the pairing the dev job already uses.
           set -euo pipefail
           # The p12 password is guarded too: we always create the p12 with one,
           # so an empty value means a mis-set secret, not a password-less cert.
-          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_APPSTORE_PROFILE_BASE64" ]; then
+          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_APPSTORE_PROFILE_BASE64" ] || [ -z "$IOS_APPSTORE_PROFILE_EXT_BASE64" ]; then
             echo "::error::iOS signing secrets are missing"
             exit 1
           fi
@@ -984,6 +988,7 @@ jobs:
           KEYCHAIN_PATH="$RUNNER_TEMP/ios-build.keychain-db"
           printf '%s' "$IOS_DIST_CERT_P12_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/dist-cert.p12"
           printf '%s' "$IOS_APPSTORE_PROFILE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/appstore.mobileprovision"
+          printf '%s' "$IOS_APPSTORE_PROFILE_EXT_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/appstore-ext.mobileprovision"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
@@ -992,35 +997,47 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s \
             -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
           security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
-          security cms -D -i "$RUNNER_TEMP/appstore.mobileprovision" > "$RUNNER_TEMP/profile.plist"
-          PROFILE_UUID=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/profile.plist")
-          PROFILE_NAME=$(plutil -extract Name raw -o - "$RUNNER_TEMP/profile.plist")
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$RUNNER_TEMP/appstore.mobileprovision" \
-            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
-          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          install_profile() {
+            security cms -D -i "$1" > "$RUNNER_TEMP/$2.plist"
+            local uuid name
+            uuid=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/$2.plist")
+            name=$(plutil -extract Name raw -o - "$RUNNER_TEMP/$2.plist")
+            cp "$1" "$HOME/Library/MobileDevice/Provisioning Profiles/$uuid.mobileprovision"
+            echo "$3=$name" >> "$GITHUB_ENV"
+            echo "installed $3=$name ($uuid)"
+          }
+          install_profile "$RUNNER_TEMP/appstore.mobileprovision" profile PROFILE_NAME
+          install_profile "$RUNNER_TEMP/appstore-ext.mobileprovision" profile-ext EXT_PROFILE_NAME
 
-      - name: Configure app target signing
+      - name: Configure target signing
         env:
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # Same app-target-only manual signing as distribute-ios-dev — global
+          # Per-target manual signing, as in distribute-ios-dev — global
           # xcodebuild overrides would break the Pods targets.
           set -euo pipefail
           gem list -i '^xcodeproj$' >/dev/null || sudo gem install xcodeproj --no-document
           ruby - <<'RUBY'
           require 'xcodeproj'
           project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
-          # App target only, deliberately: the prod share extension has no App ID
-          # or profile yet (dev is set up first, and `main` does not ship until
-          # it does). Mirror the dev job's per-target mapping when it does.
+          # Two signed targets, two profiles — the per-target mapping the dev job
+          # has always used, now that the prod share extension has its own App ID
+          # and profile. Signing the app alone is what made the archive fail with
+          # 'Signing for "ShareExtension" requires a development team'.
           app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
           app or abort('no application target found in the generated project')
-          app.build_configurations.each do |config|
-            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
-            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
-            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          extensions = project.targets.select { |t| t.product_type == 'com.apple.product-type.app-extension' }
+          extensions.any? or abort('no app extension target found — expo-share-intent did not generate one')
+          pairs = [[app, ENV.fetch('PROFILE_NAME')]]
+          pairs += extensions.map { |t| [t, ENV.fetch('EXT_PROFILE_NAME')] }
+          pairs.each do |target, profile|
+            target.build_configurations.each do |config|
+              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+              config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+              config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile
+            end
           end
           project.save
           RUBY
@@ -1037,6 +1054,15 @@ jobs:
           xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" \
             -configuration Release -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/app.xcarchive" archive
+          # The share extension is the whole point of the iOS import flow: if it
+          # is not in the archive, the upload would succeed and ship an app that
+          # never appears in the share sheet. Same assertion as the dev job.
+          APPEX=$(ls -d "$RUNNER_TEMP/app.xcarchive/Products/Applications/"*.app/PlugIns/*.appex 2>/dev/null | head -n1 || true)
+          if [ -z "$APPEX" ]; then
+            echo "::error::No app extension in the archive — the share extension did not build."
+            exit 1
+          fi
+          echo "share extension in archive: $APPEX"
           # "app-store-connect" is Xcode 15.4+'s name for the App Store export.
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -1049,6 +1075,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>net.recipely.app</key><string>$PROFILE_NAME</string>
+              <key>net.recipely.app.share-extension</key><string>$EXT_PROFILE_NAME</string>
             </dict>
           </dict>
           </plist>
