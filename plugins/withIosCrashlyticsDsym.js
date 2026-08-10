@@ -41,9 +41,13 @@ const withIosCrashlyticsDsym = (config) =>
       project.addBuildPhase([], 'PBXShellScriptBuildPhase', PHASE_NAME, null, {
         shellPath: '/bin/sh',
         shellScript: SCRIPT,
-        // The dSYM is written as part of linking, so the phase has to read it
-        // afterwards rather than declare it as an input file.
-        inputPaths: ['${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}'],
+        // Quoted, and it has to be: `xcode` writes an inputPaths entry into the
+        // pbxproj verbatim, and `${A}/${B}` unquoted is not one plist token.
+        // CocoaPods' parser reads it as two and stops the whole build with
+        // "Array missing ',' in between objects" — before a single file is
+        // compiled. Same nested-quote form as SCRIPT above and the
+        // DEBUG_INFORMATION_FORMAT below; this line was the one that missed it.
+        inputPaths: ['"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"'],
       });
     }
 
