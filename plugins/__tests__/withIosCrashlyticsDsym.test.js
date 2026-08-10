@@ -19,24 +19,36 @@ function fakeProject({ existingPhases = {}, configurations = {} } = {}) {
 
 const addedPhaseOptions = (mod) => mod.modResults.addBuildPhase.mock.calls[0][4];
 
-describe('withIosCrashlyticsDsym — pbxproj syntax', () => {
-  // The iOS production build died in `pod install`, before compiling anything:
-  //   Nanaimo::Reader::ParseError - [!] Array missing ',' in between objects
-  // `xcode` writes an inputPaths entry into the pbxproj verbatim, and
-  // `${A}/${B}` without quotes is two plist tokens, not one. Nobody caught it
-  // because dev iOS builds are opt-in, so no iOS build ran this plugin between
-  // the day it landed and the day it shipped to TestFlight.
-  it('quotes the dSYM input path so CocoaPods can parse the project', () => {
+describe('withIosCrashlyticsDsym — build graph', () => {
+  // Two failures, one line. Declaring the dSYM as an input first broke
+  // `pod install` (unquoted `${A}/${B}` is two plist tokens, so CocoaPods threw
+  // "Array missing ',' in between objects"). Quoting it fixed the parse and
+  // exposed the real problem underneath: with a share extension in the target,
+  // embedding the .appex waits on this phase, this phase waits on the dSYM, and
+  // the dSYM waits on the linked app — "Cycle inside Recipely", no archive.
+  //
+  // The script already receives the dSYM path in its own arguments, so the
+  // input declaration bought nothing and cost the cycle.
+  it('declares no build inputs, so embedding the share extension cannot cycle', () => {
     const mod = fakeProject();
 
     withIosCrashlyticsDsym(mod);
 
-    const [inputPath] = addedPhaseOptions(mod).inputPaths;
-    expect(inputPath).toBe('"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"');
+    expect(addedPhaseOptions(mod).inputPaths).toEqual([]);
   });
 
-  // The rule the case above is an instance of: any pbxproj value carrying a
-  // build-setting reference or a path separator has to arrive already quoted.
+  it('still passes the dSYM path to the upload script itself', () => {
+    const mod = fakeProject();
+
+    withIosCrashlyticsDsym(mod);
+
+    expect(addedPhaseOptions(mod).shellScript).toContain(
+      '-p ios "${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"',
+    );
+  });
+
+  // Whatever the phase does emit into the pbxproj still has to be quoted — that
+  // is what the `pod install` failure taught, and it stays true for the script.
   it('quotes every emitted value that interpolates a build setting', () => {
     const mod = fakeProject();
 

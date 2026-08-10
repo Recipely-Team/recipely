@@ -41,13 +41,17 @@ const withIosCrashlyticsDsym = (config) =>
       project.addBuildPhase([], 'PBXShellScriptBuildPhase', PHASE_NAME, null, {
         shellPath: '/bin/sh',
         shellScript: SCRIPT,
-        // Quoted, and it has to be: `xcode` writes an inputPaths entry into the
-        // pbxproj verbatim, and `${A}/${B}` unquoted is not one plist token.
-        // CocoaPods' parser reads it as two and stops the whole build with
-        // "Array missing ',' in between objects" — before a single file is
-        // compiled. Same nested-quote form as SCRIPT above and the
-        // DEBUG_INFORMATION_FORMAT below; this line was the one that missed it.
-        inputPaths: ['"${DWARF_DSYM_FOLDER_PATH}/${DWARF_DSYM_FILE_NAME}"'],
+        // NO inputPaths, deliberately. Declaring the dSYM as a build input is
+        // what the script's own arguments already cover, and it costs a
+        // dependency edge Xcode cannot satisfy once a share extension exists:
+        // embedding ShareExtension.appex waits on this phase, this phase waits
+        // on the app's dSYM, and the dSYM waits on the app being linked with
+        // the extension embedded. Xcode calls that
+        // "Cycle inside Recipely" and refuses to archive.
+        //
+        // With no inputs and no outputs the phase simply runs every build,
+        // which is what uploading symbols wants anyway.
+        inputPaths: [],
       });
     }
 
