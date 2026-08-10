@@ -1,0 +1,205 @@
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { type Href, useRouter } from 'expo-router';
+import { StoreStatus } from '@application/store/store-status';
+import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
+import { useStores } from '@presentation/bootstrap/use-stores';
+import { RoutePaths } from '@presentation/base/constants';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
+import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-recipe/model/import-stage';
+import { ValueConstants } from '@core/constants';
+import { UnknownFailure, type Failure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { ImportTrail } from '@presentation/base/errors/import-trail';
+
+/** How often the screen asks the backend where the job has got to. */
+const POLL_INTERVAL_MS = 4000;
+/** How fast the checklist creeps forward through a long `running`. */
+const STAGE_TICK_MS = 9000;
+
+/** View model the import screen renders. */
+interface UseImportRecipeResult {
+  /** True while the enqueue request itself is in flight. */
+  isQueueing: boolean;
+  /** True when the screen is still asking for a link — the paste branch. */
+  isAwaitingLink: boolean;
+  /**
+   * Why the import cannot continue, or null. Covers BOTH ends: the enqueue
+   * request that never produced a job, and a job the worker gave up on — the
+   * user is looking at one screen and needs one answer.
+   */
+  failure: Failure | null;
+  /** The job's own status, or null before there is a job. */
+  jobStatus: ImportJobStatus | null;
+  /** 0..IMPORT_STAGE_COUNT — how far the checklist has filled. */
+  activeStage: number;
+  /** 0..1 for the ring. */
+  progress: number;
+  isDone: boolean;
+  /** 1-based place in the queue, or null when the job is not waiting. */
+  queuePosition: number | null;
+  onRetry: () => void;
+  /** Queues a link the user pasted. */
+  onSubmitLink: (url: string) => void;
+  onClose: () => void;
+  /** Opens the finished draft. No-op until the job reports one. */
+  onOpenDraft: () => void;
+}
+
+/**
+ * Drives the Instagram import screen: queue the reel, then say something true
+ * about it until the user leaves.
+ *
+ * @remarks
+ * - **Leaving is not cancelling.** The job runs on a worker and its result
+ *   arrives as a notification, so this hook only ever stops WATCHING. That is
+ *   the promise the screen's copy makes, and the reason nothing here aborts.
+ * - **The poll is the screen's, not the store's.** How often to ask is a
+ *   question about a visible screen; the store owns what the answer means.
+ * - **The checklist creeps, the ring does not.** Only the backend's four states
+ *   are real, so the ring moves on them alone while the stage list walks
+ *   forward on a timer — and stops short of the end until the job is done.
+ */
+export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeResult => {
+  const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
+  const { importJobStore } = useStores();
+  const state = importJobStore((s) => s.state);
+  const [ticks, setTicks] = useState(ValueConstants.zero);
+  // The link this screen is working on: the shared one, or the pasted one.
+  const [pastedUrl, setPastedUrl] = useState<string | null>(null);
+  const startedRef = useRef(false);
+  const activeUrl = importUrl ?? pastedUrl;
+
+  const startWith = useCallback(
+    (url: string): void => {
+      setTicks(ValueConstants.zero);
+      void importJobStore.getState().startImport(url);
+    },
+    [importJobStore],
+  );
+
+  const start = useCallback((): void => {
+    if (activeUrl === null || activeUrl === undefined) return;
+    startWith(activeUrl);
+  }, [activeUrl, startWith]);
+
+  // Queue once per arrival. A re-render must not re-submit the same reel — but
+  // the guard is only spent on a call that can actually run: setting it for a
+  // param that has not arrived yet left the screen queueing forever.
+  useEffect(() => {
+    if (startedRef.current || importUrl === undefined) return;
+    startedRef.current = true;
+    startWith(importUrl);
+  }, [startWith, importUrl]);
+
+  const onSubmitLink = useCallback(
+    (url: string): void => {
+      setPastedUrl(url);
+      startWith(url);
+    },
+    [startWith],
+  );
+
+  const job = state.status === StoreStatus.Loaded ? state.job : null;
+  const isSettled =
+    job !== null && (job.status === ImportJobStatus.Done || job.status === ImportJobStatus.Failed);
+
+  // WHY these are keyed on the job's ID and STATUS, not on `job` itself: every
+  // successful poll builds a fresh `ImportJob` object even when nothing changed,
+  // so an effect that depended on the object tore itself down every 4 s. The
+  // 9 s stage tick never survived long enough to fire once — the checklist that
+  // exists to prove the wait is alive sat frozen at zero for the whole import.
+  const jobId = job?.id ?? null;
+  const isWatchable = jobId !== null && !isSettled;
+
+  useEffect(() => {
+    if (!isWatchable) return;
+    const poll = setInterval(() => void importJobStore.getState().refreshJob(), POLL_INTERVAL_MS);
+    return () => clearInterval(poll);
+  }, [isWatchable, jobId, importJobStore]);
+
+  useEffect(() => {
+    if (!isWatchable) return;
+    const tick = setInterval(() => setTicks((n) => n + ValueConstants.one), STAGE_TICK_MS);
+    return () => clearInterval(tick);
+  }, [isWatchable, jobId]);
+
+  // --- finding: leaving by gesture is still leaving ---
+  // Android back and the iOS swipe unmount this screen without going through
+  // `onClose`, and the receipt they left behind was rendered by the NEXT
+  // import's first frame — including an "Open draft" button wired to the
+  // previous reel. Dropping our copy is never cancelling; the job runs on.
+  useEffect(() => () => importJobStore.getState().clear(), [importJobStore]);
+
+  const onClose = useCallback((): void => {
+    // The job outlives the screen; dropping our copy of the receipt is all that
+    // leaving means. `goBackOrHome`, not `back`: a share intent on a cold start
+    // makes this screen the entire stack, and backing out of it QUIT THE APP.
+    importJobStore.getState().clear();
+    goBackOrHome();
+  }, [importJobStore, goBackOrHome]);
+
+  const onOpenDraft = useCallback((): void => {
+    FailureReporter.trail(ImportTrail.openDraftTapped);
+    const draftId = job?.draftId;
+    importJobStore.getState().clear();
+
+    // A finished job without a draft id should not happen — the backend writes
+    // one before it reports `done`. It DID happen, and the button answered by
+    // doing nothing at all: the user tapped, the screen sat there, and the only
+    // way out of a share-launched app is the back gesture, which finishes the
+    // task and lands them back in Instagram. Whatever the cause, a primary
+    // action must move; this one goes where the drafts actually are and leaves
+    // a report behind so the next occurrence arrives with a code instead of a
+    // description.
+    if (draftId === null || draftId === undefined) {
+      FailureReporter.trail(ImportTrail.openDraftMissing);
+      FailureReporter.report(
+        new UnknownFailure(DiagnosticMessage.recipeImport.doneWithoutDraft),
+        'ImportRecipe.openDraft',
+      );
+      router.replace({
+        pathname: RoutePaths.myRecipes,
+        params: { tab: RoutePaths.myRecipesDraftsTab },
+      });
+      return;
+    }
+
+    FailureReporter.trail(ImportTrail.navigatingToEditor);
+    router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
+  }, [job, importJobStore, router]);
+
+  // Arriving with no URL is not a dead end any more: it is the paste screen.
+  // (This is also every web visit, where no share sheet exists to arrive from.)
+  const isAwaitingLink =
+    (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
+
+  const jobStatus = job?.status ?? null;
+  const queuePosition = job?.queuePosition ?? null;
+  // A job the worker failed is not a failed REQUEST, but it reaches the user as
+  // the same thing: a stop with a reason. Wearing it as a `Failure` lets the
+  // screen resolve its copy through the one lookup every other error uses —
+  // `errorKey` rides on `messageKey`, the channel the backend already names.
+  const jobFailure =
+    job !== null && job.status === ImportJobStatus.Failed
+      ? new UnknownFailure(DiagnosticMessage.recipeImport.jobFailed, undefined, job.errorKey ?? undefined)
+      : null;
+  const activeStage = jobStatus === null ? ValueConstants.zero : importStageFor(jobStatus, ticks);
+  const isDone = jobStatus === ImportJobStatus.Done;
+
+  return {
+    isQueueing: state.status === StoreStatus.Loading,
+    isAwaitingLink,
+    failure: state.status === StoreStatus.Error ? state.failure : jobFailure,
+    jobStatus,
+    activeStage,
+    progress: activeStage / IMPORT_STAGE_COUNT,
+    isDone,
+    queuePosition,
+    onRetry: start,
+    onSubmitLink,
+    onClose,
+    onOpenDraft,
+  };
+};

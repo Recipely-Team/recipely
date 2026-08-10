@@ -1,15 +1,24 @@
 import { useCallback, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure, type Failure } from '@core/failure';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
-import type { UseRecipeSaveArgs } from '@presentation/app/create-recipe/model/saving/use-recipe-save-args';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+
+interface UseRecipeSaveArgs {
+  recipe: EditableRecipe;
+  activeDraftId: string;
+  setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
+}
 
 /**
  * Handles publishing a recipe: the required-field guards, the per-field
@@ -57,7 +66,11 @@ export const useRecipeSave = ({
 
   const hasRequiredText = (): boolean => {
     const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
-    const ingredientsEmpty = recipe.ingredients.every((s) => s.trim().length === ValueConstants.zero);
+    // A recipe of nothing but group headings has no ingredients: "# Şerbet"
+    // names a part, it does not put anything in it.
+    const ingredientsEmpty = recipe.ingredients.every(
+      (s) => s.trim().length === ValueConstants.zero || isIngredientGroup(s),
+    );
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;
@@ -72,15 +85,15 @@ export const useRecipeSave = ({
   const handlePublish = useCallback(async (): Promise<void> => {
     clearSaveFeedback();
     if (!hasRequiredText()) return;
-    // WHY: the backend create endpoint requires a cover image URL, so a recipe
-    // cannot be published without at least one photo.
-    if (recipe.media.filter((m) => m.type === 'image').length === ValueConstants.zero) {
-      setSaveIssue(t().createRecipe.noImage);
-      return;
-    }
+    // A photo is no longer required. It was only ever a guard mirroring the
+    // backend's own `image` requirement, and that requirement cost more than it
+    // bought: a recipe someone had written out in full could not be published
+    // because they had no photo to hand, and a resumed draft — whose cover was
+    // a device URI that no longer resolved — hit it with no way to understand
+    // why. Publishing without a cover is now allowed on both sides.
     await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
     const state = createdRecipesStore.getState().createState;
-    if (state.status === 'success') {
+    if (state.status === StoreStatus.Success) {
       // Capture the new recipe's id before the store state is reset so the
       // success dialog can deep-link straight to its detail page.
       const newRecipeId = state.recipe.id;
@@ -91,7 +104,7 @@ export const useRecipeSave = ({
       setSaveSuccess({ recipeId: newRecipeId });
       return;
     }
-    if (state.status === 'error') {
+    if (state.status === StoreStatus.Error) {
       surfaceSaveFailure(state.failure);
       createdRecipesStore.getState().resetCreateState();
     }
@@ -123,9 +136,16 @@ export const useRecipeSave = ({
   }, [router]);
 
   const headerTitle = t().createRecipe.previewTitle;
-  const isSaving = createState.status === 'creating';
+  const isSaving = createState.status === StoreStatus.Creating;
+  // `publishShort`, not `save`: the button does not save anything private — it
+  // puts the recipe out where other people can find it, and the in-flight label
+  // has always said "Publishing…". Reading "Kaydet" and then "Yayınlanıyor…" on
+  // the same press described two different actions, and the first one was the
+  // wrong one.
   const saveLabel =
-    createState.status === 'creating' ? t().createRecipe.publishing : t().createRecipe.save;
+    createState.status === StoreStatus.Creating
+      ? t().createRecipe.publishing
+      : t().createRecipe.publishShort;
 
   return {
     onSave,

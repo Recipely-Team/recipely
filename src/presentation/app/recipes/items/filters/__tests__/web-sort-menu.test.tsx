@@ -17,8 +17,8 @@ import {
 } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { WebSortMenu } from '@presentation/app/recipes/items/filters/web-sort-menu';
-import { sortKeyLabels } from '@presentation/app/recipes/model/recipe-sort';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 
 // Render the icon as plain text so query helpers never trip over the native mock.
 jest.mock('@expo/vector-icons', () => {

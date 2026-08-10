@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
+import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -7,7 +8,7 @@ import {
   toastBackground,
   TOAST_FOREGROUND,
 } from '@presentation/base/theme/colors/surfaces/error-surfaces';
-import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -20,13 +21,6 @@ const ENTER_OFFSET = 16;
 const EXIT_DURATION_MS = 160;
 const ICON_CHIP_SIZE = 26;
 const ICON_CHIP_ALPHA = '26'; // ~15% — tints the chip behind the accent icon.
-
-const SEVERITY_ICON: Record<SeverityType, keyof typeof Ionicons.glyphMap> = {
-  danger: 'alert-circle',
-  warning: 'warning',
-  success: 'checkmark-circle',
-  neutral: 'information-circle',
-};
 
 export interface ToastProps {
   item: ToastItem;

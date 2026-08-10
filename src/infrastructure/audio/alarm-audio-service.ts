@@ -1,4 +1,5 @@
-import { Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { InterruptionMode } from '@infrastructure/audio/interruption-mode';
 import {
   createAudioPlayer,
   setAudioModeAsync,
@@ -9,7 +10,7 @@ import {
   type AudioStatus,
 } from 'expo-audio';
 import { ValueConstants } from '@core/constants';
-import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
+import type { AlarmAudioServiceInterface } from '@domain/audio/alarm-audio-service-interface';
 import { ALARM_SOUND_ASSET } from '@infrastructure/constants/assets';
 
 const ALARM_SOURCE: AudioSource = ALARM_SOUND_ASSET;
@@ -29,7 +30,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
   allowsRecording: false,
   shouldPlayInBackground: false,
   playsInSilentMode: true,
-  interruptionMode: 'doNotMix',
+  interruptionMode: InterruptionMode.DoNotMix,
   shouldRouteThroughEarpiece: false,
 };
 
@@ -40,7 +41,7 @@ const ALARM_AUDIO_MODE: Partial<AudioMode> = {
  */
 const IDLE_AUDIO_MODE: Partial<AudioMode> = {
   shouldPlayInBackground: false,
-  interruptionMode: 'mixWithOthers',
+  interruptionMode: InterruptionMode.MixWithOthers,
 };
 
 /**
@@ -59,7 +60,7 @@ const IDLE_AUDIO_MODE: Partial<AudioMode> = {
  */
 const MAX_PLAY_ATTEMPTS = 3;
 
-export class AlarmAudioService implements IAlarmAudioService {
+export class AlarmAudioService implements AlarmAudioServiceInterface {
   private player: AudioPlayer | null = null;
   private statusSubscription: { remove: () => void } | null = null;
   /** True once the alarm session is in force and still has to be handed back. */
@@ -72,7 +73,7 @@ export class AlarmAudioService implements IAlarmAudioService {
   private generation = ValueConstants.zero;
 
   async start(): Promise<void> {
-    if (Platform.OS === 'web') return;
+    if (isWeb()) return;
     if (this.player !== null) return;
 
     this.generation += ValueConstants.one;

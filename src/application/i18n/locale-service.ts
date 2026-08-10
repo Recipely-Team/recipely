@@ -1,5 +1,5 @@
-import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { toSupportedLocale } from '@application/i18n/supported-locales';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
@@ -25,8 +25,8 @@ export class LocaleService {
   private readonly listeners = new Set<() => void>();
 
   constructor(
-    private readonly store: IKeyValueStore,
-    deviceLocaleProvider: IDeviceLocaleProvider,
+    private readonly store: KeyValueStoreInterface,
+    deviceLocaleProvider: DeviceLocaleProviderInterface,
   ) {
     this.current = toSupportedLocale(deviceLocaleProvider.getDeviceLocale());
   }
@@ -58,7 +58,10 @@ export class LocaleService {
    */
   private async restore(): Promise<void> {
     try {
-      const stored = await this.store.getItem(LANGUAGE_STORAGE_KEY);
+      const read = await this.store.getItem(LANGUAGE_STORAGE_KEY);
+      // A failed read is indistinguishable from an unset language for this
+      // purpose: both mean "fall back to the device locale".
+      const stored = read.ok ? read.value : null;
       if (stored === null || this.chosenByUser) return;
       this.apply(toSupportedLocale(stored));
     } catch {

@@ -10,10 +10,13 @@ jest.mock('@infrastructure/constants/storage', () => ({
   TIMERS_BAR_COLLAPSED_STORAGE_KEY: 'recipely.timers.bar.collapsed.v1',
 }));
 
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 
 const kvStore = new FakeKeyValueStore();
 
@@ -57,9 +60,9 @@ describe('timersBarStore', () => {
   it('does not overwrite a choice the user already made on screen', async () => {
     let release = (): void => undefined;
     jest.spyOn(kvStore, 'getItem').mockReturnValueOnce(
-      new Promise<string | null>((resolve) => {
+      new Promise<Result<string | null, Failure>>((resolve) => {
         release = () => {
-          resolve(null);
+          resolve(ok(null));
         };
       }),
     );

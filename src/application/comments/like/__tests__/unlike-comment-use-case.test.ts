@@ -3,7 +3,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { ICommentRepository } from '@domain/comments/i-comment-repository';
+import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 
 interface UnlikeCall {
   recipeId: string;
@@ -12,14 +12,14 @@ interface UnlikeCall {
 
 const makeRepo = (
   result: Result<void, Failure>,
-): { repo: ICommentRepository; calls: UnlikeCall[] } => {
+): { repo: CommentRepositoryInterface; calls: UnlikeCall[] } => {
   const calls: UnlikeCall[] = [];
   const repo = {
     unlike: (recipeId: string, commentId: string) => {
       calls.push({ recipeId, commentId });
       return Promise.resolve(result);
     },
-  } as unknown as ICommentRepository;
+  } as unknown as CommentRepositoryInterface;
   return { repo, calls };
 };
 

@@ -48,8 +48,8 @@ export const RecipeSpecCard = ({
           value={recipe.servings}
           decreaseLabel={t().createRecipe.servings}
           increaseLabel={t().createRecipe.servings}
-          onDecrement={() => onChangeServings(clamp(recipe.servings - 1, SERVINGS_MIN, SERVINGS_MAX))}
-          onIncrement={() => onChangeServings(clamp(recipe.servings + 1, SERVINGS_MIN, SERVINGS_MAX))}
+          onDecrement={() => onChangeServings(clamp(recipe.servings - ValueConstants.one, SERVINGS_MIN, SERVINGS_MAX))}
+          onIncrement={() => onChangeServings(clamp(recipe.servings + ValueConstants.one, SERVINGS_MIN, SERVINGS_MAX))}
         />
       </SpecRow>
       <SpecRow icon="speedometer" label={t().createRecipe.difficulty} error={fieldErrors.difficulty}>

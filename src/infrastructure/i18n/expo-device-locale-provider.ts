@@ -1,5 +1,5 @@
 import { getLocales } from 'expo-localization';
-import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
+import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -8,7 +8,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
  * a language the app actually ships is `LocaleService`'s job, so the supported
  * set stays defined in exactly one place.
  */
-export class ExpoDeviceLocaleProvider implements IDeviceLocaleProvider {
+export class ExpoDeviceLocaleProvider implements DeviceLocaleProviderInterface {
   getDeviceLocale(): string {
     return getLocales()[ValueConstants.zero]?.languageCode ?? CharConstants.empty;
   }

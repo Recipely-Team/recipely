@@ -3,86 +3,67 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import {
-  AI_REQUEST_TIMEOUT_MS,
-  IMPORT_REQUEST_TIMEOUT_MS,
-  RECIPES_PAGE_SIZE,
-  TRENDING_RECIPES_LIMIT,
-} from '@infrastructure/constants/api';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
+import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
+import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
+import { AI_REQUEST_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
 import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
+import type { GenerateRecipeRequestDto } from '@infrastructure/recipes/dtos/generate-recipe-request-dto';
+import type { ImportRecipeRequestDto } from '@infrastructure/recipes/dtos/import-recipe-request-dto';
+import type { ImportJobDto } from '@infrastructure/recipes/dtos/import-job-dto';
+import type { ImportJob } from '@domain/recipes/import/import-job';
+import { toImportJob } from '@infrastructure/recipes/import/to-import-job';
+import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 
 /**
- * Implements `IRecipeRepository` against the Recipely backend. Handles
+ * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
  * listing, fetching, creating, updating, deleting, and AI-generating recipes
  * via HTTP. Image uploads are handled as multipart form-data with
  * platform-specific blob construction for web vs. native.
  */
-export class RecipeRepository implements IRecipeRepository {
+export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const params: Record<string, unknown> = { page: 1, pageSize: RECIPES_PAGE_SIZE };
-    if (filters?.search) params['search'] = filters.search;
-    if (filters?.cuisines?.length) params['cuisines'] = filters.cuisines.join(',');
-    if (filters?.categories?.length) params['categories'] = filters.categories.join(',');
-    if (filters?.difficulties?.length) params['difficulties'] = filters.difficulties.join(',');
-    if (filters?.maxTime) params['maxTime'] = filters.maxTime;
-    if (filters?.sort) params['sort'] = filters.sort;
-    if (filters?.sortOrder) params['sortOrder'] = filters.sortOrder;
-
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.root,
-      params,
-    });
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
     if (!result.ok) {
       return result;
     }
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.trending,
-      params: { limit: limit ?? TRENDING_RECIPES_LIMIT },
-    });
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.trending, { params: { limit: limit ?? TRENDING_RECIPES_LIMIT } });
     if (!result.ok) {
       return result;
     }
     return mapRecipeSummaries(result.value.items);
   }
 
-  async listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.request<RecipesListDto>({
-      method: 'GET',
-      url: ApiRoutes.me.recipes,
-      params: { page: 1, pageSize: 20 },
-    });
+  async listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>> {
+    const result = await this.http.get<RecipesListDto>(ApiRoutes.me.recipes, { params: { page: page ?? FIRST_PAGE, pageSize: MY_RECIPES_PAGE_SIZE } });
     if (!result.ok) {
       return result;
     }
-    return mapRecipeSummaries(result.value.items);
+    return toRecipePage(result.value);
   }
 
   async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.byId(id),
-    });
+    const result = await this.http.get<RecipeDto>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
@@ -106,10 +87,7 @@ export class RecipeRepository implements IRecipeRepository {
   }
 
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.byId(id),
-    });
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
@@ -123,12 +101,7 @@ export class RecipeRepository implements IRecipeRepository {
   // because the synchronous Gemini call routinely exceeds the client's default
   // 10s JSON timeout, which would abort a request the backend then completes.
   async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.generate,
-      data: { prompt },
-      timeout: AI_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.generate, { prompt } satisfies GenerateRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }
@@ -143,16 +116,30 @@ export class RecipeRepository implements IRecipeRepository {
   // interceptor only overrides config.timeout for FormData payloads, so this
   // JSON override is honoured untouched.
   async importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
-    const result = await this.http.request<RecipeDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.import,
-      data: { url },
-      timeout: IMPORT_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.import, { url } satisfies ImportRecipeRequestDto, { timeout: IMPORT_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }
     return this.mapRecipe(result.value);
+  }
+
+  async enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>> {
+    const result = await this.http.post<ImportJobDto>(
+      ApiRoutes.recipes.importJobs,
+      { url } satisfies ImportRecipeRequestDto,
+    );
+    if (!result.ok) {
+      return result;
+    }
+    return toImportJob(result.value);
+  }
+
+  async getImportJob(id: string): Promise<Result<ImportJob, Failure>> {
+    const result = await this.http.get<ImportJobDto>(ApiRoutes.recipes.importJob(id));
+    if (!result.ok) {
+      return result;
+    }
+    return toImportJob(result.value);
   }
 
   // WHY: like generateRecipe, refine returns a NOT-persisted preview recipe —
@@ -166,12 +153,7 @@ export class RecipeRepository implements IRecipeRepository {
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
   ): Promise<Result<RefinedRecipe, Failure>> {
-    const result = await this.http.request<RefineRecipeResponseDto>({
-      method: 'POST',
-      url: ApiRoutes.recipes.refine,
-      data: { currentRecipe, instruction },
-      timeout: AI_REQUEST_TIMEOUT_MS,
-    });
+    const result = await this.http.post<RefineRecipeResponseDto>(ApiRoutes.recipes.refine, { currentRecipe, instruction } satisfies RefineRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }

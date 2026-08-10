@@ -3,12 +3,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-card';
+import { IngredientGroupHeading } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-group-heading';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
+import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
 
 export interface RecipeStepsProps {
   recipe: RecipeEntity;
@@ -41,16 +44,29 @@ export const RecipeSteps = ({
 
   return (
     <>
-      <SectionHeader title={t().recipes.ingredients} count={recipe.ingredients.length} />
+      {/* The count is of INGREDIENTS: a recipe with three group headings does
+          not have three more things to buy. */}
+      <SectionHeader
+        title={t().recipes.ingredients}
+        count={recipe.ingredients.filter((line) => !isIngredientGroup(line)).length}
+      />
       <View style={styles.cardsList}>
-        {recipe.ingredients.map((item, i) => (
-          <IngredientCard
-            key={i}
-            raw={item}
-            checked={checkedIngredients[i] ?? false}
-            onToggle={() => onToggleIngredient(i)}
-          />
-        ))}
+        {recipe.ingredients.map((item, i) =>
+          isIngredientGroup(item) ? (
+            <IngredientGroupHeading
+              key={i}
+              label={ingredientGroupLabel(item)}
+              isFirst={i === ValueConstants.zero}
+            />
+          ) : (
+            <IngredientCard
+              key={i}
+              raw={item}
+              checked={checkedIngredients[i] ?? false}
+              onToggle={() => onToggleIngredient(i)}
+            />
+          ),
+        )}
       </View>
 
       <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />

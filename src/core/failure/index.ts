@@ -17,4 +17,6 @@ export { ValidationFailure } from '@core/failure/kinds/validation-failure';
 export { ConflictFailure } from '@core/failure/kinds/conflict-failure';
 export { RateLimitFailure } from '@core/failure/kinds/rate-limit-failure';
 export { ServerFailure } from '@core/failure/kinds/server-failure';
+export { CancelledFailure } from '@core/failure/kinds/cancelled-failure';
 export { UnknownFailure } from '@core/failure/kinds/unknown-failure';
+export { FailureCode } from './failure-code';

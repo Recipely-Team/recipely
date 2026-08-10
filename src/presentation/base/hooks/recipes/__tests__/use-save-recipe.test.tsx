@@ -17,6 +17,7 @@
 
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
+import { ok } from '@core/result/result-helpers';
 import { UnknownFailure } from '@core/failure';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -43,8 +44,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
   create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
     savedIds: initial,
-    isLoading: false,
-    error: null,
+    listState: { status: 'idle' },
     has: (id) => get().savedIds.has(id),
     toggle: (id) =>
       set((s) => {
@@ -66,9 +66,8 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
         return { savedIds: next };
       }),
     setSaved: (): void => undefined,
-    setLoading: (loading) => set({ isLoading: loading }),
-    setError: (error) => set({ error }),
-    clearError: () => set({ error: null }),
+    loadSaved: () => Promise.resolve(ok([])),
+    clear: (): void => undefined,
   }));
 
 interface FavoritesStoreOptions {

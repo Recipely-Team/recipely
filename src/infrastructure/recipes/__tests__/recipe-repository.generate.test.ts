@@ -5,10 +5,11 @@ import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
-import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 const validDto: RecipeDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
@@ -49,12 +50,10 @@ const makeHttp = (
   result: Result<unknown, unknown>,
 ): { http: HttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const stub = {
-    request: jest.fn((config: RequestCall) => {
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(result);
-    }),
-  } as unknown as HttpClient;
+    }));
   return { http: stub, calls };
 };
 

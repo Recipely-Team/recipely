@@ -1,9 +1,10 @@
 import { useCallback, useMemo, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -14,6 +15,8 @@ import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { parseTabParam } from '@presentation/app/my-recipes/model/parse-tab-param';
+import { isFirstLoad } from '@presentation/app/my-recipes/model/is-first-load';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -28,12 +31,16 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, width } = useLayout();
-  const { savedRecipesStore, createdRecipesStore, draftsStore, loadFavoritesUseCase } = useStores();
+  const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
 
   const savedRecipes = savedRecipesStore((s) => s.savedRecipes);
+  const savedListState = savedRecipesStore((s) => s.listState);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
+  const createdListState = createdRecipesStore((s) => s.myRecipesState);
   const drafts = draftsStore((s) => s.drafts);
+  const draftsListState = draftsStore((s) => s.listState);
+  const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   // Deep-linked tab: publishing a recipe lands here on `created`, so the thing
   // the user just made is the thing they are looking at.
@@ -53,21 +60,33 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // draft they had just deleted) missing until a manual pull-to-refresh.
   useFocusEffect(
     useCallback(() => {
-      void (async () => {
-        const result = await loadFavoritesUseCase.execute();
-        if (result.ok) savedRecipesStore.getState().setSaved(result.value);
-      })();
+      void savedRecipesStore.getState().loadSaved();
       void createdRecipesStore.getState().loadMyRecipes();
       void draftsStore.getState().loadDrafts();
-    }, [loadFavoritesUseCase, savedRecipesStore, createdRecipesStore, draftsStore]),
+    }, [savedRecipesStore, createdRecipesStore, draftsStore]),
   );
 
-  const items = tab === 'saved' ? savedRecipes : createdRecipes;
+  const items = tab === TabType.Saved ? savedRecipes : createdRecipes;
+
+  // Each tab owns its own load, so both the skeleton branch and the error
+  // branch read the state of the tab actually being shown.
+  const activeState =
+    tab === TabType.Saved
+      ? savedListState
+      : tab === TabType.Created
+        ? createdListState
+        : draftsListState;
+  const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
+  const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
+  // A failed load must not read as "you have nothing" — that is the same lie
+  // the empty-state-while-loading bug told, just with a different cause.
+  const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
+  useReportFailure(loadFailure, 'MyRecipesScreen');
 
   const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
-    { key: 'saved', label: t().myRecipes.saved, count: savedRecipes.length },
-    { key: 'created', label: t().myRecipes.created, count: createdRecipes.length },
-    { key: 'drafts', label: t().myRecipes.drafts, count: drafts.length },
+    { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },
+    { key: TabType.Created, label: t().myRecipes.created, count: createdRecipes.length },
+    { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
   ];
 
   const openRecipe = (id: string): void => {
@@ -118,6 +137,13 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
             onDeleteDraft={(id) => void deleteDraft(id)}
+            isFirstLoad={isTabFirstLoad}
+            loadFailure={loadFailure}
+            onDraftsEndReached={() => void loadMoreDrafts()}
+            isLoadingMoreDrafts={
+              draftsListState.status === StoreStatus.Loaded &&
+              draftsListState.isLoadingMore === true
+            }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
           />

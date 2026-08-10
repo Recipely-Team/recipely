@@ -1,7 +1,7 @@
 import { act } from 'react-test-renderer';
 import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';

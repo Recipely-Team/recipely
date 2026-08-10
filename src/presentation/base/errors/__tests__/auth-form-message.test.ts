@@ -6,7 +6,7 @@ import {
   ValidationFailure,
 } from '@core/failure';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { en } from '@presentation/i18n/en';
+import { en } from '@presentation/i18n/locales/en';
 
 describe('authFormMessage', () => {
   it('uses the contextual override for the matching failure code', () => {

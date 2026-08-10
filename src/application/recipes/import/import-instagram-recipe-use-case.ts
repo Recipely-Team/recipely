@@ -1,8 +1,9 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 
 import type { ImportInstagramRecipeInput } from '@application/recipes/import/import-instagram-recipe-input';
 import { ValueConstants } from '@core/constants';
@@ -23,7 +24,7 @@ const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
  * be: a developer sentence for logs, never an i18n key.
  */
 export class ImportInstagramRecipeUseCase {
-  constructor(private readonly repo: IRecipeRepository) {}
+  constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   execute(input: ImportInstagramRecipeInput): Promise<Result<RecipeEntity, Failure>> {
     const trimmed = input.url.trim();
@@ -31,7 +32,7 @@ export class ImportInstagramRecipeUseCase {
       return Promise.resolve(
         fail(
           new ValidationFailure(
-            'Instagram URL is required',
+            DiagnosticMessage.recipeImport.urlRequired,
             undefined,
             ErrorMessageKey.importInvalidUrl,
           ),
@@ -57,7 +58,7 @@ export class ImportInstagramRecipeUseCase {
    */
   private notInstagram(url: string): ValidationFailure {
     return new ValidationFailure(
-      `Not an Instagram URL (${url})`,
+      DiagnosticMessage.recipeImport.notAnInstagramUrl(url),
       undefined,
       ErrorMessageKey.importNotInstagram,
     );

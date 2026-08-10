@@ -3,25 +3,31 @@ import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-
 import type { ThemeDefinition } from '@presentation/base/theme/context/theme-definition';
 import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/variant-semantics';
 import type { Palette } from '@presentation/base/theme/colors/palette/palette';
-import type { DarkArgs } from '@presentation/base/theme/colors/palette/dark-args';
-import type { LightArgs } from '@presentation/base/theme/colors/palette/light-args';
-import { RegexConstants, ValueConstants } from '@core/constants';
+import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
 import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+
+/** Offsets of the R, G and B pairs inside `#RRGGBB` — index 0 is the '#'. */
+const R_START = 1;
+const G_START = 3;
+const B_START = 5;
+/** Largest value one 8-bit colour channel can hold. */
+const CHANNEL_MAX = 255;
+/** Pad character for a single-digit hex byte. */
+const HEX_PAD = '0';
 
 const parseRgb = (hex: string): [number, number, number] => {
   if (!RegexConstants.hexColor6.test(hex)) {
     throw new Error(`themes.ts mixHex requires #RRGGBB, got: ${hex}`);
   }
-  return [
-    parseInt(hex.slice(1, 3), 16),
-    parseInt(hex.slice(3, 5), 16),
-    parseInt(hex.slice(5, 7), 16),
-  ];
+  // Skips the leading '#', then two hex chars per channel.
+  return [R_START, G_START, B_START].map((at) =>
+    parseInt(hex.slice(at, at + RadixConstants.hexCharsPerByte), RadixConstants.hex),
+  ) as [number, number, number];
 };
 
 const toHex2 = (n: number): string => {
-  const clamped = Math.max(ValueConstants.zero, Math.min(255, Math.round(n)));
-  return clamped.toString(16).padStart(2, '0');
+  const clamped = Math.max(ValueConstants.zero, Math.min(CHANNEL_MAX, Math.round(n)));
+  return clamped.toString(RadixConstants.hex).padStart(RadixConstants.hexCharsPerByte, HEX_PAD);
 };
 
 const mixHex = (a: string, b: string, t: number): string => {
@@ -223,6 +229,32 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     }),
   },
 };
+
+interface DarkArgs {
+  primary: string;
+  primaryText: string;
+  primaryLight: string;
+  gradientStart: string;
+  gradientEnd: string;
+  background: string;
+  secondary: string;
+  secondaryText: string;
+  text?: string;
+  textMuted?: string;
+}
+
+interface LightArgs {
+  primary: string;
+  primaryText: string;
+  primaryLight: string;
+  gradientStart: string;
+  gradientEnd: string;
+  background: string;
+  secondary: string;
+  secondaryText: string;
+  text?: string;
+  textMuted?: string;
+}
 
 export const ALL_THEMES: ThemeId[] = [
   'pearl-white', 'crimson-ember', 'emerald-garden', 'royal-purple',

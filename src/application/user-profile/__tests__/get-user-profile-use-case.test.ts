@@ -3,7 +3,7 @@ import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
-import type { IUserProfileRepository } from '@domain/user-profile/i-user-profile-repository';
+import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
 
 const buildProfile = (): UserProfileEntity => {
   const result = UserProfileEntity.create({
@@ -20,7 +20,7 @@ const buildProfile = (): UserProfileEntity => {
   return result.value;
 };
 
-class StubRepository implements IUserProfileRepository {
+class StubRepository implements UserProfileRepositoryInterface {
   readonly calls: string[] = [];
   constructor(private readonly result: Result<UserProfileEntity, Failure>) {}
   getById(userId: string): Promise<Result<UserProfileEntity, Failure>> {

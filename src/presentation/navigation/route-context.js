@@ -14,7 +14,21 @@
  * flags loose files at the app root for this reason).
  *
  * The regex mirrors the stock `expo-router/_ctx` exclusions for `+api`,
- * `+middleware`, root `+html` / `+native-intent`, and platform suffixes.
+ * `+middleware`, root `+html`, and platform suffixes.
+ *
+ * `+native-intent` is deliberately NOT excluded, and the exclusion list is the
+ * whole reason to say so. expo-router reads that file back out of THIS context
+ * — `getLinkingConfig` does `ctx.keys().find(k => k.match(/^\.\/\+native-intent/))`
+ * — so a context that hides it does not merely skip a route, it silently drops
+ * `redirectSystemPath`. The iOS share extension opens the app on
+ * `recipely-dev://dataUrl=<key>?nonce=…`, which is exactly the URL that hook
+ * exists to rewrite; without it every "Share to Recipely" landed on Unmatched
+ * Route. Upstream makes the same distinction — only `_ctx.web.js` excludes
+ * `+native-intent`; `_ctx.ios.js` / `_ctx.android.js` admit it — and it never
+ * becomes a route either way, because `getRoutesCore` drops `+html` and
+ * `+native-intent` from the route tree itself. Admitting it on web too is
+ * harmless: `redirectSystemPath` passes any non-share URL straight through.
+ * Guarded by `check:structure` rule Q.
  *
  * The app-dir argument MUST stay a hard-coded relative path, NOT
  * `process.env.EXPO_ROUTER_APP_ROOT`: @expo/cli resets the `routerRoot`
@@ -27,6 +41,6 @@
 export const ctx = require.context(
   '../app',
   true,
-  /^\.\/(?!(?:.*\+api|\+middleware|\+(?:html|native-intent))\.[tj]sx?$)(?:.*\/)?(?:index|_layout|\+[\w-]+|\[[^/\]]+\])(?:\.(?:android|ios|native|web))?\.[tj]sx?$/,
+  /^\.\/(?!(?:.*\+api|\+middleware|\+html)\.[tj]sx?$)(?:.*\/)?(?:index|_layout|\+[\w-]+|\[[^/\]]+\])(?:\.(?:android|ios|native|web))?\.[tj]sx?$/,
   process.env.EXPO_ROUTER_IMPORT_MODE
 );

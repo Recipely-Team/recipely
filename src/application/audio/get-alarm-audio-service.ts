@@ -1,6 +1,6 @@
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
-import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
+import type { AlarmAudioServiceInterface } from '@domain/audio/alarm-audio-service-interface';
 import { noopAlarmAudioService } from '@application/audio/noop-alarm-audio-service';
 
 /**
@@ -8,7 +8,7 @@ import { noopAlarmAudioService } from '@application/audio/noop-alarm-audio-servi
  * inert no-op service when none is registered (DI-less unit test mounts). This
  * keeps presentation/application code off a concrete `@infrastructure` import.
  */
-export const getAlarmAudioService = (): IAlarmAudioService =>
+export const getAlarmAudioService = (): AlarmAudioServiceInterface =>
   container.has(TOKENS.AlarmAudioService)
-    ? container.resolve<IAlarmAudioService>(TOKENS.AlarmAudioService)
+    ? container.resolve<AlarmAudioServiceInterface>(TOKENS.AlarmAudioService)
     : noopAlarmAudioService;

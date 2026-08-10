@@ -1,4 +1,4 @@
-import { configureNotificationsStore } from '@application/notifications/configure-notifications-store';
+import { configureNotificationsStore } from '@application/notifications/notifications-store';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { ListNotificationsResult } from '@application/notifications/list/list-notifications-result';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
@@ -18,6 +18,7 @@ const makeNotification = (id: string, read: boolean): NotificationEntity => {
     recipeId: 'recipe-1',
     recipeTitle: 'Panna Cotta',
     commentId: null,
+    draftId: null,
     message: null,
     read,
     createdAt: new Date('2026-06-01T12:00:00.000Z'),

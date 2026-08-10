@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Regression tests for `useRecipeList`'s `isPullRefreshing` flag.
  *
@@ -35,10 +36,9 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
-import { configureRecipeListStore } from '@application/recipes/list/configure-recipe-list-store';
+import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
@@ -50,6 +50,9 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
@@ -77,7 +80,7 @@ jest.mock('@presentation/base/taxonomy/use-taxonomy-label', () => ({
   })),
 }));
 
-type ListResult = Result<RecipeSummaryEntity[], Failure>;
+type ListResult = Result<RecipePage, Failure>;
 
 /** A promise plus the handle to settle it, so a load can be held in flight. */
 interface Deferred {
@@ -129,7 +132,7 @@ const makeSavedRecipesStore = () =>
     setSavedIds: jest.fn(),
   }) as unknown as SavedRecipesStoreState);
 
-const makeStores = (recipeListStore: RecipeListStore): Stores =>
+const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): Stores =>
   ({
     recipeListStore,
     authStore: makeAuthStore(),
@@ -169,7 +172,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       listRecipes: { execute } as unknown as ListRecipesUseCase,
     });
 
-    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r1')])));
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r1')]))));
 
     renderer = renderComponent(
       <StoresProvider value={makeStores(store)}>
@@ -228,7 +231,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(rendersSince(beforeToggle).every((r) => !r.isPullRefreshing)).toBe(true);
 
     await act(async () => {
-      deferred.resolve(ok([makeRecipe('r2')]));
+      deferred.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await deferred.promise;
     });
 
@@ -256,7 +259,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(vm.isReloadingResults).toBe(true);
 
     await act(async () => {
-      deferred.resolve(ok([makeRecipe('r2')]));
+      deferred.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await deferred.promise;
     });
 
@@ -279,7 +282,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(vm.isReloadingResults).toBe(false);
 
     await act(async () => {
-      deferred.resolve(ok([makeRecipe('r2')]));
+      deferred.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await deferred.promise;
     });
   });
@@ -300,7 +303,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(rendersSince(beforeSort).every((r) => !r.isPullRefreshing)).toBe(true);
 
     await act(async () => {
-      deferred.resolve(ok([makeRecipe('r2')]));
+      deferred.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await deferred.promise;
     });
 
@@ -321,7 +324,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(vm.isPullRefreshing).toBe(true);
 
     await act(async () => {
-      deferred.resolve(ok([makeRecipe('r2')]));
+      deferred.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await deferred.promise;
     });
 
@@ -362,7 +365,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       vm.onRefresh();
     });
     await act(async () => {
-      pull.resolve(ok([makeRecipe('r2')]));
+      pull.resolve(ok(recipePageOf([makeRecipe('r2')])));
       await pull.promise;
     });
     expect(vm.isPullRefreshing).toBe(false);
@@ -381,7 +384,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     expect(rendersSince(beforeToggle).every((r) => !r.isPullRefreshing)).toBe(true);
 
     await act(async () => {
-      filter.resolve(ok([makeRecipe('r3')]));
+      filter.resolve(ok(recipePageOf([makeRecipe('r3')])));
       await filter.promise;
     });
 
@@ -403,7 +406,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     const execute = jest.fn();
     await mountLoaded(execute);
 
-    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
     act(() => {
       vm.onChangeSort('rating');
     });
@@ -411,7 +414,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       await Promise.resolve();
     });
 
-    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r3')])));
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r3')]))));
     act(() => {
       vm.onToggleCuisineQuick(CuisineKey.Turkish);
     });
@@ -419,7 +422,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       await Promise.resolve();
     });
 
-    execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r4')])));
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r4')]))));
     act(() => {
       vm.onResetFilters();
     });
@@ -460,7 +463,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       const execute = jest.fn();
       await mountLoaded(execute);
 
-      execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('r2')])));
+      execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
       act(() => {
         vm.onSearchChange('pasta');
       });
@@ -474,7 +477,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       await mountLoaded(execute);
       const callsAfterMount = execute.mock.calls.length;
 
-      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
       act(() => {
         vm.onSearchChange('p');
         vm.onSearchChange('pa');
@@ -493,7 +496,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       await mountLoaded(execute);
       expect(vm.isRefetching).toBe(false);
 
-      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
       act(() => {
         vm.onSearchChange('pasta');
       });
@@ -511,7 +514,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       const execute = jest.fn();
       await mountLoaded(execute);
 
-      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
       act(() => {
         vm.onSearchChange('pasta');
       });
@@ -531,7 +534,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       const execute = jest.fn();
       await mountLoaded(execute);
 
-      execute.mockReturnValue(Promise.resolve(ok([makeRecipe('r2')])));
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
       act(() => {
         vm.onSearchChange('pasta');
       });
@@ -573,7 +576,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       expect(vm.recipes).toEqual([]);
 
       await act(async () => {
-        inFlight.resolve(ok([makeRecipe('match')]));
+        inFlight.resolve(ok(recipePageOf([makeRecipe('match')])));
         await Promise.resolve();
       });
 
@@ -605,7 +608,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       expect(framesAreLoading).toEqual([true, true]);
 
       await act(async () => {
-        inFlight.resolve(ok([makeRecipe('match')]));
+        inFlight.resolve(ok(recipePageOf([makeRecipe('match')])));
         await Promise.resolve();
       });
       expect(vm.isRefetching).toBe(false);
@@ -631,7 +634,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       const execute = jest.fn();
       await mountLoaded(execute);
 
-      execute.mockReturnValueOnce(Promise.resolve(ok([makeRecipe('match')])));
+      execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('match')]))));
       act(() => {
         vm.onSearchChange('pasta');
       });
@@ -653,7 +656,7 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
       await act(async () => {
         jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
-        inFlight.resolve(ok([makeRecipe('r1'), makeRecipe('r2')]));
+        inFlight.resolve(ok(recipePageOf([makeRecipe('r1'), makeRecipe('r2')])));
         await Promise.resolve();
       });
 

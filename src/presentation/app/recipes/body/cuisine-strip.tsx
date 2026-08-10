@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { StyleSheet, View, ScrollView, Pressable, Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { StyleSheet, View, ScrollView, Pressable } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, avatarSizes, borderWidths } from '@presentation/base/theme';
@@ -29,7 +30,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
   const scrollRef = useRef<ScrollView>(null);
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
+    if (!isWeb()) return;
     const node = scrollRef.current?.getScrollableNode() as unknown as HTMLElement | undefined;
     if (!node) return;
     const onWheel = (event: WheelEvent): void => {

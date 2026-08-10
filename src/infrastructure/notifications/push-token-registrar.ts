@@ -1,6 +1,8 @@
-import { Platform } from 'react-native';
+import { isAndroid } from '@infrastructure/constants/platform';
+import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
+import { isNonEmptyString } from '@core/guards/type-guards';
+import { PermissionStatus } from 'expo-modules-core';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
-import { ValueConstants } from '@core/constants';
 
 /**
  * Native push registration. Android: `expo-notifications` (already in the
@@ -19,26 +21,26 @@ import { ValueConstants } from '@core/constants';
  * Firebase JS SDK.
  */
 export const registerPushToken = async (register: RegisterTokenFn): Promise<void> => {
-  if (Platform.OS !== 'android') return;
+  if (!isAndroid()) return;
   try {
     const Notifications = await import('expo-notifications');
 
     const { status: existing } = await Notifications.getPermissionsAsync();
     const status =
-      existing === 'granted'
+      existing === PermissionStatus.GRANTED
         ? existing
         : (await Notifications.requestPermissionsAsync()).status;
-    if (status !== 'granted') return;
+    if (status !== PermissionStatus.GRANTED) return;
 
     const token = await Notifications.getDevicePushTokenAsync();
-    if (typeof token.data !== 'string' || token.data.length === ValueConstants.zero) return;
+    if (!isNonEmptyString(token.data)) return;
 
     const result = await register(token.data, 'android');
     if (!result.ok && __DEV__) {
-      console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
+      console.warn(`${LogTag.pushTokenRegistrar} ${LogMessage.deviceTokenRejected}`, result.failure.code);
     }
   } catch (err) {
     // Expo Go or a device without push support — the polled badge still works.
-    if (__DEV__) console.warn('[push-token-registrar] android push registration skipped:', err);
+    if (__DEV__) console.warn(`${LogTag.pushTokenRegistrar} ${LogMessage.androidPushSkipped}`, err);
   }
 };

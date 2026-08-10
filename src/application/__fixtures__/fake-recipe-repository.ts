@@ -1,11 +1,12 @@
 import { type Failure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
@@ -14,14 +15,15 @@ import type { GenerateRecipeCall } from '@application/__fixtures__/generate-reci
 import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
 import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
 import { ValueConstants } from '@core/constants';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
 
 /**
- * In-memory test double for `IRecipeRepository`. Returns pre-configured
+ * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
  * `Result` values for each operation. The `generateRecipe` method additionally
  * records call arguments in `lastGenerateCall` and increments `generateCallCount`
  * so tests can assert on invocation details without a spy framework.
  */
-export class FakeRecipeRepository implements IRecipeRepository {
+export class FakeRecipeRepository implements RecipeRepositoryInterface {
   // Public so tests can assert on the last call without a getter ceremony.
   lastGenerateCall: GenerateRecipeCall | null = null;
   generateCallCount = ValueConstants.zero;
@@ -32,7 +34,7 @@ export class FakeRecipeRepository implements IRecipeRepository {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -44,7 +46,7 @@ export class FakeRecipeRepository implements IRecipeRepository {
     );
   }
 
-  listMyRecipes(): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  listMyRecipes(_page?: number): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
       this.config.listMyRecipesResult ?? fail(new UnknownFailure('not configured')),
     );
@@ -78,6 +80,22 @@ export class FakeRecipeRepository implements IRecipeRepository {
     this.importInstagramCallCount += 1;
     return Promise.resolve(
       this.config.importInstagramRecipeResult ?? ok(undefined as unknown as RecipeEntity),
+    );
+  }
+
+  /** Records the URL so a test can assert the queue was asked, not the pipeline. */
+  lastEnqueueImportCall: { url: string } | null = null;
+
+  enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>> {
+    this.lastEnqueueImportCall = { url };
+    return Promise.resolve(
+      this.config.enqueueInstagramImportResult ?? ok(undefined as unknown as ImportJob),
+    );
+  }
+
+  getImportJob(id: string): Promise<Result<ImportJob, Failure>> {
+    return Promise.resolve(
+      this.config.getImportJobResult ?? ok({ id, status: 'queued', draftId: null, errorKey: null } as ImportJob),
     );
   }
 

@@ -1,21 +1,18 @@
 import { useCallback, useState } from 'react';
-import { ActionSheetIOS, Alert, Platform } from 'react-native';
+import {
+  MIME_BY_EXTENSION,
+  DEFAULT_IMAGE_MIME,
+} from '@infrastructure/constants/image-mime';
+import { isIos, isWeb } from '@infrastructure/constants/platform';
+import { ActionSheetIOS, Alert } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
 import type { AvatarUpload } from '@presentation/base/hooks/profile/avatar-upload';
-import type { PickSource } from '@presentation/base/hooks/profile/pick-source';
+import { PickSource } from '@presentation/base/hooks/profile/pick-source';
 import { ValueConstants } from '@core/constants';
-
-const MIME_BY_EXT: Record<string, string> = {
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg',
-  png: 'image/png',
-  webp: 'image/webp',
-  heic: 'image/heic',
-};
 
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
@@ -30,7 +27,7 @@ const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
   const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
   return {
     fileName: `avatar-${Date.now()}.${safeExt}`,
-    mimeType: MIME_BY_EXT[safeExt] ?? 'image/jpeg',
+    mimeType: MIME_BY_EXTENSION[safeExt] ?? DEFAULT_IMAGE_MIME,
   };
 };
 
@@ -52,7 +49,7 @@ export const useAvatarUpload = (): AvatarUpload => {
   const launch = useCallback(
     async (source: PickSource): Promise<void> => {
       const perm =
-        source === 'camera'
+        source === PickSource.Camera
           ? await ImagePicker.requestCameraPermissionsAsync()
           : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!perm.granted) {
@@ -61,7 +58,7 @@ export const useAvatarUpload = (): AvatarUpload => {
       }
 
       const result =
-        source === 'camera'
+        source === PickSource.Camera
           ? await ImagePicker.launchCameraAsync(PICKER_OPTIONS)
           : await ImagePicker.launchImageLibraryAsync(PICKER_OPTIONS);
       const asset = result.canceled ? undefined : result.assets[ValueConstants.zero];
@@ -88,12 +85,12 @@ export const useAvatarUpload = (): AvatarUpload => {
   const pickAndUpload = useCallback(async (): Promise<void> => {
     if (isUploading) return;
 
-    if (Platform.OS === 'web') {
-      await launch('library');
+    if (isWeb()) {
+      await launch(PickSource.Library);
       return;
     }
 
-    if (Platform.OS === 'ios') {
+    if (isIos()) {
       ActionSheetIOS.showActionSheetWithOptions(
         {
           title: t().profile.changePhoto,
@@ -105,16 +102,16 @@ export const useAvatarUpload = (): AvatarUpload => {
           cancelButtonIndex: 2,
         },
         (index) => {
-          if (index === ValueConstants.zero) void launch('camera');
-          else if (index === 1) void launch('library');
+          if (index === ValueConstants.zero) void launch(PickSource.Camera);
+          else if (index === 1) void launch(PickSource.Library);
         },
       );
       return;
     }
 
     Alert.alert(t().profile.changePhoto, undefined, [
-      { text: t().profile.takePhoto, onPress: () => void launch('camera') },
-      { text: t().profile.chooseFromLibrary, onPress: () => void launch('library') },
+      { text: t().profile.takePhoto, onPress: () => void launch(PickSource.Camera) },
+      { text: t().profile.chooseFromLibrary, onPress: () => void launch(PickSource.Library) },
       { text: t().common.cancel, style: 'cancel' },
     ]);
   }, [isUploading, launch]);

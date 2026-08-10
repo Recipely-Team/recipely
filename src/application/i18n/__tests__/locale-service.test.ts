@@ -1,21 +1,31 @@
+import { ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
-const makeStore = (initial: string | null = null): IKeyValueStore & { saved: string | null } => {
+const makeStore = (initial: string | null = null): KeyValueStoreInterface & { saved: string | null } => {
   const store = {
     saved: initial,
-    getItem: (): Promise<string | null> => Promise.resolve(store.saved),
-    setItem: (_key: string, value: string): Promise<void> => {
+    getItem: (): Promise<Result<string | null, Failure>> => Promise.resolve(ok(store.saved)),
+    setItem: (_key: string, value: string): Promise<Result<void, Failure>> => {
       store.saved = value;
-      return Promise.resolve();
+      return Promise.resolve(ok(undefined));
     },
-    removeItem: (): Promise<void> => Promise.resolve(),
+    removeItem: (): Promise<Result<void, Failure>> => Promise.resolve(ok(undefined)),
   };
   return store;
 };
 
 const deviceLocale = (locale: string) => ({ getDeviceLocale: () => locale });
+
+/**
+ * A code the app will never ship, used wherever a test needs "a language we do
+ * not have". It was `de` until German was added — pick something reserved, or
+ * the next language to land quietly turns these assertions inside out.
+ */
+const UNSUPPORTED = 'zz';
 
 describe('LocaleService', () => {
   it('seeds from the device language when nothing is stored', async () => {
@@ -27,7 +37,7 @@ describe('LocaleService', () => {
   });
 
   it('falls back to the default locale when the device language is unsupported', () => {
-    expect(new LocaleService(makeStore(), deviceLocale('de')).getLocale()).toBe('en');
+    expect(new LocaleService(makeStore(), deviceLocale(UNSUPPORTED)).getLocale()).toBe('en');
     expect(new LocaleService(makeStore(), deviceLocale('')).getLocale()).toBe('en');
   });
 
@@ -106,7 +116,7 @@ describe('LocaleService', () => {
     service.subscribe(listener);
 
     service.setLocale('en');
-    service.setLocale('de');
+    service.setLocale(UNSUPPORTED);
 
     expect(service.getLocale()).toBe('en');
     expect(store.saved).toBeNull();

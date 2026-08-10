@@ -1,11 +1,12 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when a requested resource does not exist on the server
  * (HTTP 404 equivalent).
  */
 export class NotFoundFailure extends Failure {
-  readonly code = 'not_found';
+  readonly code = FailureCode.NotFound;
   constructor(
     readonly message: string = 'Not found',
     messageKey?: string,

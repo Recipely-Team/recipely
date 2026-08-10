@@ -1,11 +1,12 @@
 import { useCallback, useState } from 'react';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
-import { CharConstants } from '@core/constants';
+import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Owns the editable recipe form state (fields, ingredients, steps, media) plus
@@ -56,6 +57,54 @@ export const useEditableRecipe = () => {
     setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
+  /**
+   * Inserts a blank ingredient INSIDE a group rather than at the end of the
+   * recipe — appending would have dropped it into whichever group happens to be
+   * last, which is what made adding to the right one a chore.
+   */
+  const onAddIngredientAt = useCallback(
+    (index: number): void => {
+      setRecipe((r) => {
+        const next = [...r.ingredients];
+        next.splice(index, ValueConstants.zero, CharConstants.empty);
+        return { ...r, ingredients: next };
+      });
+      clearFieldError('ingredients');
+    },
+    [clearFieldError],
+  );
+  const onMoveIngredient = useCallback((from: number, to: number): void => {
+    setRecipe((r) => {
+      if (to < ValueConstants.zero || to >= r.ingredients.length) return r;
+      const next = [...r.ingredients];
+      const [moved] = next.splice(from, ValueConstants.one);
+      if (moved === undefined) return r;
+      next.splice(to, ValueConstants.zero, moved);
+      return { ...r, ingredients: next };
+    });
+  }, []);
+  /**
+   * Drops a group heading, and — unless the ingredients are being kept — the
+   * ingredients under it. `keepItems` is the difference between "I grouped
+   * these wrongly" and "these are not in the recipe", which one button could
+   * not have said.
+   */
+  const onRemoveIngredientGroup = useCallback(
+    (headerIndex: number, itemIndices: readonly number[], keepItems: boolean): void => {
+      setRecipe((r) => {
+        const doomed = new Set<number>(keepItems ? [headerIndex] : [headerIndex, ...itemIndices]);
+        const kept = r.ingredients.filter((_, idx) => !doomed.has(idx));
+        return { ...r, ingredients: kept.length === ValueConstants.zero ? [CharConstants.empty] : kept };
+      });
+      clearFieldError('ingredients');
+    },
+    [clearFieldError],
+  );
+  // Appends the bare marker; the row it renders as edits the label. An unnamed
+  // group is dropped on save rather than published as a blank heading.
+  const onAddIngredientGroup = useCallback((): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, INGREDIENT_GROUP_PREFIX] }));
+  }, []);
   const onChangeStep = useCallback(
     (i: number, value: string): void => {
       setRecipe((r) => ({ ...r, instructions: r.instructions.map((x, idx) => (idx === i ? value : x)) }));
@@ -104,6 +153,10 @@ export const useEditableRecipe = () => {
     onChangeIngredient,
     onRemoveIngredient,
     onAddIngredient,
+    onAddIngredientAt,
+    onMoveIngredient,
+    onAddIngredientGroup,
+    onRemoveIngredientGroup,
     onChangeStep,
     onRemoveStep,
     onAddStep,

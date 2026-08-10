@@ -60,4 +60,6 @@ export const opacities = {
   scrimSubtle: 0.16 as number,
   /** The default overlay tint. */
   scrim: 0.18 as number,
+  /** The strongest decorative tint — a pulse ring at the top of its breath. */
+  scrimStrong: 0.28 as number,
 } as const;

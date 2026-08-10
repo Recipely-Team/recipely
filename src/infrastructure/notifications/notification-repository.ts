@@ -1,19 +1,21 @@
 import { ok } from '@core/result/result-helpers';
+import type { DevicePlatform } from '@domain/notifications/device-platform';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { NotificationEntity } from '@domain/notifications/notification-entity';
-import type { INotificationRepository } from '@domain/notifications/i-notification-repository';
+import type { NotificationRepositoryInterface } from '@domain/notifications/notification-repository-interface';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 import type { NotificationsResponseDto } from '@infrastructure/notifications/dtos/notifications-response-dto';
+import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notifications/dtos/register-device-token-request-dto';
 
 /**
- * Implements `INotificationRepository` against the Recipely backend. All
+ * Implements `NotificationRepositoryInterface` against the Recipely backend. All
  * endpoints live under `/me/` and require a valid JWT session.
  */
-export class NotificationRepository implements INotificationRepository {
+export class NotificationRepository implements NotificationRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async list(limit?: number, offset?: number): Promise<Result<NotificationListResult, Failure>> {
@@ -21,11 +23,7 @@ export class NotificationRepository implements INotificationRepository {
     if (limit !== undefined) params.limit = limit;
     if (offset !== undefined) params.offset = offset;
 
-    const result = await this.http.request<NotificationsResponseDto>({
-      method: 'GET',
-      url: ApiRoutes.me.notifications,
-      params,
-    });
+    const result = await this.http.get<NotificationsResponseDto>(ApiRoutes.me.notifications, { params });
     if (!result.ok) {
       return result;
     }
@@ -48,10 +46,7 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   async markAllRead(): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.notificationsReadAll,
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.notificationsReadAll, undefined);
     if (!result.ok) {
       return result;
     }
@@ -59,10 +54,7 @@ export class NotificationRepository implements INotificationRepository {
   }
 
   async markOneRead(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.notificationRead(id),
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.notificationRead(id), undefined);
     if (!result.ok) {
       return result;
     }
@@ -71,13 +63,9 @@ export class NotificationRepository implements INotificationRepository {
 
   async registerDeviceToken(
     token: string,
-    platform: 'ios' | 'android' | 'web',
+    platform: DevicePlatform,
   ): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'POST',
-      url: ApiRoutes.me.deviceToken,
-      data: { token, platform },
-    });
+    const result = await this.http.post<unknown>(ApiRoutes.me.deviceToken, { token, platform } satisfies RegisterDeviceTokenRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -95,6 +83,7 @@ function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEnti
     recipeId: dto.recipeId,
     recipeTitle: dto.recipeTitle,
     commentId: dto.commentId ?? null,
+    draftId: dto.draftId ?? null,
     message: dto.message ?? null,
     read: dto.read,
     createdAt: new Date(dto.createdAt),

@@ -1,12 +1,11 @@
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
+import type { BoundStore } from '@application/store/bound-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -15,6 +14,11 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
+
+
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
@@ -98,8 +102,8 @@ interface Deps {
   createRecipeUseCase: CreateRecipeUseCase;
   listMyRecipesUseCase: ListMyRecipesUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
-  recipeListStore: RecipeListStore;
-  recipeDetailStore: RecipeDetailStore;
+  recipeListStore: BoundStore<RecipeListStoreState>;
+  recipeDetailStore: BoundStore<RecipeDetailStoreState>;
 }
 
 const makeStore = (overrides: Partial<Deps> = {}) => {
@@ -119,13 +123,13 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
   const recipeListStoreRemove = jest.fn();
   const fakeRecipeListStore = {
     getState: () => ({ replace: recipeListStoreReplace, remove: recipeListStoreRemove }),
-  } as unknown as RecipeListStore;
+  } as unknown as BoundStore<RecipeListStoreState>;
 
   const recipeDetailStoreReplace = jest.fn();
   const recipeDetailStoreRemove = jest.fn();
   const fakeRecipeDetailStore = {
     getState: () => ({ replace: recipeDetailStoreReplace, remove: recipeDetailStoreRemove }),
-  } as unknown as RecipeDetailStore;
+  } as unknown as BoundStore<RecipeDetailStoreState>;
 
   const store = configureCreatedRecipesStore({
     createRecipeUseCase: fakeCreateUseCase,
@@ -177,7 +181,7 @@ describe('createdRecipesStore CRUD', () => {
   describe('findById', () => {
     it('reads from localRecipes, not from recipes', async () => {
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok([makeSummary({ id: 'network-only' })])),
+        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'network-only' })]))),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       await store.getState().loadMyRecipes();
@@ -261,7 +265,7 @@ describe('createdRecipesStore CRUD', () => {
     it('sets recipes from the lean use case result and leaves localRecipes untouched', async () => {
       const localRecipe = makeRecipe({ id: 'local-survivor' });
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok([makeSummary({ id: 'r-from-network' })])),
+        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r-from-network' })]))),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       store.getState().add(localRecipe);
@@ -279,7 +283,7 @@ describe('createdRecipesStore CRUD', () => {
       const listMyRecipesUseCase = {
         execute: () => {
           callCount += 1;
-          return Promise.resolve(callCount === 1 ? ok([existing]) : fail(new UnknownFailure('down')));
+          return Promise.resolve(callCount === 1 ? ok(recipePageOf([existing])) : fail(new UnknownFailure('down')));
         },
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
@@ -289,6 +293,113 @@ describe('createdRecipesStore CRUD', () => {
       await store.getState().loadMyRecipes();
 
       expect(store.getState().recipes.map((r) => r.id)).toEqual(['kept']);
+    });
+
+    /**
+     * The status exists so the My-Recipes grid can tell "you have published
+     * nothing" from "the answer has not arrived". Without it the screen showed
+     * its empty state for the whole of every cold load.
+     */
+    describe('myRecipesState', () => {
+      it('starts idle — nothing has been asked for yet', () => {
+        const { store } = makeStore({});
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
+
+      it('is loading while the request is in flight and loaded once it answers', async () => {
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            await held;
+            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        const inFlight = store.getState().loadMyRecipes();
+        expect(store.getState().myRecipesState).toEqual({ status: 'loading' });
+
+        release();
+        await inFlight;
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+      });
+
+      it('records the failure without blanking the grid', async () => {
+        const failure = new UnknownFailure('down');
+        const listMyRecipesUseCase = {
+          execute: () => Promise.resolve(fail(failure)),
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        await store.getState().loadMyRecipes();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'error', failure });
+      });
+
+      it('stays loaded while a grid that is already on screen reloads', async () => {
+        // Found in review: `Loading` was set on every call, and the screen
+        // re-loads on every focus — so a skeleton replaced rows the user was
+        // already reading, and tore the RefreshControl out mid-pull.
+        let release!: () => void;
+        let call = 0;
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            call += 1;
+            if (call > 1) await new Promise<void>((resolve) => (release = resolve));
+            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+        await store.getState().loadMyRecipes();
+
+        const reload = store.getState().loadMyRecipes();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+        release();
+        await reload;
+        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+      });
+
+      it('discards a response that started before the session ended', async () => {
+        let release!: () => void;
+        const held = new Promise<void>((resolve) => {
+          release = resolve;
+        });
+        const listMyRecipesUseCase = {
+          execute: async () => {
+            await held;
+            return ok(recipePageOf([makeSummary({ id: 'r-previous-user' })]));
+          },
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+
+        const inFlight = store.getState().loadMyRecipes();
+        // Signing out mid-request. The late answer must not put the previous
+        // account's recipes back into the grid.
+        store.getState().clear();
+        release();
+        await inFlight;
+
+        expect(store.getState().recipes).toEqual([]);
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
+
+      it('returns to idle when the session ends, so the next user gets a skeleton', async () => {
+        const listMyRecipesUseCase = {
+          execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r1' })]))),
+        } as unknown as ListMyRecipesUseCase;
+        const { store } = makeStore({ listMyRecipesUseCase });
+        await store.getState().loadMyRecipes();
+
+        store.getState().clear();
+
+        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+      });
     });
   });
 });

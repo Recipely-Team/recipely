@@ -1,8 +1,10 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
-import { UnknownFailure, type Failure } from '@core/failure';
-import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/api';
+import { CancelledFailure, UnknownFailure, type Failure } from '@core/failure';
+import { GOOGLE_WEB_CLIENT_ID } from '@infrastructure/constants/build-secrets';
 import { generateNonce, hashNonce } from '@infrastructure/auth/social/nonce-generator';
+import { isCancellationError } from '@infrastructure/auth/social/is-cancellation-error';
 import type { GoogleSigninMod } from '@infrastructure/auth/social/google-signin-mod';
 import type { FirebaseAuthMod } from '@infrastructure/auth/social/firebase-auth-mod';
 import * as AppleAuthentication from 'expo-apple-authentication';
@@ -22,13 +24,19 @@ let googleConfigured = false;
  * Runs the native Google Sign-In flow (Play Services check + Firebase
  * credential exchange) and resolves to a Firebase ID token the backend can
  * verify via `POST /auth/social`. Returns a graceful Failure when the native
- * modules aren't present (e.g. Expo Go) or the user cancels.
+ * modules aren't present (e.g. Expo Go).
+ *
+ * @remarks
+ * - **Dismissing the sheet is a `CancelledFailure`**, not an error. The module
+ *   reports it two ways depending on where the user backed out — a
+ *   non-success `SignInResponse` (`SignInResponse` is success-or-cancelled), or
+ *   a throw carrying `statusCodes.SIGN_IN_CANCELLED` — so both are mapped.
  */
 export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   if (googleSigninMod === null || firebaseAuthMod === null) {
-    return fail(new UnknownFailure('Google Sign-In is not available in this build'));
+    return fail(new UnknownFailure(DiagnosticMessage.auth.googleUnavailableInBuild));
   }
-  const { GoogleSignin, isSuccessResponse } = googleSigninMod;
+  const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = googleSigninMod;
   const auth = firebaseAuthMod.default;
   if (!googleConfigured) {
     GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
@@ -36,19 +44,33 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
   }
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+    // Clear the SDK's cached account before asking, so the chooser always
+    // appears. Without this `signIn()` silently reuses whichever account was
+    // used last: someone with a personal and a work Google account cannot pick,
+    // and anyone who signed in with the wrong one the first time has no way
+    // back — the app just logs them straight into it again, every time.
+    //
+    // This is a LOCAL cache clear, not a revoke: no consent is withdrawn and
+    // the next sign-in still skips the permission screen. Failing here must not
+    // block sign-in — nothing cached is not an error, it is the normal state on
+    // a fresh install.
+    await GoogleSignin.signOut().catch(() => undefined);
     const response = await GoogleSignin.signIn();
     if (!isSuccessResponse(response)) {
-      return fail(new UnknownFailure('Google sign-in was cancelled'));
+      return fail(new CancelledFailure(DiagnosticMessage.socialAuth.googleCancelled));
     }
     const { idToken } = response.data;
     if (!idToken) {
-      return fail(new UnknownFailure('Google did not return an ID token'));
+      return fail(new UnknownFailure(DiagnosticMessage.socialAuth.googleNoIdToken));
     }
     const credential = auth.GoogleAuthProvider.credential(idToken);
     const { user } = await auth().signInWithCredential(credential);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Google sign-in failed';
+    if (isErrorWithCode(e) && e.code === statusCodes.SIGN_IN_CANCELLED) {
+      return fail(new CancelledFailure(DiagnosticMessage.socialAuth.googleCancelled));
+    }
+    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.googleFailed;
     return fail(new UnknownFailure(msg));
   }
 };
@@ -57,16 +79,21 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
  * Runs the native Apple Sign-In flow with a hashed nonce and resolves to a
  * Firebase ID token. Returns a graceful Failure when Apple Sign-In or the
  * Firebase module is unavailable on the device/build.
+ *
+ * @remarks
+ * - **Dismissing the sheet is a `CancelledFailure`**, not an error:
+ *   `signInAsync` rejects with `ERR_REQUEST_CANCELED` and the screen must stay
+ *   silent for it.
  */
 export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failure>> => {
   if (firebaseAuthMod === null) {
-    return fail(new UnknownFailure('Apple Sign-In is not available in this build'));
+    return fail(new UnknownFailure(DiagnosticMessage.auth.appleUnavailableInBuild));
   }
   const auth = firebaseAuthMod.default;
   try {
     const available = await AppleAuthentication.isAvailableAsync();
     if (!available) {
-      return fail(new UnknownFailure('Apple Sign-In is not available on this device'));
+      return fail(new UnknownFailure(DiagnosticMessage.socialAuth.appleUnavailable));
     }
     const rawNonce = generateNonce();
     const hashedNonce = await hashNonce(rawNonce);
@@ -79,13 +106,16 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     });
     const { identityToken } = appleCredential;
     if (!identityToken) {
-      return fail(new UnknownFailure('Apple did not return an identity token'));
+      return fail(new UnknownFailure(DiagnosticMessage.socialAuth.appleNoIdentityToken));
     }
     const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
     const { user } = await auth().signInWithCredential(credential);
     return ok(await user.getIdToken());
   } catch (e) {
-    const msg = e instanceof Error ? e.message : 'Apple sign-in failed';
+    if (isCancellationError(e)) {
+      return fail(new CancelledFailure(DiagnosticMessage.socialAuth.appleCancelled));
+    }
+    const msg = e instanceof Error ? e.message : DiagnosticMessage.socialAuth.appleFailed;
     return fail(new UnknownFailure(msg));
   }
 };

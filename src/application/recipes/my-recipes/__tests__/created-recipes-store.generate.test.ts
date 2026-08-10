@@ -1,4 +1,5 @@
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
+import type { BoundStore } from '@application/store/bound-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import type {
   CreateRecipeUseCase,
 } from '@application/recipes/create/create-recipe-use-case';
@@ -8,8 +9,6 @@ import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-rec
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
@@ -17,6 +16,10 @@ import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+
+
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
@@ -74,11 +77,11 @@ const fakeImportUseCase = {
 // interface so the store constructs without exercising the sibling caches.
 const fakeRecipeListStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as RecipeListStore;
+} as unknown as BoundStore<RecipeListStoreState>;
 
 const fakeRecipeDetailStore = {
   getState: () => ({ replace: () => undefined, remove: () => undefined }),
-} as unknown as RecipeDetailStore;
+} as unknown as BoundStore<RecipeDetailStoreState>;
 
 interface DeferredGenerateUseCase {
   useCase: GenerateRecipeUseCase;

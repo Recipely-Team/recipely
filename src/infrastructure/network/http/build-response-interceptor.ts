@@ -1,4 +1,5 @@
 import type { AxiosResponse } from 'axios';
+import { LogTag, DECRYPT_FAILED_LOG } from '@infrastructure/constants/log-tag';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
@@ -19,12 +20,12 @@ export const buildResponseInterceptor = (
         response.data = decryptEnvelope(response.data, aesKey);
       } catch (err) {
         if (options.enableLogging) {
-          console.log(`[HTTP ←] decrypt failed: ${(err as Error).message}`);
+          console.log(`${LogTag.httpResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
         }
       }
     }
     if (options.enableLogging) {
-      console.log(`[HTTP ←] ${response.status} ${response.config.url ?? CharConstants.empty}`);
+      console.log(`${LogTag.httpResponse} ${response.status} ${response.config.url ?? CharConstants.empty}`);
     }
     return response;
   };

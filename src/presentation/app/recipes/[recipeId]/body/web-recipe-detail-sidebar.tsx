@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
+import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -56,11 +58,26 @@ export const WebRecipeDetailSidebar = ({
         <View style={styles.cardHeader}>
           <ThemedText variant="subtitle">{strings.recipes.ingredients}</ThemedText>
           <ThemedText variant="caption" muted>
-            {`${String(checkedCount)}/${String(recipe.ingredients.length)}`}
+            {`${String(checkedCount)}/${String(recipe.ingredients.filter((line) => !isIngredientGroup(line)).length)}`}
           </ThemedText>
         </View>
         <View style={styles.checklist}>
           {recipe.ingredients.map((item, i) => {
+            // A group heading names one component of the recipe — a syrup, a
+            // filling. There is nothing to tick off, so it must not carry a
+            // checkbox that does nothing when tapped.
+            if (isIngredientGroup(item)) {
+              return (
+                <ThemedText
+                  key={i}
+                  variant="caption"
+                  accessibilityRole="header"
+                  style={[styles.groupHeading, { color: colors.primary }]}
+                >
+                  {ingredientGroupLabel(item)}
+                </ThemedText>
+              );
+            }
             const checked = checkedIngredients[i] ?? false;
             return (
               <Pressable
@@ -163,6 +180,12 @@ const styles = StyleSheet.create({
   },
   checklist: {
     gap: spacing.xs,
+  },
+  groupHeading: {
+    fontWeight: fontWeights.bold,
+    letterSpacing: letterSpacings.wide,
+    textTransform: 'uppercase',
+    marginTop: spacing.xs,
   },
   checkRow: {
     flexDirection: 'row',

@@ -1,33 +1,33 @@
 import { ok } from '@core/result/result-helpers';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { Result } from '@core/result/result';
 import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { IRecipeDraftRepository } from '@domain/drafts/i-recipe-draft-repository';
+import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api';
-import { ApiRoutes } from '@infrastructure/constants/api-routes';
+import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
+import { toUpsertDraftRequest } from '@infrastructure/drafts/to-upsert-draft-request';
 
 /**
- * Implements `IRecipeDraftRepository` against the Recipely backend draft
+ * Implements `RecipeDraftRepositoryInterface` against the Recipely backend draft
  * endpoints (mounted under `/recipes`). All bodies are sent as JSON; the
  * locale rides the `Accept-Language` header attached by `HttpClient`.
  */
-export class RecipeDraftRepository implements IRecipeDraftRepository {
+export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
   async listDrafts(
     page: number,
     pageSize: number = DRAFTS_PAGE_SIZE,
   ): Promise<Result<PagedDrafts, Failure>> {
-    const result = await this.http.request<DraftsListDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.drafts,
-      params: { page, pageSize },
+    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, {
+      params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {
       return result;
@@ -46,10 +46,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
    * mapped to `ok(null)` so callers never treat "no draft" as an error.
    */
   async getLatestDraft(): Promise<Result<RecipeDraft | null, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.draftsLatest,
-    });
+    const result = await this.http.get<RecipeDraftDto>(ApiRoutes.recipes.draftsLatest);
     if (!result.ok) {
       if (result.failure instanceof NotFoundFailure) {
         return ok(null);
@@ -60,10 +57,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   }
 
   async getDraft(id: string): Promise<Result<RecipeDraft, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'GET',
-      url: ApiRoutes.recipes.draft(id),
-    });
+    const result = await this.http.get<RecipeDraftDto>(ApiRoutes.recipes.draft(id));
     if (!result.ok) {
       return result;
     }
@@ -71,15 +65,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   }
 
   async upsertDraft(input: UpsertDraftInput): Promise<Result<RecipeDraft, Failure>> {
-    const result = await this.http.request<RecipeDraftDto>({
-      method: 'PUT',
-      url: ApiRoutes.recipes.draft(input.id),
-      data: {
-        prompt: input.prompt,
-        snapshot: input.snapshot,
-        chatHistory: input.chatHistory,
-      },
-    });
+    const result = await this.http.put<RecipeDraftDto>(ApiRoutes.recipes.draft(input.id), toUpsertDraftRequest(input));
     if (!result.ok) {
       return result;
     }
@@ -87,10 +73,7 @@ export class RecipeDraftRepository implements IRecipeDraftRepository {
   }
 
   async deleteDraft(id: string): Promise<Result<void, Failure>> {
-    const result = await this.http.request<unknown>({
-      method: 'DELETE',
-      url: ApiRoutes.recipes.draft(id),
-    });
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.draft(id));
     if (!result.ok) {
       return result;
     }

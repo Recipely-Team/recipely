@@ -1,4 +1,5 @@
-import { Platform, Pressable, StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -43,7 +44,7 @@ export const WebRecipeCard = ({
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
   const hoverProps =
-    Platform.OS === 'web'
+    isWeb()
       ? {
           onMouseEnter: () => {
             scale.value = withTiming(HOVER_LIFT, { duration: HOVER_DURATION });

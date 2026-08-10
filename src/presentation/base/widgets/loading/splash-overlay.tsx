@@ -1,12 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Animated,
-  Easing,
-  Platform,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -37,7 +31,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
       toValue: ValueConstants.zero,
       duration: FADE_MS,
       easing: Easing.out(Easing.quad),
-      useNativeDriver: Platform.OS !== 'web',
+      useNativeDriver: !isWeb(),
     }).start(({ finished }) => {
       if (finished) setVisible(false);
     });
@@ -59,7 +53,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
         style={StyleSheet.absoluteFill}
         onPress={dismiss}
         accessibilityRole="button"
-        accessibilityLabel="Dismiss splash"
+        accessibilityLabel={t().splash.dismiss}
       >
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}

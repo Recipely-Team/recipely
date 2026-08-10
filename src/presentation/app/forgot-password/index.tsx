@@ -14,6 +14,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
@@ -21,7 +22,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { authStore } = useStores();
   const requestPasswordReset = authStore((s) => s.requestPasswordReset);

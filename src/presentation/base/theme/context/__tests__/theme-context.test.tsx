@@ -6,7 +6,7 @@
  * an undefined lookup and blank the screen).
  */
 import { act, create } from 'react-test-renderer';
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';

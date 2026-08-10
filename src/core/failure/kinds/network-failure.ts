@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when a network request cannot be completed due to
@@ -9,7 +10,7 @@ import { Failure } from '@core/failure/failure';
  * by design.
  */
 export class NetworkFailure extends Failure {
-  readonly code = 'network';
+  readonly code = FailureCode.Network;
   constructor(readonly message: string = 'Network error') {
     super();
   }

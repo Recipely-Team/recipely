@@ -1,6 +1,6 @@
 import type { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Difficulty } from '@domain/recipes/difficulty';
@@ -35,6 +35,10 @@ export interface UseRecipeListResult {
    * that is pulling them, the second re-fetches what the user already sees.
    */
   isReloadingResults: boolean;
+  /** True while the NEXT page is being appended below the current rows. */
+  isLoadingMore: boolean;
+  /** Called when the feed nears its end; appends the next page if there is one. */
+  onEndReached: () => void;
   activeFilterCount: number;
   gridColumns: number;
   sortBy: SortKey;

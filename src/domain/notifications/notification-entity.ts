@@ -1,36 +1,26 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { NotificationEntityProps } from '@domain/notifications/notification-entity-props';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import { ValueConstants } from '@core/constants';
 
-export interface NotificationProps {
-  id: string;
-  type: string;
-  senderId: string | null;
-  senderDisplayName: string | null;
-  senderPhotoUrl: string | null;
-  recipeId: string | null;
-  recipeTitle: string | null;
-  commentId: string | null;
-  message: string | null;
-  read: boolean;
-  createdAt: Date;
-}
 
 /**
  * Domain entity representing a backend notification (comment, like, follow,
  * AI completion, etc.). Validates that `id` is non-empty before construction.
  */
-export class NotificationEntity extends BaseEntity<NotificationProps> {
-  private constructor(props: NotificationProps) {
+export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
+  private constructor(props: NotificationEntityProps) {
     super(props);
   }
 
-  static create(props: NotificationProps): Result<NotificationEntity, ValidationFailure> {
+  static create(props: NotificationEntityProps): Result<NotificationEntity, ValidationFailure> {
     if (props.id.trim().length === ValueConstants.zero) {
-      return fail(new ValidationFailure('Notification id must be non-empty', 'id'));
+      return fail(new ValidationFailure(DiagnosticMessage.entity.notification.idRequired, 'id'));
     }
     return ok(new NotificationEntity(props));
   }
@@ -86,11 +76,16 @@ export class NotificationEntity extends BaseEntity<NotificationProps> {
    * route yet — so it has no destination and this returns `null`.
    */
   get target(): NotificationTarget | null {
+    // Checked first because it is the one target that carries no `recipeId`:
+    // the import has not produced a recipe yet, only a draft to finish.
+    if (this.props.draftId !== null) {
+      return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
+    }
     if (this.props.commentId !== null && this.props.recipeId !== null) {
-      return { kind: 'comment', recipeId: this.props.recipeId, commentId: this.props.commentId };
+      return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }
     if (this.props.recipeId !== null) {
-      return { kind: 'recipe', recipeId: this.props.recipeId };
+      return { kind: NotificationTargetKind.Recipe, recipeId: this.props.recipeId };
     }
     return null;
   }

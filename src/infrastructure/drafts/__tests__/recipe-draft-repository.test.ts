@@ -5,6 +5,7 @@ import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 const draftDto: RecipeDraftDto = {
   id: 'd1e2f3a4-5678-4901-bcde-f01234567890',
@@ -34,12 +35,10 @@ const makeHttp = (
   result: Result<unknown, unknown>,
 ): { http: HttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const stub = {
-    request: jest.fn((config: RequestCall) => {
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(result);
-    }),
-  } as unknown as HttpClient;
+    }));
   return { http: stub, calls };
 };
 

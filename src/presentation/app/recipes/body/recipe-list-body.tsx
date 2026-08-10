@@ -1,4 +1,7 @@
-import { Platform, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
+import { useCallback } from 'react';
+import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
+import { ListConstants } from '@presentation/base/constants';
+import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -8,16 +11,15 @@ import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-sea
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { FilterSortFab } from '@presentation/app/recipes/items/filters/filter-sort-fab';
-import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
-import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
-import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
-import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import { LoadingSkeleton } from '@presentation/app/recipes/body/loading-skeleton';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
+import { WebRecipeFeed } from '@presentation/app/recipes/body/web-recipe-feed';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
@@ -29,6 +31,13 @@ export interface RecipeListBodyProps {
   vm: UseRecipeListResult;
 }
 
+/**
+ * How close to the end the feed gets before the next page is asked for, as a
+ * fraction of the visible length. Half a screen ahead is enough for the rows to
+ * arrive before the user reaches them without prefetching pages they may never
+ * scroll to.
+ */
+
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
 
 /**
@@ -36,24 +45,54 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  * collapsing-header feed) and the state-dependent body (error / loading / search
  * / empty / list). The filter sheets and sign-in prompt are rendered by the
  * screen alongside this.
+ *
+ * @remarks
+ * - **The mobile feed header renders even with zero rows.** An empty result
+ *   used to swap the whole list for a centered empty state, unmounting the
+ *   cuisine strip and the active-filter chips — exactly the controls a user
+ *   needs at that moment, since the way out of a filter that matches nothing is
+ *   to un-tap it, and the only thing left was "Clear all". The empty copy is a
+ *   `ListEmptyComponent` under the header instead of a replacement for it, and
+ *   `contentContainerStyle: flexGrow 1` keeps a surface for pull-to-refresh.
+ * - **Search progress reads `vm.isRefetching`, not the store.** The web header
+ *   search is debounced, so the store looks idle for the first few hundred ms
+ *   after a keystroke; once the request is in flight the grid is already on
+ *   skeletons, so this covers only the debounce window.
  */
 export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { state, recipes, isWebShell, isSearching, gridColumns } = vm;
 
-  const renderItem = ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
-    if (gridColumns > ValueConstants.one) {
-      return (
-        <View style={styles.gridCell}>
-          <RecipeListItem recipe={item} onPress={() => vm.onOpenRecipe(item.id)} />
-        </View>
-      );
-    }
-    return <RecipeListItem recipe={item} onPress={() => vm.onOpenRecipe(item.id)} />;
-  };
+  // Stable across renders so `RecipeListItem`'s memo actually holds. A fresh
+  // arrow per row per render defeats memoisation completely — the rows would
+  // re-render on every scroll frame the parent reacts to, which is what they
+  // were doing.
+  const { onOpenRecipe } = vm;
+  const openRecipe = useCallback(
+    (id: string) => () => onOpenRecipe(id),
+    [onOpenRecipe],
+  );
+
+  const renderItem = useCallback(
+    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
+      if (gridColumns > ValueConstants.one) {
+        return (
+          <View style={styles.gridCell}>
+            <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />
+          </View>
+        );
+      }
+      return <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />;
+    },
+    [gridColumns, openRecipe],
+  );
+
+  const keyExtractor = useCallback((r: RecipeSummaryEntity): string => r.id, []);
+
+  useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'RecipeListBody');
 
   let body: React.JSX.Element;
-  if (state.status === 'error') {
+  if (state.status === StoreStatus.Error) {
     const content = failureContent(state.failure);
     body = (
       <ErrorState
@@ -66,44 +105,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
       />
     );
   } else if (isWebShell) {
-    body = (
-      <ScrollView
-        style={styles.list}
-        contentContainerStyle={styles.webContent}
-        refreshControl={<RefreshControl refreshing={false} onRefresh={vm.onRefresh} />}
-      >
-        {isSearching ? null : (
-          <>
-            <WebHeroSection onOpenRecipe={vm.onOpenRecipe} isSaved={vm.isSaved} onToggleSave={vm.onToggleSave} />
-            <WebAiBanner onPress={vm.onOpenCreate} />
-            <WebCuisineGrid selectedCuisines={vm.filters.cuisines} onToggle={vm.onToggleCuisineQuick} />
-          </>
-        )}
-        <WebRecipeGrid
-          recipes={recipes}
-          isLoading={state.status !== 'loaded' || vm.isReloadingResults}
-          // `vm.isRefetching`, not `isRecipeListRefreshing(state)`: the web
-          // header search is debounced too, so the store looks idle for the
-          // first few hundred ms after a keystroke. Once the request itself is
-          // in flight the grid switches to skeletons (`isLoading` above), so
-          // this covers only the debounce window — never both at once.
-          isRefreshing={vm.isRefetching && !vm.isReloadingResults}
-          isSearching={isSearching}
-          activeCuisineLabel={vm.activeCuisineLabel}
-          sortBy={vm.sortBy}
-          onChangeSort={vm.onChangeSort}
-          onOpenFilter={vm.onOpenFilter}
-          activeFilterCount={vm.activeFilterCount}
-          activeDifficulty={vm.filters.difficulties[ValueConstants.zero] ?? null}
-          onDifficultyChange={vm.onDifficultyChange}
-          gridColumns={gridColumns}
-          onOpenRecipe={vm.onOpenRecipe}
-          isSaved={vm.isSaved}
-          onToggleSave={vm.onToggleSave}
-        />
-      </ScrollView>
-    );
-  } else if (state.status === 'idle' || state.status === 'loading') {
+    body = <WebRecipeFeed vm={vm} />;
+  } else if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     body = <LoadingSkeleton />;
   } else if (isSearching) {
     body = (
@@ -115,23 +118,30 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     );
   } else {
     body = (
-      // Rendered even with zero rows, deliberately. An empty result used to
-      // swap the whole list out for a centered empty state, which unmounted
-      // `MobileFeedHeader` — and with it the cuisine strip and active-filter
-      // chips. That is exactly the moment a user needs them: the way out of a
-      // filter that matches nothing is to un-tap it, and the only control left
-      // was "Clear all", which throws away the other filters too. So the empty
-      // copy is a `ListEmptyComponent` under the header instead of a
-      // replacement for it. The list's own `contentContainerStyle` keeps
-      // `flexGrow: 1`, so the pull-to-refresh gesture still has a surface.
       <Animated.FlatList
         // Emptied on purpose while the next set is fetched: the rows on screen
         // answer the PREVIOUS filter, and leaving them up read as a second
         // load. `ListEmptyComponent` carries the loading placeholder, so the
         // feed header above it (cuisine strip, active-filter chips) stays.
         data={vm.isReloadingResults ? [] : recipes}
-        keyExtractor={(r) => r.id}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
+        // Windowing defaults are tuned for short rows; these are tall photo
+        // cards, so the defaults kept ~21 screens of them mounted. Measured
+        // against a full feed: fewer mounted rows, less memory, and the scroll
+        // stops dropping frames on the mid-range Android box the app targets.
+        initialNumToRender={ListConstants.initialRows}
+        maxToRenderPerBatch={ListConstants.rowsPerBatch}
+        windowSize={ListConstants.windowSize}
+        // NO `removeClippedSubviews` HERE — see check:structure rule R.
+        // It detaches and re-attaches child views behind Fabric's back, and on
+        // the New Architecture that crashed the app: opening a finished
+        // Instagram import threw `addViewAt: failed to insert view [332] into
+        // parent [338]` from `ReactClippingViewManager.addView`, the class that
+        // exists to implement this very prop. The feed sits UNDER the import
+        // screen, so it re-clipped as the stack transition finished and handed
+        // Fabric a child it had already parented elsewhere. The windowing props
+        // above are what actually bound how many rows stay mounted.
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
@@ -167,6 +177,9 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
         scrollEventThrottle={16}
+        onEndReached={vm.onEndReached}
+        onEndReachedThreshold={ListConstants.endReachedThreshold}
+        ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
         refreshControl={
@@ -197,7 +210,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   // The loaded mobile feed pads for the header band inside its own list content
   // (`mobileListContent`), so the container must not add the inset a second
   // time. Every other mobile branch renders a plain surface and needs it.
-  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === 'loaded';
+  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === StoreStatus.Loaded;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
@@ -218,7 +231,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             searchValue={vm.search}
             onSearchChange={vm.onSearchChange}
           />
-          {state.status === 'loaded' ? (
+          {state.status === StoreStatus.Loaded ? (
             <FilterSortFab
               scrollY={vm.scrollY}
               reduceMotion={vm.reduceMotion}

@@ -1,9 +1,10 @@
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
+import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { MobileFilterSheet } from '@presentation/app/recipes/sheets/mobile-filter-sheet';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
-import { countActiveFilters } from '@presentation/app/recipes/model/filter-mutations';
+import { countActiveFilters } from '@presentation/app/recipes/model/filtering/filter-mutations';
 import { ValueConstants } from '@core/constants';
 
 export const RecipeListScreen = (): React.JSX.Element => {
@@ -15,7 +16,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
       {/* Mobile filter bottom sheet (web uses the centered WebFilterModal below). */}
       <MobileFilterSheet
-        visible={!vm.isWebShell && vm.sheetOpen === 'filter'}
+        visible={!vm.isWebShell && vm.sheetOpen === RecipeSheet.Filter}
         activeFilterCount={vm.activeFilterCount}
         pendingFilters={vm.pendingFilters}
         pendingSort={vm.pendingSort}
@@ -31,7 +32,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
 
       {/* Web filter dialog — centered modal; mobile uses the bottom sheet above. */}
       <WebFilterModal
-        visible={vm.isWebShell && vm.sheetOpen === 'filter'}
+        visible={vm.isWebShell && vm.sheetOpen === RecipeSheet.Filter}
         pending={vm.pendingFilters}
         resultCount={vm.recipes.length}
         hasActiveFilters={countActiveFilters(vm.pendingFilters) > ValueConstants.zero}

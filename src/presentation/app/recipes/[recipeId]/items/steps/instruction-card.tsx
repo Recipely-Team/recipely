@@ -55,7 +55,7 @@ export const InstructionCard = ({
             maxFontSizeMultiplier={maxFontScales.badge}
             style={[styles.numberText, { color: colors.primaryText }]}
           >
-            {index + 1}
+            {index + ValueConstants.one}
           </ThemedText>
         )}
       </Pressable>

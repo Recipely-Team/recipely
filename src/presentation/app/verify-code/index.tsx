@@ -1,4 +1,6 @@
 import { useEffect } from 'react';
+import { isString } from '@core/guards/type-guards';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -15,6 +17,7 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 
@@ -22,17 +25,17 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
-  const email = typeof params.email === 'string' ? params.email : CharConstants.empty;
-  const initialExpiresAt = typeof params.expiresAt === 'string' ? params.expiresAt : CharConstants.empty;
+  const email = isString(params.email) ? params.email : CharConstants.empty;
+  const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
 
   useEffect(() => {
-    if (state.status === 'authenticated') {
+    if (state.status === StoreStatus.Authenticated) {
     // The code has been accepted, so the whole sign-up detour behind this
       // screen is spent. Landing on the feed with it still stacked let one back
       // gesture return to a code entry that can no longer be used.

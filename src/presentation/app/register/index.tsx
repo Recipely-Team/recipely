@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -14,6 +15,7 @@ import { spacing, radii, iconSizes, controlSizes, decorSizes, layoutSizes, borde
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
@@ -21,13 +23,13 @@ export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
 
   useEffect(() => {
-    if (state.status === 'authenticated') {
+    if (state.status === StoreStatus.Authenticated) {
     // Registration is a one-way door: the account exists now, so the form
       // that created it — and the login screen it was reached from — must not
       // stay behind a back gesture.

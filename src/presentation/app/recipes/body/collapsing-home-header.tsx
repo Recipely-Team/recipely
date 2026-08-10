@@ -1,4 +1,5 @@
 import { StyleSheet, View, Pressable } from 'react-native';
+import { UNREAD_BADGE_MAX, UNREAD_BADGE_OVERFLOW_LABEL } from '@presentation/app/recipes/model/unread-badge';
 import Animated, {
   interpolate,
   Extrapolation,
@@ -14,6 +15,9 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+
+/** The title is half-way shrunk at the midpoint of the scroll, so the motion reads as continuous. */
+const TITLE_SHRINK_MIDPOINT = 0.5;
 
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
@@ -58,7 +62,7 @@ export const CollapsingHomeHeader = ({
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
-  const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
+  const badgeText = unreadCount > UNREAD_BADGE_MAX ? UNREAD_BADGE_OVERFLOW_LABEL : String(unreadCount);
 
   const bandStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.value }],
@@ -87,7 +91,7 @@ export const CollapsingHomeHeader = ({
       ? 1
       : interpolate(
           scrollY.value,
-          [layoutSizes.homeTitleShrink * 0.5, layoutSizes.homeTitleShrink],
+          [layoutSizes.homeTitleShrink * TITLE_SHRINK_MIDPOINT, layoutSizes.homeTitleShrink],
           [1, 0.55],
           Extrapolation.CLAMP,
         ),

@@ -1,52 +1,94 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { ChatRole } from '@domain/drafts/chat-role';
+import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { ImportTrail } from '@presentation/base/errors/import-trail';
 import {
   failureKeyMessage,
   failureToastMessage,
 } from '@presentation/base/errors/failure-lookups';
 import { ValidationFailure } from '@core/failure';
+import { FailureCode } from '@core/failure/failure-code';
 import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draft-autosave';
-import {
-  editableHasContent,
-  editableToSnapshot,
-  emptyEditable,
-  recipeToEditable,
-  snapshotToEditable,
-} from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
+import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
+import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
+import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
 import type { ChatMessage } from '@domain/drafts/chat-message';
-import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
-import type { UseRecipeGenerationArgs } from '@presentation/app/create-recipe/model/generation/use-recipe-generation-args';
+import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
+import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
+
+import type { Dispatch, SetStateAction } from 'react';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+
+interface UseRecipeGenerationArgs {
+  recipe: EditableRecipe;
+  setRecipe: Dispatch<SetStateAction<EditableRecipe>>;
+  activeDraftId: string;
+  draftId: string | undefined;
+}
 
 const GEN_STEP_COUNT = 5;
 const GEN_STEP_INTERVAL_MS = 620;
 
 /**
- * Drives the AI phase flow of the create screen: prompt → generating → preview,
- * the generate/import/refine calls, the generating-checklist ticker, draft
- * resume + autosave, and the exit-with-unsaved-work flow.
- */
-export const useRecipeGeneration = ({
+ * Owns the AI create flow: prompt → generate → preview → refine, draft resume +
+ * autosave, and the exit-with-unsaved-work flow.
+ *
+ * @remarks
+ * - **Where a failure can be shown decides how it is shown.** A generate
+ *   failure lands back on the prompt phase, which renders no chat transcript,
+ *   so it is surfaced as a toast AND kept inline under the input.
+ * - **The backend names its errors** (`failure.messageKey`), so a refused
+ *   prompt (rewording IS the fix) no longer reads the same as an unusable AI
+ *   response (the prompt was fine, generate again) even though both arrive as
+ *   `unprocessable` → `ValidationFailure`. `aiPromptFailed` survives only for a
+ *   4xx with no key — an older backend, or a server key this build predates.
+ * - **Resuming is its own phase.** Opening `?draftId=` has to fetch before it
+ *   can show anything, and the phase it waits in is what the user sees — so it
+ *   waits in `Resuming` (a skeleton of the editor), never in `Prompt`.
+ * - **A dead pointer is its own answer.** Publishing a draft DELETES it, while
+ *   the import job and its completion notification go on naming that id for
+ *   good — so `?draftId=` routinely points at a draft that no longer exists.
+ *   Treating that 404 like any other read failure dropped the user on a blank
+ *   AI prompt, which says "your draft failed to open" about a draft they had
+ *   already turned into a recipe. Nothing here can be retried, so it says so
+ *   and leaves them among the drafts that DO exist.
+ * - **A refine outlives the screen**, so publishing or exiting to a draft while
+ *   one is in flight must not pop its "Updated!" over whatever comes next.
+ * - **Drafts round-trip through the same mapper the comparison uses**, or a
+ *   draft that was only opened and closed would compare as changed by whatever
+ *   the mapping normalises.
+ */export const useRecipeGeneration = ({
   recipe,
   setRecipe,
   activeDraftId,
   draftId,
-  importUrl,
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
   const { createdRecipesStore, draftsStore } = useStores();
   const refineState = createdRecipesStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  const [phase, setPhase] = useState<PhaseType>('prompt');
-  const [importing, setImporting] = useState(false);
+  // Opening a draft starts in `Resuming`, NOT `Prompt`: the draft is fetched
+  // asynchronously, and defaulting to the prompt phase parked the user on the
+  // AI-generate screen for the length of that request — tapping a draft looked
+  // like it had opened the wrong screen, or like nothing had happened at all.
+  const [phase, setPhase] = useState<PhaseType>(
+    draftId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
+  );
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
@@ -54,8 +96,6 @@ export const useRecipeGeneration = ({
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
-  // A refine outlives the screen: publishing (or exiting to a draft) while one
-  // is in flight must not pop its "Updated!" over whatever comes next.
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
@@ -65,31 +105,71 @@ export const useRecipeGeneration = ({
    * decide — see {@link onClose}.
    */
   const openedAs = useRef<string | null>(null);
+  /**
+   * The snapshot this screen adopted, kept whole. The editor has no field for
+   * an import's `category`, `tags`, `tips`, `nutrition` or cover, and autosave
+   * fires on open — so without carrying the original forward, merely LOOKING at
+   * an imported draft overwrote everything the AI had extracted.
+   */
+  const carried = useRef<DraftRecipeSnapshot | undefined>(undefined);
 
-  const refining = refineState.status === 'refining';
+  const refining = refineState.status === StoreStatus.Refining;
 
   // Resume a draft passed via ?draftId once on mount.
   useEffect(() => {
     if (draftId === undefined) return;
     let cancelled = false;
+    // Also set here, not just in the initial state: the resume card navigates
+    // with `router.replace`, which changes the param on an already-mounted
+    // screen sitting in `Prompt`.
+    setPhase(PhaseType.Resuming);
+    FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
-      const loaded = await draftsStore.getState().getDraft(draftId);
-      if (cancelled || loaded === null) return;
+      FailureReporter.trail(ImportTrail.draftFetchStarted);
+      const result = await draftsStore.getState().getDraft(draftId);
+      if (cancelled) return;
+      // A draft that cannot be read must not leave the screen shimmering
+      // forever — fall back to the prompt phase and say WHY. The failure's own
+      // copy distinguishes a deleted draft from an expired session from a dead
+      // connection; "couldn't open that draft" said none of them, and reporting
+      // saw nothing at all.
+      if (!result.ok) {
+        FailureReporter.trail(ImportTrail.draftFetchFailed);
+        // Gone is not unreadable — see the "dead pointer" remark above.
+        if (result.failure.code === FailureCode.NotFound) {
+          showDangerToast(t().createRecipe.draftGone);
+          router.replace({
+            pathname: RoutePaths.myRecipes,
+            params: { tab: RoutePaths.myRecipesDraftsTab },
+          });
+          return;
+        }
+        showErrorToast(result.failure);
+        FailureReporter.report(result.failure, 'CreateRecipe.resumeDraft');
+        // Drop the param as well as the phase. `activeDraftId` is `draftId ??
+        // newDraftId`, so staying on it would point the autosave at the draft
+        // that FAILED to load — an offline read leaves that draft intact on the
+        // server, and the next thing typed here would overwrite it.
+        router.replace(RoutePaths.createRecipe);
+        setPhase(PhaseType.Prompt);
+        return;
+      }
+      FailureReporter.trail(ImportTrail.draftFetchOk);
+      const loaded = result.value;
       const resumed = snapshotToEditable(loaded.snapshot);
+      carried.current = loaded.snapshot;
       setRecipe(resumed);
-      // Round-tripped through the same mapper the comparison uses, so a draft
-      // that was only opened and closed compares equal rather than differing
-      // by whatever the mapping normalises.
-      openedAs.current = JSON.stringify(editableToSnapshot(resumed));
+      openedAs.current = JSON.stringify(editableToSnapshot(resumed, loaded.snapshot));
       setChatHistory([...loaded.chatHistory]);
       originalPrompt.current = loaded.prompt;
       setPrompt(loaded.prompt);
-      setPhase('preview');
+      setPhase(PhaseType.Preview);
+      FailureReporter.trail(ImportTrail.editorReady);
     })();
     return () => {
       cancelled = true;
     };
-  }, [draftId, draftsStore, setRecipe]);
+  }, [draftId, draftsStore, setRecipe, router]);
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {
@@ -98,16 +178,17 @@ export const useRecipeGeneration = ({
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
-    if (phase !== 'generating') return;
+    if (phase !== PhaseType.Generating) return;
     setGenStep(ValueConstants.zero);
     const id = setInterval(() => {
-      setGenStep((s) => Math.min(GEN_STEP_COUNT - 1, s + 1));
+      setGenStep((s) => Math.min(GEN_STEP_COUNT - ValueConstants.one, s + ValueConstants.one));
     }, GEN_STEP_INTERVAL_MS);
     return () => clearInterval(id);
   }, [phase]);
 
   const cancelAutosave = useDraftAutosave({
-    enabled: phase === 'preview',
+    carried: carried.current,
+    enabled: phase === PhaseType.Preview,
     draftId: activeDraftId,
     prompt: originalPrompt.current,
     recipe,
@@ -121,36 +202,20 @@ export const useRecipeGeneration = ({
       if (trimmed.length === ValueConstants.zero) return;
       originalPrompt.current = trimmed;
       setGenerateError(null);
-      setPhase('generating');
+      setPhase(PhaseType.Generating);
       await createdRecipesStore.getState().generateRecipe(trimmed);
       const state = createdRecipesStore.getState().generateState;
-      if (state.status === 'success') {
+      if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
         setChatHistory([
-          { role: 'user', content: trimmed },
-          { role: 'assistant', content: t().createRecipe.aiFirstReply },
+          { role: ChatRole.User, content: trimmed },
+          { role: ChatRole.Assistant, content: t().createRecipe.aiFirstReply },
         ]);
         createdRecipesStore.getState().resetGenerateState();
-        setPhase('preview');
+        setPhase(PhaseType.Preview);
         return;
       }
-      // WHY: the failure lands back on the prompt phase, which does NOT render the
-      // chat transcript — so it must be surfaced as a toast AND kept inline under
-      // the input, or the user gets no feedback at all.
-      //
-      // The backend now names its errors (`failure.messageKey`), so the blanket
-      // "rephrase your prompt" copy of PR #157 is gone: a refused prompt
-      // (`errors.ai.prompt_rejected` — rewording IS the fix) no longer reads the
-      // same as an unusable AI response (`errors.ai.invalid_response` — the prompt
-      // was fine, just generate again), even though both arrive as
-      // `unprocessable` → ValidationFailure. `showErrorToast` derives message AND
-      // severity from that key.
-      //
-      // `aiPromptFailed` survives as the fallback for the ONE case left: a 4xx we
-      // have no key for — an older backend, or a new server key this build has no
-      // copy for. Everything else is an infrastructure failure and reads from its
-      // class, exactly as before.
-      if (state.status === 'error') {
+      if (state.status === StoreStatus.Error) {
         const { failure } = state;
         const unnamed4xx =
           failure instanceof ValidationFailure && failureKeyMessage(failure) === undefined;
@@ -162,51 +227,10 @@ export const useRecipeGeneration = ({
         setGenerateError(message);
       }
       createdRecipesStore.getState().resetGenerateState();
-      setPhase('prompt');
+      setPhase(PhaseType.Prompt);
     },
     [createdRecipesStore, setRecipe],
   );
-
-  const runImport = useCallback(
-    async (url: string): Promise<void> => {
-      const trimmed = url.trim();
-      if (trimmed.length === ValueConstants.zero) return;
-      setImporting(true);
-      setPhase('generating');
-      await createdRecipesStore.getState().importInstagram(trimmed);
-      const state = createdRecipesStore.getState().importState;
-      if (state.status === 'success') {
-        setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
-        setChatHistory([{ role: 'assistant', content: t().createRecipe.importFirstReply }]);
-        createdRecipesStore.getState().resetImportState();
-        setImporting(false);
-        setPhase('preview');
-        return;
-      }
-      // The import failure DOES have a transcript to land in (the preview chat),
-      // so the assistant bubble says the useful thing whenever the backend named
-      // the error — "that's not an Instagram link", "no recipe in that post",
-      // "the video is too long" — instead of one flat "couldn't generate".
-      // `aiError` remains the fallback for an unnamed failure.
-      if (state.status === 'error') showErrorToast(state.failure);
-      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
-      setChatHistory([
-        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
-      ]);
-      createdRecipesStore.getState().resetImportState();
-      setImporting(false);
-      setPhase('prompt');
-    },
-    [createdRecipesStore, setRecipe],
-  );
-
-  // Kick off an Instagram import once when arriving via a share intent.
-  const importHandledRef = useRef(false);
-  useEffect(() => {
-    if (importUrl === undefined || importHandledRef.current) return;
-    importHandledRef.current = true;
-    void runImport(importUrl);
-  }, [importUrl, runImport]);
 
   const handleRefine = useCallback(
     async (instruction: string): Promise<void> => {
@@ -214,12 +238,12 @@ export const useRecipeGeneration = ({
       if (trimmed.length === ValueConstants.zero || refining) return;
       setChatInput(CharConstants.empty);
       setChatExpanded(true);
-      setChatHistory((h) => [...h, { role: 'user', content: trimmed }]);
+      setChatHistory((h) => [...h, { role: ChatRole.User, content: trimmed }]);
       const refined = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
       if (refined !== null) {
         setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
         const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
-        setChatHistory((h) => [...h, { role: 'assistant', content: reply }]);
+        setChatHistory((h) => [...h, { role: ChatRole.Assistant, content: reply }]);
         // The answer landed with the assistant closed: the recipe has just
         // rewritten itself under the user, and the bubble explaining it is
         // behind a panel they cannot see. Say it out loud instead.
@@ -232,11 +256,11 @@ export const useRecipeGeneration = ({
       // as generate, so it needs the same disambiguation: a refused instruction
       // must not read like an unusable AI response.
       const state = createdRecipesStore.getState().refineState;
-      if (state.status === 'error') showErrorToast(state.failure);
-      const reason = state.status === 'error' ? failureKeyMessage(state.failure) : undefined;
+      if (state.status === StoreStatus.Error) showErrorToast(state.failure);
+      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
       setChatHistory((h) => [
         ...h,
-        { role: 'assistant', content: reason ?? t().createRecipe.aiError, error: true },
+        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
       ]);
       createdRecipesStore.getState().resetRefineState();
     },
@@ -255,11 +279,15 @@ export const useRecipeGeneration = ({
     setGenerateError(null);
   }, []);
 
+  const onImportFromInstagram = useCallback((): void => {
+    router.push(RoutePaths.importRecipe);
+  }, [router]);
+
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
     originalPrompt.current = CharConstants.empty;
-    setPhase('preview');
+    setPhase(PhaseType.Preview);
   }, [setRecipe]);
 
   const onResumeDraft = useCallback((): void => {
@@ -275,24 +303,24 @@ export const useRecipeGeneration = ({
   const onClose = useCallback((): void => {
     const unchanged =
       openedAs.current !== null &&
-      openedAs.current === JSON.stringify(editableToSnapshot(recipe));
-    if (phase === 'preview' && editableHasContent(recipe) && !unchanged) {
+      openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
+    if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
       return;
     }
-    router.back();
-  }, [phase, recipe, router]);
+    goBackOrHome();
+  }, [phase, recipe, goBackOrHome]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({
       id: activeDraftId,
       prompt: originalPrompt.current,
-      snapshot: editableToSnapshot(recipe),
+      snapshot: editableToSnapshot(recipe, carried.current),
       chatHistory,
     });
     setExitOpen(false);
-    router.back();
-  }, [upsertDraft, activeDraftId, recipe, chatHistory, router]);
+    goBackOrHome();
+  }, [upsertDraft, activeDraftId, recipe, chatHistory, goBackOrHome]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
     // Stop autosaving BEFORE the delete, not after: the timer armed by the
@@ -304,12 +332,11 @@ export const useRecipeGeneration = ({
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
-    router.back();
-  }, [cancelAutosave, draftsStore, activeDraftId, router]);
+    goBackOrHome();
+  }, [cancelAutosave, draftsStore, activeDraftId, goBackOrHome]);
 
   return {
     phase,
-    importing,
     genStep,
     refining,
     prompt,
@@ -318,6 +345,7 @@ export const useRecipeGeneration = ({
     onAppendChip,
     onGenerate: () => void runGenerate(prompt),
     onStartBlank,
+    onImportFromInstagram,
     onClose,
     latestDraft,
     onResumeDraft,

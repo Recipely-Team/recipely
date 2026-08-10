@@ -154,7 +154,7 @@ The heart of the application. Pure TypeScript, no framework dependencies.
   methods returning `Result`.
 - **Value Objects** — e.g. `Email` (self-validating class with a factory `create()` returning `Result`).
 - **Enums / Literals** — typed string unions in their own files.
-- **Repository Interfaces** — `IRecipeRepository`, `IAuthRepository`, `ICommentRepository` define contracts;
+- **Repository Interfaces** — `RecipeRepositoryInterface`, `AuthRepositoryInterface`, `CommentRepositoryInterface` define contracts;
   implementations live in `src/infrastructure/`.
 
 ### `src/application/`
@@ -180,6 +180,10 @@ Implements domain interfaces with concrete I/O.
   `RequestMapper<TInput, TDto>` (returns the DTO directly). These are **type aliases, not base classes** —
   mappers never become classes, and infallible field-copy transformers that fit neither contract stay
   plain functions.
+- **Paging** — list endpoints return the wire envelope mapped to a page read model
+  (`RecipePage`: `items`, `total`, `page`, `hasMore`), not a bare array. Dropping the
+  envelope is what let the app request page 1 forever. The page comes from the caller;
+  the query is built by a `RequestMapper`, not by the repository method.
 - **Network** — `HttpClient` wraps Axios with typed error mapping to `Failure` subclasses.
 - **Storage** — `SecureTokenStorage`; platform-specific `kv-store.ts` / `kv-store.web.ts`.
 - **Constants** — `src/infrastructure/constants/api.ts` (URLs, limits) and `storage.ts` (storage keys).
@@ -248,28 +252,32 @@ agent must flag any violation as a blocking issue.
 
 ### 1. One Declaration Per File
 
-Each file contains exactly **one** top-level declaration: one class, one interface, one type alias, one
-React component, or one enum. The only exceptions are:
+Each file publishes exactly **one** top-level declaration: one class, one interface, one type alias,
+one React component, or one enum. The rule is about a file's public surface, so the exceptions are:
 
 - Barrel `index.ts` files that only re-export.
 - A `ComponentNameProps` interface that lives in the same file as its component (it must be named
   exactly `<ComponentName>Props` — see Standard 7).
-- A simple helper type that is only meaningful alongside the **class** in the same file (this exception
-  is for classes only — it does not cover hooks, stores, or plain functions).
+- **Any non-exported type or interface.** A parameter shape only its own class or hook ever names is
+  a private detail of that declaration, not a second thing the file offers. `use-x-args.ts`,
+  `x-store-deps.ts` and `x-input.ts` files spread one unit of meaning over two or three files and
+  made nothing easier to find — the reader still had to open the consumer to learn what the type was
+  for. Declare it unexported, directly above its consumer. The moment a second file imports it, it is
+  public and earns its own file again.
 - The merged-enum idiom: a `const X` object plus a same-named `type X` union (and `X_VALUES` arrays),
   or a union type derived via `typeof` from a const in the same file. One concept = one file.
 - Constants-only files (`src/infrastructure/constants/api.ts`, `theme/tokens/spacing.ts`, …) and pure-function
-  collections with **no** type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
+  collections with **no** exported type/interface in the file (mappers, `i18n.ts`, `timer-controls.ts`).
 
 Frequent violations to watch for — all of these must be split:
 
-- A hook's args/result `interface` in the same file as the hook
-  (`use-x.ts` keeps the hook; the type moves to its own file — see Placement below).
-- A Zustand store type next to its factory: `x-store.ts` holds only `type XStore`;
-  the factory lives in `configure-x-store.ts`.
+- A second EXPORTED type in a file that already exports a class, hook or component.
 - A provider component and its `use*` hook in one `*-context.tsx` file — the hook gets its own
   `use-x.ts` file (Standard 8).
 - Logic helpers embedded in a component file — move them to the page's `model/` folder.
+
+A Zustand store is one file: `x-store.ts` exports `configureXStore` and keeps its deps interface
+unexported above it. The state type stays in `x-store-state.ts`, because screens import it.
 
 **Placement of extracted declarations:** inside a page folder, pure types go to that page's `model/`;
 inside `base/*`, the type becomes a sibling file in the same folder. File name = kebab-case of the
@@ -297,7 +305,7 @@ where a class would add no value.
 | Construct | Form |
 |-----------|------|
 | Use case | `class GetRecipeUseCase { execute(...) }` |
-| Repository | `class RecipeRepository implements IRecipeRepository { ... }` |
+| Repository | `class HttpRecipeRepository implements RecipeRepositoryInterface { ... }` |
 | HTTP / Storage | `class HttpClient { ... }` / `class SecureTokenStorage { ... }` |
 | Domain entity | `class RecipeEntity extends BaseEntity<RecipeProps> { ... }` |
 | DTO mapper | `export const toRecipe = (dto: RecipeDto): Result<RecipeEntity, ...> => { ... }` |
@@ -325,7 +333,7 @@ Rules:
  * Fails with NotFoundFailure when the recipe does not exist on the server.
  */
 export class GetRecipeUseCase {
-  constructor(private readonly repo: IRecipeRepository) {}
+  constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   // No JSDoc needed — signature is self-explanatory.
   execute(id: string): Promise<Result<Recipe, Failure>> {
@@ -402,11 +410,11 @@ Hardcoded numbers, strings, colours, and sizes are forbidden outside dedicated c
 | Empty string, separators (`,`, `.`, `/`, `\n`) | `src/core/constants/char-constants.ts` |
 | Structural numbers (`0`, `1`, `2`, `-1`) | `src/core/constants/value-constants.ts` |
 | Regexes shared by more than one file | `src/core/constants/regex-constants.ts` |
-| Locale codes (`en`, `tr`) | `src/core/constants/locale-constants.ts` |
+| Locale codes (`en`, `tr`) | `src/application/i18n/locale-constants.ts` |
 | API endpoints, page sizes, timeouts | `src/infrastructure/constants/api.ts` |
 | Storage keys | `src/infrastructure/constants/storage.ts` |
 | Any design measurement (spacing, size, opacity, tracking, z-order, …) | `src/presentation/base/theme/` — see §5a |
-| Colour palettes (light & dark) | `src/presentation/base/theme/colors.ts` / `themes.ts` |
+| Colour palettes (light & dark) | `src/presentation/base/theme/colors/palette/themes.ts` |
 | A value only one page reads | that page's `model/` folder |
 | A value only one shared widget reads | a sibling file next to the widget |
 
@@ -827,7 +835,7 @@ To bypass in an emergency: `git commit --no-verify` (use sparingly; document why
 
 | Package | Purpose |
 |---------|---------|
-| `expo` (SDK 54) | Framework |
+| `expo` (SDK 55) | Framework |
 | `expo-router` | File-based routing |
 | `expo-localization` | Device locale detection |
 | `expo-secure-store` | Secure key-value storage (native) |
@@ -839,10 +847,20 @@ To bypass in an emergency: `git commit --no-verify` (use sparingly; document why
 
 ---
 
-## External API
+## Backend
 
-DummyJSON (`https://dummyjson.com`) — free, public, zero configuration.
+`recipely-backend` — a separate repository (Node + Express + Prisma + PostgreSQL on Oracle Cloud).
+It is the only API this app talks to; there is no public sandbox behind it.
 
-- Auth: `POST /auth/login`
-- Recipes: `GET /recipes`, `GET /recipes/:id`
-- Todos: `GET /todos`, `GET /todos/:id`
+| Environment | Host | Used by |
+|---|---|---|
+| Production | `https://api.recipely.net` | release builds, recipely.net |
+| Development | `https://dev-api.recipely.net` | `APP_VARIANT=development` builds, dev.recipely.net |
+
+The variant is chosen in `src/infrastructure/constants/api.ts`, which also owns every route, page
+size and request timeout — nothing else in the app names a host or an endpoint. Requests under
+`/api/v1` are wrapped in an AES-256-GCM envelope keyed by `API_AES_KEY_HEX`, which must equal the
+backend's `API_AES_KEY`; `/health` and the avatar upload sit outside that prefix.
+
+Because the repos ship independently, a field or filter the UI wants may simply not exist yet —
+check the backend before assuming, and land the backend PR first.

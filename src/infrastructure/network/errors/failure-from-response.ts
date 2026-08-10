@@ -9,6 +9,10 @@ import {
   UnknownFailure,
   ValidationFailure,
 } from '@core/failure';
+import type { RecipelyErrorPayload } from '@infrastructure/network/errors/recipely-error-payload';
+import { isObject } from '@core/guards/type-guards';
+import { HttpStatus } from '@infrastructure/network/http/http-status';
+import { ApiErrorCode } from '@infrastructure/constants/api/api-error-code';
 
 /**
  * The Recipely backend wraps every error as
@@ -21,16 +25,11 @@ import {
  * — and everything downstream of it — must tolerate `undefined`.
  */
 interface RecipelyErrorBody {
-  error?: {
-    code?: string;
-    message?: string;
-    messageKey?: string;
-    field?: string;
-  };
+  error?: RecipelyErrorPayload;
 }
 
 const isRecipelyErrorBody = (body: unknown): body is RecipelyErrorBody =>
-  typeof body === 'object' && body !== null && 'error' in body;
+  isObject(body) && 'error' in body;
 
 /**
  * Maps a non-2xx HTTP response to the domain `Failure` hierarchy. The backend's
@@ -53,37 +52,37 @@ export const failureFromResponse = (status: number, body: unknown): Failure => {
 
   if (envelope?.code) {
     switch (envelope.code) {
-      case 'validation':
+      case ApiErrorCode.Validation:
         return new ValidationFailure(message, envelope.field, messageKey);
-      case 'unprocessable':
+      case ApiErrorCode.Unprocessable:
         // 422: the request arrived but a required piece (e.g. a missing image or
         // field) was absent. Surface as ValidationFailure so the UI reads it as
         // "fix your input"; `field` tells the UI which input was missing, and
         // `messageKey` which of the several 422s this actually is.
         return new ValidationFailure(message, envelope.field, messageKey);
-      case 'unauthorized':
+      case ApiErrorCode.Unauthorized:
         return new UnauthorizedFailure(message, messageKey);
-      case 'forbidden':
+      case ApiErrorCode.Forbidden:
         return new ForbiddenFailure(message, messageKey);
-      case 'not_found':
+      case ApiErrorCode.NotFound:
         return new NotFoundFailure(message, messageKey);
-      case 'conflict':
+      case ApiErrorCode.Conflict:
         return new ConflictFailure(message, envelope.field, messageKey);
-      case 'rate_limit':
-      case 'too_many_requests':
+      case ApiErrorCode.RateLimit:
+      case ApiErrorCode.TooManyRequests:
         return new RateLimitFailure(message, undefined, messageKey);
-      case 'server':
-      case 'internal':
+      case ApiErrorCode.Server:
+      case ApiErrorCode.Internal:
         return new ServerFailure(message, status, messageKey);
     }
   }
 
-  if (status === 401) return new UnauthorizedFailure(message, messageKey);
-  if (status === 403) return new ForbiddenFailure(message, messageKey);
-  if (status === 404) return new NotFoundFailure(message, messageKey);
-  if (status === 409) return new ConflictFailure(message, envelope?.field, messageKey);
-  if (status === 429) return new RateLimitFailure(message, undefined, messageKey);
-  if (status >= 500) return new ServerFailure(message, status, messageKey);
-  if (status >= 400) return new ValidationFailure(message, envelope?.field, messageKey);
+  if (status === HttpStatus.unauthorized) return new UnauthorizedFailure(message, messageKey);
+  if (status === HttpStatus.forbidden) return new ForbiddenFailure(message, messageKey);
+  if (status === HttpStatus.notFound) return new NotFoundFailure(message, messageKey);
+  if (status === HttpStatus.conflict) return new ConflictFailure(message, envelope?.field, messageKey);
+  if (status === HttpStatus.tooManyRequests) return new RateLimitFailure(message, undefined, messageKey);
+  if (status >= HttpStatus.serverErrorMin) return new ServerFailure(message, status, messageKey);
+  if (status >= HttpStatus.clientErrorMin) return new ValidationFailure(message, envelope?.field, messageKey);
   return new UnknownFailure(message, undefined, messageKey);
 };

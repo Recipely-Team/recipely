@@ -6,7 +6,8 @@ on:
   pull_request:
     branches: [main, dev]
   # Manual entry point for the dev mobile builds. Run it from the Actions tab or
-  # with `gh workflow run ci.yml --ref dev -f android=true -f ios=true`.
+  # with `gh workflow run ci.yml --ref dev -f android=true`. iOS is opt-in:
+  # add `-f ios=true` when an IPA is actually wanted.
   workflow_dispatch:
     inputs:
       android:
@@ -14,9 +15,13 @@ on:
         type: boolean
         default: true
       ios:
+        # Defaults to FALSE, unlike android. A dispatch that meant to ship only
+        # Android shipped an IPA too, because leaving this input alone left it
+        # at `true` — an opt-out that has to be remembered is one that will be
+        # forgotten. iOS dev builds are now explicitly asked for, every time.
         description: 'Build & ship the iOS dev IPA to Firebase App Distribution'
         type: boolean
-        default: true
+        default: false
 
 # Tag-and-deploy on main needs write access to push the new annotated tag.
 permissions:
@@ -96,7 +101,10 @@ jobs:
   dev-distribution-gate:
     name: Dev Distribution Gate
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/dev' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    # A PUSH only ships from dev. A MANUAL dispatch may target any branch: the
+    # reason to ask for a build by hand is usually to try a change BEFORE it is
+    # merged, and refusing that just means merging untested work to find out.
+    if: github.event_name == 'workflow_dispatch' || (github.ref == 'refs/heads/dev' && github.event_name == 'push')
     outputs:
       android: ${{ steps.decide.outputs.android }}
       ios: ${{ steps.decide.outputs.ios }}
@@ -117,13 +125,19 @@ jobs:
             android="$INPUT_ANDROID"
             ios="$INPUT_IOS"
           else
-            case "$COMMIT_MESSAGE" in
+            # SUBJECT LINE ONLY. Scanning the whole message meant a commit that
+            # merely MENTIONED the markers — a note in the body explaining what
+            # they do — asked for both builds, and shipped an IPA nobody wanted.
+            # A tag belongs where tags go; prose lives in the body and must stay
+            # inert there.
+            subject="$(printf '%s' "$COMMIT_MESSAGE" | head -n 1)"
+            case "$subject" in
               *'[dist]'*) android=true; ios=true ;;
             esac
-            case "$COMMIT_MESSAGE" in
+            case "$subject" in
               *'[dist:android]'*) android=true ;;
             esac
-            case "$COMMIT_MESSAGE" in
+            case "$subject" in
               *'[dist:ios]'*) ios=true ;;
             esac
           fi
@@ -133,7 +147,7 @@ jobs:
             echo "Android dev APK: $android"
             echo "iOS dev IPA: $ios"
             echo ""
-            echo "Opt in with \`[dist]\` / \`[dist:android]\` / \`[dist:ios]\` in the merge commit, or run the workflow manually on dev."
+            echo "Opt in with a marker in the merge commit SUBJECT line, or run the workflow manually on dev."
           } >>"$GITHUB_STEP_SUMMARY"
 
   lint-and-typecheck:
@@ -486,15 +500,17 @@ jobs:
           IOS_DIST_CERT_P12_BASE64: ${{ secrets.IOS_DIST_CERT_P12_BASE64 }}
           IOS_DIST_CERT_P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_P12_PASSWORD }}
           IOS_ADHOC_PROFILE_BASE64: ${{ secrets.IOS_ADHOC_PROFILE_DEV_BASE64 }}
+          IOS_ADHOC_PROFILE_EXT_BASE64: ${{ secrets.IOS_ADHOC_PROFILE_DEV_EXT_BASE64 }}
         run: |
           # Import the Apple Distribution certificate into a throwaway keychain
-          # and install the ad-hoc provisioning profile. The profile's Name is
-          # exported for the archive/export steps so the secrets stay the only
-          # place that knows which profile is in use.
+          # and install BOTH ad-hoc provisioning profiles — the app's and the
+          # share extension's, which is a separate bundle id with its own App ID.
+          # Each profile's Name is exported for the archive/export steps so the
+          # secrets stay the only place that knows which profile is in use.
           set -euo pipefail
           # The p12 password is guarded too: we always create the p12 with one,
           # so an empty value means a mis-set secret, not a password-less cert.
-          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_ADHOC_PROFILE_BASE64" ]; then
+          if [ -z "$IOS_DIST_CERT_P12_BASE64" ] || [ -z "$IOS_DIST_CERT_P12_PASSWORD" ] || [ -z "$IOS_ADHOC_PROFILE_BASE64" ] || [ -z "$IOS_ADHOC_PROFILE_EXT_BASE64" ]; then
             echo "::error::iOS signing secrets are missing"
             exit 1
           fi
@@ -502,6 +518,7 @@ jobs:
           KEYCHAIN_PATH="$RUNNER_TEMP/ios-build.keychain-db"
           printf '%s' "$IOS_DIST_CERT_P12_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/dist-cert.p12"
           printf '%s' "$IOS_ADHOC_PROFILE_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/adhoc.mobileprovision"
+          printf '%s' "$IOS_ADHOC_PROFILE_EXT_BASE64" | tr -d ' \t\r\n' | base64 -d > "$RUNNER_TEMP/adhoc-ext.mobileprovision"
           security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
           security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
           security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
@@ -510,13 +527,33 @@ jobs:
           security set-key-partition-list -S apple-tool:,apple: -s \
             -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" >/dev/null
           security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
-          security cms -D -i "$RUNNER_TEMP/adhoc.mobileprovision" > "$RUNNER_TEMP/profile.plist"
-          PROFILE_UUID=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/profile.plist")
-          PROFILE_NAME=$(plutil -extract Name raw -o - "$RUNNER_TEMP/profile.plist")
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$RUNNER_TEMP/adhoc.mobileprovision" \
-            "$HOME/Library/MobileDevice/Provisioning Profiles/$PROFILE_UUID.mobileprovision"
-          echo "PROFILE_NAME=$PROFILE_NAME" >> "$GITHUB_ENV"
+          install_profile() {
+            security cms -D -i "$1" > "$RUNNER_TEMP/$2.plist"
+            local uuid name
+            uuid=$(plutil -extract UUID raw -o - "$RUNNER_TEMP/$2.plist")
+            name=$(plutil -extract Name raw -o - "$RUNNER_TEMP/$2.plist")
+            cp "$1" "$HOME/Library/MobileDevice/Provisioning Profiles/$uuid.mobileprovision"
+            echo "$3=$name" >> "$GITHUB_ENV"
+            echo "installed $3=$name ($uuid)"
+          }
+          install_profile "$RUNNER_TEMP/adhoc.mobileprovision" profile PROFILE_NAME
+          install_profile "$RUNNER_TEMP/adhoc-ext.mobileprovision" profile-ext EXT_PROFILE_NAME
+
+          # A profile expires silently and the build fails on the day it does.
+          # Warn while there is still time to regenerate it calmly.
+          for plist in "$RUNNER_TEMP/profile.plist" "$RUNNER_TEMP/profile-ext.plist"; do
+            name=$(plutil -extract Name raw -o - "$plist")
+            expires=$(plutil -extract ExpirationDate raw -o - "$plist")
+            expires_epoch=$(date -j -f '%Y-%m-%dT%H:%M:%SZ' "$expires" +%s 2>/dev/null || echo 0)
+            if [ "$expires_epoch" -gt 0 ]; then
+              days_left=$(( (expires_epoch - $(date +%s)) / 86400 ))
+              echo "profile '$name' expires in $days_left day(s) ($expires)"
+              if [ "$days_left" -lt 30 ]; then
+                echo "::warning::Provisioning profile '$name' expires in $days_left day(s). Regenerate it and update the secret."
+              fi
+            fi
+          done
 
       - name: Configure app target signing
         env:
@@ -533,13 +570,22 @@ jobs:
           ruby - <<'RUBY'
           require 'xcodeproj'
           project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
+          # Two signed targets, two profiles. The share extension has its own
+          # bundle id and therefore its own App ID and profile — signing it with
+          # the app's would fail, and leaving it on automatic signing fails too
+          # (the runner has no account to resolve one with).
           app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
           app or abort('no application target found in the generated project')
-          app.build_configurations.each do |config|
-            config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
-            config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
-            config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
-            config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ENV.fetch('PROFILE_NAME')
+          extensions = project.targets.select { |t| t.product_type == 'com.apple.product-type.app-extension' }
+          pairs = [[app, ENV.fetch('PROFILE_NAME')]]
+          pairs += extensions.map { |t| [t, ENV.fetch('EXT_PROFILE_NAME')] }
+          pairs.each do |target, profile|
+            target.build_configurations.each do |config|
+              config.build_settings['CODE_SIGN_STYLE'] = 'Manual'
+              config.build_settings['DEVELOPMENT_TEAM'] = ENV.fetch('APPLE_TEAM_ID')
+              config.build_settings['CODE_SIGN_IDENTITY'] = 'Apple Distribution'
+              config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = profile
+            end
           end
           project.save
           RUBY
@@ -557,6 +603,18 @@ jobs:
           xcodebuild -workspace "$WORKSPACE" -scheme "$SCHEME" \
             -configuration Release -destination 'generic/platform=iOS' \
             -archivePath "$RUNNER_TEMP/app.xcarchive" archive
+
+          # The share extension is the whole point of this build: if it is not
+          # in the archive, the app installs fine and simply never appears in
+          # the share sheet — a silent, hard-to-notice regression.
+          APPEX=$(ls -d "$RUNNER_TEMP"/app.xcarchive/Products/Applications/*.app/PlugIns/*.appex 2>/dev/null | head -n1 || true)
+          if [ -z "$APPEX" ]; then
+            echo "::error::No app extension in the archive — the share extension did not build."
+            exit 1
+          fi
+          echo "share extension in archive: $APPEX"
+          codesign -dv "$APPEX" 2>&1 | sed -n '1,4p'
+
           # "release-testing" is Xcode 15.4+'s name for the ad-hoc export.
           cat > "$RUNNER_TEMP/ExportOptions.plist" <<EOF
           <?xml version="1.0" encoding="UTF-8"?>
@@ -569,6 +627,7 @@ jobs:
             <key>provisioningProfiles</key>
             <dict>
               <key>net.recipely.app.dev</key><string>$PROFILE_NAME</string>
+              <key>net.recipely.app.dev.share-extension</key><string>$EXT_PROFILE_NAME</string>
             </dict>
           </dict>
           </plist>
@@ -660,6 +719,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - run: npm ci
+      # A release artifact must not ship a placeholder secret. `API_AES_KEY_HEX`
+      # falls back to 64 zeros when unset — nothing fails, the app just encrypts
+      # every request with a key anyone can guess. Fail here instead.
+      - run: npm run check:secrets
 
       - name: Restore google-services.json
         env:
@@ -811,6 +874,10 @@ jobs:
           cache: 'npm'
 
       - run: npm ci
+      # A release artifact must not ship a placeholder secret. `API_AES_KEY_HEX`
+      # falls back to 64 zeros when unset — nothing fails, the app just encrypts
+      # every request with a key anyone can guess. Fail here instead.
+      - run: npm run check:secrets
 
       - name: Restore GoogleService-Info.plist
         env:
@@ -910,6 +977,9 @@ jobs:
           ruby - <<'RUBY'
           require 'xcodeproj'
           project = Xcodeproj::Project.open(Dir['ios/*.xcodeproj'].first)
+          # App target only, deliberately: the prod share extension has no App ID
+          # or profile yet (dev is set up first, and `main` does not ship until
+          # it does). Mirror the dev job's per-target mapping when it does.
           app = project.targets.find { |t| t.product_type == 'com.apple.product-type.application' }
           app or abort('no application target found in the generated project')
           app.build_configurations.each do |config|

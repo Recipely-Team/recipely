@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -29,7 +30,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === 'loading');
+  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
   const verifyRegistration = authStore((s) => s.verifyRegistration);
   const resendRegistrationCode = authStore((s) => s.resendRegistrationCode);
 

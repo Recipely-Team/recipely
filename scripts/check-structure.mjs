@@ -18,6 +18,10 @@
  *   K. No unguarded console.* in shipped code (CLAUDE.md §22).
  *   L. No hand-rolled bottom sheets (CLAUDE.md §23) — sheets go through the
  *      shared BottomSheet, which presents as a dialog on the web shell.
+ *   Q. The custom route context must admit every root `+file` expo-router reads
+ *      from it (`+native-intent` carries `redirectSystemPath`).
+ *   R. No `removeClippedSubviews` — it re-parents views behind Fabric's back and
+ *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -362,6 +366,110 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       errors.push(
         'app.json: expo-video background playback / picture-in-picture adds UIBackgroundModes:audio, which App Review rejects without a qualifying feature (CLAUDE.md §23c)',
       );
+    }
+  }
+}
+
+// --- O: port interfaces are *Interface, never I* (CLAUDE.md §21) -----------
+// A leading `I` is Hungarian notation: it reads as noise at the point of use
+// (`repo: IRecipeRepository`) and it sorted every port away from the thing it
+// describes in a file listing. The suffix says the same thing where a reader
+// is already looking — at the end of the name.
+{
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(/^export interface (I[A-Z]\w+)/gm)) {
+      errors.push(`${file}: port interface ${m[1]} — name it ${m[1].slice(1)}Interface in a *-interface.ts file (CLAUDE.md §21)`);
+    }
+  }
+}
+
+// --- P: no vocabulary spelled out where a name exists (CLAUDE.md §5) -------
+// The same word was written down in eleven stores, three layers, or both, and
+// nothing tied the copies together. These two are the ones that kept coming
+// back, so they are checked rather than remembered:
+//   - a status literal outside the one file that defines the vocabulary;
+//   - a `Failure` built from a sentence typed at the call site instead of the
+//     `DiagnosticMessage` catalogue;
+//   - a hand-written `typeof x === 'object'`, whose companion `x !== null` is the
+//     half a reader skims past — `typeof null` is 'object'.
+{
+  const STATUS_DEF = 'application/store/store-status.ts';
+  const MESSAGE_DEF = 'core/failure/diagnostic-message.ts';
+  const GUARDS_DEF = 'core/guards/type-guards.ts';
+  for (const file of files) {
+    // Fixtures and mocks exist to stand in for real failures; their strings are the test data.
+    if (isTest(file) || /__fixtures__|__mocks__/.test(file)) continue;
+    if (file.endsWith(STATUS_DEF) || file.endsWith(MESSAGE_DEF) || file.endsWith(GUARDS_DEF)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(/status(?::| ===| !==) '([a-z]+)'/g)) {
+      errors.push(`${file}: status literal '${m[1]}' — use StoreStatus (CLAUDE.md §5)`);
+    }
+    for (const m of src.matchAll(/typeof \w[\w.]* === '(string|object)'/g)) {
+      errors.push(`${file}: ${m[0]} — use the guards in @core/guards/type-guards (CLAUDE.md §5)`);
+    }
+    for (const m of src.matchAll(/new (\w*Failure)\(\s*['"`]([^'"`]{4,})/g)) {
+      errors.push(`${file}: ${m[1]} built from an inline message "${m[2].slice(0, 32)}…" — add it to DiagnosticMessage (CLAUDE.md §5)`);
+    }
+  }
+}
+
+// --- R: no removeClippedSubviews (CLAUDE.md §6c) ------------------------------
+// The prop detaches and re-attaches child views behind Fabric's back, and on the
+// New Architecture that is a crash, not an optimisation: opening a finished
+// Instagram import killed the app with `addViewAt: failed to insert view [332]
+// into parent [338]` thrown from `ReactClippingViewManager.addView` — the class
+// that exists to implement this prop. The feed carrying it was the screen UNDER
+// the import, so it re-clipped as the stack transition finished and handed
+// Fabric a child it had already parented somewhere else.
+//
+// FlatList's own windowing (`windowSize`, `maxToRenderPerBatch`,
+// `initialNumToRender`) is the supported way to bound mounted rows, and it was
+// already tuned on the one list that had this.
+{
+  // Matches the prop being SET (`removeClippedSubviews={…}` / `: …`), not the
+  // word. Comment lines are dropped first, so the note at the one call site
+  // explaining why it must never come back does not itself trip the rule —
+  // which is exactly what happened the first time this ran.
+  const SET_PROP = /removeClippedSubviews\s*[=:]/;
+  const isComment = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
+    if (!SET_PROP.test(code)) continue;
+    errors.push(`${file}: removeClippedSubviews — crashes Fabric mounting (CLAUDE.md §6c)`);
+  }
+}
+
+// --- Q: the custom route context must not hide a `+file` from expo-router ----
+// `route-context.js` replaces `expo-router/_ctx` so co-located page code does
+// not become routes. But expo-router reads more than routes out of that
+// context: `getLinkingConfig` looks up `./+native-intent` in it to find
+// `redirectSystemPath`. Excluding that file therefore did not skip a route, it
+// silently unplugged the hook that rewrites the iOS share-extension URL — and
+// every "Share to Recipely" landed on Unmatched Route with nothing logged.
+//
+// So: every root-level `+file` the STOCK native context would admit must be
+// admitted by ours too. The three names below are the ones upstream's
+// `_ctx.ios.js` / `_ctx.android.js` exclude; anything else is ours to pass on.
+{
+  const CTX = 'presentation/navigation/route-context.js';
+  const APP_DIR = path.join(SRC, 'presentation/app');
+  const STOCK_EXCLUDES = /^\+(html|middleware)\.[tj]sx?$|\+api\.[tj]sx?$/;
+  const ctxPath = path.join(SRC, CTX);
+  const literal = /require\.context\([\s\S]*?,\s*(?:true|false),\s*(\/.*\/)[gimsuy]*\s*,/.exec(
+    fs.readFileSync(ctxPath, 'utf8'),
+  )?.[1];
+  if (literal === undefined) {
+    errors.push(`${CTX}: cannot read the require.context regex — rule Q cannot check it`);
+  } else {
+    const admits = new RegExp(literal.slice(1, -1));
+    for (const name of fs.readdirSync(APP_DIR)) {
+      if (!/^\+[\w-]+\.[tj]sx?$/.test(name) || STOCK_EXCLUDES.test(name)) continue;
+      if (admits.test(`./${name}`)) continue;
+      errors.push(`${CTX}: excludes app/${name}, which expo-router reads from the context`);
     }
   }
 }

@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Regression tests for the failure path of `useRecipeGeneration.runGenerate`.
  *
@@ -28,7 +29,14 @@
 
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { ErrorMessageKey, NetworkFailure, UnknownFailure, ValidationFailure } from '@core/failure';
+import {
+  ErrorMessageKey,
+  type Failure,
+  NetworkFailure,
+  NotFoundFailure,
+  UnknownFailure,
+  ValidationFailure,
+} from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -39,15 +47,13 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
-import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
 import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
@@ -58,9 +64,13 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { en } from '@presentation/i18n/en';
+import { en } from '@presentation/i18n/locales/en';
+import { RoutePaths } from '@presentation/base/constants';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
@@ -70,8 +80,23 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),
 }));
 
+jest.mock('@presentation/base/errors/failure-reporter', () => ({
+  FailureReporter: { report: jest.fn(), trail: jest.fn() },
+}));
+
+// A STABLE router object, so a test can assert on the navigation a flow
+// performs — `useRouter` handing back a fresh mock per render made that
+// impossible to observe.
+const mockRouter = {
+  replace: jest.fn(),
+  back: jest.fn(),
+  // Default: there IS somewhere to go back to. The screen opened by a
+  // share intent on a cold start is the case where there is not.
+  canGoBack: jest.fn(() => true),
+};
+
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: jest.fn(), back: jest.fn() })),
+  useRouter: jest.fn(() => mockRouter),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -194,7 +219,12 @@ const noopCacheStore = <T,>(): T =>
  * the real `GenerateRecipeUseCase` down to a `FakeRecipeRepository` reading
  * `config` on every call.
  */
-const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft): Stores => {
+const makeStores = (
+  config: FakeRecipeRepositoryConfig,
+  getDraft?: RecipeDraft,
+  hold?: Promise<void>,
+  draftFailure?: Failure,
+): Stores => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -202,8 +232,8 @@ const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft):
     refineRecipeUseCase: new RefineRecipeUseCase(new FakeRecipeRepository(config)),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<RecipeListStore>(),
-    recipeDetailStore: noopCacheStore<RecipeDetailStore>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
+    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
   });
 
   const draftsStore = configureDraftsStore({
@@ -213,7 +243,11 @@ const makeStores = (config: FakeRecipeRepositoryConfig, getDraft?: RecipeDraft):
       execute: () => Promise.resolve(ok(null)),
     } as unknown as GetLatestDraftUseCase,
     getDraftUseCase: {
-      execute: () => Promise.resolve(getDraft === undefined ? fail(new UnknownFailure('no draft')) : ok(getDraft)),
+      execute: async () => {
+        if (hold !== undefined) await hold;
+        if (getDraft !== undefined) return ok(getDraft);
+        return fail(draftFailure ?? new UnknownFailure('no draft'));
+      },
     } as unknown as GetDraftUseCase,
     upsertDraftUseCase: unusedUseCase<UpsertDraftUseCase>(),
     deleteDraftUseCase: unusedUseCase<DeleteDraftUseCase>(),
@@ -238,7 +272,12 @@ interface HookDriver {
 /** Resuming an existing draft, as `?draftId=` does on the real route. */
 interface ResumeOptions {
   draftId: string;
-  getDraft: RecipeDraft;
+  /** Omitted for a draft that cannot be read — `getDraft` then answers null. */
+  getDraft?: RecipeDraft;
+  /** Held open to inspect the screen WHILE the draft is still being fetched. */
+  hold?: Promise<void>;
+  /** Which failure the read answers with. Defaults to an unreadable draft. */
+  draftFailure?: Failure;
 }
 
 /**
@@ -257,13 +296,12 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
       setRecipe: setRecipeState,
       activeDraftId: resume?.draftId ?? 'draft-1',
       draftId: resume?.draftId,
-      importUrl: undefined,
     });
     return null;
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(config, resume?.getDraft)}>
+    <StoresProvider value={makeStores(config, resume?.getDraft, resume?.hold, resume?.draftFailure)}>
       <Probe />
     </StoresProvider>,
   );
@@ -653,6 +691,36 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     expect(latest().exitOpen).toBe(true);
   });
 
+  /**
+   * THE REGRESSION: "app kapandı" — closing the screen quit the app.
+   *
+   * `router.back()` on the only screen in the stack closes the app on Android,
+   * and this screen IS the whole stack when it was opened by a share intent or
+   * a notification tap on a cold start. The X button, and every exit-dialog
+   * answer, walked the user out of Recipely instead of back into it.
+   */
+  it('goes home rather than out of the app when there is nothing to go back to', async () => {
+    mockRouter.canGoBack.mockReturnValueOnce(false);
+    const { latest } = await driveResumed();
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).not.toHaveBeenCalled();
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.recipes);
+  });
+
+  it('goes back normally when there is a screen behind it', async () => {
+    const { latest } = await driveResumed();
+
+    act(() => {
+      latest().onClose();
+    });
+
+    expect(mockRouter.back).toHaveBeenCalledTimes(1);
+  });
+
   it('still asks for a recipe started here, which is in no drafts list yet', async () => {
     const { latest, generate } = driveHook(generated());
     await generate();
@@ -662,5 +730,144 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     });
 
     expect(latest().exitOpen).toBe(true);
+  });
+});
+
+/**
+ * THE REGRESSION: tapping a draft "opened the AI screen and sat there".
+ *
+ * The hook started every mount in the `prompt` phase and only moved to
+ * `preview` once `getDraft` came back. So opening a draft — from the My Recipes
+ * drafts tab, or from the "pick up where you left off" card — showed the
+ * AI-generate prompt screen for the length of that request. It read as the wrong
+ * screen having opened, or as the tap not having registered at all; on a slow
+ * connection it lasted seconds.
+ *
+ * What must hold: a mount that carries a `draftId` NEVER renders the prompt
+ * phase. It waits in `resuming` (the editor's skeleton) and moves to `preview`
+ * with the draft in hand — or back to `prompt` if the draft cannot be read, so
+ * the wait always ends.
+ */
+describe('useRecipeGeneration — opening a draft', () => {
+  const savedDraft = (): RecipeDraft => ({
+    id: 'draft-1',
+    ownerId: 'owner-1',
+    prompt: PROMPT,
+    snapshot: { name: 'Garlic Pasta', ingredients: ['pasta'], instructions: ['boil'] },
+    chatHistory: [],
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
+  });
+
+  /** A resume whose fetch is held open until the returned `release` is called. */
+  const driveHeldResume = (
+    { draft, failure }: { draft?: RecipeDraft; failure?: Failure } = { draft: savedDraft() },
+  ) => {
+    let release!: () => void;
+    const hold = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const driver = driveHook(generated(), {
+      draftId: 'draft-1',
+      getDraft: draft,
+      hold,
+      draftFailure: failure,
+    });
+    const settle = async (): Promise<void> => {
+      release();
+      await act(async () => {
+        await hold;
+        await Promise.resolve();
+      });
+    };
+    return { ...driver, settle };
+  };
+
+  it('waits in the resuming phase instead of showing the AI prompt screen', async () => {
+    const { latest, settle } = driveHeldResume();
+
+    // The frame the user actually saw while the draft was in flight.
+    expect(latest().phase).toBe('resuming');
+    expect(latest().phase).not.toBe('prompt');
+
+    await settle();
+  });
+
+  it('lands on the preview with the draft once the fetch returns', async () => {
+    const { latest, settle } = driveHeldResume();
+
+    await settle();
+
+    expect(latest().phase).toBe('preview');
+    expect(latest().prompt).toBe(PROMPT);
+  });
+
+  it('drops the draft param on failure, so autosave cannot overwrite the draft that failed to load', async () => {
+    // `activeDraftId` is `draftId ?? newDraftId`. Staying on a draft whose read
+    // failed — an offline read leaves it intact on the server — pointed the
+    // autosave at it, and the next thing typed here would have overwritten it.
+    const { settle } = driveHeldResume({});
+
+    await settle();
+
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.createRecipe);
+  });
+
+  it('falls back to the prompt phase and says so when the draft cannot be read', async () => {
+    // `getDraft` collapses a failure to null — a draft deleted on another
+    // device, or an offline read. The wait has to END, not shimmer forever.
+    const { latest, settle } = driveHeldResume({});
+
+    await settle();
+
+    expect(latest().phase).toBe('prompt');
+    // The FAILURE is surfaced, not a single catch-all sentence: a deleted
+    // draft, an expired session and a dead connection each read differently,
+    // and the reporter now sees which one it was.
+    expect(showErrorToast).toHaveBeenCalledTimes(1);
+  });
+
+  // ─── the regression: "Taslağı aç" dropped the user on a blank AI prompt ────
+  // A finished import's queue button and its completion notification both open
+  // `?draftId=`, and both keep naming that id for good — but PUBLISHING a draft
+  // DELETES it. Tapping either one after publishing therefore read a 404, which
+  // the screen handled like any other read failure: blank AI prompt, "couldn't
+  // open" toast. Two dev jobs on 2026-08-08 pointed at drafts that had already
+  // become recipes, and it looked to the user like the import had broken.
+  describe('a draft that no longer exists', () => {
+    const gone = (): { failure: Failure } => ({ failure: new NotFoundFailure('draft deleted') });
+
+    it('sends the user to their drafts instead of a blank AI prompt screen', async () => {
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      expect(mockRouter.replace).toHaveBeenCalledWith({
+        pathname: RoutePaths.myRecipes,
+        params: { tab: RoutePaths.myRecipesDraftsTab },
+      });
+      expect(mockRouter.replace).not.toHaveBeenCalledWith(RoutePaths.createRecipe);
+    });
+
+    it('says the draft is gone rather than offering a retry that cannot work', async () => {
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      // `showErrorToast` carries a retry affordance; there is nothing to retry
+      // when the row is deleted, so this one is a plain danger toast.
+      expect(showDangerToast).toHaveBeenCalledWith(en.createRecipe.draftGone);
+      expect(showErrorToast).not.toHaveBeenCalled();
+    });
+
+    it('does not report a deleted draft as a crash', async () => {
+      // Publishing your own draft is normal use, not an incident. Reporting it
+      // would bury the read failures that ARE worth looking at.
+      const { settle } = driveHeldResume(gone());
+
+      await settle();
+
+      expect(FailureReporter.report).not.toHaveBeenCalled();
+    });
   });
 });

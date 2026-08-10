@@ -1,5 +1,6 @@
 import { createContext, useCallback, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { Platform, useColorScheme } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { useColorScheme } from 'react-native';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
@@ -50,13 +51,15 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   // Load persisted theme + preference on mount
   useEffect(() => {
-    void getKeyValueStore().getItem('theme_id').then((stored) => {
+    void getKeyValueStore().getItem('theme_id').then((read) => {
+      const stored = read.ok ? read.value : null;
       // A previously-persisted theme may no longer be part of the palette
       // (e.g. after trimming it down) — fall back to the default instead of
       // handing an unknown id to `getThemeColors`, which would crash.
       setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
-    void getKeyValueStore().getItem('theme_preference').then((stored) => {
+    void getKeyValueStore().getItem('theme_preference').then((read) => {
+      const stored = read.ok ? read.value : null;
       if (stored !== null && isThemePreference(stored)) {
         setPreferenceState(stored);
       }
@@ -81,7 +84,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // React Native 0.83 widened `ColorSchemeName` with 'unspecified' (the system
   // reports no preference); like a null scheme it resolves to light, so every
   // non-'dark' value collapses to the same branch.
-  const ignoreSystemScheme = Platform.OS === 'web' && !hydrated;
+  const ignoreSystemScheme = isWeb() && !hydrated;
   const effectiveSystemScheme: ThemeVariant =
     !ignoreSystemScheme && systemScheme === 'dark' ? 'dark' : 'light';
 

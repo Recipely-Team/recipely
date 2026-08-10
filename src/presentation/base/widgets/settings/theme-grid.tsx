@@ -1,4 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { LocaleConstants } from '@application/i18n/locale-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -28,7 +30,7 @@ export const ThemeGrid = ({
   onSelect,
 }: ThemeGridProps): React.JSX.Element => {
   const { scheme, colors } = useTheme();
-  const lang = getLocale() === 'tr' ? 'tr' : 'en';
+  const lang = getLocale() === LocaleConstants.tr ? LocaleConstants.tr : LocaleConstants.en;
 
   return (
     <ScrollView
@@ -38,9 +40,9 @@ export const ThemeGrid = ({
     >
       {ALL_THEMES.map((id) => {
         const def = getThemeDefinition(id);
-        const variant = scheme === 'dark' ? def.dark : def.light;
+        const variant = scheme === ThemeVariant.Dark ? def.dark : def.light;
         const isActive = id === selectedThemeId;
-        const label = lang === 'tr' ? def.nameTr : def.name;
+        const label = lang === LocaleConstants.tr ? def.nameTr : def.name;
 
         return (
           <Pressable

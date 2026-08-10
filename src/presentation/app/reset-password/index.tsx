@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
+import { isString } from '@core/guards/type-guards';
+import { AuthField } from '@presentation/app/login/model/auth-field';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,6 +19,7 @@ import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, medi
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 const MIN_PASSWORD_LENGTH = 8;
@@ -25,10 +28,10 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === 'landscape';
+  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
 
   const { token } = useLocalSearchParams<{ token?: string }>();
-  const tokenValue = typeof token === 'string' ? token.trim() : CharConstants.empty;
+  const tokenValue = isString(token) ? token.trim() : CharConstants.empty;
 
   const { authStore } = useStores();
   const resetPassword = authStore((s) => s.resetPassword);
@@ -37,7 +40,7 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [focusField, setFocusField] = useState<string | null>(null);
+  const [focusField, setFocusField] = useState<AuthField | null>(null);
   const [loading, setLoading] = useState(false);
   const [succeeded, setSucceeded] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);

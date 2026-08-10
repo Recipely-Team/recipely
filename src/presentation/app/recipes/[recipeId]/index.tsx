@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
@@ -13,7 +14,7 @@ import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/re
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
-import { recipeWebUrl } from '@infrastructure/constants/api';
+import { recipeWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -27,6 +28,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
+  useReportFailure(vm.failure ?? null, 'RecipeDetailScreen');
   // Composed here rather than inside useRecipeDetail: the deep-link concern is
   // self-contained (it only needs the comment state + scroll ref the vm already
   // exposes), and useRecipeDetail is at its size budget already.
@@ -59,7 +61,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               isWebShell ? (
                 <WebRecipeDetail
                   recipe={vm.recipe}
-                  recipeId={vm.recipeId}
                   media={vm.media}
                   isOwner={vm.isOwner}
                   authorState={vm.authorState}
@@ -88,8 +89,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                 />
               ) : (
                 <MobileRecipeDetail
-                  recipe={vm.recipe}
                   recipeId={vm.recipeId}
+                  recipe={vm.recipe}
                   media={vm.media}
                   isOwner={vm.isOwner}
                   isWebShell={isWebShell}

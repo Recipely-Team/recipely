@@ -1,4 +1,4 @@
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 
 export interface RecipelyAuthSessionDto {
   token: string;

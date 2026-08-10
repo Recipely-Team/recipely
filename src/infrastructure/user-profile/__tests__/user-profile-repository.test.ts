@@ -5,6 +5,7 @@ import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
 const validDto: UserProfileDto = {
   id: 'u-1',
@@ -28,12 +29,10 @@ const makeHttp = (
   result: Result<unknown, unknown>,
 ): { http: HttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
-  const stub = {
-    request: jest.fn((config: RequestCall) => {
+  const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
       return Promise.resolve(result);
-    }),
-  } as unknown as HttpClient;
+    }));
   return { http: stub, calls };
 };
 

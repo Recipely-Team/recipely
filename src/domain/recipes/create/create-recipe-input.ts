@@ -14,8 +14,19 @@ export interface CreateRecipeInput {
   prepTimeMinutes: number;
   cookTimeMinutes: number;
   servings: number;
-  // Ordered gallery (cover first). At least one image is required.
+  // Ordered gallery (cover first), as LOCAL files to upload.
   media: RecipeMediaUpload[];
+  /**
+   * A cover the backend already hosts, passed through instead of uploaded.
+   *
+   * An Instagram import comes back with a frame the importer lifted out of the
+   * video and stored server-side, so the editor already has a picture. Sending
+   * that URL back as a file would ask the device to upload something it never
+   * had — the create endpoint takes it as a plain field and uses it when no
+   * file is uploaded. Anything in `media` wins over this: a photo the user
+   * picked themselves should beat one a machine chose for them.
+   */
+  imageUrl?: string;
   rating?: number;
   tags?: Record<string, string[]>;
   mealType?: Record<string, string[]>;

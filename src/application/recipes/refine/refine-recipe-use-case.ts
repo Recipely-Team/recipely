@@ -1,8 +1,9 @@
 import { fail } from '@core/result/result-helpers';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { IRecipeRepository } from '@domain/recipes/i-recipe-repository';
+import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { RefineRecipeInput } from '@application/recipes/refine/refine-recipe-input';
 import { ValueConstants } from '@core/constants';
 
@@ -16,7 +17,7 @@ import { ValueConstants } from '@core/constants';
  * cook.
  */
 export class RefineRecipeUseCase {
-  constructor(private readonly repo: IRecipeRepository) {}
+  constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   execute(input: RefineRecipeInput): Promise<Result<RefinedRecipe, Failure>> {
     const trimmed = input.instruction.trim();
@@ -24,7 +25,7 @@ export class RefineRecipeUseCase {
       return Promise.resolve(
         fail(
           new ValidationFailure(
-            'Refine instruction is required',
+            DiagnosticMessage.ai.refineInstructionRequired,
             undefined,
             ErrorMessageKey.refineInstructionRequired,
           ),

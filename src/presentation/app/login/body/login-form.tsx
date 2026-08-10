@@ -1,4 +1,6 @@
 import { useCallback, useRef, useState } from 'react';
+import { AuthField } from '@presentation/app/login/model/auth-field';
+import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -7,6 +9,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import type { Failure } from '@presentation/base/types';
+import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
@@ -25,14 +28,14 @@ export const LoginForm = (): React.JSX.Element => {
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
-  const isLoading = authStore((s) => s.state.status === 'loading');
+  const isLoading = authStore((s) => s.state.status === StoreStatus.Loading);
   const signIn = authStore((s) => s.signIn);
   const signInWithGoogle = authStore((s) => s.signInWithGoogle);
   const signInWithApple = authStore((s) => s.signInWithApple);
 
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
-  const [focusField, setFocusField] = useState<string | null>(null);
+  const [focusField, setFocusField] = useState<AuthField | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   // Page-scoped error: it lives with this screen and dies when it unmounts, so
   // a failed sign-in never bleeds onto register / other auth screens.
@@ -40,11 +43,13 @@ export const LoginForm = (): React.JSX.Element => {
 
   const passwordRef = useRef<TextInput>(null);
 
+  // Closing the Google / Apple sheet without finishing is an answer, not an
+  // error — the form stays exactly as the user left it and says nothing.
   const runSocial = useCallback(
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);
       const failure = await signInWith();
-      if (failure) {
+      if (failure && failure.code !== FailureCode.Cancelled) {
         setErrorMessage(authFormMessage(failure, {}));
       }
     },
@@ -85,7 +90,7 @@ export const LoginForm = (): React.JSX.Element => {
               backgroundColor: colors.inputBackground,
               color: colors.text,
               borderColor:
-                focusField === 'email' ? colors.inputBorderFocused : colors.inputBorder,
+                focusField === AuthField.Email ? colors.inputBorderFocused : colors.inputBorder,
             },
           ]}
           placeholder={t().login.emailPlaceholder}
@@ -96,7 +101,7 @@ export const LoginForm = (): React.JSX.Element => {
           autoCorrect={false}
           keyboardType="email-address"
           returnKeyType="next"
-          onFocus={() => setFocusField('email')}
+          onFocus={() => setFocusField(AuthField.Email)}
           onBlur={() => setFocusField(null)}
           onSubmitEditing={() => passwordRef.current?.focus()}
         />
@@ -118,7 +123,7 @@ export const LoginForm = (): React.JSX.Element => {
               backgroundColor: colors.inputBackground,
               color: colors.text,
               borderColor:
-                focusField === 'password' ? colors.inputBorderFocused : colors.inputBorder,
+                focusField === AuthField.Password ? colors.inputBorderFocused : colors.inputBorder,
             },
           ]}
           placeholder={t().login.passwordPlaceholder}
@@ -128,7 +133,7 @@ export const LoginForm = (): React.JSX.Element => {
           secureTextEntry={!showPassword}
           autoCapitalize="none"
           returnKeyType="done"
-          onFocus={() => setFocusField('password')}
+          onFocus={() => setFocusField(AuthField.Password)}
           onBlur={() => setFocusField(null)}
           onSubmitEditing={() => { void handleSignIn(); }}
         />

@@ -17,6 +17,10 @@ export type FailureContentKey =
   | 'conflict'
   | 'rateLimit'
   | 'validation'
+  // Copy of last resort: a cancellation is meant to be swallowed by the screen
+  // (see `CancelledFailure`), so these words exist only so a caller that forgets
+  // cannot fall through to "something went wrong".
+  | 'cancelled'
   | 'unknown'
   // ── key-tier: AI generation ────────────────────────────────────────────────
   | 'aiPromptRejected'
@@ -24,6 +28,7 @@ export type FailureContentKey =
   | 'aiUpstreamFailed'
   | 'aiCooldown'
   | 'promptRequired'
+  | 'promptTooLong'
   | 'refineInstructionRequired'
   // ── key-tier: Instagram import ─────────────────────────────────────────────
   | 'importInvalidUrl'

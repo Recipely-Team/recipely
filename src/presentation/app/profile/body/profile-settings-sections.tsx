@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Platform, StyleSheet, View, Linking } from 'react-native';
+import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-account';
+import { isWeb } from '@infrastructure/constants/platform';
+import { StyleSheet, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -13,11 +15,11 @@ import { LanguageSelector } from '@presentation/base/widgets/settings/language-s
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
-import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
+
 import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-modal';
 import { appVersion } from '@presentation/base/utils/app-version';
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
@@ -26,34 +28,16 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
   const { authStore } = useStores();
   const signOut = authStore((s) => s.signOut);
-  const deleteAccount = authStore((s) => s.deleteAccount);
 
   const language = useLocale() as 'en' | 'tr';
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [signOutVisible, setSignOutVisible] = useState(false);
-  const [deleteVisible, setDeleteVisible] = useState(false);
-  const [deleting, setDeleting] = useState(false);
-  const [deleteError, setDeleteError] = useState<string | undefined>(undefined);
+  const deleteAccountFlow = useDeleteAccount();
 
   const handleSignOut = async (): Promise<void> => {
     setSignOutVisible(false);
     await signOut();
     router.replace(RoutePaths.login);
-  };
-
-  const handleDeleteAccount = async (): Promise<void> => {
-    setDeleteError(undefined);
-    setDeleting(true);
-    const failure = await deleteAccount();
-    setDeleting(false);
-    if (failure === null) {
-      setDeleteVisible(false);
-      router.replace(RoutePaths.login);
-      return;
-    }
-    // WHY: the session stays intact on failure, so keep the sheet open and show
-    // the error inline rather than navigating away.
-    setDeleteError(failureToastMessage(failure));
   };
 
   return (
@@ -93,10 +77,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
           icon="trash-outline"
           label={t().settings.deleteAccount}
           destructive
-          onPress={() => {
-            setDeleteError(undefined);
-            setDeleteVisible(true);
-          }}
+          onPress={deleteAccountFlow.open}
         />
       </View>
 
@@ -133,7 +114,7 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         />
       </View>
 
-      {Platform.OS === 'web' ? (
+      {isWeb() ? (
         <WebFeedbackModal visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
       ) : (
         <FeedbackSheet visible={feedbackOpen} onClose={() => setFeedbackOpen(false)} />
@@ -150,15 +131,15 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
         onClose={() => setSignOutVisible(false)}
       />
       <ConfirmSheet
-        visible={deleteVisible}
+        visible={deleteAccountFlow.visible}
         title={t().settings.deleteAccountConfirmTitle}
         message={t().settings.deleteAccountConfirmMessage}
         confirmLabel={t().settings.deleteAccount}
         destructive
-        loading={deleting}
-        error={deleteError}
-        onConfirm={() => void handleDeleteAccount()}
-        onClose={() => setDeleteVisible(false)}
+        loading={deleteAccountFlow.deleting}
+        error={deleteAccountFlow.error}
+        onConfirm={() => void deleteAccountFlow.confirm()}
+        onClose={deleteAccountFlow.close}
       />
     </View>
   );

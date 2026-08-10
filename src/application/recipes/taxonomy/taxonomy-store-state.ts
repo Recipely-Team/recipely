@@ -1,11 +1,11 @@
 import type { Failure } from '@core/failure';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import type { TaxonomyStatus } from '@application/recipes/taxonomy/taxonomy-status';
+import { StoreStatus } from '@application/store/store-status';
 
 export interface TaxonomyStoreState {
   cuisines: readonly TaxonomyItem[];
   categories: readonly TaxonomyItem[];
-  status: TaxonomyStatus;
+  status: StoreStatus;
   failure: Failure | null;
   /**
    * Loads the cuisine + category catalogs. Idempotent: a no-op while already

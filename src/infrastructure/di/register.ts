@@ -31,12 +31,20 @@ import { NotificationService } from '@infrastructure/notifications/notification-
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { IDeviceLocaleProvider } from '@domain/i18n/i-device-locale-provider';
-import type { IKeyValueStore } from '@domain/storage/i-key-value-store';
+import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
+import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
-import { API_BASE_URL } from '@infrastructure/constants/api';
-import type { InfrastructureOptions } from '@infrastructure/di/infrastructure-options';
+import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 
+/** Host-app callbacks and providers injected into the infrastructure wiring. */
+interface InfrastructureOptions {
+  /**
+   * Invoked on every backend 401. Wired into the HTTP client so the app can
+   * clear the session and route to login; the auth store gates the actual
+   * logout (a 401 outside an authenticated session is a no-op).
+   */
+  onUnauthorized?: () => void;
+}
 
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();
@@ -56,8 +64,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     TOKENS.LocaleService,
     () =>
       new LocaleService(
-        container.resolve<IKeyValueStore>(TOKENS.KeyValueStore),
-        container.resolve<IDeviceLocaleProvider>(TOKENS.DeviceLocaleProvider),
+        container.resolve<KeyValueStoreInterface>(TOKENS.KeyValueStore),
+        container.resolve<DeviceLocaleProviderInterface>(TOKENS.DeviceLocaleProvider),
       ),
   );
 

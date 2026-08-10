@@ -3,15 +3,15 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import type { IAuthRepository } from '@domain/auth/i-auth-repository';
+import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 import type { FakeAuthRepositoryConfig } from '@application/__fixtures__/fake-auth-repository-config';
 
 /**
- * In-memory test double for `IAuthRepository`. Each method returns the
+ * In-memory test double for `AuthRepositoryInterface`. Each method returns the
  * pre-configured `Result` from `FakeAuthRepositoryConfig`, defaulting to an
  * `UnknownFailure` (sign-in/up) or `ok(null)` (session) when not configured.
  */
-export class FakeAuthRepository implements IAuthRepository {
+export class FakeAuthRepository implements AuthRepositoryInterface {
   constructor(private readonly config: FakeAuthRepositoryConfig = {}) {}
 
   signIn(_email: string, _password: string): Promise<Result<AuthSessionEntity, Failure>> {

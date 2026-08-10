@@ -17,7 +17,10 @@ export const onboardingStore = create<OnboardingStoreState>((set) => ({
   dismissed: false,
   hydrate: async (): Promise<void> => {
     try {
-      const stored = await getKeyValueStore().getItem(ONBOARDING_SEEN_STORAGE_KEY);
+      const read = await getKeyValueStore().getItem(ONBOARDING_SEEN_STORAGE_KEY);
+      // A read that failed must not be taken for "already seen" — showing the
+      // welcome twice is far better than hiding it from a first-time user.
+      const stored = read.ok ? read.value : null;
       set({ hydrated: true, dismissed: stored === SEEN_VALUE });
     } catch {
       // A read failure must never block launch — fall back to "not dismissed"

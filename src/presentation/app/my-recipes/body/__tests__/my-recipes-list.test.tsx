@@ -16,11 +16,14 @@
 import { act } from 'react-test-renderer';
 import { FlatList, RefreshControl, ScrollView } from 'react-native';
 import type { ReactTestInstance } from 'react-test-renderer';
-import { renderComponent } from '@presentation/base/test-support/render-component';
+import { renderComponent, textContent, allByTestId } from '@presentation/base/test-support/render-component';
+import { t } from '@presentation/i18n';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
+import { MY_RECIPES_SKELETON_TEST_ID } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
 import type { MyRecipesListProps } from '@presentation/app/my-recipes/body/my-recipes-list';
-import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { NetworkFailure } from '@core/failure';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -83,6 +86,10 @@ const baseProps = (): MyRecipesListProps => ({
   onDeleteDraft: jest.fn(),
   isRefreshing: false,
   onRefresh: jest.fn(),
+  onDraftsEndReached: jest.fn(),
+  isFirstLoad: false,
+  loadFailure: null,
+  isLoadingMoreDrafts: false,
 });
 
 const render = (overrides: Partial<MyRecipesListProps>): ReactTestInstance => {
@@ -106,6 +113,71 @@ const refreshingProp = (overrides: Partial<MyRecipesListProps>): boolean => {
 
 /** The empty-state branches: no items on saved/created, no drafts on drafts. */
 const EMPTY_TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
+
+/**
+ * THE REGRESSION: opening My Recipes flashed "you have nothing here".
+ *
+ * The list only ever asked "is this array empty?", which is true both before the
+ * request comes back and after it comes back with nothing. So every cold open
+ * rendered the empty state — icon, "no saved recipes yet" — and then replaced it
+ * with the rows a moment later. `isFirstLoad` separates the two, and the
+ * skeleton branch has to win over the empty one.
+ */
+describe('MyRecipesList — the first load', () => {
+  afterEach(async () => {
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+  });
+
+  const emptyCopy: Record<TabType, string> = {
+    saved: t().myRecipes.emptySaved,
+    created: t().myRecipes.emptyCreated,
+    drafts: t().drafts.empty,
+  };
+
+  it.each(EMPTY_TABS)('shows a skeleton, not the empty state, while the %s tab loads', (tab) => {
+    const root = render({ tab, items: [], drafts: [], isFirstLoad: true });
+
+    expect(textContent(root)).not.toContain(emptyCopy[tab]);
+    expect(allByTestId(root, MY_RECIPES_SKELETON_TEST_ID).length).toBeGreaterThan(0);
+  });
+
+  it.each(EMPTY_TABS)('shows the empty state on the %s tab once the load has answered', (tab) => {
+    const root = render({ tab, items: [], drafts: [], isFirstLoad: false });
+
+    // Non-vacuity for the assertion above: the same empty props DO produce the
+    // empty copy the moment the tab is no longer waiting on an answer.
+    expect(textContent(root)).toContain(emptyCopy[tab]);
+  });
+
+  it.each(EMPTY_TABS)('shows the failure, not the empty state, when the %s tab could not load', (tab) => {
+    // Found in review: an offline cold open rendered "no saved recipes yet" —
+    // the same lie the loading flash told, with a different cause.
+    const root = render({ tab, items: [], drafts: [], loadFailure: new NetworkFailure('offline') });
+
+    const texts = textContent(root);
+    expect(texts).not.toContain(emptyCopy[tab]);
+    expect(texts).toContain(t().errors.retry);
+  });
+
+  it('keeps the rows when a RELOAD fails, rather than replacing them with an error', () => {
+    const root = render({
+      tab: 'saved',
+      items: [makeRecipe('r1')],
+      loadFailure: new NetworkFailure('offline'),
+    });
+
+    expect(textContent(root)).not.toContain(t().errors.retry);
+  });
+
+  it('keeps rendering rows rather than a skeleton when a loaded tab reloads', () => {
+    const root = render({ tab: 'saved', items: [makeRecipe('r1')], isFirstLoad: false });
+
+    expect(allByTestId(root, MY_RECIPES_SKELETON_TEST_ID)).toHaveLength(0);
+  });
+});
 
 describe('MyRecipesList — RefreshControl wiring', () => {
   // AppThemeProvider hydrates theme/preference from async storage on mount; let

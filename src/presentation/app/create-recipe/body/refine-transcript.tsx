@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { ChatRole } from '@domain/drafts/chat-role';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -56,7 +57,7 @@ export const RefineTranscript = ({ chatHistory, refining, onClose }: RefineTrans
         onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
       >
         {chatHistory.map((message, i) => {
-          const isUser = message.role === 'user';
+          const isUser = message.role === ChatRole.User;
           const bubbleColor = isUser
             ? colors.primary
             : message.error

@@ -30,7 +30,7 @@ jest.mock('@expo/vector-icons', () => {
 // The real SkeletonCard runs an infinite shimmer animation whose timer leaks
 // past the test. We only assert that shimmer (not the empty state) is shown
 // while loading, so a static stand-in is enough.
-jest.mock('@presentation/app/recipes/items/cards/skeleton-card', () => {
+jest.mock('@presentation/base/widgets/cards/skeleton-card', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return { SkeletonCard: (): React.JSX.Element => <Text>skeleton-card</Text> };
 });

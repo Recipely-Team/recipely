@@ -16,4 +16,13 @@ export const BrandColors = {
   googleRed: '#EA4335',
   googleGreen: '#34A853',
   googleYellow: '#FBBC05',
+  /**
+   * Instagram's gradient, corner to corner. Four stops, not three: the warm
+   * orange between the yellow and the pink is what stops the sweep reading as
+   * a flat magenta wash at ring width.
+   */
+  instagramGradientStart: '#F9CE34',
+  instagramGradientWarm: '#EE583F',
+  instagramGradientMid: '#EE2A7B',
+  instagramGradientEnd: '#6228D7',
 } as const;

@@ -1,11 +1,17 @@
 import { gcm } from '@noble/ciphers/aes.js';
+import { isString } from '@core/guards/type-guards';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { randomBytes } from '@noble/ciphers/utils.js';
 import type { Envelope } from '@infrastructure/crypto/envelope';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
-import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
+import { CharConstants, RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
+/** AES-256 takes a 32-byte key — the "256" is bits. */
+const KEY_BYTES = 32;
+/** Shortest sealed payload that could hold a tag: the tag plus one byte. */
+const MIN_SEALED_BYTES = AUTH_TAG_BYTES + ValueConstants.one;
 
 /**
  * Converts a 64-character hex string into a 32-byte `Uint8Array` suitable for
@@ -13,11 +19,12 @@ const AUTH_TAG_BYTES = 16;
  */
 export function keyFromHex(hex: string): Uint8Array {
   if (!RegexConstants.sha256Hex.test(hex)) {
-    throw new Error('AES key must be 64 hex chars (32 bytes)');
+    throw new Error(DiagnosticMessage.crypto.badKeyLength);
   }
-  const out = new Uint8Array(32);
-  for (let i = ValueConstants.zero; i < 32; i++) {
-    out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
+  const out = new Uint8Array(KEY_BYTES);
+  for (let i = ValueConstants.zero; i < KEY_BYTES; i++) {
+    const at = i * RadixConstants.hexCharsPerByte;
+    out[i] = parseInt(hex.slice(at, at + RadixConstants.hexCharsPerByte), RadixConstants.hex);
   }
   return out;
 }
@@ -64,23 +71,23 @@ export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
  * payload are malformed, or if the GCM auth tag check fails.
  */
 export function decryptEnvelope(envelope: Envelope, key: Uint8Array): unknown {
-  if (typeof envelope.payload !== 'string' || typeof envelope.iv !== 'string') {
-    throw new EnvelopeDecryptError('Envelope missing payload or iv');
+  if (!isString(envelope.payload) || !isString(envelope.iv)) {
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.missingEnvelopeFields);
   }
   const iv = fromBase64(envelope.iv);
   if (iv.length !== IV_BYTES) {
-    throw new EnvelopeDecryptError(`IV must decode to ${IV_BYTES} bytes`);
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.badIvLength(IV_BYTES));
   }
   const sealed = fromBase64(envelope.payload);
-  if (sealed.length < AUTH_TAG_BYTES + 1) {
-    throw new EnvelopeDecryptError('Payload shorter than auth tag');
+  if (sealed.length < MIN_SEALED_BYTES) {
+    throw new EnvelopeDecryptError(DiagnosticMessage.crypto.payloadShorterThanTag);
   }
   try {
     const plain = gcm(key, iv).decrypt(sealed);
     return JSON.parse(new TextDecoder().decode(plain));
   } catch (err) {
     throw new EnvelopeDecryptError(
-      `Failed to decrypt: ${err instanceof Error ? err.message : 'unknown'}`,
+      DiagnosticMessage.crypto.decryptFailed(err instanceof Error ? err.message : DiagnosticMessage.crypto.unknownReason),
     );
   }
 }

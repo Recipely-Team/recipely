@@ -1,6 +1,7 @@
 import type { Failure } from '@presentation/base/types';
+import { FailureCode } from '@core/failure';
 import { t } from '@presentation/i18n';
-import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import type { IoniconName } from '@presentation/base/errors/ionicon-name';
 import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
 import type { FailureContent } from '@presentation/base/errors/failure-content';
@@ -22,33 +23,38 @@ import { MESSAGE_KEY_TO_CONTENT_KEY } from '@presentation/base/errors/message-ke
 // Everything downstream (content, toast message, severity, icon) is derived from
 // the SAME resolved content key, so a failure can never read as one thing and be
 // coloured as another.
-const CODE_TO_KEY: Record<string, FailureContentKey> = {
-  network: 'network',
-  timeout: 'timeout',
-  server: 'server',
-  not_found: 'notFound',
-  unauthorized: 'unauthorized',
-  forbidden: 'forbidden',
-  conflict: 'conflict',
-  rate_limit: 'rateLimit',
-  validation: 'validation',
-  unknown: 'unknown',
+// Exhaustive by construction: `FailureCode` is a closed union, so a new code
+// that arrives without copy here is a compile error rather than a silent
+// fall-through to the "unknown" wording.
+const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
+  [FailureCode.Network]: 'network',
+  [FailureCode.Timeout]: 'timeout',
+  [FailureCode.Server]: 'server',
+  [FailureCode.NotFound]: 'notFound',
+  [FailureCode.Unauthorized]: 'unauthorized',
+  [FailureCode.Forbidden]: 'forbidden',
+  [FailureCode.Conflict]: 'conflict',
+  [FailureCode.RateLimit]: 'rateLimit',
+  [FailureCode.Validation]: 'validation',
+  [FailureCode.Cancelled]: 'cancelled',
+  [FailureCode.Unknown]: 'unknown',
 };
 
 const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
-  notFound: 'neutral',
-  rateLimit: 'warning',
+  notFound: SeverityType.Neutral,
+  rateLimit: SeverityType.Warning,
   // Nothing is broken and nothing was refused — the user just has to wait, look
   // elsewhere, or start the step again. Danger red would overstate all of these.
-  aiCooldown: 'warning',
-  codeCooldown: 'warning',
-  importBusy: 'warning',
-  importNoRecipeFound: 'neutral',
-  registrationExpired: 'neutral',
-  resetLinkInvalid: 'warning',
-  resetLinkExpired: 'warning',
-  resetLinkUsed: 'warning',
-  codeExpired: 'warning',
+  cancelled: SeverityType.Neutral,
+  aiCooldown: SeverityType.Warning,
+  codeCooldown: SeverityType.Warning,
+  importBusy: SeverityType.Warning,
+  importNoRecipeFound: SeverityType.Neutral,
+  registrationExpired: SeverityType.Neutral,
+  resetLinkInvalid: SeverityType.Warning,
+  resetLinkExpired: SeverityType.Warning,
+  resetLinkUsed: SeverityType.Warning,
+  codeExpired: SeverityType.Warning,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
@@ -61,6 +67,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   conflict: 'alert-circle-outline',
   rateLimit: 'hourglass-outline',
   validation: 'alert-circle-outline',
+  cancelled: 'close-circle-outline',
   unknown: 'sad-outline',
 
   aiPromptRejected: 'alert-circle-outline',
@@ -68,6 +75,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   aiUpstreamFailed: 'sparkles-outline',
   aiCooldown: 'hourglass-outline',
   promptRequired: 'create-outline',
+  promptTooLong: 'cut-outline',
   refineInstructionRequired: 'chatbubble-ellipses-outline',
 
   importInvalidUrl: 'link-outline',

@@ -3,11 +3,12 @@
  * store when the composition root wired one, and fall back to the inert no-op
  * store (never throw) when nothing is registered — the DI-less unit-test mount.
  */
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { noopKeyValueStore } from '@application/storage/noop-key-value-store';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
+import { ok } from '@core/result/result-helpers';
 
 describe('getKeyValueStore', () => {
   beforeEach(() => {
@@ -36,7 +37,7 @@ describe('getKeyValueStore', () => {
 
     await store.setItem('theme_id', 'royal-purple');
 
-    await expect(store.getItem('theme_id')).resolves.toBeNull();
-    await expect(store.removeItem('theme_id')).resolves.toBeUndefined();
+    await expect(store.getItem('theme_id')).resolves.toEqual(ok(null));
+    await expect(store.removeItem('theme_id')).resolves.toEqual(ok(undefined));
   });
 });

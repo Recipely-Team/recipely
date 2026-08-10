@@ -21,6 +21,7 @@ export const WEB_CONTENT_MAX_WIDTH = {
   profile: 720,
   createRecipe: 760,
   aiGenerate: 760,
+  importRecipe: 560,
   recipeDetail: 980,
   notifications: 720,
   settings: 720,

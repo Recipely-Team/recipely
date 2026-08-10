@@ -7,9 +7,20 @@ import {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import type { GeneratingAnimationResult } from '@presentation/app/create-recipe/model/generation/generating-animation-result';
 import { AnimationConstants } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
+
+import type { ViewStyle } from 'react-native';
+
+/** The three animated layers of the "AI is cooking" showpiece. */
+interface GeneratingAnimationResult {
+  /** Orbiting dots — one slow clockwise revolution. */
+  orbitStyle: ViewStyle;
+  /** Outer ring — the same revolution, counter-clockwise. */
+  ringStyle: ViewStyle;
+  /** Centre mark — a gentle breathing pulse. */
+  coreStyle: ViewStyle;
+}
 
 /** One full revolution, in degrees. */
 const FULL_TURN_DEG = 360;

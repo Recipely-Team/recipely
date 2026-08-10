@@ -1,9 +1,11 @@
 import { create, type AxiosInstance, type AxiosRequestConfig } from 'axios';
+import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { type Failure, UnauthorizedFailure } from '@core/failure';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
-import { API_AES_KEY_HEX, DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { API_AES_KEY_HEX } from '@infrastructure/constants/build-secrets';
 import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely-data-body';
@@ -12,6 +14,28 @@ import { buildRequestInterceptor } from '@infrastructure/network/http/build-requ
 import { buildResponseInterceptor } from '@infrastructure/network/http/build-response-interceptor';
 import { uploadMultipart } from '@infrastructure/network/upload/upload-multipart';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
+import { isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { HttpMethod } from '@infrastructure/network/http/http-method';
+
+/**
+ * The per-request knobs a caller may set — not the verb, url or body, which
+ * are the arguments of `get` / `post` / `put` / `patch` / `delete`.
+ *
+ * Deliberately narrower than Axios' own config: a repository has no business
+ * swapping the adapter or the status validator, and exposing the whole surface
+ * invites call sites to rebuild the client's behaviour one request at a time.
+ */
+interface RequestConfig {
+  /**
+   * Query string values, serialised by Axios. Typed as `object` rather than
+   * `Record<string, unknown>` so a purpose-built query DTO — the shape a
+   * `RequestMapper` produces — satisfies it without an index signature it has
+   * no reason to carry.
+   */
+  params?: object;
+  /** Overrides the client default — the AI and import calls need far longer. */
+  timeout?: number;
+}
 
 /**
  * Axios-backed HTTP client for the Recipely backend. Automatically attaches
@@ -30,7 +54,7 @@ export class HttpClient {
       baseURL: options.baseUrl,
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {
-        Accept: 'application/json',
+        [HttpHeader.accept]: HttpMediaType.json,
         // Content-Type is set per-request in the interceptor so FormData uploads
         // can omit it and let the XHR runtime auto-set multipart + boundary.
       },
@@ -44,10 +68,38 @@ export class HttpClient {
     );
   }
 
+  /**
+   * The verb is the method you call, not a string you pass.
+   *
+   * Every repository spelled `method: 'POST'` into a config object, so the verb
+   * was a literal thirty-odd times over and nothing stopped one from being
+   * typed `'Post'` or landing on the wrong call. These read as the request they
+   * make; `request` stays for the rare call needing a full Axios config.
+   */
+  get<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Get, url });
+  }
+
+  post<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Post, url, data });
+  }
+
+  put<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Put, url, data });
+  }
+
+  patch<T>(url: string, data?: unknown, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Patch, url, data });
+  }
+
+  delete<T>(url: string, config?: RequestConfig): Promise<Result<T, Failure>> {
+    return this.request<T>({ ...config, method: HttpMethod.Delete, url });
+  }
+
   async request<T>(config: AxiosRequestConfig): Promise<Result<T, Failure>> {
     try {
       const response = await this.instance.request<unknown>(config);
-      if (response.status >= 200 && response.status < 300) {
+      if (isSuccessStatus(response.status)) {
         const dataEnvelope = response.data;
         if (isRecipelyDataBody<T>(dataEnvelope)) {
           return ok(dataEnvelope.data);

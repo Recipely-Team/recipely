@@ -1,4 +1,5 @@
 import { useRef } from 'react';
+import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as Crypto from 'expo-crypto';
@@ -18,9 +19,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
 
-  const params = useLocalSearchParams<{ draftId?: string; importUrl?: string }>();
-  const draftId = typeof params.draftId === 'string' ? params.draftId : undefined;
-  const importUrl = typeof params.importUrl === 'string' ? params.importUrl : undefined;
+  const params = useLocalSearchParams<{ draftId?: string }>();
+  const draftId = isString(params.draftId) ? params.draftId : undefined;
 
   // A stable draft id for the lifetime of a NEW draft. A real UUID is required
   // by the backend; resumed drafts reuse their own id.
@@ -33,7 +33,6 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     setRecipe: editable.setRecipe,
     activeDraftId,
     draftId,
-    importUrl,
   });
   const save = useRecipeSave({
     recipe: editable.recipe,
@@ -51,11 +50,11 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onAppendChip: generation.onAppendChip,
     onGenerate: generation.onGenerate,
     onStartBlank: generation.onStartBlank,
+    onImportFromInstagram: generation.onImportFromInstagram,
     onClose: generation.onClose,
     latestDraft: generation.latestDraft,
     onResumeDraft: generation.onResumeDraft,
     genStep: generation.genStep,
-    importing: generation.importing,
     headerTitle: save.headerTitle,
     saveLabel: save.saveLabel,
     isSaving: save.isSaving,
@@ -67,6 +66,10 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onChangeIngredient: editable.onChangeIngredient,
     onRemoveIngredient: editable.onRemoveIngredient,
     onAddIngredient: editable.onAddIngredient,
+    onAddIngredientAt: editable.onAddIngredientAt,
+    onMoveIngredient: editable.onMoveIngredient,
+    onRemoveIngredientGroup: editable.onRemoveIngredientGroup,
+    onAddIngredientGroup: editable.onAddIngredientGroup,
     onChangeStep: editable.onChangeStep,
     onRemoveStep: editable.onRemoveStep,
     onAddStep: editable.onAddStep,

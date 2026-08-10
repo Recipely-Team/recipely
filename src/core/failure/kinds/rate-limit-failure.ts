@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when the caller has sent too many requests in a window and
@@ -8,7 +9,7 @@ import { Failure } from '@core/failure/failure';
  * distinguishes a generic throttle from a feature-specific cooldown.
  */
 export class RateLimitFailure extends Failure {
-  readonly code = 'rate_limit';
+  readonly code = FailureCode.RateLimit;
   constructor(
     readonly message: string = 'Too many requests',
     readonly retryAfterSeconds?: number,

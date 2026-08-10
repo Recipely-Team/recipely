@@ -1,1 +1,10 @@
-export type PhaseType = 'prompt' | 'generating' | 'preview';
+export const PhaseType = {
+  Prompt: 'prompt',
+  /** Fetching a draft the screen was opened on (`?draftId=`) before it can be edited. */
+  Resuming: 'resuming',
+  Generating: 'generating',
+  Preview: 'preview',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
+export type PhaseType = (typeof PhaseType)[keyof typeof PhaseType];

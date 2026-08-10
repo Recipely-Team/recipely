@@ -1,21 +1,23 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
+import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
-import { SORT_TO_FILTER } from '@presentation/app/recipes/model/recipe-sort';
-import type { SortKey } from '@presentation/app/recipes/model/sort-key';
+import { SORT_TO_FILTER } from '@presentation/app/recipes/model/sorting/recipe-sort';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
-import * as mutate from '@presentation/app/recipes/model/filter-mutations';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
+import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
+import * as mutate from '@presentation/app/recipes/model/filtering/filter-mutations';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
@@ -35,28 +37,60 @@ const REVEAL_THRESHOLD = spacing.sm;
 
 /**
  * Orchestrates the recipe-list screen: data load with locale/focus refetch,
- * filter + sort state (applied and pending), the mobile collapsing-header scroll
- * animation, and guest-gated save/create actions.
+ * filter + sort state (applied and pending), paging, the mobile
+ * collapsing-header scroll animation, and guest-gated save/create actions.
+ *
+ * @remarks
+ * - **Stale answers** — rows reach the screen only while they answer the query
+ *   being asked. Search is server-side, so on the first keystroke the store
+ *   still holds the unfiltered feed; handing it over listed the whole catalogue
+ *   as the match for one letter. It cuts the other way too: clearing the field
+ *   showed the last query's hits as if they were the feed.
+ * - **Loading is derived from data, not timers** — `isRefetching` asks "do the
+ *   rows answer the current query", because the debounce settles during render
+ *   while `load` only marks the store refreshing in the effect after it. Keying
+ *   on the debounce window left one frame claiming to be idle with no rows,
+ *   which flashed "no results" at the start of every search. A failed refresh
+ *   is excluded or the spinner would never stop.
+ * - **Pull-to-refresh** — `isPullRefreshing` tracks ONLY a user-initiated pull.
+ *   Setting `RefreshControl.refreshing` programmatically calls
+ *   `beginRefreshing` on iOS, which animates the list down and back: a visible
+ *   jump on a filter tap.
+ * - **Reloads that blank the rows** — a filter, sort, search or language change
+ *   replaces what the list should contain, so the feed empties while the next
+ *   set arrives; leaving the old rows up read as a second load, or as if the
+ *   tap had done nothing. A pull and the silent focus refetch deliberately do
+ *   not count.
+ * - **Initial load carries the sort** — a bare `load()` falls back to the
+ *   backend's `createdAt desc`, so the first paint and the focus refetch
+ *   disagreed and the list reshuffled on the first return from a detail page.
+ * - **`buildApiFilters` takes the query as an argument** rather than closing
+ *   over it: its identity is a dependency of the focus and locale effects, and
+ *   a callback changing on every debounced keystroke made those refire and
+ *   issue a second, duplicate request.
+ * - **Paging is offered only for current rows** — asking for page 2 of a query
+ *   the user has typed past would append results nobody asked for.
+ * - **Guest gating** — create and AI-generate are auth-only routes, so the tap
+ *   is intercepted here; letting the auth guard bounce a guest lands them on a
+ *   bare login screen with no explanation.
  */
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
   const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
-  const userId = authStore((s) => (s.state.status === 'authenticated' ? s.state.session.user.id : null));
+  const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
-  // Guest-gated navigations: the create-recipe / AI-generate routes are auth-only,
-  // so intercept the tap and surface the sign-in prompt instead of letting the
-  // auth guard bounce the guest to a bare login screen.
   const onOpenCreate = useCallback(() => requestGate(() => router.push(RoutePaths.createRecipe)), [requestGate, router]);
   const { cuisineLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
+  const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, width } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
@@ -65,15 +99,9 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const [search, setSearch] = useState(CharConstants.empty);
 
-  // Web takes the query from the shared app-header field, native from the
-  // in-header one; from here down only the effective query matters.
+  // Web takes the query from the shared app-header field, native from the in-header one.
   const effectiveSearch = isWebShell ? webSearchQuery : search;
   const trimmedSearch = effectiveSearch.trim();
-  // WHY: search is a backend filter (`RecipeFilters.search`), not a local
-  // `Array.filter` over the loaded page — the loaded page is only the first
-  // slice of the catalogue, so filtering it locally could only ever find a
-  // match among recipes already downloaded and silently missed the rest.
-  // Debounced so a typing burst is one request, fired when the user pauses.
   const debouncedSearch = useDebouncedValue(trimmedSearch, SEARCH_DEBOUNCE_MS);
   const isSearching = trimmedSearch.length > ValueConstants.zero;
 
@@ -125,11 +153,11 @@ export const useRecipeList = (): UseRecipeListResult => {
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isWebShell, width]);
 
-  const [sortBy, setSortBy] = useState<SortKey>('popular');
+  const [sortBy, setSortBy] = useState<SortKey>(SortKey.Popular);
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
-  const [pendingSort, setPendingSort] = useState<SortKey>('popular');
-  const [sheetOpen, setSheetOpen] = useState<'filter' | null>(null);
+  const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
+  const [sheetOpen, setSheetOpen] = useState<RecipeSheet | null>(null);
 
   // Web home shows a Save bookmark on each card, so the saved set must be populated.
   useEffect(() => {
@@ -139,10 +167,6 @@ export const useRecipeList = (): UseRecipeListResult => {
     });
   }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
 
-  // Takes the query as an argument rather than closing over it: this identity
-  // is a dependency of the focus/locale effects below, and a callback that
-  // changed on every debounced keystroke would make those effects re-fire and
-  // issue a second, duplicate request alongside the search one.
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({
       ...(query.length > ValueConstants.zero ? { search: query } : {}),
@@ -155,29 +179,12 @@ export const useRecipeList = (): UseRecipeListResult => {
     [],
   );
 
-  // WHY: the initial load must carry the same `sort` the header advertises
-  // ('popular' by default). A bare `load()` would fall back to the backend's
-  // default order (createdAt desc), so the first paint and the focus refetch
-  // would use different orderings — the list visibly reshuffled the first
-  // time the user came back from a recipe detail.
   useEffect(() => {
-    if (state.status === 'idle') void load(buildApiFilters(filters, sortBy, debouncedSearch));
+    if (state.status === StoreStatus.Idle) void load(buildApiFilters(filters, sortBy, debouncedSearch));
   }, [state.status, load, buildApiFilters, filters, sortBy, debouncedSearch]);
 
-  // WHY: the store's `isRefreshing` covers every in-place refetch (filter, sort,
-  // locale switch, focus), but `RefreshControl.refreshing` must reflect ONLY a
-  // user-initiated pull: setting it programmatically on iOS calls
-  // `UIRefreshControl.beginRefreshing`, which animates the scroll view down to
-  // reveal the spinner and back when cleared — a visible jump on a filter tap.
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
-  // Counts the loads that change WHAT the list should contain — a filter, a
-  // sort, a search or a language switch. Those are the ones the feed blanks its
-  // rows for: keeping the previous results on screen while the next set arrives
-  // read as the list loading twice, and (worse) as if the tap had done nothing.
-  // A pull-to-refresh and the silent focus refetch deliberately do NOT count:
-  // the first has the pull spinner and needs its rows to stay under the finger,
-  // the second asks for the same content the user is already looking at.
   const [pendingReloads, setPendingReloads] = useState(ValueConstants.zero);
   const reload = useCallback(
     async (next: RecipeFilters): Promise<void> => {
@@ -197,19 +204,15 @@ export const useRecipeList = (): UseRecipeListResult => {
       try {
         await load(buildApiFilters(filters, sortBy, debouncedSearch));
       } catch {
-        // `load` folds failures into state and shouldn't reject; swallow anyway so
-        // an unexpected throw can't escape as an unhandled rejection.
+        // `load` folds failures into state; swallow anyway so nothing escapes unhandled.
       } finally {
-        // Unconditional clear: never leave the spinner stuck. A late clear after
-        // unmount is a harmless no-op, so this needs no mounted-ref guard.
+        // Cleared unconditionally so the spinner can never stick.
         setIsPullRefreshing(false);
       }
     })();
   }, [load, filters, sortBy, debouncedSearch, buildApiFilters]);
 
-  // Recipe content is localized server-side, so a language switch must re-fetch.
-  // Refs keep the latest filters/sort/query without re-running these effects on
-  // their change — each of them owns its own refetch trigger below.
+  // Refs, so these effects see the latest values without re-running on them.
   const filtersRef = useRef(filters);
   const sortByRef = useRef(sortBy);
   const searchRef = useRef(debouncedSearch);
@@ -225,9 +228,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
   }, [language, reload, buildApiFilters]);
 
-  // The query settled — fetch the matching page. Skips the mount run because
-  // the idle-load effect above already issues the first request; without the
-  // guard the screen would fire two identical loads on every cold open.
+  // Skips the mount run: the idle-load effect above already issued that request.
   const didSearchRef = useRef(false);
   useEffect(() => {
     if (!didSearchRef.current) {
@@ -249,7 +250,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     }, [load, buildApiFilters]),
   );
 
-  useRefreshFailureToast(state.status === 'loaded' ? state.refreshFailure : undefined);
+  useRefreshFailureToast(state.status === StoreStatus.Loaded ? state.refreshFailure : undefined);
 
   const onOpenRecipe = useCallback(
     (id: string) => router.push(RoutePaths.recipeDetail(id) as Href),
@@ -277,7 +278,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const onOpenFilter = (): void => {
     setPendingFilters(filters);
     setPendingSort(sortBy);
-    setSheetOpen('filter');
+    setSheetOpen(RecipeSheet.Filter);
   };
 
   const onResetFilters = (): void => {
@@ -287,49 +288,28 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
-  // The query the rows currently in the store are the answer to. Empty both
-  // for the unfiltered feed and while nothing is loaded yet.
-  const answeredQuery = state.status === 'loaded' ? state.query : CharConstants.empty;
+  // The query the stored rows answer — empty for the feed and before any load.
+  const answeredQuery = state.status === StoreStatus.Loaded ? state.query : CharConstants.empty;
   const answersCurrentQuery = answeredQuery === trimmedSearch;
 
-  // WHY: rows are handed over only while they answer the query being asked.
-  // Search is server-side, so on the first keystroke the store still holds the
-  // unfiltered feed — the old code rendered it under the search field, and
-  // listing the entire catalogue as the match for one letter was the single
-  // weirdest thing about typing here. It cuts the other way too: clearing the
-  // box used to show the last query's handful of results as if they were the
-  // feed. Both surfaces already have a loading state for the gap
-  // (`isRefetching` is true for the whole of it), so handing back nothing is
-  // never an empty screen.
   const recipes = useMemo(
-    () => (state.status === 'loaded' && answersCurrentQuery ? state.recipes : []),
+    () => (state.status === StoreStatus.Loaded && answersCurrentQuery ? state.recipes : []),
     [state, answersCurrentQuery],
   );
 
-  // Covers the whole round trip the user is waiting on, not just the request.
-  // Anchoring it on `answersCurrentQuery` rather than on the debounce window
-  // closes a gap the old `trimmedSearch !== debouncedSearch` left open: the
-  // debounce fires during render but `load` only flips `isRefreshing` in the
-  // effect that follows, so for one frame nothing claimed to be loading while
-  // `recipes` was already empty — long enough to flash "no results" at the
-  // start of every single search.
-  //
-  // A failed refresh is deliberately excluded: it leaves the query unanswered
-  // for good, and without this the spinner would never stop. The empty state
-  // takes over and `useRefreshFailureToast` says what went wrong.
-  const hasRefreshFailure = state.status === 'loaded' && state.refreshFailure !== undefined;
-  // The window in which the rows on screen have been withheld for not answering
-  // what is being asked. Both flags below need it, for the same reason and with
-  // the same failure escape hatch.
+  const hasRefreshFailure = state.status === StoreStatus.Loaded && state.refreshFailure !== undefined;
+  // The window in which rows are withheld for not answering the current query.
   const isAwaitingAnswer = !answersCurrentQuery && !hasRefreshFailure;
   const isRefetching = isRecipeListRefreshing(state) || isAwaitingAnswer;
-  // WHY the staleness term belongs here too: `pendingReloads` counts requests,
-  // and the debounce window sits BEFORE the request. Clearing the search field
-  // drops straight back to the feed body with `recipes` already withheld and no
-  // reload counted yet — which put the "no recipes yet, try again" empty state
-  // on screen for the length of the debounce. A focus refetch still doesn't
-  // count: it asks for the same content, so `answersCurrentQuery` stays true.
   const isReloadingResults = pendingReloads > ValueConstants.zero || isAwaitingAnswer;
+
+  const isLoadingMore = state.status === StoreStatus.Loaded && state.isLoadingMore === true;
+  const canLoadMore =
+    state.status === StoreStatus.Loaded && state.hasMore && answersCurrentQuery && !isLoadingMore;
+  const onEndReached = useCallback((): void => {
+    if (!canLoadMore) return;
+    void loadMore(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
+  }, [canLoadMore, loadMore, buildApiFilters]);
 
   return {
     state,
@@ -338,6 +318,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     isSearching,
     isRefetching,
     isReloadingResults,
+    isLoadingMore,
+    onEndReached,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
     sortBy,

@@ -1,3 +1,4 @@
+import type { BoundStore } from '@application/store/bound-store';
 /**
  * Behavior tests for `useRecipeSave` — the save-feedback rework.
  *
@@ -26,15 +27,13 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import { FakeRecipeRepository } from '@application/__fixtures__/fake-recipe-repository';
 import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
 import { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/configure-created-recipes-store';
-import { configureDraftsStore } from '@application/drafts/configure-drafts-store';
+import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
+import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { RecipeListStore } from '@application/recipes/list/recipe-list-store';
-import type { RecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
 import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
@@ -45,11 +44,13 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
-import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/recipe-mapping';
+import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { en } from '@presentation/i18n/en';
+import { en } from '@presentation/i18n/locales/en';
+import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
@@ -127,8 +128,8 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     refineRecipeUseCase: unusedUseCase<RefineRecipeUseCase>(),
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
-    recipeListStore: noopCacheStore<RecipeListStore>(),
-    recipeDetailStore: noopCacheStore<RecipeDetailStore>(),
+    recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
+    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
   });
 
   const draftsStore = configureDraftsStore({
@@ -206,15 +207,6 @@ describe('useRecipeSave — pre-submit guards', () => {
     expect(driver.latest().saveIssue).toBe(en.createRecipe.missing);
     expect(driver.fieldErrors().fields.name).toBe(en.createRecipe.nameRequired);
     expect(driver.fieldErrors().fields.ingredients).toBe(en.createRecipe.ingredientsRequired);
-    expect(driver.latest().saveSuccess).toBeNull();
-  });
-
-  it('sets the no-image dialog when text is complete but no photo was added', async () => {
-    const driver = driveHook({}, { ...publishable(), media: [] });
-
-    await driver.save();
-
-    expect(driver.latest().saveIssue).toBe(en.createRecipe.noImage);
     expect(driver.latest().saveSuccess).toBeNull();
   });
 });

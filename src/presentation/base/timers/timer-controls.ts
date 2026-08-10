@@ -43,7 +43,12 @@ export const startTimer = async (
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
   const endTimeMs = Date.now() + durationSeconds * TimerTimeConstants.msPerSecond;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, recipeName, endTimeMs);
+  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
+    timerId,
+    recipeName,
+    endTimeMs,
+    t().timer.notificationBody,
+  );
   await timerStore.getState().add({
     id: timerId,
     recipeId,
@@ -89,7 +94,12 @@ export const resumeTimer = async (timerId: string): Promise<void> => {
   // an earlier expiry must not silence it.
   triggeredAlarms.release(timerId);
   const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(timerId, entry.recipeName, newEndTimeMs);
+  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
+    timerId,
+    entry.recipeName,
+    newEndTimeMs,
+    t().timer.notificationBody,
+  );
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;

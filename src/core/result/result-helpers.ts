@@ -15,3 +15,4 @@ export const flatMapResult = <T, U, F>(
   r: Result<T, F>,
   f: (t: T) => Result<U, F>,
 ): Result<U, F> => (r.ok ? f(r.value) : r);
+// helpers ile Result tek dosyada olabilir gereksiz ayırma

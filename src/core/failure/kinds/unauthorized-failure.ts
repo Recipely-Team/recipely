@@ -1,4 +1,5 @@
 import { Failure } from '@core/failure/failure';
+import { FailureCode } from '@core/failure/failure-code';
 
 /**
  * Failure produced when the caller lacks valid credentials or the server
@@ -6,7 +7,7 @@ import { Failure } from '@core/failure/failure';
  * `errors.unauthorized.invalid_token`) says why, when the server provides it.
  */
 export class UnauthorizedFailure extends Failure {
-  readonly code = 'unauthorized';
+  readonly code = FailureCode.Unauthorized;
   constructor(
     readonly message: string = 'Unauthorized',
     messageKey?: string,

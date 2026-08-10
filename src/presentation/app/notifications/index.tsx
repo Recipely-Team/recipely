@@ -1,9 +1,13 @@
 import { useEffect, useMemo, useState } from 'react';
+import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
+import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
+import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { type Href, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -31,6 +35,7 @@ const KNOWN_KINDS = new Set<NotifKind>([
   'like',
   'favorite',
   'ai_done',
+  'import_done',
   'moderation_approved',
   'moderation_pending',
   'follow',
@@ -57,8 +62,8 @@ const toNotifItem = (n: NotificationEntity): NotifItem => ({
   target: n.target,
 });
 
-const buildSections = (items: NotifItem[], filter: 'all' | 'unread'): SectionData[] => {
-  const visible = filter === 'unread' ? items.filter((n) => !n.read) : items;
+const buildSections = (items: NotifItem[], filter: NotificationFilter): SectionData[] => {
+  const visible = filter === NotificationFilter.Unread ? items.filter((n) => !n.read) : items;
   const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
   const yesterday = visible.filter((n) => n.daysAgo === ValueConstants.one);
   const earlier = visible.filter((n) => n.daysAgo > ValueConstants.one);
@@ -84,6 +89,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
+  useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
+
   // Load the latest feed once per mount. Notifications stay unread until the
   // user taps them individually or presses the explicit "mark all read" button —
   // opening the screen alone never clears the badge.
@@ -93,20 +100,28 @@ export const NotificationsScreen = (): React.JSX.Element => {
   }, []);
 
   const items: NotifItem[] = useMemo(() => {
-    if (state.status !== 'loaded') return [];
+    if (state.status !== StoreStatus.Loaded) return [];
     return state.items.map(toNotifItem);
   }, [state]);
 
   const unreadCount =
-    state.status === 'loaded' ? state.unreadCount : ValueConstants.zero;
+    state.status === StoreStatus.Loaded ? state.unreadCount : ValueConstants.zero;
   const sections = buildSections(items, filter);
 
   // Cast: a dynamic recipe path can't be statically verified against
   // expo-router's typed-routes union — same pattern as useRecipeDetail.
   const openTarget = (target: NotificationTarget): void => {
+    // A draft is the one target with no recipe behind it: the import produced
+    // something to finish, not something to read. It opens the editor the same
+    // way My Recipes does, so a resumed import and a resumed draft are the same
+    // screen in the same state.
+    if (target.kind === NotificationTargetKind.Draft) {
+      router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
+      return;
+    }
     const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
-      (target.kind === 'comment'
+      (target.kind === NotificationTargetKind.Comment
         ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
         : path) as Href,
     );
@@ -151,7 +166,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
       <View style={styles.filterRow}>
         {(['all', 'unread'] as const).map((f) => {
           const isActive = filter === f;
-          const label = f === 'all'
+          const label = f === NotificationFilter.All
             ? `${t().notifications.all} (${items.length})`
             : `${t().notifications.unread} (${unreadCount})`;
           return (
@@ -179,11 +194,11 @@ export const NotificationsScreen = (): React.JSX.Element => {
         })}
       </View>
 
-      {state.status === 'loading' || state.status === 'idle' ? (
+      {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
         <View style={styles.empty}>
           <ActivityIndicator color={colors.primary} />
         </View>
-      ) : state.status === 'error' ? (
+      ) : state.status === StoreStatus.Error ? (
         <ErrorState
           severity={failureSeverity(state.failure)}
           icon={failureIcon(state.failure)}

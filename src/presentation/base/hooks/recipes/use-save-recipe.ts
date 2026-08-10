@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import type { UseSaveRecipeResult } from '@presentation/base/hooks/recipes/use-save-recipe-result';
@@ -13,7 +14,7 @@ export const useSaveRecipe = (): UseSaveRecipeResult => {
   const { savedRecipesStore, favoritesStore, authStore } = useStores();
   const savedIds = savedRecipesStore((s) => s.savedIds);
   const authState = authStore((s) => s.state);
-  const userId = authState.status === 'authenticated' ? authState.session.user.id : null;
+  const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
 
   const isSaved = useCallback((recipeId: string): boolean => savedIds.has(recipeId), [savedIds]);
 

@@ -23,8 +23,8 @@ import type { RenderResult } from '@presentation/base/test-support/render-result
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
-import { emptyFilters } from '@presentation/app/recipes/model/ui-filter-defaults';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
+import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import { CUISINE_KEY_VALUES } from '@domain/recipes/taxonomy/cuisine-key';
 import { DIFFICULTY_VALUES } from '@domain/recipes/difficulty';

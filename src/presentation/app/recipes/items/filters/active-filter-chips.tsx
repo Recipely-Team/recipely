@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { formatLabel } from '@presentation/app/recipes/model/format-label';
-import type { UiFilters } from '@presentation/app/recipes/model/ui-filters';
+import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, colorAlphas } from '@presentation/base/theme';

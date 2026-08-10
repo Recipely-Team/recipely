@@ -1,7 +1,9 @@
 import { useEffect } from 'react';
-import { type Href, usePathname, useRouter } from 'expo-router';
+import { StoreStatus } from '@application/store/store-status';
+import { type Href, useGlobalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
+import { isString } from '@core/guards/type-guards';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
@@ -16,7 +18,7 @@ import { RoutePaths } from '@presentation/base/constants';
  * to login on tap; only the gated sub-routes — my-recipes, profile, create,
  * settings, notifications, and the AI generator — remain guarded.
  */
-export const PUBLIC_PATHS = new Set<string>([
+const PUBLIC_PATHS = new Set<string>([
   '/',
   '/onboarding',
   '/login',
@@ -40,6 +42,25 @@ const isPublicPath = (pathname: string): boolean =>
   PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname);
 
 /**
+ * Rebuilds the path the user was actually on, query string included.
+ *
+ * `usePathname()` drops the query, and the redirect was built from it alone —
+ * so sharing an Instagram link to a signed-out app bounced to
+ * `/login?redirect=%2Fcreate-recipe` and the shared URL was simply gone. The
+ * user signed in and landed on an empty create screen with nothing to explain
+ * where their link went. Anything routed to a gated path with parameters had
+ * the same hole; this closes it for all of them.
+ */
+const withParams = (pathname: string, params: Record<string, unknown>): string => {
+  const search = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (isString(value) && value.length > 0) search.append(key, value);
+  }
+  const query = search.toString();
+  return query.length > 0 ? `${pathname}?${query}` : pathname;
+};
+
+/**
  * Redirects to `/login` whenever the session resolves as unauthenticated on a
  * route that requires auth — covers both "never logged in" and "signed out".
  * No-ops while the session is still hydrating (`idle`/`loading`) so a valid
@@ -59,16 +80,17 @@ export const useAuthGuard = (): void => {
   const { authStore } = useStores();
   const status = authStore((s) => s.state.status);
   const pathname = usePathname();
+  const params = useGlobalSearchParams();
   const router = useRouter();
 
   useEffect(() => {
-    if (status !== 'unauthenticated') return;
+    if (status !== StoreStatus.Unauthenticated) return;
     if (isPublicPath(pathname)) return;
     // `pathname` is guaranteed non-public here — the isPublicPath early return
     // above already handled `/`, `/login`, and the other public routes — so it
     // is always worth preserving as a post-login redirect target. Cast: the
     // dynamic redirect param can't be statically verified against expo-router's
     // typed-routes union.
-    router.replace(RoutePaths.loginWithRedirect(pathname) as Href);
-  }, [status, pathname, router]);
+    router.replace(RoutePaths.loginWithRedirect(withParams(pathname, params)) as Href);
+  }, [status, pathname, params, router]);
 };

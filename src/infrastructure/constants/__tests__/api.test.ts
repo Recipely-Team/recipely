@@ -1,4 +1,4 @@
-import { recipeWebUrl, PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api';
+import { recipeWebUrl, PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
 
 describe('recipeWebUrl', () => {
   it('builds the canonical recipe URL using the default web-app base', () => {
@@ -20,7 +20,7 @@ describe('recipeWebUrl', () => {
       // this suite exists to prove a module-level constant follows the env var, and
       // a dynamic import needs --experimental-vm-modules, which jest does not run here.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
+      const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api/api-hosts') as typeof import('@infrastructure/constants/api/api-hosts');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
       process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
@@ -39,7 +39,7 @@ describe('recipeWebUrl', () => {
       // this suite exists to prove a module-level constant follows the env var, and
       // a dynamic import needs --experimental-vm-modules, which jest does not run here.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
+      const { recipeWebUrl: freshFn } = require('@infrastructure/constants/api/api-hosts') as typeof import('@infrastructure/constants/api/api-hosts');
       expect(freshFn('42')).toBe('https://staging.recipely.net/recipes/42');
     } finally {
       process.env.EXPO_PUBLIC_WEB_APP_URL = originalEnv;
@@ -76,7 +76,7 @@ describe('legal page URLs', () => {
       // this suite exists to prove a module-level constant follows the env var, and
       // a dynamic import needs --experimental-vm-modules, which jest does not run here.
       // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const fresh = require('@infrastructure/constants/api') as typeof import('@infrastructure/constants/api');
+      const fresh = require('@infrastructure/constants/api/api-hosts') as typeof import('@infrastructure/constants/api/api-hosts');
       expect(fresh.PRIVACY_POLICY_URL).toBe('https://recipely.net/privacy');
       expect(fresh.TERMS_OF_USE_URL).toBe('https://recipely.net/terms');
     } finally {

@@ -3,7 +3,7 @@
  * service when the composition root wired one, and fall back to the inert no-op
  * service (never throw) when nothing is registered.
  */
-import { container } from '@core/di/container-instance';
+import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { noopNotificationService } from '@application/notifications/noop-notification-service';
@@ -34,9 +34,11 @@ describe('getNotificationService', () => {
   it('falls back to a service whose methods are inert and grant nothing', async () => {
     const service = getNotificationService();
 
-    await expect(service.init()).resolves.toBeUndefined();
+    await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!' })).resolves.toBeUndefined();
     await expect(service.requestPermissions()).resolves.toBe(false);
-    await expect(service.scheduleTimerComplete('t1', 'Pasta', Date.now())).resolves.toEqual([]);
+    await expect(
+      service.scheduleTimerComplete('t1', 'Pasta', Date.now(), 'Timer is done!'),
+    ).resolves.toEqual([]);
     await expect(service.cancel(['notif-1'])).resolves.toBeUndefined();
   });
 });

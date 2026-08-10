@@ -1,4 +1,4 @@
-import { configureCommentsStore } from '@application/comments/configure-comments-store';
+import { configureCommentsStore } from '@application/comments/comments-store';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
@@ -7,12 +7,13 @@ import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-com
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
+import { CommentEntity } from '@domain/comments/comment-entity';
+import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
 import type { CommentPage } from '@domain/comments/comment-page';
 
 const RECIPE_ID = 'recipe-3';
 
-const makeComment = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity => {
   const result = CommentEntity.create({
     id: 'c1',
     body: 'Looks delicious!',

@@ -1,6 +1,7 @@
-import { CommentEntity, type CommentProps } from '@domain/comments/comment-entity';
+import { CommentEntity } from '@domain/comments/comment-entity';
+import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
 
-const makeProps = (overrides: Partial<CommentProps> = {}): CommentProps => ({
+const makeProps = (overrides: Partial<CommentEntityProps> = {}): CommentEntityProps => ({
   id: 'c1',
   body: 'Looks delicious!',
   authorId: 'author-9',
@@ -13,7 +14,7 @@ const makeProps = (overrides: Partial<CommentProps> = {}): CommentProps => ({
   ...overrides,
 });
 
-const build = (overrides: Partial<CommentProps> = {}): CommentEntity => {
+const build = (overrides: Partial<CommentEntityProps> = {}): CommentEntity => {
   const result = CommentEntity.create(makeProps(overrides));
   if (!result.ok) {
     throw new Error('Test setup expected a valid Comment');

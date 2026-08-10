@@ -3,7 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
-import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, opacities, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -20,7 +20,11 @@ export interface FeedbackDialogProps {
   onPrimary: () => void;
   /** Visual tone of the disc + icon; success by default. */
   severity?: 'success' | 'danger';
-  /** Optional secondary text action shown under the primary button. */
+  /**
+   * Optional SECOND action, shown beside the primary. Only for a real
+   * alternative — "dismiss" is the ✕ and the backdrop, and a button that
+   * duplicates them just makes the user choose between two ways to do nothing.
+   */
   secondaryLabel?: string;
   onSecondary?: () => void;
   onClose: () => void;
@@ -28,10 +32,14 @@ export interface FeedbackDialogProps {
 
 /**
  * Centered operation-outcome dialog (a true modal alert, not a bottom sheet).
- * Shows a severity disc (✓ success / ! danger), a title and message, a
- * full-width primary button and an optional secondary text action — so neither
- * a completed nor a failed operation can ever pass silently or off-screen.
- * Cross-platform: works on web where `Alert.alert` is a no-op.
+ *
+ * @remarks
+ * - **Closing is the ✕, not a button.** The dialog reports an outcome; the only
+ *   thing a user must be able to do is leave. That is the ✕ (and the backdrop),
+ *   so the action row is free to hold actions that actually DO something.
+ * - **Two actions sit side by side**, not stacked: they are peers, and stacking
+ *   them reads as one being the way out of the other.
+ * - Cross-platform: works on the web, where `Alert.alert` is a no-op.
  */
 export const FeedbackDialog = ({
   visible,
@@ -67,6 +75,15 @@ export const FeedbackDialog = ({
           accessibilityViewIsModal
           style={[styles.card, { backgroundColor: colors.background }]}
         >
+          <Pressable
+            onPress={onClose}
+            hitSlop={spacing.sm}
+            accessibilityRole="button"
+            accessibilityLabel={t().common.close}
+            style={({ pressed }) => [styles.close, { opacity: pressed ? opacities.pressed : opacities.full }]}
+          >
+            <Ionicons name="close" size={iconSizes.lg} color={colors.textMuted} />
+          </Pressable>
           <View style={[styles.disc, { backgroundColor: surface.disc }]}>
             <Ionicons name={SEVERITY_ICON[severity]} size={iconSizes.xxxl} color={surface.icon} />
           </View>
@@ -76,31 +93,37 @@ export const FeedbackDialog = ({
           <ThemedText variant="body" muted style={styles.message}>
             {message}
           </ThemedText>
-          <Pressable
-            onPress={onPrimary}
-            accessibilityRole="button"
-            accessibilityLabel={primaryLabel}
-            style={({ pressed }) => [
-              styles.primary,
-              { backgroundColor: colors.primary, opacity: pressed ? 0.7 : 1 },
-            ]}
-          >
-            <ThemedText variant="body" style={[styles.primaryLabel, { color: colors.primaryText }]}>
-              {primaryLabel}
-            </ThemedText>
-          </Pressable>
-          {secondaryLabel !== undefined && onSecondary !== undefined ? (
+          <View style={styles.actions}>
+            {secondaryLabel !== undefined && onSecondary !== undefined ? (
+              <Pressable
+                onPress={onSecondary}
+                accessibilityRole="button"
+                accessibilityLabel={secondaryLabel}
+                style={({ pressed }) => [
+                  styles.action,
+                  styles.secondary,
+                  { borderColor: colors.border, opacity: pressed ? opacities.pressed : opacities.full },
+                ]}
+              >
+                <ThemedText variant="body" style={styles.actionLabel}>
+                  {secondaryLabel}
+                </ThemedText>
+              </Pressable>
+            ) : null}
             <Pressable
-              onPress={onSecondary}
+              onPress={onPrimary}
               accessibilityRole="button"
-              accessibilityLabel={secondaryLabel}
-              style={({ pressed }) => [styles.secondary, { opacity: pressed ? 0.7 : 1 }]}
+              accessibilityLabel={primaryLabel}
+              style={({ pressed }) => [
+                styles.action,
+                { backgroundColor: colors.primary, opacity: pressed ? opacities.pressed : opacities.full },
+              ]}
             >
-              <ThemedText variant="body" muted style={styles.secondaryLabel}>
-                {secondaryLabel}
+              <ThemedText variant="body" style={[styles.actionLabel, { color: colors.primaryText }]}>
+                {primaryLabel}
               </ThemedText>
             </Pressable>
-          ) : null}
+          </View>
         </View>
       </View>
     </Modal>
@@ -139,24 +162,30 @@ const styles = StyleSheet.create({
     lineHeight: lineHeightFor(fontSizes.body),
     marginBottom: spacing.lg,
   },
-  primary: {
+  close: {
+    position: 'absolute',
+    top: spacing.md,
+    right: spacing.md,
+    zIndex: zIndices.raised,
+  },
+  actions: {
     alignSelf: 'stretch',
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
+  action: {
+    // Equal halves when there are two, full width when there is one — the row
+    // needs no branch, `flex: 1` produces both.
+    flex: ValueConstants.one,
     minHeight: controlSizes.button,
     borderRadius: radii.lg,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  primaryLabel: {
-    fontWeight: fontWeights.semibold,
-  },
   secondary: {
-    alignSelf: 'stretch',
-    minHeight: controlSizes.button,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.xs,
+    borderWidth: borderWidths.thin,
   },
-  secondaryLabel: {
+  actionLabel: {
     fontWeight: fontWeights.semibold,
   },
 });

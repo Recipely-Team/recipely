@@ -1,6 +1,6 @@
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import type { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -20,13 +20,13 @@ export interface UseCreateRecipeResult {
   onAppendChip: (chip: string) => void;
   onGenerate: () => void;
   onStartBlank: () => void;
+  onImportFromInstagram: () => void;
   onClose: () => void;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;
 
   // Generating phase.
   genStep: number;
-  importing: boolean;
 
   // Header.
   headerTitle: string;
@@ -42,6 +42,11 @@ export interface UseCreateRecipeResult {
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
   onAddIngredient: () => void;
+  onAddIngredientAt: (index: number) => void;
+  onMoveIngredient: (from: number, to: number) => void;
+  onRemoveIngredientGroup: (headerIndex: number, itemIndices: readonly number[], keepItems: boolean) => void;
+  /** Appends an unnamed ingredient group heading for the user to label. */
+  onAddIngredientGroup: () => void;
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onAddStep: () => void;

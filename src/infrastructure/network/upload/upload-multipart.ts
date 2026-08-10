@@ -1,8 +1,13 @@
 import { fail, ok } from '@core/result/result-helpers';
+import { LogTag, DECRYPT_FAILED_LOG } from '@infrastructure/constants/log-tag';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { HttpStatus , isSuccessStatus } from '@infrastructure/network/http/http-status';
+import { HttpMethod } from '@infrastructure/network/http/http-method';
+import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-header';
 import type { Result } from '@core/result/result';
 import { type Failure, NetworkFailure, TimeoutFailure } from '@core/failure';
-import { RegexConstants, ValueConstants } from '@core/constants';
-import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api';
+import { ValueConstants } from '@core/constants';
+import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { decryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { failureFromResponse } from '@infrastructure/network/errors/failure-from-response';
 import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
@@ -10,6 +15,7 @@ import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
+import { joinUrl } from '@infrastructure/network/http/join-url';
 
 /**
  * Uploads a `FormData` payload via raw `XMLHttpRequest`, bypassing axios
@@ -28,20 +34,18 @@ export const uploadMultipart = async <T>(
   formData: FormData,
   onProgress?: (event: UploadProgressEvent) => void,
 ): Promise<Result<T, Failure>> => {
-  const fullUrl = RegexConstants.absoluteHttpUrl.test(url)
-    ? url
-    : `${options.baseUrl}${url.startsWith('/') ? url : `/${url}`}`;
+  const fullUrl = joinUrl(options.baseUrl, url);
   const commonHeaders = await buildCommonHeaders(options);
   const enableLogging = options.enableLogging === true;
 
   return new Promise<Result<T, Failure>>((resolve) => {
     if (enableLogging) {
-      console.log(`[HTTP → multipart] POST ${fullUrl}`);
+      console.log(`${LogTag.multipartRequest} ${HttpMethod.Post} ${fullUrl}`);
     }
     const xhr = new XMLHttpRequest();
-    xhr.open('POST', fullUrl, true);
+    xhr.open(HttpMethod.Post, fullUrl, true);
     xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
-    xhr.setRequestHeader('Accept', 'application/json');
+    xhr.setRequestHeader(HttpHeader.accept, HttpMediaType.json);
     for (const [name, value] of Object.entries(commonHeaders)) {
       xhr.setRequestHeader(name, value);
     }
@@ -59,7 +63,7 @@ export const uploadMultipart = async <T>(
       const status = xhr.status;
       const responseText = xhr.responseText;
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] ${status} ${fullUrl}`);
+        console.log(`${LogTag.multipartResponse} ${status} ${fullUrl}`);
       }
       let body: unknown;
       try {
@@ -72,11 +76,11 @@ export const uploadMultipart = async <T>(
           body = decryptEnvelope(body, aesKey);
         } catch (err) {
           if (enableLogging) {
-            console.log(`[HTTP ← multipart] decrypt failed: ${(err as Error).message}`);
+            console.log(`${LogTag.multipartResponse} ${DECRYPT_FAILED_LOG} ${(err as Error).message}`);
           }
         }
       }
-      if (status >= 200 && status < 300) {
+      if (isSuccessStatus(status)) {
         if (isRecipelyDataBody<T>(body)) {
           resolve(ok(body.data));
           return;
@@ -84,7 +88,7 @@ export const uploadMultipart = async <T>(
         resolve(ok(body as T));
         return;
       }
-      if (status === 401) {
+      if (status === HttpStatus.unauthorized) {
         options.onUnauthorized?.();
       }
       // `body` is the decrypted error envelope here, so the server's
@@ -96,19 +100,19 @@ export const uploadMultipart = async <T>(
 
     xhr.onerror = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
+        console.log(`${LogTag.multipartResponse} network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
       }
       // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
       // unreadable file URI, cleartext blocked). Surface as NetworkFailure with
       // the status (0 == no response) so the UI can show something concrete.
-      resolve(fail(new NetworkFailure(`Network error (status ${xhr.status || ValueConstants.zero})`)));
+      resolve(fail(new NetworkFailure(DiagnosticMessage.network.uploadFailed(xhr.status || ValueConstants.zero))));
     };
 
     xhr.ontimeout = (): void => {
       if (enableLogging) {
-        console.log(`[HTTP ← multipart] timeout ${fullUrl}`);
+        console.log(`${LogTag.multipartResponse} timeout ${fullUrl}`);
       }
-      resolve(fail(new TimeoutFailure('Request timed out')));
+      resolve(fail(new TimeoutFailure(DiagnosticMessage.network.timedOut)));
     };
 
     xhr.send(formData);

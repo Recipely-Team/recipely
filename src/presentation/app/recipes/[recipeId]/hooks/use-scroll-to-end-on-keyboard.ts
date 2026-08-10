@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Keyboard, Platform } from 'react-native';
+import { isWeb } from '@infrastructure/constants/platform';
+import { Keyboard } from 'react-native';
 import type { EmitterSubscription, ScrollView } from 'react-native';
 import type { RefObject } from 'react';
 
@@ -41,7 +42,7 @@ export const useScrollToEndOnKeyboard = (
       });
     };
 
-    if (Platform.OS === 'web' || Keyboard.isVisible()) {
+    if (isWeb() || Keyboard.isVisible()) {
       scrollToEnd();
       return;
     }

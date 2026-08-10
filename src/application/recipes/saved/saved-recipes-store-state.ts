@@ -1,5 +1,7 @@
+import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { SavedRecipesListState } from '@application/recipes/saved/saved-recipes-list-state';
 
 export interface SavedRecipesStoreState {
   /**
@@ -9,15 +11,20 @@ export interface SavedRecipesStoreState {
    */
   savedRecipes: readonly RecipeSummaryEntity[];
   savedIds: ReadonlySet<string>;
-  isLoading: boolean;
-  error: Failure | null;
+  /** Load status of `savedRecipes` — what the saved grid shows a skeleton for. */
+  listState: SavedRecipesListState;
   has: (id: string) => boolean;
   toggle: (id: string) => void;
   addLocal: (id: string) => void;
   removeLocal: (id: string) => void;
   /** Replaces both the rows and the id set from one favourites response. */
   setSaved: (recipes: readonly RecipeSummaryEntity[]) => void;
-  setLoading: (loading: boolean) => void;
-  setError: (error: Failure | null) => void;
-  clearError: () => void;
+  /**
+   * Fetches the favourites, folds the outcome into `listState`, and hands the
+   * same outcome back — a caller that pulled to refresh needs to know how ITS
+   * load ended, which a shared field cannot say once two loads overlap.
+   */
+  loadSaved: () => Promise<Result<readonly RecipeSummaryEntity[], Failure>>;
+  /** Drops the signed-in user's saved recipes. Called when the session ends. */
+  clear: () => void;
 }

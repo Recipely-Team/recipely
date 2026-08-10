@@ -1,5 +1,6 @@
+import type { BoundStore } from '@application/store/bound-store';
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
-import { configureAuthStore } from '@application/auth/configure-auth-store';
+import { configureAuthStore } from '@application/auth/auth-store';
 import { GetSessionUseCase } from '@application/auth/session/get-session-use-case';
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
@@ -14,8 +15,7 @@ import { UploadAvatarUseCase } from '@application/auth/profile/upload-avatar-use
 import { UpdateProfileUseCase } from '@application/auth/profile/update-profile-use-case';
 import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { configureSavedRecipesStore } from '@application/recipes/saved/configure-saved-recipes-store';
-import type { SavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
+import { configureSavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
 import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -23,6 +23,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -65,11 +66,20 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
   return result.value;
 };
 
+/**
+ * The saved store's own fetch, stubbed out. These tests drive it through
+ * `setSaved` / `clear`; a real use case here would only add a network seam
+ * nothing asserts on.
+ */
+const neverLoadsFavorites = {
+  execute: () => Promise.resolve(ok([])),
+} as unknown as LoadFavoritesUseCase;
+
 const makeStore = (
   repo: FakeAuthRepository,
-  overrides: { savedRecipesStore?: SavedRecipesStore; clearSessionCaches?: () => void } = {},
+  overrides: { savedRecipesStore?: BoundStore<SavedRecipesStoreState>; clearSessionCaches?: () => void } = {},
 ) => {
-  const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore();
+  const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
   return configureAuthStore({
     signIn: new SignInUseCase(repo),
     requestRegistration: new RequestRegistrationUseCase(repo),
@@ -383,7 +393,7 @@ describe('auth-store', () => {
         signOutResult: ok(undefined),
       });
       const signOutSpy = jest.spyOn(repo, 'signOut');
-      const savedRecipesStore = configureSavedRecipesStore();
+      const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
@@ -467,7 +477,7 @@ describe('auth-store', () => {
         signInResult: ok(session),
         deleteAccountResult: ok(undefined),
       });
-      const savedRecipesStore = configureSavedRecipesStore();
+      const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
       await store.getState().signIn('emilys', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');

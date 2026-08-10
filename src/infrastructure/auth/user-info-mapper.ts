@@ -1,9 +1,10 @@
 import { fail } from '@core/result/result-helpers';
+import { optional } from '@core/guards/type-guards';
 import type { ValidationFailure } from '@core/failure';
 import type { Mapper } from '@core/mapper/mapper';
 import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
-import type { RecipelyUserDto } from '@infrastructure/auth/recipely-user-dto';
+import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 
 /**
  * Maps a `RecipelyUserDto` from the API into a domain `UserEntity` entity. Validates
@@ -19,7 +20,7 @@ export const toUser: Mapper<RecipelyUserDto, UserEntity, ValidationFailure> = (d
     id: dto.id,
     email: emailResult.value,
     displayName: dto.displayName,
-    ...(dto.photoUrl ? { photoUrl: dto.photoUrl } : {}),
-    ...(dto.bio ? { bio: dto.bio } : {}),
+    ...optional('photoUrl', dto.photoUrl),
+    ...optional('bio', dto.bio),
   });
 };

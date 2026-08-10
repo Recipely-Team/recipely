@@ -1,4 +1,4 @@
-import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
+import type { AlarmAudioServiceInterface } from '@domain/audio/alarm-audio-service-interface';
 
 /**
  * Null-object alarm-audio service used only when none is registered in the
@@ -6,7 +6,7 @@ import type { IAlarmAudioService } from '@domain/audio/i-alarm-audio-service';
  * root). Both methods are inert — the real service is always registered before
  * the UI mounts in the app.
  */
-export const noopAlarmAudioService: IAlarmAudioService = {
+export const noopAlarmAudioService: AlarmAudioServiceInterface = {
   start: async () => {},
   stop: async () => {},
 };

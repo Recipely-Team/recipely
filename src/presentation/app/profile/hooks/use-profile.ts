@@ -1,12 +1,27 @@
 import { useEffect } from 'react';
+import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
-import type { UseProfileResult } from '@presentation/app/profile/model/use-profile-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+
+/** View model returned by {@link useProfile} for the profile screen. */
+interface UseProfileResult {
+  displayName: string;
+  handle: string;
+  bio: string;
+  photoUri: string | undefined;
+  isUploading: boolean;
+  onPickAvatar: () => void;
+  onEditProfile: () => void;
+  stats: ProfileStatsState;
+  /** Localized message for the avatar upload-failure dialog; null when there is none. */
+  uploadError: string | null;
+  onDismissUploadError: () => void;
+}
 
 /**
  * Orchestrates the profile screen: exposes the signed-in user's identity
@@ -24,7 +39,7 @@ export const useProfile = (): UseProfileResult => {
   const loadProfile = userProfileStore((s) => s.load);
   const savedCount = savedRecipesStore((s) => s.savedIds.size);
 
-  const user = authState.status === 'authenticated' ? authState.session.user : null;
+  const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
   const userId = user?.id;
   const displayName = user?.displayName ?? CharConstants.empty;
   const email = user?.email.value ?? CharConstants.empty;
@@ -33,7 +48,7 @@ export const useProfile = (): UseProfileResult => {
   const bio = user?.bio?.trim() ?? CharConstants.empty;
 
   useEffect(() => {
-    if (userId !== undefined && profileState.status === 'idle') {
+    if (userId !== undefined && profileState.status === StoreStatus.Idle) {
       void loadProfile(userId);
     }
   }, [userId, profileState.status, loadProfile]);
@@ -45,23 +60,23 @@ export const useProfile = (): UseProfileResult => {
   const stats = ((): ProfileStatsState => {
     switch (profileState.status) {
       case 'loading':
-        return { status: 'loading' };
+        return { status: StoreStatus.Loading };
       case 'error':
         return {
-          status: 'error',
+          status: StoreStatus.Error,
           message: failureToastMessage(profileState.failure),
           onRetry: retry,
         };
       case 'loaded':
         return {
-          status: 'loaded',
+          status: StoreStatus.Loaded,
           recipeCount: profileState.profile.recipeCount,
           totalLikes: profileState.profile.totalLikes,
           totalViews: profileState.profile.totalViews,
           savedCount,
         };
       default:
-        return { status: 'idle' };
+        return { status: StoreStatus.Idle };
     }
   })();
 

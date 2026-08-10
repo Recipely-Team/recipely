@@ -1,4 +1,6 @@
 import { AxiosError } from 'axios';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { AxiosErrorCode } from '@infrastructure/network/http/http-status';
 import {
   type Failure,
   NetworkFailure,
@@ -23,24 +25,29 @@ import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-er
  * only branch with a decoded envelope. Every other branch is transport- or
  * client-level (no response body, hence no key) and leaves `Failure.messageKey`
  * `undefined`; presentation falls back to `code` for those.
+ *
+ * The English sentences below are diagnostics, not user copy. Nothing renders
+ * `Failure.message`: presentation resolves what the user reads from
+ * `messageKey`, then `code` (`failure-lookups.ts`), so these strings only ever
+ * reach a log or a crash report.
  */
 export const mapAxiosError = (error: unknown): Failure => {
   if (error instanceof EnvelopeDecryptError) {
-    return new ValidationFailure(`Bad envelope: ${error.message}`);
+    return new ValidationFailure(DiagnosticMessage.network.badEnvelope(error.message));
   }
   if (!(error instanceof AxiosError)) {
-    return new UnknownFailure('Unexpected error', error);
+    return new UnknownFailure(DiagnosticMessage.network.unexpected, error);
   }
 
-  if (error.code === 'ECONNABORTED' || error.code === 'ETIMEDOUT') {
-    return new TimeoutFailure('Request timed out');
+  if (error.code === AxiosErrorCode.timedOut || error.code === AxiosErrorCode.connectionTimedOut) {
+    return new TimeoutFailure(DiagnosticMessage.network.timedOut);
   }
 
   if (error.response) {
     return failureFromResponse(error.response.status, error.response.data);
   }
   if (error.request) {
-    return new NetworkFailure(error.message || 'Network unreachable');
+    return new NetworkFailure(error.message || DiagnosticMessage.network.unreachable);
   }
   return new UnknownFailure(error.message, error);
 };

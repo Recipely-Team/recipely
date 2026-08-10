@@ -4,8 +4,10 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
+import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
+import { ResumingView } from '@presentation/app/create-recipe/body/resuming-view';
 import { CreateRecipePreview } from '@presentation/app/create-recipe/body/create-recipe-preview';
 import { PhotosSheet } from '@presentation/app/create-recipe/sheets/photos-sheet';
 import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
@@ -17,7 +19,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
 
-  if (vm.phase === 'prompt') {
+  if (vm.phase === PhaseType.Prompt) {
     return (
       <KeyboardAvoider style={styles.root}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
@@ -29,6 +31,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             onAppendChip={vm.onAppendChip}
             onGenerate={vm.onGenerate}
             onStartBlank={vm.onStartBlank}
+            onImportFromInstagram={vm.onImportFromInstagram}
             onClose={vm.onClose}
             latestDraft={vm.latestDraft}
             onResumeDraft={vm.onResumeDraft}
@@ -38,11 +41,21 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     );
   }
 
-  if (vm.phase === 'generating') {
+  if (vm.phase === PhaseType.Resuming) {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
-          <GeneratingView activeStep={vm.genStep} variant={vm.importing ? 'import' : 'generate'} />
+          <ResumingView isWebShell={vm.isWebShell} topInset={vm.insets.top} onClose={vm.onClose} />
+        </ResponsiveContainer>
+      </View>
+    );
+  }
+
+  if (vm.phase === PhaseType.Generating) {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+        <ResponsiveContainer route="createRecipe" gutter={false} fill>
+          <GeneratingView activeStep={vm.genStep} />
         </ResponsiveContainer>
       </View>
     );
@@ -91,8 +104,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         message={t().createRecipe.successPublished}
         primaryLabel={t().createRecipe.viewRecipe}
         onPrimary={vm.onSuccessPrimary}
-        secondaryLabel={t().createRecipe.successDone}
-        onSecondary={vm.onCloseSuccess}
         onClose={vm.onCloseSuccess}
       />
     </KeyboardAvoider>
