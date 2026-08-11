@@ -11,9 +11,9 @@ A recipe app that puts the recipe first — and writes one for you when you only
 [![React Native 0.83](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
 [![React 19.2](https://img.shields.io/badge/React-19.2-149ECA?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
-[![Tests](https://img.shields.io/badge/tests-1516%20in%20180%20suites-3FB950)](#testing)
+[![Tests](https://img.shields.io/badge/tests-1542%20in%20184%20suites-3FB950)](#testing)
 [![Architecture](https://img.shields.io/badge/DDD%20%2F%20Clean%20Architecture-17%20mechanical%20rules-8957E5)](#quality-gates)
-[![License MIT](https://img.shields.io/badge/license-MIT-lightgrey)](#license)
+[![License AGPL-3.0](https://img.shields.io/badge/license-AGPL--3.0-lightgrey)](#license)
 
 [**recipely.net**](https://recipely.net) · [About](https://recipely.net/about) · [dev.recipely.net](https://dev.recipely.net)
 
@@ -41,7 +41,7 @@ deploys the same source to `recipely.net` as a static web export.
 |---|---|
 | **Platforms** | iOS · Android · Web |
 | **Shells** | Mobile + a real desktop shell |
-| **Languages** | English · Turkish |
+| **Languages** | 9 selectable · 14 catalogues |
 | **Backend** | [`recipely-backend`](https://api.recipely.net) (separate repo) |
 | **Architecture** | DDD on Clean Architecture, 5 layers |
 | **Enforcement** | 17 mechanical rules + 4 gates |
@@ -157,8 +157,8 @@ a structured recipe you can edit and save.
 | Animation | **react-native-reanimated** | 4 |
 | Vector art | **react-native-svg** | 15 |
 | Auth / analytics / crash | **Firebase** (native + web SDKs) | Google & Apple sign-in, Crashlytics |
-| i18n | **expo-localization** + in-repo dictionaries | EN, TR |
-| Testing | **Jest + jest-expo** | 1516 tests across 180 suites |
+| i18n | **expo-localization** + in-repo dictionaries | 9 selectable, 5 more translated and awaiting an RTL/CJK pass |
+| Testing | **Jest + jest-expo** | 1542 tests across 184 suites |
 | Tooling | ESLint (`eslint-config-expo`), Husky, lint-staged | |
 | CI/CD | GitHub Actions → Play internal track, TestFlight, Firebase Hosting | |
 
@@ -492,6 +492,23 @@ short version.
 
 ---
 
+## License
+
+Released under the **[GNU AGPL-3.0](LICENSE)**. You may read, run, modify,
+self-host and redistribute this code, provided your version is released under
+the same licence and its source is available to anyone who uses it — including
+over a network.
+
+A copyright licence covers code and nothing else, so the name **Recipely**, the
+logo and the store listings are reserved separately in
+[`TRADEMARKS.md`](TRADEMARKS.md): a fork is welcome, a look-alike in the stores
+under the same name is not.
+
+Note that this repository is the client. The backend it talks to is a separate,
+private repository, and no API key, encryption key or service credential is
+committed here — so this tree is something to learn from and build on rather
+than a deployable copy of the product.
+
 ## Documentation map
 
 | Document | What it is for |
@@ -508,11 +525,13 @@ short version.
 | [`docs/roadmap.md`](docs/roadmap.md) | Planned features — the reasoning behind each, and what is still open |
 | [`docs/qa/android.md`](docs/qa/android.md) · [`docs/qa/ios.md`](docs/qa/ios.md) | Step-by-step manual QA passes, per platform |
 | [`TODO.md`](TODO.md) | Closed-out record of the backend-contract parity work |
+| [`LICENSE`](LICENSE) | AGPL-3.0 — the terms the code is offered under |
+| [`TRADEMARKS.md`](TRADEMARKS.md) | What the licence does **not** cover: the name, the logo, the store listings |
 
 ---
 
 <div align="center">
 
-**MIT** · Built with [Expo](https://expo.dev) · Designed in [Claude Design](https://claude.ai/design)
+**AGPL-3.0** · Built with [Expo](https://expo.dev) · Designed in [Claude Design](https://claude.ai/design)
 
 </div>
