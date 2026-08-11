@@ -76,16 +76,21 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * route yet — so it has no destination and this returns `null`.
    */
   get target(): NotificationTarget | null {
-    // Checked first because it is the one target that carries no `recipeId`:
-    // the import has not produced a recipe yet, only a draft to finish.
-    if (this.props.draftId !== null) {
-      return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
-    }
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }
+    // A recipe outranks a draft when both are present. An import announces the
+    // draft it produced, and publishing that draft turns it into a recipe — at
+    // which point the server sets `recipeId` on the same notification. The
+    // draft pointer is the older claim of the two, so the newer one wins;
+    // checking the draft first sent the user to a row that no longer existed.
     if (this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Recipe, recipeId: this.props.recipeId };
+    }
+    // Only reachable while the import's draft is still unpublished: there is
+    // no recipe yet, just something to finish.
+    if (this.props.draftId !== null) {
+      return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
     }
     return null;
   }

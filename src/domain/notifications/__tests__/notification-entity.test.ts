@@ -75,3 +75,31 @@ describe('NotificationEntity — asRead', () => {
     expect(notification.asRead()).toBe(notification);
   });
 });
+
+describe('NotificationEntity.target — a draft that became a recipe', () => {
+  // An Instagram import announces the draft it produced. Publishing that draft
+  // deletes it, and the server sets `recipeId` on the same notification — so a
+  // notification can carry both. Reading the draft first sent the user to a row
+  // publishing had removed, and they got an error instead of the recipe that
+  // now exists.
+  it('opens the recipe, not the draft, once both are present', () => {
+    const notification = build({ recipeId: 'recipe-9', draftId: 'draft-9' });
+
+    expect(notification.target).toEqual({ kind: 'recipe', recipeId: 'recipe-9' });
+  });
+
+  it('still opens the draft while the import is unpublished', () => {
+    const notification = build({ recipeId: null, draftId: 'draft-9' });
+
+    expect(notification.target).toEqual({ kind: 'draft', draftId: 'draft-9' });
+  });
+
+  // A comment always accompanies a recipe, so it must keep outranking both.
+  it('still opens the comment when one is attached', () => {
+    const notification = build({ recipeId: 'recipe-9', commentId: 'comment-9', draftId: 'draft-9' });
+
+    expect(notification.target).toEqual({
+      kind: 'comment', recipeId: 'recipe-9', commentId: 'comment-9',
+    });
+  });
+});

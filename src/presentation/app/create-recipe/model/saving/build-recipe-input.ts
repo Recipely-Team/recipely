@@ -23,7 +23,11 @@ const cleanIngredients = (lines: readonly string[]): string[] =>
   );
 
 /** Builds the create-recipe API payload from the editor state for a given locale. */
-export const buildCreateInput = (recipe: EditableRecipe, locale: string): CreateRecipeInput => {
+export const buildCreateInput = (
+  recipe: EditableRecipe,
+  locale: string,
+  fromDraftId?: string,
+): CreateRecipeInput => {
   const images = recipe.media.filter((m) => m.type === MediaType.Image);
   // An Instagram import arrives with a cover the backend already stored, so it
   // is a URL to hand back rather than a file to upload — see `isHostedMedia`.
@@ -45,5 +49,9 @@ export const buildCreateInput = (recipe: EditableRecipe, locale: string): Create
     mealType: { [locale]: [] },
     isPublished: true,
     locale,
+    // Names the draft so the server can retire it — and send its
+    // notifications on to this recipe — instead of the client deleting it
+    // in a call nothing connects to this one.
+    ...(fromDraftId !== undefined ? { fromDraftId } : {}),
   };
 };

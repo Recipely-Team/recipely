@@ -54,6 +54,11 @@ export const buildCreateRecipeFormData = async (
   if (input.isPublished !== undefined) {
     formData.append('isPublished', String(input.isPublished));
   }
+  // Travels as a field, not a file: it names the draft this publish came from
+  // so the server can retire it and repoint its notifications at the recipe.
+  if (input.fromDraftId !== undefined) {
+    formData.append('fromDraftId', input.fromDraftId);
+  }
 
   return formData;
 };

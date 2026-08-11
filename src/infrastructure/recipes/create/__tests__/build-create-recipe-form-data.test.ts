@@ -60,3 +60,21 @@ describe('buildCreateRecipeFormData', () => {
     expect(formData.get('image')).toBe('https://api.recipely.net/uploads/imports/6f1c.webp');
   });
 });
+
+describe('buildCreateRecipeFormData — the draft being published', () => {
+  // The server retires the draft it is named here: the import notification that
+  // opens that draft is repointed at the new recipe before the row goes. Losing
+  // the field means the notification keeps pointing at something publishing has
+  // deleted, which is the error the user hit after publishing an import.
+  it('names the draft the publish came from', async () => {
+    const formData = await buildCreateRecipeFormData({ ...base, fromDraftId: 'draft-7' });
+
+    expect(formData.get('fromDraftId')).toBe('draft-7');
+  });
+
+  it('omits it for a recipe written from scratch', async () => {
+    const formData = await buildCreateRecipeFormData(base);
+
+    expect(formData.get('fromDraftId')).toBeNull();
+  });
+});

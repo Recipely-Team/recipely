@@ -32,4 +32,14 @@ export interface CreateRecipeInput {
   mealType?: Record<string, string[]>;
   isPublished?: boolean;
   locale?: string;
+  /**
+   * The draft this recipe is being published from, when there is one.
+   *
+   * The server uses it to retire the draft: any notification that opens it — an
+   * Instagram import announces the draft it produced — is repointed at the new
+   * recipe before the row goes. Publishing used to delete the draft in a
+   * separate call the server could not connect to this one, which left those
+   * notifications pointing at something that no longer existed.
+   */
+  fromDraftId?: string;
 }
