@@ -22,6 +22,7 @@ import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { navigationTheme } from '@presentation/navigation/navigation-theme';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
+import { useWindowBackground } from '@presentation/navigation/use-window-background';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
 
@@ -106,6 +107,7 @@ const RootStack = (): React.JSX.Element => {
   useAuthGuard();
   useInstagramShareImport();
   usePushNotificationTap();
+  useWindowBackground(colors.background);
 
   const reactNavTheme = useMemo(() => navigationTheme(scheme, colors), [scheme, colors]);
   const headerBg = colors.background;
@@ -113,6 +115,12 @@ const RootStack = (): React.JSX.Element => {
 
   return (
     <ThemeProvider value={reactNavTheme}>
+      {/* The tab bar is a sibling of the Stack and unmounts the moment the
+          route becomes a tab-less one, while the stack transition is still
+          running. Without a painted container the strip it vacated shows
+          whatever is behind the app for the length of that animation —
+          black on Android. `useWindowBackground` is the floor under this. */}
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
       <WebShellChrome />
       <Stack
         screenOptions={{
@@ -160,9 +168,14 @@ const RootStack = (): React.JSX.Element => {
       <AlarmOverlay />
       <SplashOverlay />
       <StatusBar style="auto" />
+      </View>
     </ThemeProvider>
   );
 };
+
+const styles = StyleSheet.create({
+  root: { flex: 1 },
+});
 
 export const RootLayout = (): React.JSX.Element => {
   return (

@@ -712,3 +712,71 @@ reasoning as the Info.plist background-audio assertion beside it.
 runs them. Anything that rewrites a generated native project needs a check on the
 generated file, in the job that generates it — and a run-script phase that declares a
 build product as its input will deadlock any target that embeds an extension.
+
+---
+
+## The notification that outlived what it pointed at, again
+
+**Symptom:** an Instagram import finishes and notifies. Publish the draft it
+produced, then tap that notification: an error, instead of the recipe that
+exists. Reported from a device, not caught by anything.
+
+**Root cause:** nothing recorded what the draft became. Publishing was two
+unrelated calls — `POST /recipes` and then a client-side
+`DELETE /recipes/drafts/:id` — and the server was never told the second was a
+consequence of the first. So `Notification.draftId` kept naming a row that
+publishing had removed, with no way to resolve it forward. A second, quieter
+defect sat behind it: `Notification.target` read `draftId` **before**
+`recipeId`, so even once the server knew the recipe, the draft would still have
+won.
+
+*Guard:* `fromDraftId` on create. The server repoints that draft's
+notifications at the new recipe and deletes the draft in the same operation —
+and **clears** `draftId` as it sets `recipeId`, so clients already in the field,
+which read the draft pointer first, land on the recipe too. `target` now ranks
+recipe above draft. Three cases in `notification-entity.test.ts` (two fail
+against the unfixed getter), two in `build-create-recipe-form-data.test.ts`,
+four in the backend's `create-recipe-use-case.test.ts`.
+
+**The lesson is that this is the same class as ["Taslağı aç" opened a blank AI
+prompt screen](#taslağı-aç-opened-a-blank-ai-prompt-screen), and the first fix
+only handled the easy half.** That one taught the pointer to say "it is gone";
+it never asked what the thing had *turned into*. A pointer whose target can be
+transformed rather than merely deleted needs somewhere to record the
+transformation — otherwise every consumer is left guessing, and the graceful
+"it's gone" message is a dead end wearing good manners. When a fix handles
+deletion, ask whether the target can also become something else.
+
+---
+
+## The strip the tab bar left behind
+
+**Symptom:** moving between screens showed black bands — reported as "weird
+things happen going from screen to screen". Visible on a device recording, not
+in any test: during a push into a recipe, the area the bottom tab bar had
+occupied went black for the length of the transition.
+
+**Root cause:** the tab bar is a sibling of the `Stack`, not a navigator of its
+own, and `RootTabBar` returns `null` the moment the route becomes a tab-less
+one. So the strip is vacated *immediately* while the stack transition still has
+250ms to run — and nothing was painting it. The root had no container `View`
+with a background, and `expo-system-ui` was a dependency the app never called,
+so the native window kept the platform default. What showed through was
+Android's black.
+
+The stack itself was innocent: `contentStyle` and the navigation theme were
+both already derived from the palette, which is why this survived the earlier
+"navigator painted its scenes in a colour the app never uses" fix. That one
+covered the scene; nothing covered the space *outside* it.
+
+*Guard:* a themed container `View` wraps the stack and the bars, and
+`useWindowBackground` pushes the active background to the native window on every
+theme change. Three cases in `use-window-background.test.ts` pin that it paints,
+repaints on a theme switch, and does not repaint when nothing changed.
+
+**The lesson: a component that unmounts instantly leaves a hole for as long as
+the animation around it runs.** Mount and transition are not on the same clock —
+React removes the node in one frame, the navigator keeps animating for another
+fifteen. Anything that disappears on a route change needs to ask what is
+underneath it during that gap, and the honest answer is "the platform default"
+until something is deliberately painted there.

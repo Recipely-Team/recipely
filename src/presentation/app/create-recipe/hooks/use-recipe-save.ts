@@ -91,7 +91,9 @@ export const useRecipeSave = ({
     // because they had no photo to hand, and a resumed draft — whose cover was
     // a device URI that no longer resolved — hit it with no way to understand
     // why. Publishing without a cover is now allowed on both sides.
-    await createdRecipesStore.getState().createRecipe(buildCreateInput(recipe, getLocale()));
+    await createdRecipesStore
+      .getState()
+      .createRecipe(buildCreateInput(recipe, getLocale(), activeDraftId));
     const state = createdRecipesStore.getState().createState;
     if (state.status === StoreStatus.Success) {
       // Capture the new recipe's id before the store state is reset so the
@@ -99,7 +101,12 @@ export const useRecipeSave = ({
       const newRecipeId = state.recipe.id;
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
-      // Best-effort cleanup of the working draft now that it's published.
+      // The server retires the draft itself now — it is told which one by
+      // `fromDraftId`, which is also how the import notification learns to open
+      // the recipe instead of the draft it used to point at. This delete stays
+      // as the fallback for a build running against a backend that predates
+      // that: against a current one it simply 404s, which this call already
+      // tolerates. Remove it once no shipped version can reach an older API.
       await draftsStore.getState().deleteDraft(activeDraftId);
       setSaveSuccess({ recipeId: newRecipeId });
       return;
