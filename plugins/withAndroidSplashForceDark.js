@@ -7,8 +7,13 @@ const { withDangerousMod } = require('@expo/config-plugins');
  *
  * **The symptom.** In dark mode the launch screen showed a lighter orange
  * SQUARE floating on a darker orange field. Measured from a device screenshot:
- * the square was `#EE8941` — exactly the configured splash background — and the
+ * the square was `#EE8941` — the splash background of the day — and the
  * surround was `#A14900`, a colour that appears nowhere in this repo.
+ *
+ * The splash is now a fixed off-white (`#F5F5F4`, in both light and dark), which
+ * makes this opt-out matter MORE rather than less: Force Dark darkens a white
+ * window far more visibly than it darkened an orange one, and the logo plate
+ * would still be untouched. The seam would simply be starker.
  *
  * **Why.** `Theme.SplashScreen` descends from a light theme, so on Android 10+
  * the system may apply Force Dark: it algorithmically darkens the WINDOW's
