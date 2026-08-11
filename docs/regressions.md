@@ -746,3 +746,37 @@ transformed rather than merely deleted needs somewhere to record the
 transformation — otherwise every consumer is left guessing, and the graceful
 "it's gone" message is a dead end wearing good manners. When a fix handles
 deletion, ask whether the target can also become something else.
+
+---
+
+## The strip the tab bar left behind
+
+**Symptom:** moving between screens showed black bands — reported as "weird
+things happen going from screen to screen". Visible on a device recording, not
+in any test: during a push into a recipe, the area the bottom tab bar had
+occupied went black for the length of the transition.
+
+**Root cause:** the tab bar is a sibling of the `Stack`, not a navigator of its
+own, and `RootTabBar` returns `null` the moment the route becomes a tab-less
+one. So the strip is vacated *immediately* while the stack transition still has
+250ms to run — and nothing was painting it. The root had no container `View`
+with a background, and `expo-system-ui` was a dependency the app never called,
+so the native window kept the platform default. What showed through was
+Android's black.
+
+The stack itself was innocent: `contentStyle` and the navigation theme were
+both already derived from the palette, which is why this survived the earlier
+"navigator painted its scenes in a colour the app never uses" fix. That one
+covered the scene; nothing covered the space *outside* it.
+
+*Guard:* a themed container `View` wraps the stack and the bars, and
+`useWindowBackground` pushes the active background to the native window on every
+theme change. Three cases in `use-window-background.test.ts` pin that it paints,
+repaints on a theme switch, and does not repaint when nothing changed.
+
+**The lesson: a component that unmounts instantly leaves a hole for as long as
+the animation around it runs.** Mount and transition are not on the same clock —
+React removes the node in one frame, the navigator keeps animating for another
+fifteen. Anything that disappears on a route change needs to ask what is
+underneath it during that gap, and the honest answer is "the platform default"
+until something is deliberately painted there.
