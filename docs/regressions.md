@@ -712,3 +712,37 @@ reasoning as the Info.plist background-audio assertion beside it.
 runs them. Anything that rewrites a generated native project needs a check on the
 generated file, in the job that generates it — and a run-script phase that declares a
 build product as its input will deadlock any target that embeds an extension.
+
+---
+
+## The notification that outlived what it pointed at, again
+
+**Symptom:** an Instagram import finishes and notifies. Publish the draft it
+produced, then tap that notification: an error, instead of the recipe that
+exists. Reported from a device, not caught by anything.
+
+**Root cause:** nothing recorded what the draft became. Publishing was two
+unrelated calls — `POST /recipes` and then a client-side
+`DELETE /recipes/drafts/:id` — and the server was never told the second was a
+consequence of the first. So `Notification.draftId` kept naming a row that
+publishing had removed, with no way to resolve it forward. A second, quieter
+defect sat behind it: `Notification.target` read `draftId` **before**
+`recipeId`, so even once the server knew the recipe, the draft would still have
+won.
+
+*Guard:* `fromDraftId` on create. The server repoints that draft's
+notifications at the new recipe and deletes the draft in the same operation —
+and **clears** `draftId` as it sets `recipeId`, so clients already in the field,
+which read the draft pointer first, land on the recipe too. `target` now ranks
+recipe above draft. Three cases in `notification-entity.test.ts` (two fail
+against the unfixed getter), two in `build-create-recipe-form-data.test.ts`,
+four in the backend's `create-recipe-use-case.test.ts`.
+
+**The lesson is that this is the same class as ["Taslağı aç" opened a blank AI
+prompt screen](#taslağı-aç-opened-a-blank-ai-prompt-screen), and the first fix
+only handled the easy half.** That one taught the pointer to say "it is gone";
+it never asked what the thing had *turned into*. A pointer whose target can be
+transformed rather than merely deleted needs somewhere to record the
+transformation — otherwise every consumer is left guessing, and the graceful
+"it's gone" message is a dead end wearing good manners. When a fix handles
+deletion, ask whether the target can also become something else.
