@@ -389,6 +389,11 @@
 
 </main>
 
-<script src="/about/assets/landing.js"></script>
+<!-- ?v= is load-bearing: hosting serves /about/assets/* with
+     `max-age=31536000, immutable` and the filename carries no content hash, so a
+     returning visitor keeps the cached script for a year. The HTML itself is
+     `no-cache`, which makes this query the only way a change reaches them. Bump
+     it whenever landing.js or landing.css changes. -->
+<script src="/about/assets/landing.js?v=2"></script>
 </body>
 </html>
