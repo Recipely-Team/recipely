@@ -780,3 +780,41 @@ React removes the node in one frame, the navigator keeps animating for another
 fifteen. Anything that disappears on a route change needs to ask what is
 underneath it during that gap, and the honest answer is "the platform default"
 until something is deliberately painted there.
+
+---
+
+## The landing page picked a language without asking
+
+**Symptom:** a Turkish visitor opening recipely.net/about for the first time got
+the English page, with the header switch as the only way to find the Turkish
+copy — on a site whose whole pitch that week was "nine languages".
+
+**Root cause:** `landing.js` opened with `var startLang = 'en'` and consulted
+only `localStorage`. The browser's own language was never read, so "no stored
+choice" meant English rather than "ask the platform". The same function then
+wrote every language it applied back to storage, including the default one — so
+the first load silently froze the page's language, and a visitor who later
+changed their browser language would never be re-asked.
+
+*Guard:* `deviceLang()` walks `navigator.languages` in preference order and
+falls back to English only when the page has no translation for anything the
+visitor reads; `applyLang` persists only when a click passes `persist`. Six
+cases in `public/about/__tests__/landing-language.test.ts`, two of which fail
+against the unfixed script. The test evaluates the real `landing.js` in jsdom
+rather than a copy of its logic — there is no module boundary to mock, and a
+reimplementation would have passed while the shipped file stayed broken.
+
+**The lesson: a default is not the same as a detection, and storage is not the
+same as a decision.** Both halves of this bug are the same mistake made twice —
+treating "nothing chosen yet" as an answer instead of a question. The app had
+already solved it properly (`LocaleService`: stored choice > device language >
+default); the landing page was written separately and never inherited the rule.
+When a surface outside `src/` renders user-facing copy, it needs the same
+precedence, not a plausible-looking shortcut.
+
+*Second trap in the same fix:* `/about/assets/*` is served
+`max-age=31536000, immutable` and the filenames carry no content hash, so a
+returning visitor keeps the cached script for a year. The HTML is `no-cache`,
+which makes the `?v=` query on the `<script>` tag the only thing that delivers a
+change to them. **Editing an asset under `public/` is not shipping it** — bump
+the query in the same commit.

@@ -19,9 +19,13 @@
     try { localStorage.setItem(TKEY, next); } catch (e) {}
   });
 
-  /* ───── Language (EN / TR) — auto-localization demo ───── */
+  /* ───── Language (EN / TR) — auto-localization demo ─────
+     `persist` is what separates a decision from a default: only a click on the
+     switch writes the choice. An auto-detected language that saved itself would
+     freeze the page in whatever the browser said on the visitor's FIRST load,
+     so changing the browser language afterwards would no longer be read. */
   var LKEY = 'recipely-landing-lang';
-  function applyLang(lang) {
+  function applyLang(lang, persist) {
     document.querySelectorAll('[data-en]').forEach(function (el) {
       var v = el.getAttribute('data-' + lang);
       if (v != null) el.textContent = v;
@@ -30,12 +34,26 @@
     document.querySelectorAll('[data-lang-seg] button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-lang') === lang);
     });
-    try { localStorage.setItem(LKEY, lang); } catch (e) {}
+    if (persist) { try { localStorage.setItem(LKEY, lang); } catch (e) {} }
   }
-  var startLang = 'en';
+  /* Follows the browser's own preference ORDER, so the first entry the page can
+     actually speak wins: `['de','tr']` opens in Turkish, `['en-GB','tr']` in
+     English. Region subtags are dropped (`tr-TR` → `tr`), matching
+     `toSupportedLocale` in the app. Everything else lands on English — those are
+     the only two translations this page carries. */
+  function deviceLang() {
+    var prefs = (navigator.languages && navigator.languages.length) ? navigator.languages : [navigator.language];
+    for (var i = 0; i < prefs.length; i++) {
+      var code = String(prefs[i] || '').toLowerCase().split('-')[0];
+      if (code === 'tr' || code === 'en') return code;
+    }
+    return 'en';
+  }
+  // A stored choice is the visitor's own decision and outranks the browser.
+  var startLang = deviceLang();
   try { var sl = localStorage.getItem(LKEY); if (sl === 'tr' || sl === 'en') startLang = sl; } catch (e) {}
   document.querySelectorAll('[data-lang-seg] button').forEach(function (b) {
-    b.addEventListener('click', function () { applyLang(b.getAttribute('data-lang')); });
+    b.addEventListener('click', function () { applyLang(b.getAttribute('data-lang'), true); });
   });
   applyLang(startLang);
 
