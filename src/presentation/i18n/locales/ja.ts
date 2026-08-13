@@ -482,6 +482,7 @@ export const ja = {
     assistant: 'AIアシスタント',
     closeAssistant: 'AIアシスタントを閉じる',
     refineHint: '何度でも変更を頼めます',
+    adLabel: '広告',
     proposalTitle: '提案された変更',
     proposalAccept: '適用',
     proposalReject: '破棄',

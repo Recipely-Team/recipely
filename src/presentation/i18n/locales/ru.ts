@@ -482,6 +482,7 @@ export const ru = {
     assistant: 'ИИ-ассистент',
     closeAssistant: 'Закрыть ИИ-ассистента',
     refineHint: 'Просите столько изменений, сколько хотите',
+    adLabel: 'Реклама',
     proposalTitle: 'Предлагаемые изменения',
     proposalAccept: 'Применить',
     proposalReject: 'Отклонить',

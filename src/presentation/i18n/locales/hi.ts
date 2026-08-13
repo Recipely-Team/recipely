@@ -478,6 +478,7 @@ export const hi: Translations = {
     assistant: 'AI सहायक',
     closeAssistant: 'AI सहायक बंद करें',
     refineHint: 'जितने चाहें बदलाव माँग सकते हैं',
+    adLabel: 'विज्ञापन',
     proposalTitle: 'सुझाए गए बदलाव',
     proposalAccept: 'लागू करें',
     proposalReject: 'रद्द करें',

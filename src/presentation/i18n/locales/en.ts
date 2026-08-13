@@ -489,6 +489,7 @@ export const en = {
     assistant: 'AI assistant',
     closeAssistant: 'Close AI assistant',
     refineHint: 'Ask for as many changes as you like',
+    adLabel: 'Advertisement',
     proposalTitle: 'Proposed changes',
     proposalAccept: 'Apply',
     proposalReject: 'Discard',

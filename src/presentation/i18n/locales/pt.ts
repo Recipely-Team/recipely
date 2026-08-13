@@ -482,6 +482,7 @@ export const pt = {
     assistant: 'Assistente de IA',
     closeAssistant: 'Fechar assistente de IA',
     refineHint: 'Peça quantas alterações quiser',
+    adLabel: 'Publicidade',
     proposalTitle: 'Alterações propostas',
     proposalAccept: 'Aplicar',
     proposalReject: 'Descartar',

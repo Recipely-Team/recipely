@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 828 source files.
+[architecture.md](architecture.md). 834 source files.
 
 ## Layers
 
@@ -63,6 +63,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
+- `ads/` _(2)_
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(23)_
 - `comments/` — dtos _(4)_
@@ -101,7 +102,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(18)_
+- `hooks/` (ads, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(19)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
@@ -109,7 +110,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(46)_
+- `widgets/` (ads, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(47)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -142,4 +143,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 3980b0c9da6cece7 -->
+<!-- fingerprint: dfcdfcee74650dc7 -->

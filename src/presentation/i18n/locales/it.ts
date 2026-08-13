@@ -482,6 +482,7 @@ export const it = {
     assistant: 'Assistente IA',
     closeAssistant: 'Chiudi assistente IA',
     refineHint: 'Chiedi tutte le modifiche che vuoi',
+    adLabel: 'Pubblicità',
     proposalTitle: 'Modifiche proposte',
     proposalAccept: 'Applica',
     proposalReject: 'Annulla',
