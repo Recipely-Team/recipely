@@ -1,5 +1,8 @@
 # Backend Contract & Frontend Parity — Tracking
 
+> All items resolved and shipped to `dev`. Kept as a record of what was
+> investigated and why.
+
 Source: recipely-backend commits `3c9106b` (lean list DTO, #162) and `dd78b76`
 (public recipe detail, #164), plus local bug screenshots in `~/Desktop/Hatalar/`.
 
@@ -38,7 +41,7 @@ Verified against the backend repo before starting — see notes per item.
   - [x] Quality gate on domain/application/infrastructure: lint clean,
         `tsc --noEmit` clean for these layers, full jest suite green
         (80 suites / 928 tests). Committed on `feat/lean-recipe-list-dto`
-        (`9310d86`), not pushed.
+        (`9310d86`).
   - [x] **Presentation layer** (rn-developer, commit `264f111`):
     - [x] `web-recipe-card.tsx`, `web-hero-mini-card.tsx` — `RecipeSummary`,
           `totalTimeMinutes` directly
@@ -55,8 +58,9 @@ Verified against the backend repo before starting — see notes per item.
   - [x] Full quality gate, project-wide: lint clean, `tsc --noEmit` clean
         (0 errors), jest 82 suites / 932 tests passing. Two commits on
         `feat/lean-recipe-list-dto`: `9310d86` (domain/application/
-        infrastructure) + `264f111` (presentation). Not pushed/PR'd yet.
-- [ ] **Multi-field validation parsing.** Backend now reports every failing
+        infrastructure) + `264f111` (presentation). Merged to `dev` as
+        PR #127 (`cb096e3`).
+- [x] **Multi-field validation parsing.** Backend now reports every failing
       Zod field, joined into one string in `error.message`
       (`"name: too short; category: invalid"`), `error.field` = first
       offender only (verified in recipely-backend `error-handler.ts` /
@@ -69,7 +73,8 @@ Verified against the backend repo before starting — see notes per item.
         additive — existing `message`/`field` readers unaffected.
   - [x] Confirmed `src/application/recipes/created-recipes-store.ts` already
         surfaces the raw `ValidationFailure` via `createState`/`updateState`
-        — no store change needed for this part. UI binding is Phase 4.
+        — no store change needed for this part. UI binding shipped with
+        Phase 4's "Form field validation" item (PR #135).
 - [x] **Base API URL / DummyJSON cleanup** — already resolved in this repo.
       `src/infrastructure/constants/api.ts` already separates prod
       (`api.recipely.net`) / dev (`dev-api.recipely.net`) via build variant;
@@ -91,7 +96,7 @@ Verified against the backend repo before starting — see notes per item.
   - Branch `feat/guest-recipe-access`, 3 commits, code-reviewer approved
     (no blocking findings; 2 minor test gaps it flagged were closed).
     Quality gate: lint clean, `tsc --noEmit` clean, jest 88 suites / 971
-    tests passing. Not yet merged.
+    tests passing. Merged to `dev` as PR #128 (`ca90dda`).
 
 ## Phase 3 — State Lifecycle & Navigational Performance
 
