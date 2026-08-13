@@ -6,8 +6,7 @@ Ideas that are decided-in-principle but not scheduled. This file holds the
 **This is not a task tracker.** When an item is ready to be worked, open a
 GitHub issue for it and link the issue number back here — the issue carries the
 assignment, the discussion and the PR link; this file carries the reasoning that
-would otherwise be lost in a comment thread. `TODO.md` is unrelated: it is the
-closed-out record of the backend-contract parity work, not a backlog.
+would otherwise be lost in a comment thread.
 
 | Status | Meaning |
 |---|---|
