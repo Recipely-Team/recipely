@@ -51,9 +51,9 @@ describe('RefineRecipeUseCase.execute', () => {
     });
     const useCase = new RefineRecipeUseCase(repo);
 
-    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '  add garlic  ' });
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '  add garlic  ', history: [] });
 
-    expect(repo.lastRefineCall).toEqual({ currentRecipe: snapshot, instruction: 'add garlic' });
+    expect(repo.lastRefineCall).toEqual({ currentRecipe: snapshot, instruction: 'add garlic', history: [] });
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.recipe).toBe(recipe);
@@ -69,7 +69,7 @@ describe('RefineRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ refineRecipeResult: ok({ recipe }) });
     const useCase = new RefineRecipeUseCase(repo);
 
-    const r = await useCase.execute({ currentRecipe: snapshot, instruction: 'add garlic' });
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: 'add garlic', history: [] });
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -86,7 +86,7 @@ describe('RefineRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new RefineRecipeUseCase(repo);
 
-    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '' });
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '', history: [] });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -102,7 +102,7 @@ describe('RefineRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new RefineRecipeUseCase(repo);
 
-    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '  \n\t ' });
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: '  \n\t ', history: [] });
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBeInstanceOf(ValidationFailure);
@@ -114,7 +114,7 @@ describe('RefineRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository({ refineRecipeResult: fail(failure) });
     const useCase = new RefineRecipeUseCase(repo);
 
-    const r = await useCase.execute({ currentRecipe: snapshot, instruction: 'add garlic' });
+    const r = await useCase.execute({ currentRecipe: snapshot, instruction: 'add garlic', history: [] });
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe(failure);

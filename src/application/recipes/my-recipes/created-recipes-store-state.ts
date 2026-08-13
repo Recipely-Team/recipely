@@ -9,6 +9,7 @@ import type { GenerateRecipeState } from '@application/recipes/generate/generate
 import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
 import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
 import type { MyRecipesListState } from '@application/recipes/my-recipes/my-recipes-list-state';
+import type { ChatMessage } from '@domain/drafts/chat-message';
 
 export interface CreatedRecipesStoreState {
   // WHY: `recipes` and `localRecipes` split the two jobs this used to do as
@@ -40,6 +41,7 @@ export interface CreatedRecipesStoreState {
   refineRecipe: (
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
+    history: readonly ChatMessage[],
   ) => Promise<RefinedRecipe | null>;
   deleteRecipe: (id: string) => Promise<void>;
   resetCreateState: () => void;

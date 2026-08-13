@@ -142,7 +142,7 @@ describe('createdRecipesStore.refineRecipe', () => {
       recipeDetailStore: fakeRecipeDetailStore,
     });
 
-    const pending = store.getState().refineRecipe(snapshot, 'add garlic');
+    const pending = store.getState().refineRecipe(snapshot, 'add garlic', []);
 
     expect(store.getState().refineState).toEqual({ status: 'refining' });
 
@@ -155,7 +155,7 @@ describe('createdRecipesStore.refineRecipe', () => {
     const refined: RefinedRecipe = { recipe, summary: 'Added garlic.', suggestion: 'Try basil.' };
     const store = makeStoreWithRefineResult(ok(refined));
 
-    const returned = await store.getState().refineRecipe(snapshot, 'add garlic');
+    const returned = await store.getState().refineRecipe(snapshot, 'add garlic', []);
 
     const s = store.getState();
     expect(s.refineState.status).toBe('success');
@@ -174,7 +174,7 @@ describe('createdRecipesStore.refineRecipe', () => {
     const store = makeStoreWithRefineResult(ok({ recipe: refined }));
     store.getState().add(existing);
 
-    await store.getState().refineRecipe(snapshot, 'add garlic');
+    await store.getState().refineRecipe(snapshot, 'add garlic', []);
 
     expect(store.getState().recipes.map((r) => r.id)).toEqual(['existing']);
   });
@@ -183,7 +183,7 @@ describe('createdRecipesStore.refineRecipe', () => {
     const failure = new UnknownFailure('AI down');
     const store = makeStoreWithRefineResult(fail(failure));
 
-    const returned = await store.getState().refineRecipe(snapshot, 'add garlic');
+    const returned = await store.getState().refineRecipe(snapshot, 'add garlic', []);
 
     const s = store.getState();
     expect(s.refineState.status).toBe('error');
@@ -197,7 +197,7 @@ describe('createdRecipesStore.refineRecipe', () => {
   it('resetRefineState returns refineState to idle', async () => {
     const store = makeStoreWithRefineResult(ok({ recipe: makeRecipe() }));
 
-    await store.getState().refineRecipe(snapshot, 'add garlic');
+    await store.getState().refineRecipe(snapshot, 'add garlic', []);
     expect(store.getState().refineState.status).toBe('success');
 
     store.getState().resetRefineState();

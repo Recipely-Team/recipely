@@ -28,6 +28,7 @@ import type { ImportJobDto } from '@infrastructure/recipes/dtos/import-job-dto';
 import type { ImportJob } from '@domain/recipes/import/import-job';
 import { toImportJob } from '@infrastructure/recipes/import/to-import-job';
 import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
+import type { ChatMessage } from '@domain/drafts/chat-message';
 
 /**
  * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
@@ -152,8 +153,9 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   async refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
+    history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>> {
-    const result = await this.http.post<RefineRecipeResponseDto>(ApiRoutes.recipes.refine, { currentRecipe, instruction } satisfies RefineRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
+    const result = await this.http.post<RefineRecipeResponseDto>(ApiRoutes.recipes.refine, { currentRecipe, instruction, history } satisfies RefineRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
       return result;
     }
