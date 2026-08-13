@@ -26,6 +26,9 @@ const renderDock = (overrides: { expanded: boolean; refining: boolean }): ReactT
       canRegenerate
       onRegenerate={noop}
       onSubmit={noop}
+      proposal={null}
+      onAcceptProposal={noop}
+      onRejectProposal={noop}
       bottomInset={0}
     />,
   ).renderer;

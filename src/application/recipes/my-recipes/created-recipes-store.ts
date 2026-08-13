@@ -150,9 +150,9 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         aiDraft: recipe,
       });
     },
-    refineRecipe: async (currentRecipe, instruction) => {
+    refineRecipe: async (currentRecipe, instruction, history) => {
       set({ refineState: { status: StoreStatus.Refining } });
-      const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction });
+      const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction, history });
       if (!result.ok) {
         set({ refineState: { status: StoreStatus.Error, failure: result.failure } });
         return null;

@@ -88,6 +88,9 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
         canRegenerate={vm.canRegenerate}
         onRegenerate={vm.onRegenerate}
         onSubmit={vm.onSubmitRefine}
+        proposal={vm.proposal}
+        onAcceptProposal={vm.onAcceptProposal}
+        onRejectProposal={vm.onRejectProposal}
         bottomInset={vm.isWebShell ? ValueConstants.zero : vm.insets.bottom}
       />
     </>
