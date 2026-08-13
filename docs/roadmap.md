@@ -18,19 +18,35 @@ would otherwise be lost in a comment thread.
 
 ## 1. Import a recipe from an Instagram **post**
 
-**Status:** `idea` · **Extends:** the existing Reel/video import
+**Status:** `partly shipped` — the caption path is live · **Extends:** the
+existing Reel/video import
 
 Video import already works (share sheet → backend → yt-dlp + transcription +
 vision). Posts are a different problem: a carousel or single image with the
 recipe written in the **caption**, and often the ingredient list burned into the
 image itself.
 
-- Caption text is the cheap path — parse it before touching the images.
+- ~~Caption text is the cheap path — parse it before touching the images.~~
+  **Shipped** — recipely-backend PR #239.
 - Images need OCR, not transcription. Different pipeline, different cost.
 - A carousel is N images; deciding which ones matter is part of the work.
 
-**Open:** does the share payload for a post give us the caption, or only a URL?
-That single answer decides whether this is a small job or a scraping problem.
+**The open question, answered — and it was the wrong question.** The share
+payload gives only a URL. It does not matter: the caption never had to come from
+the share. `ReelMedia.probe()` already runs `yt-dlp --dump-json` before anything
+is downloaded and already reads `description`, which for Instagram *is* the
+caption. A small job, not a scraping problem.
+
+**What it uncovered:** `/p/` links had always passed URL validation, so sharing a
+photo post already queued a job — which reached the worker, spent its time, and
+died at the download with a generic "couldn't fetch", while the recipe sat in a
+caption that had been read two steps earlier. A failed download now falls back to
+a caption-only extraction (and rescues a reel whose download fails for any other
+reason too).
+
+**Still open:** OCR for the ingredient list burned into the image, and choosing
+which frames of a carousel are worth sending. Those are the expensive half; the
+caption covers most food posts on its own.
 
 ## 2. Import a recipe from **YouTube**
 
