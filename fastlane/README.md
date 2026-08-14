@@ -42,7 +42,7 @@ The Listing Hub exports everything at the right size. Filenames come out as
 
 | Asset | Size | Where it goes |
 |---|---|---|
-| App Store screenshots (6) | 1290 × 2796 | `fastlane/screenshots/<locale>/` |
+| App Store screenshots (6) | 1320 × 2868 | `fastlane/screenshots/<locale>/` |
 | Play screenshots (6) | 1080 × 1920 | Play Console (not read by `supply` here) |
 | App icon — App Store | 1024 × 1024 | App Store Connect |
 | App icon — Play | 512 × 512 | Play Console |
@@ -54,7 +54,17 @@ language's folder and leave the names alone.
 
 ### App Store rules the Hub copy does not know about
 
-Three things cost a failed upload each before they were written down:
+Four things cost a failed upload each before they were written down:
+
+- **A screenshot may not draw its own status bar.** Build 1.0.43 (694) was rejected under
+  guideline **2.3.10** — *"revise the app's screenshots to remove non-iOS status bar images"*.
+  The frames drew `9:41` + `5G` + a battery in the app's webfont, missing the signal and wifi
+  glyphs and ordering the rest the way no iOS device does, straight over the app's own buttons.
+  The Hub now renders that band as an empty spacer; keep it that way and let a real capture
+  carry real chrome. The PNGs in `screenshots/` are the ones that got rejected — they predate
+  the Hub (exported before #301) and still carry both the fake bar and the star-rating /
+  testimonial cards the Hub has since dropped. **They must be re-exported before the next
+  submission, not re-uploaded.**
 
 - **No emoji in `description.txt`.** The App Store rejects the whole field:
   `Description can't contain the following character(s): 🔖, 🤖, …`. Play accepts
@@ -66,9 +76,21 @@ Three things cost a failed upload each before they were written down:
   name is already being used by another app"* — the English name
   `Recipely - AI Recipe Chef` is taken, which is why `en-US` is not yet a live
   App Store localization.
-- **Screenshots go in the 6.9" slot, not 6.5".** 1290 × 2796 is only valid for
-  the slot Apple labels *6.5", 6.7" or 6.9" Displays*; the separate 6.5" entry
-  wants 1242 × 2688. Fill 6.9" and the smaller sizes inherit from it.
+- **Screenshots go in the 6.9" slot, not 6.5".** 1320 × 2868 (like the older
+  1290 × 2796) is only valid for the slot Apple labels *6.5", 6.7" or 6.9"
+  Displays*; the separate 6.5" entry wants 1242 × 2688. Fill 6.9" and the smaller
+  sizes inherit from it. **The inherited slots are read-only**: the 6.5" panel on
+  the version page shows "Using 6.9" Display" with its *Choose File* and *Delete
+  All* greyed out, which reads exactly like a bug. The editable 6.9" slot is only
+  in **View All Sizes in Media Manager** — which is why Apple's rejection letter
+  points there.
+- **Upload one file at a time.** Handing the picker all six at once let them land
+  in completion order, not filename order, and the set came out shuffled — with
+  the closing frame first, where only the first three are used on the install
+  sheet. Upload, wait for the thumbnail, then the next.
+- **Flatten to RGB before uploading.** The Hub exports RGBA with a fully opaque
+  alpha channel; App Store Connect rejects a PNG that merely *has* the channel.
+  `Image.open(f).convert('RGB')` is the whole fix.
 
 > `deliver` re-uploads a screenshot when its post-upload check races Apple's
 > eventual consistency, and the retry lands as a DUPLICATE rather than
@@ -122,7 +144,8 @@ Keep `distribution/whatsnew/whatsnew-<locale>` and
 
 - [ ] Copy in these files matches the Listing Hub
 - [ ] Release notes written for **both** stores, in **both** languages
-- [ ] Six screenshots per language present in `screenshots/<locale>/`
+- [ ] Six screenshots per language present in `screenshots/<locale>/`, re-exported from the
+      Hub — no drawn status bar, no ratings, no review quotes (see the rules above)
 - [ ] Character counts still under the limits (the Hub shows a live counter)
 - [ ] iOS: re-run the section Z checks in [`docs/qa/ios.md`](../docs/qa/ios.md) —
       guest browsing and in-app account deletion are what got build 321 rejected

@@ -818,3 +818,30 @@ returning visitor keeps the cached script for a year. The HTML is `no-cache`,
 which makes the `?v=` query on the `<script>` tag the only thing that delivers a
 change to them. **Editing an asset under `public/` is not shipping it** — bump
 the query in the same commit.
+
+## A screenshot drew the chrome it should have captured
+
+**Symptom.** App Review rejected 1.0.43 (694) under guideline 2.3.10 — *"revise
+the app's screenshots to remove non-iOS status bar images."*
+
+**Cause.** The store frames drew their own status bar instead of letting the
+capture carry the real one: `9:41` and `5G` and a battery, set in the app's
+Plus Jakarta webfont rather than SF Pro, with the signal bars not rendering at
+all and no wifi glyph — an arrangement no iOS device has ever shown. Because
+the band was painted over the capture rather than above it, the fake clock also
+sat on top of the recipe screen's back button and the `5G` on top of the
+bookmark icon, which is how a reviewer spots a composite in one glance.
+
+The band existed to make the mock look like a real device. It could only ever
+fail at that: every glyph in it was a guess at another platform's UI, re-guessed
+in whatever font the export happened to resolve.
+
+**Now.** The hub draws no status bar — the band above each capture is an empty
+spacer and the island is the only device chrome, which is real hardware and
+carries no claim. `check:structure` rule S fails on a clock or a radio label
+(`3G`/`4G`/`5G`/`LTE`) reappearing anywhere in `fastlane/store-hub/`.
+
+*The wider lesson:* store assets are shipped artifacts and rot like any other.
+The rejected PNGs predate the hub that generates them, so they also still
+carried star ratings and invented review quotes that the hub's own README had
+already banned under 2.3.7. **Re-export; never re-upload what is in the folder.**
