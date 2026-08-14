@@ -18,8 +18,14 @@ export const layoutSizes = {
    * ratio: a max-height and a ratio cannot both hold, and clamping the height
    * is what let the card drift into a 2.6:1 letterbox. Tune the hero's size
    * here; everything else about it is derived.
+   *
+   * Set high on purpose. Narrowing the band is what breaks its alignment with
+   * the banner and the grid below, so this is a guard for genuinely short
+   * windows (a 1920x700 letterbox), not a routine constraint — at 0.42 it bit
+   * on an ordinary 1557x784 laptop window and left the band visibly inset from
+   * everything under it.
    */
-  heroViewportShare: 0.42,
+  heroViewportShare: 0.55,
   /** Centered text-block caps, ascending. */
   maxContentXs: 300,
   maxContentSm: 320,
