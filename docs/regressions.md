@@ -898,3 +898,22 @@ the time chip instead of printing what they were handed. Covered by
 than reality delivers stays wrong until something checks it. The morning's
 version was a boolean named after a platform being asked about size; this one
 is a wire field named required that is not.
+
+## A controlled input nobody reset
+
+**Symptom.** In the AI create flow, sending a refine instruction left the text
+in the field. The next instruction had to be typed on top of the last one.
+
+**Cause.** `RefineDock` is a controlled input — `chatInput` and
+`onChangeChatInput` belong to `useRecipeGeneration` — and `setChatInput` was
+only ever wired to typing. Nothing on the send path asked for a reset, so the
+value simply stayed. Every piece worked; no piece owned the clearing.
+
+**Now.** `submitFreeText` clears after it submits. Deliberately there and not in
+`onSubmit`: a quick chip sends its own instruction and must leave whatever the
+cook has half-typed alone, and `onSubmitRefine` appends the sent text to the
+transcript before the request goes out, so clearing loses nothing.
+
+*The class:* with a controlled input, "the field empties on send" is a
+behaviour someone has to implement — it is not what the widget does on its own,
+and the bug is invisible in every unit that is individually correct.
