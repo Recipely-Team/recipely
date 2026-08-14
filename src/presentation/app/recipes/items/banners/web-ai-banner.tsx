@@ -9,26 +9,33 @@ import { ValueConstants } from '@core/constants';
 
 export interface WebAiBannerProps {
   onPress: () => void;
+  /**
+   * Stacks icon, text and chip instead of laying them across a row. The wide
+   * form is a full-width bar; inside the hero band's side column there is no
+   * width to spread across, so the row form would crush the text to a couple of
+   * words per line.
+   */
+  compact?: boolean;
 }
 
 /**
  * Wide web-only AI generator promo banner. Larger than the mobile
  * `AiBannerCard`: title + subtitle, sparkle decoration, and a "Start" chip.
  */
-export const WebAiBanner = ({ onPress }: WebAiBannerProps): React.JSX.Element => {
+export const WebAiBanner = ({ onPress, compact = false }: WebAiBannerProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t().recipes.aiPromo}
-      style={({ pressed }) => [styles.wrapper, pressed ? styles.pressed : null]}
+      style={({ pressed }) => [compact ? styles.wrapperCompact : styles.wrapper, pressed ? styles.pressed : null]}
     >
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
         end={{ x: ValueConstants.one, y: ValueConstants.zero }}
-        style={[styles.card, { borderColor: colors.gradientBorder }]}
+        style={[styles.card, compact ? styles.cardCompact : null, { borderColor: colors.gradientBorder }]}
       >
         <View pointerEvents="none" style={styles.decor}>
           <Ionicons name="sparkles" size={decorSizes.sparkleDecor} color={colors.onOverlay} />
@@ -38,7 +45,7 @@ export const WebAiBanner = ({ onPress }: WebAiBannerProps): React.JSX.Element =>
           <Ionicons name="sparkles" size={iconSizes.xxxl} color={colors.onOverlay} />
         </View>
 
-        <View style={styles.textBlock}>
+        <View style={[styles.textBlock, compact ? styles.textBlockCompact : null]}>
           <ThemedText style={[styles.title, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
             {t().recipes.aiPromo}
           </ThemedText>
@@ -62,8 +69,20 @@ const styles = StyleSheet.create({
   wrapper: {
     marginBottom: spacing.lg,
   },
+  // In the band's side column the banner is a tile, not a bar: no bottom margin
+  // (the column's gap handles it) and it fills the width it is given.
+  wrapperCompact: {
+    width: '100%',
+  },
   pressed: {
     opacity: opacities.pressedFaint,
+  },
+  cardCompact: {
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    gap: spacing.sm,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.lg,
   },
   card: {
     flexDirection: 'row',
@@ -93,6 +112,10 @@ const styles = StyleSheet.create({
   textBlock: {
     flex: ValueConstants.one,
     gap: spacing.xs,
+  },
+  textBlockCompact: {
+    flex: ValueConstants.zero,
+    alignSelf: 'stretch',
   },
   title: {
     fontWeight: fontWeights.heavy,

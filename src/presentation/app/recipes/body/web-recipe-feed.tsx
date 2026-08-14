@@ -5,7 +5,8 @@ import { spacing } from '@presentation/base/theme';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
 import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
-import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
+import { CuisineStrip } from '@presentation/app/recipes/body/cuisine-strip';
+import { useCuisinesInBand } from '@presentation/app/recipes/hooks/use-cuisines-in-band';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 
@@ -22,7 +23,13 @@ export interface WebRecipeFeedProps {
  * the browser — and only ever rendered one of them. Keeping both in one file
  * made a 300-line component whose top half a mobile reader had to skip past.
  */
-export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => (
+export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => {
+  // Asks whether the band is ACTUALLY showing the cuisines, not merely whether
+  // it is wide enough to: the band renders nothing when trending is short, and
+  // suppressing the strip on width alone took the filter off the page.
+  const cuisinesInBand = useCuisinesInBand();
+
+  return (
   <ScrollView
     style={styles.list}
     contentContainerStyle={styles.webContent}
@@ -30,9 +37,18 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
   >
     {vm.isSearching ? null : (
       <>
-        <WebHeroSection onOpenRecipe={vm.onOpenRecipe} isSaved={vm.isSaved} onToggleSave={vm.onToggleSave} />
-        <WebAiBanner onPress={vm.onOpenCreate} />
-        <WebCuisineGrid selectedCuisines={vm.filters.cuisines} onToggle={vm.onToggleCuisineQuick} />
+        <WebHeroSection
+          onOpenRecipe={vm.onOpenRecipe}
+          selectedCuisines={vm.filters.cuisines}
+          onToggleCuisine={vm.onToggleCuisineQuick}
+          onOpenCreate={vm.onOpenCreate}
+          isSaved={vm.isSaved}
+          onToggleSave={vm.onToggleSave}
+        />
+        {cuisinesInBand ? null : <WebAiBanner onPress={vm.onOpenCreate} />}
+        {cuisinesInBand ? null : (
+          <CuisineStrip selectedCuisines={vm.filters.cuisines} onToggle={vm.onToggleCuisineQuick} gutter={false} />
+        )}
       </>
     )}
     <WebRecipeGrid
@@ -53,7 +69,8 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
       onToggleSave={vm.onToggleSave}
     />
   </ScrollView>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   list: {
