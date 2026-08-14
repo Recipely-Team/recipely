@@ -1,7 +1,8 @@
 import { RefreshControl, ScrollView, StyleSheet } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
-import { spacing, layoutSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
 import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
 import { WebCuisineGrid } from '@presentation/app/recipes/body/web-cuisine-grid';
@@ -59,14 +60,14 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   // The cap and the gutter the column maths in `use-recipe-list` has always
-  // assumed — it sizes a card against `min(width, webContentMax) - xl * 2` —
+  // assumed — it sizes a card against `min(width, the same route cap) - xl * 2` —
   // but which the layout never actually applied. Nothing capped or padded this
   // feed, so it ran edge-to-edge: on a wide monitor that passes for a
   // deliberate full-bleed dashboard, and on a 1032pt iPad it just reads as
   // content jammed against both bezels.
   webContent: {
     width: '100%',
-    maxWidth: layoutSizes.webContentMax,
+    maxWidth: WEB_CONTENT_MAX_WIDTH.recipes,
     alignSelf: 'center',
     paddingHorizontal: spacing.xl,
     paddingBottom: spacing.xl,

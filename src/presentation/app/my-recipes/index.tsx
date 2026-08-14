@@ -20,12 +20,13 @@ import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, layoutSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
-const WEB_CONTENT_MAX = layoutSizes.webContentMax;
+const WEB_CONTENT_MAX = WEB_CONTENT_MAX_WIDTH.myRecipes;
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();

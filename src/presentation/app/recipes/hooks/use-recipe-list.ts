@@ -23,6 +23,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, layoutSizes } from '@presentation/base/theme';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -149,7 +150,7 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const gridColumns = useMemo<number>(() => {
     if (!isExpanded) return 1;
-    const available = Math.min(width, layoutSizes.webContentMax) - spacing.xl * ValueConstants.two;
+    const available = Math.min(width, WEB_CONTENT_MAX_WIDTH.recipes) - spacing.xl * ValueConstants.two;
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 
