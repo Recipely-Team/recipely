@@ -7,11 +7,9 @@ import { WebHeroMiniCard } from '@presentation/app/recipes/items/hero/web-hero-m
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, mediaSizes } from '@presentation/base/theme';
-import { WebCuisineColumn } from '@presentation/app/recipes/body/web-cuisine-column';
 import { WebAiBanner } from '@presentation/app/recipes/items/banners/web-ai-banner';
-import { bandMaxWidth, HeroBandFlex } from '@presentation/app/recipes/model/hero/hero-band-layout';
+import { aiPanelInRow, heroRowMinHeight, HeroFlex } from '@presentation/app/recipes/model/hero/hero-band-layout';
 import { HERO_MIN_RECIPES } from '@presentation/app/recipes/model/hero/hero-min-recipes';
-import { useCuisinesInBand } from '@presentation/app/recipes/hooks/use-cuisines-in-band';
 import { useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -23,10 +21,7 @@ const MINI_SKELETON_HEIGHT = (mediaSizes.heroImageHeightWeb - spacing.sm2) / Val
 
 export interface WebHeroSectionProps {
   onOpenRecipe: (id: string) => void;
-  /** Cuisine filter state, so the band can host the cuisine column when it fits. */
-  selectedCuisines: string[];
-  onToggleCuisine: (cuisine: string) => void;
-  /** Opens the AI generator; the band hosts its banner when the side column is up. */
+  /** Opens the AI generator; its panel is the row's third block. */
   onOpenCreate: () => void;
   /** True when the recipe id is in the signed-in user's saved set. */
   isSaved: (id: string) => boolean;
@@ -41,8 +36,6 @@ export interface WebHeroSectionProps {
  */
 export const WebHeroSection = ({
   onOpenRecipe,
-  selectedCuisines,
-  onToggleCuisine,
   onOpenCreate,
   isSaved,
   onToggleSave,
@@ -50,7 +43,7 @@ export const WebHeroSection = ({
   const { trendingRecipesStore } = useStores();
   const state = trendingRecipesStore((s) => s.state);
   const load = trendingRecipesStore((s) => s.load);
-  const { width, height } = useLayout();
+  const { width } = useLayout();
   const language = useLocale();
 
   useEffect(() => {
@@ -70,17 +63,20 @@ export const WebHeroSection = ({
     void load();
   }, [language, load]);
 
-  const cuisinesInBand = useCuisinesInBand();
   const stacked = width < STACK_WIDTH;
-  const withCuisines = !stacked && cuisinesInBand;
-  const rowCap = { maxWidth: bandMaxWidth(height, withCuisines) };
-  const featuredFlex = { flex: HeroBandFlex.featured };
-  const miniFlex = { flex: HeroBandFlex.mini };
-  const cuisineFlex = { flex: HeroBandFlex.cuisines };
+  const inRow = aiPanelInRow(width);
+  // Grow/basis rather than a bare weight: each block states the width below
+  // which it would rather the row wrapped than be squeezed.
+  const rowMin = { minHeight: heroRowMinHeight(width) };
+  const featuredFlex = { flexGrow: HeroFlex.featured.grow, flexBasis: HeroFlex.featured.basis };
+  const miniFlex = { flexGrow: HeroFlex.runners.grow, flexBasis: HeroFlex.runners.basis };
+  const aiFlex = inRow
+    ? { flexGrow: HeroFlex.ai.grow, flexBasis: HeroFlex.ai.basis, maxWidth: HeroFlex.ai.max }
+    : styles.aiBand;
 
   if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     return (
-      <View style={[styles.row, rowCap, stacked ? styles.stacked : null]}>
+      <View style={[styles.row, rowMin, stacked ? styles.stacked : null]}>
         <View style={[styles.featured, featuredFlex]}>
           <SkeletonLoader width="100%" height={mediaSizes.heroImageHeightWeb} borderRadius={radii.xxl2} />
         </View>
@@ -101,7 +97,7 @@ export const WebHeroSection = ({
   const [featured, mini1, mini2] = state.recipes;
 
   return (
-    <View style={[styles.row, rowCap, stacked ? styles.stacked : null]}>
+    <View style={[styles.row, rowMin, stacked ? styles.stacked : null]}>
       <View style={[styles.featured, featuredFlex]}>
         <WebHeroFeaturedCard
           recipe={featured}
@@ -116,24 +112,23 @@ export const WebHeroSection = ({
           <WebHeroMiniCard recipe={mini2} rank={3} onPress={onOpenRecipe} />
         </View>
       )}
-      {withCuisines ? (
-        <View style={[styles.sideSlot, cuisineFlex]}>
-          <View style={styles.sideStack}>
-            <WebAiBanner onPress={onOpenCreate} compact />
-            <View style={styles.cuisineSlot}>
-              <WebCuisineColumn selectedCuisines={selectedCuisines} onToggle={onToggleCuisine} />
-            </View>
-          </View>
+      {stacked ? null : (
+        <View style={[styles.aiSlot, aiFlex]}>
+          <WebAiBanner onPress={onOpenCreate} wide={!inRow} />
         </View>
-      ) : null}
+      )}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  // `flexWrap` is what lets the AI panel drop to its own line instead of
+  // squeezing the photography beside it; `alignItems: stretch` (the default)
+  // keeps the three blocks the same height while they share a line.
   row: {
     flexDirection: 'row',
-    gap: spacing.sm2,
+    flexWrap: 'wrap',
+    gap: spacing.md,
     marginBottom: spacing.lg,
     width: '100%',
     alignSelf: 'center',
@@ -144,21 +139,15 @@ const styles = StyleSheet.create({
   featured: {
     minWidth: ValueConstants.zero,
   },
-  sideSlot: {
+  aiSlot: {
     minWidth: ValueConstants.zero,
   },
-  // Absolutely filled so the stack cannot push the band taller than the ratio
-  // says; the banner sits on top and the cuisines take whatever is left.
-  sideStack: {
-    ...StyleSheet.absoluteFillObject,
-    flexDirection: 'column',
-    gap: spacing.sm2,
-  },
-  // `position: relative` is what the absolutely-filled cuisine panel anchors to.
-  cuisineSlot: {
-    position: 'relative',
-    flex: ValueConstants.one,
-    minWidth: ValueConstants.zero,
+  // Below the wide breakpoint the panel takes a whole line of its own, which is
+  // what turns the third column into the design's full-width band. Wrapping is
+  // the collapse — nothing reorders.
+  aiBand: {
+    flexBasis: '100%',
+    maxWidth: '100%',
   },
   mini: {
     minWidth: ValueConstants.zero,

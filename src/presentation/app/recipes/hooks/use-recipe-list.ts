@@ -23,13 +23,13 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { t, useLocale } from '@presentation/i18n';
 import { spacing, layoutSizes } from '@presentation/base/theme';
-import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
+import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-width';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
-const RECIPE_CARD_MIN_WIDTH = 320;
+const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
 /** Snap/timing config for the mobile collapsing header band (Material small-top-app-bar feel). */
 const HEADER_TIMING = { duration: 220, easing: Easing.out(Easing.cubic) } as const;
@@ -150,7 +150,7 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const gridColumns = useMemo<number>(() => {
     if (!isExpanded) return 1;
-    const available = Math.min(width, WEB_CONTENT_MAX_WIDTH.recipes) - spacing.xl * ValueConstants.two;
+    const available = feedContentWidth(width);
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 

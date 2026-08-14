@@ -23,8 +23,8 @@ export const BREAKPOINTS = {
  */
 export const WEB_CONTENT_MAX_WIDTH = {
   default: 1200,
-  recipes: 1800,
-  myRecipes: 1800,
+  recipes: 1720,
+  myRecipes: 1720,
   profile: 720,
   createRecipe: 760,
   aiGenerate: 760,

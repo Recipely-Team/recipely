@@ -1,85 +1,43 @@
-import { aspectRatios, layoutSizes, spacing } from '@presentation/base/theme';
+import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 
 /**
- * How the home hero band divides its width, and when it grows a third column.
+ * How the home hero row divides its width, from the wide-screen home design.
  *
  * @remarks
- * - **Proportion, never a pinned size.** The band states its split in flex
- *   weights and its shape in one ratio; every height in it follows. Two
- *   siblings that each carry a size will disagree — a ratio-sized featured card
- *   beside `minHeight`-sized minis left the row ragged along the bottom.
- * - **The cuisines take a SHARE, not the leftover.** The obvious version — let
- *   the hero size itself and give the cuisines whatever is left — collapses
- *   unpredictably, because the hero's own bound scales with viewport HEIGHT:
- *   a 1920x1080 window leaves 557px beside it but a 2560x1440 one leaves 170px,
- *   so a taller monitor would close the column. A fixed share cannot do that.
- * - **Size hierarchy, not position** (the Guardian / NYT card-grid pattern):
- *   the featured card is the largest block at every width, the minis and the
- *   cuisine column support it, and below the threshold the band collapses to a
- *   single editorial stack without reordering anything.
+ * - **Three blocks, one row**: the featured recipe, the two runners-up stacked
+ *   beside it, and the AI panel. Grow/basis pairs rather than plain weights,
+ *   because each block has a width below which it stops being readable and the
+ *   row should wrap rather than squeeze it.
+ * - **The cuisines are NOT here.** They were, and it was wrong: a vertical list
+ *   of forty items beside a photographic hero read as a form control, and it
+ *   could only ever show a truncated seven. They are a full-width rail above
+ *   the grid now, with the catalogue behind one button.
+ * - **Wrapping is the collapse.** Below {@link aiPanelInRow} the AI panel takes
+ *   a line of its own and switches to its row form — the design's band.
+ *   Nothing reorders; the row simply wraps.
  */
-export const HeroBandFlex = {
-  featured: 5,
-  mini: 3,
-  cuisines: 3,
+export const HeroFlex = {
+  featured: { grow: 2.5, basis: 520 },
+  runners: { grow: 1.05, basis: 260 },
+  ai: { grow: 1, basis: 300, max: 380 },
 } as const;
 
 /**
- * Width the cuisine column needs before it earns a place in the band.
- *
- * Set so the column opens on a desktop window (~1400px and up) but never on a
- * tablet — three columns at iPad width crowded the band.
- *
- * The third column is not only a place to put the cuisines: it also takes the
- * featured card from 5/8 of the band down to 5/11, which is what keeps the hero
- * near half the viewport instead of two thirds of it. Below this the band stays
- * two columns and the cuisines render as the horizontal strip underneath.
+ * Whether the AI panel rides in the hero row as a third column, or sits under
+ * it as a full-width band. Asked by the panel itself (to pick its form) and by
+ * the row (for its height), so the two always agree.
  */
-const CUISINE_COLUMN_MIN = 360;
-
-const totalFlex = (withCuisines: boolean): number =>
-  HeroBandFlex.featured + HeroBandFlex.mini + (withCuisines ? HeroBandFlex.cuisines : 0);
-
-/** Width one flex part is worth, once the inter-column gaps are removed. */
-const partWidth = (bandWidth: number, withCuisines: boolean): number => {
-  const gaps = spacing.sm2 * (withCuisines ? 2 : 1);
-  return (bandWidth - gaps) / totalFlex(withCuisines);
-};
+export const aiPanelInRow = (viewportWidth: number): boolean =>
+  viewportWidth >= BREAKPOINTS.wide;
 
 /**
- * Whether the band has room for the cuisine column at this width. Asks what the
- * column would actually get rather than comparing the viewport to a magic
- * number, so the answer stays true if the split ever changes.
+ * The row's floor at each width, from the design's frames: 440 at 1920, 400 at
+ * 1440, 340 at 1030, 300 below. A floor rather than a fixed height — the
+ * featured card's own ratio can ask for more, and text must be able to grow.
  */
-export const bandFitsCuisines = (bandWidth: number): boolean =>
-  partWidth(bandWidth, true) * HeroBandFlex.cuisines >= CUISINE_COLUMN_MIN;
-
-/**
- * The height the band resolves to — the featured card's width over its ratio.
- *
- * Takes the split rather than re-deriving it: asking `bandFitsCuisines` here
- * let this disagree with {@link bandMaxWidth}, which is handed the flag, and the
- * two then described different bands.
- */
-export const bandHeight = (bandWidth: number, withCuisines: boolean): number =>
-  (partWidth(bandWidth, withCuisines) * HeroBandFlex.featured) / aspectRatios.heroWide;
-
-/**
- * Ceiling for unusually short windows only.
- *
- * The band normally spans the full feed width, which is what keeps it aligned
- * with the banner and the recipe grid below. But a very wide, very short window
- * (1920x700) would hand 70% of the viewport to one card, so the band narrows
- * until its height is back under {@link layoutSizes.heroViewportShare}.
- *
- * It is expressed as a max WIDTH even though what we are limiting is height: a
- * max-height and an aspect ratio cannot both hold, and clamping the height is
- * what let the card drift into a 2.6:1 letterbox. Bounding the width bounds the
- * height through the ratio instead.
- */
-export const bandMaxWidth = (viewportHeight: number, withCuisines: boolean): number => {
-  const maxHeight = viewportHeight * layoutSizes.heroViewportShare;
-  const featuredWidth = maxHeight * aspectRatios.heroWide;
-  const gaps = spacing.sm2 * (withCuisines ? 2 : 1);
-  return (featuredWidth * totalFlex(withCuisines)) / HeroBandFlex.featured + gaps;
+export const heroRowMinHeight = (viewportWidth: number): number => {
+  if (viewportWidth >= BREAKPOINTS.wide) return 440;
+  if (viewportWidth >= BREAKPOINTS.desktop) return 400;
+  if (viewportWidth >= BREAKPOINTS.tablet) return 340;
+  return 300;
 };

@@ -14,21 +14,28 @@
  * surface that wanted the opposite thing.
  */
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
+import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-width';
 import { spacing } from '@presentation/base/theme';
 
 /** Mirrors the memo in `use-recipe-list`; kept in step by the assertions below. */
-const RECIPE_CARD_MIN_WIDTH = 320;
+const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
 
-const columnsAt = (width: number): number => {
-  const available = Math.min(width, WEB_CONTENT_MAX_WIDTH.recipes) - spacing.xl * 2;
-  return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
-};
+const columnsAt = (width: number): number =>
+  Math.max(1, Math.floor((feedContentWidth(width) + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
 
 describe('recipe grid columns follow the viewport', () => {
   it('adds a column as the window widens', () => {
     expect(columnsAt(1440)).toBeGreaterThan(columnsAt(1200));
     expect(columnsAt(1920)).toBeGreaterThan(columnsAt(1440));
+  });
+
+  // The counts the wide-screen home design draws, at the widths it draws them.
+  it('lands on the design column counts', () => {
+    expect(columnsAt(1920)).toBe(5);
+    expect(columnsAt(1440)).toBe(4);
+    expect(columnsAt(1030)).toBe(3);
+    expect(columnsAt(880)).toBe(2);
   });
 
   // The regression: every one of these used to answer 3.
@@ -39,7 +46,7 @@ describe('recipe grid columns follow the viewport', () => {
   });
 
   it('drops columns as the window narrows', () => {
-    expect(columnsAt(1032)).toBeLessThan(columnsAt(1200));
+    expect(columnsAt(900)).toBeLessThan(columnsAt(1440));
   });
 
   it('caps browsing far wider than the recipe detail, which protects line length', () => {
