@@ -54,7 +54,17 @@ language's folder and leave the names alone.
 
 ### App Store rules the Hub copy does not know about
 
-Three things cost a failed upload each before they were written down:
+Four things cost a failed upload each before they were written down:
+
+- **A screenshot may not draw its own status bar.** Build 1.0.43 (694) was rejected under
+  guideline **2.3.10** — *"revise the app's screenshots to remove non-iOS status bar images"*.
+  The frames drew `9:41` + `5G` + a battery in the app's webfont, missing the signal and wifi
+  glyphs and ordering the rest the way no iOS device does, straight over the app's own buttons.
+  The Hub now renders that band as an empty spacer; keep it that way and let a real capture
+  carry real chrome. The PNGs in `screenshots/` are the ones that got rejected — they predate
+  the Hub (exported before #301) and still carry both the fake bar and the star-rating /
+  testimonial cards the Hub has since dropped. **They must be re-exported before the next
+  submission, not re-uploaded.**
 
 - **No emoji in `description.txt`.** The App Store rejects the whole field:
   `Description can't contain the following character(s): 🔖, 🤖, …`. Play accepts
@@ -122,7 +132,8 @@ Keep `distribution/whatsnew/whatsnew-<locale>` and
 
 - [ ] Copy in these files matches the Listing Hub
 - [ ] Release notes written for **both** stores, in **both** languages
-- [ ] Six screenshots per language present in `screenshots/<locale>/`
+- [ ] Six screenshots per language present in `screenshots/<locale>/`, re-exported from the
+      Hub — no drawn status bar, no ratings, no review quotes (see the rules above)
 - [ ] Character counts still under the limits (the Hub shows a live counter)
 - [ ] iOS: re-run the section Z checks in [`docs/qa/ios.md`](../docs/qa/ios.md) —
       guest browsing and in-app account deletion are what got build 321 rejected
