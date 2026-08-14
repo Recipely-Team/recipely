@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, mediaSizes, decorSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, decorSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -65,9 +65,11 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
 };
 
 const styles = StyleSheet.create({
+  // No height of its own: the row is one rectangle whose height the featured
+  // card's ratio sets, and the two minis split it. A minHeight here made the
+  // column taller than the featured and left the row ragged along the bottom.
   card: {
     flex: ValueConstants.one,
-    minHeight: mediaSizes.heroMiniMinHeight,
     borderRadius: radii.xxl,
     overflow: 'hidden',
   },
