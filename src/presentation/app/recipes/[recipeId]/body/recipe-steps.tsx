@@ -17,7 +17,7 @@ export interface RecipeStepsProps {
   recipe: RecipeEntity;
   recipeId: string;
   isOwner: boolean;
-  isWebShell: boolean;
+  isExpanded: boolean;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
   completedSteps: boolean[];
@@ -33,7 +33,7 @@ export const RecipeSteps = ({
   recipe,
   recipeId,
   isOwner,
-  isWebShell,
+  isExpanded,
   checkedIngredients,
   onToggleIngredient,
   completedSteps,
@@ -83,7 +83,7 @@ export const RecipeSteps = ({
       </View>
 
       {isOwner ? (
-        isWebShell ? (
+        isExpanded ? (
           // WEB: design's header-cluster button language — a ghost
           // "Delete" pill (danger-tinted).
           <View style={styles.ownerActionsWeb}>

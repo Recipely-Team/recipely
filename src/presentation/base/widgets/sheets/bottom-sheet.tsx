@@ -38,12 +38,15 @@ export interface BottomSheetProps {
  * Modal sheet with a header, optional close button, a scrollable content area
  * and an optional pinned {@link BottomSheetProps.footer}.
  *
- * PRESENTATION IS PER SHELL. On the mobile shell it is a bottom sheet, dragged
- * or tapped away by its grabber. On the WEB shell it is a centred dialog: a
- * panel glued to the bottom edge of a desktop window is a touch idiom with
- * nothing to reach for it there, and the grabber promises a drag gesture a
- * mouse never performs. Every sheet in the app goes through this component, so
- * the rule holds app-wide rather than per call site.
+ * PRESENTATION IS PER VIEWPORT. On a phone it is a bottom sheet, dragged or
+ * tapped away by its grabber. Once the viewport is expanded it is a centred
+ * dialog: a panel glued to the bottom edge of a desktop window is a touch idiom
+ * with nothing to reach for it there, and the grabber promises a drag gesture a
+ * mouse never performs. A 13" tablet lands on the same answer for its own
+ * reason — the bottom edge is a thumb-stretch away and iPadOS centres its
+ * sheets — so this asks `isExpanded`, not `isWebShell`. Every sheet in the app
+ * goes through this component, so the rule holds app-wide rather than per call
+ * site.
  */
 export const BottomSheet = ({
   visible,
@@ -56,31 +59,31 @@ export const BottomSheet = ({
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
-  const { isWebShell } = useLayout();
+  const { isExpanded } = useLayout();
   const { translateY, panHandlers } = useDragToDismiss(onClose, visible);
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType={isWebShell ? 'fade' : 'slide'}
+      animationType={isExpanded ? 'fade' : 'slide'}
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <KeyboardAvoider style={[styles.root, isWebShell ? styles.rootWeb : null]}>
+      <KeyboardAvoider style={[styles.root, isExpanded ? styles.rootWeb : null]}>
         <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
         <Animated.View
           style={[
             styles.sheet,
-            isWebShell ? styles.dialog : null,
+            isExpanded ? styles.dialog : null,
             {
               backgroundColor: colors.background,
-              paddingBottom: isWebShell ? spacing.lg : Math.max(insets.bottom, spacing.lg),
-              transform: [{ translateY: isWebShell ? ValueConstants.zero : translateY }],
+              paddingBottom: isExpanded ? spacing.lg : Math.max(insets.bottom, spacing.lg),
+              transform: [{ translateY: isExpanded ? ValueConstants.zero : translateY }],
             },
           ]}
         >
-          {isWebShell ? null : (
+          {isExpanded ? null : (
             <View
               {...panHandlers}
               style={styles.grabberWrap}
@@ -99,7 +102,7 @@ export const BottomSheet = ({
             onClose={onClose}
             // The grabber is the mobile dismiss affordance; without it the
             // dialog needs a visible close control of its own.
-            showCloseButton={showCloseButton || isWebShell}
+            showCloseButton={showCloseButton || isExpanded}
             rightAction={rightAction}
           />
           <ScrollView

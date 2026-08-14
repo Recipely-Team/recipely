@@ -20,9 +20,9 @@ export interface ResponsiveContainerProps {
 }
 
 /**
- * Caps content width on the web shell so mobile-first screens (profile,
+ * Caps content width on any expanded viewport so mobile-first screens (profile,
  * createRecipe, settings, etc.) do not stretch full-bleed across a desktop
- * viewport. Pass-through on mobile/tablet — children render edge-to-edge.
+ * window or an iPad. Pass-through on phones — children render edge-to-edge.
  */
 export const ResponsiveContainer = ({
   children,
@@ -32,10 +32,10 @@ export const ResponsiveContainer = ({
   fill = false,
   style,
 }: ResponsiveContainerProps): React.JSX.Element => {
-  const { isWebShell } = useLayout();
+  const { isExpanded } = useLayout();
   const cap = maxWidth ?? (route ? WEB_CONTENT_MAX_WIDTH[route] : WEB_CONTENT_MAX_WIDTH.default);
 
-  if (!isWebShell) {
+  if (!isExpanded) {
     return (
       <View style={[fill ? styles.fill : styles.passthrough, style]}>{children}</View>
     );

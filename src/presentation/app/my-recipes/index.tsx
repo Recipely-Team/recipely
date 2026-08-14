@@ -30,7 +30,7 @@ const WEB_CONTENT_MAX = layoutSizes.webContentMax;
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isWebShell, width } = useLayout();
+  const { isWebShell, isExpanded, width } = useLayout();
   const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
 
@@ -48,12 +48,13 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
-  // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
+  // Grid columns: 1 on a phone, auto-fill at RECIPE_CARD_MIN_WIDTH once the
+  // viewport is expanded — the web shell and the iPad alike.
   const gridColumns = useMemo<number>(() => {
-    if (!isWebShell) return ValueConstants.one;
+    if (!isExpanded) return ValueConstants.one;
     const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
     return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
-  }, [isWebShell, width]);
+  }, [isExpanded, width]);
 
   // WHY on focus, not on mount: this screen stays mounted behind the create
   // flow, so a mount-only load left a recipe the user had just published (or a
@@ -131,7 +132,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             drafts={drafts}
             items={items}
             gridColumns={gridColumns}
-            isWebShell={isWebShell}
+            isExpanded={isExpanded}
             isSaved={isSaved}
             onToggleSave={(id) => void toggleSave(id)}
             onOpenRecipe={openRecipe}

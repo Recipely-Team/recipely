@@ -91,7 +91,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
   const loadMore = recipeListStore((s) => s.loadMore);
-  const { isWebShell, width } = useLayout();
+  const { isWebShell, isExpanded, width } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
@@ -148,10 +148,10 @@ export const useRecipeList = (): UseRecipeListResult => {
   });
 
   const gridColumns = useMemo<number>(() => {
-    if (!isWebShell) return 1;
+    if (!isExpanded) return 1;
     const available = Math.min(width, layoutSizes.webContentMax) - spacing.xl * ValueConstants.two;
     return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
-  }, [isWebShell, width]);
+  }, [isExpanded, width]);
 
   const [sortBy, setSortBy] = useState<SortKey>(SortKey.Popular);
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
@@ -159,13 +159,14 @@ export const useRecipeList = (): UseRecipeListResult => {
   const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
   const [sheetOpen, setSheetOpen] = useState<RecipeSheet | null>(null);
 
-  // Web home shows a Save bookmark on each card, so the saved set must be populated.
+  // The grid card carries a Save bookmark, so the saved set must be populated
+  // wherever the grid renders — which is now the iPad as well as the web.
   useEffect(() => {
-    if (!isWebShell) return;
+    if (!isExpanded) return;
     void loadFavoritesUseCase.execute().then((result) => {
       if (result.ok) savedRecipesStore.getState().setSaved(result.value);
     });
-  }, [isWebShell, loadFavoritesUseCase, savedRecipesStore]);
+  }, [isExpanded, loadFavoritesUseCase, savedRecipesStore]);
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({
@@ -315,6 +316,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     state,
     recipes,
     isWebShell,
+    isExpanded,
     isSearching,
     isRefetching,
     isReloadingResults,

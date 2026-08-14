@@ -24,8 +24,8 @@ const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
+  const { isExpanded, orientation } = useLayout();
+  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
   const email = isString(params.email) ? params.email : CharConstants.empty;

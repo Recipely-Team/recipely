@@ -21,8 +21,8 @@ const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
+  const { isExpanded, orientation } = useLayout();
+  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
 
   const { authStore } = useStores();
   const requestPasswordReset = authStore((s) => s.requestPasswordReset);

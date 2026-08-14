@@ -14,6 +14,7 @@ export interface UseRecipeListResult {
    */
   recipes: RecipeSummaryEntity[];
   isWebShell: boolean;
+  isExpanded: boolean;
   isSearching: boolean;
   /**
    * True whenever the visible rows are out of date with what the user has
