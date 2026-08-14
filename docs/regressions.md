@@ -845,3 +845,30 @@ carries no claim. `check:structure` rule S fails on a clock or a radio label
 The rejected PNGs predate the hub that generates them, so they also still
 carried star ratings and invented review quotes that the hub's own README had
 already banned under 2.3.7. **Re-export; never re-upload what is in the folder.**
+
+## One flag answered two questions, and the iPad got the phone
+
+**Symptom.** On a 13" iPad the app rendered the phone layout stretched across
+the screen: one recipe card per row, the single-column recipe detail, bottom
+sheets glued to the bottom edge of a tablet. The wide layout the web has had
+for months never appeared, and the App Store iPad screenshot showed it.
+
+**Cause.** `isWebShell = isWeb() && width >= BREAKPOINTS.desktop` was the only
+question the layout context could answer, and 38 files asked it. But it bundled
+two unrelated things: *is there room for the wide layout* and *is the browser
+chrome mounted*. An iPad answers yes to the first and no to the second, so
+every consumer — grids, the columned detail, the max-width caps, the sheet
+presentation — took the phone branch. Nothing was broken; the question was.
+
+**Now.** Two flags. `isExpanded` is pure width, so any platform past the
+desktop breakpoint gets the wide content layout and a Split View pane loses it
+again on its own. `isWebShell` keeps its name and its old definition and is now
+only asked about browser chrome: the sticky WebHeader, the absent TabBar, the
+absent safe-area insets. Deciding per call site is the work — the tab bar,
+the native app header, the safe-area paddings and the web header's search and
+sort fields all deliberately stay on `isWebShell`, because a tablet keeps its
+native chrome.
+
+*The general shape:* a boolean whose name describes a PLATFORM will be asked
+questions about SIZE, and it answers them wrong on the first device that is one
+without the other. Name the capability, not the platform.

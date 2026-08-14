@@ -15,6 +15,7 @@ const DEFAULT_VALUE: LayoutContextValue = {
   orientation: OrientationType.Portrait,
   breakpoint: 'mobile',
   isWebShell: false,
+  isExpanded: false,
   isCompact: true,
 };
 
@@ -51,10 +52,18 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
     if (gated) return DEFAULT_VALUE;
     const breakpoint = resolveBreakpoint(width);
     const orientation: OrientationType = width >= height ? OrientationType.Landscape : OrientationType.Portrait;
-    const isWebShell = isWeb() && width >= BREAKPOINTS.desktop;
+    // Two questions, deliberately separate. `isExpanded` asks only how much
+    // room there is, so a 13" iPad (1032pt portrait) gets the grids and the
+    // columned detail the web has always had, and a Split View pane drops back
+    // to the phone layout on its own. `isWebShell` stays a question about the
+    // PLATFORM's chrome: only a browser swaps the native app bar for the sticky
+    // WebHeader and drops the TabBar and the safe-area insets. Answering both
+    // with one flag is what left the iPad rendering a stretched phone.
+    const isExpanded = width >= BREAKPOINTS.desktop;
+    const isWebShell = isWeb() && isExpanded;
     const isCompact = breakpoint === BreakpointType.Mobile;
     const aspectRatio = height === ValueConstants.zero ? 1 : width / height;
-    return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isCompact };
+    return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isExpanded, isCompact };
   }, [gated, width, height]);
 
   return <LayoutContext.Provider value={value}>{children}</LayoutContext.Provider>;

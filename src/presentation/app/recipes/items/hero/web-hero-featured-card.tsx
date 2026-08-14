@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities, aspectRatios } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -101,8 +101,14 @@ export const WebHeroFeaturedCard = ({
 };
 
 const styles = StyleSheet.create({
+  // Ratio-sized, not height-pinned. The card takes its width from the row's
+  // flex, so a pinned height made the shape a function of the window: at 2000px
+  // the hero was a 2.8:1 letterbox strip with the photo cropped to a band, and
+  // it squared up again as the window narrowed. The max-height keeps it from
+  // eating the fold once the content cap hands it a wide column.
   card: {
-    minHeight: mediaSizes.heroImageHeightWeb,
+    aspectRatio: aspectRatios.heroWide,
+    maxHeight: mediaSizes.heroImageHeightWeb,
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },
