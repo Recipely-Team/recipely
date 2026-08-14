@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities, aspectRatios } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, opacities, aspectRatios } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -108,7 +108,6 @@ const styles = StyleSheet.create({
   // eating the fold once the content cap hands it a wide column.
   card: {
     aspectRatio: aspectRatios.heroWide,
-    maxHeight: mediaSizes.heroImageHeightWeb,
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },

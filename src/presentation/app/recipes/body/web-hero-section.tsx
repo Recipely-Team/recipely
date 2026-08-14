@@ -6,7 +6,7 @@ import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-he
 import { WebHeroMiniCard } from '@presentation/app/recipes/items/hero/web-hero-mini-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, radii, mediaSizes } from '@presentation/base/theme';
+import { spacing, radii, mediaSizes, aspectRatios, layoutSizes } from '@presentation/base/theme';
 import { useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -15,6 +15,32 @@ const HERO_MIN_RECIPES = 3;
 
 /** Window width (px) below which the hero collapses to the featured card only. */
 const STACK_WIDTH = 700;
+
+/**
+ * How the row divides horizontally — the featured card takes five parts, the
+ * mini column three. Everything else in the hero derives from this split and
+ * the ratio; no card carries a width or a height of its own.
+ */
+const FEATURED_FLEX = 5;
+const MINI_FLEX = 3;
+
+/**
+ * The cap the hero grows into, expressed as a WIDTH even though what we are
+ * limiting is height.
+ *
+ * Clamping the height directly let the row keep widening past the clamp, so the
+ * featured card drifted from 1.6:1 to a 2.6:1 letterbox with the photo cropped
+ * to a band — a max-height and an aspect ratio cannot both hold. Bounding the
+ * width bounds the height through the ratio instead, and the shape survives
+ * every viewport.
+ *
+ * The bound itself is a share of the viewport rather than a pixel count, so a
+ * short landscape window gets a short hero and a tall one gets a taller hero,
+ * and neither ever hands the fold to a single card.
+ */
+const rowMaxWidth = (viewportHeight: number): number =>
+  viewportHeight * layoutSizes.heroViewportShare * aspectRatios.heroWide * ((FEATURED_FLEX + MINI_FLEX) / FEATURED_FLEX) +
+  spacing.sm2;
 /** Height of each mini-card skeleton so two fill the hero column. */
 const MINI_SKELETON_HEIGHT = (mediaSizes.heroImageHeightWeb - spacing.sm2) / ValueConstants.two;
 
@@ -39,7 +65,7 @@ export const WebHeroSection = ({
   const { trendingRecipesStore } = useStores();
   const state = trendingRecipesStore((s) => s.state);
   const load = trendingRecipesStore((s) => s.load);
-  const { width } = useLayout();
+  const { width, height } = useLayout();
   const language = useLocale();
 
   useEffect(() => {
@@ -60,10 +86,11 @@ export const WebHeroSection = ({
   }, [language, load]);
 
   const stacked = width < STACK_WIDTH;
+  const rowCap = { maxWidth: rowMaxWidth(height) };
 
   if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     return (
-      <View style={[styles.row, stacked ? styles.stacked : null]}>
+      <View style={[styles.row, rowCap, stacked ? styles.stacked : null]}>
         <View style={styles.featured}>
           <SkeletonLoader width="100%" height={mediaSizes.heroImageHeightWeb} borderRadius={radii.xxl2} />
         </View>
@@ -84,7 +111,7 @@ export const WebHeroSection = ({
   const [featured, mini1, mini2] = state.recipes;
 
   return (
-    <View style={[styles.row, stacked ? styles.stacked : null]}>
+    <View style={[styles.row, rowCap, stacked ? styles.stacked : null]}>
       <View style={styles.featured}>
         <WebHeroFeaturedCard
           recipe={featured}
@@ -108,16 +135,18 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm2,
     marginBottom: spacing.lg,
+    width: '100%',
+    alignSelf: 'center',
   },
   stacked: {
     flexDirection: 'column',
   },
   featured: {
-    flex: 1.9,
+    flex: FEATURED_FLEX,
     minWidth: ValueConstants.zero,
   },
   mini: {
-    flex: ValueConstants.one,
+    flex: MINI_FLEX,
     minWidth: ValueConstants.zero,
     flexDirection: 'column',
     gap: spacing.sm2,
