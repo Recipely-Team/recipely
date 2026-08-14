@@ -65,7 +65,7 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     cuisine: dto.cuisine,
     category: dto.category,
     difficulty: dto.difficulty,
-    totalTimeMinutes: dto.totalTimeMinutes,
+    totalTimeMinutes: dto.totalTimeMinutes ?? null,
     rating: dto.rating,
     moderationStatus: dto.moderationStatus,
     likeCount: dto.likeCount ?? ValueConstants.zero,

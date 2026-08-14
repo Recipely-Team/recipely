@@ -872,3 +872,29 @@ native chrome.
 *The general shape:* a boolean whose name describes a PLATFORM will be asked
 questions about SIZE, and it answers them wrong on the first device that is one
 without the other. Name the capability, not the platform.
+
+## A DTO asserted a field the backend does not always send
+
+**Symptom.** "undefined min" on the recipe cards and "undefined dk" on the home
+hero, on the live web app and in the iPad screenshots being prepared for the
+App Store. Dev never showed it, which is what made it look like a display bug.
+
+**Cause.** `RecipeListItemDto` declared `totalTimeMinutes: number` — required —
+and the mapper passed it straight through. Every type from the wire to the
+screen therefore claimed a number while the value was `undefined`. The backend
+simply has no timing for some recipes (AI-generated and imported ones); dev's
+seeded catalogue happens to have it for all of them.
+
+TypeScript could not catch this and never will: **a DTO is an assertion about
+the wire, not a check of it.** Whatever the mapper does not verify, the type
+system will confidently repeat all the way to the UI.
+
+**Now.** The field is optional on the DTO, the entity carries `number | null`,
+the mapper turns absence into `null` at the boundary, and the three cards hide
+the time chip instead of printing what they were handed. Covered by
+`recipe-mapper.missing-time.test`, which fails against the pass-through.
+
+*The wider lesson, and the second time today:* a declaration that promises more
+than reality delivers stays wrong until something checks it. The morning's
+version was a boolean named after a platform being asked about size; this one
+is a wire field named required that is not.

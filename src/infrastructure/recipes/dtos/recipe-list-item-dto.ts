@@ -11,7 +11,13 @@ export interface RecipeListItemDto {
   readonly cuisine: string;
   readonly category: string;
   readonly difficulty: Difficulty;
-  readonly totalTimeMinutes: number;
+  /**
+   * Absent on recipes the backend has no timing for (AI-generated and imported
+   * ones, mostly). It was declared required, nothing checked it, and every type
+   * downstream said `number` while the value was `undefined` — which reached
+   * the screen as "undefined min".
+   */
+  readonly totalTimeMinutes?: number;
   readonly rating: number;
   readonly moderationStatus: string;
   readonly likeCount: number;

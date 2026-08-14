@@ -54,10 +54,14 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
             {recipe.rating.toFixed(1)}
           </ThemedText>
-          <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
-          <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-            {totalMin} {t().recipes.minutes}
-          </ThemedText>
+          {totalMin === null ? null : (
+            <>
+              <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
+              <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
+                {totalMin} {t().recipes.minutes}
+              </ThemedText>
+            </>
+          )}
         </View>
       </View>
     </Pressable>
