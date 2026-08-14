@@ -27,12 +27,15 @@ export const HeroBandFlex = {
 /**
  * Width the cuisine column needs before it earns a place in the band.
  *
- * Deliberately high — the column only earns its place on a genuinely large
- * desktop window (~1535px and up), not on a laptop or a tablet. Three columns
- * at iPad width crowded the band; below this the band stays two columns and the
- * cuisines render as the horizontal strip underneath.
+ * Set so the column opens on a desktop window (~1400px and up) but never on a
+ * tablet — three columns at iPad width crowded the band.
+ *
+ * The third column is not only a place to put the cuisines: it also takes the
+ * featured card from 5/8 of the band down to 5/11, which is what keeps the hero
+ * near half the viewport instead of two thirds of it. Below this the band stays
+ * two columns and the cuisines render as the horizontal strip underneath.
  */
-const CUISINE_COLUMN_MIN = 400;
+const CUISINE_COLUMN_MIN = 360;
 
 const totalFlex = (withCuisines: boolean): number =>
   HeroBandFlex.featured + HeroBandFlex.mini + (withCuisines ? HeroBandFlex.cuisines : 0);

@@ -22,9 +22,10 @@ import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-w
 describe('hero band geometry', () => {
   // Deliberately late: three columns crowded the band at tablet and laptop
   // widths, so the side column is a large-desktop affordance only.
-  it('opens the side column only on a genuinely large desktop window', () => {
+  it('opens the side column on a desktop window but never on a tablet', () => {
     expect(bandFitsCuisines(feedContentWidth(1920))).toBe(true);
-    expect(bandFitsCuisines(feedContentWidth(1440))).toBe(false);
+    expect(bandFitsCuisines(feedContentWidth(1440))).toBe(true);
+    // A tablet never gets it: three columns crowded the band at this width.
     expect(bandFitsCuisines(feedContentWidth(1032))).toBe(false);
     expect(bandFitsCuisines(feedContentWidth(900))).toBe(false);
   });
