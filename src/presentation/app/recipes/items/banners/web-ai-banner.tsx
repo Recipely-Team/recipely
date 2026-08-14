@@ -3,75 +3,75 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, decorSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeightFor, iconSizes, decorSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface WebAiBannerProps {
   onPress: () => void;
   /**
-   * Stacks icon, text and chip instead of laying them across a row. The wide
-   * form is a full-width bar; inside the hero band's side column there is no
-   * width to spread across, so the row form would crush the text to a couple of
-   * words per line.
+   * The full-width band form: everything on one line, supporting sentence
+   * dropped. Used when the panel has wrapped out of the hero row and has a
+   * whole line to itself, where the tall form would be mostly empty gradient.
    */
-  compact?: boolean;
+  wide?: boolean;
 }
 
 /**
- * Wide web-only AI generator promo banner. Larger than the mobile
- * `AiBannerCard`: title + subtitle, sparkle decoration, and a "Start" chip.
+ * The AI generator's promo, as the hero row's third block.
+ *
+ * @remarks
+ * - **Two forms, one component.** In the row it is a tall panel — mark, kicker,
+ *   headline, one paragraph, and a button pinned to the bottom edge so the
+ *   three blocks in the row end level. Once it wraps onto its own line it turns
+ *   into a band: the same content on one line with the paragraph dropped,
+ *   because a full-width bar of body copy is a wall, not a promo.
+ * - The button is pinned with `marginTop: auto` rather than a spacer, so the
+ *   panel keeps its shape whatever height the row settles at.
  */
-export const WebAiBanner = ({ onPress, compact = false }: WebAiBannerProps): React.JSX.Element => {
+export const WebAiBanner = ({ onPress, wide = false }: WebAiBannerProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={t().recipes.aiPromo}
-      style={({ pressed }) => [compact ? styles.wrapperCompact : styles.wrapper, pressed ? styles.pressed : null]}
+      style={({ pressed }) => [styles.wrapper, pressed ? styles.pressed : null]}
     >
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
         start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
-        end={{ x: ValueConstants.one, y: ValueConstants.zero }}
-        style={[styles.card, compact ? styles.cardCompact : null, { borderColor: colors.gradientBorder }]}
+        end={{ x: ValueConstants.one, y: ValueConstants.one }}
+        style={[styles.card, wide ? styles.cardWide : null, { borderColor: colors.gradientBorder }]}
       >
-        {compact ? null : (
-          <View pointerEvents="none" style={styles.decor}>
-            <Ionicons name="sparkles" size={decorSizes.sparkleDecor} color={colors.onOverlay} />
-          </View>
-        )}
-
-        <View
-          style={[
-            styles.iconTile,
-            compact ? styles.iconTileCompact : null,
-            { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder },
-          ]}
-        >
-          <Ionicons name="sparkles" size={compact ? iconSizes.lg : iconSizes.xxxl} color={colors.onOverlay} />
+        <View pointerEvents="none" style={styles.decor}>
+          <Ionicons name="sparkles" size={decorSizes.sparkleDecor} color={colors.onOverlay} />
         </View>
 
-        <View style={styles.textBlock}>
-          <ThemedText
-            numberOfLines={compact ? 2 : undefined}
-            style={[styles.title, compact ? styles.titleCompact : null, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}
-          >
+        <View style={[styles.text, wide ? styles.textWide : null]}>
+          <View style={[styles.mark, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
+            <Ionicons name="sparkles" size={iconSizes.md} color={colors.onOverlay} />
+          </View>
+          <ThemedText style={[styles.kicker, { color: colors.onOverlay }]}>
+            {t().recipes.aiKicker}
+          </ThemedText>
+          <ThemedText style={[styles.title, wide ? styles.titleWide : null, { color: colors.onOverlay }]}>
             {t().recipes.aiPromo}
           </ThemedText>
-          {compact ? null : (
-            <ThemedText style={[styles.subtitle, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
+          {wide ? null : (
+            <ThemedText style={[styles.body, { color: colors.onOverlay }]}>
               {t().recipes.aiPromoSubtitle}
             </ThemedText>
           )}
         </View>
 
-        <View style={[styles.startChip, { backgroundColor: colors.onOverlay }]}>
-          <ThemedText style={[styles.startLabel, { color: colors.heroButtonText }]}>
-            {t().recipes.aiStart}
-          </ThemedText>
-          <Ionicons name="chevron-forward" size={iconSizes.md} color={colors.heroButtonText} />
+        <View style={[styles.foot, wide ? styles.footWide : null]}>
+          <View style={[styles.action, { backgroundColor: colors.onOverlay }]}>
+            <ThemedText style={[styles.actionLabel, { color: colors.heroButtonText }]}>
+              {t().recipes.aiStart}
+            </ThemedText>
+            <Ionicons name="arrow-forward" size={iconSizes.md} color={colors.heroButtonText} />
+          </View>
         </View>
       </LinearGradient>
     </Pressable>
@@ -80,86 +80,92 @@ export const WebAiBanner = ({ onPress, compact = false }: WebAiBannerProps): Rea
 
 const styles = StyleSheet.create({
   wrapper: {
-    marginBottom: spacing.lg,
-  },
-  // In the band's side column the banner is a tile, not a bar: no bottom margin
-  // (the column's gap handles it) and it fills the width it is given.
-  wrapperCompact: {
     width: '100%',
+    flexGrow: ValueConstants.one,
   },
   pressed: {
     opacity: opacities.pressedFaint,
   },
-  // A slim ROW, not a stacked tile. Stacking icon + title + subtitle + chip
-  // needed ~200px, but the side stack only has whatever the band's ratio left
-  // after the cuisine list — the chip ended up drawn over the title. A row with
-  // no subtitle fits in a fraction of that and leaves the list its room.
-  cardCompact: {
-    gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-  },
   card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.lg,
+    flexGrow: ValueConstants.one,
+    flexDirection: 'column',
+    gap: spacing.md,
     borderWidth: borderWidths.hairline,
     borderRadius: radii.xxl,
-    paddingVertical: spacing.xl,
-    paddingHorizontal: spacing.xxl,
+    padding: spacing.lg2,
     overflow: 'hidden',
+  },
+  cardWide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xl,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
   decor: {
     position: 'absolute',
-    top: -spacing.lg,
+    top: -spacing.xl,
     right: -spacing.md,
     opacity: opacities.scrimFaint,
   },
-  iconTile: {
-    width: decorSizes.aiBannerIcon,
-    height: decorSizes.aiBannerIcon,
-    borderRadius: radii.lg,
-    borderWidth: borderWidths.hairline,
-    alignItems: 'center',
-    justifyContent: 'center',
-    flexShrink: ValueConstants.zero,
-  },
-  textBlock: {
-    flex: ValueConstants.one,
+  text: {
     gap: spacing.xs,
   },
-  iconTileCompact: {
+  textWide: {
+    flexShrink: ValueConstants.one,
+    flexGrow: ValueConstants.one,
+  },
+  mark: {
     width: decorSizes.aiBannerIconCompact,
     height: decorSizes.aiBannerIconCompact,
     borderRadius: radii.md,
+    borderWidth: borderWidths.hairline,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: spacing.sm,
   },
-  titleCompact: {
-    fontSize: fontSizes.medium,
+  kicker: {
+    fontWeight: fontWeights.bold,
+    fontSize: fontSizes.caption,
+    letterSpacing: letterSpacings.wide,
+    opacity: opacities.onMediaSubtle,
   },
   title: {
     fontWeight: fontWeights.heavy,
-    fontSize: fontSizes.subtitle,
-    textShadowOffset: { width: ValueConstants.zero, height: ValueConstants.one },
-    textShadowRadius: spacing.xs2,
+    fontSize: fontSizes.title,
+    lineHeight: lineHeightFor(fontSizes.title),
   },
-  subtitle: {
+  titleWide: {
+    fontSize: fontSizes.subtitle,
+    lineHeight: lineHeightFor(fontSizes.subtitle),
+  },
+  body: {
     fontWeight: fontWeights.regular,
     fontSize: fontSizes.medium,
+    lineHeight: lineHeightFor(fontSizes.medium),
     opacity: opacities.onMediaSubtle,
-    textShadowOffset: { width: ValueConstants.zero, height: ValueConstants.one },
-    textShadowRadius: spacing.xs,
   },
-  startChip: {
-    flexShrink: ValueConstants.zero,
+  // Pinned to the bottom edge so the panel ends level with the cards beside it,
+  // whatever height the row settles at.
+  foot: {
+    marginTop: 'auto',
+    alignSelf: 'stretch',
+  },
+  footWide: {
+    marginTop: ValueConstants.zero,
+    alignSelf: 'auto',
+  },
+  action: {
+    minHeight: controlSizes.button,
+    borderRadius: radii.lg,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.xs,
-    borderRadius: radii.round,
-    paddingVertical: spacing.xs2,
-    paddingHorizontal: spacing.md,
+    justifyContent: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.lg,
   },
-  startLabel: {
+  actionLabel: {
     fontWeight: fontWeights.bold,
-    fontSize: fontSizes.caption,
+    fontSize: fontSizes.body,
   },
 });
