@@ -25,6 +25,8 @@ export const decorSizes = {
   badgeSm: scale(28),
   /** Card overlap onto the hero above it. */
   cardOverlap: scale(40),
+  /** Same tile inside the hero band's side stack, where height is scarce. */
+  aiBannerIconCompact: scale(40),
   /** Circular icon plate on the AI banner. */
   aiBannerIcon: scale(52),
   /** Severity disc behind the icon in a FeedbackDialog. */

@@ -37,21 +37,34 @@ export const WebAiBanner = ({ onPress, compact = false }: WebAiBannerProps): Rea
         end={{ x: ValueConstants.one, y: ValueConstants.zero }}
         style={[styles.card, compact ? styles.cardCompact : null, { borderColor: colors.gradientBorder }]}
       >
-        <View pointerEvents="none" style={styles.decor}>
-          <Ionicons name="sparkles" size={decorSizes.sparkleDecor} color={colors.onOverlay} />
+        {compact ? null : (
+          <View pointerEvents="none" style={styles.decor}>
+            <Ionicons name="sparkles" size={decorSizes.sparkleDecor} color={colors.onOverlay} />
+          </View>
+        )}
+
+        <View
+          style={[
+            styles.iconTile,
+            compact ? styles.iconTileCompact : null,
+            { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder },
+          ]}
+        >
+          <Ionicons name="sparkles" size={compact ? iconSizes.lg : iconSizes.xxxl} color={colors.onOverlay} />
         </View>
 
-        <View style={[styles.iconTile, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}>
-          <Ionicons name="sparkles" size={iconSizes.xxxl} color={colors.onOverlay} />
-        </View>
-
-        <View style={[styles.textBlock, compact ? styles.textBlockCompact : null]}>
-          <ThemedText style={[styles.title, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
+        <View style={styles.textBlock}>
+          <ThemedText
+            numberOfLines={compact ? 2 : undefined}
+            style={[styles.title, compact ? styles.titleCompact : null, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}
+          >
             {t().recipes.aiPromo}
           </ThemedText>
-          <ThemedText style={[styles.subtitle, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
-            {t().recipes.aiPromoSubtitle}
-          </ThemedText>
+          {compact ? null : (
+            <ThemedText style={[styles.subtitle, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}>
+              {t().recipes.aiPromoSubtitle}
+            </ThemedText>
+          )}
         </View>
 
         <View style={[styles.startChip, { backgroundColor: colors.onOverlay }]}>
@@ -77,12 +90,14 @@ const styles = StyleSheet.create({
   pressed: {
     opacity: opacities.pressedFaint,
   },
+  // A slim ROW, not a stacked tile. Stacking icon + title + subtitle + chip
+  // needed ~200px, but the side stack only has whatever the band's ratio left
+  // after the cuisine list — the chip ended up drawn over the title. A row with
+  // no subtitle fits in a fraction of that and leaves the list its room.
   cardCompact: {
-    flexDirection: 'column',
-    alignItems: 'flex-start',
     gap: spacing.sm,
-    paddingVertical: spacing.lg,
-    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.md,
   },
   card: {
     flexDirection: 'row',
@@ -113,9 +128,13 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
     gap: spacing.xs,
   },
-  textBlockCompact: {
-    flex: ValueConstants.zero,
-    alignSelf: 'stretch',
+  iconTileCompact: {
+    width: decorSizes.aiBannerIconCompact,
+    height: decorSizes.aiBannerIconCompact,
+    borderRadius: radii.md,
+  },
+  titleCompact: {
+    fontSize: fontSizes.medium,
   },
   title: {
     fontWeight: fontWeights.heavy,
