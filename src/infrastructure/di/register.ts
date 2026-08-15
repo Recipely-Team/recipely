@@ -29,6 +29,7 @@ import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
+import { AdsService } from '@infrastructure/ads/ads-service';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
 import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
@@ -55,6 +56,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.KeyValueStore, () => kvStore);
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
+  container.register(TOKENS.AdsService, () => new AdsService());
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 
   // The app-wide single source of truth for the active language. Everything

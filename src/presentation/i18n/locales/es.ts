@@ -487,6 +487,7 @@ export const es = {
     assistant: 'Asistente de IA',
     closeAssistant: 'Cerrar asistente de IA',
     refineHint: 'Pide tantos cambios como quieras',
+    adLabel: 'Publicidad',
     proposalTitle: 'Cambios propuestos',
     proposalAccept: 'Aplicar',
     proposalReject: 'Descartar',

@@ -487,6 +487,7 @@ export const id = {
     assistant: 'Asisten AI',
     closeAssistant: 'Tutup asisten AI',
     refineHint: 'Minta perubahan sebanyak yang kamu mau',
+    adLabel: 'Iklan',
     proposalTitle: 'Perubahan yang diusulkan',
     proposalAccept: 'Terapkan',
     proposalReject: 'Buang',

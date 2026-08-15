@@ -6,7 +6,6 @@ import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
@@ -24,7 +23,9 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, iconSizes, controlSizes, layoutSizes } from '@presentation/base/theme';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { FeedRow } from '@presentation/app/recipes/model/ads/feed-row';
+import { FeedRowView } from '@presentation/app/recipes/items/feed-row-view';
+import { useFeedRows } from '@presentation/app/recipes/hooks/use-feed-rows';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeListBodyProps {
@@ -73,21 +74,18 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     [onOpenRecipe],
   );
 
-  const renderItem = useCallback(
-    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => {
-      if (gridColumns > ValueConstants.one) {
-        return (
-          <View style={styles.gridCell}>
-            <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />
-          </View>
-        );
-      }
-      return <RecipeListItem recipe={item} onPress={openRecipe(item.id)} />;
-    },
-    [gridColumns, openRecipe],
-  );
+  const { rows, keyExtractor, adUnitId } = useFeedRows({
+    recipes,
+    isReloading: vm.isReloadingResults,
+    gridColumns,
+  });
 
-  const keyExtractor = useCallback((r: RecipeSummaryEntity): string => r.id, []);
+  const renderItem = useCallback(
+    ({ item }: { item: FeedRow }): React.JSX.Element => (
+      <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} openRecipe={openRecipe} />
+    ),
+    [gridColumns, openRecipe, adUnitId],
+  );
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'RecipeListBody');
 
@@ -123,7 +121,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         // answer the PREVIOUS filter, and leaving them up read as a second
         // load. `ListEmptyComponent` carries the loading placeholder, so the
         // feed header above it (cuisine strip, active-filter chips) stays.
-        data={vm.isReloadingResults ? [] : recipes}
+        data={rows}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
         // Windowing defaults are tuned for short rows; these are tall photo
@@ -275,10 +273,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
-  },
-  gridCell: {
-    flex: ValueConstants.one,
-    minWidth: ValueConstants.zero,
   },
   separator: {
     height: spacing.md,

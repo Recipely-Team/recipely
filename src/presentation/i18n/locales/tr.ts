@@ -491,6 +491,7 @@ export const tr: Translations = {
     assistant: 'Yapay zekâ asistanı',
     closeAssistant: 'Yapay zekâ asistanını kapat',
     refineHint: 'İstediğin kadar değişiklik yapabilirsin',
+    adLabel: 'Reklam',
     proposalTitle: 'Önerilen değişiklikler',
     proposalAccept: 'Uygula',
     proposalReject: 'Vazgeç',

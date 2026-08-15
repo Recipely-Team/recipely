@@ -483,6 +483,7 @@ export const ko: Translations = {
     assistant: 'AI 도우미',
     closeAssistant: 'AI 도우미 닫기',
     refineHint: '원하는 만큼 수정 요청을 할 수 있어요',
+    adLabel: '광고',
     proposalTitle: '제안된 변경 사항',
     proposalAccept: '적용',
     proposalReject: '취소',

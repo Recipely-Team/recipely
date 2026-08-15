@@ -127,6 +127,14 @@
           "iosUrlScheme": "com.googleusercontent.apps.421167568469-hl9tkgpi61p1rrir349b9ild9h976kgd"
         }
       ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "userTrackingUsageDescription": "Allows Recipely to show ads that are more relevant to you. Recipes and your saved content stay the same either way."
+        }
+      ],
       "./plugins/withIosCrashlyticsDsym",
       "./plugins/withAndroidSplashForceDark",
       "./plugins/withAndroidReleaseSigning",

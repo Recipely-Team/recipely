@@ -491,6 +491,7 @@ export const zh = {
     assistant: 'AI 助手',
     closeAssistant: '关闭 AI 助手',
     refineHint: '想改多少次都可以',
+    adLabel: '广告',
     proposalTitle: '建议的更改',
     proposalAccept: '应用',
     proposalReject: '放弃',
