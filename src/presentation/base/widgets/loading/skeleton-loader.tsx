@@ -12,7 +12,8 @@ import { radii, opacities } from '@presentation/base/theme';
 
 export interface SkeletonLoaderProps {
   width: number | string;
-  height: number;
+  /** Percentages are allowed so a placeholder can fill a ratio-sized box. */
+  height: number | string;
   borderRadius?: number;
   style?: ViewStyle;
 }
@@ -82,7 +83,13 @@ export const SkeletonLoader = ({
   return (
     <Animated.View
       style={[
-        { width: width as number, height, borderRadius, backgroundColor: colors.skeleton, overflow: 'hidden' },
+        {
+          width: width as number,
+          height: height as number,
+          borderRadius,
+          backgroundColor: colors.skeleton,
+          overflow: 'hidden',
+        },
         style,
       ]}
     >

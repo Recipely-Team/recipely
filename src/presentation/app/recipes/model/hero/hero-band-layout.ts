@@ -15,6 +15,12 @@ import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
  * - **Wrapping is the collapse.** Below {@link aiPanelInRow} the AI panel takes
  *   a line of its own and switches to its row form — the design's band.
  *   Nothing reorders; the row simply wraps.
+ * - **Width only — the row states no height.** The featured card's ratio is the
+ *   band's single source of shape and the other two blocks stretch to it. A
+ *   per-breakpoint `minHeight` used to live here as well, and the two sizes
+ *   disagreed: at 1200 the flex split hands the featured card ~538px, so its
+ *   ratio asks for ~336, while the floor held the row at 440 and left a ~100px
+ *   strip of dead space under all three cards.
  */
 export const HeroFlex = {
   featured: { grow: 2.5, basis: 520 },
@@ -29,15 +35,3 @@ export const HeroFlex = {
  */
 export const aiPanelInRow = (viewportWidth: number): boolean =>
   viewportWidth >= BREAKPOINTS.wide;
-
-/**
- * The row's floor at each width, from the design's frames: 440 at 1920, 400 at
- * 1440, 340 at 1030, 300 below. A floor rather than a fixed height — the
- * featured card's own ratio can ask for more, and text must be able to grow.
- */
-export const heroRowMinHeight = (viewportWidth: number): number => {
-  if (viewportWidth >= BREAKPOINTS.wide) return 440;
-  if (viewportWidth >= BREAKPOINTS.desktop) return 400;
-  if (viewportWidth >= BREAKPOINTS.tablet) return 340;
-  return 300;
-};

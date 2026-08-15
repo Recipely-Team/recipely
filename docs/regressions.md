@@ -917,3 +917,31 @@ transcript before the request goes out, so clearing loses nothing.
 *The class:* with a controlled input, "the field empties on send" is a
 behaviour someone has to implement — it is not what the widget does on its own,
 and the bug is invisible in every unit that is individually correct.
+
+## A floor and a ratio, arguing about the same row
+
+**Symptom.** On the web home, as soon as the window was wide enough for the
+three-column hero band, a strip of dead space — about 100px at 1200 — opened
+under it. All three blocks ended on the same line and the page then held empty
+until "Browse cuisines".
+
+**Cause.** Two sizes for one row. `WebHeroSection` carried a per-breakpoint
+`minHeight` (440 above 1200) while the featured card is sized by its own
+`aspectRatio`. The flex split hands that card ~538px at 1200, so the ratio asks
+for ~336 — and a wrap container hands the surplus to free space after the line,
+not to the cards. The floor read as reasonable in isolation: it came from the
+design's frames, which quote heights for viewports where the card is wide
+enough to reach them.
+
+**Now.** The row states no height at all; the featured card's ratio is the
+band's single source of shape and the other two blocks stretch to it — which is
+what the mini-card's own comment already claimed. The loading placeholder
+borrows the same ratio, so removing the floor did not trade the gap for a jump
+on load. `web-hero-section.test` pins both and fails against either revert.
+
+*The class:* [rule 6b](../CLAUDE.md)'s "divide by proportion; pin nothing" is
+not only about a child fighting its parent — **a parent's floor and a child's
+ratio are two sizes for the same box**, and they agree at exactly one width.
+Design frames quote heights at the widths they were drawn at; translating them
+into a floor rather than into the ratio is what carries the disagreement into
+the code.
