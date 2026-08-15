@@ -48,7 +48,7 @@ export const WebCuisineRail = ({
   const { cuisineKeys } = useTaxonomyOptions();
   const { width, height } = useLayout();
 
-  const visible = railChipCount(feedContentWidth(width), height);
+  const visible = railChipCount(feedContentWidth(width), width, height);
   const railKeys = cuisineKeys.slice(ValueConstants.zero, visible);
   const noneSelected = selectedCuisines.length === ValueConstants.zero;
 
