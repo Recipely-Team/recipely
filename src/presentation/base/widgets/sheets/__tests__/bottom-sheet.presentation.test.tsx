@@ -2,15 +2,24 @@
  * Reported from the web app: signing out opened a bottom sheet. A panel glued
  * to the bottom edge of a desktop window is a touch idiom — nothing reaches for
  * it there, and its grabber promises a drag a mouse never performs. Every sheet
- * in the app goes through this component, so the shell decides the
- * presentation here, once: sheet on mobile, centred dialog on web.
+ * in the app goes through this component, so the VIEWPORT decides the
+ * presentation here, once: sheet on a phone, centred dialog once expanded.
+ *
+ * The last case is the one that made this ask `isExpanded` rather than
+ * `isWebShell`: an iPad is not the web shell, so it used to keep the phone's
+ * bottom sheet — glued to the bottom edge of a 13" tablet.
  */
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
+let mockIsExpanded = false;
 let mockIsWebShell = false;
 
 jest.mock('@presentation/base/responsive/use-layout', () => ({
-  useLayout: () => ({ isWebShell: mockIsWebShell, width: mockIsWebShell ? 1280 : 390 }),
+  useLayout: () => ({
+    isWebShell: mockIsWebShell,
+    isExpanded: mockIsExpanded,
+    width: mockIsExpanded ? 1280 : 390,
+  }),
 }));
 
 import { act, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
@@ -20,7 +29,11 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 
-const render = (isWebShell: boolean): { root: ReactTestInstance; renderer: ReactTestRenderer } => {
+const render = (
+  isExpanded: boolean,
+  isWebShell: boolean = isExpanded,
+): { root: ReactTestInstance; renderer: ReactTestRenderer } => {
+  mockIsExpanded = isExpanded;
   mockIsWebShell = isWebShell;
   return renderComponent(
     <BottomSheet visible title="Sheet title" onClose={jest.fn()}>
@@ -41,7 +54,7 @@ const panelStyle = (root: ReactTestInstance): ViewStyle => {
   return StyleSheet.flatten(panel.props.style as StyleProp<ViewStyle>) ?? {};
 };
 
-describe('BottomSheet — presentation per shell', () => {
+describe('BottomSheet — presentation per viewport', () => {
   let renderer: ReactTestRenderer | undefined;
 
   afterEach(async () => {
@@ -55,7 +68,7 @@ describe('BottomSheet — presentation per shell', () => {
     });
   });
 
-  it('is a bottom sheet on the mobile shell', () => {
+  it('is a bottom sheet on a phone', () => {
     const rendered = render(false);
     renderer = rendered.renderer;
 
@@ -65,7 +78,7 @@ describe('BottomSheet — presentation per shell', () => {
     expect(panelStyle(rendered.root).borderRadius).toBeUndefined();
   });
 
-  it('is a centred dialog on the web shell', () => {
+  it('is a centred dialog once the viewport is expanded', () => {
     const rendered = render(true);
     renderer = rendered.renderer;
 
@@ -75,7 +88,7 @@ describe('BottomSheet — presentation per shell', () => {
     expect(panelStyle(rendered.root).maxWidth).toBeGreaterThan(0);
   });
 
-  it('drops the drag grabber on web and shows a close button instead', () => {
+  it('drops the drag grabber when expanded and shows a close button instead', () => {
     const web = render(true);
     renderer = web.renderer;
 
@@ -91,6 +104,17 @@ describe('BottomSheet — presentation per shell', () => {
           node.props.accessibilityLabel === t().common.close,
       ).length,
     ).toBeGreaterThan(0);
+  });
+
+  // The regression this split exists for: a tablet is expanded but is NOT the
+  // web shell, and used to fall through to the phone's bottom sheet.
+  it('is a centred dialog on a tablet, which is not the web shell', () => {
+    const tablet = render(true, false);
+    renderer = tablet.renderer;
+
+    expect(tablet.root.findByType(Modal).props.animationType).toBe('fade');
+    expect(panelStyle(tablet.root).borderRadius).toBeGreaterThan(0);
+    expect(panelStyle(tablet.root).maxWidth).toBeGreaterThan(0);
   });
 
   it('keeps the grabber on mobile, where it is the dismiss affordance', () => {

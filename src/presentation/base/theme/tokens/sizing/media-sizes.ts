@@ -20,12 +20,8 @@ export const mediaSizes = {
   heroLogo: scale(88),
   /** Thumbnail strip cell width under the web hero. */
   webDetailThumbWidth: scale(88),
-  /** Minimum cuisine tile on a narrow web grid. */
-  cuisineTileMinSm: scale(90),
   /** Square hero art on compact auth screens. */
   heroSquare: scale(96),
-  /** Minimum cuisine tile on a wide web grid. */
-  cuisineTileMin: scale(110),
   /** Review / comment attachment strip. */
   reviewImageHeight: scale(160),
   /** Recipe card cover in the feed. */

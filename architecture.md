@@ -642,13 +642,39 @@ multiplies on top of whatever we emit.
    rendered text (it re-derives from the live `fontScale`) or `lineHeightFor` inside a
    `StyleSheet.create()` entry.
 3. **Prefer `aspectRatio` to a pinned image height.** A ratio follows whatever width the column
-   gives it; a height only ever matches one screen. Pair it with a `mediaSizes` cap when a wide
-   container would otherwise push the content below the fold.
-4. **Multi-line fields use `AutoGrowTextInput`** (`base/widgets/inputs/`), never a bare
+   gives it; a height only ever matches one screen.
+
+   **A max-height and an aspect ratio cannot both hold.** Once the box is wider than
+   `maxHeight x ratio`, one of them has to give, and it is always the ratio: the home hero drifted
+   from 1.6:1 to a 2.6:1 letterbox with the photo cropped to a band, and it squared up again as the
+   window narrowed. Cap the **width** instead and let the ratio derive the height —
+   `maxWidth = maxHeight x ratio`, written as that expression so the cap moves when the ratio does.
+
+   **Express the bound as a share of the viewport, not a pixel count**, whenever the thing competes
+   with the fold: `layoutSizes.heroViewportShare` is what stops a hero eating a short landscape
+   window, and it adapts to a tall one for free. A pixel cap only ever suits the screen it was
+   measured on.
+
+4. **Divide by proportion; pin nothing.** A row states its split in flex weights (the hero is `5`
+   beside `3`) and its shape in one ratio, and every height in it follows. Two siblings that each
+   carry their own size will disagree: the hero's featured card took its height from a ratio while
+   the minis beside it each carried a `minHeight`, so the column came out taller and the row ended
+   ragged along the bottom. One dimension is declared per row; the rest is derived.
+
+5. **A cap is a readability constraint, so reading and browsing do not share one.** A 2000px line
+   of instructions is unreadable, which is why `recipeDetail` caps at 980 and the forms at 480. A
+   grid of cards has no line length to protect, so sharing that cap with the feed froze it at three
+   columns from a 1200px window to a 4K one — every pixel past the cap bought nothing. Browsing caps
+   far wider (`recipes`, `myRecipes`).
+
+   **The layout and the maths that sizes items inside it must read the SAME cap.** They were three
+   separate constants that disagreed: the column maths sized cards against a cap the container never
+   applied, so the feed shipped with no gutter at all while the arithmetic assumed one.
+6. **Multi-line fields use `AutoGrowTextInput`** (`base/widgets/inputs/`), never a bare
    `multiline` `TextInput` with a fixed height. react-native-web renders `multiline` as a real
    `<textarea>`, which does not grow with its content — it keeps its box and puts a scrollbar down
    the side. The web half of that platform pair measures and resizes the element itself.
-5. **`maxFontSizeMultiplier` is a last resort.** It stops honouring the user's accessibility
+7. **`maxFontSizeMultiplier` is a last resort.** It stops honouring the user's accessibility
    setting, so it is only for text inside a shape that genuinely cannot grow (digits in a
    fixed-diameter badge). Everywhere else, make the box flexible instead.
 

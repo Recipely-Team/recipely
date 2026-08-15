@@ -7,7 +7,13 @@ const SHOT={
   profile:'assets/screens/screen-profile.png',
 };
 const L=(en,tr)=>`<span class="en">${en}</span><span class="tr">${tr}</span>`;
-const sysbar=dark=>`<div class="sysbar${dark?' dk':''}"><span class="tm">9:41</span><span class="ri"><span class="net">5G</span><span class="sig"><i></i><i></i><i></i><i></i></span><span class="bat"><b></b></span></span></div>`;
+// The band above the capture is an EMPTY spacer — never a drawn status bar.
+// App Review rejected 1.0.43 (694) under guideline 2.3.10 for "non-iOS status bar
+// images": the old export drew 9:41 + 5G + a battery in the app's own webfont, with
+// no signal or wifi glyph and in the wrong order for iOS, painted straight over the
+// back button and the bookmark icon. A status bar that is drawn rather than captured
+// can only ever be wrong, so this draws none. Real device chrome (the island) stays.
+const sysbar=dark=>`<div class="sysbar${dark?' dk':''}"></div>`;
 
 
 function frame({eyebrow,hl,sub,shot,art,dark=false}){

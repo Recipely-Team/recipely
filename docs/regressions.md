@@ -818,3 +818,145 @@ returning visitor keeps the cached script for a year. The HTML is `no-cache`,
 which makes the `?v=` query on the `<script>` tag the only thing that delivers a
 change to them. **Editing an asset under `public/` is not shipping it** — bump
 the query in the same commit.
+
+## A screenshot drew the chrome it should have captured
+
+**Symptom.** App Review rejected 1.0.43 (694) under guideline 2.3.10 — *"revise
+the app's screenshots to remove non-iOS status bar images."*
+
+**Cause.** The store frames drew their own status bar instead of letting the
+capture carry the real one: `9:41` and `5G` and a battery, set in the app's
+Plus Jakarta webfont rather than SF Pro, with the signal bars not rendering at
+all and no wifi glyph — an arrangement no iOS device has ever shown. Because
+the band was painted over the capture rather than above it, the fake clock also
+sat on top of the recipe screen's back button and the `5G` on top of the
+bookmark icon, which is how a reviewer spots a composite in one glance.
+
+The band existed to make the mock look like a real device. It could only ever
+fail at that: every glyph in it was a guess at another platform's UI, re-guessed
+in whatever font the export happened to resolve.
+
+**Now.** The hub draws no status bar — the band above each capture is an empty
+spacer and the island is the only device chrome, which is real hardware and
+carries no claim. `check:structure` rule S fails on a clock or a radio label
+(`3G`/`4G`/`5G`/`LTE`) reappearing anywhere in `fastlane/store-hub/`.
+
+*The wider lesson:* store assets are shipped artifacts and rot like any other.
+The rejected PNGs predate the hub that generates them, so they also still
+carried star ratings and invented review quotes that the hub's own README had
+already banned under 2.3.7. **Re-export; never re-upload what is in the folder.**
+
+## One flag answered two questions, and the iPad got the phone
+
+**Symptom.** On a 13" iPad the app rendered the phone layout stretched across
+the screen: one recipe card per row, the single-column recipe detail, bottom
+sheets glued to the bottom edge of a tablet. The wide layout the web has had
+for months never appeared, and the App Store iPad screenshot showed it.
+
+**Cause.** `isWebShell = isWeb() && width >= BREAKPOINTS.desktop` was the only
+question the layout context could answer, and 38 files asked it. But it bundled
+two unrelated things: *is there room for the wide layout* and *is the browser
+chrome mounted*. An iPad answers yes to the first and no to the second, so
+every consumer — grids, the columned detail, the max-width caps, the sheet
+presentation — took the phone branch. Nothing was broken; the question was.
+
+**Now.** Two flags. `isExpanded` is pure width, so any platform past the
+desktop breakpoint gets the wide content layout and a Split View pane loses it
+again on its own. `isWebShell` keeps its name and its old definition and is now
+only asked about browser chrome: the sticky WebHeader, the absent TabBar, the
+absent safe-area insets. Deciding per call site is the work — the tab bar,
+the native app header, the safe-area paddings and the web header's search and
+sort fields all deliberately stay on `isWebShell`, because a tablet keeps its
+native chrome.
+
+*The general shape:* a boolean whose name describes a PLATFORM will be asked
+questions about SIZE, and it answers them wrong on the first device that is one
+without the other. Name the capability, not the platform.
+
+## A DTO asserted a field the backend does not always send
+
+**Symptom.** "undefined min" on the recipe cards and "undefined dk" on the home
+hero, on the live web app and in the iPad screenshots being prepared for the
+App Store. Dev never showed it, which is what made it look like a display bug.
+
+**Cause.** `RecipeListItemDto` declared `totalTimeMinutes: number` — required —
+and the mapper passed it straight through. Every type from the wire to the
+screen therefore claimed a number while the value was `undefined`. The backend
+simply has no timing for some recipes (AI-generated and imported ones); dev's
+seeded catalogue happens to have it for all of them.
+
+TypeScript could not catch this and never will: **a DTO is an assertion about
+the wire, not a check of it.** Whatever the mapper does not verify, the type
+system will confidently repeat all the way to the UI.
+
+**Now.** The field is optional on the DTO, the entity carries `number | null`,
+the mapper turns absence into `null` at the boundary, and the three cards hide
+the time chip instead of printing what they were handed. Covered by
+`recipe-mapper.missing-time.test`, which fails against the pass-through.
+
+*The wider lesson, and the second time today:* a declaration that promises more
+than reality delivers stays wrong until something checks it. The morning's
+version was a boolean named after a platform being asked about size; this one
+is a wire field named required that is not.
+
+## A controlled input nobody reset
+
+**Symptom.** In the AI create flow, sending a refine instruction left the text
+in the field. The next instruction had to be typed on top of the last one.
+
+**Cause.** `RefineDock` is a controlled input — `chatInput` and
+`onChangeChatInput` belong to `useRecipeGeneration` — and `setChatInput` was
+only ever wired to typing. Nothing on the send path asked for a reset, so the
+value simply stayed. Every piece worked; no piece owned the clearing.
+
+**Now.** `submitFreeText` clears after it submits. Deliberately there and not in
+`onSubmit`: a quick chip sends its own instruction and must leave whatever the
+cook has half-typed alone, and `onSubmitRefine` appends the sent text to the
+transcript before the request goes out, so clearing loses nothing.
+
+*The class:* with a controlled input, "the field empties on send" is a
+behaviour someone has to implement — it is not what the widget does on its own,
+and the bug is invisible in every unit that is individually correct.
+
+## A floor and a ratio, arguing about the same row
+
+**Symptom.** On the web home, as soon as the window was wide enough for the
+three-column hero band, a strip of dead space — about 100px at 1200 — opened
+under it. All three blocks ended on the same line and the page then held empty
+until "Browse cuisines".
+
+**Cause.** Two sizes for one row. `WebHeroSection` carried a per-breakpoint
+`minHeight` (440 above 1200) while the featured card is sized by its own
+`aspectRatio`. The flex split hands that card ~538px at 1200, so the ratio asks
+for ~336 — and a wrap container hands the surplus to free space after the line,
+not to the cards. The floor read as reasonable in isolation: it came from the
+design's frames, which quote heights for viewports where the card is wide
+enough to reach them.
+
+**Now.** The row states no height at all; the featured card's ratio is the
+band's single source of shape and the other two blocks stretch to it — which is
+what the mini-card's own comment already claimed.
+
+**The second bug, caught in review.** The first fix gave the loading placeholder
+the same ratio and called it done. But the placeholder had never rendered the AI
+slot — harmless while both states were pinned at 440, and a ~140px reflow the
+moment the ratio was in charge, because the featured block is wider on a
+two-block line and its height is now that width over the ratio. *Once a height
+is derived, everything the derivation reads from becomes load-bearing:* the
+placeholder has to reserve the same SLOTS, not merely the same ratio.
+
+*The class:* [rule 6b](../CLAUDE.md)'s "divide by proportion; pin nothing" is
+not only about a child fighting its parent — **a parent's floor and a child's
+ratio are two sizes for the same box**, and they agree at exactly one width.
+Design frames quote heights at the widths they were drawn at; translating them
+into a floor rather than into the ratio is what carries the disagreement into
+the code.
+
+*Mechanical guard, considered and rejected.* A `check:structure` rule flagging a
+`flexWrap: 'wrap'` container that also carries `height`/`minHeight` would land
+green today and states something true (with Yoga's default `alignContent:
+flex-start`, the surplus is always dead space after the last line). It is not
+worth having: the offender here was an inline `{ minHeight: … }` object built in
+the component body, not a `StyleSheet` entry, so a rule reading `StyleSheet`
+blocks would have passed this very file — a guard that misses the case that
+motivated it reads as coverage and is worse than none.

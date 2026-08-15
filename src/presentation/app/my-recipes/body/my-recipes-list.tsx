@@ -29,7 +29,7 @@ export interface MyRecipesListProps {
   drafts: readonly DraftItem[];
   items: readonly RecipeSummaryEntity[];
   gridColumns: number;
-  isWebShell: boolean;
+  isExpanded: boolean;
   isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
   onOpenRecipe: (id: string) => void;
@@ -66,7 +66,7 @@ export const MyRecipesList = ({
   drafts,
   items,
   gridColumns,
-  isWebShell,
+  isExpanded,
   isSaved,
   onToggleSave,
   onOpenRecipe,
@@ -180,7 +180,7 @@ export const MyRecipesList = ({
       numColumns={gridColumns}
       renderItem={({ item }) => (
         <View style={gridColumns > ValueConstants.one ? styles.gridCell : null}>
-          {isWebShell ? (
+          {isExpanded ? (
             <WebRecipeCard
               recipe={item}
               saved={isSaved(item.id)}

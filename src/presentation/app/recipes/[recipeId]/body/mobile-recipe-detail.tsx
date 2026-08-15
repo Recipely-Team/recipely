@@ -17,7 +17,7 @@ export interface MobileRecipeDetailProps {
   recipeId: string;
   media: readonly MediaItem[];
   isOwner: boolean;
-  isWebShell: boolean;
+  isExpanded: boolean;
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
@@ -42,7 +42,7 @@ export interface MobileRecipeDetailProps {
 
 /**
  * Single-column recipe-detail layout for the native/mobile shell. Mounted by the
- * screen only when `useLayout().isWebShell` is false; the web shell renders
+ * screen only when `useLayout().isExpanded` is false; the web shell renders
  * `WebRecipeDetail` instead. Store loading and handlers are owned by the parent
  * screen and passed in — this component composes the presentational sections.
  */
@@ -69,7 +69,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           recipe={recipe}
           recipeId={recipeId}
           isOwner={props.isOwner}
-          isWebShell={props.isWebShell}
+          isExpanded={props.isExpanded}
           checkedIngredients={props.checkedIngredients}
           onToggleIngredient={props.onToggleIngredient}
           completedSteps={props.completedSteps}

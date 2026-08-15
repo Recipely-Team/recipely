@@ -78,7 +78,7 @@ const baseProps = (): MyRecipesListProps => ({
   drafts: [],
   items: [],
   gridColumns: 1,
-  isWebShell: false,
+  isExpanded: false,
   isSaved: () => false,
   onToggleSave: jest.fn(),
   onOpenRecipe: jest.fn(),
@@ -242,7 +242,7 @@ describe('MyRecipesList — RefreshControl wiring', () => {
         tab: 'created',
         items: [makeRecipe('r1'), makeRecipe('r2')],
         gridColumns: 3,
-        isWebShell: true,
+        isExpanded: true,
       });
 
       // The grid remounts on a column change (`key={grid-${gridColumns}}`), an

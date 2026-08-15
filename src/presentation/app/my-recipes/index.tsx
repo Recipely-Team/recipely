@@ -20,17 +20,18 @@ import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, layoutSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
-const WEB_CONTENT_MAX = layoutSizes.webContentMax;
+const WEB_CONTENT_MAX = WEB_CONTENT_MAX_WIDTH.myRecipes;
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isWebShell, width } = useLayout();
+  const { isWebShell, isExpanded, width } = useLayout();
   const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
 
@@ -48,12 +49,13 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
-  // Grid columns: 1 on mobile, auto-fill at RECIPE_CARD_MIN_WIDTH on web shell.
+  // Grid columns: 1 on a phone, auto-fill at RECIPE_CARD_MIN_WIDTH once the
+  // viewport is expanded — the web shell and the iPad alike.
   const gridColumns = useMemo<number>(() => {
-    if (!isWebShell) return ValueConstants.one;
+    if (!isExpanded) return ValueConstants.one;
     const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
     return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
-  }, [isWebShell, width]);
+  }, [isExpanded, width]);
 
   // WHY on focus, not on mount: this screen stays mounted behind the create
   // flow, so a mount-only load left a recipe the user had just published (or a
@@ -131,7 +133,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             drafts={drafts}
             items={items}
             gridColumns={gridColumns}
-            isWebShell={isWebShell}
+            isExpanded={isExpanded}
             isSaved={isSaved}
             onToggleSave={(id) => void toggleSave(id)}
             onOpenRecipe={openRecipe}

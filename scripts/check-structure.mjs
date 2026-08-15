@@ -22,6 +22,8 @@
  *      from it (`+native-intent` carries `redirectSystemPath`).
  *   R. No `removeClippedSubviews` — it re-parents views behind Fabric's back and
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
+ *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
+ *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -470,6 +472,30 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       if (!/^\+[\w-]+\.[tj]sx?$/.test(name) || STOCK_EXCLUDES.test(name)) continue;
       if (admits.test(`./${name}`)) continue;
       errors.push(`${CTX}: excludes app/${name}, which expo-router reads from the context`);
+    }
+  }
+}
+
+// --- S: the store hub must not draw a status bar -----------------------------
+// App Review rejected 1.0.43 (694) under guideline 2.3.10 — "remove non-iOS
+// status bar images". The frames drew `9:41` + `5G` + a battery in the app's own
+// webfont, with no signal or wifi glyph and in an order iOS never uses, painted
+// over the app's back and bookmark buttons. Chrome that is drawn instead of
+// captured can only ever be some other platform's, so none is drawn: the band
+// above each capture is an empty spacer and the island is the only device chrome.
+{
+  const HUB = 'fastlane/store-hub';
+  const hubDir = path.join(ROOT, HUB);
+  // A clock (`9:41`) or a radio label is what a status bar says and nothing else
+  // in this page does. Comments are stripped so the note explaining the rule —
+  // and any `a ? 1024 : 512` — cannot trip it.
+  const CHROME = /\b\d{1,2}:\d{2}\b|\b(?:3G|4G|5G|LTE)\b/;
+  const strip = (s) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '');
+  if (fs.existsSync(hubDir)) {
+    for (const name of fs.readdirSync(hubDir)) {
+      if (!/\.(js|css|html)$/.test(name)) continue;
+      const hit = CHROME.exec(strip(fs.readFileSync(path.join(hubDir, name), 'utf8')));
+      if (hit) errors.push(`${HUB}/${name}: draws status-bar chrome (${hit[0]}) — see fastlane/store-hub/README.md`);
     }
   }
 }

@@ -62,7 +62,7 @@ const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />
  */
 export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { state, recipes, isWebShell, isSearching, gridColumns } = vm;
+  const { state, recipes, isExpanded, isSearching, gridColumns } = vm;
 
   // Stable across renders so `RecipeListItem`'s memo actually holds. A fresh
   // arrow per row per render defeats memoisation completely — the rows would
@@ -102,7 +102,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         onPrimary={vm.onRefresh}
       />
     );
-  } else if (isWebShell) {
+  } else if (isExpanded) {
     body = <WebRecipeFeed vm={vm} />;
   } else if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
     body = <LoadingSkeleton />;
@@ -208,11 +208,11 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   // The loaded mobile feed pads for the header band inside its own list content
   // (`mobileListContent`), so the container must not add the inset a second
   // time. Every other mobile branch renders a plain surface and needs it.
-  const isMobileLoadedFeed = !isWebShell && !isSearching && state.status === StoreStatus.Loaded;
+  const isMobileLoadedFeed = !isExpanded && !isSearching && state.status === StoreStatus.Loaded;
 
   return (
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
-      {isWebShell ? (
+      {isExpanded ? (
         <>
           <RecipesAppHeader onNotificationsPress={vm.onNotifications} unreadCount={vm.unreadCount} />
           <View style={styles.bodyContainer}>{body}</View>

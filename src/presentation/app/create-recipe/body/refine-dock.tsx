@@ -18,7 +18,7 @@ import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];
@@ -70,9 +70,14 @@ export const RefineDock = ({
   const keyboardVisible = useKeyboardVisible();
   const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
 
+  // Clearing belongs to the free-text path, not to `onSubmit`: a quick chip
+  // sends its own instruction and must leave whatever the cook has typed alone.
+  // The sent text is not lost — `onSubmitRefine` appends it to the transcript
+  // above before the request goes out, so it stays on screen as their turn.
   const submitFreeText = (): void => {
     if (!canSend) return;
     onSubmit(chatInput.trim());
+    onChangeChatInput(CharConstants.empty);
   };
 
   // WHY the two steps are serialized: dismissing the keyboard and unmounting

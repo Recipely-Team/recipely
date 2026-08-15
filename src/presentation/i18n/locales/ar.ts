@@ -9,6 +9,7 @@ export const ar = {
     ok: "OK",
     of: "من",
     clear: "مسح",
+    apply: "تطبيق",
     close: "إغلاق",
     back: "رجوع",
     closeHint: "اضغط مرتين أو اسحب لأسفل للإغلاق"
@@ -281,6 +282,10 @@ export const ar = {
     browseCuisines: "تصفح المطابخ",
     trending: "رائج هذا الأسبوع",
     aiPromo: "أنشئ وصفة بالذكاء الاصطناعي",
+    aiKicker: "الذكاء الاصطناعي",
+    allCuisines: "كل المطابخ",
+    searchCuisine: "ابحث عن مطبخ…",
+    cuisinesSelected: "{n} مطبخ محدد",
     aiPromoSub: "صف ما تريده — وسأتولى الباقي",
     removeFilter: "إزالة عامل التصفية",
     removeTimeFilter: "إزالة تصفية الوقت",

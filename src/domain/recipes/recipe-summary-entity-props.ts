@@ -9,7 +9,8 @@ export interface RecipeSummaryEntityProps {
   cuisine: string;
   category: string;
   difficulty: Difficulty;
-  totalTimeMinutes: number;
+  /** `null` when the source has no timing — the UI hides the chip rather than inventing one. */
+  totalTimeMinutes: number | null;
   rating: number;
   moderationStatus: string;
   likeCount: number;

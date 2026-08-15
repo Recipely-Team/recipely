@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, mediaSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, opacities, aspectRatios } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
@@ -80,10 +80,14 @@ export const WebHeroFeaturedCard = ({
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
             {recipe.rating.toFixed(1)}
           </ThemedText>
-          <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
-          <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-            {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
-          </ThemedText>
+          {totalMin === null ? null : (
+            <>
+              <Ionicons name="time-outline" size={iconSizes.md} color={colors.onOverlay} />
+              <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
+                {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
+              </ThemedText>
+            </>
+          )}
           <Ionicons name="speedometer-outline" size={iconSizes.md} color={colors.onOverlay} />
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
             {difficultyLabel(recipe.difficulty)}
@@ -101,8 +105,13 @@ export const WebHeroFeaturedCard = ({
 };
 
 const styles = StyleSheet.create({
+  // Ratio-sized, not height-pinned. The card takes its width from the row's
+  // flex, so a pinned height made the shape a function of the window: at 2000px
+  // the hero was a 2.8:1 letterbox strip with the photo cropped to a band, and
+  // it squared up again as the window narrowed. This ratio is now the whole
+  // band's height — the row states none of its own.
   card: {
-    minHeight: mediaSizes.heroImageHeightWeb,
+    aspectRatio: aspectRatios.heroWide,
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },

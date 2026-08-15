@@ -10,14 +10,21 @@ export const BREAKPOINTS = {
 } as const;
 
 /**
- * Per-route content max-width caps when the web shell is active. Mobile-first
+ * Per-route content max-width caps on an expanded viewport. Mobile-first
  * screens (profile, createRecipe, settings, etc.) need a container or their
  * full-width controls span the whole desktop viewport.
+ *
+ * Browsing grids are capped far wider than reading surfaces on purpose. A cap
+ * is a readability constraint — a 2000px line of instructions is unreadable,
+ * which is why `recipeDetail` and the forms stay narrow. A grid of cards has no
+ * line length to protect, so the same 1200 there just froze the feed at three
+ * columns from a 1200px window all the way to a 4K one, wasting every pixel
+ * past the cap.
  */
 export const WEB_CONTENT_MAX_WIDTH = {
   default: 1200,
-  recipes: 1200,
-  myRecipes: 1200,
+  recipes: 1720,
+  myRecipes: 1720,
   profile: 720,
   createRecipe: 760,
   aiGenerate: 760,
