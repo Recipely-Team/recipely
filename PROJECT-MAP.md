@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 826 source files.
+[architecture.md](architecture.md). 827 source files.
 
 ## Layers
 
@@ -140,4 +140,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: a792d4dfb5817a85 -->
+<!-- fingerprint: a7751a7c7be49f0c -->
