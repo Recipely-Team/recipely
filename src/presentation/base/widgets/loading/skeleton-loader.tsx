@@ -10,9 +10,19 @@ import Animated, {
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { radii, opacities } from '@presentation/base/theme';
 
+/**
+ * A pixel count or a percentage — the two the shimmer can actually be given.
+ * Narrower than RN's `DimensionValue` (which also admits `auto` and `null`)
+ * because this is the one type both paths must satisfy: an RN style on native
+ * and a DOM `CSSProperties` on the web. Anything wider needs a cast on one
+ * side or the other, and a percentage is what lets the block fill a
+ * ratio-sized box.
+ */
+type SkeletonSizeType = number | `${number}%`;
+
 export interface SkeletonLoaderProps {
-  width: number | string;
-  height: number;
+  width: SkeletonSizeType;
+  height: SkeletonSizeType;
   borderRadius?: number;
   style?: ViewStyle;
 }
@@ -82,7 +92,7 @@ export const SkeletonLoader = ({
   return (
     <Animated.View
       style={[
-        { width: width as number, height, borderRadius, backgroundColor: colors.skeleton, overflow: 'hidden' },
+        { width, height, borderRadius, backgroundColor: colors.skeleton, overflow: 'hidden' },
         style,
       ]}
     >

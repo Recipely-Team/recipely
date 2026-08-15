@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
   // Ratio-sized, not height-pinned. The card takes its width from the row's
   // flex, so a pinned height made the shape a function of the window: at 2000px
   // the hero was a 2.8:1 letterbox strip with the photo cropped to a band, and
-  // it squared up again as the window narrowed. The max-height keeps it from
-  // eating the fold once the content cap hands it a wide column.
+  // it squared up again as the window narrowed. This ratio is now the whole
+  // band's height — the row states none of its own.
   card: {
     aspectRatio: aspectRatios.heroWide,
     borderRadius: radii.xxl2,

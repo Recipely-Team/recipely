@@ -917,3 +917,46 @@ transcript before the request goes out, so clearing loses nothing.
 *The class:* with a controlled input, "the field empties on send" is a
 behaviour someone has to implement — it is not what the widget does on its own,
 and the bug is invisible in every unit that is individually correct.
+
+## A floor and a ratio, arguing about the same row
+
+**Symptom.** On the web home, as soon as the window was wide enough for the
+three-column hero band, a strip of dead space — about 100px at 1200 — opened
+under it. All three blocks ended on the same line and the page then held empty
+until "Browse cuisines".
+
+**Cause.** Two sizes for one row. `WebHeroSection` carried a per-breakpoint
+`minHeight` (440 above 1200) while the featured card is sized by its own
+`aspectRatio`. The flex split hands that card ~538px at 1200, so the ratio asks
+for ~336 — and a wrap container hands the surplus to free space after the line,
+not to the cards. The floor read as reasonable in isolation: it came from the
+design's frames, which quote heights for viewports where the card is wide
+enough to reach them.
+
+**Now.** The row states no height at all; the featured card's ratio is the
+band's single source of shape and the other two blocks stretch to it — which is
+what the mini-card's own comment already claimed.
+
+**The second bug, caught in review.** The first fix gave the loading placeholder
+the same ratio and called it done. But the placeholder had never rendered the AI
+slot — harmless while both states were pinned at 440, and a ~140px reflow the
+moment the ratio was in charge, because the featured block is wider on a
+two-block line and its height is now that width over the ratio. *Once a height
+is derived, everything the derivation reads from becomes load-bearing:* the
+placeholder has to reserve the same SLOTS, not merely the same ratio.
+
+*The class:* [rule 6b](../CLAUDE.md)'s "divide by proportion; pin nothing" is
+not only about a child fighting its parent — **a parent's floor and a child's
+ratio are two sizes for the same box**, and they agree at exactly one width.
+Design frames quote heights at the widths they were drawn at; translating them
+into a floor rather than into the ratio is what carries the disagreement into
+the code.
+
+*Mechanical guard, considered and rejected.* A `check:structure` rule flagging a
+`flexWrap: 'wrap'` container that also carries `height`/`minHeight` would land
+green today and states something true (with Yoga's default `alignContent:
+flex-start`, the surplus is always dead space after the last line). It is not
+worth having: the offender here was an inline `{ minHeight: … }` object built in
+the component body, not a `StyleSheet` entry, so a rule reading `StyleSheet`
+blocks would have passed this very file — a guard that misses the case that
+motivated it reads as coverage and is worse than none.
