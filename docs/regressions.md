@@ -960,3 +960,36 @@ worth having: the offender here was an inline `{ minHeight: … }` object built 
 the component body, not a `StyleSheet` entry, so a rule reading `StyleSheet`
 blocks would have passed this very file — a guard that misses the case that
 motivated it reads as coverage and is worse than none.
+
+## A pair split one level too high
+
+**Symptom.** The dev web deploy stopped going out. `Build Web (dev)` failed on
+the commit that added the ad slots: *Importing native-only module
+"react-native/Libraries/Utilities/codegenNativeComponent" on web from
+react-native-google-mobile-ads*.
+
+**Cause.** The ads SDK was already understood to be native-only — `AdsService`
+had a `.web.ts` twin whose comment says, in as many words, that importing the
+SDK on the web fails the build. But the split stopped at the service. `AdSlot`
+imported `BannerAd` at module scope, and on the web `useAdsReady` answered
+false, so the component rendered nothing and *looked* correct. Rendering
+nothing is not the same as importing nothing: the bundler follows the import
+either way.
+
+Nothing local could see it. `tsc`, `jest` and `eslint` all resolve the native
+file happily; only the web export walks the module graph the browser will get,
+and it is not one of the four gates.
+
+**Now.** `ad-slot.web.tsx` returns `null` and imports no SDK, with the shared
+props in `ad-slot-props.ts` (rule 13). `check:structure` rule **T** makes the
+pairing mechanical: a module importing a package on the native-only list must
+be a `.web.*` file or have a `.web.*` sibling. Verified by deleting the new
+file — the gate names it.
+
+*The class:* **a platform pair has to be split at the module that IMPORTS the
+native package, not at the one that owns the concept.** Splitting the service
+answered "who decides whether ads run"; the bundler was asking a different
+question, "who pulls this package into the graph", and the answer was a
+component two layers up. When a dependency has no web target, trace every
+module that names it — a conditional that renders nothing still bundles
+everything.
