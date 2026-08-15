@@ -238,17 +238,43 @@ blocking.
 6. **StyleSheet.create() for static styles** — inline style objects are forbidden for static values.
    Dynamic portions may be inline; combine with `[styles.base, { color: dynamic }]`.
 
-6b. **Responsive sizing** (full rules: `architecture.md` §5a) — five blocking rules:
+6b. **Responsive sizing** (full rules: `architecture.md` §5a) — blocking rules:
    - `minHeight`, never `height`, on any box that contains text. A pinned height is for *shapes*
      (circular buttons, avatars, media boxes) only.
    - Never write an absolute `lineHeight`. RN scales `fontSize` by the OS font setting and does
      NOT scale `lineHeight`, so a fixed one clips at large accessibility sizes. Use
      `useTextLineHeight` (rendered text) or `lineHeightFor` (StyleSheet entries).
-   - Prefer `aspectRatio` over a pinned image height; cap it with a `mediaSizes` token.
+   - Prefer `aspectRatio` over a pinned image height. **A max-height and a ratio cannot both
+     hold** — past `maxHeight x ratio` the ratio is what breaks, which turned the home hero into a
+     2.6:1 letterbox on a wide window. Cap the **width** (`maxWidth = maxHeight x ratio`) and let
+     the ratio derive the height. Express the bound as a share of the viewport
+     (`layoutSizes.heroViewportShare`), not a pixel count, whenever the box competes with the fold.
+   - **Divide by proportion; pin nothing.** A row declares its split in flex weights and its shape
+     in ONE ratio; every height follows. Two siblings that each carry a size will disagree — a
+     ratio-sized card beside `minHeight`-sized ones left the row ragged along the bottom.
+   - **Reading and browsing do not share a width cap.** A cap protects line length, so
+     `recipeDetail`/forms stay narrow while grids cap far wider; sharing one froze the feed at three
+     columns from 1200px to 4K. And the layout must apply the SAME cap the item maths assumes —
+     three constants that disagreed shipped a feed with no gutter at all.
    - Multi-line fields use `AutoGrowTextInput` (`base/widgets/inputs/`) — a bare `multiline`
      `TextInput` becomes a fixed-height `<textarea>` with a scrollbar on web.
    - `maxFontSizeMultiplier` only where a shape genuinely cannot grow (digits in a badge); it
      overrides an accessibility setting, so making the box flexible always comes first.
+
+6b2. **Name the capability, not the platform.** `isWebShell` answered two questions at once — *is
+   there room for the wide layout* and *is the browser chrome mounted* — and 38 files asked it. An
+   iPad answers yes to the first and no to the second, so the tablet shipped the phone layout
+   stretched across 13 inches. It is now `isExpanded` (pure width: grids, columns, content caps,
+   centred dialogs) beside `isWebShell` (browser chrome only: the sticky header, the absent TabBar
+   and safe-area insets). **Ask each call site which one it means** — the tablet keeps its native
+   chrome, so the TabBar, the app header and the safe-area paddings stay on `isWebShell`, and so do
+   the web header's search and sort fields, because moving those would have made sort unreachable
+   on iPad.
+
+   Because the breakpoint is pure width, a Split View pane drops back to the phone layout on its
+   own — a device check would not have managed that. **A boolean whose name describes a PLATFORM
+   will be asked questions about SIZE, and it answers them wrong on the first device that is one
+   without the other.**
 
 6c. **No `removeClippedSubviews`** — the prop detaches and re-attaches child views
    directly in the native hierarchy, outside React's reconciliation. The New

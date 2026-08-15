@@ -32,6 +32,6 @@ export class RefineRecipeUseCase {
         ),
       );
     }
-    return this.repo.refineRecipe(input.currentRecipe, trimmed);
+    return this.repo.refineRecipe(input.currentRecipe, trimmed, input.history);
   }
 }

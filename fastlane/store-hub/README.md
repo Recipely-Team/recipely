@@ -55,6 +55,11 @@ of these.
 - **No social proof anywhere.** No star ratings, review quotes, award badges or download counts.
   Apple (2.3.7 / 2.3.10) and Google Play both reject store graphics showing unverifiable claims or
   UI that does not exist in the app.
+- **Never draw a status bar.** The band above each capture is an empty spacer; the only device
+  chrome is the island (or the punch-hole on Play). Apple rejected 1.0.43 (694) under **2.3.10 —
+  "remove non-iOS status bar images"** because the band drew `9:41` + `5G` + a battery in the app's
+  own webfont, with no signal or wifi glyph and in an order iOS never uses, painted over the back
+  and bookmark buttons. Drawn chrome cannot be right; a real capture already carries the real one.
 
 ## Files
 

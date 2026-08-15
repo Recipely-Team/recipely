@@ -43,21 +43,10 @@
   border-radius:calc(var(--phrad) - var(--phpad));display:block}
 .shot{display:block;width:100%;height:auto;position:relative;z-index:1}
 /* device chrome */
-.sysbar{position:relative;z-index:4;height:calc(var(--sw)*.115);display:flex;align-items:center;
-  justify-content:space-between;padding:0 calc(var(--sw)*.072);background:var(--app);color:var(--ink);
-  font:700 calc(var(--sw)*.038)/1 'Plus Jakarta Sans'}
-.sysbar.dk{background:#17181B;color:#fff}
-.sysbar .ri{display:flex;align-items:center;gap:calc(var(--sw)*.022)}
-.sysbar .net{font:800 calc(var(--sw)*.031)/1 'Plus Jakarta Sans';letter-spacing:.5px}
-.sysbar .sig{display:flex;align-items:flex-end;gap:calc(var(--sw)*.0055);height:calc(var(--sw)*.032)}
-.sysbar .sig i{width:calc(var(--sw)*.009);background:currentColor;border-radius:calc(var(--sw)*.003)}
-.sysbar .sig i:nth-child(1){height:38%}.sysbar .sig i:nth-child(2){height:60%}
-.sysbar .sig i:nth-child(3){height:80%}.sysbar .sig i:nth-child(4){height:100%}
-.sysbar .bat{position:relative;width:calc(var(--sw)*.055);height:calc(var(--sw)*.028);
-  border:calc(var(--sw)*.004) solid currentColor;border-radius:calc(var(--sw)*.008);opacity:.95}
-.sysbar .bat b{position:absolute;inset:calc(var(--sw)*.004);right:28%;background:currentColor;border-radius:calc(var(--sw)*.003);display:block}
-.sysbar .bat::after{content:"";position:absolute;right:calc(var(--sw)*-.008);top:30%;height:40%;
-  width:calc(var(--sw)*.005);background:currentColor;border-radius:0 2px 2px 0;opacity:.7}
+/* Empty spacer that keeps the capture clear of the island — draws no status bar.
+   See the note on `sysbar` in carousel-frames.js: glyphs here got 1.0.43 rejected. */
+.sysbar{position:relative;z-index:4;height:calc(var(--sw)*.115);background:var(--app)}
+.sysbar.dk{background:#17181B}
 .island{position:absolute;top:calc(var(--sw)*.03);left:50%;transform:translateX(-50%);
   width:calc(var(--sw)*.28);height:calc(var(--sw)*.055);background:#0B1020;border-radius:999px;z-index:20}
 .hole{display:none}

@@ -5,6 +5,7 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
 
 /** View model returned by {@link useCreateRecipe} for the create-recipe screen. */
 export interface UseCreateRecipeResult {
@@ -62,6 +63,10 @@ export interface UseCreateRecipeResult {
   canRegenerate: boolean;
   onRegenerate: () => void;
   onSubmitRefine: (instruction: string) => void;
+  /** The refinement awaiting a decision — null when there is nothing to decide. */
+  proposal: RefineProposal | null;
+  onAcceptProposal: () => void;
+  onRejectProposal: () => void;
 
   // Photos sheet.
   photosOpen: boolean;

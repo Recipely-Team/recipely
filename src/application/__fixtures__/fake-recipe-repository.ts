@@ -16,6 +16,7 @@ import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import
 import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
 import { ValueConstants } from '@core/constants';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import type { ChatMessage } from '@domain/drafts/chat-message';
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -102,8 +103,9 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
   refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
+    history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>> {
-    this.lastRefineCall = { currentRecipe, instruction };
+    this.lastRefineCall = { currentRecipe, instruction, history };
     this.refineCallCount += 1;
     return Promise.resolve(
       this.config.refineRecipeResult ?? ok(undefined as unknown as RefinedRecipe),

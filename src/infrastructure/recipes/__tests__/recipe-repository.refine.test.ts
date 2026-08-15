@@ -12,6 +12,7 @@ import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+import { ChatRole } from '@domain/drafts/chat-role';
 
 const validDto: RecipeDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
@@ -77,7 +78,7 @@ describe('RecipeRepository.refineRecipe', () => {
     const { http } = makeHttp(ok(refinedDto));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.refineRecipe(snapshot, 'add more garlic');
+    const r = await repo.refineRecipe(snapshot, 'add more garlic', []);
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -95,7 +96,7 @@ describe('RecipeRepository.refineRecipe', () => {
     const { http } = makeHttp(ok(validDto));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.refineRecipe(snapshot, 'add more garlic');
+    const r = await repo.refineRecipe(snapshot, 'add more garlic', []);
 
     expect(r.ok).toBe(true);
     if (r.ok) {
@@ -106,11 +107,34 @@ describe('RecipeRepository.refineRecipe', () => {
     }
   });
 
-  it('POSTs /recipes/refine with { currentRecipe, instruction } body', async () => {
+  // WHY: the conversation history is what lets a follow-up ("and spicier too")
+  // resolve against the earlier turn. It is assembled on the screen and only
+  // matters if it survives the trip — a repository that quietly dropped it
+  // would look identical from the UI and start every turn over.
+  it('carries the conversation history, declined turns included', async () => {
     const { http, calls } = makeHttp(ok(validDto));
     const repo = new RecipeRepository(http);
 
-    await repo.refineRecipe(snapshot, 'add more garlic');
+    await repo.refineRecipe(snapshot, 'and spicier too', [
+      { role: ChatRole.User, content: 'make it vegetarian' },
+      { role: ChatRole.Assistant, content: 'Swapped the beef.', rejected: true },
+    ]);
+
+    expect(calls[0].data).toEqual({
+      currentRecipe: snapshot,
+      instruction: 'and spicier too',
+      history: [
+        { role: ChatRole.User, content: 'make it vegetarian' },
+        { role: ChatRole.Assistant, content: 'Swapped the beef.', rejected: true },
+      ],
+    });
+  });
+
+  it('POSTs /recipes/refine with { currentRecipe, instruction, history } body', async () => {
+    const { http, calls } = makeHttp(ok(validDto));
+    const repo = new RecipeRepository(http);
+
+    await repo.refineRecipe(snapshot, 'add more garlic', []);
 
     expect(calls).toHaveLength(1);
     expect(calls[0].method).toBe('POST');
@@ -118,6 +142,7 @@ describe('RecipeRepository.refineRecipe', () => {
     expect(calls[0].data).toEqual({
       currentRecipe: snapshot,
       instruction: 'add more garlic',
+      history: [],
     });
     // The synchronous Gemini call routinely exceeds the default 10s JSON
     // timeout, so a per-request override is required or the client would abort
@@ -130,7 +155,7 @@ describe('RecipeRepository.refineRecipe', () => {
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.refineRecipe(snapshot, 'add garlic');
+    const r = await repo.refineRecipe(snapshot, 'add garlic', []);
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe(failure);
@@ -141,7 +166,7 @@ describe('RecipeRepository.refineRecipe', () => {
     const { http } = makeHttp(ok(malformed));
     const repo = new RecipeRepository(http);
 
-    const r = await repo.refineRecipe(snapshot, 'add garlic');
+    const r = await repo.refineRecipe(snapshot, 'add garlic', []);
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure.code).toBe('validation');

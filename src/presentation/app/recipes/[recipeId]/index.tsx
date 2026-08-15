@@ -25,7 +25,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
-  const { isWebShell } = useLayout();
+  const { isExpanded } = useLayout();
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
   useReportFailure(vm.failure ?? null, 'RecipeDetailScreen');
@@ -58,7 +58,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         >
           <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>
             {vm.recipe !== null ? (
-              isWebShell ? (
+              isExpanded ? (
                 <WebRecipeDetail
                   recipe={vm.recipe}
                   media={vm.media}
@@ -93,7 +93,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   recipe={vm.recipe}
                   media={vm.media}
                   isOwner={vm.isOwner}
-                  isWebShell={isWebShell}
+                  isExpanded={isExpanded}
                   authorState={vm.authorState}
                   liked={vm.liked}
                   likeCount={vm.likeCount}
@@ -121,7 +121,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         </ScrollView>
       </ResponsiveContainer>
 
-      {!isWebShell ? (
+      {!isExpanded ? (
         <Pressable
           accessibilityRole="button"
           // Named after where back actually goes — the glyph alone announced
@@ -151,7 +151,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
       {vm.recipe !== null ? (
         <>
-          {!isWebShell ? (
+          {!isExpanded ? (
             <RecipeFloatingActions
               insetsTop={insets.top}
               liked={vm.liked}

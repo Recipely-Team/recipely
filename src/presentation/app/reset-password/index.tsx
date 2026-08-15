@@ -27,8 +27,8 @@ const MIN_PASSWORD_LENGTH = 8;
 export const ResetPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isWebShell, orientation } = useLayout();
-  const isLandscapeShell = isWebShell && orientation === OrientationType.Landscape;
+  const { isExpanded, orientation } = useLayout();
+  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
 
   const { token } = useLocalSearchParams<{ token?: string }>();
   const tokenValue = isString(token) ? token.trim() : CharConstants.empty;

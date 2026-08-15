@@ -94,10 +94,14 @@ export const WebRecipeCard = ({
               {recipe.name}
             </ThemedText>
             <View style={styles.metaRow}>
-              <Ionicons name="time-outline" size={iconSizes.md} color={colors.textMuted} />
-              <ThemedText variant="caption" muted>
-                {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
-              </ThemedText>
+              {totalMin === null ? null : (
+                <>
+                  <Ionicons name="time-outline" size={iconSizes.md} color={colors.textMuted} />
+                  <ThemedText variant="caption" muted>
+                    {t().recipes.heroTotalMin.replace('{n}', String(totalMin))}
+                  </ThemedText>
+                </>
+              )}
               <Ionicons name="speedometer-outline" size={iconSizes.md} color={colors.textMuted} />
               <ThemedText variant="caption" muted>
                 {difficultyLabel(recipe.difficulty)}

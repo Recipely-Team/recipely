@@ -96,6 +96,7 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   state: { status: 'loaded', query: '', recipes: RECIPES, page: 1, hasMore: false },
   recipes: RECIPES,
   isWebShell: false,
+  isExpanded: false,
   isSearching: false,
   isRefetching: false,
   isReloadingResults: false,

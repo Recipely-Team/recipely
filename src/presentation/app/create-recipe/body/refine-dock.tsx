@@ -11,12 +11,14 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
 import { RefinePendingRow } from '@presentation/app/create-recipe/items/refine-pending-row';
+import { RefineProposalCard } from '@presentation/app/create-recipe/items/refine-proposal-card';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];
@@ -29,6 +31,10 @@ export interface RefineDockProps {
   canRegenerate: boolean;
   onRegenerate: () => void;
   onSubmit: (instruction: string) => void;
+  /** The change awaiting a decision, or null when there is nothing to decide. */
+  proposal: RefineProposal | null;
+  onAcceptProposal: () => void;
+  onRejectProposal: () => void;
   bottomInset: number;
 }
 
@@ -49,6 +55,9 @@ export const RefineDock = ({
   canRegenerate,
   onRegenerate,
   onSubmit,
+  proposal,
+  onAcceptProposal,
+  onRejectProposal,
   bottomInset,
 }: RefineDockProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -61,9 +70,14 @@ export const RefineDock = ({
   const keyboardVisible = useKeyboardVisible();
   const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
 
+  // Clearing belongs to the free-text path, not to `onSubmit`: a quick chip
+  // sends its own instruction and must leave whatever the cook has typed alone.
+  // The sent text is not lost — `onSubmitRefine` appends it to the transcript
+  // above before the request goes out, so it stays on screen as their turn.
   const submitFreeText = (): void => {
     if (!canSend) return;
     onSubmit(chatInput.trim());
+    onChangeChatInput(CharConstants.empty);
   };
 
   // WHY the two steps are serialized: dismissing the keyboard and unmounting
@@ -111,6 +125,16 @@ export const RefineDock = ({
         <RefineTranscript chatHistory={chatHistory} refining={refining} onClose={closeAssistant} />
       ) : refining ? (
         <RefinePendingRow />
+      ) : null}
+
+      {/* Above the input and outside the transcript: the decision has to be
+          reachable whether or not the cook has the assistant panel open. */}
+      {proposal !== null ? (
+        <RefineProposalCard
+          changes={proposal.changes}
+          onAccept={onAcceptProposal}
+          onReject={onRejectProposal}
+        />
       ) : null}
 
       <ScrollView

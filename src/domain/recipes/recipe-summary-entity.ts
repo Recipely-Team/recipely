@@ -45,7 +45,7 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   get difficulty(): Difficulty {
     return this.props.difficulty;
   }
-  get totalTimeMinutes(): number {
+  get totalTimeMinutes(): number | null {
     return this.props.totalTimeMinutes;
   }
   get rating(): number {

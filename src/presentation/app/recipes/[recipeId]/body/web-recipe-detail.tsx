@@ -59,7 +59,7 @@ const stickyColumn = stickyBase as ViewStyle;
 /**
  * Two-column SaaS recipe-detail layout for the web shell. The mobile screen
  * renders its own single-column layout; this component is only mounted when
- * `useLayout().isWebShell` is true. Store loading and handlers are owned by the
+ * `useLayout().isExpanded` is true — the web shell and the iPad alike. Store loading and handlers are owned by the
  * parent screen and passed in — this component holds only the active-image
  * selection state.
  */

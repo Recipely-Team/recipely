@@ -9,6 +9,7 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import type { ChatMessage } from '@domain/drafts/chat-message';
 
 export interface RecipeRepositoryInterface {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>>;
@@ -59,6 +60,7 @@ export interface RecipeRepositoryInterface {
   refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,
+    history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>>;
   deleteRecipe(id: string): Promise<Result<void, Failure>>;
 }

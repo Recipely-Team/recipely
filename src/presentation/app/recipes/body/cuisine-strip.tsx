@@ -12,6 +12,13 @@ import { ValueConstants } from '@core/constants';
 export interface CuisineStripProps {
   selectedCuisines: string[];
   onToggle: (cuisine: string) => void;
+  /**
+   * Paints the strip's own horizontal inset. True for the phone feed, where the
+   * strip is the only thing providing it. The web feed already pads its content
+   * column, so it passes false — otherwise the two stack and the strip sits
+   * visibly indented from the hero, banner and grid above and below it.
+   */
+  gutter?: boolean;
 }
 
 /**
@@ -23,7 +30,7 @@ export interface CuisineStripProps {
  * through {@link useTaxonomyLabel}, so the display comes from the backend
  * taxonomy (localized) with a local fallback.
  */
-export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps): React.JSX.Element => {
+export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: CuisineStripProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
   const { cuisineKeys } = useTaxonomyOptions();
@@ -77,7 +84,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
 
   return (
     <View style={styles.section}>
-      <View style={styles.sectionHeader}>
+      <View style={[styles.sectionHeader, gutter ? styles.headerGutter : null]}>
         <ThemedText variant="body" style={styles.sectionTitle}>
           {t().recipes.browseCuisines}
         </ThemedText>
@@ -86,7 +93,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle }: CuisineStripProps):
         ref={scrollRef}
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
+        contentContainerStyle={[styles.scroll, gutter ? styles.scrollGutter : null]}
       >
         {chips}
       </ScrollView>
@@ -102,15 +109,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingHorizontal: spacing.lg,
     marginBottom: spacing.md,
+  },
+  headerGutter: {
+    paddingHorizontal: spacing.lg,
   },
   sectionTitle: {
     fontWeight: fontWeights.bold,
   },
   scroll: {
-    paddingHorizontal: spacing.lg,
     gap: spacing.lg,
+  },
+  scrollGutter: {
+    paddingHorizontal: spacing.lg,
   },
   item: {
     alignItems: 'center',

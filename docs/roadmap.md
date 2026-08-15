@@ -6,8 +6,7 @@ Ideas that are decided-in-principle but not scheduled. This file holds the
 **This is not a task tracker.** When an item is ready to be worked, open a
 GitHub issue for it and link the issue number back here — the issue carries the
 assignment, the discussion and the PR link; this file carries the reasoning that
-would otherwise be lost in a comment thread. `TODO.md` is unrelated: it is the
-closed-out record of the backend-contract parity work, not a backlog.
+would otherwise be lost in a comment thread.
 
 | Status | Meaning |
 |---|---|
@@ -19,19 +18,35 @@ closed-out record of the backend-contract parity work, not a backlog.
 
 ## 1. Import a recipe from an Instagram **post**
 
-**Status:** `idea` · **Extends:** the existing Reel/video import
+**Status:** `partly shipped` — the caption path is live · **Extends:** the
+existing Reel/video import
 
 Video import already works (share sheet → backend → yt-dlp + transcription +
 vision). Posts are a different problem: a carousel or single image with the
 recipe written in the **caption**, and often the ingredient list burned into the
 image itself.
 
-- Caption text is the cheap path — parse it before touching the images.
+- ~~Caption text is the cheap path — parse it before touching the images.~~
+  **Shipped** — recipely-backend PR #239.
 - Images need OCR, not transcription. Different pipeline, different cost.
 - A carousel is N images; deciding which ones matter is part of the work.
 
-**Open:** does the share payload for a post give us the caption, or only a URL?
-That single answer decides whether this is a small job or a scraping problem.
+**The open question, answered — and it was the wrong question.** The share
+payload gives only a URL. It does not matter: the caption never had to come from
+the share. `ReelMedia.probe()` already runs `yt-dlp --dump-json` before anything
+is downloaded and already reads `description`, which for Instagram *is* the
+caption. A small job, not a scraping problem.
+
+**What it uncovered:** `/p/` links had always passed URL validation, so sharing a
+photo post already queued a job — which reached the worker, spent its time, and
+died at the download with a generic "couldn't fetch", while the recipe sat in a
+caption that had been read two steps earlier. A failed download now falls back to
+a caption-only extraction (and rescues a reel whose download fails for any other
+reason too).
+
+**Still open:** OCR for the ingredient list burned into the image, and choosing
+which frames of a carousel are worth sending. Those are the expensive half; the
+caption covers most food posts on its own.
 
 ## 2. Import a recipe from **YouTube**
 
@@ -70,26 +85,35 @@ Avoided heavy floating system overlays (`SYSTEM_ALERT_WINDOW` / Video `PiP`) to 
 
 ## 4. Conversational AI recipe editing, with confirmation
 
-**Status:** `shaped` · **Replaces:** today's refine chat
+**Status:** `shipped` · **Replaced:** the immediate-apply refine chat
 
-Today every message rewrites the recipe immediately. That is fast but
-unforgiving — a vague instruction silently destroys work, and there is no undo.
+Every message used to rewrite the recipe immediately. That was fast but
+unforgiving — a vague instruction silently destroyed work, and there was no undo.
 
-Wanted instead:
+Shipped instead:
 
 - The assistant **proposes** a change and shows what it would alter, as a diff
   against the current recipe.
-- Nothing is applied until the user accepts. Reject leaves the recipe untouched.
+- Nothing is applied until the user accepts. Declining leaves the recipe
+  untouched.
 - The conversation has memory, so "actually make it spicier too" builds on the
   previous turn instead of starting over.
 
-**Why it matters beyond convenience:** an accept/reject step gives us an undo
+**Why it mattered beyond convenience:** the accept/decline step gives an undo
 boundary for free, and it turns a scary irreversible action into a safe one —
 which is exactly what makes people willing to use AI editing at all.
 
-**Open:** does the backend return a structured patch we can render as a diff, or
-a whole recipe we have to diff ourselves? Front-end diffing works but is more
-fragile with free-text steps.
+**The open question, answered:** the backend returns a **whole recipe**, not a
+structured patch, so the diff is computed on the client
+(`model/refine/diff-editable-recipes.ts`). It compares lists line-wise rather
+than positionally — a step inserted at the top would otherwise report every
+following step as changed.
+
+**What declining forced:** once a refinement is a proposal, an assistant summary
+is no longer proof the recipe changed. The turn is marked `rejected`, and that
+mark rides back to the refiner, which is told a rejected turn was never applied
+— otherwise the replayed history describes a recipe that does not exist.
+Backend: recipely-backend PR #237.
 
 ## 5. Advertising on web, Android and iOS
 

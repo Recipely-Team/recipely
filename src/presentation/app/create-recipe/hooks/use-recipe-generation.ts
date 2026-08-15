@@ -4,7 +4,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
-import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
 import {
@@ -19,7 +19,7 @@ import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafti
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
 import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
-import { buildRefineReply } from '@presentation/app/create-recipe/model/generation/build-refine-reply';
+import { useRefineProposal } from '@presentation/app/create-recipe/hooks/use-refine-proposal';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
@@ -96,8 +96,6 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
-  const mounted = useRef(true);
-  useEffect(() => () => { mounted.current = false; }, []);
   const [exitOpen, setExitOpen] = useState(false);
   /**
    * The draft exactly as this screen adopted it, or null for one started here.
@@ -196,6 +194,15 @@ const GEN_STEP_INTERVAL_MS = 620;
     upsertDraft,
   });
 
+  const { proposal, onSubmitRefine, onAcceptProposal, onRejectProposal } = useRefineProposal({
+    recipe,
+    setRecipe,
+    chatHistory,
+    setChatHistory,
+    chatExpanded,
+    refining,
+  });
+
   const runGenerate = useCallback(
     async (text: string): Promise<void> => {
       const trimmed = text.trim();
@@ -230,41 +237,6 @@ const GEN_STEP_INTERVAL_MS = 620;
       setPhase(PhaseType.Prompt);
     },
     [createdRecipesStore, setRecipe],
-  );
-
-  const handleRefine = useCallback(
-    async (instruction: string): Promise<void> => {
-      const trimmed = instruction.trim();
-      if (trimmed.length === ValueConstants.zero || refining) return;
-      setChatInput(CharConstants.empty);
-      setChatExpanded(true);
-      setChatHistory((h) => [...h, { role: ChatRole.User, content: trimmed }]);
-      const refined = await createdRecipesStore.getState().refineRecipe(editableToSnapshot(recipe), trimmed);
-      if (refined !== null) {
-        setRecipe((prev) => recipeToEditable(refined.recipe, prev.media));
-        const reply = buildRefineReply(refined, t().createRecipe.aiUpdated);
-        setChatHistory((h) => [...h, { role: ChatRole.Assistant, content: reply }]);
-        // The answer landed with the assistant closed: the recipe has just
-        // rewritten itself under the user, and the bubble explaining it is
-        // behind a panel they cannot see. Say it out loud instead.
-        if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.aiUpdated);
-        createdRecipesStore.getState().resetRefineState();
-        return;
-      }
-      // `refineRecipe` collapses its failure to `null`, so the reason is read back
-      // off the store. Refine hits the same endpoint and the same prompt moderator
-      // as generate, so it needs the same disambiguation: a refused instruction
-      // must not read like an unusable AI response.
-      const state = createdRecipesStore.getState().refineState;
-      if (state.status === StoreStatus.Error) showErrorToast(state.failure);
-      const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;
-      setChatHistory((h) => [
-        ...h,
-        { role: ChatRole.Assistant, content: reason ?? t().createRecipe.aiError, error: true },
-      ]);
-      createdRecipesStore.getState().resetRefineState();
-    },
-    [createdRecipesStore, recipe, refining, setRecipe, chatExpanded],
   );
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
@@ -357,7 +329,10 @@ const GEN_STEP_INTERVAL_MS = 620;
     onCollapseChat: () => setChatExpanded(false),
     canRegenerate: originalPrompt.current.length > ValueConstants.zero,
     onRegenerate: () => void runGenerate(originalPrompt.current),
-    onSubmitRefine: (instruction: string) => void handleRefine(instruction),
+    proposal,
+    onSubmitRefine,
+    onAcceptProposal,
+    onRejectProposal,
     exitOpen,
     onSaveDraftAndExit: () => void onSaveDraftAndExit(),
     onDiscardAndExit: () => void onDiscardAndExit(),
