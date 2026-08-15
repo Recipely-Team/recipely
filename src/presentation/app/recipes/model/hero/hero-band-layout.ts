@@ -17,10 +17,8 @@ import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
  *   Nothing reorders; the row simply wraps.
  * - **Width only — the row states no height.** The featured card's ratio is the
  *   band's single source of shape and the other two blocks stretch to it. A
- *   per-breakpoint `minHeight` used to live here as well, and the two sizes
- *   disagreed: at 1200 the flex split hands the featured card ~538px, so its
- *   ratio asks for ~336, while the floor held the row at 440 and left a ~100px
- *   strip of dead space under all three cards.
+ *   per-breakpoint floor used to live here too and fought that ratio; see
+ *   `docs/regressions.md`.
  */
 export const HeroFlex = {
   featured: { grow: 2.5, basis: 520 },

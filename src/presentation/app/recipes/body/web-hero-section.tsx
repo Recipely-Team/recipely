@@ -77,9 +77,10 @@ export const WebHeroSection = ({
     : styles.aiBand;
 
   if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
-    // The placeholder is sized the way the loaded band is — the featured
-    // block's ratio, everything else stretching to it — so nothing shifts
-    // vertically when the recipes arrive.
+    // The placeholder reserves the SAME slots as the loaded band, not just the
+    // same ratio. Leaving the AI slot out gave the featured block the width of
+    // a two-block line, and since its height is now that width over the ratio,
+    // the band shrank ~140px the moment the recipes arrived.
     return (
       <View style={[styles.row, stacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
         <View
@@ -96,6 +97,13 @@ export const WebHeroSection = ({
             <View style={styles.miniSlot}>
               <SkeletonLoader width="100%" height="100%" borderRadius={radii.xxl} />
             </View>
+          </View>
+        )}
+        {/* Only while the panel shares the line: below that it wraps to a band
+            of its own, where it takes no width from the featured block. */}
+        {stacked || !inRow ? null : (
+          <View style={[styles.aiSlot, aiFlex]}>
+            <SkeletonLoader width="100%" height="100%" borderRadius={radii.xxl2} />
           </View>
         )}
       </View>
@@ -138,11 +146,8 @@ const styles = StyleSheet.create({
   // squeezing the photography beside it; `alignItems: stretch` (the default)
   // keeps the three blocks the same height while they share a line.
   //
-  // The row states NO height. The line is as tall as the featured card's ratio
-  // makes it, and the runners-up column and the AI panel stretch to that. A
-  // per-breakpoint `minHeight` here fought that ratio: past the three-column
-  // breakpoint the floor (440) outran what the split-down featured card could
-  // reach (~336 at 1200), and the surplus showed as dead space under the band.
+  // The row states NO height: the line is as tall as the featured card's ratio
+  // makes it, and the other two blocks stretch to that.
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',

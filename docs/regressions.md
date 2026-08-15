@@ -935,9 +935,15 @@ enough to reach them.
 
 **Now.** The row states no height at all; the featured card's ratio is the
 band's single source of shape and the other two blocks stretch to it — which is
-what the mini-card's own comment already claimed. The loading placeholder
-borrows the same ratio, so removing the floor did not trade the gap for a jump
-on load. `web-hero-section.test` pins both and fails against either revert.
+what the mini-card's own comment already claimed.
+
+**The second bug, caught in review.** The first fix gave the loading placeholder
+the same ratio and called it done. But the placeholder had never rendered the AI
+slot — harmless while both states were pinned at 440, and a ~140px reflow the
+moment the ratio was in charge, because the featured block is wider on a
+two-block line and its height is now that width over the ratio. *Once a height
+is derived, everything the derivation reads from becomes load-bearing:* the
+placeholder has to reserve the same SLOTS, not merely the same ratio.
 
 *The class:* [rule 6b](../CLAUDE.md)'s "divide by proportion; pin nothing" is
 not only about a child fighting its parent — **a parent's floor and a child's
@@ -945,3 +951,12 @@ ratio are two sizes for the same box**, and they agree at exactly one width.
 Design frames quote heights at the widths they were drawn at; translating them
 into a floor rather than into the ratio is what carries the disagreement into
 the code.
+
+*Mechanical guard, considered and rejected.* A `check:structure` rule flagging a
+`flexWrap: 'wrap'` container that also carries `height`/`minHeight` would land
+green today and states something true (with Yoga's default `alignContent:
+flex-start`, the surplus is always dead space after the last line). It is not
+worth having: the offender here was an inline `{ minHeight: … }` object built in
+the component body, not a `StyleSheet` entry, so a rule reading `StyleSheet`
+blocks would have passed this very file — a guard that misses the case that
+motivated it reads as coverage and is worse than none.
