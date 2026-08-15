@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 840 source files.
+[architecture.md](architecture.md). 842 source files.
 
 ## Layers
 
@@ -110,7 +110,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(6)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(47)_
+- `widgets/` (ads, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(49)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -143,4 +143,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 0490f9e9775fd3cd -->
+<!-- fingerprint: b7a509f63a5340da -->

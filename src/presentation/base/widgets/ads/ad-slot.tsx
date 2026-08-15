@@ -3,16 +3,10 @@ import { StyleSheet, View } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useAdsReady } from '@presentation/base/hooks/ads/use-ads-ready';
 import { spacing } from '@presentation/base/theme';
-
-export interface AdSlotProps {
-  /** AdMob ad unit id for this placement. */
-  unitId: string;
-  /** Read by a screen reader in place of the ad's own content. */
-  accessibilityLabel: string;
-}
+import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
 
 /**
- * One banner, or nothing at all.
+ * One banner, or nothing at all. **Native build** — see `ad-slot.web.tsx`.
  *
  * @remarks
  * - **Nothing is the default, and failure returns to it.** The slot occupies no
