@@ -25,6 +25,15 @@ export const FEED_BANNER_UNIT_ID: string =
 export const GENERATING_BANNER_UNIT_ID: string =
   process.env.EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID ?? TEST_BANNER_UNIT_ID;
 
+/**
+ * Banner on the import queue screen. Its own unit rather than the generating
+ * one: this is the longest wait in the app — a reel goes through a queue, a
+ * download and a transcription — so it earns separate reporting from the
+ * seconds-long generate.
+ */
+export const IMPORT_BANNER_UNIT_ID: string =
+  process.env.EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID ?? TEST_BANNER_UNIT_ID;
+
 /** Rows of recipes shown before the first ad may appear. */
 export const FEED_ROWS_BEFORE_FIRST_AD = 6;
 
