@@ -577,6 +577,8 @@ export const zh = {
     stage2: '正在识别食谱',
     stage3: '正在整理食谱',
     notify: '知道了，准备好后通知我',
+    notifyBlocked:
+      '通知已关闭，我们无法提醒你。导入会继续进行，完成后可在“我的食谱”中找到。',
     openDraft: '打开草稿',
     background: '可在后台继续',
     estimate: '预计',
