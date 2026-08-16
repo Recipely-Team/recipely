@@ -1,0 +1,5 @@
+# Authorised sellers of recipely.net's web inventory (IAB Tech Lab ads.txt).
+# The same publisher line as app-ads.txt: AdSense sells the site, AdMob sells
+# the apps, but a publisher has one id. This file is the SITE's — the crawler
+# reads /ads.txt for the web and /app-ads.txt for the apps.
+google.com, pub-2891163996772365, DIRECT, f08c47fec0942fa0

@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from 'react';
 import { ValueConstants } from '@core/constants';
-import { FEED_BANNER_UNIT_ID } from '@infrastructure/constants/ads';
+import { feedBannerUnitId } from '@infrastructure/constants/ads';
 import { useAdsReady } from '@presentation/base/hooks/ads/use-ads-ready';
 import { buildFeedRows } from '@presentation/app/recipes/model/ads/build-feed-rows';
 import { FeedRowKind } from '@presentation/app/recipes/model/ads/feed-row-kind';
@@ -42,5 +42,5 @@ export const useFeedRows = ({ recipes, isReloading, gridColumns }: UseFeedRowsAr
     [],
   );
 
-  return { rows, keyExtractor, adUnitId: FEED_BANNER_UNIT_ID };
+  return { rows, keyExtractor, adUnitId: feedBannerUnitId() };
 };
