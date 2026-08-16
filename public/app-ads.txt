@@ -1,0 +1,4 @@
+# Authorised sellers of Recipely's app inventory (IAB Tech Lab app-ads.txt).
+# AdMob verifies app ownership by fetching this from the root of the developer
+# website declared on the store listing, so it must stay at recipely.net/app-ads.txt.
+google.com, pub-2891163996772365, DIRECT, f08c47fec0942fa0

@@ -993,3 +993,29 @@ question, "who pulls this package into the graph", and the answer was a
 component two layers up. When a dependency has no web target, trace every
 module that names it — a conditional that renders nothing still bundles
 everything.
+
+## A 200 that was not the file
+
+**Symptom.** AdMob would not verify app ownership: *"Bir app-ads.txt dosyası
+oluşturmuş olabilirsiniz, ancak bilgileriniz eşleşmiyor."* Meanwhile
+`recipely.net/app-ads.txt` answered **200**.
+
+**Cause.** It answered 200 with the SPA's `index.html`. Hosting rewrites `**`
+to `/index.html`, so a static file that is not there is not a 404 — it is the
+app shell, with a success status and `text/html`. Every status-code check says
+the asset is fine; only something that reads the body disagrees, which is
+exactly what AdMob's crawler does.
+
+The same rewrite had already done this once: `prune-web-export` deleted the
+legal pages out of `dist` and /privacy quietly became the app shell.
+
+**Now.** `public/app-ads.txt` exists, and `scripts/assert-public-assets.mjs`
+runs at the end of `build:web`: every file in `public/` must exist in `dist/`,
+or the build fails with the list. Existence in `dist`, deliberately, rather
+than reachability over HTTP — reachability is the one question the rewrite
+cannot answer honestly.
+
+*The class:* **under a catch-all rewrite, "the URL responds" proves nothing.**
+A missing asset and a working one are the same status code, so verify content
+(or the artifact) rather than the response — and be suspicious of any check
+whose passing condition a fallback route can satisfy by accident.
