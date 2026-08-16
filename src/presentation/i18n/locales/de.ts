@@ -573,6 +573,8 @@ export const de = {
     stage2: 'Rezept wird gelesen',
     stage3: 'Rezept wird ausgearbeitet',
     notify: 'Verstanden — benachrichtige mich',
+    notifyBlocked:
+      'Benachrichtigungen sind aus, wir können dich nicht informieren. Der Import läuft weiter – du findest ihn unter „Meine Rezepte“.',
     openDraft: 'Entwurf öffnen',
     background: 'Läuft im Hintergrund',
     estimate: 'Geschätzt',

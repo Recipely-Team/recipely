@@ -573,6 +573,8 @@ export const it = {
     stage2: 'Lettura della ricetta',
     stage3: 'Stesura della ricetta',
     notify: 'Va bene — avvisami',
+    notifyBlocked:
+      'Le notifiche sono disattivate, quindi non possiamo avvisarti. L’importazione continua: la troverai in Le mie ricette.',
     openDraft: 'Apri bozza',
     background: 'Funziona in background',
     estimate: 'Stima',

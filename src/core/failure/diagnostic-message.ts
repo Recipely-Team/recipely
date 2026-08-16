@@ -72,6 +72,17 @@ export const DiagnosticMessage = {
   feedback: {
     messageRequired: 'Message is required',
   },
+  ads: {
+    /**
+     * The SSP's own reason a banner did not fill, carried through verbatim.
+     *
+     * The reason is the whole point: code 3 ("no fill") is a healthy account
+     * with no inventory yet, while code 1 ("invalid request") is a wrong unit
+     * id or an app id the manifest never got — two problems that look identical
+     * from the outside, because both render nothing at all.
+     */
+    bannerFailed: (reason: string): string => `Banner ad failed to load: ${reason}`,
+  },
   auth: {
     invalidEmail: 'Invalid email format',
     noActiveSession: 'No active session to update',

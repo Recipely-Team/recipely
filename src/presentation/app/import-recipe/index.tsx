@@ -70,7 +70,7 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
               isDone={vm.isDone}
               queuePosition={vm.queuePosition}
               isQueueing={vm.isQueueing}
-              onPrimary={vm.isDone ? vm.onOpenDraft : vm.onClose}
+              onPrimary={vm.isDone ? vm.onOpenDraft : vm.onNotifyMe}
             />
           )}
         </ResponsiveContainer>

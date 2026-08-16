@@ -1053,3 +1053,90 @@ about whether it compiles. No new mechanical gate — compiling native code is
 not something the four can do. The guard is procedural: **ask for a real
 Android build in the same session that adds a native dependency**, and read the
 compiler's own version ceiling out of the failure before choosing a fix.
+
+---
+
+## Ads that never appear look exactly like ads that were never allowed
+
+**Symptom.** The production Play build (1.0.47) showed no ad anywhere — not an
+empty slot, no slot at all — while the dev build served test banners fine. AdMob
+reported **zero requests**, so nothing on the console side could say why either.
+
+**Root cause, in two halves, both of them "the reason was discarded".**
+
+`AdSlot` handled a failed banner as `onAdFailedToLoad={() => setFailed(true)}`.
+The SDK hands that callback an error whose message carries the code, and the
+code is the entire diagnosis: **3 (no fill)** is a healthy account with no
+inventory yet and needs patience, **1 (invalid request)** is a wrong unit id or
+an app id that never reached the manifest and needs a fix. Both rendered the
+same nothing.
+
+`AdsService` cached the result of its one consent gather for the whole session
+(`this.pending ??= this.run()`). A gather that **threw** — offline at launch, a
+console still being configured — was stored as the same `false` a user who
+declines produces, so one transient failure at launch silenced every slot for
+the rest of the session and every later mount read the cached refusal instead of
+asking again. "Could not ask" and "was told no" are different answers and only
+one of them is final.
+
+**Now.** The banner's error message goes to Crashlytics as a non-fatal, once per
+unit per session (a feed carries a banner every ten rows; the first report has
+the whole message). A gather that throws is reported, falls back to the consent
+already stored on the device — the same `canRequestAds` Google's own sample
+consults in its failure listener — and leaves nothing cached, so the next slot
+retries. A refusal that the flow actually *returned* is still cached.
+
+**And the retry had to be bounded before it shipped.** `prepare()` is called
+from `useAdsReady`, which runs on every `AdSlot` mount — and a slot is a
+FlatList row, so windowing remounts it every time it scrolls back into view. A
+retry with no ceiling would have fired a native consent call *and* a crash
+report per row for as long as a device stayed offline: the same flood the slot
+half of this change dedupes against, one file over. Three attempts per session,
+each failing step reported once.
+
+*The class:* **a silent fallback with no reporting is untestable in production —
+and "just retry" is a flood whenever the caller is a list row.**
+Rendering nothing was always the right thing for the user to see; it was never
+the right thing for us to see. When a code path's whole job is to fail quietly,
+the failure has to leave somewhere else — a non-fatal, a counted event — or the
+next outage arrives with the same single fact it had this time: "it doesn't
+work." No new mechanical gate fits: no `check:structure` rule can tell a
+deliberately-empty catch from a negligent one. The guard is the pair of
+regression tests, and the standard is stated here.
+---
+## A button that promised a notification and only closed the screen
+
+**Symptom.** After sending a reel to the importer, "Got it — notify me" produced
+nothing: no notification when the import finished, none when it failed, and the
+result only ever appeared as a number on the in-app badge.
+
+**Cause.** Three things were true at once, and only the third was missing.
+
+The backend was complete: `complete-import-job` and `fail-import-job` both
+write a notification row *and* send an FCM push. The foreground handler was
+already set to show banners. What no one had written was the middle: the
+button was wired to `onClose`. Nothing ever asked the OS for notification
+permission, so a user who had not already granted it was promised something
+their device would never deliver — and the app said nothing about it.
+
+Registration made it worse in a way that hid the hole: it runs once per cold
+start and **gives up silently** when permission is missing, so even a user who
+granted permission later had no token until the next launch.
+
+**Now.** The button asks for permission at the moment it makes the promise —
+which is also the moment the request makes sense to the user — and on a grant it
+re-triggers registration through `ensurePushRegistration`, the same
+mutable-handler seam the composition root already uses for `onSessionExpired`.
+A refusal is said out loud instead of swallowed. `use-import-recipe.test` pins
+all three and fails against the old wiring.
+
+*The class:* **a promise in copy is a feature, and features have to be built.**
+"You can close the app, we'll notify you" reads as a description of existing
+behaviour, so nobody goes looking for the code that makes it true. When copy
+asserts something, find the line that keeps it — and when a permission-gated
+capability gives up silently, the giving-up is the part that needs a voice.
+
+*Still true, deliberately:* iOS receives no push at all. `push-token-registrar`
+returns early there because the backend addresses devices through FCM and an
+APNs token needs `@react-native-firebase/messaging` plus a native rebuild. That
+is a native dependency, and the call was to fix what exists rather than add one.
