@@ -1053,3 +1053,44 @@ about whether it compiles. No new mechanical gate — compiling native code is
 not something the four can do. The guard is procedural: **ask for a real
 Android build in the same session that adds a native dependency**, and read the
 compiler's own version ceiling out of the failure before choosing a fix.
+
+---
+
+## Ads that never appear look exactly like ads that were never allowed
+
+**Symptom.** The production Play build (1.0.47) showed no ad anywhere — not an
+empty slot, no slot at all — while the dev build served test banners fine. AdMob
+reported **zero requests**, so nothing on the console side could say why either.
+
+**Root cause, in two halves, both of them "the reason was discarded".**
+
+`AdSlot` handled a failed banner as `onAdFailedToLoad={() => setFailed(true)}`.
+The SDK hands that callback an error whose message carries the code, and the
+code is the entire diagnosis: **3 (no fill)** is a healthy account with no
+inventory yet and needs patience, **1 (invalid request)** is a wrong unit id or
+an app id that never reached the manifest and needs a fix. Both rendered the
+same nothing.
+
+`AdsService` cached the result of its one consent gather for the whole session
+(`this.pending ??= this.run()`). A gather that **threw** — offline at launch, a
+console still being configured — was stored as the same `false` a user who
+declines produces, so one transient failure at launch silenced every slot for
+the rest of the session and every later mount read the cached refusal instead of
+asking again. "Could not ask" and "was told no" are different answers and only
+one of them is final.
+
+**Now.** The banner's error message goes to Crashlytics as a non-fatal, once per
+unit per session (a feed carries a banner every ten rows; the first report has
+the whole message). A gather that throws is reported, falls back to the consent
+already stored on the device — the same `canRequestAds` Google's own sample
+consults in its failure listener — and leaves nothing cached, so the next slot
+retries. A refusal that the flow actually *returned* is still cached.
+
+*The class:* **a silent fallback with no reporting is untestable in production.**
+Rendering nothing was always the right thing for the user to see; it was never
+the right thing for us to see. When a code path's whole job is to fail quietly,
+the failure has to leave somewhere else — a non-fatal, a counted event — or the
+next outage arrives with the same single fact it had this time: "it doesn't
+work." No new mechanical gate fits: no `check:structure` rule can tell a
+deliberately-empty catch from a negligent one. The guard is the pair of
+regression tests, and the standard is stated here.
