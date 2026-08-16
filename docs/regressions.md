@@ -1019,3 +1019,37 @@ cannot answer honestly.
 A missing asset and a working one are the same status code, so verify content
 (or the artifact) rather than the response — and be suspicious of any check
 whose passing condition a fallback route can satisfy by accident.
+
+## A dependency that raised the floor under the native build
+
+**Symptom.** Every Android build stopped compiling the moment ads were merged:
+`:react-native-google-mobile-ads:compileReleaseKotlin FAILED` — *play-services-ads
+25.4.0 … metadata is 2.3.0, expected version is 2.1.0*.
+
+**Cause.** AdMob's native SDK is built with a newer Kotlin than Expo SDK 55
+pins, and a Kotlin compiler refuses metadata from a version above its own. The
+requirement arrived from the JavaScript side: `npm install` succeeded, and
+`lint`, `tsc`, `jest` and `check:structure` were all green, because **none of
+the four gates compiles a line of Kotlin**. Worse, mobile builds are opt-in on
+`dev`, so a native dependency can sit merged and never once be built.
+
+**The wrong fix, and what it taught.** Raising `android.kotlinVersion` to 2.3.0
+looked like the direct answer. It moved the kotlin-stdlib *dependency* and left
+the *compiler* at 2.1.0, so the build got worse rather than better: every RN
+library failed, `react-native-safe-area-context` included, on *"compiler version
+2.1.0 can read versions up to 2.2.0"*. The compiler version is not a build
+property — moving it is an SDK upgrade.
+
+That error line is also the measurement nobody had: the ceiling is **2.2.0**.
+
+**Now.** `react-native-google-mobile-ads` is held at 16.0.0, which declares ads
+24.6.0 with UMP 3.2.0 — a pair the library ships together, and one a
+`resolutionStrategy.force` on either half would have split. Verified by an
+Android build on the branch before the merge, not after.
+
+*The class:* a package added to `package.json` can raise the floor under a
+toolchain no JS gate touches, and "it installed and the tests pass" says nothing
+about whether it compiles. No new mechanical gate — compiling native code is
+not something the four can do. The guard is procedural: **ask for a real
+Android build in the same session that adds a native dependency**, and read the
+compiler's own version ceiling out of the failure before choosing a fix.
