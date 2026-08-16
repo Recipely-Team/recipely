@@ -717,9 +717,9 @@ jobs:
       # impressions just count. Unset here too until the secrets exist, which
       # simply keeps production on test ads rather than breaking the build.
       ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
-      EXPO_PUBLIC_ADMOB_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_FEED_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_GENERATING_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_IMPORT_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_ANDROID_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_FEED_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID }}
       # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber.
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -884,6 +884,13 @@ jobs:
       APP_VARIANT: production
       EXPO_PUBLIC_API_AES_KEY: ${{ secrets.EXPO_PUBLIC_API_AES_KEY }}
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # The iOS half of the same rule the Play job carries: the only build that
+      # may request REAL inventory. AdMob issues unit ids per app, so these are
+      # the iOS app's own — an Android unit requested here would never fill.
+      ADMOB_IOS_APP_ID: ${{ secrets.ADMOB_IOS_APP_ID }}
+      EXPO_PUBLIC_ADMOB_IOS_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_FEED_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_IOS_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_GENERATING_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_IOS_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_IMPORT_BANNER_UNIT_ID }}
       # Mirrors the Android distribute job so app.config.ts derives the same
       # versionCode / buildNumber for every target of a single CI run.
       BUILD_NUMBER: ${{ github.run_number }}

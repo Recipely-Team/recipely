@@ -12,7 +12,7 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 import { AdSlot } from '@presentation/base/widgets/ads/ad-slot';
-import { GENERATING_BANNER_UNIT_ID } from '@infrastructure/constants/ads';
+import { generatingBannerUnitId } from '@infrastructure/constants/ads';
 
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
@@ -149,7 +149,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
       {/* Below the checklist and outside it: this screen has nothing else to
           tap, so the one tappable thing on it must not sit where a thumb rests
           while waiting. */}
-      <AdSlot unitId={GENERATING_BANNER_UNIT_ID} accessibilityLabel={copy.adLabel} />
+      <AdSlot unitId={generatingBannerUnitId()} accessibilityLabel={copy.adLabel} />
     </View>
   );
 };

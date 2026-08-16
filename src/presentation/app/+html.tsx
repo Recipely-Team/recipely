@@ -1,8 +1,20 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
+import { ADSENSE_CLIENT_ID } from '@infrastructure/constants/ads';
 import type { PropsWithChildren } from 'react';
 
 const SITE_URL = PROD_WEB_APP_BASE_URL;
+
+/**
+ * The AdSense loader, on the production site only.
+ *
+ * `dev.recipely.net` is not a site declared in AdSense and is served `noindex`
+ * behind an access wall; putting ad code on it would be serving ads from a
+ * property the account has not claimed. This file is rendered by `expo export`
+ * in Node, so the build's own variable decides — the same one that already
+ * picks the API host and the app id.
+ */
+const SERVES_ADS = process.env.APP_VARIANT !== 'development';
 const SITE_TITLE = 'Recipely — AI Recipe Generator & Cooking Community';
 const SITE_DESCRIPTION =
   'Discover, create, and share recipes with an AI sous-chef. Generate a full recipe from a craving, browse by cuisine, track nutrition, and cook smarter with Recipely.';
@@ -31,6 +43,13 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta name="twitter:title" content={SITE_TITLE} />
       <meta name="twitter:description" content={SITE_DESCRIPTION} />
       <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
+      {SERVES_ADS ? (
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
+          crossOrigin="anonymous"
+        />
+      ) : null}
       <ScrollViewStyleReset />
     </head>
     <body>{children}</body>
