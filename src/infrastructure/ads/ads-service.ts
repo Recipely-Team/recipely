@@ -84,9 +84,18 @@ export class AdsService implements AdsServiceInterface {
     this.pending ??= this.run();
     // WHY the outcome rides on the awaited promise rather than an instance
     // flag: concurrent callers await the same run, and a flag read after the
-    // await describes whichever run finished last.
-    const outcome = await this.pending;
-    if (outcome === RunOutcome.Unavailable && this.attempts < MAX_ATTEMPTS) this.pending = null;
+    // await describes whichever run finished last. The identity check is the
+    // same hazard one level up — a late awaiter of an older run must not clear
+    // a newer one that has already taken its place.
+    const started = this.pending;
+    const outcome = await started;
+    if (
+      outcome === RunOutcome.Unavailable &&
+      this.attempts < MAX_ATTEMPTS &&
+      this.pending === started
+    ) {
+      this.pending = null;
+    }
     return outcome === RunOutcome.Allowed;
   }
 
