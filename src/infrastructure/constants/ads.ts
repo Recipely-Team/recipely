@@ -1,3 +1,5 @@
+import { ValueConstants } from '@core/constants';
+
 /**
  * Ad unit ids and how often the feed is allowed to show one.
  *
@@ -12,18 +14,30 @@
  *   into the list.** The first ad sits far enough down that the feed reads as a
  *   feed before it reads as inventory, and the gap after it is wide enough that
  *   scrolling never lands on two in one screen.
+ * - **Blank counts as unset.** These arrive from CI, where an undeclared secret
+ *   is an EMPTY STRING rather than undefined — and `?? fallback` does not catch
+ *   that. A unit id of `''` requests nothing and reports nothing, which looks
+ *   from the outside exactly like ads that "do not fill".
  */
 
 /** Google's always-available test banner. Serves a house ad, counts nothing. */
 const TEST_BANNER_UNIT_ID = 'ca-app-pub-3940256099942544/6300978111';
 
+/** The env var when it holds something, the test unit when it is unset OR blank. */
+const unitId = (configured: string | undefined): string =>
+  configured !== undefined && configured.trim().length > ValueConstants.zero
+    ? configured
+    : TEST_BANNER_UNIT_ID;
+
 /** Banner between recipe rows in the feed. */
-export const FEED_BANNER_UNIT_ID: string =
-  process.env.EXPO_PUBLIC_ADMOB_FEED_BANNER_UNIT_ID ?? TEST_BANNER_UNIT_ID;
+export const FEED_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_FEED_BANNER_UNIT_ID,
+);
 
 /** Banner shown under the checklist while a recipe generates. */
-export const GENERATING_BANNER_UNIT_ID: string =
-  process.env.EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID ?? TEST_BANNER_UNIT_ID;
+export const GENERATING_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID,
+);
 
 /**
  * Banner on the import queue screen. Its own unit rather than the generating
@@ -31,8 +45,9 @@ export const GENERATING_BANNER_UNIT_ID: string =
  * download and a transcription — so it earns separate reporting from the
  * seconds-long generate.
  */
-export const IMPORT_BANNER_UNIT_ID: string =
-  process.env.EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID ?? TEST_BANNER_UNIT_ID;
+export const IMPORT_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID,
+);
 
 /** Rows of recipes shown before the first ad may appear. */
 export const FEED_ROWS_BEFORE_FIRST_AD = 6;

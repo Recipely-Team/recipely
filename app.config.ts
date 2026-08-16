@@ -29,6 +29,7 @@ const IOS_DEV_GOOGLE_URL_SCHEME =
   'com.googleusercontent.apps.421167568469-v6qorc4n7abqbb2vteulr3424p19p72o';
 
 const GOOGLE_SIGNIN_PLUGIN = '@react-native-google-signin/google-signin';
+const ADMOB_PLUGIN = 'react-native-google-mobile-ads';
 
 const variant: Variant =
   (process.env.APP_VARIANT as Variant | undefined) ?? 'production';
@@ -102,6 +103,37 @@ const withVariantGoogleUrlScheme = (
       : plugin,
   );
 
+/** Swaps the AdMob plugin's app ids for the real ones when the build supplies
+ * them, leaving app.json's Google test ids in place when it does not.
+ *
+ * The same rule the ad UNIT ids follow in `@infrastructure/constants/ads`, and
+ * for the same reason: requesting real inventory from a development build is
+ * what gets an AdMob account suspended, and nothing fails when it happens — the
+ * impressions simply count. So the real ids arrive only where they are set, and
+ * every other build is safe by default rather than by remembering.
+ *
+ * No `EXPO_PUBLIC_` prefix: unlike the unit ids these are read here, at config
+ * time, and written into the native manifest. They never enter the JS bundle,
+ * and the prefix would claim they do. */
+const withRealAdMobAppIds = (plugins: ExpoConfig['plugins']): ExpoConfig['plugins'] => {
+  // An unset GitHub secret arrives as an EMPTY STRING, not as undefined, so
+  // `?? fallback` would happily write '' into the manifest — and the Mobile Ads
+  // SDK aborts at startup on a missing app id. Blank is unset.
+  const orUnset = (value: string | undefined): string | undefined =>
+    value !== undefined && value.trim().length > 0 ? value : undefined;
+  const androidAppId = orUnset(process.env.ADMOB_ANDROID_APP_ID);
+  const iosAppId = orUnset(process.env.ADMOB_IOS_APP_ID);
+  if (androidAppId === undefined && iosAppId === undefined) return plugins;
+
+  return plugins?.map((plugin) => {
+    if (!Array.isArray(plugin) || plugin[0] !== ADMOB_PLUGIN) return plugin;
+    const options = { ...(plugin[1] ?? {}) };
+    if (androidAppId !== undefined) options.androidAppId = androidAppId;
+    if (iosAppId !== undefined) options.iosAppId = iosAppId;
+    return [ADMOB_PLUGIN, options];
+  });
+};
+
 export default ({ config }: ConfigContext): ExpoConfig => {
   const buildNumber = getBuildNumber();
   const version = getVersion(config.version ?? '1.0.0');
@@ -112,7 +144,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     slug: config.slug ?? 'recipely',
     version,
     scheme,
-    plugins: withVariantGoogleUrlScheme(config.plugins),
+    plugins: withRealAdMobAppIds(withVariantGoogleUrlScheme(config.plugins)),
     ios: {
       ...config.ios,
       bundleIdentifier: iosBundleId,
