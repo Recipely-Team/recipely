@@ -710,6 +710,16 @@ jobs:
       # APK via google-services.json. Must match Firebase Authentication → Web
       # client ID.
       EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID: 421167568469-kqknuidq9mtu66llumtdcitsr5j4j497.apps.googleusercontent.com
+      # The only build that may request REAL ad inventory. Every other build —
+      # dev APK, local, preview — leaves these unset and serves Google's test
+      # units, because real requests from a development build are what gets an
+      # AdMob account suspended, and nothing fails when it happens: the
+      # impressions just count. Unset here too until the secrets exist, which
+      # simply keeps production on test ads rather than breaking the build.
+      ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
+      EXPO_PUBLIC_ADMOB_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_FEED_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_GENERATING_BANNER_UNIT_ID }}
+      EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_IMPORT_BANNER_UNIT_ID }}
       # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber.
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
