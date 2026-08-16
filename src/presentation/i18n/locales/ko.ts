@@ -569,6 +569,8 @@ export const ko: Translations = {
     stage2: '레시피 내용 확인 중',
     stage3: '레시피 작성 중',
     notify: '완료되면 알려 주세요',
+    notifyBlocked:
+      '알림이 꺼져 있어 알려드릴 수 없습니다. 가져오기는 계속되며 결과는 내 레시피에 저장됩니다.',
     openDraft: '임시저장 열기',
     background: '백그라운드에서 계속 진행돼요',
     estimate: '예상 시간',

@@ -573,6 +573,8 @@ export const fr = {
     stage2: 'Lecture de la recette',
     stage3: 'Mise au propre de la recette',
     notify: 'Compris — prévenez-moi',
+    notifyBlocked:
+      'Les notifications sont désactivées, impossible de vous prévenir. L’import continue — vous le trouverez dans Mes recettes.',
     openDraft: 'Ouvrir le brouillon',
     background: 'Fonctionne en arrière-plan',
     estimate: 'Estimation',

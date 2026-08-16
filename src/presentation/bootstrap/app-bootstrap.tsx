@@ -21,6 +21,7 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
+import { setPushRegistrationHandler } from '@application/notifications/ensure-push-registration';
 import { hydrateLocale } from '@presentation/i18n/i18n';
 
 export interface AppBootstrapProps {
@@ -101,8 +102,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
   // configured; iOS is still a no-op pending a native messaging module).
   useEffect(() => {
     let registered = false;
-    const maybeRegister = (): void => {
-      if (registered) return;
+    const register = (): void => {
       if (stores.authStore.getState().state.status !== StoreStatus.Authenticated) return;
       registered = true;
       const useCase = container.resolve<RegisterDeviceTokenUseCase>(
@@ -110,6 +110,15 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       );
       void registerPushToken((token, platform) => useCase.execute(token, platform));
     };
+    // Startup and sign-in run this once; the screen that PROMISES a
+    // notification can ask again, because registration gives up silently when
+    // permission has not been granted yet and granting it later would
+    // otherwise change nothing until the next cold start.
+    const maybeRegister = (): void => {
+      if (registered) return;
+      register();
+    };
+    setPushRegistrationHandler(register);
     maybeRegister();
     return stores.authStore.subscribe(maybeRegister);
   }, []);

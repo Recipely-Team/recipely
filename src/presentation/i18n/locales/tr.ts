@@ -577,6 +577,8 @@ export const tr: Translations = {
     stage2: 'Tarif okunuyor',
     stage3: 'Tarif yazılıyor',
     notify: 'Tamam, haber ver',
+    notifyBlocked:
+      'Bildirimler kapalı, o yüzden haber veremeyiz. İçe aktarma devam ediyor; sonucu Tariflerim’de bulacaksın.',
     openDraft: 'Taslağı aç',
     background: 'Arka planda devam ediyor',
     estimate: 'Tahmini',
