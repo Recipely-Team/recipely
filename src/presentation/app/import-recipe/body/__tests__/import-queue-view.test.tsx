@@ -1,15 +1,25 @@
 /**
- * When the queue-position badge appears, and when it must not.
+ * What this screen shows while a job is waiting, and what it must drop once the
+ * job is not: the queue-position badge, and the ad.
  *
- * The number is only meaningful while the job is WAITING. Showing it on a job a
- * worker has already picked up would tell the user they are 3rd in a line they
- * have already left — which is the opposite of what the badge exists to say.
+ * The position is only meaningful while the job is WAITING. Showing it on a job
+ * a worker has already picked up would tell the user they are 3rd in a line
+ * they have already left — the opposite of what the badge exists to say.
  */
 
+import { ScrollView } from 'react-native';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ImportQueueView } from '@presentation/app/import-recipe/body/import-queue-view';
 import { en } from '@presentation/i18n/locales/en';
+
+// The real slot renders null until consent and a loaded ad say otherwise, so it
+// cannot tell "no ad yet" from "no ad slot". A stand-in makes the screen's own
+// decision — whether it OFFERS the placement — the thing under test.
+jest.mock('@presentation/base/widgets/ads/ad-slot', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  return { AdSlot: (): React.JSX.Element => <Text>ad-slot</Text> };
+});
 
 const POSITION_TOKEN = '{position}';
 
@@ -64,5 +74,36 @@ describe('the queue-position badge', () => {
 
     expect(shown.some((line) => line.includes('In queue'))).toBe(false);
     expect(shown.some((line) => line.includes('null'))).toBe(false);
+  });
+});
+
+describe('the ad on the import screen', () => {
+  it('offers the placement while the import is still working', () => {
+    // This is the longest wait in the app, which is the whole argument for
+    // putting one here rather than on a screen the user passes through.
+    expect(shownText({ jobStatus: ImportJobStatus.Running })).toContain('ad-slot');
+  });
+
+  it('drops it the moment the import is done', () => {
+    // A finished job turns the screen into a receipt with "open draft" on it.
+    // An ad beside that is not passing a wait, it is charging for the exit.
+    expect(shownText({ isDone: true })).not.toContain('ad-slot');
+  });
+
+  it('keeps it out of the pinned footer, where the thumb is', () => {
+    const { root } = renderComponent(
+      <ImportQueueView
+        jobStatus={ImportJobStatus.Running}
+        activeStage={0}
+        progress={0}
+        isDone={false}
+        isQueueing={false}
+        queuePosition={null}
+        onPrimary={jest.fn()}
+      />,
+    );
+    const scroll = root.findByType(ScrollView);
+
+    expect(textContent(scroll)).toContain('ad-slot');
   });
 });
