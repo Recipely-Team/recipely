@@ -487,6 +487,7 @@ export const ar = {
     assistant: "مساعد الذكاء الاصطناعي",
     closeAssistant: "إغلاق مساعد الذكاء الاصطناعي",
     refineHint: "اطلب أي عدد من التعديلات",
+    adLabel: 'إعلان',
     proposalTitle: 'التغييرات المقترحة',
     proposalAccept: 'تطبيق',
     proposalReject: 'تجاهل',

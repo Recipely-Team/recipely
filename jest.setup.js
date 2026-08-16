@@ -15,3 +15,21 @@ jest.mock('react-native-reanimated', () => ({
   // reduce-motion setting — which is what the suites assert against.
   useReducedMotion: () => false,
 }));
+
+// The ads SDK's entry point calls `TurboModuleRegistry.getEnforcing` at import
+// time, so merely importing a screen that contains an ad slot throws before any
+// test runs. The library ships a setup file for this, but it re-mocks
+// `react-native` wholesale and would fight jest-expo's own preset — so the
+// module is mocked directly, the way reanimated is above.
+//
+// `canRequestAds: false` is the deliberate default: it is the answer a user who
+// declined consent gives, so every suite renders the feed WITHOUT ads and would
+// notice a slot that appears regardless. The with-ads layout is covered purely
+// by the `buildFeedRows` tests.
+jest.mock('react-native-google-mobile-ads', () => ({
+  __esModule: true,
+  default: () => ({ initialize: async () => [] }),
+  BannerAd: () => null,
+  BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: 'ANCHORED_ADAPTIVE_BANNER' },
+  AdsConsent: { gatherConsent: async () => ({ canRequestAds: false }) },
+}));

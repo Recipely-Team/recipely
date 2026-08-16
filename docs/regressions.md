@@ -917,3 +917,139 @@ transcript before the request goes out, so clearing loses nothing.
 *The class:* with a controlled input, "the field empties on send" is a
 behaviour someone has to implement — it is not what the widget does on its own,
 and the bug is invisible in every unit that is individually correct.
+
+## A floor and a ratio, arguing about the same row
+
+**Symptom.** On the web home, as soon as the window was wide enough for the
+three-column hero band, a strip of dead space — about 100px at 1200 — opened
+under it. All three blocks ended on the same line and the page then held empty
+until "Browse cuisines".
+
+**Cause.** Two sizes for one row. `WebHeroSection` carried a per-breakpoint
+`minHeight` (440 above 1200) while the featured card is sized by its own
+`aspectRatio`. The flex split hands that card ~538px at 1200, so the ratio asks
+for ~336 — and a wrap container hands the surplus to free space after the line,
+not to the cards. The floor read as reasonable in isolation: it came from the
+design's frames, which quote heights for viewports where the card is wide
+enough to reach them.
+
+**Now.** The row states no height at all; the featured card's ratio is the
+band's single source of shape and the other two blocks stretch to it — which is
+what the mini-card's own comment already claimed.
+
+**The second bug, caught in review.** The first fix gave the loading placeholder
+the same ratio and called it done. But the placeholder had never rendered the AI
+slot — harmless while both states were pinned at 440, and a ~140px reflow the
+moment the ratio was in charge, because the featured block is wider on a
+two-block line and its height is now that width over the ratio. *Once a height
+is derived, everything the derivation reads from becomes load-bearing:* the
+placeholder has to reserve the same SLOTS, not merely the same ratio.
+
+*The class:* [rule 6b](../CLAUDE.md)'s "divide by proportion; pin nothing" is
+not only about a child fighting its parent — **a parent's floor and a child's
+ratio are two sizes for the same box**, and they agree at exactly one width.
+Design frames quote heights at the widths they were drawn at; translating them
+into a floor rather than into the ratio is what carries the disagreement into
+the code.
+
+*Mechanical guard, considered and rejected.* A `check:structure` rule flagging a
+`flexWrap: 'wrap'` container that also carries `height`/`minHeight` would land
+green today and states something true (with Yoga's default `alignContent:
+flex-start`, the surplus is always dead space after the last line). It is not
+worth having: the offender here was an inline `{ minHeight: … }` object built in
+the component body, not a `StyleSheet` entry, so a rule reading `StyleSheet`
+blocks would have passed this very file — a guard that misses the case that
+motivated it reads as coverage and is worse than none.
+
+## A pair split one level too high
+
+**Symptom.** The dev web deploy stopped going out. `Build Web (dev)` failed on
+the commit that added the ad slots: *Importing native-only module
+"react-native/Libraries/Utilities/codegenNativeComponent" on web from
+react-native-google-mobile-ads*.
+
+**Cause.** The ads SDK was already understood to be native-only — `AdsService`
+had a `.web.ts` twin whose comment says, in as many words, that importing the
+SDK on the web fails the build. But the split stopped at the service. `AdSlot`
+imported `BannerAd` at module scope, and on the web `useAdsReady` answered
+false, so the component rendered nothing and *looked* correct. Rendering
+nothing is not the same as importing nothing: the bundler follows the import
+either way.
+
+Nothing local could see it. `tsc`, `jest` and `eslint` all resolve the native
+file happily; only the web export walks the module graph the browser will get,
+and it is not one of the four gates.
+
+**Now.** `ad-slot.web.tsx` returns `null` and imports no SDK, with the shared
+props in `ad-slot-props.ts` (rule 13). `check:structure` rule **T** makes the
+pairing mechanical: a module importing a package on the native-only list must
+be a `.web.*` file or have a `.web.*` sibling. Verified by deleting the new
+file — the gate names it.
+
+*The class:* **a platform pair has to be split at the module that IMPORTS the
+native package, not at the one that owns the concept.** Splitting the service
+answered "who decides whether ads run"; the bundler was asking a different
+question, "who pulls this package into the graph", and the answer was a
+component two layers up. When a dependency has no web target, trace every
+module that names it — a conditional that renders nothing still bundles
+everything.
+
+## A 200 that was not the file
+
+**Symptom.** AdMob would not verify app ownership: *"Bir app-ads.txt dosyası
+oluşturmuş olabilirsiniz, ancak bilgileriniz eşleşmiyor."* Meanwhile
+`recipely.net/app-ads.txt` answered **200**.
+
+**Cause.** It answered 200 with the SPA's `index.html`. Hosting rewrites `**`
+to `/index.html`, so a static file that is not there is not a 404 — it is the
+app shell, with a success status and `text/html`. Every status-code check says
+the asset is fine; only something that reads the body disagrees, which is
+exactly what AdMob's crawler does.
+
+The same rewrite had already done this once: `prune-web-export` deleted the
+legal pages out of `dist` and /privacy quietly became the app shell.
+
+**Now.** `public/app-ads.txt` exists, and `scripts/assert-public-assets.mjs`
+runs at the end of `build:web`: every file in `public/` must exist in `dist/`,
+or the build fails with the list. Existence in `dist`, deliberately, rather
+than reachability over HTTP — reachability is the one question the rewrite
+cannot answer honestly.
+
+*The class:* **under a catch-all rewrite, "the URL responds" proves nothing.**
+A missing asset and a working one are the same status code, so verify content
+(or the artifact) rather than the response — and be suspicious of any check
+whose passing condition a fallback route can satisfy by accident.
+
+## A dependency that raised the floor under the native build
+
+**Symptom.** Every Android build stopped compiling the moment ads were merged:
+`:react-native-google-mobile-ads:compileReleaseKotlin FAILED` — *play-services-ads
+25.4.0 … metadata is 2.3.0, expected version is 2.1.0*.
+
+**Cause.** AdMob's native SDK is built with a newer Kotlin than Expo SDK 55
+pins, and a Kotlin compiler refuses metadata from a version above its own. The
+requirement arrived from the JavaScript side: `npm install` succeeded, and
+`lint`, `tsc`, `jest` and `check:structure` were all green, because **none of
+the four gates compiles a line of Kotlin**. Worse, mobile builds are opt-in on
+`dev`, so a native dependency can sit merged and never once be built.
+
+**The wrong fix, and what it taught.** Raising `android.kotlinVersion` to 2.3.0
+looked like the direct answer. It moved the kotlin-stdlib *dependency* and left
+the *compiler* at 2.1.0, so the build got worse rather than better: every RN
+library failed, `react-native-safe-area-context` included, on *"compiler version
+2.1.0 can read versions up to 2.2.0"*. The compiler version is not a build
+property — moving it is an SDK upgrade.
+
+That error line is also the measurement nobody had: the ceiling is **2.2.0**.
+
+**Now.** `react-native-google-mobile-ads` is held at 16.0.0, which declares ads
+24.6.0 with UMP 3.2.0 — a pair the library ships together, and one a
+`resolutionStrategy.force` on either half would have split. Verified by an
+Android build on the branch before the merge, not after.
+
+*The class:* a package added to `package.json` can raise the floor under a
+toolchain no JS gate touches, and "it installed and the tests pass" says nothing
+about whether it compiles. No new mechanical gate — compiling native code is
+not something the four can do. The guard is procedural: **ask for a real
+Android build in the same session that adds a native dependency**, and read the
+compiler's own version ceiling out of the failure before choosing a fix.

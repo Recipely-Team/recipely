@@ -500,6 +500,38 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- T: a native-only package needs a `.web` sibling to keep it out of the ---
+//        web bundle
+// `AdsService` was split into a native/web pair and the web build answered
+// "no ads", so the ad slot rendered nothing on the web — but it still imported
+// `react-native-google-mobile-ads` at module scope, and that package reaches
+// `codegenNativeComponent`, which has no web target. A static export does not
+// degrade on a native-only module, it FAILS: the dev web deploy went down on
+// the commit that added the slot, and neither tsc nor jest nor lint noticed,
+// because all three resolve the native file quite happily.
+//
+// So the rule is the pair, not the render: any module importing one of these
+// packages must be a `.web.*` file itself or have a `.web.*` sibling for the
+// resolver to pick first. The list is short on purpose — add to it when the web
+// export teaches you another one, since only the bundler can really know.
+{
+  const NATIVE_ONLY = ['react-native-google-mobile-ads'];
+  const imports = (code, pkg) =>
+    new RegExp(`from\\s+['"]${pkg.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(code);
+  for (const file of files) {
+    if (isTest(file) || /\.web\.[jt]sx?$/.test(file)) continue;
+    const code = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const pkg = NATIVE_ONLY.find((name) => imports(code, name));
+    if (pkg === undefined) continue;
+    const base = path.join(SRC, file).replace(/\.[jt]sx?$/, '');
+    const hasWebSibling = ['.web.ts', '.web.tsx', '.web.js', '.web.jsx'].some((ext) =>
+      fs.existsSync(base + ext),
+    );
+    if (hasWebSibling) continue;
+    errors.push(`${file}: imports ${pkg} with no .web sibling — breaks the web export (CLAUDE.md §13)`);
+  }
+}
+
 // --- J: PROJECT-MAP.md must describe the tree that exists --------------------
 // The map only saves anyone time while it is true. It carries a fingerprint of
 // every folder and file name under src/; if the tree moved and the map did not,

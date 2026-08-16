@@ -487,6 +487,7 @@ export const de = {
     assistant: 'KI-Assistent',
     closeAssistant: 'KI-Assistent schließen',
     refineHint: 'Du kannst so viele Änderungen wünschen, wie du möchtest',
+    adLabel: 'Werbung',
     proposalTitle: 'Vorgeschlagene Änderungen',
     proposalAccept: 'Übernehmen',
     proposalReject: 'Verwerfen',

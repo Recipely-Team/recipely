@@ -43,4 +43,5 @@ export const TOKENS = {
   LocaleService: Symbol.for('LocaleService'),
   NotificationService: Symbol.for('NotificationService'),
   AlarmAudioService: Symbol.for('AlarmAudioService'),
+  AdsService: Symbol.for('AdsService'),
 } as const;

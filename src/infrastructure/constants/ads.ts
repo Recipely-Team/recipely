@@ -1,0 +1,56 @@
+import { ValueConstants } from '@core/constants';
+
+/**
+ * Ad unit ids and how often the feed is allowed to show one.
+ *
+ * @remarks
+ * - **Google's public test units are the default, deliberately.** Requesting a
+ *   real unit from a development build is a policy violation that can get the
+ *   AdMob account suspended, and it is the easy mistake to make — nothing
+ *   fails, the impressions just count. A build without the env vars serves
+ *   test ads and is safe; a release build gets the real ids from
+ *   `EXPO_PUBLIC_ADMOB_*`.
+ * - **Frequency is a product decision, so it is named here rather than spelled
+ *   into the list.** The first ad sits far enough down that the feed reads as a
+ *   feed before it reads as inventory, and the gap after it is wide enough that
+ *   scrolling never lands on two in one screen.
+ * - **Blank counts as unset.** These arrive from CI, where an undeclared secret
+ *   is an EMPTY STRING rather than undefined — and `?? fallback` does not catch
+ *   that. A unit id of `''` requests nothing and reports nothing, which looks
+ *   from the outside exactly like ads that "do not fill".
+ */
+
+/** Google's always-available test banner. Serves a house ad, counts nothing. */
+const TEST_BANNER_UNIT_ID = 'ca-app-pub-3940256099942544/6300978111';
+
+/** The env var when it holds something, the test unit when it is unset OR blank. */
+const unitId = (configured: string | undefined): string =>
+  configured !== undefined && configured.trim().length > ValueConstants.zero
+    ? configured
+    : TEST_BANNER_UNIT_ID;
+
+/** Banner between recipe rows in the feed. */
+export const FEED_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_FEED_BANNER_UNIT_ID,
+);
+
+/** Banner shown under the checklist while a recipe generates. */
+export const GENERATING_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_GENERATING_BANNER_UNIT_ID,
+);
+
+/**
+ * Banner on the import queue screen. Its own unit rather than the generating
+ * one: this is the longest wait in the app — a reel goes through a queue, a
+ * download and a transcription — so it earns separate reporting from the
+ * seconds-long generate.
+ */
+export const IMPORT_BANNER_UNIT_ID: string = unitId(
+  process.env.EXPO_PUBLIC_ADMOB_IMPORT_BANNER_UNIT_ID,
+);
+
+/** Rows of recipes shown before the first ad may appear. */
+export const FEED_ROWS_BEFORE_FIRST_AD = 6;
+
+/** Rows of recipes between one ad and the next. */
+export const FEED_ROWS_BETWEEN_ADS = 10;
