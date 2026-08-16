@@ -993,3 +993,30 @@ question, "who pulls this package into the graph", and the answer was a
 component two layers up. When a dependency has no web target, trace every
 module that names it — a conditional that renders nothing still bundles
 everything.
+
+## A dependency that raised the floor under the native build
+
+**Symptom.** The Android build stopped compiling the moment ads were merged:
+`:react-native-google-mobile-ads:compileReleaseKotlin FAILED` — *play-services-ads
+25.4.0 … metadata is 2.3.0, expected version is 2.1.0*.
+
+**Cause.** AdMob's native SDK is compiled with a newer Kotlin than the project
+uses, and a Kotlin compiler refuses metadata from a version above its own. So
+the requirement arrived from a package added on the JavaScript side: `npm
+install` succeeded, `tsc`, `jest`, `eslint` and `check:structure` were all
+green, and nothing that runs before a merge compiles a line of Kotlin.
+
+That is the part worth remembering: in this repo mobile builds are **opt-in on
+dev**, so a native dependency can sit on `dev` fully merged and completely
+unbuilt. The web export caught its own version of this in CI on the same
+commit; the Android side only failed because a build was asked for by hand.
+
+**Now.** `android.kotlinVersion` is pinned in `expo-build-properties`. No new
+gate: compiling native code is not something the four gates can do, and a rule
+that reads version numbers out of jars would be guessing. The honest guard is
+procedural — **ask for an Android build in the same session that adds a native
+dependency**, rather than finding out at release time.
+
+*The class:* a package added to `package.json` can raise the floor under a
+toolchain nothing in the JS gates ever touches. "It installed and the tests
+pass" says nothing about whether it compiles.
