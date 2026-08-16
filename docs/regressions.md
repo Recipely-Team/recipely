@@ -1086,7 +1086,16 @@ already stored on the device — the same `canRequestAds` Google's own sample
 consults in its failure listener — and leaves nothing cached, so the next slot
 retries. A refusal that the flow actually *returned* is still cached.
 
-*The class:* **a silent fallback with no reporting is untestable in production.**
+**And the retry had to be bounded before it shipped.** `prepare()` is called
+from `useAdsReady`, which runs on every `AdSlot` mount — and a slot is a
+FlatList row, so windowing remounts it every time it scrolls back into view. A
+retry with no ceiling would have fired a native consent call *and* a crash
+report per row for as long as a device stayed offline: the same flood the slot
+half of this change dedupes against, one file over. Three attempts per session,
+each failing step reported once.
+
+*The class:* **a silent fallback with no reporting is untestable in production —
+and "just retry" is a flood whenever the caller is a list row.**
 Rendering nothing was always the right thing for the user to see; it was never
 the right thing for us to see. When a code path's whole job is to fail quietly,
 the failure has to leave somewhere else — a non-fatal, a counted event — or the

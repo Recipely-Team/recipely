@@ -35,6 +35,12 @@ jest.mock('react-native-google-mobile-ads', () => ({
     gatherConsent: async () => ({ canRequestAds: false }),
     // Consulted only when `gatherConsent` throws; present so the fallback path
     // is a real call rather than an `undefined is not a function`.
-    getConsentInfo: async () => ({ canRequestAds: false }),
+    getConsentInfo: async () => ({ canRequestAds: false, status: 'UNKNOWN' }),
+  },
+  AdsConsentStatus: {
+    UNKNOWN: 'UNKNOWN',
+    REQUIRED: 'REQUIRED',
+    NOT_REQUIRED: 'NOT_REQUIRED',
+    OBTAINED: 'OBTAINED',
   },
 }));

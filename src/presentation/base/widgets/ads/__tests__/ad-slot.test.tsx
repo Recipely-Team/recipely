@@ -29,6 +29,21 @@ jest.mock('@application/ads/get-ads-service', () => ({
   getAdsService: () => ({ prepare: async () => true }),
 }));
 
+/**
+ * A unit id no other test in this file has used.
+ *
+ * The slot dedupes its reporting through a MODULE-scoped Set whose lifetime is
+ * the session — right for the app, and impossible to reset from here without
+ * re-requiring the module and losing the `FailureReporter` instance the sink is
+ * attached to. So each test takes a fresh id instead of clearing the Set, and a
+ * test added later cannot silently inherit another's "already reported".
+ */
+let unitCounter = 0;
+const freshUnitId = (): string => {
+  unitCounter += 1;
+  return `ca-app-pub-test/${unitCounter}`;
+};
+
 /** Mounts the slot and settles the `useAdsReady` promise so the banner mounts. */
 const mountSlot = async (unitId: string): Promise<void> => {
   renderComponent(<AdSlot unitId={unitId} accessibilityLabel="Ad" />);
@@ -55,7 +70,7 @@ describe('AdSlot', () => {
     const sink = jest.fn();
     FailureReporter.setSink(sink);
 
-    await mountSlot('ca-app-pub-test/1');
+    await mountSlot(freshUnitId());
     expect(onFailed).toBeDefined();
     act(() => onFailed?.(new Error('Request Error: No ad config.')));
 
@@ -69,9 +84,10 @@ describe('AdSlot', () => {
     const sink = jest.fn();
     FailureReporter.setSink(sink);
 
-    await mountSlot('ca-app-pub-test/2');
+    const unitId = freshUnitId();
+    await mountSlot(unitId);
     act(() => onFailed?.(new Error('no fill')));
-    await mountSlot('ca-app-pub-test/2');
+    await mountSlot(unitId);
     act(() => onFailed?.(new Error('no fill')));
 
     expect(sink).toHaveBeenCalledTimes(1);
