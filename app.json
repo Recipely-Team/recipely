@@ -55,7 +55,6 @@
             ]
           },
           "android": {
-            "kotlinVersion": "2.3.0",
             "usesCleartextTraffic": true,
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true,
