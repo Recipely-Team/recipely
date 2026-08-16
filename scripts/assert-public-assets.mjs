@@ -16,9 +16,16 @@
 
 import fs from 'node:fs';
 import path from 'node:path';
+import { DEV_VARIANT_REMOVALS } from './apply-variant-robots.mjs';
 
 const PUBLIC_DIR = 'public';
 const distDir = process.argv[2] ?? 'dist';
+
+// A dev export drops the sitemap on purpose — its URLs point at the production
+// origin. Read from the script that does the dropping rather than restated
+// here, so the exemption cannot outlive the deletion it excuses.
+const deliberatelyAbsent =
+  process.env.APP_VARIANT === 'development' ? new Set(DEV_VARIANT_REMOVALS) : new Set();
 
 /** Every file under `dir`, as paths relative to it. */
 const filesUnder = (dir, prefix = '') =>
@@ -30,7 +37,7 @@ const filesUnder = (dir, prefix = '') =>
 if (!fs.existsSync(PUBLIC_DIR)) process.exit(0);
 
 const missing = filesUnder(PUBLIC_DIR).filter(
-  (file) => !fs.existsSync(path.join(distDir, file)),
+  (file) => !deliberatelyAbsent.has(file) && !fs.existsSync(path.join(distDir, file)),
 );
 
 if (missing.length > 0) {
@@ -42,4 +49,8 @@ if (missing.length > 0) {
   process.exit(1);
 }
 
-console.log(`assert-public-assets — all ${filesUnder(PUBLIC_DIR).length} public file(s) present in ${distDir}`);
+const exempt = filesUnder(PUBLIC_DIR).filter((file) => deliberatelyAbsent.has(file));
+console.log(
+  `assert-public-assets — ${filesUnder(PUBLIC_DIR).length - exempt.length} public file(s) present in ${distDir}` +
+    (exempt.length > 0 ? `, ${exempt.join(', ')} dropped for this variant on purpose` : ''),
+);
