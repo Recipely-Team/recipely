@@ -1,9 +1,15 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
 import { useAdsReady } from '@presentation/base/hooks/ads/use-ads-ready';
 import { spacing } from '@presentation/base/theme';
 import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
+import { UnknownFailure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+
+/** Units whose failure has already been reported once this session. */
+const reported = new Set<string>();
 
 /**
  * One banner, or nothing at all. **Native build** — see `ad-slot.web.tsx`.
@@ -19,11 +25,33 @@ import type { AdSlotProps } from '@presentation/base/widgets/ads/ad-slot-props';
  * - **`ANCHORED_ADAPTIVE_BANNER`, not a fixed size.** It asks for a height
  *   suited to the device width instead of a 320×50 rectangle stretched or
  *   letterboxed on everything from a small phone to a tablet.
+ * - **The SSP's reason is kept, not thrown away.** `onAdFailedToLoad` used to
+ *   be `() => setFailed(true)`, which collapsed every cause into the same empty
+ *   space: a brand-new unit with no inventory (code 3, "no fill") looked
+ *   exactly like a unit id that does not exist or an app id the manifest never
+ *   received (code 1, "invalid request"). Rendering nothing is still right —
+ *   the reason belongs in the crash report, not on the screen.
+ * - **Once per unit per session.** A feed shows a banner every ten rows, so
+ *   reporting each failure would file the same report dozens of times in one
+ *   scroll. The first one carries the whole message; the rest add nothing.
  */
 export const AdSlot = ({ unitId, accessibilityLabel }: AdSlotProps): React.JSX.Element | null => {
   const ready = useAdsReady();
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
+
+  const onFailed = useCallback(
+    (error: Error): void => {
+      setFailed(true);
+      if (reported.has(unitId)) return;
+      reported.add(unitId);
+      FailureReporter.report(
+        new UnknownFailure(DiagnosticMessage.ads.bannerFailed(error.message)),
+        'AdSlot.load',
+      );
+    },
+    [unitId],
+  );
 
   if (!ready || failed) return null;
 
@@ -37,7 +65,7 @@ export const AdSlot = ({ unitId, accessibilityLabel }: AdSlotProps): React.JSX.E
         unitId={unitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
         onAdLoaded={() => setLoaded(true)}
-        onAdFailedToLoad={() => setFailed(true)}
+        onAdFailedToLoad={onFailed}
       />
     </View>
   );
