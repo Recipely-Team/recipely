@@ -10,6 +10,10 @@ import { ValueConstants } from '@core/constants';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
+import { showWarningToast } from '@presentation/base/feedback/show-toast';
+import { getNotificationService } from '@application/notifications/get-notification-service';
+import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
+import { t } from '@presentation/i18n';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
 
 /** How often the screen asks the backend where the job has got to. */
@@ -42,6 +46,8 @@ interface UseImportRecipeResult {
   /** Queues a link the user pasted. */
   onSubmitLink: (url: string) => void;
   onClose: () => void;
+  /** Leaves the screen the way the button promises: with notifications on. */
+  onNotifyMe: () => void;
   /** Opens the finished draft. No-op until the job reports one. */
   onOpenDraft: () => void;
 }
@@ -140,6 +146,30 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     goBackOrHome();
   }, [importJobStore, goBackOrHome]);
 
+  // --- finding: the button said "notify me" and only closed the screen ---
+  // The copy promises a notification when the reel is ready, and the backend
+  // does send one — for both outcomes. What was missing sat here: nothing ever
+  // asked the OS for permission, so a user who had not already granted it was
+  // promised something the device would never deliver, and the app said
+  // nothing about it. Asking at the moment the promise is made is also the
+  // moment it makes sense to the user, which is why it is not at startup.
+  const onNotifyMe = useCallback((): void => {
+    void getNotificationService()
+      .requestPermissions()
+      .then((granted) => {
+        // Granting late is the normal case now, and registration gives up
+        // silently without permission — so ask for the token again rather than
+        // leaving the promise unkept until the next cold start.
+        if (granted) ensurePushRegistration();
+        // Told plainly rather than silently swallowed: the import still runs,
+        // and the result still lands in the app — the only thing lost is the
+        // interruption, which is exactly what the user just asked for.
+        else showWarningToast(t().importRecipe.notifyBlocked);
+      })
+      .catch(() => showWarningToast(t().importRecipe.notifyBlocked))
+      .finally(onClose);
+  }, [onClose]);
+
   const onOpenDraft = useCallback((): void => {
     FailureReporter.trail(ImportTrail.openDraftTapped);
     const draftId = job?.draftId;
@@ -200,6 +230,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     onRetry: start,
     onSubmitLink,
     onClose,
+    onNotifyMe,
     onOpenDraft,
   };
 };

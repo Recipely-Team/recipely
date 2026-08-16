@@ -573,6 +573,8 @@ export const id = {
     stage2: 'Membaca resep',
     stage3: 'Menyusun resep',
     notify: 'Oke — beri tahu saya',
+    notifyBlocked:
+      'Notifikasi nonaktif, jadi kami tidak bisa memberi tahu Anda. Impor tetap berjalan — Anda akan menemukannya di Resep Saya.',
     openDraft: 'Buka draf',
     background: 'Berjalan di latar belakang',
     estimate: 'Perkiraan',

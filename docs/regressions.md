@@ -1103,3 +1103,40 @@ next outage arrives with the same single fact it had this time: "it doesn't
 work." No new mechanical gate fits: no `check:structure` rule can tell a
 deliberately-empty catch from a negligent one. The guard is the pair of
 regression tests, and the standard is stated here.
+---
+## A button that promised a notification and only closed the screen
+
+**Symptom.** After sending a reel to the importer, "Got it — notify me" produced
+nothing: no notification when the import finished, none when it failed, and the
+result only ever appeared as a number on the in-app badge.
+
+**Cause.** Three things were true at once, and only the third was missing.
+
+The backend was complete: `complete-import-job` and `fail-import-job` both
+write a notification row *and* send an FCM push. The foreground handler was
+already set to show banners. What no one had written was the middle: the
+button was wired to `onClose`. Nothing ever asked the OS for notification
+permission, so a user who had not already granted it was promised something
+their device would never deliver — and the app said nothing about it.
+
+Registration made it worse in a way that hid the hole: it runs once per cold
+start and **gives up silently** when permission is missing, so even a user who
+granted permission later had no token until the next launch.
+
+**Now.** The button asks for permission at the moment it makes the promise —
+which is also the moment the request makes sense to the user — and on a grant it
+re-triggers registration through `ensurePushRegistration`, the same
+mutable-handler seam the composition root already uses for `onSessionExpired`.
+A refusal is said out loud instead of swallowed. `use-import-recipe.test` pins
+all three and fails against the old wiring.
+
+*The class:* **a promise in copy is a feature, and features have to be built.**
+"You can close the app, we'll notify you" reads as a description of existing
+behaviour, so nobody goes looking for the code that makes it true. When copy
+asserts something, find the line that keeps it — and when a permission-gated
+capability gives up silently, the giving-up is the part that needs a voice.
+
+*Still true, deliberately:* iOS receives no push at all. `push-token-registrar`
+returns early there because the backend addresses devices through FCM and an
+APNs token needs `@react-native-firebase/messaging` plus a native rebuild. That
+is a native dependency, and the call was to fix what exists rather than add one.

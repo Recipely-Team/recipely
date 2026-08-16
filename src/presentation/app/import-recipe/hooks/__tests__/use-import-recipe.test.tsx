@@ -26,6 +26,9 @@ import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import
 import { RoutePaths } from '@presentation/base/constants';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ImportTrail } from '@presentation/base/errors/import-trail';
+import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
+import { showWarningToast } from '@presentation/base/feedback/show-toast';
+import { en } from '@presentation/i18n/locales/en';
 
 const mockRouter = { replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
 
@@ -35,6 +38,20 @@ jest.mock('@presentation/base/errors/failure-reporter', () => ({
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => mockRouter),
+}));
+
+// `mock` prefix: jest only lets a module factory reach variables named this way.
+const mockRequestPermissions = jest.fn(async () => true);
+jest.mock('@application/notifications/get-notification-service', () => ({
+  getNotificationService: () => ({ requestPermissions: mockRequestPermissions }),
+}));
+
+jest.mock('@application/notifications/ensure-push-registration', () => ({
+  ensurePushRegistration: jest.fn(),
+}));
+
+jest.mock('@presentation/base/feedback/show-toast', () => ({
+  showWarningToast: jest.fn(),
 }));
 
 const REEL = 'https://www.instagram.com/reel/abc/';
@@ -370,5 +387,75 @@ describe('useImportRecipe — the trail it leaves for a crash report', () => {
       expect(mark).not.toMatch(/https?:\/\//);
       expect(mark).not.toMatch(/[0-9a-f]{8}-[0-9a-f]{4}/);
     }
+  });
+});
+
+/**
+ * THE REGRESSION: the button labelled "notify me" only closed the screen.
+ *
+ * The copy promises a notification when the reel is ready and the backend
+ * genuinely sends one — for a finished import and a failed one alike. What was
+ * missing was on this side: nothing ever asked the OS for permission, so a user
+ * who had not already granted it was promised something their device would
+ * never deliver, and the app said nothing about it.
+ *
+ * Granting late also has to COUNT: token registration gives up silently without
+ * permission and otherwise runs once per cold start, so a grant that did not
+ * re-trigger it would leave the promise unkept for the rest of the session.
+ */
+describe('useImportRecipe — the notification the button promises', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockRequestPermissions.mockResolvedValue(true);
+  });
+
+  it('asks for notification permission when the user asks to be notified', async () => {
+    const vm = drive(ImportJobStatus.Running);
+
+    await act(async () => {
+      vm.latest().onNotifyMe();
+      await Promise.resolve();
+    });
+
+    expect(mockRequestPermissions).toHaveBeenCalled();
+  });
+
+  it('registers for push once permission is granted, not only at the next launch', async () => {
+    const vm = drive(ImportJobStatus.Running);
+
+    await act(async () => {
+      vm.latest().onNotifyMe();
+      await Promise.resolve();
+    });
+
+    expect(ensurePushRegistration).toHaveBeenCalled();
+  });
+
+  it('says so plainly when the user refuses, instead of promising silently', async () => {
+    mockRequestPermissions.mockResolvedValue(false);
+    const vm = drive(ImportJobStatus.Running);
+
+    await act(async () => {
+      vm.latest().onNotifyMe();
+      await Promise.resolve();
+    });
+
+    expect(showWarningToast).toHaveBeenCalledWith(en.importRecipe.notifyBlocked);
+    expect(ensurePushRegistration).not.toHaveBeenCalled();
+  });
+
+  it('leaves the screen either way — the job outlives it', async () => {
+    mockRequestPermissions.mockResolvedValue(false);
+    const vm = drive(ImportJobStatus.Running);
+
+    await act(async () => {
+      vm.latest().onNotifyMe();
+      await Promise.resolve();
+    });
+
+    // `back`, because this fixture can go back — the point is only that a
+    // refused permission does not strand the user on a screen with nothing left
+    // to do.
+    expect(mockRouter.back).toHaveBeenCalled();
   });
 });

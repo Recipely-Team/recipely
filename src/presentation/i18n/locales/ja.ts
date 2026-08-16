@@ -573,6 +573,8 @@ export const ja = {
     stage2: 'レシピを読み取り中',
     stage3: 'レシピをまとめています',
     notify: '了解 — 通知する',
+    notifyBlocked:
+      '通知がオフのためお知らせできません。インポートは続行され、結果は「マイレシピ」に入ります。',
     openDraft: '下書きを開く',
     background: 'バックグラウンドで実行',
     estimate: '目安',

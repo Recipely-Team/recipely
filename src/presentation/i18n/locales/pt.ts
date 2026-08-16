@@ -573,6 +573,8 @@ export const pt = {
     stage2: 'Lendo a receita',
     stage3: 'Organizando a receita',
     notify: 'Entendi — me avise',
+    notifyBlocked:
+      'As notificações estão desativadas, então não podemos avisar você. A importação continua — você a encontrará em Minhas receitas.',
     openDraft: 'Abrir rascunho',
     background: 'Funciona em segundo plano',
     estimate: 'Estimativa',

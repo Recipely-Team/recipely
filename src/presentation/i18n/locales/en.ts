@@ -580,6 +580,8 @@ export const en = {
     stage2: 'Reading the recipe',
     stage3: 'Writing it up',
     notify: 'Got it — notify me',
+    notifyBlocked:
+      'Notifications are off, so we can’t ping you. The import keeps running — you’ll find it in My Recipes.',
     openDraft: 'Open draft',
     background: 'Runs in the background',
     estimate: 'Estimated',
