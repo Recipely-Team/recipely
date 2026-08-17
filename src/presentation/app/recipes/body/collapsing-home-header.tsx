@@ -1,5 +1,4 @@
 import { StyleSheet, View, Pressable } from 'react-native';
-import { UNREAD_BADGE_MAX, UNREAD_BADGE_OVERFLOW_LABEL } from '@presentation/app/recipes/model/unread-badge';
 import Animated, {
   interpolate,
   Extrapolation,
@@ -9,10 +8,11 @@ import Animated, {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, layoutSizes, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -62,7 +62,6 @@ export const CollapsingHomeHeader = ({
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
-  const badgeText = unreadCount > UNREAD_BADGE_MAX ? UNREAD_BADGE_OVERFLOW_LABEL : String(unreadCount);
 
   const bandStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: reduceMotion ? ValueConstants.zero : headerTranslateY.value }],
@@ -127,11 +126,7 @@ export const CollapsingHomeHeader = ({
             size={iconSizes.xl}
             color={colors.text}
           />
-          {unreadCount > ValueConstants.zero ? (
-            <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-              <ThemedText style={styles.badgeText}>{badgeText}</ThemedText>
-            </View>
-          ) : null}
+          <CountBadge count={unreadCount} style={styles.badge} />
         </Pressable>
       </View>
 
@@ -187,24 +182,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Placement only; the badge's own shape and colours are the widget's.
   badge: {
-    position: 'absolute',
     top: ValueConstants.zero,
     right: ValueConstants.zero,
-    minWidth: decorSizes.notifBadge,
-    height: decorSizes.notifBadge,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    color: BrandColors.white,
-    fontSize: fontSizes.nano,
-    fontWeight: fontWeights.bold,
-    lineHeight: decorSizes.notifBadgeLineHeight,
-    includeFontPadding: false,
   },
   // Pinned to the bottom of the band. The title row got shorter when the mark
   // moved beside the title, and letting the search rise with it would have

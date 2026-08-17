@@ -18,8 +18,6 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { ImportProgressRing } from '@presentation/app/import-recipe/body/import-progress-ring';
 import { ImportStageList } from '@presentation/app/import-recipe/body/import-stage-list';
-import { AdSlot } from '@presentation/base/widgets/ads/ad-slot';
-import { importBannerUnitId } from '@infrastructure/constants/ads';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ImportJobStatus as ImportJobStatusType } from '@domain/recipes/import/import-job-status';
 import { ValueConstants } from '@core/constants';
@@ -64,9 +62,6 @@ export const ImportQueueView = ({
 }: ImportQueueViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().importRecipe;
-  // One label for every slot in the app; it happens to live under createRecipe
-  // because that is the screen that first needed one.
-  const adLabel = t().createRecipe.adLabel;
 
   const statusLabel = isDone
     ? copy.ready
@@ -137,15 +132,6 @@ export const ImportQueueView = ({
           <ThemedText variant="subtitle">{copy.estimateValue}</ThemedText>
         </View>
 
-        {/* The longest wait in the app, so the one screen where a banner is
-            worth its space. Last in the SCROLL, never in the pinned footer:
-            "notify me" is what a thumb reaches for here, and an ad sharing that
-            edge would be tapped by accident. Once the job is done the screen is
-            a receipt with an "open draft" button, and an ad beside a finished
-            job is inventory, not a way to pass a wait. */}
-        {isDone ? null : (
-          <AdSlot unitId={importBannerUnitId()} accessibilityLabel={adLabel} />
-        )}
       </ScrollView>
 
       <View style={styles.footer}>

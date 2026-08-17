@@ -5,10 +5,12 @@ import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 
 interface LikesStoreDeps {
   likeRecipe: LikeRecipeUseCase;
   unlikeRecipe: UnlikeRecipeUseCase;
+  likedRecipesStore: BoundStore<LikedRecipesStoreState>;
 }
 
 export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> =>
@@ -80,6 +82,13 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
             : { ...current, isLoading: false }, // rollback
         },
       }));
+
+      // Taking the heart off a recipe must take it out of the Liked grid too.
+      // Only on the way OUT: a new like has no list row to insert here, and the
+      // next load of that grid fetches it in like order anyway.
+      if (result.ok && wasLiked) {
+        deps.likedRecipesStore.getState().removeLocal(recipeId);
+      }
 
       return result;
     },

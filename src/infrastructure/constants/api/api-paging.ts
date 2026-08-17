@@ -20,6 +20,9 @@ export const DRAFTS_PAGE_SIZE = 20;
 /** The saved grid has no paging UI, so this is the ceiling on what a user can see. */
 export const FAVORITES_PAGE_SIZE = 100;
 
+/** Same deal as the saved grid: the liked tab shows one page and no more. */
+export const LIKED_RECIPES_PAGE_SIZE = 100;
+
 export const COMMENTS_PAGE_SIZE = 20;
 
 /** Backend caps `limit` at 1–30. */

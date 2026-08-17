@@ -1,18 +1,20 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes } from '@presentation/base/theme';
-import type { WebMyRecipesTab } from '@presentation/app/my-recipes/model/web-my-recipes-tab';
-import { ValueConstants } from '@core/constants';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
+import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
 export interface WebMyRecipesTabsProps {
-  tabs: readonly WebMyRecipesTab[];
-  active: string;
-  onChange: (key: string) => void;
+  tabs: readonly MyRecipesTab[];
+  active: TabType;
+  onChange: (key: TabType) => void;
 }
 
-/** Web My Recipes underlined tab row: each tab shows a count pill; the active
- * tab carries a primary underline. */
+/** Web My Recipes underlined tab row: each tab shows its icon and a count pill;
+ * the active tab carries a primary underline. */
 export const WebMyRecipesTabs = ({ tabs, active, onChange }: WebMyRecipesTabsProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
@@ -28,6 +30,11 @@ export const WebMyRecipesTabs = ({ tabs, active, onChange }: WebMyRecipesTabsPro
             accessibilityLabel={label}
             style={[styles.tab, { borderBottomColor: isActive ? colors.primary : 'transparent' }]}
           >
+            <MaterialCommunityIcons
+              name={TabIcons[key]}
+              size={iconSizes.md}
+              color={isActive ? colors.text : colors.textMuted}
+            />
             <ThemedText style={[styles.label, { color: isActive ? colors.text : colors.textMuted }]}>
               {label}
             </ThemedText>
@@ -63,7 +70,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.md,
-    borderBottomWidth: ValueConstants.two,
+    borderBottomWidth: borderWidths.medium,
   },
   label: {
     fontWeight: fontWeights.bold,
@@ -71,8 +78,8 @@ const styles = StyleSheet.create({
   },
   pill: {
     minWidth: iconSizes.xl,
-    height: iconSizes.lg,
     paddingHorizontal: spacing.xs2,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

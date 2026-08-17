@@ -20,6 +20,12 @@ import { isIos } from '@infrastructure/constants/platform';
  *   into the list.** The first ad sits far enough down that the feed reads as a
  *   feed before it reads as inventory, and the gap after it is wide enough that
  *   scrolling never lands on two in one screen.
+ * - **One unit, because there is one placement.** There were three: the feed,
+ *   the generating checklist and the import queue. The latter two were wait
+ *   screens — a spinner, a stage list and a progress bar — which carry no
+ *   publisher content, and ads on such a screen are a policy violation, not
+ *   inventory. Only a screen showing something the user came to read may carry
+ *   an ad, and in this app that is the feed.
  * - **Blank counts as unset.** These arrive from CI, where an undeclared secret
  *   is an EMPTY STRING rather than undefined — and `?? fallback` does not catch
  *   that. A unit id of `''` requests nothing and reports nothing, which looks
@@ -50,35 +56,6 @@ export const feedBannerUnitId = (): string =>
     process.env.EXPO_PUBLIC_ADMOB_IOS_FEED_BANNER_UNIT_ID,
     process.env.EXPO_PUBLIC_ADMOB_ANDROID_FEED_BANNER_UNIT_ID,
   );
-
-/** Banner shown under the checklist while a recipe generates. */
-export const generatingBannerUnitId = (): string =>
-  unitId(
-    process.env.EXPO_PUBLIC_ADMOB_IOS_GENERATING_BANNER_UNIT_ID,
-    process.env.EXPO_PUBLIC_ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID,
-  );
-
-/**
- * Banner on the import queue screen. Its own unit rather than the generating
- * one: this is the longest wait in the app — a reel goes through a queue, a
- * download and a transcription — so it earns separate reporting from the
- * seconds-long generate.
- */
-export const importBannerUnitId = (): string =>
-  unitId(
-    process.env.EXPO_PUBLIC_ADMOB_IOS_IMPORT_BANNER_UNIT_ID,
-    process.env.EXPO_PUBLIC_ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID,
-  );
-
-/**
- * The AdSense publisher this site's web ads belong to.
- *
- * The same account the AdMob ids above come from — AdMob is the mobile-app
- * product and AdSense the site one, but a publisher has exactly one id, which
- * is why `app-ads.txt` and `ads.txt` carry the identical line. Public by
- * nature: it ships in the page source of every site that serves AdSense.
- */
-export const ADSENSE_CLIENT_ID = 'ca-pub-2891163996772365';
 
 /** Rows of recipes shown before the first ad may appear. */
 export const FEED_ROWS_BEFORE_FIRST_AD = 6;

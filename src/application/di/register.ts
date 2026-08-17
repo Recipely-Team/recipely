@@ -56,6 +56,8 @@ import type { CommentRepositoryInterface } from '@domain/comments/comment-reposi
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import { configureLikesStore } from '@application/likes/likes-store';
+import { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
+import { configureLikedRecipesStore } from '@application/recipes/liked/liked-recipes-store';
 import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
@@ -112,8 +114,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
   const likeRecipeUseCase = container.resolve<LikeRecipeUseCase>(TOKENS.LikeRecipeUseCase);
   const unlikeRecipeUseCase = container.resolve<UnlikeRecipeUseCase>(TOKENS.UnlikeRecipeUseCase);
+  const loadLikedRecipesUseCase = container.resolve<LoadLikedRecipesUseCase>(TOKENS.LoadLikedRecipesUseCase);
 
   const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase });
+  const likedRecipesStore = configureLikedRecipesStore({ loadLikedRecipesUseCase });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
   const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
@@ -153,6 +157,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const likesStore = configureLikesStore({
     likeRecipe: likeRecipeUseCase,
     unlikeRecipe: unlikeRecipeUseCase,
+    likedRecipesStore,
   });
   const listNotificationsUseCase = container.resolve<ListNotificationsUseCase>(
     TOKENS.ListNotificationsUseCase,
@@ -188,6 +193,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   // likes, notifications) until a manual refresh.
   const clearSessionCaches = (): void => {
     savedRecipesStore.getState().clear();
+    likedRecipesStore.getState().clear();
     commentsStore.getState().clear();
     likesStore.getState().clear();
     recipeDetailStore.getState().clear();
@@ -204,6 +210,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     trendingRecipesStore,
     recipeDetailStore,
     savedRecipesStore,
+    likedRecipesStore,
     createdRecipesStore,
     draftsStore,
     importJobStore,

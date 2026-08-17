@@ -718,8 +718,6 @@ jobs:
       # simply keeps production on test ads rather than breaking the build.
       ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
       EXPO_PUBLIC_ADMOB_ANDROID_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_FEED_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID }}
       # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber.
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -889,8 +887,6 @@ jobs:
       # the iOS app's own — an Android unit requested here would never fill.
       ADMOB_IOS_APP_ID: ${{ secrets.ADMOB_IOS_APP_ID }}
       EXPO_PUBLIC_ADMOB_IOS_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_FEED_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_IOS_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_GENERATING_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_IOS_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_IMPORT_BANNER_UNIT_ID }}
       # Mirrors the Android distribute job so app.config.ts derives the same
       # versionCode / buildNumber for every target of a single CI run.
       BUILD_NUMBER: ${{ github.run_number }}
@@ -969,6 +965,22 @@ jobs:
             exit 1
           fi
           echo "OK — no background-audio mode in $plist"
+
+      # Same lesson, other direction: app.json listing skAdNetworkItems proves
+      # nothing, because the ads config plugin only writes them when the option
+      # reaches it. Attribution silently missing is invisible — ads still serve,
+      # only the measurement is gone — so assert on the artifact.
+      - name: Assert SKAdNetwork identifiers reached the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          count="$(/usr/libexec/PlistBuddy -c 'Print :SKAdNetworkItems' "$plist" 2>/dev/null | grep -c 'SKAdNetworkIdentifier' || true)"
+          expected="$(node -e "const p=require('./app.json').expo.plugins.find(p=>Array.isArray(p)&&p[0]==='react-native-google-mobile-ads');console.log((p[1].skAdNetworkItems||[]).length)")"
+          if [ "$count" -lt "$expected" ]; then
+            echo "::error file=app.json::$plist carries $count SKAdNetworkIdentifier entries, expected at least $expected. iOS ad attribution is not configured — check the skAdNetworkItems option on the react-native-google-mobile-ads plugin."
+            exit 1
+          fi
+          echo "OK — $count SKAdNetworkIdentifier entries in $plist"
 
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.

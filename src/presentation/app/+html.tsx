@@ -1,29 +1,44 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
-import { ADSENSE_CLIENT_ID } from '@infrastructure/constants/ads';
 import type { PropsWithChildren } from 'react';
 
 const SITE_URL = PROD_WEB_APP_BASE_URL;
 
 /**
- * The AdSense loader, on the production site only.
+ * Registers the service worker that makes the site installable.
  *
- * `dev.recipely.net` is not a site declared in AdSense and is served `noindex`
- * behind an access wall; putting ad code on it would be serving ads from a
- * property the account has not claimed. This file is rendered by `expo export`
- * in Node, so the build's own variable decides — the same one that already
- * picks the API host and the app id.
+ * Inline and untyped on purpose: this has to run before the bundle does — the
+ * install affordance is decided on first paint, and a registration that waits
+ * for React means the first visit is never offered the app. `load` keeps it off
+ * the critical path all the same.
  */
-const SERVES_ADS = process.env.APP_VARIANT !== 'development';
+const SERVICE_WORKER_REGISTRATION = `
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('/sw.js').catch(function () {});
+  });
+}`;
+
 const SITE_TITLE = 'Recipely — AI Recipe Generator & Cooking Community';
 const SITE_DESCRIPTION =
   'Discover, create, and share recipes with an AI sous-chef. Generate a full recipe from a craving, browse by cuisine, track nutrition, and cook smarter with Recipely.';
 
 /**
- * Customizes the static HTML shell Expo Router emits for web export. Without this,
- * the exported `index.html` has an empty `<title>` and no meta description or Open
- * Graph tags, so search engines and link previews have nothing to show for the root
- * domain (the marketing content otherwise only lives under `/about`).
+ * Customizes the static HTML shell Expo Router emits for web export. Without
+ * this, the exported `index.html` has an empty `<title>` and no meta
+ * description or Open Graph tags, so search engines and link previews have
+ * nothing to show for the root domain (the marketing content otherwise only
+ * lives under `/about`).
+ *
+ * @remarks
+ * - **No ad loader here, deliberately.** This shell wraps EVERY route — login,
+ *   register, verify-code, onboarding, settings, create-recipe, the lot — so
+ *   the AdSense script it used to carry ran on pages holding no publisher
+ *   content at all. The site declares no ad unit of its own
+ *   (`ad-slot.web.tsx` renders nothing), so every ad it ever served was an Auto
+ *   Ad placed on one of those pages: exactly the "ads on screens without
+ *   publisher content" violation AdSense flagged. A web ad belongs to a page
+ *   that has earned it and is added on that page — never to the shell.
  */
 export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement => (
   <html lang="en">
@@ -43,13 +58,26 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta name="twitter:title" content={SITE_TITLE} />
       <meta name="twitter:description" content={SITE_DESCRIPTION} />
       <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
-      {SERVES_ADS ? (
-        <script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`}
-          crossOrigin="anonymous"
-        />
-      ) : null}
+      {/* `use-credentials` is not optional here. A manifest is fetched WITHOUT
+          cookies by default, even same-origin — so on dev.recipely.net, which
+          sits behind Cloudflare Access, the request was redirected to the login
+          page, the manifest parsed as nothing, and Chrome offered no install.
+          The service worker was fine all along: its script fetch does send
+          cookies. Harmless on an origin with no auth wall. */}
+      <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
+      <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+      {/* Colours the OS/browser chrome around the app. Two, because the app
+          follows the system scheme and a single value leaves the bar fighting
+          the page it sits on in one of them. */}
+      <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
+      <meta name="theme-color" content="#0B0B0D" media="(prefers-color-scheme: dark)" />
+      {/* `apple-` is the legacy spelling iOS still reads; the unprefixed one is
+          what everything else does. Both, until iOS catches up. */}
+      <meta name="mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-capable" content="yes" />
+      <meta name="apple-mobile-web-app-title" content="Recipely" />
+      <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+      <script dangerouslySetInnerHTML={{ __html: SERVICE_WORKER_REGISTRATION }} />
       <ScrollViewStyleReset />
     </head>
     <body>{children}</body>

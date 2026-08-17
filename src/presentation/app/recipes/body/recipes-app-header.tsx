@@ -1,11 +1,11 @@
 import { StyleSheet, View, Pressable } from 'react-native';
-import { UNREAD_BADGE_MAX, UNREAD_BADGE_OVERFLOW_LABEL } from '@presentation/app/recipes/model/unread-badge';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, borderWidths, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -21,7 +21,6 @@ export const RecipesAppHeader = ({
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
   if (isWebShell) return null;
-  const badgeText = unreadCount > UNREAD_BADGE_MAX ? UNREAD_BADGE_OVERFLOW_LABEL : String(unreadCount);
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={styles.titles}>
@@ -45,11 +44,7 @@ export const RecipesAppHeader = ({
           size={iconSizes.xl}
           color={colors.text}
         />
-        {unreadCount > ValueConstants.zero ? (
-          <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-            <ThemedText style={styles.badgeText}>{badgeText}</ThemedText>
-          </View>
-        ) : null}
+        <CountBadge count={unreadCount} style={styles.badge} />
       </Pressable>
     </View>
   );
@@ -77,23 +72,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Placement only; the badge's own shape and colours are the widget's.
   badge: {
-    position: 'absolute',
     top: ValueConstants.zero,
     right: ValueConstants.zero,
-    minWidth: decorSizes.notifBadge,
-    height: decorSizes.notifBadge,
-    paddingHorizontal: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badgeText: {
-    color: BrandColors.white,
-    fontSize: fontSizes.nano,
-    fontWeight: fontWeights.bold,
-    lineHeight: decorSizes.notifBadgeLineHeight,
-    includeFontPadding: false,
   },
 });
