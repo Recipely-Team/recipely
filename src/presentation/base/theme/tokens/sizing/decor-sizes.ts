@@ -11,12 +11,6 @@ import { scale } from '@presentation/base/theme/tokens/scale';
  */
 export const decorSizes = {
   /**
-   * How far a {@link notifBadge} hangs off the corner of the glyph it counts.
-   * The badge is meant to overlap its icon rather than sit beside it — flush
-   * against the corner it reads as part of the glyph instead of a marker on it.
-   */
-  notifBadgeOverhang: scale(6),
-  /**
    * Line box that vertically centers the count inside {@link notifBadge}
    * (its 14pt inner box after the 2pt border).
    */
