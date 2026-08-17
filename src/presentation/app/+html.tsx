@@ -58,7 +58,13 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta name="twitter:title" content={SITE_TITLE} />
       <meta name="twitter:description" content={SITE_DESCRIPTION} />
       <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
-      <link rel="manifest" href="/manifest.webmanifest" />
+      {/* `use-credentials` is not optional here. A manifest is fetched WITHOUT
+          cookies by default, even same-origin — so on dev.recipely.net, which
+          sits behind Cloudflare Access, the request was redirected to the login
+          page, the manifest parsed as nothing, and Chrome offered no install.
+          The service worker was fine all along: its script fetch does send
+          cookies. Harmless on an origin with no auth wall. */}
+      <link rel="manifest" href="/manifest.webmanifest" crossOrigin="use-credentials" />
       <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       {/* Colours the OS/browser chrome around the app. Two, because the app
           follows the system scheme and a single value leaves the bar fighting
