@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -12,6 +13,7 @@ import {
   fontWeights,
   letterSpacings,
   iconSizes,
+  decorSizes,
   borderWidths,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
@@ -30,9 +32,13 @@ export interface MyRecipesTabsProps {
  *   each segment to its label, and a fourth tab pushed the Turkish labels
  *   ("Beğendiklerim", "Oluşturduklarım") past the width of a 390pt screen. A
  *   column is `flexBasis: 0`, so the row splits by count rather than by text.
- * - **Icon and count ride above the label** so the label gets the full column
- *   width for its one line, and the underline reads as the same control the web
- *   tab row is.
+ * - **The count rides ON the icon** — as a notification badge rather than a pill
+ *   beside it. Four labels, four glyphs and four separate count pills was more
+ *   than a phone-width row could seat legibly; hanging the number off its own
+ *   glyph gives the label the whole column back, and it is the same marker the
+ *   notification bell already wears.
+ * - **A tab with nothing in it wears no badge** — `CountBadge` renders nothing
+ *   at zero, so an empty Drafts tab is quiet instead of showing a red "0".
  */
 export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -48,24 +54,13 @@ export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): R
             onPress={() => onChange(key)}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
-            accessibilityLabel={label}
+            // The badge caps at "9+", so the true count is spelled out here.
+            accessibilityLabel={`${label}, ${count}`}
             style={styles.tab}
           >
-            <View style={styles.badgeRow}>
-              <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.sm} color={tint} />
-              <View
-                style={[
-                  styles.countPill,
-                  { backgroundColor: isActive ? colors.chipBackground : colors.surface },
-                ]}
-              >
-                <ThemedText
-                  variant="caption"
-                  style={[styles.countText, { color: isActive ? colors.chipText : colors.textMuted }]}
-                >
-                  {count}
-                </ThemedText>
-              </View>
+            <View style={styles.glyph}>
+              <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.md} color={tint} />
+              <CountBadge count={count} style={styles.badge} />
             </View>
             <ThemedText
               variant="caption"
@@ -102,27 +97,22 @@ const styles = StyleSheet.create({
     flexBasis: ValueConstants.zero,
     minWidth: ValueConstants.zero,
     alignItems: 'center',
-    gap: spacing.xxs,
-    paddingTop: spacing.xxs,
+    gap: spacing.xs,
+    // Top padding leaves the badge somewhere to hang: it overhangs the glyph,
+    // and without the room it would be clipped by the row above.
+    paddingTop: spacing.xs2,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.xxs,
   },
-  badgeRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  countPill: {
-    minWidth: iconSizes.lg,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xxs,
-    borderRadius: radii.round,
+  // Sized to the glyph so the badge has a corner to hang off; `overflow` is
+  // left visible (the default) on purpose — the badge is meant to escape it.
+  glyph: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  countText: {
-    fontWeight: fontWeights.bold,
-    fontSize: fontSizes.micro,
+  badge: {
+    top: -decorSizes.notifBadgeOverhang,
+    right: -decorSizes.notifBadgeOverhang,
   },
   label: {
     fontSize: fontSizes.micro,
