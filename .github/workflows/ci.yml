@@ -966,6 +966,22 @@ jobs:
           fi
           echo "OK — no background-audio mode in $plist"
 
+      # Same lesson, other direction: app.json listing skAdNetworkItems proves
+      # nothing, because the ads config plugin only writes them when the option
+      # reaches it. Attribution silently missing is invisible — ads still serve,
+      # only the measurement is gone — so assert on the artifact.
+      - name: Assert SKAdNetwork identifiers reached the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          count="$(/usr/libexec/PlistBuddy -c 'Print :SKAdNetworkItems' "$plist" 2>/dev/null | grep -c 'SKAdNetworkIdentifier' || true)"
+          expected="$(node -e "const p=require('./app.json').expo.plugins.find(p=>Array.isArray(p)&&p[0]==='react-native-google-mobile-ads');console.log((p[1].skAdNetworkItems||[]).length)")"
+          if [ "$count" -lt "$expected" ]; then
+            echo "::error file=app.json::$plist carries $count SKAdNetworkIdentifier entries, expected at least $expected. iOS ad attribution is not configured — check the skAdNetworkItems option on the react-native-google-mobile-ads plugin."
+            exit 1
+          fi
+          echo "OK — $count SKAdNetworkIdentifier entries in $plist"
+
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.
       - uses: actions/cache@v4
