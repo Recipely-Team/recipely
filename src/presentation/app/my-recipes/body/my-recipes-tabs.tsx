@@ -1,52 +1,86 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
+import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
+import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  letterSpacings,
+  iconSizes,
+  borderWidths,
+} from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface MyRecipesTabsProps {
-  tabs: readonly { key: TabType; label: string; count: number }[];
+  tabs: readonly MyRecipesTab[];
   active: TabType;
   onChange: (key: TabType) => void;
 }
 
-/** Mobile segmented control for the Saved / Created / Drafts tabs. */
+/**
+ * Mobile My-Recipes tab row: Saved / Liked / Created / Drafts.
+ *
+ * @remarks
+ * - **Four equal columns, not a pill** — the segmented pill this replaced sized
+ *   each segment to its label, and a fourth tab pushed the Turkish labels
+ *   ("Beğendiklerim", "Oluşturduklarım") past the width of a 390pt screen. A
+ *   column is `flexBasis: 0`, so the row splits by count rather than by text.
+ * - **Icon and count ride above the label** so the label gets the full column
+ *   width for its one line, and the underline reads as the same control the web
+ *   tab row is.
+ */
 export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
-    <View style={[styles.segmented, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+    <View style={[styles.row, { borderBottomColor: colors.cardBorder }]}>
       {tabs.map(({ key, label, count }) => {
         const isActive = active === key;
+        const tint = isActive ? colors.primary : colors.textMuted;
         return (
           <Pressable
             key={key}
             onPress={() => onChange(key)}
-            accessibilityRole="button"
+            accessibilityRole="tab"
+            accessibilityState={{ selected: isActive }}
             accessibilityLabel={label}
-            style={[styles.segment, { backgroundColor: isActive ? colors.primary : 'transparent' }]}
+            style={styles.tab}
           >
+            <View style={styles.badgeRow}>
+              <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.sm} color={tint} />
+              <View
+                style={[
+                  styles.countPill,
+                  { backgroundColor: isActive ? colors.chipBackground : colors.surface },
+                ]}
+              >
+                <ThemedText
+                  variant="caption"
+                  style={[styles.countText, { color: isActive ? colors.chipText : colors.textMuted }]}
+                >
+                  {count}
+                </ThemedText>
+              </View>
+            </View>
             <ThemedText
               variant="caption"
               numberOfLines={1}
-              style={[styles.segmentLabel, { color: isActive ? colors.primaryText : colors.text }]}
+              style={[
+                styles.label,
+                {
+                  color: isActive ? colors.text : colors.textMuted,
+                  fontWeight: isActive ? fontWeights.bold : fontWeights.medium,
+                },
+              ]}
             >
               {label}
             </ThemedText>
-            <View
-              style={[
-                styles.countPill,
-                { backgroundColor: isActive ? colors.gradientBorder : colors.chipBackground },
-              ]}
-            >
-              <ThemedText
-                variant="caption"
-                style={[styles.countText, { color: isActive ? colors.primaryText : colors.chipText }]}
-              >
-                {count}
-              </ThemedText>
-            </View>
+            {isActive && <View style={[styles.underline, { backgroundColor: colors.primary }]} />}
           </Pressable>
         );
       })}
@@ -55,45 +89,54 @@ export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): R
 };
 
 const styles = StyleSheet.create({
-  segmented: {
+  row: {
     flexDirection: 'row',
     marginHorizontal: spacing.lg,
     marginTop: spacing.sm,
     marginBottom: spacing.md,
-    padding: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.hairline,
+    borderBottomWidth: borderWidths.hairline,
   },
-  segment: {
+  tab: {
     flexGrow: ValueConstants.one,
     flexShrink: ValueConstants.one,
-    flexBasis: 'auto',
+    flexBasis: ValueConstants.zero,
     minWidth: ValueConstants.zero,
-    height: controlSizes.iconBtn,
-    paddingHorizontal: spacing.xs2,
-    borderRadius: radii.round,
+    alignItems: 'center',
+    gap: spacing.xxs,
+    paddingTop: spacing.xxs,
+    paddingBottom: spacing.sm,
+    paddingHorizontal: spacing.xxs,
+  },
+  badgeRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
     gap: spacing.xs,
   },
-  segmentLabel: {
-    fontWeight: fontWeights.semibold,
-    fontSize: fontSizes.small,
-    flexShrink: ValueConstants.one,
-    minWidth: ValueConstants.zero,
-  },
   countPill: {
-    minWidth: iconSizes.xl,
-    height: iconSizes.lg,
-    paddingHorizontal: spacing.xs2,
+    minWidth: iconSizes.lg,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.xxs,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    flexShrink: ValueConstants.zero,
   },
   countText: {
     fontWeight: fontWeights.bold,
     fontSize: fontSizes.micro,
+  },
+  label: {
+    fontSize: fontSizes.micro,
+    letterSpacing: letterSpacings.tight,
+    textAlign: 'center',
+  },
+  // Sits on the container's own hairline, so the active column looks like it
+  // owns that stretch of the rule rather than drawing a second one under it.
+  underline: {
+    position: 'absolute',
+    left: spacing.xs,
+    right: spacing.xs,
+    bottom: -borderWidths.hairline,
+    height: borderWidths.medium,
+    borderRadius: radii.round,
   },
 });

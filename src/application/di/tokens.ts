@@ -29,6 +29,7 @@ export const TOKENS = {
   LikeRepository: Symbol.for('LikeRepository'),
   LikeRecipeUseCase: Symbol.for('LikeRecipeUseCase'),
   UnlikeRecipeUseCase: Symbol.for('UnlikeRecipeUseCase'),
+  LoadLikedRecipesUseCase: Symbol.for('LoadLikedRecipesUseCase'),
   NotificationRepository: Symbol.for('NotificationRepository'),
   UserProfileRepository: Symbol.for('UserProfileRepository'),
   ListNotificationsUseCase: Symbol.for('ListNotificationsUseCase'),

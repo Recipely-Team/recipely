@@ -1,6 +1,6 @@
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
-const TABS: readonly TabType[] = [TabType.Saved, TabType.Created, TabType.Drafts];
+const TABS: readonly TabType[] = [TabType.Saved, TabType.Liked, TabType.Created, TabType.Drafts];
 
 /**
  * Reads the `?tab=` deep-link parameter, falling back to the saved tab.

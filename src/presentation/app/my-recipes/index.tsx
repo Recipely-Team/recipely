@@ -5,6 +5,7 @@ import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { WebMyRecipesHeader } from '@presentation/app/my-recipes/body/web-my-recipes-header';
@@ -32,11 +33,13 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const { isWebShell, isExpanded, width } = useLayout();
-  const { savedRecipesStore, createdRecipesStore, draftsStore } = useStores();
+  const { savedRecipesStore, likedRecipesStore, createdRecipesStore, draftsStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
 
   const savedRecipes = savedRecipesStore((s) => s.savedRecipes);
   const savedListState = savedRecipesStore((s) => s.listState);
+  const likedRecipes = likedRecipesStore((s) => s.likedRecipes);
+  const likedListState = likedRecipesStore((s) => s.listState);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const createdListState = createdRecipesStore((s) => s.myRecipesState);
   const drafts = draftsStore((s) => s.drafts);
@@ -63,21 +66,25 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   useFocusEffect(
     useCallback(() => {
       void savedRecipesStore.getState().loadSaved();
+      void likedRecipesStore.getState().loadLiked();
       void createdRecipesStore.getState().loadMyRecipes();
       void draftsStore.getState().loadDrafts();
-    }, [savedRecipesStore, createdRecipesStore, draftsStore]),
+    }, [savedRecipesStore, likedRecipesStore, createdRecipesStore, draftsStore]),
   );
 
-  const items = tab === TabType.Saved ? savedRecipes : createdRecipes;
+  const items =
+    tab === TabType.Saved ? savedRecipes : tab === TabType.Liked ? likedRecipes : createdRecipes;
 
   // Each tab owns its own load, so both the skeleton branch and the error
   // branch read the state of the tab actually being shown.
   const activeState =
     tab === TabType.Saved
       ? savedListState
-      : tab === TabType.Created
-        ? createdListState
-        : draftsListState;
+      : tab === TabType.Liked
+        ? likedListState
+        : tab === TabType.Created
+          ? createdListState
+          : draftsListState;
   const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
   const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
   // A failed load must not read as "you have nothing" — that is the same lie
@@ -85,8 +92,9 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
   useReportFailure(loadFailure, 'MyRecipesScreen');
 
-  const tabDefs: readonly { key: TabType; label: string; count: number }[] = [
+  const tabDefs: readonly MyRecipesTab[] = [
     { key: TabType.Saved, label: t().myRecipes.saved, count: savedRecipes.length },
+    { key: TabType.Liked, label: t().myRecipes.liked, count: likedRecipes.length },
     { key: TabType.Created, label: t().myRecipes.created, count: createdRecipes.length },
     { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
   ];
@@ -122,7 +130,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
 
           {isWebShell ? (
             <View style={styles.webTabsWrap}>
-              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={(key) => setTab(key as TabType)} />
+              <WebMyRecipesTabs tabs={tabDefs} active={tab} onChange={setTab} />
             </View>
           ) : (
             <MyRecipesTabs tabs={tabDefs} active={tab} onChange={setTab} />

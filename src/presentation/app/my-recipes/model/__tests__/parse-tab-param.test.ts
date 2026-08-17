@@ -9,6 +9,7 @@ import { parseTabParam } from '@presentation/app/my-recipes/model/parse-tab-para
 describe('parseTabParam', () => {
   it('takes a known tab from the link', () => {
     expect(parseTabParam('created')).toBe('created');
+    expect(parseTabParam('liked')).toBe('liked');
     expect(parseTabParam('drafts')).toBe('drafts');
   });
 

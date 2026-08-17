@@ -8,6 +8,7 @@ import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
 import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes } from '@presentation/base/theme';
@@ -23,6 +24,18 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
+
+/**
+ * What each tab says when it has nothing. Read lazily: `t()` resolves against
+ * the active locale, so a module-level lookup would freeze the copy at the
+ * language the app started in.
+ */
+const EMPTY_COPY: Record<TabType, () => string> = {
+  [TabType.Saved]: () => t().myRecipes.emptySaved,
+  [TabType.Liked]: () => t().myRecipes.emptyLiked,
+  [TabType.Created]: () => t().myRecipes.emptyCreated,
+  [TabType.Drafts]: () => t().drafts.empty,
+};
 
 export interface MyRecipesListProps {
   tab: TabType;
@@ -120,9 +133,9 @@ export const MyRecipesList = ({
           refreshControl={refreshControl}
         >
           <View style={styles.empty}>
-            <MaterialCommunityIcons name="file-document-edit-outline" size={iconSizes.jumbo} color={colors.textMuted} />
+            <MaterialCommunityIcons name={TabIcons[TabType.Drafts]} size={iconSizes.jumbo} color={colors.textMuted} />
             <ThemedText variant="body" muted style={styles.emptyText}>
-              {t().drafts.empty}
+              {EMPTY_COPY[TabType.Drafts]()}
             </ThemedText>
           </View>
         </ScrollView>
@@ -158,13 +171,9 @@ export const MyRecipesList = ({
         refreshControl={refreshControl}
       >
         <View style={styles.empty}>
-          <MaterialCommunityIcons
-            name={tab === TabType.Saved ? 'bookmark-outline' : 'silverware-fork-knife'}
-            size={iconSizes.jumbo}
-            color={colors.textMuted}
-          />
+          <MaterialCommunityIcons name={TabIcons[tab]} size={iconSizes.jumbo} color={colors.textMuted} />
           <ThemedText variant="body" muted style={styles.emptyText}>
-            {tab === TabType.Saved ? t().myRecipes.emptySaved : t().myRecipes.emptyCreated}
+            {EMPTY_COPY[tab]()}
           </ThemedText>
         </View>
       </ScrollView>
