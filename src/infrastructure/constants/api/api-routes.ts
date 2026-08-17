@@ -17,6 +17,7 @@ export const ApiRoutes = {
     root: '/me',
     profile: '/me/profile',
     favorites: '/me/favorites',
+    likes: '/me/likes',
     recipes: '/me/recipes',
     deviceToken: '/me/device-token',
     notifications: '/me/notifications',

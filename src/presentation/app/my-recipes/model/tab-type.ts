@@ -1,5 +1,6 @@
 export const TabType = {
   Saved: 'saved',
+  Liked: 'liked',
   Created: 'created',
   Drafts: 'drafts',
 } as const;

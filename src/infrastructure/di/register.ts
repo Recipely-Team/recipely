@@ -17,6 +17,7 @@ import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { LikeRepository } from '@infrastructure/likes/like-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
 import { NotificationRepository } from '@infrastructure/notifications/notification-repository';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
 import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
@@ -164,6 +165,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.UnlikeRecipeUseCase, () => {
     const repo = container.resolve<LikeRepository>(TOKENS.LikeRepository);
     return new UnlikeRecipeUseCase(repo);
+  });
+
+  container.register(TOKENS.LoadLikedRecipesUseCase, () => {
+    const repo = container.resolve<LikeRepository>(TOKENS.LikeRepository);
+    return new LoadLikedRecipesUseCase(repo);
   });
 
   container.register(TOKENS.NotificationRepository, () => {

@@ -11,6 +11,7 @@ import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
@@ -23,6 +24,7 @@ export interface ApplicationStores {
   trendingRecipesStore: BoundStore<TrendingRecipesStoreState>;
   recipeDetailStore: BoundStore<RecipeDetailStoreState>;
   savedRecipesStore: BoundStore<SavedRecipesStoreState>;
+  likedRecipesStore: BoundStore<LikedRecipesStoreState>;
   createdRecipesStore: BoundStore<CreatedRecipesStoreState>;
   draftsStore: BoundStore<DraftsStoreState>;
   importJobStore: BoundStore<ImportJobStoreState>;

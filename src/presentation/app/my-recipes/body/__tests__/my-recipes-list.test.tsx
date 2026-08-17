@@ -111,8 +111,8 @@ const refreshingProp = (overrides: Partial<MyRecipesListProps>): boolean => {
   return refreshing;
 };
 
-/** The empty-state branches: no items on saved/created, no drafts on drafts. */
-const EMPTY_TABS: readonly TabType[] = ['saved', 'created', 'drafts'];
+/** The empty-state branches: no items on saved/liked/created, no drafts on drafts. */
+const EMPTY_TABS: readonly TabType[] = ['saved', 'liked', 'created', 'drafts'];
 
 /**
  * THE REGRESSION: opening My Recipes flashed "you have nothing here".
@@ -133,6 +133,7 @@ describe('MyRecipesList — the first load', () => {
 
   const emptyCopy: Record<TabType, string> = {
     saved: t().myRecipes.emptySaved,
+    liked: t().myRecipes.emptyLiked,
     created: t().myRecipes.emptyCreated,
     drafts: t().drafts.empty,
   };
