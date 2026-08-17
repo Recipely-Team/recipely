@@ -8,6 +8,7 @@ import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
+import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
 import { maxFontScales } from '@presentation/base/theme';
 
 const render = (count: number): RenderResult => renderComponent(<CountBadge count={count} />);
@@ -27,6 +28,17 @@ describe('CountBadge', () => {
 
   it('shows the exact count up to nine', () => {
     expect(textContent(render(9).root)).toContain('9');
+  });
+
+  it('caps a tally only where the digits would burst the disc, not at nine', () => {
+    // Shipped capping every badge at "9+", which turned "you have 43 drafts"
+    // into no answer at all on the one screen that exists to tell you.
+    const tally = (count: number): RenderResult =>
+      renderComponent(<CountBadge count={count} tone={CountBadgeTone.Tally} />);
+
+    expect(textContent(tally(43).root)).toContain('43');
+    expect(textContent(tally(99).root)).toContain('99');
+    expect(textContent(tally(150).root)).toContain('99+');
   });
 
   it('caps at "9+" once the count outgrows the circle it is drawn in', () => {

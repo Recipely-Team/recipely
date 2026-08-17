@@ -62,11 +62,11 @@ describe('MyRecipesTabs', () => {
     expect(textContent(render().root)).not.toContain('0');
   });
 
-  it('caps a large count on the badge but keeps the true one in the label', () => {
+  it('shows a two-digit count in full — these are the user\'s own recipes, not an alert queue', () => {
     const result = render();
 
-    expect(textContent(result.root)).toContain('9+');
-    expect(textContent(result.root)).not.toContain('12');
+    expect(textContent(result.root)).toContain('12');
+    expect(textContent(result.root)).not.toContain('9+');
     expect(tabByLabel(result, 'Liked').accessibilityLabel).toBe('Liked, 12');
   });
 
