@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
+import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
 import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -32,11 +33,14 @@ export interface MyRecipesTabsProps {
  *   each segment to its label, and a fourth tab pushed the Turkish labels
  *   ("Beğendiklerim", "Oluşturduklarım") past the width of a 390pt screen. A
  *   column is `flexBasis: 0`, so the row splits by count rather than by text.
- * - **The count rides ON the icon** — as a notification badge rather than a pill
- *   beside it. Four labels, four glyphs and four separate count pills was more
- *   than a phone-width row could seat legibly; hanging the number off its own
- *   glyph gives the label the whole column back, and it is the same marker the
- *   notification bell already wears.
+ * - **The count rides ON the icon** — as a badge rather than a pill beside it.
+ *   Four labels, four glyphs and four separate count pills was more than a
+ *   phone-width row could seat legibly; hanging the number off its own glyph
+ *   gives the label the whole column back.
+ * - **A tally, not an alert.** The badge is drawn in the chip palette, not the
+ *   danger red the notification bell wears. Shipped red first, and four
+ *   scarlet discs over four tabs read as four problems when the user had
+ *   simply saved six recipes — and "9+" hid the draft count they came to see.
  * - **A tab with nothing in it wears no badge** — `CountBadge` renders nothing
  *   at zero, so an empty Drafts tab is quiet instead of showing a red "0".
  */
@@ -59,8 +63,8 @@ export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): R
             style={styles.tab}
           >
             <View style={styles.glyph}>
-              <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.md} color={tint} />
-              <CountBadge count={count} style={styles.badge} />
+              <MaterialCommunityIcons name={TabIcons[key]} size={iconSizes.lg} color={tint} />
+              <CountBadge count={count} tone={CountBadgeTone.Tally} style={styles.badge} />
             </View>
             <ThemedText
               variant="caption"
