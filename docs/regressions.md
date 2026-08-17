@@ -1140,3 +1140,29 @@ capability gives up silently, the giving-up is the part that needs a voice.
 returns early there because the backend addresses devices through FCM and an
 APNs token needs `@react-native-firebase/messaging` plus a native rebuild. That
 is a native dependency, and the call was to fix what exists rather than add one.
+
+## Ads on screens with nothing on them
+
+*Symptom:* AdSense served a policy notice on recipely.net — "ads shown on
+screens with no publisher content", the category that also covers screens under
+construction and ones used for navigation or behavioural purposes.
+
+*Root cause:* two, of the same shape. `+html.tsx` loaded the AdSense script into
+the shell that wraps **every** route, and the site declares no ad unit of its
+own — so every ad it ever served was an Auto Ad placed on `/login`,
+`/settings`, `/verify-code`, `/onboarding` and the rest. In the app, `AdSlot`
+sat on the generate checklist and the import queue: a spinner, a stage list and
+a progress bar, which is the same violation under AdMob's wording of the rule.
+Both placements were argued for on product grounds — "the longest wait in the
+app is where a banner is worth its space" — and the argument was about the user,
+never about whether the screen had content to put an ad beside.
+
+*Now:* the loader is gone from the shell, and both wait-screen banners are gone.
+The feed banner stays: recipes are publisher content. `check:structure` rule T
+fails on an AdSense loader anywhere under `src/` and on `<AdSlot>` rendered
+outside an allowlisted placement, so the next one is caught before it ships.
+
+*The class:* **a placement is a policy decision before it is a product one.**
+"Where would an ad be least annoying?" and "may this screen carry an ad at all?"
+are different questions, and the second has to be asked first — a wait screen is
+the most tempting answer to the first and a forbidden answer to the second.

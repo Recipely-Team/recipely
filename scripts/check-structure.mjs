@@ -24,6 +24,8 @@
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
+ *   T. Ads only on screens carrying publisher content, and no ad loader in the
+ *      web shell — AdSense flagged both (CLAUDE.md §23e).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -529,6 +531,47 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     );
     if (hasWebSibling) continue;
     errors.push(`${file}: imports ${pkg} with no .web sibling — breaks the web export (CLAUDE.md §13)`);
+  }
+}
+
+// --- T: an ad needs a screen with something on it ----------------------------
+// AdSense served notice on recipely.net for "ads on screens without publisher
+// content". Two causes, both of them ours:
+//
+//   1. `+html.tsx` loaded the AdSense script into the shell that wraps EVERY
+//      route, and the site declares no ad unit of its own — so every ad it ever
+//      served was an Auto Ad placed on /login, /settings, /verify-code and the
+//      rest, none of which hold any content.
+//   2. `AdSlot` sat on the generate checklist and the import queue. Both are
+//      wait screens — a spinner, a stage list, a progress bar — which is the
+//      same violation in the app, under the same rule in AdMob's version of it.
+//
+// So: the loader may not come back to the shell, and a slot may only be
+// rendered from a placement listed here. Adding to that list is a policy
+// decision about whether the screen shows the user something they came to read;
+// it is deliberately a one-line diff someone has to justify.
+{
+  const AD_PLACEMENTS = new Set(['presentation/app/recipes/items/feed-row-view.tsx']);
+  const SHELL = 'presentation/app/+html.tsx';
+  const LOADER = /adsbygoogle|pagead2\.googlesyndication\.com/;
+  const RENDERS_SLOT = /<AdSlot[\s/>]/;
+  const isComment = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
+
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
+
+    if (LOADER.test(code)) {
+      errors.push(
+        `${file}: loads the AdSense script — it runs on every route, including the ones with no content (CLAUDE.md §23e)`,
+      );
+    }
+    if (RENDERS_SLOT.test(code) && !AD_PLACEMENTS.has(file) && !file.startsWith('presentation/base/widgets/ads/')) {
+      errors.push(
+        `${file}: renders <AdSlot> outside an approved placement — a wait, form or auth screen carries no publisher content (CLAUDE.md §23e)`,
+      );
+    }
   }
 }
 
