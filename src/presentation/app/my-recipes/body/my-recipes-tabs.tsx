@@ -14,7 +14,6 @@ import {
   fontWeights,
   letterSpacings,
   iconSizes,
-  decorSizes,
   borderWidths,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
@@ -41,8 +40,12 @@ export interface MyRecipesTabsProps {
  *   danger red the notification bell wears. Shipped red first, and four
  *   scarlet discs over four tabs read as four problems when the user had
  *   simply saved six recipes — and "9+" hid the draft count they came to see.
+ * - **The badge clears the glyph** — it hangs off the top-right corner rather
+ *   than sitting on it. Overlapping cost more than it saved: at two digits the
+ *   count covered the icon it was counting, which is the one thing the column
+ *   uses to say which tab it is.
  * - **A tab with nothing in it wears no badge** — `CountBadge` renders nothing
- *   at zero, so an empty Drafts tab is quiet instead of showing a red "0".
+ *   at zero, so an empty Drafts tab is quiet instead of showing a "0".
  */
 export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -102,9 +105,8 @@ const styles = StyleSheet.create({
     minWidth: ValueConstants.zero,
     alignItems: 'center',
     gap: spacing.xs,
-    // Top padding leaves the badge somewhere to hang: it overhangs the glyph,
-    // and without the room it would be clipped by the row above.
-    paddingTop: spacing.xs2,
+    // Room for the badge, which now sits fully above the glyph's top edge.
+    paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.xxs,
   },
@@ -114,9 +116,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Anchored to the glyph's top-right CORNER — `bottom`/`left` at 100% put the
+  // badge's bottom-left there, so it grows up and to the right, away from the
+  // icon. Anchoring by `right` instead is what buried the icon: a two-digit
+  // count widens leftward, and "12" sat straight on top of the heart. The
+  // negative margins tuck it back a touch so it reads as attached.
   badge: {
-    top: -decorSizes.notifBadgeOverhang,
-    right: -decorSizes.notifBadgeOverhang,
+    bottom: '100%',
+    left: '100%',
+    marginBottom: -spacing.xs,
+    marginLeft: -spacing.xs,
   },
   label: {
     fontSize: fontSizes.micro,

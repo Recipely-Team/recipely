@@ -41,9 +41,10 @@ export interface CountBadgeProps {
  *   {@link CountBadgeTone}. A tally is drawn in the chip palette because red is
  *   the app's word for "deal with me", and a shelf of saved recipes is not
  *   asking for anything.
- * - **The ring is the page, not the badge** — the border is drawn in
- *   `colors.background` so the badge appears cut out of the surface behind it,
- *   which is what keeps it legible where it overlaps its own glyph.
+ * - **The ring is the page, not the badge** — where a badge sits ON its glyph
+ *   (the bell), the border is drawn in `colors.background` so it appears cut
+ *   out of the surface behind it. A tally sits beside its glyph and takes no
+ *   ring.
  * - **The true count belongs to the label** — this rounds off past the tone's
  *   maximum, so the pressable that owns the badge must put the real number in
  *   its `accessibilityLabel`; a screen reader hearing "9+" has lost information
@@ -67,6 +68,10 @@ export const CountBadge = ({
         {
           backgroundColor: isAlert ? colors.danger : colors.chipBackground,
           borderColor: colors.background,
+          // The ring cuts the badge out of the glyph beneath it. A tally sits
+          // beside its glyph rather than on it, so the ring would only be
+          // 2pt of extra disc crowding the row.
+          borderWidth: isAlert ? borderWidths.medium : ValueConstants.zero,
         },
         style,
       ]}
@@ -88,7 +93,6 @@ const styles = StyleSheet.create({
     height: decorSizes.notifBadge,
     paddingHorizontal: spacing.xs,
     borderRadius: radii.round,
-    borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',
   },
