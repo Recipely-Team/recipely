@@ -718,8 +718,6 @@ jobs:
       # simply keeps production on test ads rather than breaking the build.
       ADMOB_ANDROID_APP_ID: ${{ secrets.ADMOB_ANDROID_APP_ID }}
       EXPO_PUBLIC_ADMOB_ANDROID_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_FEED_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_GENERATING_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_ANDROID_IMPORT_BANNER_UNIT_ID }}
       # app.config.ts uses BUILD_NUMBER for versionCode / iOS buildNumber.
       BUILD_NUMBER: ${{ github.run_number }}
     steps:
@@ -889,8 +887,6 @@ jobs:
       # the iOS app's own — an Android unit requested here would never fill.
       ADMOB_IOS_APP_ID: ${{ secrets.ADMOB_IOS_APP_ID }}
       EXPO_PUBLIC_ADMOB_IOS_FEED_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_FEED_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_IOS_GENERATING_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_GENERATING_BANNER_UNIT_ID }}
-      EXPO_PUBLIC_ADMOB_IOS_IMPORT_BANNER_UNIT_ID: ${{ secrets.ADMOB_IOS_IMPORT_BANNER_UNIT_ID }}
       # Mirrors the Android distribute job so app.config.ts derives the same
       # versionCode / buildNumber for every target of a single CI run.
       BUILD_NUMBER: ${{ github.run_number }}

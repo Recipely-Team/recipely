@@ -463,6 +463,19 @@ blocking.
     covered by a test that asserts a requested page reaches the query — the test that was
     missing when this shipped.
 
+23e. **An ad needs a screen with something on it** — a placement may only sit on
+    a screen showing content the user came to read. In this app that is the recipe
+    feed, and nothing else. Wait screens (the generate checklist, the import
+    queue), forms, auth and settings screens carry no publisher content, and an ad
+    on one is a policy violation rather than inventory — AdSense served notice on
+    recipely.net for exactly this. **The web shell never loads an ad script**:
+    `+html.tsx` wraps every route, so a loader there runs on `/login`,
+    `/settings` and `/verify-code` too, and since the site declares no unit of
+    its own, every ad it served was an Auto Ad on one of those pages. A web ad
+    is added to the page that earned it. **Enforced mechanically** by
+    `check:structure` (rule T), whose placement allowlist is a one-line diff
+    someone has to justify.
+
 24. **A bug fix ships the test that would have caught it** — this is how the repo gets
     harder to break instead of merely getting patched. Three steps, in order:
 

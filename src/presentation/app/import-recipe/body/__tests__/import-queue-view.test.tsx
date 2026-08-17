@@ -1,10 +1,16 @@
 /**
  * What this screen shows while a job is waiting, and what it must drop once the
- * job is not: the queue-position badge, and the ad.
+ * job is not.
  *
  * The position is only meaningful while the job is WAITING. Showing it on a job
  * a worker has already picked up would tell the user they are 3rd in a line
  * they have already left — the opposite of what the badge exists to say.
+ *
+ * The ad is the other half, and it is gone for good: AdSense served notice for
+ * "ads on screens without publisher content", and a queue screen — a stage
+ * list, an estimate and a progress bar — is precisely that. The wait being long
+ * was the argument for putting one here; policy is the argument that outranks
+ * it.
  */
 
 import { ScrollView } from 'react-native';
@@ -77,20 +83,18 @@ describe('the queue-position badge', () => {
   });
 });
 
-describe('the ad on the import screen', () => {
-  it('offers the placement while the import is still working', () => {
-    // This is the longest wait in the app, which is the whole argument for
-    // putting one here rather than on a screen the user passes through.
-    expect(shownText({ jobStatus: ImportJobStatus.Running })).toContain('ad-slot');
+describe('the ad that used to be on the import screen', () => {
+  // The AdSlot mock above renders visible text, so these fail against the
+  // version that carried a banner — which is the point.
+  it.each([
+    ['queued', { jobStatus: ImportJobStatus.Queued }],
+    ['running', { jobStatus: ImportJobStatus.Running }],
+    ['done', { isDone: true }],
+  ])('offers no placement while the job is %s', (_label, overrides) => {
+    expect(shownText(overrides)).not.toContain('ad-slot');
   });
 
-  it('drops it the moment the import is done', () => {
-    // A finished job turns the screen into a receipt with "open draft" on it.
-    // An ad beside that is not passing a wait, it is charging for the exit.
-    expect(shownText({ isDone: true })).not.toContain('ad-slot');
-  });
-
-  it('keeps it out of the pinned footer, where the thumb is', () => {
+  it('offers none inside the scroll either, not merely outside the footer', () => {
     const { root } = renderComponent(
       <ImportQueueView
         jobStatus={ImportJobStatus.Running}
@@ -102,8 +106,7 @@ describe('the ad on the import screen', () => {
         onPrimary={jest.fn()}
       />,
     );
-    const scroll = root.findByType(ScrollView);
 
-    expect(textContent(scroll)).toContain('ad-slot');
+    expect(textContent(root.findByType(ScrollView))).not.toContain('ad-slot');
   });
 });
