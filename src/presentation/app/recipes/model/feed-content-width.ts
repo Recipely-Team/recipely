@@ -22,3 +22,21 @@ export const feedGutter = (viewportWidth: number): number => {
  */
 export const feedContentWidth = (viewportWidth: number): number =>
   Math.min(viewportWidth, WEB_CONTENT_MAX_WIDTH.recipes) - feedGutter(viewportWidth) * 2;
+
+/**
+ * The inset the PHONE feed paints on each side of every row.
+ *
+ * Separate from {@link feedGutter}, which serves the expanded layout and its
+ * content cap; the two are different numbers on purpose and always have been.
+ * It is named here because a second reader appeared: an adaptive banner is
+ * requested at a WIDTH, and a banner asking for the device width inside a
+ * padded list renders edge to edge past the cards it sits between.
+ */
+export const MOBILE_FEED_GUTTER = spacing.lg;
+
+/**
+ * The width one phone-feed row actually occupies — what an ad must ask for to
+ * line up with the cards above and below it.
+ */
+export const mobileFeedRowWidth = (viewportWidth: number): number =>
+  viewportWidth - MOBILE_FEED_GUTTER * 2;

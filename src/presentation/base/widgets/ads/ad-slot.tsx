@@ -23,8 +23,15 @@ const reported = new Set<string>();
  *   list or a strip under a finished checklist, so nothing the user was reading
  *   moves when it appears.
  * - **`ANCHORED_ADAPTIVE_BANNER`, not a fixed size.** It asks for a height
- *   suited to the device width instead of a 320×50 rectangle stretched or
- *   letterboxed on everything from a small phone to a tablet.
+ *   suited to the width instead of a 320×50 rectangle stretched or letterboxed
+ *   on everything from a small phone to a tablet.
+ * - **The width is asked for, not styled on.** An adaptive banner defaults to
+ *   the DEVICE width and renders at it regardless of the padding around it, so
+ *   the feed banner ran edge to edge while every card beside it was inset. The
+ *   fix is to request the narrower size — `width` reaches the SDK, which
+ *   returns a creative built for it. Clipping or scaling the view instead would
+ *   alter a served ad, which is the thing the network's policy forbids, so the
+ *   container carries no radius of its own however card-like the neighbours.
  * - **The SSP's reason is kept, not thrown away.** `onAdFailedToLoad` used to
  *   be `() => setFailed(true)`, which collapsed every cause into the same empty
  *   space: a brand-new unit with no inventory (code 3, "no fill") looked
@@ -35,7 +42,7 @@ const reported = new Set<string>();
  *   reporting each failure would file the same report dozens of times in one
  *   scroll. The first one carries the whole message; the rest add nothing.
  */
-export const AdSlot = ({ unitId, accessibilityLabel }: AdSlotProps): React.JSX.Element | null => {
+export const AdSlot = ({ unitId, accessibilityLabel, width }: AdSlotProps): React.JSX.Element | null => {
   const ready = useAdsReady();
   const [loaded, setLoaded] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -64,6 +71,7 @@ export const AdSlot = ({ unitId, accessibilityLabel }: AdSlotProps): React.JSX.E
       <BannerAd
         unitId={unitId}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+        width={width}
         onAdLoaded={() => setLoaded(true)}
         onAdFailedToLoad={onFailed}
       />

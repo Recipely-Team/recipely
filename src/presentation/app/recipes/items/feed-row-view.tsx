@@ -12,6 +12,8 @@ export interface FeedRowViewProps {
   /** > 1 puts each recipe in a grid cell; ads are only ever placed at 1. */
   gridColumns: number;
   adUnitId: string;
+  /** Width the banner is requested at, so it lines up with the cards. */
+  adWidth: number;
   /**
    * The list body's stable curried opener. Taken as the factory, not as an
    * already-bound handler, so this file does not change how `RecipeListItem`
@@ -30,10 +32,11 @@ export const FeedRowView = ({
   row,
   gridColumns,
   adUnitId,
+  adWidth,
   openRecipe,
 }: FeedRowViewProps): React.JSX.Element => {
   if (row.kind === FeedRowKind.Ad) {
-    return <AdSlot unitId={adUnitId} accessibilityLabel={t().createRecipe.adLabel} />;
+    return <AdSlot unitId={adUnitId} width={adWidth} accessibilityLabel={t().createRecipe.adLabel} />;
   }
   const card = <RecipeListItem recipe={row.recipe} onPress={openRecipe(row.recipe.id)} />;
   if (gridColumns > ValueConstants.one) {
