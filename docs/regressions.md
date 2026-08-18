@@ -1166,3 +1166,66 @@ outside an allowlisted placement, so the next one is caught before it ships.
 "Where would an ad be least annoying?" and "may this screen carry an ad at all?"
 are different questions, and the second has to be asked first — a wait screen is
 the most tempting answer to the first and a forbidden answer to the second.
+
+## The web served no ads at all, because nothing declared one
+
+*Symptom:* AdSense reported recipely.net as approved and "preparing to serve",
+and no ad ever appeared on the site.
+
+*Root cause:* the fix for the previous entry removed the Auto Ad loader from
+`+html.tsx` and left nothing in its place, because the site declared no unit of
+its own — `ad-slot.web.tsx` rendered `null` and `AdsService` (web) answered
+`false` to every request, so the feed built no ad rows either. Approved
+inventory with no unit on the page serves nothing.
+
+*Now:* the feed carries one AdSense display unit. `mountAdsenseUnit` builds the
+`<ins>` and fetches the loader *with it*, so the script only ever runs on a page
+that has an ad to show — never in the shell, which is what `check:structure`
+rule T still fails on. The unit id arrives as `EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID`
+and only on the production deploy; blank means no element at all.
+
+*The class:* **removing a policy violation is not the same as shipping the
+compliant version of it.** The first half — take the ads off the pages that may
+not have them — is what stops the notice, and it is the half that feels
+finished. Nothing serves until someone does the second.
+
+## The feed banner ran edge to edge while every card beside it was inset
+
+*Symptom:* the ad between two recipe cards touched both screen edges, on both
+platforms.
+
+*Root cause:* an anchored adaptive banner asks the SDK for a size and defaults
+to the DEVICE width, then renders at that width regardless of the padding on
+its container. The list's `paddingHorizontal` had nothing to push against.
+
+*Now:* the width is REQUESTED — `useFeedRows` publishes `mobileFeedRowWidth`
+beside the unit id, `AdSlot` passes it to `BannerAd`, and the SDK returns a
+creative built for it. The list's gutter is named (`MOBILE_FEED_GUTTER`) so the
+two cannot drift. Clipping or scaling the view instead would alter a served ad,
+which is what the network's policy forbids — so the slot carries no corner
+radius however card-like its neighbours.
+
+*The class:* **a native ad view is sized by what you asked the network for, not
+by the box you put it in.** Layout props are a suggestion to something that
+already decided its own dimensions.
+
+## Every banner arrived a beat after the row it belongs to
+
+*Symptom:* on every device, an ad appeared visibly later than the feed row
+holding it, then pushed the content below it down.
+
+*Root cause:* `useAdsReady` started at `false` and re-awaited `prepare()` on
+every mount, even though `useAdsWarmup` had settled that answer at launch. So
+each slot rendered `null`, resolved an already-resolved promise, set state, and
+only then mounted the banner — a full render and a native view creation before
+the ad request even left.
+
+*Now:* a yes is remembered for the session and seeds the hook's initial state,
+so the request leaves on the row's first render. A **no** is deliberately not
+remembered: `AdsService` already tells "the user refused" from "nobody could be
+asked" and retries only the second, and caching `false` in front of it would
+turn one offline launch into a session with no ads.
+
+*The class:* **an answer that is settled for the session should not be
+re-awaited per consumer.** `await` on a resolved promise still costs a render,
+and a render is exactly the beat a user sees.
