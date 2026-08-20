@@ -1322,3 +1322,41 @@ with the measurement written down beside them.
 out which one it obeys before writing the one that is easier to reach.** A
 config that is ignored fails silently and looks, in code review, exactly like a
 config that works.
+
+## "You have used today's minutes" — to a user who had used none
+
+The assistant panel told the user their daily voice allowance was spent. The
+backend was simply unreachable; they had spent nothing, and the advice that came
+with it — come back tomorrow — was wrong twice over, since an outage can clear
+in a second.
+
+*Why:* a refusal and an outage both land on the same `Unavailable` status. The
+panel read the status and then guessed the reason, defaulting to the user's own
+limit because that is the common case. The reason it needed was right there and
+`null`.
+
+*Now:* the choice is a pure function with the rule written into it — only a
+STATED reason may claim a limit, everything else says voice is off without
+saying why — and its test asserts the outage case is not the limit copy.
+
+*The class:* **when two causes collapse into one state, the state cannot pick
+the message.** A default that names the likelier cause reads as certainty to
+the user, and it is the unlikelier cause that most needs the truth.
+
+## A floating dock that landed on the tab bar
+
+The assistant pill sat squarely over the third tab and swallowed taps meant for
+it, on every phone-width screen that has a tab bar.
+
+*Why:* it docked to the safe-area inset alone. The safe area describes the
+hardware, not the app's own chrome, and this app draws a tab bar above it. The
+timers bar had already solved exactly this and its computation was three files
+away.
+
+*Now:* the pill adds `controlSizes.tabBar` when a tab bar is actually present —
+and only then, because routes without one (onboarding, auth, detail) would
+otherwise float the pill off the screen edge.
+
+*The class:* **the safe-area inset is not the bottom of the app.** Anything
+docked to the bottom edge has to clear the chrome the app itself mounts there,
+and the second widget to learn this should have copied the first.
