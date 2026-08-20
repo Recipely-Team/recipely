@@ -3,6 +3,7 @@ import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontWeights, durations } from '@presentation/base/theme';
+import { AVATAR_INITIALS_FONT_RATIO } from '@presentation/base/widgets/media/avatar-initials-font-ratio';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AvatarImageProps {
@@ -16,14 +17,14 @@ const initialsFor = (name: string): string => {
   if (trimmed.length === ValueConstants.zero) return '?';
   const parts = trimmed.split(/\s+/);
   const first = parts[ValueConstants.zero]?.[ValueConstants.zero] ?? CharConstants.empty;
-  const second = parts.length > 1 ? (parts[parts.length - ValueConstants.one]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;
+  const second = parts.length > ValueConstants.one ? (parts[parts.length - ValueConstants.one]?.[ValueConstants.zero] ?? CharConstants.empty) : CharConstants.empty;
   return (first + second).toUpperCase();
 };
 
 /** Circular avatar that shows a remote image or falls back to initials on a primary-gradient background. */
 export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const borderRadius = size / 2;
+  const borderRadius = size / ValueConstants.two;
 
   if (uri !== undefined && uri.length > ValueConstants.zero) {
     return (
@@ -50,7 +51,12 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
-        <Text style={[styles.initials, { fontSize: size * 0.36, color: colors.primaryText }]}>
+        <Text
+          style={[
+            styles.initials,
+            { fontSize: size * AVATAR_INITIALS_FONT_RATIO, color: colors.primaryText },
+          ]}
+        >
           {initialsFor(name)}
         </Text>
       </View>

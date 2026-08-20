@@ -4,7 +4,18 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, decorSizes, borderWidths, BrandColors } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  controlSizes,
+  decorSizes,
+  borderWidths,
+  opacities,
+  iconSizes,
+  BrandColors,
+} from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
@@ -56,11 +67,11 @@ export const WebHeaderActions = ({
             styles.discoverBtn,
             {
               borderColor: colors.cardBorder,
-              opacity: pressed ? 0.85 : 1,
+              opacity: pressed ? opacities.pressedSubtle : opacities.full,
             },
           ]}
         >
-          <Ionicons name="sparkles" size={15} color={colors.primary} />
+          <Ionicons name="sparkles" size={iconSizes.md} color={colors.primary} />
           <ThemedText style={[styles.createLabel, { color: colors.text }]}>
             {discoverLabel}
           </ThemedText>
@@ -74,10 +85,13 @@ export const WebHeaderActions = ({
         style={({ pressed }) => [
           styles.createBtn,
           shadows.sm,
-          { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+          {
+            backgroundColor: colors.primary,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
+          },
         ]}
       >
-        <Ionicons name="add" size={16} color={colors.primaryText} />
+        <Ionicons name="add" size={iconSizes.md} color={colors.primaryText} />
         <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
           {createLabel}
         </ThemedText>
@@ -92,13 +106,13 @@ export const WebHeaderActions = ({
           {
             backgroundColor: colors.surface,
             borderColor: colors.cardBorder,
-            opacity: pressed ? 0.85 : 1,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
           },
         ]}
       >
         <Ionicons
           name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
-          size={18}
+          size={iconSizes.lg}
           color={colors.text}
         />
         {unreadCount > ValueConstants.zero ? (
@@ -122,7 +136,7 @@ export const WebHeaderActions = ({
           {
             borderColor: isProfileActive ? colors.primary : colors.cardBorder,
             backgroundColor: isProfileActive ? colors.chipBackground : colors.surface,
-            opacity: pressed ? 0.85 : 1,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
           },
         ]}
       >

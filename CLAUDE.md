@@ -472,7 +472,10 @@ blocking.
     `+html.tsx` wraps every route, so a loader there runs on `/login`,
     `/settings` and `/verify-code` too, and since the site declares no unit of
     its own, every ad it served was an Auto Ad on one of those pages. A web ad
-    is added to the page that earned it. **Enforced mechanically** by
+    is added to the page that earned it — the site now declares ONE AdSense
+    display unit and the feed is where it sits, with the loader fetched by
+    `mountAdsenseUnit` alongside the `<ins>` it serves so the script cannot
+    reach a page that has no ad on it. **Enforced mechanically** by
     `check:structure` (rule T), whose placement allowlist is a one-line diff
     someone has to justify.
 

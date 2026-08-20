@@ -54,7 +54,7 @@ const RecipeCard = ({ recipe }: { recipe: MockRecipe }): React.JSX.Element => {
         <Ionicons name="restaurant" size={iconSizes.xxl} color={colors.onOverlay} />
       </LinearGradient>
       <View style={styles.cardBody}>
-        <ThemedText numberOfLines={1} style={styles.cardTitle}>
+        <ThemedText numberOfLines={ValueConstants.one} style={styles.cardTitle}>
           {recipe.title}
         </ThemedText>
         <ThemedText muted style={styles.cardMeta}>

@@ -10,6 +10,9 @@ import { WebCuisineRail } from '@presentation/app/recipes/body/web-cuisine-rail'
 import { AllCuisinesSheet } from '@presentation/app/recipes/sheets/all-cuisines-sheet';
 import { feedGutter } from '@presentation/app/recipes/model/feed-content-width';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
+import { WebBannerAd } from '@presentation/base/widgets/ads/web-banner-ad';
+import { webFeedSlotId } from '@infrastructure/constants/ads';
+import { t } from '@presentation/i18n';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 
 export interface WebRecipeFeedProps {
@@ -28,6 +31,8 @@ export interface WebRecipeFeedProps {
 export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => {
   const { width } = useLayout();
   const [allCuisinesOpen, setAllCuisinesOpen] = useState(false);
+  const recipesLoaded =
+    vm.state.status === StoreStatus.Loaded && !vm.isReloadingResults && vm.recipes.length > ValueConstants.zero;
   // The rail's label is the first thing to go when the row runs out of width.
   const showRailTitle = width >= BREAKPOINTS.desktop;
 
@@ -52,6 +57,21 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
           onOpenAll={() => setAllCuisinesOpen(true)}
           showTitle={showRailTitle}
         />
+        {/* Between the rail and the grid, which is the only place on this page
+            with finished content both above and below it. Not above the hero
+            (the ad would BE the page on arrival) and not inside the grid, where
+            a cell-sized banner sits among the photo cards it is trying not to
+            be mistaken for. Hidden during search for the same reason: the
+            results are the whole page then, with nothing above them.
+
+            And only once the recipes have ARRIVED. Rendered unconditionally it
+            mounted while the grid was still skeletons, so the request went out
+            against a page with nothing on it yet — which is the shape of the
+            violation this placement exists to avoid, and on a failed load the
+            unit was thrown away unread when the error state replaced the feed. */}
+        {recipesLoaded ? (
+          <WebBannerAd slotId={webFeedSlotId()} accessibilityLabel={t().createRecipe.adLabel} />
+        ) : null}
       </>
     )}
     <WebRecipeGrid
@@ -85,7 +105,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
 
 const styles = StyleSheet.create({
   list: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   // ONE content column for the whole feed. Every block inside — hero, rail,
   // grid — sits in it and shares its edges, which is the thing that stops the

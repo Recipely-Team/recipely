@@ -1,15 +1,15 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isString } from '@core/guards/type-guards';
-import type { RefObject } from 'react';
-import type { ScrollView, ScrollViewProps } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import { useStores } from '@presentation/bootstrap/use-stores';
-import { spacing } from '@presentation/base/theme';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
-import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
-import { ValueConstants } from '@core/constants';
+import { ValueConstants } from "@core/constants";
+import { isString } from "@core/guards/type-guards";
+import type { CommentNode } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
+import type { UseCommentHighlightResult } from "@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result";
+import { spacing } from "@presentation/base/theme";
+import { useStores } from "@presentation/bootstrap/use-stores";
+import { useLocalSearchParams } from "expo-router";
+import type { RefObject } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { ScrollView, ScrollViewProps } from "react-native";
 
-import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
+import type { RecipeCommentsState } from "@application/comments/list/recipe-comments-state";
 
 /** Inputs {@link useCommentHighlight} needs from the recipe-detail view model. */
 interface UseCommentHighlightArgs {
@@ -75,12 +75,15 @@ export const useCommentHighlight = ({
   scrollViewRef,
 }: UseCommentHighlightArgs): UseCommentHighlightResult => {
   const params = useLocalSearchParams<{ commentId?: string }>();
-  const targetId = isString(params.commentId) && params.commentId.length > ValueConstants.zero
-    ? params.commentId
-    : null;
+  const targetId =
+    isString(params.commentId) && params.commentId.length > ValueConstants.zero
+      ? params.commentId
+      : null;
 
   const { commentsStore } = useStores();
-  const [highlightedCommentId, setHighlightedCommentId] = useState<string | null>(null);
+  const [highlightedCommentId, setHighlightedCommentId] = useState<
+    string | null
+  >(null);
   const nodeRef = useRef<CommentNode | null>(null);
   // Bumped when the target card mounts, so the scroll effect re-runs with a node.
   const [nodeVersion, setNodeVersion] = useState(ValueConstants.zero);
@@ -117,7 +120,7 @@ export const useCommentHighlight = ({
     if (commentState.items.length <= lastCountRef.current) return;
     if (attemptsRef.current >= MAX_PAGE_FETCHES) return;
     lastCountRef.current = commentState.items.length;
-    attemptsRef.current += 1;
+    attemptsRef.current++;
     void commentsStore.getState().loadMore(recipeId);
   }, [targetId, recipeId, commentState, commentsStore]);
 
@@ -137,10 +140,10 @@ export const useCommentHighlight = ({
       scrollDoneRef.current = true;
       return;
     }
-    scrollAttemptsRef.current += 1;
+    scrollAttemptsRef.current++;
 
     node.measureLayout(
-      innerNode as Parameters<CommentNode['measureLayout']>[0],
+      innerNode as Parameters<CommentNode["measureLayout"]>[0],
       (_x, y) => {
         // The user grabbed the scroller while we were measuring — their call.
         if (scrollDoneRef.current) return;
@@ -148,10 +151,16 @@ export const useCommentHighlight = ({
         lastYRef.current = y;
         // The same y twice running means the content above the comment has
         // stopped growing: this landing is the final one.
-        if (previousY !== null && Math.abs(y - previousY) <= SETTLE_EPSILON_PX) {
+        if (
+          previousY !== null &&
+          Math.abs(y - previousY) <= SETTLE_EPSILON_PX
+        ) {
           scrollDoneRef.current = true;
         }
-        scrollViewRef.current?.scrollTo({ y: Math.max(ValueConstants.zero, y - SCROLL_OFFSET), animated: false });
+        scrollViewRef.current?.scrollTo({
+          y: Math.max(ValueConstants.zero, y - SCROLL_OFFSET),
+          animated: false,
+        });
       },
       () => {
         // Card unmounted mid-measure: keep the highlight, skip the scroll.
@@ -167,7 +176,8 @@ export const useCommentHighlight = ({
   // leaving the deep link doing nothing at all. Marking the comment costs them
   // nothing; only moving them under their finger would.
   useEffect(() => {
-    if (targetId === null || flashedRef.current || nodeRef.current === null) return;
+    if (targetId === null || flashedRef.current || nodeRef.current === null)
+      return;
     flashedRef.current = true;
     setHighlightedCommentId(targetId);
   }, [targetId, nodeVersion]);
@@ -195,5 +205,10 @@ export const useCommentHighlight = ({
     };
   }, [scrollToTarget, releaseToUser]);
 
-  return { targetCommentId: targetId, highlightedCommentId, registerTargetNode, scrollViewProps };
+  return {
+    targetCommentId: targetId,
+    highlightedCommentId,
+    registerTargetNode,
+    scrollViewProps,
+  };
 };

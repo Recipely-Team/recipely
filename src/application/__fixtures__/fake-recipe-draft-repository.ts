@@ -1,13 +1,13 @@
-import { type Failure, UnknownFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result-helpers';
-import type { Result } from '@core/result/result';
-import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
-import type { PagedDrafts } from '@domain/drafts/paged-drafts';
-import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
-import type { FakeRecipeDraftRepositoryConfig } from '@application/__fixtures__/fake-recipe-draft-repository-config';
-import type { ListDraftsCall } from '@application/__fixtures__/list-drafts-call';
-import { ValueConstants } from '@core/constants';
+import type { FakeRecipeDraftRepositoryConfig } from "@application/__fixtures__/fake-recipe-draft-repository-config";
+import type { ListDraftsCall } from "@application/__fixtures__/list-drafts-call";
+import { ValueConstants } from "@core/constants";
+import { type Failure, UnknownFailure } from "@core/failure";
+import type { Result } from "@core/result/result";
+import { fail, ok } from "@core/result/result-helpers";
+import type { PagedDrafts } from "@domain/drafts/paged-drafts";
+import type { RecipeDraft } from "@domain/drafts/recipe-draft";
+import type { RecipeDraftRepositoryInterface } from "@domain/drafts/recipe-draft-repository-interface";
+import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
 
 /**
  * In-memory test double for `RecipeDraftRepositoryInterface`. Returns pre-configured
@@ -27,38 +27,43 @@ export class FakeRecipeDraftRepository implements RecipeDraftRepositoryInterface
 
   constructor(private readonly config: FakeRecipeDraftRepositoryConfig = {}) {}
 
-  listDrafts(page: number, pageSize: number): Promise<Result<PagedDrafts, Failure>> {
+  listDrafts(
+    page: number,
+    pageSize: number,
+  ): Promise<Result<PagedDrafts, Failure>> {
     this.lastListCall = { page, pageSize };
-    this.listCallCount += 1;
+    this.listCallCount++;
     return Promise.resolve(
-      this.config.listDraftsResult ?? fail(new UnknownFailure('not configured')),
+      this.config.listDraftsResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
   getLatestDraft(): Promise<Result<RecipeDraft | null, Failure>> {
-    this.getLatestCallCount += 1;
+    this.getLatestCallCount++;
     return Promise.resolve(this.config.getLatestDraftResult ?? ok(null));
   }
 
   getDraft(id: string): Promise<Result<RecipeDraft, Failure>> {
     this.lastGetDraftId = id;
-    this.getDraftCallCount += 1;
+    this.getDraftCallCount++;
     return Promise.resolve(
-      this.config.getDraftResult ?? fail(new UnknownFailure('not configured')),
+      this.config.getDraftResult ?? fail(new UnknownFailure("not configured")),
     );
   }
 
   upsertDraft(input: UpsertDraftInput): Promise<Result<RecipeDraft, Failure>> {
     this.lastUpsertInput = input;
-    this.upsertCallCount += 1;
+    this.upsertCallCount++;
     return Promise.resolve(
-      this.config.upsertDraftResult ?? fail(new UnknownFailure('not configured')),
+      this.config.upsertDraftResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
   deleteDraft(id: string): Promise<Result<void, Failure>> {
     this.lastDeleteId = id;
-    this.deleteCallCount += 1;
+    this.deleteCallCount++;
     return Promise.resolve(this.config.deleteDraftResult ?? ok(undefined));
   }
 }

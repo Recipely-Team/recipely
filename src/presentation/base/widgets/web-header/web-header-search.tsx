@@ -33,7 +33,7 @@ export const WebHeaderSearch = ({
         },
       ]}
     >
-      <Ionicons name="search" size={16} color={colors.textMuted} />
+      <Ionicons name="search" size={iconSizes.md} color={colors.textMuted} />
       <TextInput
         value={value}
         onChangeText={onChange}
@@ -50,7 +50,7 @@ export const WebHeaderSearch = ({
           accessibilityLabel={ariaClear}
           style={styles.clearBtn}
         >
-          <Ionicons name="close-circle" size={16} color={colors.textMuted} />
+          <Ionicons name="close-circle" size={iconSizes.md} color={colors.textMuted} />
         </Pressable>
       ) : null}
     </View>

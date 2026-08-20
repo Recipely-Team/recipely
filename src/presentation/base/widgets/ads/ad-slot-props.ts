@@ -10,4 +10,10 @@ export interface AdSlotProps {
   unitId: string;
   /** Read by a screen reader in place of the ad's own content. */
   accessibilityLabel: string;
+  /**
+   * Width to request the adaptive banner at, in dp. Omitted, the SDK asks for
+   * the DEVICE width, which renders past the padding of whatever container the
+   * slot sits in. Ignored by the web build, where the unit is sized by its box.
+   */
+  width?: number;
 }

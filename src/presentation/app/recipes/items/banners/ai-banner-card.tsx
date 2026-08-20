@@ -41,7 +41,7 @@ export const AiBannerCard = ({ onPress }: AiBannerCardProps): React.JSX.Element 
 
         <ThemedText
           variant="body"
-          numberOfLines={1}
+          numberOfLines={ValueConstants.one}
           style={[styles.title, { color: colors.onOverlay }]}
         >
           {t().recipes.aiPromo}

@@ -9,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { HERO_OVERLAY_DEEP, HERO_OVERLAY_FADE } from '@presentation/app/recipes/model/hero/web-hero-constants';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
+import { formatRating } from '@presentation/base/utils/format-rating';
 
 export interface WebHeroMiniCardProps {
   recipe: RecipeSummaryEntity;
@@ -46,13 +47,13 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
         </ThemedText>
       </View>
       <View style={styles.content}>
-        <ThemedText numberOfLines={2} style={[styles.title, { color: colors.onOverlay }]}>
+        <ThemedText numberOfLines={ValueConstants.two} style={[styles.title, { color: colors.onOverlay }]}>
           {recipe.name}
         </ThemedText>
         <View style={styles.metaRow}>
           <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-            {recipe.rating.toFixed(1)}
+            {formatRating(recipe.rating)}
           </ThemedText>
           {totalMin === null ? null : (
             <>

@@ -2,7 +2,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeightFor, controlSizes } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  lineHeightFor,
+  controlSizes,
+  opacities,
+} from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -60,7 +68,10 @@ export const ConfirmSheet = ({
           accessibilityLabel={t().common.cancel}
           style={({ pressed }) => [
             styles.button,
-            { backgroundColor: colors.surface, opacity: pressed || loading ? 0.7 : 1 },
+            {
+              backgroundColor: colors.surface,
+              opacity: pressed || loading ? opacities.pressedStrong : opacities.full,
+            },
           ]}
         >
           <ThemedText variant="body" style={styles.buttonLabel}>
@@ -74,7 +85,10 @@ export const ConfirmSheet = ({
           accessibilityLabel={confirmLabel}
           style={({ pressed }) => [
             styles.button,
-            { backgroundColor: confirmBackground, opacity: pressed || loading ? 0.7 : 1 },
+            {
+              backgroundColor: confirmBackground,
+              opacity: pressed || loading ? opacities.pressedStrong : opacities.full,
+            },
           ]}
         >
           <ThemedText variant="body" style={[styles.buttonLabel, { color: confirmLabelColor }]}>

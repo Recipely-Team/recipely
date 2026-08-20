@@ -6,26 +6,26 @@
  * error and assert what the app does with the reason.
  */
 
-import { act } from 'react-test-renderer';
-import { renderComponent } from '@presentation/base/test-support/render-component';
-import { FailureReporter } from '@presentation/base/errors/failure-reporter';
-import { AdSlot } from '@presentation/base/widgets/ads/ad-slot';
+import { FailureReporter } from "@presentation/base/errors/failure-reporter";
+import { renderComponent } from "@presentation/base/test-support/render-component";
+import { AdSlot } from "@presentation/base/widgets/ads/ad-slot";
+import { act } from "react-test-renderer";
 
 /** Captured so a test can fire the SDK's own failure callback. */
 let onFailed: ((error: Error) => void) | undefined;
 
-jest.mock('react-native-google-mobile-ads', () => ({
+jest.mock("react-native-google-mobile-ads", () => ({
   __esModule: true,
   default: () => ({ initialize: async () => [] }),
   BannerAd: (props: { onAdFailedToLoad?: (error: Error) => void }) => {
     onFailed = props.onAdFailedToLoad;
     return null;
   },
-  BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: 'ANCHORED_ADAPTIVE_BANNER' },
+  BannerAdSize: { ANCHORED_ADAPTIVE_BANNER: "ANCHORED_ADAPTIVE_BANNER" },
   AdsConsent: { gatherConsent: async () => ({ canRequestAds: true }) },
 }));
 
-jest.mock('@application/ads/get-ads-service', () => ({
+jest.mock("@application/ads/get-ads-service", () => ({
   getAdsService: () => ({ prepare: async () => true }),
 }));
 
@@ -40,7 +40,7 @@ jest.mock('@application/ads/get-ads-service', () => ({
  */
 let unitCounter = 0;
 const freshUnitId = (): string => {
-  unitCounter += 1;
+  unitCounter++;
   return `ca-app-pub-test/${unitCounter}`;
 };
 
@@ -52,7 +52,7 @@ const mountSlot = async (unitId: string): Promise<void> => {
   });
 };
 
-describe('AdSlot', () => {
+describe("AdSlot", () => {
   beforeEach(() => {
     onFailed = undefined;
   });
@@ -66,29 +66,31 @@ describe('AdSlot', () => {
   // error on the floor, so "no fill" (a healthy account with no inventory yet)
   // and "invalid request" (a wrong unit id, or an app id the manifest never
   // received) both reached us as the same thing: an empty space.
-  it('reports the reason a banner did not load', async () => {
+  it("reports the reason a banner did not load", async () => {
     const sink = jest.fn();
     FailureReporter.setSink(sink);
 
     await mountSlot(freshUnitId());
     expect(onFailed).toBeDefined();
-    act(() => onFailed?.(new Error('Request Error: No ad config.')));
+    act(() => onFailed?.(new Error("Request Error: No ad config.")));
 
     expect(sink).toHaveBeenCalledWith(
-      expect.objectContaining({ message: expect.stringContaining('No ad config.') }),
-      'AdSlot.load',
+      expect.objectContaining({
+        message: expect.stringContaining("No ad config."),
+      }),
+      "AdSlot.load",
     );
   });
 
-  it('reports a given unit only once, however many rows carry it', async () => {
+  it("reports a given unit only once, however many rows carry it", async () => {
     const sink = jest.fn();
     FailureReporter.setSink(sink);
 
     const unitId = freshUnitId();
     await mountSlot(unitId);
-    act(() => onFailed?.(new Error('no fill')));
+    act(() => onFailed?.(new Error("no fill")));
     await mountSlot(unitId);
-    act(() => onFailed?.(new Error('no fill')));
+    act(() => onFailed?.(new Error("no fill")));
 
     expect(sink).toHaveBeenCalledTimes(1);
   });

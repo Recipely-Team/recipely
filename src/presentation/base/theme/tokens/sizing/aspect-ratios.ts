@@ -13,6 +13,11 @@ export const aspectRatios = {
   square: 1,
   /** Recipe-detail hero on a phone (the 375×280 design frame). */
   hero: 4 / 3,
+  /**
+   * Cover of a recipe card in the web grid. Taller than {@link cardCover}
+   * because a wide column would otherwise letterbox every card in the grid.
+   */
+  cardCoverTall: 4 / 3,
   /** Recipe-detail hero in a wide web column — shallower so the page still scrolls. */
   heroWide: 16 / 10,
   /** Card cover strip in a feed. */

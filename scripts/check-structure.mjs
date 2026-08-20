@@ -24,8 +24,9 @@
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
- *   T. Ads only on screens carrying publisher content, and no ad loader in the
- *      web shell — AdSense flagged both (CLAUDE.md §23e).
+ *   T. Ads only on screens carrying publisher content, and the ad loader only
+ *      in the widget that mounts a unit — never in a page and never in the web
+ *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
  *
  * KNOWN_DEBT entries are pre-existing violations tolerated until burned down.
  * Adding a NEW entry to KNOWN_DEBT requires explicit user approval in review.
@@ -546,30 +547,36 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 //      wait screens — a spinner, a stage list, a progress bar — which is the
 //      same violation in the app, under the same rule in AdMob's version of it.
 //
-// So: the loader may not come back to the shell, and a slot may only be
-// rendered from a placement listed here. Adding to that list is a policy
-// decision about whether the screen shows the user something they came to read;
-// it is deliberately a one-line diff someone has to justify.
+// So: a slot may only be rendered from a placement listed here, and the loader
+// may only be fetched by the widget that mounts a unit — never by a route, and
+// above all never by the shell. Adding to either list is a policy decision
+// about whether the screen shows the user something they came to read; it is
+// deliberately a one-line diff someone has to justify.
 {
-  const AD_PLACEMENTS = new Set(['presentation/app/recipes/items/feed-row-view.tsx']);
-  const SHELL = 'presentation/app/+html.tsx';
+  const AD_PLACEMENTS = new Set([
+    'presentation/app/recipes/items/feed-row-view.tsx',
+    'presentation/app/recipes/body/web-recipe-feed.tsx',
+  ]);
+  // The one folder allowed to name the loader: it is where a unit is built, so
+  // the script it needs arrives with it rather than with the page.
+  const AD_WIDGETS = 'presentation/base/widgets/ads/';
   const LOADER = /adsbygoogle|pagead2\.googlesyndication\.com/;
-  const RENDERS_SLOT = /<AdSlot[\s/>]/;
+  const RENDERS_SLOT = /<(AdSlot|WebBannerAd)[\s/>]/;
   const isComment = (line) => /^\s*(\/\/|\*|\/\*)/.test(line);
 
   for (const file of files) {
-    if (isTest(file)) continue;
+    if (isTest(file) || file.startsWith(AD_WIDGETS)) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
 
     if (LOADER.test(code)) {
       errors.push(
-        `${file}: loads the AdSense script — it runs on every route, including the ones with no content (CLAUDE.md §23e)`,
+        `${file}: loads the AdSense script — it belongs to the unit in ${AD_WIDGETS}, not to a page, and in the shell it runs on every route (CLAUDE.md §23e)`,
       );
     }
-    if (RENDERS_SLOT.test(code) && !AD_PLACEMENTS.has(file) && !file.startsWith('presentation/base/widgets/ads/')) {
+    if (RENDERS_SLOT.test(code) && !AD_PLACEMENTS.has(file)) {
       errors.push(
-        `${file}: renders <AdSlot> outside an approved placement — a wait, form or auth screen carries no publisher content (CLAUDE.md §23e)`,
+        `${file}: renders an ad outside an approved placement — a wait, form or auth screen carries no publisher content (CLAUDE.md §23e)`,
       );
     }
   }

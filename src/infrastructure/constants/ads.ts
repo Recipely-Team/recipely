@@ -1,4 +1,4 @@
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isIos } from '@infrastructure/constants/platform';
 
 /**
@@ -62,3 +62,24 @@ export const FEED_ROWS_BEFORE_FIRST_AD = 6;
 
 /** Rows of recipes between one ad and the next. */
 export const FEED_ROWS_BETWEEN_ADS = 10;
+
+/**
+ * The AdSense publisher id that sells recipely.net's web inventory.
+ *
+ * Not a secret and not configurable: it is already published verbatim in
+ * `public/ads.txt`, which is the file whose whole purpose is to state it in the
+ * open. Reading it from CI would only mean a deploy that forgot the variable
+ * silently stopped serving.
+ */
+export const ADSENSE_CLIENT_ID = 'ca-pub-2891163996772365';
+
+/**
+ * The display unit shown in the web recipe feed, or blank when none is set.
+ *
+ * Blank is the safe answer and the default: the slot renders nothing without an
+ * id, so a build that never received the variable serves no ads rather than
+ * requesting a unit that does not exist. Same trim as the AdMob ids above —
+ * an undeclared CI secret arrives as an empty string, not as `undefined`.
+ */
+export const webFeedSlotId = (): string =>
+  process.env.EXPO_PUBLIC_ADSENSE_WEB_FEED_SLOT_ID?.trim() ?? CharConstants.empty;

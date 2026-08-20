@@ -72,7 +72,7 @@ export const WebCuisineRail = ({
         <ThemedText style={styles.emoji}>{emoji}</ThemedText>
       </View>
       <ThemedText
-        numberOfLines={1}
+        numberOfLines={ValueConstants.one}
         style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
       >
         {name}

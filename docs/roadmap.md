@@ -147,6 +147,39 @@ rest into ordinary integration work.
 
 ---
 
+## 6. Voice assistant that drives the app (Gemini Live API)
+
+**Status:** `shaped` — full plan in
+[voice-assistant-plan.md](voice-assistant-plan.md) · **Extends:** the refine chat
+in §4, which already established propose-then-confirm
+
+A text **and** voice assistant that can do everything the app does — create,
+publish, delete, save, like, search, write a profile bio — over Gemini's Live API
+(WebSocket, free tier). Interruptible: the user can cut the model off mid-sentence.
+
+What makes this different from a chatbot with an API attached: the assistant
+**drives the UI where the user can see it**. "Create a recipe" opens the create
+screen, the draft fills in, the user watches it happen. It is not dictation — the
+AI decides what to write and issues the command; the user's words are never
+transcribed into fields.
+
+**What it depends on:** a new native dependency (`react-native-audio-api` — the
+installed `expo-audio 55.0.16` neither streams mic PCM nor plays raw PCM), turning
+the microphone permission on for the first time, and a backend PR that mints
+ephemeral tokens so the API key never reaches the client.
+
+**Why the design is shaped by token cost, not by features:** voice runs ~1.7k
+tokens per minute, so the recipe text never enters the voice session. The model
+issues `generateRecipe(prompt)`, the existing `/recipes/generate` pipeline writes
+it server-side, and the model gets back a one-line summary. Tool declarations are
+a single `runAction` with an action enum, because the Live API fixes the tool list
+at session setup and this assistant navigates between screens mid-session.
+
+**The open question:** the free tier's concurrent-session limit is not documented
+anywhere — it has to be read off the AI Studio dashboard. Phase 0 is a throwaway
+spike that measures real tokens per minute and confirms the model id is actually
+callable before any UI is written.
+
 ## Adding to this file
 
 Keep the shape: **what**, **why**, **what it depends on**, **what is still

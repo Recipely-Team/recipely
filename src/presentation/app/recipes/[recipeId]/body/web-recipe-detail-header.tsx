@@ -11,6 +11,7 @@ import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, cont
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
+import { formatRating } from '@presentation/base/utils/format-rating';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -89,7 +90,7 @@ export const WebRecipeDetailHeader = ({
             <View style={styles.statItem}>
               <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
               <ThemedText variant="body" style={[styles.statText, { color: colors.text }]}>
-                {recipe.rating.toFixed(1)}
+                {formatRating(recipe.rating)}
               </ThemedText>
             </View>
           ) : null}

@@ -19,6 +19,15 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 
+/**
+ * Weight of the reading column against the side column beside it.
+ *
+ * A ratio rather than two widths: rule 6b2 — the row declares its split in
+ * flex weights and lets every height follow, so the two columns cannot
+ * disagree about where the fold is.
+ */
+const MAIN_COLUMN_WEIGHT = 1.7;
+
 export interface WebRecipeDetailProps {
   recipe: RecipeEntity;
   media: readonly MediaItem[];
@@ -201,7 +210,7 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
   },
   mainColumn: {
-    flex: 1.7,
+    flex: MAIN_COLUMN_WEIGHT,
     minWidth: ValueConstants.zero,
     gap: spacing.xl,
   },

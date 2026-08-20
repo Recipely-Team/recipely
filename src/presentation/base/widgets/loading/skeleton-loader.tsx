@@ -8,7 +8,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { radii, opacities } from '@presentation/base/theme';
+import { radii, opacities, durations } from '@presentation/base/theme';
 
 /**
  * A pixel count or a percentage — the two the shimmer can actually be given.
@@ -62,7 +62,7 @@ export const SkeletonLoader = ({
   useEffect(() => {
     if (isWeb()) return;
     translateX.value = withRepeat(
-      withTiming(SHIMMER_SWEEP_WIDTH, { duration: 1200 }),
+      withTiming(SHIMMER_SWEEP_WIDTH, { duration: durations.shimmer }),
       -1,
       false,
     );

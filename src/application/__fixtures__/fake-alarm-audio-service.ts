@@ -13,13 +13,13 @@ export class FakeAlarmAudioService implements AlarmAudioServiceInterface {
   isPlaying = false;
 
   start(): Promise<void> {
-    this.startCount += 1;
+    this.startCount++;
     this.isPlaying = true;
     return Promise.resolve();
   }
 
   stop(): Promise<void> {
-    this.stopCount += 1;
+    this.stopCount++;
     this.isPlaying = false;
     return Promise.resolve();
   }

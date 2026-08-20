@@ -12,7 +12,17 @@ import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, zIndices, opacities } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  controlSizes,
+  borderWidths,
+  zIndices,
+  opacities,
+  iconSizes,
+} from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -79,7 +89,7 @@ export const LoginForm = (): React.JSX.Element => {
       <View style={styles.inputWrapper}>
         <MaterialCommunityIcons
           name="email-outline"
-          size={20}
+          size={iconSizes.xl}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -110,7 +120,7 @@ export const LoginForm = (): React.JSX.Element => {
       <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
         <MaterialCommunityIcons
           name="lock-outline"
-          size={20}
+          size={iconSizes.xl}
           color={colors.textMuted}
           style={styles.inputIcon}
         />
@@ -139,14 +149,14 @@ export const LoginForm = (): React.JSX.Element => {
         />
         <Pressable
           onPress={() => setShowPassword((visible) => !visible)}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={styles.eyeButton}
           accessibilityRole="button"
           accessibilityLabel={showPassword ? t().login.hidePassword : t().login.showPassword}
         >
           <MaterialCommunityIcons
             name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            size={18}
+            size={iconSizes.lg}
             color={colors.textMuted}
           />
         </Pressable>

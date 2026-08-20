@@ -2,7 +2,7 @@ import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AppErrorBoundaryProps {
   children: ReactNode;
@@ -42,7 +42,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
   componentDidCatch(error: Error, info: ErrorInfo): void {
     // The component stack is the half that says WHERE, and it is lost by the
     // time Crashlytics sees the Error alone.
-    this.props.onError(error, `${CONTEXT}${info.componentStack ?? ''}`);
+    this.props.onError(error, `${CONTEXT}${info.componentStack ?? CharConstants.empty}`);
   }
 
   private readonly handleRetry = (): void => {

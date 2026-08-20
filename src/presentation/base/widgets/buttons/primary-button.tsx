@@ -1,7 +1,7 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, controlSizes, opacities } from '@presentation/base/theme';
 
 export interface PrimaryButtonProps {
   label: string;
@@ -28,7 +28,10 @@ export const PrimaryButton = ({
       disabled={!isInteractive}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor, opacity: pressed && isInteractive ? 0.85 : 1 },
+        {
+          backgroundColor,
+          opacity: pressed && isInteractive ? opacities.pressedSubtle : opacities.full,
+        },
       ]}
     >
       <View style={styles.inner}>

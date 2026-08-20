@@ -48,7 +48,7 @@ export const SelectTile = ({
           <ThemedText style={styles.emoji}>{emoji}</ThemedText>
           <ThemedText
             variant="body"
-            numberOfLines={1}
+            numberOfLines={ValueConstants.one}
             style={[styles.value, { color: hasValue ? colors.text : colors.textMuted }]}
           >
             {value ?? placeholder}
