@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
+import { useAssistantProfileActions } from '@presentation/app/edit-profile/hooks/use-assistant-profile-actions';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
@@ -16,6 +17,10 @@ export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const vm = useEditProfile();
+
+  // Registered by the screen that owns the form, so the assistant can fill in
+  // a name or a bio here and nowhere else.
+  useAssistantProfileActions({ onChangeName: vm.onChangeName, onChangeBio: vm.onChangeBio });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

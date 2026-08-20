@@ -24,6 +24,9 @@
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
+ *   U. Every assistant action offered to the model has a handler registered by
+ *      some screen — a word nothing answers advertises a capability the
+ *      assistant does not have (CLAUDE.md §5).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -425,6 +428,40 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
           'app.json: expo-audio requests RECORD_AUDIO, so its "microphonePermission" must be the iOS usage string — false or missing deletes NSMicrophoneUsageDescription and the mic is denied with no prompt (CLAUDE.md §23c)',
         );
       }
+    }
+  }
+}
+
+// --- U: every assistant action has a handler (CLAUDE.md §5) ----------------
+// The action list is offered to the model as the enum of its one tool, and a
+// word nothing answers is the worst kind of bug this feature has: the model is
+// told it can do a thing, tries, and gets `unavailable_here` — so the assistant
+// looks broken for a capability it was advertised. Nothing catches that at
+// build time, and on a device it looks like the model misunderstood.
+//
+// Handlers are registered from screens via `useAssistantAction`, so the check
+// is a set comparison between the vocabulary and the registrations.
+{
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(vocabularyPath)) {
+    const vocabulary = [...fs.readFileSync(vocabularyPath, 'utf8').matchAll(/^ {2}\w+: '(\w+)',/gm)].map(
+      (m) => m[1],
+    );
+    const registered = new Set();
+    for (const file of files) {
+      const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+      for (const m of src.matchAll(/useAssistantAction\(\s*AssistantAction\.(\w+)/g)) {
+        const value = new RegExp(`^ {2}${m[1]}: '(\\w+)',`, 'm').exec(
+          fs.readFileSync(vocabularyPath, 'utf8'),
+        )?.[1];
+        if (value !== undefined) registered.add(value);
+      }
+    }
+    const unhandled = vocabulary.filter((action) => !registered.has(action));
+    if (unhandled.length > 0) {
+      errors.push(
+        `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
+      );
     }
   }
 }

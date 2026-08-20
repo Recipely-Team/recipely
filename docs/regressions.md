@@ -1360,3 +1360,25 @@ otherwise float the pill off the screen edge.
 *The class:* **the safe-area inset is not the bottom of the app.** Anything
 docked to the bottom edge has to clear the chrome the app itself mounts there,
 and the second widget to learn this should have copied the first.
+
+## An assistant that could talk about the app and do nothing to it
+
+The voice assistant shipped its transport, its session, its registry and its UI,
+and answered every single tool call `unavailable_here`. Twenty-three actions
+were offered to the model; zero had a handler. It transcribed, it decided, it
+issued the command — and nothing happened, on any screen.
+
+*Why:* the registry is deliberately open — screens register what only they can
+perform — and nothing anywhere said the set had to be complete. Every gate was
+green, because an empty registry is a valid registry.
+
+*Now:* `check:structure` rule U compares the action vocabulary against every
+`useAssistantAction` registration and blocks on a word nothing answers. Two
+actions the plan invented were deleted rather than implemented — `writeBio`
+duplicated `updateProfile`, and `repeat` is something a model does without a
+tool.
+
+*The class:* **a registry with no required members is a feature with no
+required parts.** When the thing being built is a *set* of capabilities, the
+completeness of the set is the requirement, and it needs a check of its own —
+the individual pieces all passing says nothing about it.

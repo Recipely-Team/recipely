@@ -1,0 +1,104 @@
+import { useCallback } from 'react';
+import { router, type Href } from 'expo-router';
+import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/assistant-navigation-targets';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
+import { RoutePaths } from '@presentation/base/constants/route-paths';
+import { StoreStatus } from '@application/store/store-status';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useStores } from '@presentation/bootstrap/use-stores';
+import { CharConstants } from '@core/constants';
+
+/**
+ * The actions that work from anywhere, registered once beside the pill.
+ *
+ * @remarks
+ * - **These are what make it an assistant rather than a chatbot.** Moving
+ *   between screens, searching and opening a recipe are the ones a user is
+ *   watching happen; everything else the assistant does is performed by the
+ *   screen it just opened.
+ * - **`openRecipe` accepts a name, because a person does.** The model is told
+ *   what is on screen, not a table of ids, so it passes back the words the user
+ *   said. An exact id still works — an argument that matches nothing in the
+ *   loaded feed is tried as one, which is what makes the action usable from a
+ *   deep link or a previous turn.
+ * - **Failures name themselves.** `not_found` and `nothing_to_search` let the
+ *   model say something useful out loud instead of falling silent; that is the
+ *   whole reason handlers answer with a shape rather than a boolean.
+ */
+export const useAssistantGlobalActions = (): void => {
+  const { assistantSessionStore, recipeListStore } = useStores();
+  const listState = recipeListStore((s) => s.state);
+  const stopVoice = assistantSessionStore((s) => s.stopVoice);
+
+  useAssistantAction(
+    AssistantAction.Navigate,
+    useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
+      const target = ASSISTANT_NAVIGATION_TARGETS[arg ?? CharConstants.empty];
+      if (target === undefined) return { ok: false, error: 'unknown_screen' };
+
+      router.push(target as Href);
+      return { ok: true };
+    }, []),
+  );
+
+  useAssistantAction(
+    AssistantAction.Search,
+    useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
+      if (arg === undefined || arg === CharConstants.empty) {
+        return { ok: false, error: 'nothing_to_search' };
+      }
+      // Opening the feed WITH the query, rather than filling its store behind
+      // its back: the field shows what was asked for and the user watches the
+      // search happen, which is the whole point of an assistant that drives
+      // the app instead of talking about it.
+      router.push(RoutePaths.recipesWithSearch(arg) as Href);
+      return { ok: true };
+    }, []),
+  );
+
+  useAssistantAction(
+    AssistantAction.GenerateRecipe,
+    useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
+      if (arg === undefined || arg === CharConstants.empty) {
+        return { ok: false, error: 'empty_prompt' };
+      }
+      // Same shape, and the flagship case: the create screen opens with the
+      // prompt in place and the generating view runs in front of the user. The
+      // recipe TEXT never comes back through the voice session — the screen
+      // writes it, and the model is told only that it worked.
+      router.push(RoutePaths.createRecipeWithPrompt(arg) as Href);
+      return { ok: true };
+    }, []),
+  );
+
+  useAssistantAction(
+    AssistantAction.OpenRecipe,
+    useCallback(
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        if (arg === undefined || arg === CharConstants.empty) {
+          return { ok: false, error: 'not_found' };
+        }
+        const loaded = listState.status === StoreStatus.Loaded ? listState.recipes : [];
+        const match = loaded.find((recipe) =>
+          recipe.name.toLocaleLowerCase().includes(arg.toLocaleLowerCase()),
+        );
+        // An argument that matches no loaded recipe is tried as an id, so a
+        // reference from a previous turn or a deep link still opens.
+        const id = match?.id ?? arg;
+
+        router.push(RoutePaths.recipeDetail(id) as Href);
+        return { ok: true, ...(match !== undefined ? { title: match.name } : {}) };
+      },
+      [listState],
+    ),
+  );
+
+  useAssistantAction(
+    AssistantAction.Stop,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      await stopVoice();
+      return { ok: true };
+    }, [stopVoice]),
+  );
+};

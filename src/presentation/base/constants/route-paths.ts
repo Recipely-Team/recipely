@@ -29,5 +29,16 @@ export const RoutePaths = {
   editProfile: '/edit-profile',
   settings: '/settings',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /**
+   * The feed, arriving with the search box already filled.
+   *
+   * The assistant navigates like a person rather than reaching into the feed's
+   * store: it opens the screen with the query, the field shows it, and the
+   * user watches the search they asked for happen.
+   */
+  recipesWithSearch: (query: string): string => `/recipes?q=${encodeURIComponent(query)}`,
+  /** The create screen, arriving with the prompt filled and generation started. */
+  createRecipeWithPrompt: (prompt: string): string =>
+    `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
   loginWithRedirect: (pathname: string): string => `/login?redirect=${encodeURIComponent(pathname)}`,
 } as const;

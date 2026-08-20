@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -93,6 +93,13 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const originalPrompt = useRef(CharConstants.empty);
+
+  // The assistant creates a recipe by opening this screen with `?prompt=`,
+  // exactly as a person would type it in and tap generate — the prompt appears
+  // in the field and the generating view runs where they can see it. A draft
+  // being resumed wins: `?draftId=` means the user asked for something else.
+  const { prompt: promptParam } = useLocalSearchParams<{ prompt?: string }>();
+  const startedFromParam = useRef(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -241,6 +248,14 @@ const GEN_STEP_INTERVAL_MS = 620;
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
   // for a failed run, so any change to it drops the stale error.
+  useEffect(() => {
+    if (promptParam === undefined || promptParam === CharConstants.empty) return;
+    if (draftId !== undefined || startedFromParam.current) return;
+    startedFromParam.current = true;
+    setPrompt(promptParam);
+    void runGenerate(promptParam);
+  }, [promptParam, draftId, runGenerate]);
+
   const onChangePrompt = useCallback((value: string): void => {
     setPrompt(value);
     setGenerateError(null);

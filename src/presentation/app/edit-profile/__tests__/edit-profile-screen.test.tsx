@@ -33,6 +33,13 @@ const mockVm: UseEditProfileResult = {
   onCloseErrorDialog: jest.fn(),
 };
 
+// This suite renders the screen bare, without a StoresProvider — it is about
+// keyboard avoidance, not wiring. The assistant hook only registers actions,
+// so stubbing it keeps that focus rather than dragging a store container in.
+jest.mock('@presentation/app/edit-profile/hooks/use-assistant-profile-actions', () => ({
+  useAssistantProfileActions: (): void => {},
+}));
+
 jest.mock('@presentation/app/edit-profile/hooks/use-edit-profile', () => ({
   useEditProfile: (): UseEditProfileResult => mockVm,
 }));

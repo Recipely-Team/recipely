@@ -3,6 +3,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
@@ -18,6 +19,22 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
+
+  // Registered here rather than deeper down because the assistant's actions
+  // belong to the SCREEN: they are available exactly while a draft is open,
+  // and answer `unavailable_here` everywhere else.
+  useAssistantDraftActions({
+    recipe: vm.recipe,
+    onUpdateField: vm.onUpdateField,
+    onAddIngredient: vm.onAddIngredient,
+    onChangeIngredient: vm.onChangeIngredient,
+    onRemoveIngredient: vm.onRemoveIngredient,
+    onAddStep: vm.onAddStep,
+    onChangeStep: vm.onChangeStep,
+    onRemoveStep: vm.onRemoveStep,
+    onOpenPhotos: vm.onOpenPhotos,
+    onSave: vm.onSave,
+  });
 
   if (vm.phase === PhaseType.Prompt) {
     return (

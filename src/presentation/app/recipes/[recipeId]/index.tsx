@@ -11,6 +11,9 @@ import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mo
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
+import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
+import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/use-assistant-recipe-actions';
+import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
@@ -19,7 +22,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -36,6 +39,26 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     recipeId: vm.recipeId,
     commentState: vm.commentState,
     scrollViewRef: vm.scrollViewRef,
+  });
+  // "Save it" means the recipe on screen. Registering here is what supplies
+  // the subject the user never says out loud.
+  const cookTimer = useRecipeTimer({
+    timerId: cookTimerId(vm.recipeId),
+    recipeId: vm.recipeId,
+    recipeName: vm.recipe?.name ?? CharConstants.empty,
+    minutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+  });
+  useAssistantRecipeActions({
+    recipeId: vm.recipeId,
+    recipeName: vm.recipe?.name ?? CharConstants.empty,
+    instructions: vm.recipe?.instructions ?? [],
+    cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+    isOwner: vm.isOwner,
+    commentInput: vm.commentInput,
+    onChangeCommentInput: vm.onChangeCommentInput,
+    onAddComment: vm.onAddComment,
+    onOpenDelete: vm.onOpenDelete,
+    onStartCookTimer: cookTimer.start,
   });
 
   return (

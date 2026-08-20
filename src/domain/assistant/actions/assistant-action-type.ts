@@ -14,6 +14,12 @@
  *   reconnecting — paying setup and context again — on every navigation. One
  *   tool with an action enum costs about 200 tokens at setup instead of the
  *   1.5–2k a tool apiece would.
+ * - **Nothing is listed that nothing performs.** `writeBio` and `repeat` were
+ *   in the plan and are not here: a bio is written with `updateProfile`, one
+ *   capability under one word, and repeating a sentence is something the model
+ *   does by itself with no help from the app. A word offered to the model that
+ *   no handler answers comes back as a failed call it has to explain away —
+ *   the assistant looks broken for a thing it was told it could do.
  * - **Names are the model's, not the code's.** The model picks an action by
  *   reading these words, so they are chosen to be unambiguous to a reader with
  *   no schema: `unsave` rather than `removeFavorite`.
@@ -36,11 +42,9 @@ export const AssistantAction = {
   PublishDraft: 'publishDraft',
   DeleteRecipe: 'deleteRecipe',
   AddComment: 'addComment',
-  WriteBio: 'writeBio',
   UpdateProfile: 'updateProfile',
   StartTimer: 'startTimer',
   ReadStep: 'readStep',
-  Repeat: 'repeat',
   Stop: 'stop',
 } as const;
 

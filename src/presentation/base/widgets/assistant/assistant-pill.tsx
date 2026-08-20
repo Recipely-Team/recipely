@@ -8,6 +8,8 @@ import { AssistantStatus } from '@application/assistant/session/assistant-status
 import { AssistantPanel } from '@presentation/base/widgets/assistant/assistant-panel';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
+import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, layoutSizes, radii, spacing, zIndices } from '@presentation/base/theme';
@@ -29,6 +31,9 @@ import { t } from '@presentation/i18n';
  * - **It sits above the timers bar** (see `zIndices`): the assistant can be
  *   speaking and acting on the app's behalf, so the control that stops it must
  *   never be the thing that is covered.
+ * - **It registers the global actions**, because it is the only component
+ *   mounted for the whole app's life. Screen-scoped actions belong to their
+ *   screens, which is what makes "save it" mean the recipe in front of you.
  * - **It clears the tab bar the same way the timers bar does.** Docked to the
  *   safe-area inset alone, it landed squarely on the third tab and swallowed
  *   taps meant for it. Routes without a tab bar — onboarding, auth, detail —
@@ -39,6 +44,12 @@ export const AssistantPill = (): React.JSX.Element => {
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
   const { status, isPanelOpen, openPanel, toggleVoice } = useAssistantSession();
+
+  // The pill is the one component mounted for the whole app's life, so the
+  // actions that work from anywhere — and the screen line every tool result
+  // carries — are registered from here.
+  useAssistantGlobalActions();
+  useAssistantScreenContext();
 
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const bottom =
