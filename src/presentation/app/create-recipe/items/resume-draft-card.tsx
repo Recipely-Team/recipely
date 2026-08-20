@@ -31,7 +31,7 @@ export const ResumeDraftCard = ({ draftName, onPress }: ResumeDraftCardProps): R
         <ThemedText variant="caption" style={[styles.resumeKicker, { color: colors.primary }]}>
           {upperCase(t().createRecipe.resumeDraft)}
         </ThemedText>
-        <ThemedText variant="body" style={[styles.resumeName, { color: colors.text }]} numberOfLines={1}>
+        <ThemedText variant="body" style={[styles.resumeName, { color: colors.text }]} numberOfLines={ValueConstants.one}>
           {name}
         </ThemedText>
       </View>

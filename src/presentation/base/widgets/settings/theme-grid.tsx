@@ -7,7 +7,17 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
 import type { ThemeId } from '@presentation/base/theme/context/theme-id';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  iconSizes,
+  borderWidths,
+  opacities,
+  lineHeights,
+  lineHeightFor,
+} from '@presentation/base/theme';
 import { getLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -18,11 +28,12 @@ export interface ThemeGridProps {
 
 const CHIP_WIDTH = 76;
 const SWATCH_SIZE = 56;
-const LABEL_LINE_HEIGHT = 13;
-/** Reserve exactly two lines of label height so switching between a short
- * (English) and long (Turkish, or any other locale) theme name never shifts
- * the section below the grid — see `numberOfLines={2}` on the label below. */
-const LABEL_MIN_HEIGHT = LABEL_LINE_HEIGHT * 2;
+/** Reserve exactly this many lines of label height so switching between a short
+ * (English) and long (Turkish, or any other locale) theme name never shifts the
+ * section below the grid. The same count drives `numberOfLines` on the label. */
+const LABEL_LINE_COUNT = ValueConstants.two;
+const LABEL_LINE_HEIGHT = lineHeightFor(fontSizes.micro, lineHeights.snug);
+const LABEL_MIN_HEIGHT = LABEL_LINE_HEIGHT * LABEL_LINE_COUNT;
 
 /** Horizontal scrollable grid of colour-swatch chips for selecting the active theme. */
 export const ThemeGrid = ({
@@ -48,7 +59,10 @@ export const ThemeGrid = ({
           <Pressable
             key={id}
             onPress={() => onSelect(id)}
-            style={({ pressed }) => [styles.chip, { opacity: pressed ? 0.7 : 1 }]}
+            style={({ pressed }) => [
+              styles.chip,
+              { opacity: pressed ? opacities.pressedStrong : opacities.full },
+            ]}
           >
             <View>
               <LinearGradient
@@ -59,7 +73,7 @@ export const ThemeGrid = ({
                   styles.swatch,
                   {
                     borderColor: isActive ? colors.primary : variant.cardBorder,
-                    borderWidth: isActive ? 2.5 : 1,
+                    borderWidth: isActive ? borderWidths.thick : borderWidths.hairline,
                   },
                 ]}
               />
@@ -73,13 +87,13 @@ export const ThemeGrid = ({
                     },
                   ]}
                 >
-                  <Ionicons name="checkmark" size={12} color={colors.primaryText} />
+                  <Ionicons name="checkmark" size={iconSizes.xs} color={colors.primaryText} />
                 </View>
               ) : null}
             </View>
             <ThemedText
               variant="caption"
-              numberOfLines={2}
+              numberOfLines={LABEL_LINE_COUNT}
               style={[
                 styles.label,
                 { color: isActive ? colors.primary : colors.textMuted },

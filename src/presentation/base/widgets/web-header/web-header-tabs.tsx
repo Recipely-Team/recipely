@@ -2,7 +2,14 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, borderWidths, opacities } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  borderWidths,
+  opacities,
+  iconSizes,
+} from '@presentation/base/theme';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
 
@@ -32,7 +39,7 @@ export const WebHeaderTabs = ({ active, tabs, onPress }: WebHeaderTabsProps): Re
               (state as { hovered?: boolean }).hovered === true && styles.hovered,
             ]}
           >
-            <Ionicons name={tab.icon} size={16} color={tint} />
+            <Ionicons name={tab.icon} size={iconSizes.md} color={tint} />
             <ThemedText
               style={[styles.label, { color: tint, fontWeight: isActive ? '700' : '500' }]}
             >

@@ -1,13 +1,13 @@
-import { Container } from '@core/di/container';
+import { Container } from "@core/di/container";
 
-const TOKEN = Symbol.for('test.service');
+const TOKEN = Symbol.for("test.service");
 
-describe('Container', () => {
-  it('resolves a registered factory and caches the instance', () => {
+describe("Container", () => {
+  it("resolves a registered factory and caches the instance", () => {
     const c = new Container();
     let calls = 0;
     c.register(TOKEN, () => {
-      calls += 1;
+      calls++;
       return { id: calls };
     });
 
@@ -18,7 +18,7 @@ describe('Container', () => {
     expect(calls).toBe(1);
   });
 
-  it('reset clears factories and instances', () => {
+  it("reset clears factories and instances", () => {
     const c = new Container();
     c.register(TOKEN, () => ({ id: 1 }));
     c.resolve(TOKEN);
@@ -28,9 +28,11 @@ describe('Container', () => {
     expect(() => c.resolve(TOKEN)).toThrow();
   });
 
-  it('throws when resolving an unregistered token', () => {
+  it("throws when resolving an unregistered token", () => {
     const c = new Container();
 
-    expect(() => c.resolve(Symbol.for('nope'))).toThrow(/No factory registered/);
+    expect(() => c.resolve(Symbol.for("nope"))).toThrow(
+      /No factory registered/,
+    );
   });
 });

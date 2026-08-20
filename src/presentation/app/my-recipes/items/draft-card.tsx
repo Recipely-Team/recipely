@@ -44,7 +44,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
             {upperCase(t().drafts.title)}
           </ThemedText>
         </View>
-        <ThemedText variant="body" style={styles.name} numberOfLines={1}>
+        <ThemedText variant="body" style={styles.name} numberOfLines={ValueConstants.one}>
           {name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
         </ThemedText>
         <ThemedText variant="caption" muted>

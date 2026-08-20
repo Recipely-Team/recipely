@@ -26,6 +26,7 @@ import { spacing, iconSizes, controlSizes, layoutSizes } from '@presentation/bas
 import type { FeedRow } from '@presentation/app/recipes/model/ads/feed-row';
 import { FeedRowView } from '@presentation/app/recipes/items/feed-row-view';
 import { useFeedRows } from '@presentation/app/recipes/hooks/use-feed-rows';
+import { MOBILE_FEED_GUTTER } from '@presentation/app/recipes/model/feed-content-width';
 import { ValueConstants } from '@core/constants';
 
 export interface RecipeListBodyProps {
@@ -74,7 +75,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     [onOpenRecipe],
   );
 
-  const { rows, keyExtractor, adUnitId } = useFeedRows({
+  const { rows, keyExtractor, adUnitId, adWidth } = useFeedRows({
     recipes,
     isReloading: vm.isReloadingResults,
     gridColumns,
@@ -82,9 +83,10 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
 
   const renderItem = useCallback(
     ({ item }: { item: FeedRow }): React.JSX.Element => (
-      <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} openRecipe={openRecipe} />
+      // prettier-ignore
+      <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} adWidth={adWidth} openRecipe={openRecipe} />
     ),
-    [gridColumns, openRecipe, adUnitId],
+    [gridColumns, openRecipe, adUnitId, adWidth],
   );
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'RecipeListBody');
@@ -258,7 +260,9 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: ValueConstants.one,
-    paddingHorizontal: spacing.lg,
+    // Named, because the feed banner has to request its width from the same
+    // number — see `mobileFeedRowWidth`.
+    paddingHorizontal: MOBILE_FEED_GUTTER,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,
   },

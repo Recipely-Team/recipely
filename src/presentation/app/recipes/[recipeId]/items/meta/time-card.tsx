@@ -99,11 +99,11 @@ export const TimeCard = ({
       </View>
       <ThemedText
         style={[styles.value, { color: isDone ? colors.success : colors.text }]}
-        numberOfLines={1}
+        numberOfLines={ValueConstants.one}
       >
         {valueText}
       </ThemedText>
-      <ThemedText variant="label" muted style={styles.segmentLabel} numberOfLines={1}>
+      <ThemedText variant="label" muted style={styles.segmentLabel} numberOfLines={ValueConstants.one}>
         {label}
       </ThemedText>
       {controls}

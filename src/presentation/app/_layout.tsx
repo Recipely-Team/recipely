@@ -174,7 +174,7 @@ const RootStack = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
+  root: { flex: ValueConstants.one },
 });
 
 export const RootLayout = (): React.JSX.Element => {

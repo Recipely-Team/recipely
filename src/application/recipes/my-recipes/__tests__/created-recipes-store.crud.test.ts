@@ -1,83 +1,86 @@
-import type { BoundStore } from '@application/store/bound-store';
-import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
-import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
-import type { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
-import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
-import type { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
-import type { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-recipes-use-case';
-import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
-import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import { UnknownFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result-helpers';
-import { RecipeEntity } from '@domain/recipes/recipe-entity';
-import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
-import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
-import { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
-import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
+import { recipePageOf } from "@application/__fixtures__/recipe-page-of";
+import type { CreateRecipeUseCase } from "@application/recipes/create/create-recipe-use-case";
+import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";
+import type { RecipeDetailStoreState } from "@application/recipes/detail/recipe-detail-store-state";
+import type { GenerateRecipeUseCase } from "@application/recipes/generate/generate-recipe-use-case";
+import type { ImportInstagramRecipeUseCase } from "@application/recipes/import/import-instagram-recipe-use-case";
+import type { RecipeListStoreState } from "@application/recipes/list/recipe-list-store-state";
+import { configureCreatedRecipesStore } from "@application/recipes/my-recipes/created-recipes-store";
+import type { ListMyRecipesUseCase } from "@application/recipes/my-recipes/list-my-recipes-use-case";
+import type { RefineRecipeUseCase } from "@application/recipes/refine/refine-recipe-use-case";
+import type { BoundStore } from "@application/store/bound-store";
+import { UnknownFailure } from "@core/failure";
+import { fail, ok } from "@core/result/result-helpers";
+import type { CreateRecipeInput } from "@domain/recipes/create/create-recipe-input";
+import { Difficulty } from "@domain/recipes/difficulty";
+import { RecipeEntity } from "@domain/recipes/recipe-entity";
+import { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
+import { CuisineKey } from "@domain/recipes/taxonomy/cuisine-key";
+import { RecipeCategory } from "@domain/recipes/taxonomy/recipe-category";
 
-
-
-const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
+const makeRecipe = (
+  overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {},
+): RecipeEntity => {
   const result = RecipeEntity.create({
-    id: 'r1',
-    name: 'My Recipe',
+    id: "r1",
+    name: "My Recipe",
     cuisine: CuisineKey.Italian,
     category: RecipeCategory.Dinner,
     difficulty: Difficulty.Easy,
-    ingredients: ['flour'],
-    instructions: ['mix'],
+    ingredients: ["flour"],
+    instructions: ["mix"],
     prepTimeMinutes: 10,
     cookTimeMinutes: 20,
     servings: 2,
     caloriesPerServing: 0,
-    image: 'https://cdn.example.com/r1.webp',
-    media: [{ type: 'image', url: 'https://cdn.example.com/r1.webp' }],
+    image: "https://cdn.example.com/r1.webp",
+    media: [{ type: "image", url: "https://cdn.example.com/r1.webp" }],
     rating: 4.5,
     tags: [],
     mealType: [],
-    ownerId: 'owner-1',
+    ownerId: "owner-1",
     likeCount: 0,
     likedByMe: false,
     viewCount: 0,
-    moderationStatus: 'approved',
+    moderationStatus: "approved",
     commentCount: 0,
     ...overrides,
   });
-  if (!result.ok) throw new Error('failed to build Recipe fixture');
+  if (!result.ok) throw new Error("failed to build Recipe fixture");
   return result.value;
 };
 
-const makeSummary = (overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {}): RecipeSummaryEntity => {
+const makeSummary = (
+  overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
+): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
-    id: 'network-only',
-    name: 'Network Only Recipe',
-    image: 'https://cdn.example.com/network.webp',
+    id: "network-only",
+    name: "Network Only Recipe",
+    image: "https://cdn.example.com/network.webp",
     cuisine: CuisineKey.Italian,
     category: RecipeCategory.Dinner,
     difficulty: Difficulty.Easy,
     totalTimeMinutes: 30,
     rating: 4.0,
-    moderationStatus: 'approved',
+    moderationStatus: "approved",
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
     ...overrides,
   });
-  if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
+  if (!result.ok)
+    throw new Error("failed to build RecipeSummaryEntity fixture");
   return result.value;
 };
 
 const createInput: CreateRecipeInput = {
-  name: { en: 'New Recipe' },
+  name: { en: "New Recipe" },
   cuisine: CuisineKey.Italian,
   category: RecipeCategory.Dinner,
   difficulty: Difficulty.Easy,
-  ingredients: { en: ['flour'] },
-  instructions: { en: ['mix'] },
+  ingredients: { en: ["flour"] },
+  instructions: { en: ["mix"] },
   prepTimeMinutes: 5,
   cookTimeMinutes: 10,
   servings: 2,
@@ -87,15 +90,15 @@ const createInput: CreateRecipeInput = {
 // Hand-rolled fakes — construction requires all use cases, but each test only
 // exercises the one(s) relevant to its scenario.
 const fakeGenerateUseCase = {
-  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+  execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
 } as unknown as GenerateRecipeUseCase;
 
 const fakeImportUseCase = {
-  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+  execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
 } as unknown as ImportInstagramRecipeUseCase;
 
 const fakeRefineUseCase = {
-  execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+  execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
 } as unknown as RefineRecipeUseCase;
 
 interface Deps {
@@ -108,7 +111,7 @@ interface Deps {
 
 const makeStore = (overrides: Partial<Deps> = {}) => {
   const fakeCreateUseCase = {
-    execute: () => Promise.resolve(fail(new UnknownFailure('not used'))),
+    execute: () => Promise.resolve(fail(new UnknownFailure("not used"))),
   } as unknown as CreateRecipeUseCase;
 
   const fakeListMyUseCase = {
@@ -122,13 +125,19 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
   const recipeListStoreReplace = jest.fn();
   const recipeListStoreRemove = jest.fn();
   const fakeRecipeListStore = {
-    getState: () => ({ replace: recipeListStoreReplace, remove: recipeListStoreRemove }),
+    getState: () => ({
+      replace: recipeListStoreReplace,
+      remove: recipeListStoreRemove,
+    }),
   } as unknown as BoundStore<RecipeListStoreState>;
 
   const recipeDetailStoreReplace = jest.fn();
   const recipeDetailStoreRemove = jest.fn();
   const fakeRecipeDetailStore = {
-    getState: () => ({ replace: recipeDetailStoreReplace, remove: recipeDetailStoreRemove }),
+    getState: () => ({
+      replace: recipeDetailStoreReplace,
+      remove: recipeDetailStoreRemove,
+    }),
   } as unknown as BoundStore<RecipeDetailStoreState>;
 
   const store = configureCreatedRecipesStore({
@@ -143,75 +152,87 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     ...overrides,
   });
 
-  return { store, recipeListStoreReplace, recipeListStoreRemove, recipeDetailStoreReplace, recipeDetailStoreRemove };
+  return {
+    store,
+    recipeListStoreReplace,
+    recipeListStoreRemove,
+    recipeDetailStoreReplace,
+    recipeDetailStoreRemove,
+  };
 };
 
-describe('createdRecipesStore CRUD', () => {
-  describe('add', () => {
-    it('prepends the full Recipe to localRecipes and a lean RecipeSummaryEntity to recipes', () => {
+describe("createdRecipesStore CRUD", () => {
+  describe("add", () => {
+    it("prepends the full Recipe to localRecipes and a lean RecipeSummaryEntity to recipes", () => {
       const { store } = makeStore();
-      const recipe = makeRecipe({ id: 'r-added', name: 'Added Recipe' });
+      const recipe = makeRecipe({ id: "r-added", name: "Added Recipe" });
 
       store.getState().add(recipe);
 
       const s = store.getState();
       expect(s.localRecipes[0]).toBe(recipe);
-      expect(s.recipes[0].id).toBe('r-added');
-      expect(s.recipes[0].name).toBe('Added Recipe');
+      expect(s.recipes[0].id).toBe("r-added");
+      expect(s.recipes[0].name).toBe("Added Recipe");
       expect(s.recipes[0]).toBeInstanceOf(RecipeSummaryEntity);
     });
   });
 
-  describe('remove', () => {
-    it('removes the matching entry from both arrays', () => {
+  describe("remove", () => {
+    it("removes the matching entry from both arrays", () => {
       const { store } = makeStore();
-      const kept = makeRecipe({ id: 'r-kept' });
-      const removed = makeRecipe({ id: 'r-removed' });
+      const kept = makeRecipe({ id: "r-kept" });
+      const removed = makeRecipe({ id: "r-removed" });
       store.getState().add(kept);
       store.getState().add(removed);
 
-      store.getState().remove('r-removed');
+      store.getState().remove("r-removed");
 
       const s = store.getState();
-      expect(s.localRecipes.map((r) => r.id)).toEqual(['r-kept']);
-      expect(s.recipes.map((r) => r.id)).toEqual(['r-kept']);
+      expect(s.localRecipes.map((r) => r.id)).toEqual(["r-kept"]);
+      expect(s.recipes.map((r) => r.id)).toEqual(["r-kept"]);
     });
   });
 
-  describe('findById', () => {
-    it('reads from localRecipes, not from recipes', async () => {
+  describe("findById", () => {
+    it("reads from localRecipes, not from recipes", async () => {
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'network-only' })]))),
+        execute: () =>
+          Promise.resolve(
+            ok(recipePageOf([makeSummary({ id: "network-only" })])),
+          ),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       await store.getState().loadMyRecipes();
-      const localOnly = makeRecipe({ id: 'local-only' });
+      const localOnly = makeRecipe({ id: "local-only" });
       store.getState().add(localOnly);
 
       const s = store.getState();
-      expect(s.recipes.map((r) => r.id)).toContain('network-only');
-      expect(s.findById('network-only')).toBeUndefined();
-      expect(s.findById('local-only')).toBe(localOnly);
+      expect(s.recipes.map((r) => r.id)).toContain("network-only");
+      expect(s.findById("network-only")).toBeUndefined();
+      expect(s.findById("local-only")).toBe(localOnly);
     });
   });
 
-  describe('createRecipe', () => {
-    it('on success, adds the new recipe to both recipes and localRecipes via the store\'s own add logic', async () => {
+  describe("createRecipe", () => {
+    it("on success, adds the new recipe to both recipes and localRecipes via the store's own add logic", async () => {
       const createRecipeUseCase = {
-        execute: () => Promise.resolve(ok(makeRecipe({ id: 'r-created', name: 'Created Recipe' }))),
+        execute: () =>
+          Promise.resolve(
+            ok(makeRecipe({ id: "r-created", name: "Created Recipe" })),
+          ),
       } as unknown as CreateRecipeUseCase;
       const { store } = makeStore({ createRecipeUseCase });
 
       await store.getState().createRecipe(createInput);
 
       const s = store.getState();
-      expect(s.createState.status).toBe('success');
-      expect(s.localRecipes.map((r) => r.id)).toEqual(['r-created']);
-      expect(s.recipes.map((r) => r.id)).toEqual(['r-created']);
+      expect(s.createState.status).toBe("success");
+      expect(s.localRecipes.map((r) => r.id)).toEqual(["r-created"]);
+      expect(s.recipes.map((r) => r.id)).toEqual(["r-created"]);
     });
 
-    it('on failure, sets createState.error and leaves recipes/localRecipes untouched', async () => {
-      const failure = new UnknownFailure('boom');
+    it("on failure, sets createState.error and leaves recipes/localRecipes untouched", async () => {
+      const failure = new UnknownFailure("boom");
       const createRecipeUseCase = {
         execute: () => Promise.resolve(fail(failure)),
       } as unknown as CreateRecipeUseCase;
@@ -220,52 +241,57 @@ describe('createdRecipesStore CRUD', () => {
       await store.getState().createRecipe(createInput);
 
       const s = store.getState();
-      expect(s.createState).toEqual({ status: 'error', failure });
+      expect(s.createState).toEqual({ status: "error", failure });
       expect(s.localRecipes).toEqual([]);
       expect(s.recipes).toEqual([]);
     });
   });
 
-  describe('deleteRecipe', () => {
-    it('on success, removes from both arrays and notifies sibling stores', async () => {
-      const { store, recipeListStoreRemove, recipeDetailStoreRemove } = makeStore();
-      const recipe = makeRecipe({ id: 'r-to-delete' });
+  describe("deleteRecipe", () => {
+    it("on success, removes from both arrays and notifies sibling stores", async () => {
+      const { store, recipeListStoreRemove, recipeDetailStoreRemove } =
+        makeStore();
+      const recipe = makeRecipe({ id: "r-to-delete" });
       store.getState().add(recipe);
 
-      await store.getState().deleteRecipe('r-to-delete');
+      await store.getState().deleteRecipe("r-to-delete");
 
       const s = store.getState();
       expect(s.localRecipes).toEqual([]);
       expect(s.recipes).toEqual([]);
-      expect(s.deleteState).toEqual({ status: 'success' });
-      expect(recipeListStoreRemove).toHaveBeenCalledWith('r-to-delete');
-      expect(recipeDetailStoreRemove).toHaveBeenCalledWith('r-to-delete');
+      expect(s.deleteState).toEqual({ status: "success" });
+      expect(recipeListStoreRemove).toHaveBeenCalledWith("r-to-delete");
+      expect(recipeDetailStoreRemove).toHaveBeenCalledWith("r-to-delete");
     });
 
-    it('on failure, sets deleteState.error and does not touch sibling stores', async () => {
-      const failure = new UnknownFailure('cannot delete');
+    it("on failure, sets deleteState.error and does not touch sibling stores", async () => {
+      const failure = new UnknownFailure("cannot delete");
       const deleteRecipeUseCase = {
         execute: () => Promise.resolve(fail(failure)),
       } as unknown as DeleteRecipeUseCase;
-      const { store, recipeListStoreRemove, recipeDetailStoreRemove } = makeStore({ deleteRecipeUseCase });
-      const recipe = makeRecipe({ id: 'r-stays' });
+      const { store, recipeListStoreRemove, recipeDetailStoreRemove } =
+        makeStore({ deleteRecipeUseCase });
+      const recipe = makeRecipe({ id: "r-stays" });
       store.getState().add(recipe);
 
-      await store.getState().deleteRecipe('r-stays');
+      await store.getState().deleteRecipe("r-stays");
 
       const s = store.getState();
-      expect(s.deleteState).toEqual({ status: 'error', failure });
-      expect(s.localRecipes.map((r) => r.id)).toEqual(['r-stays']);
+      expect(s.deleteState).toEqual({ status: "error", failure });
+      expect(s.localRecipes.map((r) => r.id)).toEqual(["r-stays"]);
       expect(recipeListStoreRemove).not.toHaveBeenCalled();
       expect(recipeDetailStoreRemove).not.toHaveBeenCalled();
     });
   });
 
-  describe('loadMyRecipes', () => {
-    it('sets recipes from the lean use case result and leaves localRecipes untouched', async () => {
-      const localRecipe = makeRecipe({ id: 'local-survivor' });
+  describe("loadMyRecipes", () => {
+    it("sets recipes from the lean use case result and leaves localRecipes untouched", async () => {
+      const localRecipe = makeRecipe({ id: "local-survivor" });
       const listMyRecipesUseCase = {
-        execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r-from-network' })]))),
+        execute: () =>
+          Promise.resolve(
+            ok(recipePageOf([makeSummary({ id: "r-from-network" })])),
+          ),
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       store.getState().add(localRecipe);
@@ -273,26 +299,30 @@ describe('createdRecipesStore CRUD', () => {
       await store.getState().loadMyRecipes();
 
       const s = store.getState();
-      expect(s.recipes.map((r) => r.id)).toEqual(['r-from-network']);
+      expect(s.recipes.map((r) => r.id)).toEqual(["r-from-network"]);
       expect(s.localRecipes).toContain(localRecipe);
     });
 
-    it('leaves recipes untouched on failure', async () => {
-      const existing = makeSummary({ id: 'kept' });
+    it("leaves recipes untouched on failure", async () => {
+      const existing = makeSummary({ id: "kept" });
       let callCount = 0;
       const listMyRecipesUseCase = {
         execute: () => {
-          callCount += 1;
-          return Promise.resolve(callCount === 1 ? ok(recipePageOf([existing])) : fail(new UnknownFailure('down')));
+          callCount++;
+          return Promise.resolve(
+            callCount === 1
+              ? ok(recipePageOf([existing]))
+              : fail(new UnknownFailure("down")),
+          );
         },
       } as unknown as ListMyRecipesUseCase;
       const { store } = makeStore({ listMyRecipesUseCase });
       await store.getState().loadMyRecipes();
-      expect(store.getState().recipes.map((r) => r.id)).toEqual(['kept']);
+      expect(store.getState().recipes.map((r) => r.id)).toEqual(["kept"]);
 
       await store.getState().loadMyRecipes();
 
-      expect(store.getState().recipes.map((r) => r.id)).toEqual(['kept']);
+      expect(store.getState().recipes.map((r) => r.id)).toEqual(["kept"]);
     });
 
     /**
@@ -300,14 +330,14 @@ describe('createdRecipesStore CRUD', () => {
      * nothing" from "the answer has not arrived". Without it the screen showed
      * its empty state for the whole of every cold load.
      */
-    describe('myRecipesState', () => {
-      it('starts idle — nothing has been asked for yet', () => {
+    describe("myRecipesState", () => {
+      it("starts idle — nothing has been asked for yet", () => {
         const { store } = makeStore({});
 
-        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+        expect(store.getState().myRecipesState).toEqual({ status: "idle" });
       });
 
-      it('is loading while the request is in flight and loaded once it answers', async () => {
+      it("is loading while the request is in flight and loaded once it answers", async () => {
         let release!: () => void;
         const held = new Promise<void>((resolve) => {
           release = resolve;
@@ -315,22 +345,22 @@ describe('createdRecipesStore CRUD', () => {
         const listMyRecipesUseCase = {
           execute: async () => {
             await held;
-            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+            return ok(recipePageOf([makeSummary({ id: "r1" })]));
           },
         } as unknown as ListMyRecipesUseCase;
         const { store } = makeStore({ listMyRecipesUseCase });
 
         const inFlight = store.getState().loadMyRecipes();
-        expect(store.getState().myRecipesState).toEqual({ status: 'loading' });
+        expect(store.getState().myRecipesState).toEqual({ status: "loading" });
 
         release();
         await inFlight;
 
-        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+        expect(store.getState().myRecipesState).toEqual({ status: "loaded" });
       });
 
-      it('records the failure without blanking the grid', async () => {
-        const failure = new UnknownFailure('down');
+      it("records the failure without blanking the grid", async () => {
+        const failure = new UnknownFailure("down");
         const listMyRecipesUseCase = {
           execute: () => Promise.resolve(fail(failure)),
         } as unknown as ListMyRecipesUseCase;
@@ -338,10 +368,13 @@ describe('createdRecipesStore CRUD', () => {
 
         await store.getState().loadMyRecipes();
 
-        expect(store.getState().myRecipesState).toEqual({ status: 'error', failure });
+        expect(store.getState().myRecipesState).toEqual({
+          status: "error",
+          failure,
+        });
       });
 
-      it('stays loaded while a grid that is already on screen reloads', async () => {
+      it("stays loaded while a grid that is already on screen reloads", async () => {
         // Found in review: `Loading` was set on every call, and the screen
         // re-loads on every focus — so a skeleton replaced rows the user was
         // already reading, and tore the RefreshControl out mid-pull.
@@ -349,9 +382,10 @@ describe('createdRecipesStore CRUD', () => {
         let call = 0;
         const listMyRecipesUseCase = {
           execute: async () => {
-            call += 1;
-            if (call > 1) await new Promise<void>((resolve) => (release = resolve));
-            return ok(recipePageOf([makeSummary({ id: 'r1' })]));
+            call++;
+            if (call > 1)
+              await new Promise<void>((resolve) => (release = resolve));
+            return ok(recipePageOf([makeSummary({ id: "r1" })]));
           },
         } as unknown as ListMyRecipesUseCase;
         const { store } = makeStore({ listMyRecipesUseCase });
@@ -359,13 +393,13 @@ describe('createdRecipesStore CRUD', () => {
 
         const reload = store.getState().loadMyRecipes();
 
-        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+        expect(store.getState().myRecipesState).toEqual({ status: "loaded" });
         release();
         await reload;
-        expect(store.getState().myRecipesState).toEqual({ status: 'loaded' });
+        expect(store.getState().myRecipesState).toEqual({ status: "loaded" });
       });
 
-      it('discards a response that started before the session ended', async () => {
+      it("discards a response that started before the session ended", async () => {
         let release!: () => void;
         const held = new Promise<void>((resolve) => {
           release = resolve;
@@ -373,7 +407,7 @@ describe('createdRecipesStore CRUD', () => {
         const listMyRecipesUseCase = {
           execute: async () => {
             await held;
-            return ok(recipePageOf([makeSummary({ id: 'r-previous-user' })]));
+            return ok(recipePageOf([makeSummary({ id: "r-previous-user" })]));
           },
         } as unknown as ListMyRecipesUseCase;
         const { store } = makeStore({ listMyRecipesUseCase });
@@ -386,19 +420,20 @@ describe('createdRecipesStore CRUD', () => {
         await inFlight;
 
         expect(store.getState().recipes).toEqual([]);
-        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+        expect(store.getState().myRecipesState).toEqual({ status: "idle" });
       });
 
-      it('returns to idle when the session ends, so the next user gets a skeleton', async () => {
+      it("returns to idle when the session ends, so the next user gets a skeleton", async () => {
         const listMyRecipesUseCase = {
-          execute: () => Promise.resolve(ok(recipePageOf([makeSummary({ id: 'r1' })]))),
+          execute: () =>
+            Promise.resolve(ok(recipePageOf([makeSummary({ id: "r1" })]))),
         } as unknown as ListMyRecipesUseCase;
         const { store } = makeStore({ listMyRecipesUseCase });
         await store.getState().loadMyRecipes();
 
         store.getState().clear();
 
-        expect(store.getState().myRecipesState).toEqual({ status: 'idle' });
+        expect(store.getState().myRecipesState).toEqual({ status: "idle" });
       });
     });
   });

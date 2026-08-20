@@ -27,7 +27,7 @@ import type { NotifKind } from '@presentation/app/notifications/model/notif-kind
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import type { SectionData } from '@presentation/app/notifications/model/section-data';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
-import { ValueConstants } from '@core/constants';
+import { TimeConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
 const KNOWN_KINDS = new Set<NotifKind>([
@@ -47,7 +47,13 @@ const resolveKind = (raw: string): NotifKind => {
 
 const daysSince = (createdAt: Date): number => {
   const ms = Date.now() - createdAt.getTime();
-  return Math.max(ValueConstants.zero, Math.floor(ms / (1000 * 60 * 60 * 24)));
+  return Math.max(ValueConstants.zero, Math.floor(
+      ms /
+        (TimeConstants.millisecondsPerSecond *
+          TimeConstants.secondsPerMinute *
+          TimeConstants.minutesPerHour *
+          TimeConstants.hoursPerDay),
+    ));
 };
 
 const toNotifItem = (n: NotificationEntity): NotifItem => ({

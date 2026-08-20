@@ -70,12 +70,12 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
         <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
       </View>
       <View style={styles.rowBody}>
-        <ThemedText variant="body" style={styles.actionLine} numberOfLines={2}>
+        <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
           <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
           {' '}{actionText(item)}
         </ThemedText>
         {item.body !== undefined ? (
-          <ThemedText variant="caption" muted numberOfLines={2} style={styles.bodyText}>
+          <ThemedText variant="caption" muted numberOfLines={ValueConstants.two} style={styles.bodyText}>
             {item.body}
           </ThemedText>
         ) : null}

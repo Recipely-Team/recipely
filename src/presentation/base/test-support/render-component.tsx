@@ -7,8 +7,18 @@ import type { RenderResult } from '@presentation/base/test-support/render-result
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /** Fixed safe-area metrics so layout-dependent components render deterministically. */
+/** Viewport the harness pretends to render into — a 320×640 phone, the
+ * narrowest layout the app supports, so a test that passes here passes wider. */
+const TEST_FRAME_WIDTH = 320;
+const TEST_FRAME_HEIGHT = 640;
+
 const SAFE_AREA_METRICS = {
-  frame: { x: ValueConstants.zero, y: ValueConstants.zero, width: 320, height: 640 },
+  frame: {
+    x: ValueConstants.zero,
+    y: ValueConstants.zero,
+    width: TEST_FRAME_WIDTH,
+    height: TEST_FRAME_HEIGHT,
+  },
   insets: { top: ValueConstants.zero, left: ValueConstants.zero, right: ValueConstants.zero, bottom: ValueConstants.zero },
 } as const;
 

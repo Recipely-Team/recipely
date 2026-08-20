@@ -64,7 +64,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
       >
         <ThemedText
           style={[styles.chipName, { color: isDone ? colors.success : colors.text }]}
-          numberOfLines={1}
+          numberOfLines={ValueConstants.one}
         >
           {entry.recipeName}
         </ThemedText>

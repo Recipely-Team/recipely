@@ -14,76 +14,114 @@
  * reference would pass against the broken code.
  */
 
-import { act } from 'react-test-renderer';
-import { create } from 'zustand';
-import { renderComponent } from '@presentation/base/test-support/render-component';
-import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
-import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
-import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
-import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
-import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
-import { RoutePaths } from '@presentation/base/constants';
-import { FailureReporter } from '@presentation/base/errors/failure-reporter';
-import { ImportTrail } from '@presentation/base/errors/import-trail';
-import { ensurePushRegistration } from '@application/notifications/ensure-push-registration';
-import { showWarningToast } from '@presentation/base/feedback/show-toast';
-import { en } from '@presentation/i18n/locales/en';
+import { ensurePushRegistration } from "@application/notifications/ensure-push-registration";
+import type { ImportJobStoreState } from "@application/recipes/import/import-job-store-state";
+import { ImportJobStatus } from "@domain/recipes/import/import-job-status";
+import { useImportRecipe } from "@presentation/app/import-recipe/hooks/use-import-recipe";
+import { IMPORT_STAGE_COUNT } from "@presentation/app/import-recipe/model/import-stage";
+import { RoutePaths } from "@presentation/base/constants";
+import { FailureReporter } from "@presentation/base/errors/failure-reporter";
+import { ImportTrail } from "@presentation/base/errors/import-trail";
+import { showWarningToast } from "@presentation/base/feedback/show-toast";
+import { renderComponent } from "@presentation/base/test-support/render-component";
+import type { Stores } from "@presentation/bootstrap/stores";
+import { StoresProvider } from "@presentation/bootstrap/stores-context";
+import { en } from "@presentation/i18n/locales/en";
+import { act } from "react-test-renderer";
+import { create } from "zustand";
 
-const mockRouter = { replace: jest.fn(), back: jest.fn(), canGoBack: jest.fn(() => true) };
+const mockRouter = {
+  replace: jest.fn(),
+  back: jest.fn(),
+  canGoBack: jest.fn(() => true),
+};
 
-jest.mock('@presentation/base/errors/failure-reporter', () => ({
+jest.mock("@presentation/base/errors/failure-reporter", () => ({
   FailureReporter: { report: jest.fn(), trail: jest.fn() },
 }));
 
-jest.mock('expo-router', () => ({
+jest.mock("expo-router", () => ({
   useRouter: jest.fn(() => mockRouter),
 }));
 
 // `mock` prefix: jest only lets a module factory reach variables named this way.
 const mockRequestPermissions = jest.fn(async () => true);
-jest.mock('@application/notifications/get-notification-service', () => ({
-  getNotificationService: () => ({ requestPermissions: mockRequestPermissions }),
+jest.mock("@application/notifications/get-notification-service", () => ({
+  getNotificationService: () => ({
+    requestPermissions: mockRequestPermissions,
+  }),
 }));
 
-jest.mock('@application/notifications/ensure-push-registration', () => ({
+jest.mock("@application/notifications/ensure-push-registration", () => ({
   ensurePushRegistration: jest.fn(),
 }));
 
-jest.mock('@presentation/base/feedback/show-toast', () => ({
+jest.mock("@presentation/base/feedback/show-toast", () => ({
   showWarningToast: jest.fn(),
 }));
 
-const REEL = 'https://www.instagram.com/reel/abc/';
+const REEL = "https://www.instagram.com/reel/abc/";
 const POLL_MS = 4000;
 const TICK_MS = 9000;
 
 /** A store whose `refreshJob` behaves like the real one: a new object each time. */
-const makeStores = (status: ImportJobStatus, positions: readonly (number | null)[] = [null]) => {
+const makeStores = (
+  status: ImportJobStatus,
+  positions: readonly (number | null)[] = [null],
+) => {
   let polls = 0;
   // The queue moves under a waiting job, so each poll may answer differently.
-  const positionAt = (n: number): number | null => positions[Math.min(n, positions.length - 1)] ?? null;
+  const positionAt = (n: number): number | null =>
+    positions[Math.min(n, positions.length - 1)] ?? null;
   const importJobStore = create<ImportJobStoreState>((set) => ({
-    state: { status: 'idle' },
+    state: { status: "idle" },
     startImport: async () => {
-      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null, queuePosition: positionAt(0) } } });
+      set({
+        state: {
+          status: "loaded",
+          job: {
+            id: "job-1",
+            status,
+            draftId: null,
+            errorKey: null,
+            queuePosition: positionAt(0),
+          },
+        },
+      });
       await Promise.resolve();
     },
     refreshJob: async () => {
-      polls += 1;
+      polls++;
       // A FRESH object, exactly as `toImportJob` produces on every response.
-      set({ state: { status: 'loaded', job: { id: 'job-1', status, draftId: null, errorKey: null, queuePosition: positionAt(polls) } } });
+      set({
+        state: {
+          status: "loaded",
+          job: {
+            id: "job-1",
+            status,
+            draftId: null,
+            errorKey: null,
+            queuePosition: positionAt(polls),
+          },
+        },
+      });
       await Promise.resolve();
     },
-    clear: () => set({ state: { status: 'idle' } }),
+    clear: () => set({ state: { status: "idle" } }),
   }));
 
-  return { stores: { importJobStore } as unknown as Stores, pollCount: () => polls };
+  return {
+    stores: { importJobStore } as unknown as Stores,
+    pollCount: () => polls,
+  };
 };
 
 type ViewModel = ReturnType<typeof useImportRecipe>;
 
-const drive = (status: ImportJobStatus, positions?: readonly (number | null)[]) => {
+const drive = (
+  status: ImportJobStatus,
+  positions?: readonly (number | null)[],
+) => {
   const { stores, pollCount } = makeStores(status, positions);
   let latest!: ViewModel;
 
@@ -104,7 +142,7 @@ const drive = (status: ImportJobStatus, positions?: readonly (number | null)[]) 
 /** Advances time in poll-sized slices so the polls genuinely interleave. */
 const advance = async (ms: number): Promise<void> => {
   const slices = Math.ceil(ms / POLL_MS);
-  for (let i = 0; i < slices; i += 1) {
+  for (let i = 0; i < slices; i++) {
     await act(async () => {
       jest.advanceTimersByTime(POLL_MS);
       await Promise.resolve();
@@ -112,7 +150,7 @@ const advance = async (ms: number): Promise<void> => {
   }
 };
 
-describe('useImportRecipe — the wait has to keep moving', () => {
+describe("useImportRecipe — the wait has to keep moving", () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -122,7 +160,7 @@ describe('useImportRecipe — the wait has to keep moving', () => {
     jest.clearAllMocks();
   });
 
-  it('advances the checklist while the job runs, even though every poll rewrites the job', async () => {
+  it("advances the checklist while the job runs, even though every poll rewrites the job", async () => {
     const { latest } = drive(ImportJobStatus.Running);
     await act(async () => {
       await Promise.resolve();
@@ -135,7 +173,7 @@ describe('useImportRecipe — the wait has to keep moving', () => {
     expect(latest().activeStage).toBeGreaterThan(0);
   });
 
-  it('keeps polling while the job runs', async () => {
+  it("keeps polling while the job runs", async () => {
     const { pollCount } = drive(ImportJobStatus.Running);
     await act(async () => {
       await Promise.resolve();
@@ -146,7 +184,7 @@ describe('useImportRecipe — the wait has to keep moving', () => {
     expect(pollCount()).toBeGreaterThanOrEqual(2);
   });
 
-  it('stops polling once the job is done, and fills every stage', async () => {
+  it("stops polling once the job is done, and fills every stage", async () => {
     const { latest, pollCount } = drive(ImportJobStatus.Done);
     await act(async () => {
       await Promise.resolve();
@@ -160,7 +198,7 @@ describe('useImportRecipe — the wait has to keep moving', () => {
   });
 });
 
-describe('useImportRecipe — leaving', () => {
+describe("useImportRecipe — leaving", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     mockRouter.back.mockClear();
@@ -177,7 +215,7 @@ describe('useImportRecipe — leaving', () => {
    * screen the entire navigation stack, and `router.back()` on the only screen
    * closes the app on Android — so "Got it, notify me" quit Recipely.
    */
-  it('goes home rather than out of the app when there is nothing to go back to', async () => {
+  it("goes home rather than out of the app when there is nothing to go back to", async () => {
     mockRouter.canGoBack.mockReturnValue(false);
     const { latest } = drive(ImportJobStatus.Queued);
     await act(async () => {
@@ -192,7 +230,7 @@ describe('useImportRecipe — leaving', () => {
     expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.recipes);
   });
 
-  it('goes back normally when a screen is behind it', async () => {
+  it("goes back normally when a screen is behind it", async () => {
     const { latest } = drive(ImportJobStatus.Queued);
     await act(async () => {
       await Promise.resolve();
@@ -206,7 +244,7 @@ describe('useImportRecipe — leaving', () => {
   });
 });
 
-describe('useImportRecipe — arriving with no URL', () => {
+describe("useImportRecipe — arriving with no URL", () => {
   beforeEach(() => {
     jest.useFakeTimers();
   });
@@ -215,7 +253,7 @@ describe('useImportRecipe — arriving with no URL', () => {
     jest.useRealTimers();
   });
 
-  it('asks for a link instead of queueing forever', async () => {
+  it("asks for a link instead of queueing forever", async () => {
     const { stores } = makeStores(ImportJobStatus.Queued);
     let latest!: ViewModel;
     const Probe = (): null => {
@@ -242,7 +280,7 @@ describe('useImportRecipe — arriving with no URL', () => {
   });
 });
 
-describe('useImportRecipe — where in the queue', () => {
+describe("useImportRecipe — where in the queue", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
@@ -252,7 +290,7 @@ describe('useImportRecipe — where in the queue', () => {
     jest.useRealTimers();
   });
 
-  it('surfaces the position the backend reported', async () => {
+  it("surfaces the position the backend reported", async () => {
     const { latest } = drive(ImportJobStatus.Queued, [4]);
 
     await act(async () => {
@@ -262,7 +300,7 @@ describe('useImportRecipe — where in the queue', () => {
     expect(latest().queuePosition).toBe(4);
   });
 
-  it('follows the queue forward as jobs ahead finish', async () => {
+  it("follows the queue forward as jobs ahead finish", async () => {
     // The number is only worth showing if it MOVES. A position frozen at 4
     // through a two-minute wait reads as a queue that has stopped.
     const { latest } = drive(ImportJobStatus.Queued, [4, 3, 2, 1]);
@@ -277,7 +315,7 @@ describe('useImportRecipe — where in the queue', () => {
     expect(latest().queuePosition).toBe(1);
   });
 
-  it('reports nothing when the backend sends no position', async () => {
+  it("reports nothing when the backend sends no position", async () => {
     // An older backend, or a job that has started. Either way the screen shows
     // no badge rather than inventing a place in a line.
     const { latest } = drive(ImportJobStatus.Queued, [null]);
@@ -297,7 +335,7 @@ describe('useImportRecipe — where in the queue', () => {
 // A finished job without a draft id should not be possible — the backend writes
 // one before reporting `done` — but "should not" is not "does not", and the
 // button has to move either way.
-describe('useImportRecipe — a finished job with no draft to open', () => {
+describe("useImportRecipe — a finished job with no draft to open", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
@@ -307,7 +345,7 @@ describe('useImportRecipe — a finished job with no draft to open', () => {
     jest.useRealTimers();
   });
 
-  it('sends the user to their drafts instead of doing nothing', async () => {
+  it("sends the user to their drafts instead of doing nothing", async () => {
     const { latest } = drive(ImportJobStatus.Done);
 
     await act(async () => {
@@ -323,7 +361,7 @@ describe('useImportRecipe — a finished job with no draft to open', () => {
     });
   });
 
-  it('reports it, so the next occurrence arrives with a code', async () => {
+  it("reports it, so the next occurrence arrives with a code", async () => {
     const { latest } = drive(ImportJobStatus.Done);
 
     await act(async () => {
@@ -335,7 +373,7 @@ describe('useImportRecipe — a finished job with no draft to open', () => {
 
     expect(FailureReporter.report).toHaveBeenCalledWith(
       expect.anything(),
-      'ImportRecipe.openDraft',
+      "ImportRecipe.openDraft",
     );
   });
 });
@@ -346,7 +384,7 @@ describe('useImportRecipe — a finished job with no draft to open', () => {
 // all: the same blank page for "died navigating", "died fetching the draft" and
 // "died rendering the editor". These marks are what make the next report name
 // the step, so they are worth pinning.
-describe('useImportRecipe — the trail it leaves for a crash report', () => {
+describe("useImportRecipe — the trail it leaves for a crash report", () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.clearAllMocks();
@@ -366,22 +404,28 @@ describe('useImportRecipe — the trail it leaves for a crash report', () => {
     });
   };
 
-  it('marks the tap before anything else can go wrong', async () => {
+  it("marks the tap before anything else can go wrong", async () => {
     await tapOpenDraft();
 
-    expect(FailureReporter.trail).toHaveBeenCalledWith(ImportTrail.openDraftTapped);
+    expect(FailureReporter.trail).toHaveBeenCalledWith(
+      ImportTrail.openDraftTapped,
+    );
   });
 
-  it('marks a missing draft id distinctly from a navigation', async () => {
+  it("marks a missing draft id distinctly from a navigation", async () => {
     // The fixture job has no draftId, so this is the missing-id branch: the
     // trail must say so rather than implying the app got as far as navigating.
     await tapOpenDraft();
 
-    expect(FailureReporter.trail).toHaveBeenCalledWith(ImportTrail.openDraftMissing);
-    expect(FailureReporter.trail).not.toHaveBeenCalledWith(ImportTrail.navigatingToEditor);
+    expect(FailureReporter.trail).toHaveBeenCalledWith(
+      ImportTrail.openDraftMissing,
+    );
+    expect(FailureReporter.trail).not.toHaveBeenCalledWith(
+      ImportTrail.navigatingToEditor,
+    );
   });
 
-  it('carries no ids or urls — a breadcrumb is a place, not a value', () => {
+  it("carries no ids or urls — a breadcrumb is a place, not a value", () => {
     // Rule 22: user ids and recipe ids have leaked into logs once already.
     for (const mark of Object.values(ImportTrail)) {
       expect(mark).not.toMatch(/https?:\/\//);
@@ -403,13 +447,13 @@ describe('useImportRecipe — the trail it leaves for a crash report', () => {
  * permission and otherwise runs once per cold start, so a grant that did not
  * re-trigger it would leave the promise unkept for the rest of the session.
  */
-describe('useImportRecipe — the notification the button promises', () => {
+describe("useImportRecipe — the notification the button promises", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockRequestPermissions.mockResolvedValue(true);
   });
 
-  it('asks for notification permission when the user asks to be notified', async () => {
+  it("asks for notification permission when the user asks to be notified", async () => {
     const vm = drive(ImportJobStatus.Running);
 
     await act(async () => {
@@ -420,7 +464,7 @@ describe('useImportRecipe — the notification the button promises', () => {
     expect(mockRequestPermissions).toHaveBeenCalled();
   });
 
-  it('registers for push once permission is granted, not only at the next launch', async () => {
+  it("registers for push once permission is granted, not only at the next launch", async () => {
     const vm = drive(ImportJobStatus.Running);
 
     await act(async () => {
@@ -431,7 +475,7 @@ describe('useImportRecipe — the notification the button promises', () => {
     expect(ensurePushRegistration).toHaveBeenCalled();
   });
 
-  it('says so plainly when the user refuses, instead of promising silently', async () => {
+  it("says so plainly when the user refuses, instead of promising silently", async () => {
     mockRequestPermissions.mockResolvedValue(false);
     const vm = drive(ImportJobStatus.Running);
 
@@ -440,11 +484,13 @@ describe('useImportRecipe — the notification the button promises', () => {
       await Promise.resolve();
     });
 
-    expect(showWarningToast).toHaveBeenCalledWith(en.importRecipe.notifyBlocked);
+    expect(showWarningToast).toHaveBeenCalledWith(
+      en.importRecipe.notifyBlocked,
+    );
     expect(ensurePushRegistration).not.toHaveBeenCalled();
   });
 
-  it('leaves the screen either way — the job outlives it', async () => {
+  it("leaves the screen either way — the job outlives it", async () => {
     mockRequestPermissions.mockResolvedValue(false);
     const vm = drive(ImportJobStatus.Running);
 

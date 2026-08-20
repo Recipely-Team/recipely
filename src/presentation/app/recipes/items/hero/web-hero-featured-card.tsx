@@ -17,6 +17,16 @@ import {
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 import { HeroGradientConstants } from '@presentation/app/recipes/model/hero/hero-gradient-constants';
+import { formatRating } from '@presentation/base/utils/format-rating';
+
+/**
+ * Lines the hero title is allowed before it truncates.
+ *
+ * Three rather than two because this card is the widest thing on the web home
+ * and a long Turkish recipe name reaches a third line there; clamping at two
+ * cut names mid-word on the one card the page is built around.
+ */
+const TITLE_LINE_CLAMP = 3;
 
 export interface WebHeroFeaturedCardProps {
   recipe: RecipeSummaryEntity;
@@ -69,7 +79,7 @@ export const WebHeroFeaturedCard = ({
         </View>
 
         <ThemedText
-          numberOfLines={3}
+          numberOfLines={TITLE_LINE_CLAMP}
           style={[styles.title, { color: colors.onOverlay, textShadowColor: colors.overlayLight }]}
         >
           {recipe.name}
@@ -78,7 +88,7 @@ export const WebHeroFeaturedCard = ({
         <View style={styles.metaRow}>
           <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
           <ThemedText style={[styles.meta, { color: colors.onOverlay }]}>
-            {recipe.rating.toFixed(1)}
+            {formatRating(recipe.rating)}
           </ThemedText>
           {totalMin === null ? null : (
             <>

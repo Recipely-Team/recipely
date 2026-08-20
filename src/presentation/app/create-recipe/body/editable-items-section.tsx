@@ -3,7 +3,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  iconSizes,
+  controlSizes,
+  borderWidths,
+} from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 export interface EditableItemsSectionProps {
   icon: React.ComponentProps<typeof Ionicons>['name'];
@@ -107,7 +116,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   actionGrow: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   addBtn: {
     flexDirection: 'row',

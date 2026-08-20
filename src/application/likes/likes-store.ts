@@ -6,6 +6,7 @@ import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
+import { ValueConstants } from '@/src/core/constants/value-constants';
 
 interface LikesStoreDeps {
   likeRecipe: LikeRecipeUseCase;
@@ -60,7 +61,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
 
       const wasLiked = current.likedByMe;
       const optimistic: RecipeLikeState = {
-        likeCount: wasLiked ? current.likeCount - 1 : current.likeCount + 1,
+        likeCount: wasLiked ? current.likeCount - ValueConstants.one : current.likeCount + ValueConstants.one,
         likedByMe: !wasLiked,
         isLoading: true,
         // The user's own action is the newest truth there is until a response

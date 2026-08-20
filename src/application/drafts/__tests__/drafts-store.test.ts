@@ -1,25 +1,25 @@
-import { configureDraftsStore } from '@application/drafts/drafts-store';
-import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
-import type { ListDraftsInput } from '@application/drafts/list/list-drafts-input';
-import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
-import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
-import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
-import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
-import { UnknownFailure, type Failure } from '@core/failure';
-import { fail, ok } from '@core/result/result-helpers';
-import type { Result } from '@core/result/result';
-import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { PagedDrafts } from '@domain/drafts/paged-drafts';
-import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
+import { configureDraftsStore } from "@application/drafts/drafts-store";
+import type { ListDraftsInput } from "@application/drafts/list/list-drafts-input";
+import type { ListDraftsUseCase } from "@application/drafts/list/list-drafts-use-case";
+import type { GetDraftUseCase } from "@application/drafts/read/get-draft-use-case";
+import type { GetLatestDraftUseCase } from "@application/drafts/read/get-latest-draft-use-case";
+import type { DeleteDraftUseCase } from "@application/drafts/write/delete-draft-use-case";
+import type { UpsertDraftUseCase } from "@application/drafts/write/upsert-draft-use-case";
+import { UnknownFailure, type Failure } from "@core/failure";
+import type { Result } from "@core/result/result";
+import { fail, ok } from "@core/result/result-helpers";
+import type { PagedDrafts } from "@domain/drafts/paged-drafts";
+import type { RecipeDraft } from "@domain/drafts/recipe-draft";
+import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
 
 const makeDraft = (id: string): RecipeDraft => ({
   id,
-  ownerId: 'owner-1',
+  ownerId: "owner-1",
   prompt: `prompt-${id}`,
   snapshot: { name: id },
   chatHistory: [],
-  createdAt: new Date('2026-05-11T12:00:00.000Z'),
-  updatedAt: new Date('2026-05-11T12:00:00.000Z'),
+  createdAt: new Date("2026-05-11T12:00:00.000Z"),
+  updatedAt: new Date("2026-05-11T12:00:00.000Z"),
 });
 
 const makePage = (items: RecipeDraft[]): PagedDrafts => ({
@@ -40,21 +40,28 @@ interface StubConfig {
 const makeStore = (config: StubConfig = {}) => {
   const listDraftsUseCase = {
     execute: (_input: ListDraftsInput) =>
-      Promise.resolve(config.listResult ?? fail(new UnknownFailure('not configured'))),
+      Promise.resolve(
+        config.listResult ?? fail(new UnknownFailure("not configured")),
+      ),
   } as unknown as ListDraftsUseCase;
   const getLatestDraftUseCase = {
     execute: () => Promise.resolve(config.latestResult ?? ok(null)),
   } as unknown as GetLatestDraftUseCase;
   const getDraftUseCase = {
     execute: (_id: string) =>
-      Promise.resolve(config.draftResult ?? fail(new UnknownFailure('not configured'))),
+      Promise.resolve(
+        config.draftResult ?? fail(new UnknownFailure("not configured")),
+      ),
   } as unknown as GetDraftUseCase;
   const upsertDraftUseCase = {
     execute: (_input: UpsertDraftInput) =>
-      Promise.resolve(config.upsertResult ?? fail(new UnknownFailure('not configured'))),
+      Promise.resolve(
+        config.upsertResult ?? fail(new UnknownFailure("not configured")),
+      ),
   } as unknown as UpsertDraftUseCase;
   const deleteDraftUseCase = {
-    execute: (_id: string) => Promise.resolve(config.deleteResult ?? ok(undefined)),
+    execute: (_id: string) =>
+      Promise.resolve(config.deleteResult ?? ok(undefined)),
   } as unknown as DeleteDraftUseCase;
 
   return configureDraftsStore({
@@ -66,37 +73,37 @@ const makeStore = (config: StubConfig = {}) => {
   });
 };
 
-describe('draftsStore initial state', () => {
-  it('starts empty with idle listState and null latestDraft', () => {
+describe("draftsStore initial state", () => {
+  it("starts empty with idle listState and null latestDraft", () => {
     const store = makeStore();
 
     expect(store.getState().drafts).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: 'idle' });
+    expect(store.getState().listState).toEqual({ status: "idle" });
     expect(store.getState().latestDraft).toBeNull();
   });
 });
 
-describe('draftsStore.loadDrafts', () => {
-  it('populates drafts and sets listState loaded on success', async () => {
-    const drafts = [makeDraft('a'), makeDraft('b')];
+describe("draftsStore.loadDrafts", () => {
+  it("populates drafts and sets listState loaded on success", async () => {
+    const drafts = [makeDraft("a"), makeDraft("b")];
     const store = makeStore({ listResult: ok(makePage(drafts)) });
 
     await store.getState().loadDrafts();
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(['a', 'b']);
-    expect(s.listState).toEqual({ status: 'loaded', page: 1, hasMore: false });
+    expect(s.drafts.map((d) => d.id)).toEqual(["a", "b"]);
+    expect(s.listState).toEqual({ status: "loaded", page: 1, hasMore: false });
   });
 
-  it('sets listState error and leaves drafts empty on failure', async () => {
-    const failure = new UnknownFailure('boom');
+  it("sets listState error and leaves drafts empty on failure", async () => {
+    const failure = new UnknownFailure("boom");
     const store = makeStore({ listResult: fail(failure) });
 
     await store.getState().loadDrafts();
 
     const s = store.getState();
-    expect(s.listState.status).toBe('error');
-    if (s.listState.status === 'error') {
+    expect(s.listState.status).toBe("error");
+    if (s.listState.status === "error") {
       expect(s.listState.failure).toBe(failure);
     }
     expect(s.drafts).toEqual([]);
@@ -104,36 +111,44 @@ describe('draftsStore.loadDrafts', () => {
 
   // Both guards were added after review of the My-Recipes skeleton work: the
   // drafts tab shares that screen and had the same two holes.
-  it('stays loaded while a list that is already on screen reloads', async () => {
+  it("stays loaded while a list that is already on screen reloads", async () => {
     // Otherwise a re-focus swaps the rows the user is reading for a skeleton,
     // and a pull-to-refresh tears out the RefreshControl mid-gesture.
     let release!: () => void;
     let call = 0;
     const listDraftsUseCase = {
       execute: async () => {
-        call += 1;
+        call++;
         if (call > 1) await new Promise<void>((resolve) => (release = resolve));
-        return ok(makePage([makeDraft('a')]));
+        return ok(makePage([makeDraft("a")]));
       },
     } as unknown as ListDraftsUseCase;
     const store = configureDraftsStore({
       listDraftsUseCase,
-      getLatestDraftUseCase: { execute: () => Promise.resolve(ok(null)) } as unknown as GetLatestDraftUseCase,
-      getDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as GetDraftUseCase,
-      upsertDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as UpsertDraftUseCase,
-      deleteDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as DeleteDraftUseCase,
+      getLatestDraftUseCase: {
+        execute: () => Promise.resolve(ok(null)),
+      } as unknown as GetLatestDraftUseCase,
+      getDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as GetDraftUseCase,
+      upsertDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as UpsertDraftUseCase,
+      deleteDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as DeleteDraftUseCase,
     });
     await store.getState().loadDrafts();
 
     const reload = store.getState().loadDrafts();
 
-    expect(store.getState().listState.status).toBe('loaded');
+    expect(store.getState().listState.status).toBe("loaded");
     release();
     await reload;
-    expect(store.getState().listState.status).toBe('loaded');
+    expect(store.getState().listState.status).toBe("loaded");
   });
 
-  it('discards a page that started before the session ended', async () => {
+  it("discards a page that started before the session ended", async () => {
     let release!: () => void;
     const held = new Promise<void>((resolve) => {
       release = resolve;
@@ -141,15 +156,23 @@ describe('draftsStore.loadDrafts', () => {
     const listDraftsUseCase = {
       execute: async () => {
         await held;
-        return ok(makePage([makeDraft('previous-user')]));
+        return ok(makePage([makeDraft("previous-user")]));
       },
     } as unknown as ListDraftsUseCase;
     const store = configureDraftsStore({
       listDraftsUseCase,
-      getLatestDraftUseCase: { execute: () => Promise.resolve(ok(null)) } as unknown as GetLatestDraftUseCase,
-      getDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as GetDraftUseCase,
-      upsertDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as UpsertDraftUseCase,
-      deleteDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure('unused'))) } as unknown as DeleteDraftUseCase,
+      getLatestDraftUseCase: {
+        execute: () => Promise.resolve(ok(null)),
+      } as unknown as GetLatestDraftUseCase,
+      getDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as GetDraftUseCase,
+      upsertDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as UpsertDraftUseCase,
+      deleteDraftUseCase: {
+        execute: () => Promise.resolve(fail(new UnknownFailure("unused"))),
+      } as unknown as DeleteDraftUseCase,
     });
 
     const inFlight = store.getState().loadDrafts();
@@ -160,13 +183,13 @@ describe('draftsStore.loadDrafts', () => {
     await inFlight;
 
     expect(store.getState().drafts).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: 'idle' });
+    expect(store.getState().listState).toEqual({ status: "idle" });
   });
 });
 
-describe('draftsStore.loadLatestDraft', () => {
-  it('sets latestDraft when one exists', async () => {
-    const draft = makeDraft('latest');
+describe("draftsStore.loadLatestDraft", () => {
+  it("sets latestDraft when one exists", async () => {
+    const draft = makeDraft("latest");
     const store = makeStore({ latestResult: ok(draft) });
 
     await store.getState().loadLatestDraft();
@@ -174,7 +197,7 @@ describe('draftsStore.loadLatestDraft', () => {
     expect(store.getState().latestDraft).toBe(draft);
   });
 
-  it('leaves latestDraft null when the user has none', async () => {
+  it("leaves latestDraft null when the user has none", async () => {
     const store = makeStore({ latestResult: ok(null) });
 
     await store.getState().loadLatestDraft();
@@ -182,8 +205,8 @@ describe('draftsStore.loadLatestDraft', () => {
     expect(store.getState().latestDraft).toBeNull();
   });
 
-  it('leaves state untouched on failure', async () => {
-    const store = makeStore({ latestResult: fail(new UnknownFailure('boom')) });
+  it("leaves state untouched on failure", async () => {
+    const store = makeStore({ latestResult: fail(new UnknownFailure("boom")) });
 
     await store.getState().loadLatestDraft();
 
@@ -191,104 +214,116 @@ describe('draftsStore.loadLatestDraft', () => {
   });
 });
 
-describe('draftsStore.upsertDraft', () => {
-  it('prepends a new draft to the local list and sets it as latestDraft', async () => {
-    const existing = makeDraft('a');
-    const saved = makeDraft('b');
-    const store = makeStore({ listResult: ok(makePage([existing])), upsertResult: ok(saved) });
+describe("draftsStore.upsertDraft", () => {
+  it("prepends a new draft to the local list and sets it as latestDraft", async () => {
+    const existing = makeDraft("a");
+    const saved = makeDraft("b");
+    const store = makeStore({
+      listResult: ok(makePage([existing])),
+      upsertResult: ok(saved),
+    });
     await store.getState().loadDrafts();
 
     const returned = await store.getState().upsertDraft({
-      id: 'b',
-      prompt: 'p',
+      id: "b",
+      prompt: "p",
       snapshot: {},
       chatHistory: [],
     });
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(['b', 'a']);
+    expect(s.drafts.map((d) => d.id)).toEqual(["b", "a"]);
     expect(s.latestDraft).toBe(saved);
     expect(returned).toBe(saved);
   });
 
-  it('replaces an existing draft in place rather than duplicating it', async () => {
-    const original = makeDraft('a');
-    const updated: RecipeDraft = { ...makeDraft('a'), prompt: 'updated' };
-    const store = makeStore({ listResult: ok(makePage([original])), upsertResult: ok(updated) });
+  it("replaces an existing draft in place rather than duplicating it", async () => {
+    const original = makeDraft("a");
+    const updated: RecipeDraft = { ...makeDraft("a"), prompt: "updated" };
+    const store = makeStore({
+      listResult: ok(makePage([original])),
+      upsertResult: ok(updated),
+    });
     await store.getState().loadDrafts();
 
     await store.getState().upsertDraft({
-      id: 'a',
-      prompt: 'updated',
+      id: "a",
+      prompt: "updated",
       snapshot: {},
       chatHistory: [],
     });
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(['a']);
-    expect(s.drafts[0].prompt).toBe('updated');
+    expect(s.drafts.map((d) => d.id)).toEqual(["a"]);
+    expect(s.drafts[0].prompt).toBe("updated");
     expect(s.latestDraft).toBe(updated);
   });
 
-  it('returns null and does not mutate the list on failure', async () => {
-    const existing = makeDraft('a');
+  it("returns null and does not mutate the list on failure", async () => {
+    const existing = makeDraft("a");
     const store = makeStore({
       listResult: ok(makePage([existing])),
-      upsertResult: fail(new UnknownFailure('boom')),
+      upsertResult: fail(new UnknownFailure("boom")),
     });
     await store.getState().loadDrafts();
 
     const returned = await store.getState().upsertDraft({
-      id: 'b',
-      prompt: 'p',
+      id: "b",
+      prompt: "p",
       snapshot: {},
       chatHistory: [],
     });
 
     expect(returned).toBeNull();
-    expect(store.getState().drafts.map((d) => d.id)).toEqual(['a']);
+    expect(store.getState().drafts.map((d) => d.id)).toEqual(["a"]);
   });
 });
 
-describe('draftsStore.deleteDraft', () => {
-  it('removes the draft locally and clears latestDraft when it pointed to it', async () => {
-    const a = makeDraft('a');
-    const b = makeDraft('b');
-    const store = makeStore({ listResult: ok(makePage([a, b])), latestResult: ok(a) });
+describe("draftsStore.deleteDraft", () => {
+  it("removes the draft locally and clears latestDraft when it pointed to it", async () => {
+    const a = makeDraft("a");
+    const b = makeDraft("b");
+    const store = makeStore({
+      listResult: ok(makePage([a, b])),
+      latestResult: ok(a),
+    });
     await store.getState().loadDrafts();
     await store.getState().loadLatestDraft();
 
-    await store.getState().deleteDraft('a');
+    await store.getState().deleteDraft("a");
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(['b']);
+    expect(s.drafts.map((d) => d.id)).toEqual(["b"]);
     expect(s.latestDraft).toBeNull();
   });
 
-  it('keeps latestDraft when a different draft is deleted', async () => {
-    const a = makeDraft('a');
-    const b = makeDraft('b');
-    const store = makeStore({ listResult: ok(makePage([a, b])), latestResult: ok(a) });
+  it("keeps latestDraft when a different draft is deleted", async () => {
+    const a = makeDraft("a");
+    const b = makeDraft("b");
+    const store = makeStore({
+      listResult: ok(makePage([a, b])),
+      latestResult: ok(a),
+    });
     await store.getState().loadDrafts();
     await store.getState().loadLatestDraft();
 
-    await store.getState().deleteDraft('b');
+    await store.getState().deleteDraft("b");
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(['a']);
+    expect(s.drafts.map((d) => d.id)).toEqual(["a"]);
     expect(s.latestDraft).toBe(a);
   });
 
-  it('does not mutate the list on failure', async () => {
-    const a = makeDraft('a');
+  it("does not mutate the list on failure", async () => {
+    const a = makeDraft("a");
     const store = makeStore({
       listResult: ok(makePage([a])),
-      deleteResult: fail(new UnknownFailure('boom')),
+      deleteResult: fail(new UnknownFailure("boom")),
     });
     await store.getState().loadDrafts();
 
-    await store.getState().deleteDraft('a');
+    await store.getState().deleteDraft("a");
 
-    expect(store.getState().drafts.map((d) => d.id)).toEqual(['a']);
+    expect(store.getState().drafts.map((d) => d.id)).toEqual(["a"]);
   });
 });

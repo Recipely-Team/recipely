@@ -191,7 +191,7 @@ const styles = StyleSheet.create({
   },
   heroColStacked: {
     height: HERO_MAX_HEIGHT,
-    flex: 0,
+    flex: ValueConstants.zero,
   },
   hero: {
     flex: ValueConstants.one,

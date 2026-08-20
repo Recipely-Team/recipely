@@ -129,7 +129,7 @@ export const WebRecipeGrid = ({
           <View style={[styles.filterBadge, { backgroundColor: colors.primary }]}>
             <ThemedText
               style={[styles.filterBadgeText, { color: colors.primaryText }]}
-              numberOfLines={1}
+              numberOfLines={ValueConstants.one}
             >
               {activeFilterCount}
             </ThemedText>

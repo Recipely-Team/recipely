@@ -29,7 +29,7 @@ export const BottomSheetHeader = ({
       {showCloseButton ? (
         <Pressable
           onPress={onClose}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={styles.headerSide}
           accessibilityRole="button"
           accessibilityLabel={t().common.close}
@@ -43,7 +43,7 @@ export const BottomSheetHeader = ({
       {rightAction !== undefined ? (
         <Pressable
           onPress={rightAction.onPress}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           style={[styles.headerSide, styles.headerRight]}
           accessibilityRole="button"
           accessibilityLabel={rightAction.label}

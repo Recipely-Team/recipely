@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   disc: {
     width: DISC_SIZE,
     height: DISC_SIZE,
-    borderRadius: DISC_SIZE / 2,
+    borderRadius: DISC_SIZE / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg2,

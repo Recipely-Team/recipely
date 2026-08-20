@@ -71,7 +71,7 @@ export const MyRecipesTabs = ({ tabs, active, onChange }: MyRecipesTabsProps): R
             </View>
             <ThemedText
               variant="caption"
-              numberOfLines={1}
+              numberOfLines={ValueConstants.one}
               style={[
                 styles.label,
                 {
