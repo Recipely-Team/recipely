@@ -1275,3 +1275,50 @@ since that spelling silently means every default.
 *The class:* **read the config plugin, not the README, before adding a native
 dependency.** The capability a library grants itself by default is the one
 nobody writes down, and it lands in the artifact rather than the diff.
+
+## A transport that connected, sent its setup, and heard nothing forever
+
+The Live API transport passed every unit test — handshake, tool calls,
+resumption, interruption ordering — and against the real server it would have
+reached `setupComplete` never.
+
+*Why:* the API sends its JSON in **binary** WebSocket frames, not text ones,
+every frame including `setupComplete`. The transport read `typeof data ===
+'string'` and dropped everything else as unparseable. The fake socket in its
+tests sent strings, because that is what a fake naturally does, so the bug was
+invisible from inside the suite.
+
+*Now:* the socket asks for `arraybuffer` and the decoder accepts a string, an
+`ArrayBuffer` or a typed-array view. The fake socket delivers **binary**, like
+the real one, so the whole suite goes red without the fix rather than one test.
+
+*The class:* **a fake that is more convenient than the real thing tests the
+convenience.** Where a protocol has a wire format — framing, encoding,
+endianness — the double has to reproduce it, or the suite is green about
+something nobody ships.
+
+## The setup nobody was listening to
+
+The client built the session's whole configuration — system instruction, the
+single `runAction` tool and its action enum, modality, transcription, sliding
+window, resumption handle — and sent it in the setup frame. Measured against the
+live API, none of it had any effect.
+
+*Why:* with an ephemeral token, the setup baked in at mint time is
+authoritative and the client's setup frame is a trigger whose contents are
+discarded. Sending the full setup and sending `{ model }` produced sessions
+identical down to the prompt token count. Worse in the other direction: a token
+minted without tools, connected by a client that declared them, ran a session
+with **no tools at all** and no error to say so — the assistant simply never
+acted, and every explanation for that points at the prompt.
+
+*Now:* the system instruction, tool list and action enum live on the backend
+that mints the token; the client sends `{ setup: { model } }` and nothing else.
+`languageCode` and the resumption handle are arguments to the mint. The mapper's
+tests assert the deliberate **absence** of everything the plan had put there,
+with the measurement written down beside them.
+
+*The class:* **when a server takes the same configuration by two routes, find
+out which one it obeys before writing the one that is easier to reach.** A
+config that is ignored fails silently and looks, in code review, exactly like a
+config that works.

@@ -13,6 +13,7 @@ class FakeSocket {
   static readonly CLOSED = 3;
 
   readyState = FakeSocket.OPEN;
+  binaryType = '';
   readonly sent: string[] = [];
   onopen: (() => void) | null = null;
   onmessage: ((event: { data: unknown }) => void) | null = null;
@@ -32,7 +33,17 @@ class FakeSocket {
     this.onopen?.();
   }
 
+  /**
+   * Delivers a frame the way the real server does: as a BINARY frame. A fake
+   * that sent strings was why a transport which read only strings passed every
+   * test and received nothing at all from Google.
+   */
   deliver(frame: unknown): void {
+    const bytes = new TextEncoder().encode(JSON.stringify(frame));
+    this.onmessage?.({ data: bytes.buffer });
+  }
+
+  deliverText(frame: unknown): void {
     this.onmessage?.({ data: JSON.stringify(frame) });
   }
 
@@ -70,7 +81,7 @@ describe('GeminiLiveSession', () => {
     const events: AssistantSessionEventType[] = [];
     session.subscribe((event) => events.push(event));
 
-    const pending = session.connect(credentials, 'tr-TR');
+    const pending = session.connect(credentials);
     const socket = sockets[0]!;
     socket.open();
     socket.deliver({ setupComplete: {} });
@@ -81,9 +92,7 @@ describe('GeminiLiveSession', () => {
 
   it('sends the setup frame as soon as the socket opens', async () => {
     const { socket } = await connected();
-    const [first] = socket.parsedSends() as unknown as { setup?: { model?: string } }[];
-
-    expect(first!.setup?.model).toBe('models/gemini-flash-latest');
+    expect(socket.parsedSends()).toEqual([{ setup: { model: 'models/gemini-flash-latest' } }]);
   });
 
   // The socket opens before the server has accepted the model, the tool list or
@@ -99,7 +108,7 @@ describe('GeminiLiveSession', () => {
     });
 
     let settled = false;
-    const pending = session.connect(credentials, 'tr-TR').then((r) => {
+    const pending = session.connect(credentials).then((r) => {
       settled = true;
       return r;
     });
@@ -120,7 +129,7 @@ describe('GeminiLiveSession', () => {
       return socket as unknown as WebSocket;
     });
 
-    const pending = session.connect(credentials, 'tr-TR');
+    const pending = session.connect(credentials);
     sockets[0]!.fail();
 
     expect((await pending).ok).toBe(false);
@@ -202,18 +211,19 @@ describe('GeminiLiveSession', () => {
     expect(session.lastResumptionHandle).toBe('handle-1');
   });
 
-  it('sends the handle back when reconnecting after a goAway', async () => {
+  // The handle cannot travel on the socket — a setup frame's contents are
+  // discarded — so it is kept for the next mint instead. Reconnecting therefore
+  // sends the same minimal frame as a fresh connection.
+  it('opens a reconnect with the same minimal frame', async () => {
     const { session, sockets } = await connected();
 
-    const pending = session.connect(credentials, 'tr-TR', 'handle-1');
+    const pending = session.connect(credentials);
     const next = sockets[1]!;
     next.open();
     next.deliver({ setupComplete: {} });
     await pending;
 
-    const [first] = next.parsedSends() as unknown as { setup?: { sessionResumption?: unknown } }[];
-
-    expect(first!.setup?.sessionResumption).toEqual({ handle: 'handle-1' });
+    expect(next.parsedSends()).toEqual([{ setup: { model: credentials.model } }]);
   });
 
   // A reconnect closes the old socket and opens the new one in the same tick.
@@ -224,7 +234,7 @@ describe('GeminiLiveSession', () => {
     const { session, events } = await connected();
     events.length = 0;
 
-    void session.connect(credentials, 'tr-TR');
+    void session.connect(credentials);
 
     expect(events).toEqual([{ kind: AssistantEventKind.Closed, expected: true }]);
   });
@@ -262,6 +272,42 @@ describe('GeminiLiveSession', () => {
     socket.deliver({ usageMetadata: { totalTokenCount: 3 } });
 
     expect(seen).toEqual([AssistantEventKind.Usage]);
+  });
+
+  // Every frame the Live API sends — setupComplete included — arrives as a
+  // BINARY WebSocket frame, not a text one. A transport that accepted only
+  // strings connected, sent its setup, and then heard nothing forever; the unit
+  // tests passed because a fake socket naturally sends strings.
+  describe('binary frames', () => {
+    it('asks the socket for ArrayBuffers rather than Blobs', async () => {
+      const { socket } = await connected();
+
+      expect(socket.binaryType).toBe('arraybuffer');
+    });
+
+    it('reads a binary setupComplete, which is how connect resolves at all', async () => {
+      const { result } = await connected();
+
+      expect(result.ok).toBe(true);
+    });
+
+    it('reads a frame delivered as a typed-array view', async () => {
+      const { socket, events } = await connected();
+      events.length = 0;
+
+      socket.onmessage?.({ data: new TextEncoder().encode(JSON.stringify({ usageMetadata: { totalTokenCount: 5 } })) });
+
+      expect(events).toEqual([{ kind: AssistantEventKind.Usage, totalTokens: 5 }]);
+    });
+
+    it('still reads a text frame, so a proxy that reframes them keeps working', async () => {
+      const { socket, events } = await connected();
+      events.length = 0;
+
+      socket.deliverText({ usageMetadata: { totalTokenCount: 7 } });
+
+      expect(events).toEqual([{ kind: AssistantEventKind.Usage, totalTokens: 7 }]);
+    });
   });
 
   it('stops delivering after unsubscribe', async () => {

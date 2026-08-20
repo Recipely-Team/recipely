@@ -6,6 +6,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Failure } from '@core/failure/failure';
 import { float32ToPcm16Base64 } from '@infrastructure/assistant/live/pcm-codec';
+import { isString } from '@core/guards/type-guards';
 import type { LiveServerMessageDto } from '@infrastructure/assistant/live/dtos/live-server-message-dto';
 import type { LiveSessionCredentials } from '@domain/assistant/live-session-credentials';
 import { LiveProtocol } from '@infrastructure/assistant/live/live-protocol';
@@ -30,10 +31,11 @@ import { toLiveSetupRequest } from '@infrastructure/assistant/live/live-setup-re
  * - **A listener that throws must not kill the socket.** One screen's bad
  *   render would otherwise take down the audio session and every other
  *   listener with it.
- * - **The resumption handle is remembered but never acted on here.**
- *   Reconnecting asks whether the user still wants to be talking, which is a
- *   policy question for the application layer; this class only keeps the handle
- *   and reports the `goAway` that makes it relevant.
+ * - **The resumption handle is remembered but never acted on here.** It cannot
+ *   be: a handle put in the setup frame is discarded, so continuing a session
+ *   means minting a new token with it. Reconnecting also asks whether the user
+ *   still wants to be talking, which is a policy question either way; this
+ *   class only keeps the handle and reports the `goAway` that makes it matter.
  * - **Whether a close was expected is tracked per socket**, not in a field. A
  *   reconnect closes the old socket and opens a new one in the same tick, and a
  *   single flag was read by the old socket's `onclose` after the new
@@ -44,6 +46,24 @@ import { toLiveSetupRequest } from '@infrastructure/assistant/live/live-setup-re
 type SocketFactory = (url: string) => WebSocket;
 
 const SOCKET_OPEN = 1;
+const ARRAY_BUFFER = 'arraybuffer';
+
+/**
+ * Reads one incoming frame as text.
+ *
+ * The Live API sends its JSON as BINARY WebSocket frames, not text ones — every
+ * frame, including `setupComplete`. A transport that accepted only strings
+ * silently received nothing at all, and its unit tests passed because a fake
+ * socket naturally sends strings. `binaryType` is set to `arraybuffer` so this
+ * stays synchronous; a Blob would have to be awaited, and the mapper's ordering
+ * guarantee does not survive an await between frames.
+ */
+function decodeFrame(data: unknown): string | null {
+  if (isString(data)) return data;
+  if (data instanceof ArrayBuffer) return new TextDecoder().decode(data);
+  if (ArrayBuffer.isView(data)) return new TextDecoder().decode(data.buffer as ArrayBuffer);
+  return null;
+}
 
 export class GeminiLiveSession implements AssistantSessionInterface {
   private socket: WebSocket | null = null;
@@ -58,11 +78,7 @@ export class GeminiLiveSession implements AssistantSessionInterface {
     return this.resumptionHandle;
   }
 
-  connect(
-    credentials: LiveSessionCredentials,
-    languageCode: string,
-    resumptionHandle?: string,
-  ): Promise<Result<void, Failure>> {
+  connect(credentials: LiveSessionCredentials): Promise<Result<void, Failure>> {
     this.close();
 
     return new Promise((resolve) => {
@@ -74,18 +90,13 @@ export class GeminiLiveSession implements AssistantSessionInterface {
       };
 
       const socket = this.createSocket(credentials.wsUrl);
+      // The server sends its JSON in BINARY frames. Without this the runtime
+      // hands them over as Blob, which cannot be read synchronously.
+      socket.binaryType = ARRAY_BUFFER;
       this.socket = socket;
 
       socket.onopen = () => {
-        socket.send(
-          JSON.stringify(
-            toLiveSetupRequest({
-              model: credentials.model,
-              languageCode,
-              ...(resumptionHandle === undefined ? {} : { resumptionHandle }),
-            }),
-          ),
-        );
+        socket.send(JSON.stringify(toLiveSetupRequest({ model: credentials.model })));
       };
 
       socket.onmessage = (event) => {
@@ -154,10 +165,11 @@ export class GeminiLiveSession implements AssistantSessionInterface {
   }
 
   private parse(data: unknown): AssistantSessionEventType[] {
-    if (typeof data !== 'string') return [];
+    const text = decodeFrame(data);
+    if (text === null) return [];
 
     try {
-      return mapLiveServerMessage(JSON.parse(data) as LiveServerMessageDto);
+      return mapLiveServerMessage(JSON.parse(text) as LiveServerMessageDto);
     } catch {
       // A frame we cannot read is not a reason to drop a live conversation.
       return [];

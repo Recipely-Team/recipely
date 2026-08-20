@@ -69,9 +69,76 @@ mevcut üretim hattı yazar, modele tek satır özet döner.
 
 ## Faz 0 bulguları (2026-08-20) — planın düzeltmeleri
 
-Aşağıdakiler kod yazılırken *doğrulandı*; plan metninin geri kalanı bu bölüme göre
-okunmalı. Ölçüm yarısı (model id, dakika başına token, eşzamanlı oturum limiti) hâlâ
-açık: Gemini anahtarı gerekiyor, spike script'i hazır.
+Aşağıdakiler kod yazılırken ve **canlı API'ye karşı ölçülerek** doğrulandı; plan
+metninin geri kalanı bu bölüme göre okunmalı.
+
+### Canlı ölçüm — uçtan uca çalışan akış (2026-08-20)
+
+Gerçek konuşma (macOS `say` ile üretilmiş TR ses) → 16k PCM → ephemeral token ile
+constrained WS → transkripsiyon → `runAction` tool call → tool sonucu → asistanın
+sesli cevabı. Ölçülen:
+
+| | değer |
+|---|---|
+| Duyduğu | "Elimde tavuk ve yoğurt var, bana bir tarif oluştur." |
+| Tool call | `runAction({action:'generateRecipe', arg:'chicken, yogurt'})`, 5.5 sn |
+| Söylediği | "Harika bir tarif buldum! Ekranına yansıtıyorum." — tarifi okumadı |
+| Toplam token | **957** (prompt 868 / cevap 89) |
+| Ses in | 3.7 sn → 180 token (~49 tok/sn) |
+| Ses out | 2.7 sn → 69 token (~26 tok/sn) |
+| Kesme | çalışıyor, 4 modelde de `interrupted` geldi |
+| Resumption | handle geliyor |
+
+Planın hedefi "30 sn'lik tarif oluştur akışı ≤ 3k token" idi — **957 ölçüldü**, hedefin
+üçte biri. Ses *girişi* plandaki ~28 tok/sn tahmininden pahalı (~49), çıkış tahmine
+uygun (~26). Bütçe modeli ayakta.
+
+**Model seçimi: `gemini-3.1-flash-live-preview`.** Ölçülen dört modelden tek "temiz"
+olanı. `gemini-2.5-flash-native-audio-*` ailesi düşüncesini **metin part'ı olarak
+sızdırıyor** ("**Formulating a Recipe**…") ve `thoughtsTokenCount` ~100 token ekliyor;
+`preview-09-2025`'in prompt'u 1211 token (3.1'de 247). 3.1 ayrıca resumption handle
+veren tek modeldi.
+
+### Ephemeral token — plandaki her ayrıntı yanlıştı, ama sonuç çalışıyor
+
+Plan `authTokens.create` + `liveConnectConstraints` + `v1beta` diyordu. Doğrusu:
+
+- Uç nokta **`auth_tokens`** (snake_case). `authTokens` **404** döndürüyor.
+- Kısıt alanı **`bidiGenerateContentSetup`**. `liveConnectConstraints` diye bir alan
+  yok — API "Cannot find field" diyor.
+- Bağlantı **`v1alpha`** + **`BidiGenerateContentConstrained`** (farklı RPC metodu!) +
+  **`access_token=<tam auth_tokens/... adı>`**. Normal `BidiGenerateContent`'e
+  `key=` veya `access_token=` ile bağlanmak "API key not valid" / "unregistered
+  callers" veriyor.
+
+### Bu mimariyi değiştirdi: setup'ın sahibi backend
+
+**Mint'teki setup geçerli; istemcinin setup frame'inin içeriği yok sayılıyor.** İki
+ölçümle kanıtlandı: (a) mint'te yalnızca `generationConfig` varken istemci tool
+gönderdi → oturumda tool YOK, hata da yok; (b) mint'te tam setup varken istemci
+`{setup:{model}}` gönderdi → tool'lar, transkripsiyon, sistem talimatı, resumption
+hepsi çalıştı, prompt token sayısı bile aynı. Frame yine de **zorunlu** — hiç
+göndermeyen oturum `setupComplete`'e ulaşmıyor, hata da vermiyor, asılı kalıyor.
+
+Sonuç: sistem talimatı, tool listesi ve action enum'u **backend'de** yaşıyor; istemci
+yalnızca `{setup:{model}}` yolluyor. `languageCode` ve `resumptionHandle` da socket'e
+değil **mint isteğine** gidiyor (`AssistantTokenRepositoryInterface.mintSession`).
+İstemcide kalan tek sözlük, registry'nin *dispatch* ettiği `AssistantAction`.
+
+Bu aslında planın güvenlik gerekçesiyle uyumlu: token istemcide bir bearer credential,
+kısıtın orada olması gerekiyordu — ölçüm onu zorunlu kıldı.
+
+### Frame'ler binary
+
+Live API JSON'unu **binary WebSocket frame** olarak yolluyor, `setupComplete` dahil.
+Yalnızca string kabul eden transport bağlanıp setup gönderiyor ve sonsuza kadar hiçbir
+şey duymuyor — unit testleri de geçiyor, çünkü sahte soket doğal olarak string yollar.
+`binaryType='arraybuffer'` + regresyon testi eklendi.
+
+### Hâlâ açık
+
+- Free tier eşzamanlı oturum / RPD limiti (AI Studio panelinden okunacak).
+- Cihaz üstü: mikrofonun gerçekte verdiği sample rate, kesmenin hissi. Dev build ister.
 
 **Ses hattı kararı ayakta.** `react-native-audio-api@0.13.3` kuruldu; `AudioRecorder`
 gerçekten `onAudioReady` ile float32 PCM veriyor ve `AudioBufferQueueSourceNode`

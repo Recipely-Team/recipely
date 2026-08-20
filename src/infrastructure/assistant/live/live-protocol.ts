@@ -1,18 +1,20 @@
 /**
- * The words the Live API's wire format is spelled with, defined once.
+ * The two wire words the client still gets to say, defined once.
  *
- * The setup frame names the tool and the schema types; the session frames name
- * the same tool again when answering a call, and name the audio format on every
- * frame it sends. Written out at each site, the tool declared and the tool
- * responded to could differ by a character — and a mismatched name is answered
- * with silence, not an error, so the conversation would simply stop.
+ * @remarks
+ * - **`toolName` must match what the backend minted the token with.** The
+ *   session's tools are declared server-side and cannot be seen from here, so
+ *   a response sent under a name that does not match the declaration is
+ *   answered with silence rather than an error — the conversation simply stops
+ *   mid-turn. That is the one thing across the two repos that has to agree
+ *   character for character, which is why it is a named constant on this side
+ *   rather than a string typed at the call site.
+ * - **The input rate is ours to state; the output rate is not.** The microphone
+ *   frame declares 16 kHz because that is what we resample to. The model
+ *   answers at 24 kHz regardless, which is why no constant here says so — the
+ *   player reads it from the frame.
  */
 export const LiveProtocol = {
   toolName: 'runAction',
-  /** What the microphone sends. The model answers at 24 kHz, not this rate. */
   inputAudioMime: 'audio/pcm;rate=16000',
-  audioModality: 'AUDIO',
-  objectType: 'OBJECT',
-  stringType: 'STRING',
-  actionProperty: 'action',
 } as const;

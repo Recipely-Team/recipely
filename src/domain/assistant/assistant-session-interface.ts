@@ -13,6 +13,10 @@ import type { Result } from '@core/result/result';
  *   user is silence, which is the player's `flush`, not a message on this
  *   socket. A method here would have implied the transport could stop a turn
  *   on demand, and callers would have used it instead of flushing.
+ * - **The credentials are the configuration.** An ephemeral token carries the
+ *   setup it was minted with, and the server discards whatever the client puts
+ *   in its own setup frame — so a `connect` that accepted a system instruction
+ *   or a tool list would be offering a lie.
  * - **Sends do not resolve.** Audio is produced on the hardware's clock and a
  *   caller that awaited each frame would stall the capture loop; a send that
  *   arrives after the socket closed is dropped, because there is nothing a
@@ -23,15 +27,13 @@ import type { Result } from '@core/result/result';
  */
 export interface AssistantSessionInterface {
   /**
-   * Opens the socket and configures the session, resolving once the server has
-   * accepted the setup. `resumptionHandle` continues a session the server
-   * asked us to leave, which avoids paying for setup and context again.
+   * Opens the socket, resolving once the server has acknowledged setup.
+   *
+   * There is nothing to configure here: the session runs on the setup its
+   * token was minted with, so language and resumption are arguments to
+   * `AssistantTokenRepositoryInterface.mintSession`, not to this.
    */
-  connect(
-    credentials: LiveSessionCredentials,
-    languageCode: string,
-    resumptionHandle?: string,
-  ): Promise<Result<void, Failure>>;
+  connect(credentials: LiveSessionCredentials): Promise<Result<void, Failure>>;
 
   /** Streams one frame of 16 kHz mono microphone audio. */
   sendAudio(samples: Float32Array<ArrayBuffer>): void;
