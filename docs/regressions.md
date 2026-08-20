@@ -1596,3 +1596,24 @@ absence of any sheet drawn above it.
 thing its sheet is.** An early return that skips the render does not skip the
 effect, and the gap between them is a gate that accepts answers to a question
 nobody was asked.
+
+## "You can keep typing" — into a field that went nowhere
+
+Running out of the daily voice allowance is a normal outcome, and the panel
+says so: it offers the text field as the way through. Typing into it wrote the
+user's message into the transcript and dropped it. Out of budget there is no
+socket, and `sendText` wrote to the socket.
+
+*Why:* the text mode was designed as the fallback and built as a method on the
+session. Everything about it worked while a session existed — which is exactly
+when it is not needed. The one state it exists for is the one where its
+dependency is absent.
+
+*Now:* it is its own port with its own backend endpoint, one request and no
+socket. The store uses the socket while a session is live (that turn carries
+the conversation's context and a second contextless request would be slower and
+dearer) and HTTP otherwise.
+
+*The class:* **a fallback that depends on what it is falling back from is not a
+fallback.** Build the alternative path against the absence it exists for, and
+test it in that state — the happy path passes either way.

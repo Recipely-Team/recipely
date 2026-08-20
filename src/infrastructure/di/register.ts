@@ -31,6 +31,7 @@ import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
+import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
 import { AssistantTokenRepository } from '@infrastructure/assistant/token/assistant-token-repository';
 import { GeminiLiveSession } from '@infrastructure/assistant/live/gemini-live-session';
 import { Microphone } from '@infrastructure/assistant/live/audio/microphone';
@@ -68,6 +69,10 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(
     TOKENS.AssistantTokenRepository,
     () => new AssistantTokenRepository(container.resolve(TOKENS.HttpClient)),
+  );
+  container.register(
+    TOKENS.AssistantMessenger,
+    () => new AssistantMessenger(container.resolve(TOKENS.HttpClient)),
   );
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 

@@ -41,7 +41,8 @@ export const useAssistantSession = (): AssistantSessionView => {
   const closePanel = assistantSessionStore((s) => s.closePanel);
   const startVoice = assistantSessionStore((s) => s.startVoice);
   const stopVoice = assistantSessionStore((s) => s.stopVoice);
-  const sendText = assistantSessionStore((s) => s.sendText);
+  const send = assistantSessionStore((s) => s.sendText);
+  const sendText = useCallback((text: string) => send(text, locale), [send, locale]);
 
   const toggleVoice = useCallback(() => {
     if (status === AssistantStatus.Idle) {

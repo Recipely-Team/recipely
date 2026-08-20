@@ -7,6 +7,7 @@ import { AssistantStatus } from '@application/assistant/session/assistant-status
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { ChatRole } from '@domain/drafts/chat-role';
@@ -27,6 +28,8 @@ function harness(
     denyReconnect?: boolean;
     connectFails?: boolean;
     micFails?: boolean;
+    messengerFails?: boolean;
+    textAction?: { action: { name: string; arg?: string } };
   } = {},
 ) {
   let emit: (event: AssistantSessionEventType) => void = () => {};
@@ -39,6 +42,7 @@ function harness(
     texts: [] as string[],
     mints: [] as { languageCode: string; resumptionHandle: string | undefined }[],
     audioFrames: 0,
+    asks: [] as { message: string; languageCode: string; screenContext: string | undefined }[],
     onFrame: null as ((samples: Float32Array<ArrayBuffer>) => void) | null,
   };
 
@@ -112,8 +116,17 @@ function harness(
     reportUsage: async () => ({ ok: true, value: 400 }),
   };
 
+  const messenger: AssistantMessengerInterface = {
+    ask: async (message, languageCode, screenContext) => {
+      calls.asks.push({ message, languageCode, screenContext });
+      return overrides.messengerFails === true
+        ? { ok: false, failure: new NetworkFailure('offline') }
+        : { ok: true, value: { reply: 'tamam', ...(overrides.textAction ?? {}) } };
+    },
+  };
+
   const registry = new AssistantActionRegistry();
-  const store = configureAssistantSessionStore({ session, microphone, player, tokens, registry });
+  const store = configureAssistantSessionStore({ session, microphone, player, tokens, messenger, registry });
   openStores.push(store);
   return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event) };
 }
@@ -491,11 +504,71 @@ describe('assistant session store', () => {
     expect(calls.micStopped).toBeGreaterThan(0);
   });
 
+  // The mode the whole budget design promises. Out of budget there is no
+  // socket, and this used to write the user's message into the transcript and
+  // drop it — which looked exactly like being ignored.
+  describe('typing with no session', () => {
+    it('answers over HTTP and shows the reply', async () => {
+      const { store, calls } = harness({ grantDenied: true });
+      await store.getState().startVoice('tr-TR');
+
+      store.getState().sendText('tavuklu bir şey öner', 'tr-TR');
+      await settle();
+
+      expect(calls.asks).toEqual([
+        { message: 'tavuklu bir şey öner', languageCode: 'tr-TR', screenContext: undefined },
+      ]);
+      expect(store.getState().transcript.at(-1)?.text).toBe('tamam');
+    });
+
+    it('performs the action the answer chose', async () => {
+      const { store, registry } = harness({
+        grantDenied: true,
+        textAction: { action: { name: AssistantAction.GenerateRecipe, arg: 'tavuk' } },
+      });
+      let ranWith: string | undefined;
+      registry.register(AssistantAction.GenerateRecipe, async (arg) => {
+        ranWith = arg;
+        return { ok: true };
+      });
+      await store.getState().startVoice('tr-TR');
+
+      store.getState().sendText('tarif yap', 'tr-TR');
+      await settle();
+
+      expect(ranWith).toBe('tavuk');
+    });
+
+    it('reports a backend it could not reach', async () => {
+      const { store } = harness({ grantDenied: true, messengerFails: true });
+      await store.getState().startVoice('tr-TR');
+
+      store.getState().sendText('merhaba', 'tr-TR');
+      await settle();
+
+      expect(store.getState().error).not.toBeNull();
+    });
+
+    // With a live session the turn belongs on the socket: it carries the
+    // conversation's context, and paying for a second, contextless request
+    // would be both slower and dearer.
+    it('uses the socket while one is open', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      store.getState().sendText('yayınla', 'tr-TR');
+      await settle();
+
+      expect(calls.texts).toEqual(['yayınla']);
+      expect(calls.asks).toEqual([]);
+    });
+  });
+
   it('sends a typed turn and shows it in the transcript', async () => {
     const { store, calls } = harness();
     await store.getState().startVoice('tr-TR');
 
-    store.getState().sendText('yayınla');
+    store.getState().sendText('yayınla', 'tr-TR');
 
     expect(calls.texts).toEqual(['yayınla']);
     expect(store.getState().transcript.at(-1)?.text).toBe('yayınla');

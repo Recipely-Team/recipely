@@ -5,6 +5,7 @@ import type { AssistantActionRegistry } from '@application/assistant/actions/ass
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import type { BoundStore } from '@application/store/bound-store';
@@ -18,6 +19,7 @@ interface AssistantSessionStoreDeps {
   microphone: MicrophoneInterface;
   player: AudioPlayerInterface;
   tokens: AssistantTokenRepositoryInterface;
+  messenger: AssistantMessengerInterface;
   registry: AssistantActionRegistry;
 }
 
@@ -69,7 +71,7 @@ const PLAYBACK_SAMPLE_RATE = 24_000;
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
 ): BoundStore<AssistantSessionStoreState> => {
-  const { session, microphone, player, tokens, registry } = deps;
+  const { session, microphone, player, tokens, messenger, registry } = deps;
 
   let unsubscribe: (() => void) | null = null;
   // Tool calls run ONE AT A TIME, in arrival order. The model routinely sends
@@ -330,10 +332,35 @@ export const configureAssistantSessionStore = (
         await teardown(AssistantStatus.Idle);
       },
 
-      sendText: (text: string) => {
+      sendText: (text: string, locale: string) => {
         if (text === CharConstants.empty) return;
         appendTranscript(ChatRole.User, text);
-        session.sendText(text);
+
+        // A live session carries the turn; without one it goes over HTTP. That
+        // second path is the whole point of the text mode: out of budget there
+        // is no socket, and this used to write the user's message into the
+        // transcript and drop it — which looked exactly like being ignored.
+        if (get().status !== AssistantStatus.Idle && get().status !== AssistantStatus.Unavailable) {
+          session.sendText(text);
+          return;
+        }
+
+        // An empty screen line is omitted rather than sent: the backend
+        // appends it to the prompt, and an empty bracket is a token spent
+        // saying nothing.
+        const screen = registry.screenContext;
+        const context = screen === CharConstants.empty ? undefined : screen;
+        void messenger.ask(text, locale, context).then((answered) => {
+          if (!answered.ok) {
+            set({ error: answered.failure });
+            return;
+          }
+          if (answered.value.reply !== CharConstants.empty) {
+            appendTranscript(ChatRole.Assistant, answered.value.reply);
+          }
+          const action = answered.value.action;
+          if (action !== undefined) void registry.run(action.name, action.arg);
+        });
       },
 
       clearError: () => set({ error: null }),

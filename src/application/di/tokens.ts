@@ -49,4 +49,5 @@ export const TOKENS = {
   AssistantMicrophone: Symbol.for('AssistantMicrophone'),
   AssistantPlayer: Symbol.for('AssistantPlayer'),
   AssistantTokenRepository: Symbol.for('AssistantTokenRepository'),
+  AssistantMessenger: Symbol.for('AssistantMessenger'),
 } as const;

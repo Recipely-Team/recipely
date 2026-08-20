@@ -57,5 +57,6 @@ export const ApiRoutes = {
   assistant: {
     session: '/assistant/session',
     heartbeat: '/assistant/heartbeat',
+    message: '/assistant/message',
   },
 } as const;

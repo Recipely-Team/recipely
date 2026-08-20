@@ -65,6 +65,11 @@ export class AssistantActionRegistry {
     this.describeScreen = describe;
   }
 
+  /** The one-line screen state, for a caller that needs it outside a result. */
+  get screenContext(): string {
+    return this.describeScreen();
+  }
+
   get registeredActions(): AssistantActionType[] {
     return [...this.handlers.keys()];
   }

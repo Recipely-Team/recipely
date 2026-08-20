@@ -1,4 +1,5 @@
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
@@ -202,6 +203,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     microphone: container.resolve<MicrophoneInterface>(TOKENS.AssistantMicrophone),
     player: container.resolve<AudioPlayerInterface>(TOKENS.AssistantPlayer),
     tokens: container.resolve<AssistantTokenRepositoryInterface>(TOKENS.AssistantTokenRepository),
+    messenger: container.resolve<AssistantMessengerInterface>(TOKENS.AssistantMessenger),
     registry: assistantActionRegistry,
   });
   // WHY: built after every session-scoped store exists so sign-out / account

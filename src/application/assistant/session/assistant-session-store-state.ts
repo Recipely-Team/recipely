@@ -26,7 +26,12 @@ export interface AssistantSessionStoreState {
   closePanel: () => void;
   startVoice: (languageCode: string) => Promise<void>;
   stopVoice: () => Promise<void>;
-  sendText: (text: string) => void;
+  /**
+   * Sends a typed turn. `locale` is required because this path also runs with
+   * no session behind it — out of budget there is no socket and no minted
+   * language, and this is exactly the case the text mode exists for.
+   */
+  sendText: (text: string, locale: string) => void;
   clearError: () => void;
   reset: () => void;
 }
