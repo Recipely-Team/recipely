@@ -123,6 +123,12 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           // the key and the name are accepted, because the model has seen
           // whichever the screen showed it.
           const options = field === CUISINE_FIELD ? cuisines : categories;
+          // An empty catalogue is not the same as an unrecognised value: the
+          // app has simply not loaded it yet, and telling the model the
+          // cuisine does not exist would have it say something untrue out loud.
+          if (options.length === ValueConstants.zero) {
+            return { ok: false, error: 'taxonomy_not_loaded' };
+          }
           const wanted = value.toLocaleLowerCase();
           const match = options.find(
             (item) => item.key.toLocaleLowerCase() === wanted || item.name.toLocaleLowerCase() === wanted,
