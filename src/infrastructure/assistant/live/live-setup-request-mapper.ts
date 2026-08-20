@@ -1,5 +1,6 @@
 import { AssistantAction } from '@domain/assistant/assistant-action-type';
 import type { LiveSetupRequestDto } from '@infrastructure/assistant/live/dtos/live-setup-request-dto';
+import { LiveProtocol } from '@infrastructure/assistant/live/live-protocol';
 import type { RequestMapper } from '@core/mapper/request-mapper';
 
 /**
@@ -36,13 +37,8 @@ const SYSTEM_INSTRUCTION =
   'Never compose recipe text yourself — call generateRecipe and let the app write it. ' +
   'Reply in the language the user speaks.';
 
-const TOOL_NAME = 'runAction';
 const TOOL_DESCRIPTION = 'Perform one action in the Recipely app.';
 const ARG_DESCRIPTION = 'The action argument: a recipe prompt, a search query, a field value, or an id.';
-const AUDIO_MODALITY = 'AUDIO';
-const OBJECT_TYPE = 'OBJECT';
-const STRING_TYPE = 'STRING';
-const ACTION_PROPERTY = 'action';
 
 // Only this file names it, so rule 1 keeps it unexported and next to its use.
 interface LiveSetupInput {
@@ -56,7 +52,7 @@ export const toLiveSetupRequest: RequestMapper<LiveSetupInput, LiveSetupRequestD
   setup: {
     model: input.model,
     generationConfig: {
-      responseModalities: [AUDIO_MODALITY],
+      responseModalities: [LiveProtocol.audioModality],
       speechConfig: { languageCode: input.languageCode },
     },
     systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
@@ -64,15 +60,15 @@ export const toLiveSetupRequest: RequestMapper<LiveSetupInput, LiveSetupRequestD
       {
         functionDeclarations: [
           {
-            name: TOOL_NAME,
+            name: LiveProtocol.toolName,
             description: TOOL_DESCRIPTION,
             parameters: {
-              type: OBJECT_TYPE,
+              type: LiveProtocol.objectType,
               properties: {
-                action: { type: STRING_TYPE, enum: Object.values(AssistantAction) },
-                arg: { type: STRING_TYPE, description: ARG_DESCRIPTION },
+                action: { type: LiveProtocol.stringType, enum: Object.values(AssistantAction) },
+                arg: { type: LiveProtocol.stringType, description: ARG_DESCRIPTION },
               },
-              required: [ACTION_PROPERTY],
+              required: [LiveProtocol.actionProperty],
             },
           },
         ],
