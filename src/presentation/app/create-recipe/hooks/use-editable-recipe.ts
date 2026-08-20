@@ -53,18 +53,26 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
+  /** Appends a blank ingredient row — what a person tapping "+" wants. */
+  const onAddIngredient = useCallback((): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
+    clearFieldError('ingredients');
+  }, [clearFieldError]);
+
   /**
-   * Appends an ingredient row. Blank for the "+" button, which is what a
-   * person tapping it wants; with text when the assistant already knows what
-   * goes in it.
+   * Appends an ingredient row that already has its text.
    *
-   * The optional value is not a convenience — it is the only way two additions
-   * in one breath can both land. The assistant appends then writes, and two
-   * calls arriving in one model turn run as microtasks, before React has
-   * re-rendered: both then wrote to the same index and the first ingredient
-   * vanished, leaving a blank row behind it.
+   * Separate from {@link onAddIngredient} rather than an optional parameter on
+   * it. The blank version is wired straight to a Pressable's `onPress`, which
+   * calls it WITH the gesture event — an optional first parameter therefore
+   * pushed a `GestureResponderEvent` into a `string[]` on an ordinary tap, and
+   * neither the type (three levels of `() => void` props) nor any test saw it.
+   *
+   * It exists at all because the assistant adds two things in one breath: two
+   * tool calls in one model turn run as microtasks, before React re-renders,
+   * so appending and then writing had both calls land on the same index.
    */
-  const onAddIngredient = useCallback((value: string = CharConstants.empty): void => {
+  const onAppendIngredient = useCallback((value: string): void => {
     setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, value] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
@@ -133,8 +141,14 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
-  /** Appends an instruction row — see {@link onAddIngredient} on the value. */
-  const onAddStep = useCallback((value: string = CharConstants.empty): void => {
+  /** Appends a blank instruction row — what a person tapping "+" wants. */
+  const onAddStep = useCallback((): void => {
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, CharConstants.empty] }));
+    clearFieldError('instructions');
+  }, [clearFieldError]);
+
+  /** Appends an instruction that already has its text — see {@link onAppendIngredient}. */
+  const onAppendStep = useCallback((value: string): void => {
     setRecipe((r) => ({ ...r, instructions: [...r.instructions, value] }));
     clearFieldError('instructions');
   }, [clearFieldError]);
@@ -165,6 +179,7 @@ export const useEditableRecipe = () => {
     onChangeIngredient,
     onRemoveIngredient,
     onAddIngredient,
+    onAppendIngredient,
     onAddIngredientAt,
     onMoveIngredient,
     onAddIngredientGroup,
@@ -172,6 +187,7 @@ export const useEditableRecipe = () => {
     onChangeStep,
     onRemoveStep,
     onAddStep,
+    onAppendStep,
     onAddMedia,
     onRemoveMedia,
     onSetCover,

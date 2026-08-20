@@ -14,6 +14,10 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   unknown action is a normal outcome, not a bug: the enum the model chooses
  *   from is declared by the backend, so a deploy there can teach it a word this
  *   build has never heard.
+ * - **A handler may decline.** Answering `notMine` passes the call outward to
+ *   the handler underneath instead of failing — the list screen answers for
+ *   the rows it is showing, and anything else falls through to the one that
+ *   works from anywhere.
  * - **A key holds a STACK, not one handler.** Several actions are implemented
  *   by more than one screen — the pill answers `openRecipe` from anywhere, My
  *   Recipes answers it from the list in front of the user — and the innermost
@@ -65,30 +69,34 @@ export class AssistantActionRegistry {
     return [...this.handlers.keys()];
   }
 
-  /** The handler that answers now: the most recently registered one. */
-  private topmost(action: AssistantActionType): AssistantActionHandlerType | undefined {
-    return this.handlers.get(action)?.at(ValueConstants.minusOne);
-  }
-
   async run(action: string, arg?: string): Promise<AssistantActionResultType> {
     if (!isKnownAction(action)) {
       return this.withContext({ ok: false, error: 'unknown_action' });
     }
 
-    const handler = this.topmost(action);
-    if (handler === undefined) {
+    const stack = this.handlers.get(action) ?? [];
+    if (stack.length === ValueConstants.zero) {
       // The action exists but nothing on this screen can do it — "open the
       // photo picker" with no draft open. The model can recover from being
       // told so; it cannot recover from silence.
       return this.withContext({ ok: false, error: 'unavailable_here' });
     }
 
-    try {
-      return this.withContext(await handler(arg));
-    } catch {
-      // A handler that throws is a bug, and it must still not hang the session.
-      return this.withContext({ ok: false, error: 'failed' });
+    // Innermost first, then outward while a handler says the subject is not
+    // its own. A screen showing a list answers for the rows it is showing; a
+    // recipe named from anywhere else belongs to the handler underneath, and
+    // stopping at the top meant the innermost screen denied it.
+    for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
+      try {
+        const result = await stack[at]!(arg);
+        if (result.notMine !== true) return this.withContext(result);
+      } catch {
+        // A handler that throws is a bug, and it must still not hang the
+        // session — but it also must not silently promote the one beneath it.
+        return this.withContext({ ok: false, error: 'failed' });
+      }
     }
+    return this.withContext({ ok: false, error: 'not_found' });
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {

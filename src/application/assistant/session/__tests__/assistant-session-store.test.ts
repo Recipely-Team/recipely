@@ -118,6 +118,11 @@ function harness(
   return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event) };
 }
 
+/** Lets every queued microtask — the tool queue, a reconnect — run to a stop. */
+const settle = async (): Promise<void> => {
+  for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+};
+
 describe('assistant session store', () => {
   afterEach(async () => {
     for (const store of openStores.splice(0)) await store.getState().stopVoice();
@@ -259,7 +264,7 @@ describe('assistant session store', () => {
 
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
-      for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+      await settle();
 
       expect(order).toEqual(['open:start', 'open:end', 'save:start', 'save:end']);
       expect(calls.toolResponses).toHaveLength(2);
@@ -277,7 +282,7 @@ describe('assistant session store', () => {
 
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
-      for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+      await settle();
 
       expect(calls.toolResponses).toEqual([
         { ok: false, error: 'failed' },
@@ -289,10 +294,6 @@ describe('assistant session store', () => {
     // session that read that as the end would die mid-conversation on a timer,
     // which is what happened while these events fell through to `default`.
     describe('surviving a goAway', () => {
-      const settle = async (): Promise<void> => {
-        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
-      };
-
       it('continues on a fresh socket instead of ending', async () => {
         const { store, calls, emit } = harness();
         await store.getState().startVoice('tr-TR');
@@ -380,11 +381,64 @@ describe('assistant session store', () => {
         emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
         emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
         emit({ kind: AssistantEventKind.Closed, expected: false });
-        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+        await settle();
         calls.audioFrames = 0;
         calls.onFrame?.(new Float32Array([0.2]));
 
         expect(calls.audioFrames).toBe(1);
+      });
+
+      // A goAway is normal every ten minutes, so several per session is fine —
+      // but several with no completed turn between them means the handover
+      // itself is failing, and retrying forever bills the backend for a
+      // session nobody is having.
+      it('gives up after repeated handovers with no conversation between them', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.connects = 0;
+
+        for (let round = 0; round < 5; round += 1) {
+          emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+          emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+          emit({ kind: AssistantEventKind.Closed, expected: false });
+          await settle();
+        }
+
+        expect(calls.connects).toBeLessThanOrEqual(3);
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+      });
+
+      it('keeps handing over across a long conversation', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.connects = 0;
+
+        for (let round = 0; round < 5; round += 1) {
+          emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+          emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+          emit({ kind: AssistantEventKind.Closed, expected: false });
+          await settle();
+          // A completed turn is a conversation that is happening.
+          emit({ kind: AssistantEventKind.TurnComplete });
+        }
+
+        expect(calls.connects).toBe(5);
+        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+      });
+
+      // The turn the pill was showing died with the socket, so it must not be
+      // left reading "speaking" until something else happens to arrive.
+      it('goes back to listening after the handover', async () => {
+        const { store, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.1]) });
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(store.getState().status).toBe(AssistantStatus.Listening);
       });
 
       // Saying "stop" during the handover used to open a fresh socket AFTER
@@ -399,7 +453,7 @@ describe('assistant session store', () => {
         emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
         emit({ kind: AssistantEventKind.Closed, expected: false });
         await store.getState().stopVoice();
-        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+        await settle();
 
         expect(calls.connects).toBe(0);
         expect(store.getState().status).toBe(AssistantStatus.Idle);

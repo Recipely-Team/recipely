@@ -88,13 +88,18 @@ describe('useAssistantMyRecipesActions', () => {
     expect(spies.onOpenRecipe).toHaveBeenCalledWith('r2');
   });
 
-  it('reports a name that is not in this list rather than opening the wrong row', async () => {
+  // Declines rather than denies: the recipe may be one the user knows from the
+  // feed, and the always-mounted handler underneath can open it by name or by
+  // id. On the Drafts tab this list is not even the same collection. With
+  // nothing registered underneath, the registry reports not_found — the
+  // fallthrough itself is covered in the registry's own suite.
+  it('does not open a row for a name it is not showing', async () => {
     const { registry, spies } = harness();
 
     await act(async () => {
       await expect(registry.run(AssistantAction.OpenRecipe, 'pizza')).resolves.toEqual({
         ok: false,
-        error: 'not_in_list',
+        error: 'not_found',
       });
     });
 

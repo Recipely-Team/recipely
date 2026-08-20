@@ -43,6 +43,65 @@ describe('AssistantActionRegistry', () => {
     });
   });
 
+  // A screen showing a list answers for the rows it is showing; anything else
+  // belongs to the handler that works from anywhere. Stopping at the top meant
+  // the innermost screen denied a recipe the outer handler could have opened —
+  // and on the Drafts tab, the list it checks is not even the same collection.
+  describe('declining', () => {
+    it('passes the call outward when the top handler says it is not theirs', async () => {
+      const registry = new AssistantActionRegistry();
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: true, title: 'from the feed' }));
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: false, notMine: true }));
+
+      await expect(registry.run(AssistantAction.OpenRecipe, 'pizza')).resolves.toEqual({
+        ok: true,
+        title: 'from the feed',
+      });
+    });
+
+    it('keeps the top handler when it does answer', async () => {
+      const registry = new AssistantActionRegistry();
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: true, title: 'from the feed' }));
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: true, title: 'from the list' }));
+
+      await expect(registry.run(AssistantAction.OpenRecipe, 'mercimek')).resolves.toEqual({
+        ok: true,
+        title: 'from the list',
+      });
+    });
+
+    it('reports not found when every handler declines', async () => {
+      const registry = new AssistantActionRegistry();
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: false, notMine: true }));
+
+      await expect(registry.run(AssistantAction.OpenRecipe, 'pizza')).resolves.toEqual({
+        ok: false,
+        error: 'not_found',
+      });
+    });
+
+    // A thrown handler is a bug in THAT screen, not a signal that the one
+    // underneath should act instead — promoting it would run the wrong thing
+    // on the wrong screen and look like it worked.
+    it('does not promote the handler underneath when one throws', async () => {
+      const registry = new AssistantActionRegistry();
+      let underneathRan = false;
+      registry.register(AssistantAction.OpenRecipe, async () => {
+        underneathRan = true;
+        return { ok: true };
+      });
+      registry.register(AssistantAction.OpenRecipe, async () => {
+        throw new Error('boom');
+      });
+
+      await expect(registry.run(AssistantAction.OpenRecipe)).resolves.toEqual({
+        ok: false,
+        error: 'failed',
+      });
+      expect(underneathRan).toBe(false);
+    });
+  });
+
   describe('screen context', () => {
     // Sending the screen state as its own realtimeInput.text would start a new
     // model turn and be billed as one. Riding inside a response the model is

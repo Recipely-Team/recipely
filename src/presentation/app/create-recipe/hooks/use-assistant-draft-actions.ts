@@ -1,5 +1,6 @@
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { useCallback, useMemo } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -12,9 +13,9 @@ import { CharConstants, ValueConstants } from '@core/constants';
 interface AssistantDraftActionsDeps {
   recipe: EditableRecipe;
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
-  onAddIngredient: (value?: string) => void;
+  onAppendIngredient: (value: string) => void;
   onRemoveIngredient: (index: number) => void;
-  onAddStep: (value?: string) => void;
+  onAppendStep: (value: string) => void;
   onRemoveStep: (index: number) => void;
   onOpenPhotos: () => void;
   onSubmitRefine: (instruction: string) => void;
@@ -24,17 +25,19 @@ interface AssistantDraftActionsDeps {
 
 const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as const;
 /**
- * The fields that really are free text.
+ * The only field that really is free text.
  *
- * `difficulty` is deliberately NOT here: it is a `Difficulty` enum, and the
- * cast that used to cover all four fields let `difficulty=easy` write the
- * lower-case string straight into the draft. The chip then rendered nothing
- * selected and publish sent the backend a value it rejects. `cuisine` and
- * `category` are opaque taxonomy keys the backend owns, so they pass through
- * as given — but they pass through as the strings they are.
+ * Everything else the model can set is a KEY, not a label. `difficulty` is a
+ * `Difficulty` enum; `cuisine` and `category` are taxonomy keys the backend
+ * owns and the chips resolve through the catalogue. One cast covering all four
+ * let `difficulty=easy` and `cuisine=Italian` write labels straight into the
+ * draft: the chip fell back to its placeholder and publish sent the backend
+ * values it rejects. Each is resolved against its own vocabulary now.
  */
-const TEXT_FIELDS = ['name', 'cuisine', 'category'] as const;
+const TEXT_FIELDS = ['name'] as const;
 const DIFFICULTY_FIELD = 'difficulty';
+const CUISINE_FIELD = 'cuisine';
+const CATEGORY_FIELD = 'category';
 
 /**
  * Lets the assistant fill in the draft the user is watching.
@@ -43,13 +46,14 @@ const DIFFICULTY_FIELD = 'difficulty';
  * - **This is the demonstration.** "Add two eggs" landing in the ingredient
  *   list while the user looks at it is the difference between an assistant and
  *   a chat window, and it is why the panel is a pill rather than a sheet.
- * - **Adding is ONE call, carrying the text.** The editor's "+" appends a blank
- *   row, which is what a person tapping it wants; the assistant already knows
- *   what goes in it. Appending and then writing was two state updates, and two
- *   additions in one breath — "two eggs and 200 g of flour" — arrive as two
- *   tool calls in one model turn, which run as microtasks before React has
- *   re-rendered. Both then wrote to the same index: the eggs disappeared and a
- *   blank row took their place.
+ * - **Adding is ONE call that carries the text**, and a DIFFERENT function from
+ *   the one the "+" button uses. Appending and then writing was two state
+ *   updates, and two additions in one breath — "two eggs and 200 g of flour" —
+ *   arrive as two tool calls in one model turn, which run as microtasks before
+ *   React re-renders: both wrote to the same index and the eggs disappeared.
+ *   Giving the button's own handler an optional value instead would have been
+ *   worse than the bug: `onPress` calls it with the gesture event, so a plain
+ *   tap pushed a `GestureResponderEvent` into a `string[]`.
  * - **`setDraftField` parses `field=value`** because the tool has one string
  *   argument. Only the fields a person would name out loud are writable:
  *   `media` is not one of them, and a model that could write it could clear
@@ -66,12 +70,16 @@ const DIFFICULTY_FIELD = 'difficulty';
  *   under their name.
  */
 export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void => {
+  const { taxonomyStore } = useStores();
+  const cuisines = taxonomyStore((state) => state.cuisines);
+  const categories = taxonomyStore((state) => state.categories);
+
   const {
     recipe,
     onUpdateField,
-    onAddIngredient,
+    onAppendIngredient,
     onRemoveIngredient,
-    onAddStep,
+    onAppendStep,
     onRemoveStep,
     onOpenPhotos,
     onSubmitRefine,
@@ -110,13 +118,27 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           onUpdateField(DIFFICULTY_FIELD, difficulty);
           return { ok: true, title: recipe.name, n: counts };
         }
+        if (field === CUISINE_FIELD || field === CATEGORY_FIELD) {
+          // The model says "Italian"; the draft holds the backend's key. Both
+          // the key and the name are accepted, because the model has seen
+          // whichever the screen showed it.
+          const options = field === CUISINE_FIELD ? cuisines : categories;
+          const wanted = value.toLocaleLowerCase();
+          const match = options.find(
+            (item) => item.key.toLocaleLowerCase() === wanted || item.name.toLocaleLowerCase() === wanted,
+          );
+          if (match === undefined) return { ok: false, error: `unknown_${field}` };
+
+          onUpdateField(field, match.key);
+          return { ok: true, title: recipe.name, n: counts };
+        }
         if ((TEXT_FIELDS as readonly string[]).includes(field)) {
           onUpdateField(field as (typeof TEXT_FIELDS)[number], value);
           return { ok: true, title: recipe.name, n: counts };
         }
         return { ok: false, error: 'unknown_field' };
       },
-      [onUpdateField, counts, recipe.name],
+      [onUpdateField, counts, recipe.name, cuisines, categories],
     ),
   );
 
@@ -128,10 +150,10 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         // One state update, not an append followed by a write. Two additions in
         // one model turn run as microtasks — before React re-renders — so the
         // second still saw the old length and both wrote to the same row.
-        onAddIngredient(arg);
+        onAppendIngredient(arg);
         return { ok: true, n: { ...counts, ing: counts.ing + ValueConstants.one } };
       },
-      [onAddIngredient, counts],
+      [onAppendIngredient, counts],
     ),
   );
 
@@ -153,10 +175,10 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
-        onAddStep(arg);
+        onAppendStep(arg);
         return { ok: true, n: { ...counts, step: counts.step + ValueConstants.one } };
       },
-      [onAddStep, counts],
+      [onAppendStep, counts],
     ),
   );
 

@@ -495,23 +495,37 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       .filter((name, at, all) => all.indexOf(name) === at);
 
     for (const member of confirmed) {
-      const registrations = files.filter((file) => {
-        if (isTest(file)) return false;
+      // Both registration shapes count, the same two rule U accepts: a
+      // confirmed action registered through `registry.register` was invisible
+      // to the first version of this, which is the shape the confirm/cancel
+      // pair itself uses.
+      const pattern = new RegExp(
+        `(?:useAssistantAction|\\.register)\\(\\s*AssistantAction\\.${member}\\b`,
+        'g',
+      );
+      let registrations = 0;
+      let acting = 0;
+      for (const file of files) {
+        if (isTest(file)) continue;
         const src = fs.readFileSync(path.join(SRC, file), 'utf8');
-        return new RegExp(`useAssistantAction\\(\\s*AssistantAction\\.${member}\\b`).test(src);
-      });
-      const asks = registrations.some((file) => {
-        const src = fs.readFileSync(path.join(SRC, file), 'utf8');
-        const at = src.search(new RegExp(`useAssistantAction\\(\\s*AssistantAction\\.${member}\\b`));
-        // The handler body is what follows, up to the next registration.
-        const rest = src.slice(at);
-        const next = rest.slice(1).search(/useAssistantAction\(/);
-        return /awaiting:\s*true/.test(next === -1 ? rest : rest.slice(0, next + 1));
-      });
-      if (registrations.length > 0 && !asks) {
+        for (const match of src.matchAll(pattern)) {
+          registrations += 1;
+          // The handler runs from this registration to the next one, or to the
+          // end of the file. Bounding it matters: without the bound, an
+          // unrelated `awaiting` further down the file satisfied the check.
+          const rest = src.slice(match.index ?? 0);
+          const nextAt = rest.slice(1).search(/(?:useAssistantAction|\.register)\(/);
+          const body = nextAt === -1 ? rest : rest.slice(0, nextAt + 1);
+          if (!/awaiting:\s*true/.test(body)) acting += 1;
+        }
+      }
+      // EVERY registration must ask, not merely one of them — the action is
+      // implemented by more than one screen for several of these, and one
+      // screen doing it right says nothing about the others.
+      if (registrations > 0 && acting > 0) {
         const spelled = new RegExp(`^ {2}${member}: '(\\w+)',`, 'm').exec(vocabulary)?.[1] ?? member;
         errors.push(
-          `assistant action '${spelled}' is in CONFIRMED_ACTIONS but its handler does not answer awaiting — it must raise a confirmation instead of acting (CLAUDE.md §5)`,
+          `assistant action '${spelled}' is in CONFIRMED_ACTIONS but ${acting} of its ${registrations} handler(s) act without asking — each must raise a confirmation and answer awaiting (CLAUDE.md §5)`,
         );
       }
     }

@@ -58,9 +58,11 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(items.map((r) => r.name), arg);
-        // Not found here is not a failure worth reporting as one: the feed's
-        // handler takes over for anything that is not in this list.
-        if (found === null) return { ok: false, error: 'not_in_list' };
+        // Declining rather than failing: the recipe may be one the user knows
+        // from the feed, and the always-mounted handler underneath can open it
+        // by name or by id. This tab only answers for the rows it is showing —
+        // on Drafts, that is not even the same collection.
+        if (found === null) return { ok: false, notMine: true };
 
         onOpenRecipe(items[found]!.id);
         return { ok: true, title: items[found]!.name };

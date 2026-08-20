@@ -1535,3 +1535,64 @@ it just opened if the change happened during the connect.
 outlives a user-cancellable operation needs to re-check that it is still wanted
 after each suspension, not only before the first one — and the test for it has
 to interleave the cancel, which no test of the happy path ever does.
+
+## An optional parameter, and the "+" button pushed an event into a string array
+
+Adding a value parameter to `onAddStep` so the assistant could append a filled
+row broke the ordinary button beside it: the "+" is wired `onPress={onAdd}`,
+and React Native calls `onPress` WITH the gesture event. Tapping it pushed a
+`GestureResponderEvent` into `instructions: string[]`, which rendered as an
+object in a `TextInput` and rode into publish.
+
+*Why:* the prop is declared `() => void` at three levels between the button and
+the hook, so a handler that accepts a first argument still satisfies every one
+of them — TypeScript allows a function of fewer parameters where more are
+expected, and this is the mirror of that rule. No test covers the "+" button.
+
+*Now:* the blank append and the filled append are two functions.
+`onAddIngredient()` takes nothing and can never receive anything;
+`onAppendIngredient(value)` requires it. The hazard is structural rather than
+patched at one call site.
+
+*The class:* **never give an optional leading parameter to a function that is
+handed to an event handler.** The event arrives in it, the types cannot see it
+because fewer-parameter functions are assignable to more-parameter ones, and
+the value that lands is an object where a string was expected.
+
+## The innermost screen denied what the outer one could have done
+
+While My Recipes was open, "open the lentil soup" for anything not in the
+current tab answered `not_found` — even though the always-mounted handler
+underneath can open any recipe by name or id. On the Drafts tab the list it
+checked was not even the same collection, so the entire feed was unreachable by
+voice from that screen.
+
+*Why:* the registry dispatches to the topmost handler only. The code's own
+comment claimed "the feed's handler takes over", which was never true — it read
+as a described behaviour rather than an assumption.
+
+*Now:* a handler can answer `notMine` and the registry tries the one beneath
+it. A thrown handler does NOT fall through: that is a bug in that screen, and
+promoting the one underneath would run the wrong thing and look like it worked.
+
+*The class:* **a comment describing a fallback is not a fallback.** Where one
+layer narrows what another could have answered, the narrowing needs a way to
+say "not mine" — otherwise the more specific handler silently removes
+capability instead of adding it.
+
+## A confirmation on a screen that was not showing it
+
+The create screen registered its publish confirmation regardless of phase,
+while the sheet that renders it sits after three early returns. In the prompt,
+resuming and generating phases, `publishDraft` opened an invisible confirmation
+that still accepted a spoken "yes" — the user agreeing to something they could
+not see. The exit and save-error sheets could likewise be on screen while the
+refine proposal held the word.
+
+*Now:* every confirmation is scoped to the phase that renders it and to the
+absence of any sheet drawn above it.
+
+*The class:* **a confirmation's registration must be conditioned on the same
+thing its sheet is.** An early return that skips the render does not skip the
+effect, and the gap between them is a gate that accepts answers to a question
+nobody was asked.

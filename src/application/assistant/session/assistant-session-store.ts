@@ -54,6 +54,15 @@ interface AssistantSessionStoreDeps {
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
 const SILENCE_TIMEOUT_MS = 8_000;
+/**
+ * How many handovers in a row are tolerated before the session is given up.
+ *
+ * A `goAway` is normal roughly every ten minutes, so several in a session is
+ * expected over a long conversation — but several with no completed turn
+ * between them means the handover itself is failing, and retrying it forever
+ * bills the backend for a session nobody is having.
+ */
+const MAX_HANDOVERS = 3;
 const MIC_SAMPLE_RATE = 16_000;
 const PLAYBACK_SAMPLE_RATE = 24_000;
 
@@ -83,6 +92,10 @@ export const configureAssistantSessionStore = (
   // "stop" during the handover otherwise opened a fresh socket AFTER the
   // microphone had been closed — a session nobody could hear or end.
   let epoch = ValueConstants.zero;
+  // Consecutive handovers with no conversation between them. A server that
+  // re-issues goAway immediately would otherwise mint and connect in a loop,
+  // billing the backend for a session nobody is having.
+  let handovers = ValueConstants.zero;
 
   return create<AssistantSessionStoreState>((set, get) => {
     const stopTimers = (): void => {
@@ -132,7 +145,17 @@ export const configureAssistantSessionStore = (
      * session ends it here rather than silently continuing.
      */
     const reconnect = async (): Promise<void> => {
+      handovers += ValueConstants.one;
+      if (handovers > MAX_HANDOVERS) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+
       const startedAt = epoch;
+      // The old socket's calls can never be answered — their ids belong to a
+      // session that no longer exists — so the queue starts empty rather than
+      // replying to the new socket with the old one's callIds.
+      toolQueue = Promise.resolve();
       const grant = await tokens.mintSession(languageCode, resumptionHandle ?? undefined);
       if (epoch !== startedAt) return;
 
@@ -149,7 +172,14 @@ export const configureAssistantSessionStore = (
         session.close();
         return;
       }
-      if (!connected.ok) await teardown(AssistantStatus.Idle);
+      if (!connected.ok) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+      // The pill was left mid-utterance — the turn it was showing died with
+      // the socket — so it goes back to listening rather than staying stuck on
+      // "speaking" until the next event arrives.
+      set({ status: AssistantStatus.Listening });
     };
 
     const handle = (event: AssistantSessionEventType): void => {
@@ -171,6 +201,9 @@ export const configureAssistantSessionStore = (
           set({ status: AssistantStatus.Listening });
           break;
         case AssistantEventKind.TurnComplete:
+          // A completed turn is a conversation that is happening, so the
+          // handover counter starts again from here.
+          handovers = ValueConstants.zero;
           set({ status: AssistantStatus.Listening });
           nudgeSilenceTimer();
           break;
@@ -200,6 +233,9 @@ export const configureAssistantSessionStore = (
           set({ tokensUsed: event.totalTokens });
           break;
         case AssistantEventKind.Closed:
+          // A close the app asked for is already being handled by whoever
+          // asked; re-entering teardown here would fight it.
+          if (event.expected) break;
           if (expectingGoAway && resumptionHandle !== null) {
             expectingGoAway = false;
             void reconnect();
@@ -207,8 +243,16 @@ export const configureAssistantSessionStore = (
           }
           void teardown(AssistantStatus.Idle);
           break;
-        default:
+        case AssistantEventKind.Ready:
+          // `connect` already resolved on this; nothing further to do.
           break;
+        default:
+          // Exhaustive: the union is closed and the mapper is its only
+          // producer, so a new kind must be handled here rather than silently
+          // dropped. `Resumption`, `GoAway` and `Usage` were dropped for
+          // exactly as long as this was a bare `break` — the whole
+          // reconnect path was dead and nothing said so.
+          assertNever(event);
       }
     };
 
@@ -230,6 +274,7 @@ export const configureAssistantSessionStore = (
         languageCode = locale;
         resumptionHandle = null;
         expectingGoAway = false;
+        handovers = ValueConstants.zero;
         epoch += ValueConstants.one;
 
         const grant = await tokens.mintSession(locale);
@@ -307,3 +352,15 @@ export const configureAssistantSessionStore = (
     };
   });
 };
+
+/**
+ * Fails to compile when a new event kind is added without being handled.
+ *
+ * The alternative — a `default` that breaks — is right for a union that grows
+ * server-side, and wrong for this one: it is declared in the domain and the
+ * mapper is its only producer, so every variant is known at build time. Three
+ * of them were being discarded, and nothing anywhere reported it.
+ */
+function assertNever(event: never): void {
+  void event;
+}
