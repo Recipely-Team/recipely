@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -19,6 +20,10 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
+  // Only the assistant's publish goes through here. A tap on Save is the user
+  // already looking at the button they pressed; a spoken "yayınla" is a word
+  // that may have been misheard, and publishing is not undoable.
+  const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
@@ -33,7 +38,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     onChangeStep: vm.onChangeStep,
     onRemoveStep: vm.onRemoveStep,
     onOpenPhotos: vm.onOpenPhotos,
-    onSave: vm.onSave,
+    onSubmitRefine: vm.onSubmitRefine,
+    onRequestPublish: () => setAssistantPublishOpen(true),
   });
 
   if (vm.phase === PhaseType.Prompt) {
@@ -98,6 +104,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onDiscard={vm.onDiscardAndExit}
         onKeepEditing={vm.onKeepEditing}
       />
+      <ConfirmSheet
+        visible={assistantPublishOpen}
+        title={t().assistant.publishTitle}
+        message={t().assistant.publishMessage}
+        confirmLabel={t().assistant.publishConfirm}
+        onConfirm={() => {
+          setAssistantPublishOpen(false);
+          vm.onSave();
+        }}
+        onClose={() => setAssistantPublishOpen(false)}
+      />
+
       <ConfirmSheet
         visible={vm.saveError !== null}
         title={t().createRecipe.saveErrorTitle}

@@ -891,6 +891,9 @@ export const es = {
     unavailable: "La voz no está disponible ahora mismo. Puedes seguir escribiendo.",
     busyEverywhere: "La voz está ocupada ahora mismo. Puedes seguir escribiendo.",
     minutesLeft: "Quedan {{minutes}} min",
+    publishTitle: "¿Publicar esta receta?",
+    publishMessage: "Saldrá con tu nombre y todos podrán verla.",
+    publishConfirm: "Publicar",
     micDenied: "Recipely necesita el micrófono para oírte.",
   },
 };

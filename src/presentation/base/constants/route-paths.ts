@@ -40,5 +40,7 @@ export const RoutePaths = {
   /** The create screen, arriving with the prompt filled and generation started. */
   createRecipeWithPrompt: (prompt: string): string =>
     `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
+  /** My Recipes opened on one of its tabs — saved, liked, created, drafts. */
+  myRecipesTab: (tab: string): string => `/my-recipes?tab=${encodeURIComponent(tab)}`,
   loginWithRedirect: (pathname: string): string => `/login?redirect=${encodeURIComponent(pathname)}`,
 } as const;

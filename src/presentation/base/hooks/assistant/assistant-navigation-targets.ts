@@ -1,4 +1,5 @@
 import { RoutePaths } from '@presentation/base/constants/route-paths';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
 /**
  * The screens the assistant may send the user to, by the word it says.
@@ -20,7 +21,13 @@ export const ASSISTANT_NAVIGATION_TARGETS: Readonly<Record<string, string>> = {
   create: RoutePaths.createRecipe,
   importRecipe: RoutePaths.importRecipe,
   myRecipes: RoutePaths.myRecipes,
-  saved: RoutePaths.myRecipes,
+  // The four My Recipes tabs are destinations in their own right — "open my
+  // saved ones" names one of them, and landing on the tab the screen happened
+  // to remember is not what was asked for.
+  saved: RoutePaths.myRecipesTab(TabType.Saved),
+  liked: RoutePaths.myRecipesTab(TabType.Liked),
+  created: RoutePaths.myRecipesTab(TabType.Created),
+  drafts: RoutePaths.myRecipesTab(TabType.Drafts),
   notifications: RoutePaths.notifications,
   profile: RoutePaths.profile,
   editProfile: RoutePaths.editProfile,

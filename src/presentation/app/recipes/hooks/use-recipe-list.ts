@@ -1,8 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  AssistantScrollDirection,
+  type AssistantScrollDirectionType,
+} from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
+import { SCROLL_STEP_SHARE } from '@presentation/app/recipes/model/scroll-step-share';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import Animated, { Easing, useAnimatedRef, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
@@ -92,7 +98,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
   const loadMore = recipeListStore((s) => s.loadMore);
-  const { isWebShell, isExpanded, width } = useLayout();
+  const { isWebShell, isExpanded, width, height } = useLayout();
   const { searchQuery: webSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
@@ -120,6 +126,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const isSearching = trimmedSearch.length > ValueConstants.zero;
 
   const scrollY = useSharedValue(ValueConstants.zero);
+  const listRef = useAnimatedRef<Animated.FlatList<RecipeSummaryEntity>>();
   const headerTranslateY = useSharedValue(ValueConstants.zero);
   const insets = useSafeAreaInsets();
   const hiddenHeaderY = hiddenHeaderOffset(insets.top);
@@ -342,6 +349,22 @@ export const useRecipeList = (): UseRecipeListResult => {
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
     unreadCount,
+    listRef,
+    // A step is one viewport minus a sliver, so a line of the previous screen
+    // stays visible — scrolling a whole screen away loses the reader's place,
+    // which is exactly the complaint about page-down keys.
+    onAssistantScroll: (direction: AssistantScrollDirectionType) => {
+      const step = height * SCROLL_STEP_SHARE;
+      const target =
+        direction === AssistantScrollDirection.Top
+          ? ValueConstants.zero
+          : direction === AssistantScrollDirection.Bottom
+            ? Number.MAX_SAFE_INTEGER
+            : direction === AssistantScrollDirection.Up
+              ? Math.max(ValueConstants.zero, scrollY.value - step)
+              : scrollY.value + step;
+      listRef.current?.scrollToOffset({ offset: target, animated: true });
+    },
     scrollY,
     headerTranslateY,
     reduceMotion,
@@ -361,6 +384,11 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     onToggleCuisineQuick: (cuisine: string) => applyAndLoad(mutate.toggleCuisineQuick(filters, cuisine)),
     onDifficultyChange: (d: Difficulty | null) => applyAndLoad(mutate.setDifficultyQuick(filters, d)),
+    // Direct category / max-time setters, applied and loaded the same way the
+    // quick cuisine chip is. The sheet reaches these through its pending copy;
+    // the assistant asks for one change at a time and has no sheet to open.
+    onToggleCategory: (c: string) => applyAndLoad(mutate.toggleCategory(filters, c)),
+    onSetMaxTime: (minutes: number) => applyAndLoad(mutate.setMaxTime(filters, minutes)),
     onRemoveCategory: (c: string) => applyAndLoad(mutate.removeCategory(filters, c)),
     onRemoveDifficulty: (d: Difficulty) => applyAndLoad(mutate.removeDifficulty(filters, d)),
     onRemoveMaxTime: () => applyAndLoad(mutate.removeMaxTime(filters)),

@@ -891,6 +891,9 @@ export const ja = {
     unavailable: "音声モードは現在利用できません。入力は続けられます。",
     busyEverywhere: "音声モードは現在混雑しています。入力は続けられます。",
     minutesLeft: "残り{{minutes}}分",
+    publishTitle: "このレシピを公開しますか？",
+    publishMessage: "あなたの名前で公開され、誰でも見られます。",
+    publishConfirm: "公開",
     micDenied: "声を聞くにはマイクの許可が必要です。",
   },
 };

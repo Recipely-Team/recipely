@@ -184,8 +184,8 @@ describe('assistant session store', () => {
       await store.getState().startVoice('tr-TR');
 
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.AttachPhoto });
-      await Promise.resolve();
-      await Promise.resolve();
+      // The queue that serialises tool calls costs a tick beyond the handler's.
+      for (let tick = 0; tick < 8; tick += 1) await Promise.resolve();
 
       expect(calls.toolResponses).toEqual([{ ok: false, error: 'unavailable_here' }]);
     });
@@ -196,10 +196,59 @@ describe('assistant session store', () => {
       await store.getState().startVoice('tr-TR');
 
       emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.GenerateRecipe, arg: 'tavuk' });
-      await Promise.resolve();
-      await Promise.resolve();
+      for (let tick = 0; tick < 8; tick += 1) await Promise.resolve();
 
       expect(calls.toolResponses).toEqual([{ ok: true, title: 'tavuk' }]);
+    });
+
+    // The model sends several calls in one frame when the user asks for several
+    // things, and each is meant to see what the last one did — "open the recipe
+    // and share it" is nonsense if the share runs against the screen the open
+    // was still pushing. Concurrently, these two interleaved.
+    it('runs several calls from one frame in order, never overlapping', async () => {
+      const { store, registry, calls, emit } = harness();
+      const order: string[] = [];
+      let running = false;
+      const slow = (label: string) => async (): Promise<{ ok: true }> => {
+        expect(running).toBe(false);
+        running = true;
+        order.push(`${label}:start`);
+        await Promise.resolve();
+        await Promise.resolve();
+        order.push(`${label}:end`);
+        running = false;
+        return { ok: true };
+      };
+      registry.register(AssistantAction.OpenRecipe, slow('open'));
+      registry.register(AssistantAction.Save, slow('save'));
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
+      for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+
+      expect(order).toEqual(['open:start', 'open:end', 'save:start', 'save:end']);
+      expect(calls.toolResponses).toHaveLength(2);
+    });
+
+    // A queue holding a rejected promise would swallow every later call in
+    // silence, which is the same symptom as a session that has stopped.
+    it('keeps running the queue after a handler rejects', async () => {
+      const { store, registry, calls, emit } = harness();
+      registry.register(AssistantAction.OpenRecipe, async () => {
+        throw new Error('boom');
+      });
+      registry.register(AssistantAction.Save, async () => ({ ok: true, title: 'after' }));
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
+      for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+
+      expect(calls.toolResponses).toEqual([
+        { ok: false, error: 'failed' },
+        { ok: true, title: 'after' },
+      ]);
     });
 
     it('stands down when the socket closes', async () => {

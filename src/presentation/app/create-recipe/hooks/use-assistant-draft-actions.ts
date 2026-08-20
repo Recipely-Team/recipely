@@ -16,7 +16,8 @@ interface AssistantDraftActionsDeps {
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onOpenPhotos: () => void;
-  onSave: () => void;
+  onSubmitRefine: (instruction: string) => void;
+  onRequestPublish: () => void;
 }
 
 /**
@@ -35,8 +36,16 @@ interface AssistantDraftActionsDeps {
  *   argument. Only the fields a person would name out loud are writable:
  *   `media` is not one of them, and a model that could write it could clear
  *   the user's photos with a typo.
- * - **`publishDraft` saves rather than confirming here.** The confirmation is
- *   the screen's — this hook is reached only once the user has agreed.
+ * - **`refineDraft` is the way through for anything not directly editable.**
+ *   The fields with their own setters are set outright — that is faster, exact,
+ *   and the user watches it land. Everything else ("make it spicier", "halve
+ *   it") has no field to write to, so it goes to the same AI refine the chat
+ *   box drives, and comes back as a proposal the user accepts or rejects.
+ * - **`publishDraft` asks; it does not publish.** A misheard "yayınla" that
+ *   published immediately is not a mistake anyone can take back, and voice
+ *   mishears. It opens the screen's confirm sheet and answers `awaiting`, so
+ *   the model says so out loud while the user reads what is about to go out
+ *   under their name.
  */
 const FIELD_SEPARATOR = '=';
 const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as const;
@@ -53,7 +62,8 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     onChangeStep,
     onRemoveStep,
     onOpenPhotos,
-    onSave,
+    onSubmitRefine,
+    onRequestPublish,
   } = deps;
 
   // Memoised because every handler below carries it into a `useCallback`
@@ -153,11 +163,26 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   );
 
   useAssistantAction(
+    AssistantAction.RefineDraft,
+    useCallback(
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
+        onSubmitRefine(arg);
+        // The refine answers with a PROPOSAL the user accepts or rejects, so
+        // this is awaiting even though nothing was destroyed — telling the
+        // model it is done would have it announce a change that has not landed.
+        return { ok: true, awaiting: true, n: counts };
+      },
+      [onSubmitRefine, counts],
+    ),
+  );
+
+  useAssistantAction(
     AssistantAction.PublishDraft,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      onSave();
-      return { ok: true, title: recipe.name, n: counts };
-    }, [onSave, recipe.name, counts]),
+      onRequestPublish();
+      return { ok: true, awaiting: true, title: recipe.name, n: counts };
+    }, [onRequestPublish, recipe.name, counts]),
   );
 };
 

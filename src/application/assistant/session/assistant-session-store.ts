@@ -38,6 +38,10 @@ interface AssistantSessionStoreDeps {
  *   day for free — and one that dies mid-conversation has already paid for the
  *   seconds it used, which is why the report is a delta on a timer rather than
  *   a total at the end.
+ * - **Tool calls are serialised.** The model sends several in one frame when
+ *   the user asks for several things, and each is meant to see what the last
+ *   one did — "open the recipe and share it" is nonsense if the share runs
+ *   against the screen the open was still pushing.
  * - **Silence closes the session.** Voice is billed per second of an open
  *   microphone, so a session left running in a pocket is the single most
  *   expensive thing this feature can do.
@@ -54,6 +58,12 @@ export const configureAssistantSessionStore = (
   const { session, microphone, player, tokens, registry } = deps;
 
   let unsubscribe: (() => void) | null = null;
+  // Tool calls run ONE AT A TIME, in arrival order. The model routinely sends
+  // several in a single frame — "make a recipe and then share it" is two — and
+  // running them concurrently raced: the share fired against the screen the
+  // create was still opening. A queue is also what lets a later call see what
+  // an earlier one did, which is the whole reason the model chains them.
+  let toolQueue: Promise<void> = Promise.resolve();
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let silence: ReturnType<typeof setTimeout> | null = null;
   let lineId = ValueConstants.zero;
@@ -68,6 +78,9 @@ export const configureAssistantSessionStore = (
 
     const teardown = async (status: AssistantSessionStoreState['status']): Promise<void> => {
       stopTimers();
+      // A queue left holding a rejected promise would swallow every later call
+      // silently; the session is over either way, so it starts clean.
+      toolQueue = Promise.resolve();
       unsubscribe?.();
       unsubscribe = null;
       await microphone.stop();
@@ -109,12 +122,15 @@ export const configureAssistantSessionStore = (
         case AssistantEventKind.TurnComplete:
           set({ status: AssistantStatus.Listening });
           break;
-        case AssistantEventKind.ToolCall:
+        case AssistantEventKind.ToolCall: {
           set({ status: AssistantStatus.Working });
-          void registry
-            .run(event.action, event.arg)
-            .then((result) => session.respondToTool(event.callId, { ...result }));
+          const { callId, action, arg } = event;
+          toolQueue = toolQueue.then(async () => {
+            const result = await registry.run(action, arg);
+            session.respondToTool(callId, { ...result });
+          });
           break;
+        }
         case AssistantEventKind.Closed:
           void teardown(AssistantStatus.Idle);
           break;
