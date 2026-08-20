@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useRef } from 'react';
+import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -12,7 +13,17 @@ import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
 import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/use-assistant-recipe-actions';
+import {
+  AssistantScrollDirection,
+  type AssistantScrollDirectionType,
+} from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+import { useAssistantScroll } from '@presentation/base/hooks/assistant/use-assistant-scroll';
+import {
+  DETAIL_SCROLL_STEP_SHARE,
+  SCROLL_EVENT_THROTTLE_MS,
+} from '@presentation/app/recipes/[recipeId]/model/scroll-tuning';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
@@ -35,6 +46,26 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // Composed here rather than inside useRecipeDetail: the deep-link concern is
   // self-contained (it only needs the comment state + scroll ref the vm already
   // exposes), and useRecipeDetail is at its size budget already.
+  // The detail screen is one long ScrollView, so a step is measured against
+  // the window rather than a row height, and the offset is tracked here — a
+  // ScrollView has no way to be asked where it currently is.
+  const scrollOffset = useRef(ValueConstants.zero);
+  const scrollDetail = useCallback(
+    (direction: AssistantScrollDirectionType) => {
+      const step = Dimensions.get('window').height * DETAIL_SCROLL_STEP_SHARE;
+      const y =
+        direction === AssistantScrollDirection.Top
+          ? ValueConstants.zero
+          : direction === AssistantScrollDirection.Bottom
+            ? Number.MAX_SAFE_INTEGER
+            : direction === AssistantScrollDirection.Up
+              ? Math.max(ValueConstants.zero, scrollOffset.current - step)
+              : scrollOffset.current + step;
+      vm.scrollViewRef.current?.scrollTo({ y, animated: true });
+    },
+    [vm.scrollViewRef],
+  );
+
   const commentHighlight = useCommentHighlight({
     recipeId: vm.recipeId,
     commentState: vm.commentState,
@@ -51,6 +82,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   useAssistantRecipeActions({
     recipeId: vm.recipeId,
     recipeName: vm.recipe?.name ?? CharConstants.empty,
+    ingredients: vm.recipe?.ingredients ?? [],
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
     isOwner: vm.isOwner,
@@ -60,13 +92,28 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onOpenDelete: vm.onOpenDelete,
     onOpenShare: vm.onOpenShare,
     onStartCookTimer: cookTimer.start,
+    onPauseTimer: cookTimer.pause,
+    onResumeTimer: () => cookTimer.resume(),
+    onStopTimer: cookTimer.stop,
+    checkedIngredients: vm.checkedIngredients,
+    completedSteps: vm.completedSteps,
+    onToggleIngredient: vm.onToggleIngredient,
+    onToggleStep: vm.onToggleStep,
   });
+  // Deleting is the one thing on this screen nobody can undo, and it is also
+  // the one the cook most needs to answer without a free hand.
+  useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
+  useAssistantScroll(scrollDetail);
 
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
         <ScrollView
           ref={vm.scrollViewRef}
+          scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
+          onScroll={(event) => {
+            scrollOffset.current = event.nativeEvent.contentOffset.y;
+          }}
           contentContainerStyle={styles.scroll}
           {...commentHighlight.scrollViewProps}
           // After the spread on purpose, so a later addition to

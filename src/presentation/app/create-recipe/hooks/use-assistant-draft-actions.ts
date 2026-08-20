@@ -17,6 +17,7 @@ interface AssistantDraftActionsDeps {
   onRemoveStep: (index: number) => void;
   onOpenPhotos: () => void;
   onSubmitRefine: (instruction: string) => void;
+  onRegenerate: () => void;
   onRequestPublish: () => void;
 }
 
@@ -63,6 +64,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     onRemoveStep,
     onOpenPhotos,
     onSubmitRefine,
+    onRegenerate,
     onRequestPublish,
   } = deps;
 
@@ -175,6 +177,17 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [onSubmitRefine, counts],
     ),
+  );
+
+  useAssistantAction(
+    AssistantAction.Regenerate,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // "Start over" — the same button the preview offers. It replaces the
+      // draft outright, so it goes through the screen's own control rather
+      // than being assembled from a prompt here.
+      onRegenerate();
+      return { ok: true };
+    }, [onRegenerate]),
   );
 
   useAssistantAction(

@@ -4,6 +4,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
@@ -39,8 +40,20 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     onRemoveStep: vm.onRemoveStep,
     onOpenPhotos: vm.onOpenPhotos,
     onSubmitRefine: vm.onSubmitRefine,
+    onRegenerate: vm.onRegenerate,
     onRequestPublish: () => setAssistantPublishOpen(true),
   });
+  // Each sheet that stops the assistant also takes a spoken answer, or the
+  // hands-free flow ends at the gate meant to protect it.
+  useAssistantConfirmation(
+    assistantPublishOpen,
+    () => {
+      setAssistantPublishOpen(false);
+      vm.onSave();
+    },
+    () => setAssistantPublishOpen(false),
+  );
+  useAssistantConfirmation(vm.proposal !== null, vm.onAcceptProposal, vm.onRejectProposal);
 
   if (vm.phase === PhaseType.Prompt) {
     return (
