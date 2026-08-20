@@ -549,6 +549,22 @@ describe('assistant session store', () => {
       expect(store.getState().error).not.toBeNull();
     });
 
+    // `Connecting` has a socket that the server has not acknowledged, and
+    // anything written into that window is discarded — the same silence this
+    // whole path exists to remove.
+    it('uses HTTP while the session is still connecting', async () => {
+      const { store, calls } = harness();
+      // Started but not awaited: the store is in Connecting.
+      const starting = store.getState().startVoice('tr-TR');
+
+      store.getState().sendText('merhaba', 'tr-TR');
+      await starting;
+      await settle();
+
+      expect(calls.asks.map((a) => a.message)).toEqual(['merhaba']);
+      expect(calls.texts).toEqual([]);
+    });
+
     // With a live session the turn belongs on the socket: it carries the
     // conversation's context, and paying for a second, contextless request
     // would be both slower and dearer.

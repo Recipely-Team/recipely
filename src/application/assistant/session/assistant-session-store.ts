@@ -1,6 +1,6 @@
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
-import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
@@ -336,11 +336,12 @@ export const configureAssistantSessionStore = (
         if (text === CharConstants.empty) return;
         appendTranscript(ChatRole.User, text);
 
-        // A live session carries the turn; without one it goes over HTTP. That
-        // second path is the whole point of the text mode: out of budget there
-        // is no socket, and this used to write the user's message into the
-        // transcript and drop it — which looked exactly like being ignored.
-        if (get().status !== AssistantStatus.Idle && get().status !== AssistantStatus.Unavailable) {
+        // A live session carries the turn; anything else goes over HTTP. The
+        // list is positive on purpose — `Connecting` has a socket that is not
+        // yet acknowledged, and a turn written into that window is discarded
+        // by the server, which is the same silence this whole path exists to
+        // remove.
+        if (LIVE_STATUSES.includes(get().status)) {
           session.sendText(text);
           return;
         }

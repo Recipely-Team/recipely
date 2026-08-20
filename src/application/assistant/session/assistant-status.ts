@@ -21,3 +21,17 @@ export const AssistantStatus = {
 } as const;
 
 export type AssistantStatusType = (typeof AssistantStatus)[keyof typeof AssistantStatus];
+
+/**
+ * The states in which a socket is open and will carry a turn.
+ *
+ * `Connecting` is deliberately absent: the socket exists but has not been
+ * acknowledged, and anything written to it in that window is discarded by the
+ * server. A turn typed while connecting therefore goes over HTTP — an answer
+ * the user gets, rather than one they wait for and never receive.
+ */
+export const LIVE_STATUSES: readonly AssistantStatusType[] = [
+  AssistantStatus.Listening,
+  AssistantStatus.Speaking,
+  AssistantStatus.Working,
+];
