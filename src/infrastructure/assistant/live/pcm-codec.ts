@@ -31,7 +31,7 @@ function clamp(sample: number): number {
 }
 
 /** Encodes recorder samples for `realtimeInput.audio`. */
-export function float32ToPcm16Base64(samples: Float32Array): string {
+export function float32ToPcm16Base64(samples: Float32Array<ArrayBuffer>): string {
   const bytes = new Uint8Array(samples.length * BYTES_PER_SAMPLE);
   const view = new DataView(bytes.buffer);
 
@@ -43,7 +43,7 @@ export function float32ToPcm16Base64(samples: Float32Array): string {
 }
 
 /** Decodes an `inlineData` audio part into samples the player can queue. */
-export function pcm16Base64ToFloat32(base64: string): Float32Array {
+export function pcm16Base64ToFloat32(base64: string): Float32Array<ArrayBuffer> {
   const bytes = base64ToBytes(base64);
   const count = Math.floor(bytes.length / BYTES_PER_SAMPLE);
   const samples = new Float32Array(count);
@@ -64,7 +64,11 @@ export function pcm16Base64ToFloat32(base64: string): Float32Array {
  * a speech model whose useful band ends around 8 kHz, and the alternative costs
  * CPU on every frame of a live session for quality no listener receives.
  */
-export function resample(samples: Float32Array, fromRate: number, toRate: number): Float32Array {
+export function resample(
+  samples: Float32Array<ArrayBuffer>,
+  fromRate: number,
+  toRate: number,
+): Float32Array<ArrayBuffer> {
   if (fromRate === toRate || samples.length === ValueConstants.zero) return samples;
 
   const ratio = fromRate / toRate;
