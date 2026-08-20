@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 859 source files.
+[architecture.md](architecture.md). 861 source files.
 
 ## Layers
 
@@ -64,6 +64,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
 - `ads/` _(2)_
+- `assistant/` — live _(1)_
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(23)_
 - `comments/` — dtos _(4)_
@@ -84,6 +85,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 ## `src/core/` — building blocks only
 
+- `codec/` _(1)_
 - `constants/` _(6)_
 - `di/` _(1)_
 - `entity/` _(1)_
@@ -143,4 +145,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e3e800124caf4bae -->
+<!-- fingerprint: bfb6fcbb7ff09c83 -->

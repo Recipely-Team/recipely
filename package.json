@@ -66,6 +66,7 @@
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "react-native": "0.83.6",
+    "react-native-audio-api": "^0.13.3",
     "react-native-gesture-handler": "~2.30.0",
     "react-native-google-mobile-ads": "16.0.0",
     "react-native-reanimated": "4.2.1",
@@ -106,7 +107,7 @@
       "^@presentation/(.*)$": "<rootDir>/src/presentation/$1"
     },
     "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg))"
+      "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@noble/.*))"
     ]
   },
   "lint-staged": {

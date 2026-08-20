@@ -4,7 +4,8 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { randomBytes } from '@noble/ciphers/utils.js';
 import type { Envelope } from '@infrastructure/crypto/envelope';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
-import { CharConstants, RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
+import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
+import { base64ToBytes, bytesToBase64 } from '@core/codec/base64';
 
 const IV_BYTES = 12;
 const AUTH_TAG_BYTES = 16;
@@ -29,26 +30,6 @@ export function keyFromHex(hex: string): Uint8Array {
   return out;
 }
 
-function toBase64(bytes: Uint8Array): string {
-  let binary = CharConstants.empty;
-  for (let i = ValueConstants.zero; i < bytes.length; i++) {
-    binary += String.fromCharCode(bytes[i]!);
-  }
-  // RN/Expo provide a global `btoa`. fall back to Buffer for tests under jest-expo.
-  if (typeof globalThis.btoa === 'function') return globalThis.btoa(binary);
-  return Buffer.from(bytes).toString('base64');
-}
-
-function fromBase64(b64: string): Uint8Array {
-  if (typeof globalThis.atob === 'function') {
-    const binary = globalThis.atob(b64);
-    const out = new Uint8Array(binary.length);
-    for (let i = ValueConstants.zero; i < binary.length; i++) out[i] = binary.charCodeAt(i);
-    return out;
-  }
-  return new Uint8Array(Buffer.from(b64, 'base64'));
-}
-
 /**
  * Serialises `plain` to JSON and encrypts it with AES-256-GCM using a fresh
  * random 12-byte IV per call. Returns an `Envelope` whose `payload` and `iv`
@@ -60,8 +41,8 @@ export function encryptEnvelope(plain: unknown, key: Uint8Array): Envelope {
   const plaintext = new TextEncoder().encode(JSON.stringify(plain));
   const sealed = cipher.encrypt(plaintext); // includes auth tag at the end
   return {
-    payload: toBase64(sealed),
-    iv: toBase64(iv),
+    payload: bytesToBase64(sealed),
+    iv: bytesToBase64(iv),
   };
 }
 
@@ -74,11 +55,11 @@ export function decryptEnvelope(envelope: Envelope, key: Uint8Array): unknown {
   if (!isString(envelope.payload) || !isString(envelope.iv)) {
     throw new EnvelopeDecryptError(DiagnosticMessage.crypto.missingEnvelopeFields);
   }
-  const iv = fromBase64(envelope.iv);
+  const iv = base64ToBytes(envelope.iv);
   if (iv.length !== IV_BYTES) {
     throw new EnvelopeDecryptError(DiagnosticMessage.crypto.badIvLength(IV_BYTES));
   }
-  const sealed = fromBase64(envelope.payload);
+  const sealed = base64ToBytes(envelope.payload);
   if (sealed.length < MIN_SEALED_BYTES) {
     throw new EnvelopeDecryptError(DiagnosticMessage.crypto.payloadShorterThanTag);
   }
