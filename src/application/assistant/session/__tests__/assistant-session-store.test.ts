@@ -38,6 +38,8 @@ function harness(
     toolResponses: [] as unknown[],
     texts: [] as string[],
     mints: [] as { languageCode: string; resumptionHandle: string | undefined }[],
+    audioFrames: 0,
+    onFrame: null as ((samples: Float32Array<ArrayBuffer>) => void) | null,
   };
 
   const session: AssistantSessionInterface = {
@@ -47,7 +49,9 @@ function harness(
         ? { ok: false, failure: new NetworkFailure('nope') }
         : { ok: true, value: undefined };
     },
-    sendAudio: () => {},
+    sendAudio: () => {
+      calls.audioFrames += 1;
+    },
     sendText: (text) => calls.texts.push(text),
     respondToTool: (_id, response) => calls.toolResponses.push(response),
     subscribe: (listener) => {
@@ -58,12 +62,15 @@ function harness(
   };
 
   const microphone: MicrophoneInterface = {
-    start: async () =>
-      overrides.micFails === true
+    start: async (_rate, onFrame) => {
+      calls.onFrame = onFrame;
+      return overrides.micFails === true
         ? { ok: false, failure: new NetworkFailure('denied') }
-        : { ok: true, value: undefined },
+        : { ok: true, value: undefined };
+    },
     stop: async () => {
       calls.micStopped += 1;
+      calls.onFrame = null;
     },
   };
 
@@ -361,6 +368,24 @@ describe('assistant session store', () => {
         expect(calls.micStopped).toBeGreaterThan(0);
       });
     });
+
+      // Only the TRANSPORT is replaced. The capture callback closes over the
+      // session object, not its socket, so audio must keep flowing after the
+      // handover — a mic still pushing at a socket that no longer exists is
+      // the same silence as a mic that was closed.
+      it('keeps the microphone feeding the new socket', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+        calls.audioFrames = 0;
+        calls.onFrame?.(new Float32Array([0.2]));
+
+        expect(calls.audioFrames).toBe(1);
+      });
 
       // Saying "stop" during the handover used to open a fresh socket AFTER
       // the microphone had been closed: a session nobody could hear, and one
