@@ -1,22 +1,22 @@
-import { type Failure, UnknownFailure } from '@core/failure';
-import { fail, ok } from '@core/result/result-helpers';
-import type { Result } from '@core/result/result';
-import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
-import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
-import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import type { ImportJob } from '@domain/recipes/import/import-job';
-import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
-import type { FakeRecipeRepositoryConfig } from '@application/__fixtures__/fake-recipe-repository-config';
-import type { GenerateRecipeCall } from '@application/__fixtures__/generate-recipe-call';
-import type { ImportInstagramRecipeCall } from '@application/__fixtures__/import-instagram-recipe-call';
-import type { RefineRecipeCall } from '@application/__fixtures__/refine-recipe-call';
-import { ValueConstants } from '@core/constants';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
-import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { FakeRecipeRepositoryConfig } from "@application/__fixtures__/fake-recipe-repository-config";
+import type { GenerateRecipeCall } from "@application/__fixtures__/generate-recipe-call";
+import type { ImportInstagramRecipeCall } from "@application/__fixtures__/import-instagram-recipe-call";
+import type { RefineRecipeCall } from "@application/__fixtures__/refine-recipe-call";
+import { ValueConstants } from "@core/constants";
+import { type Failure, UnknownFailure } from "@core/failure";
+import type { Result } from "@core/result/result";
+import { fail, ok } from "@core/result/result-helpers";
+import type { ChatMessage } from "@domain/drafts/chat-message";
+import type { DraftRecipeSnapshot } from "@domain/drafts/draft-recipe-snapshot";
+import type { CreateRecipeInput } from "@domain/recipes/create/create-recipe-input";
+import type { CreateRecipeProgressCallback } from "@domain/recipes/create/create-recipe-progress-callback";
+import type { ImportJob } from "@domain/recipes/import/import-job";
+import type { RecipeFilters } from "@domain/recipes/list/recipe-filters";
+import type { RecipePage } from "@domain/recipes/list/recipe-page";
+import type { RecipeEntity } from "@domain/recipes/recipe-entity";
+import type { RecipeRepositoryInterface } from "@domain/recipes/recipe-repository-interface";
+import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
+import type { RefinedRecipe } from "@domain/recipes/refine/refined-recipe";
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -35,27 +35,34 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
 
   constructor(private readonly config: FakeRecipeRepositoryConfig = {}) {}
 
-  listActiveRecipes(_filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
+  listActiveRecipes(
+    _filters?: RecipeFilters,
+  ): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
-      this.config.listActiveRecipesResult ?? fail(new UnknownFailure('not configured')),
+      this.config.listActiveRecipesResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
-  listTrendingRecipes(_limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
+  listTrendingRecipes(
+    _limit?: number,
+  ): Promise<Result<RecipeSummaryEntity[], Failure>> {
     return Promise.resolve(
-      this.config.listTrendingRecipesResult ?? fail(new UnknownFailure('not configured')),
+      this.config.listTrendingRecipesResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
   listMyRecipes(_page?: number): Promise<Result<RecipePage, Failure>> {
     return Promise.resolve(
-      this.config.listMyRecipesResult ?? fail(new UnknownFailure('not configured')),
+      this.config.listMyRecipesResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
   getRecipe(_id: string): Promise<Result<RecipeEntity, Failure>> {
     return Promise.resolve(
-      this.config.getRecipeResult ?? fail(new UnknownFailure('not configured')),
+      this.config.getRecipeResult ?? fail(new UnknownFailure("not configured")),
     );
   }
 
@@ -64,23 +71,26 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     _onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<RecipeEntity, Failure>> {
     return Promise.resolve(
-      this.config.createRecipeResult ?? fail(new UnknownFailure('not configured')),
+      this.config.createRecipeResult ??
+        fail(new UnknownFailure("not configured")),
     );
   }
 
   generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     this.lastGenerateCall = { prompt };
-    this.generateCallCount += 1;
+    this.generateCallCount++;
     return Promise.resolve(
-      this.config.generateRecipeResult ?? ok(undefined as unknown as RecipeEntity),
+      this.config.generateRecipeResult ??
+        ok(undefined as unknown as RecipeEntity),
     );
   }
 
   importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
     this.lastImportInstagramCall = { url };
-    this.importInstagramCallCount += 1;
+    this.importInstagramCallCount++;
     return Promise.resolve(
-      this.config.importInstagramRecipeResult ?? ok(undefined as unknown as RecipeEntity),
+      this.config.importInstagramRecipeResult ??
+        ok(undefined as unknown as RecipeEntity),
     );
   }
 
@@ -90,13 +100,20 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
   enqueueInstagramImport(url: string): Promise<Result<ImportJob, Failure>> {
     this.lastEnqueueImportCall = { url };
     return Promise.resolve(
-      this.config.enqueueInstagramImportResult ?? ok(undefined as unknown as ImportJob),
+      this.config.enqueueInstagramImportResult ??
+        ok(undefined as unknown as ImportJob),
     );
   }
 
   getImportJob(id: string): Promise<Result<ImportJob, Failure>> {
     return Promise.resolve(
-      this.config.getImportJobResult ?? ok({ id, status: 'queued', draftId: null, errorKey: null } as ImportJob),
+      this.config.getImportJobResult ??
+        ok({
+          id,
+          status: "queued",
+          draftId: null,
+          errorKey: null,
+        } as ImportJob),
     );
   }
 
@@ -106,9 +123,10 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>> {
     this.lastRefineCall = { currentRecipe, instruction, history };
-    this.refineCallCount += 1;
+    this.refineCallCount++;
     return Promise.resolve(
-      this.config.refineRecipeResult ?? ok(undefined as unknown as RefinedRecipe),
+      this.config.refineRecipeResult ??
+        ok(undefined as unknown as RefinedRecipe),
     );
   }
 

@@ -39,7 +39,7 @@ export const WebRecipeCard = ({
 }: WebRecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
-  const scale = useSharedValue(1);
+  const scale = useSharedValue(ValueConstants.one);
   const totalMin = recipe.totalTimeMinutes;
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));

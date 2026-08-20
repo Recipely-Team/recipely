@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { spacing, fontSizes, controlSizes } from '@presentation/base/theme';
+import { spacing, fontSizes, controlSizes, iconSizes, fontWeights } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
@@ -23,7 +23,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
-  const bottomPad = Math.max(insets.bottom, 12);
+  const bottomPad = Math.max(insets.bottom, spacing.md);
   if (isWebShell) return null;
 
   const tabs: TabItem<TabBarKey>[] = [
@@ -56,10 +56,16 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
             onPress={() => onChange(tab.key)}
             style={styles.tab}
           >
-            <Ionicons name={isActive ? filledIcon : tab.icon} size={22} color={tint} />
+            <Ionicons name={isActive ? filledIcon : tab.icon} size={iconSizes.xxl} color={tint} />
             <ThemedText
               variant="caption"
-              style={[styles.label, { color: tint, fontWeight: isActive ? '700' : '500' }]}
+              style={[
+                styles.label,
+                {
+                  color: tint,
+                  fontWeight: isActive ? fontWeights.bold : fontWeights.medium,
+                },
+              ]}
             >
               {tab.label}
             </ThemedText>

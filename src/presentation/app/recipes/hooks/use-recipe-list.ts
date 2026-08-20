@@ -124,8 +124,8 @@ export const useRecipeList = (): UseRecipeListResult => {
           headerHidden.value = ValueConstants.zero;
           headerTranslateY.value = withTiming(ValueConstants.zero, HEADER_TIMING);
         }
-      } else if (delta > ValueConstants.zero && headerHidden.value !== 1) {
-        headerHidden.value = 1;
+      } else if (delta > ValueConstants.zero && headerHidden.value !== ValueConstants.one) {
+        headerHidden.value = ValueConstants.one;
         headerTranslateY.value = withTiming(hiddenHeaderY, HEADER_TIMING);
       } else if (delta < -REVEAL_THRESHOLD && headerHidden.value !== ValueConstants.zero) {
         headerHidden.value = ValueConstants.zero;
@@ -137,21 +137,21 @@ export const useRecipeList = (): UseRecipeListResult => {
     onMomentumEnd: () => {
       if (reduceMotion) return;
       const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
-      headerHidden.value = hide ? 1 : ValueConstants.zero;
+      headerHidden.value = hide ? ValueConstants.one : ValueConstants.zero;
       headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
     onEndDrag: () => {
       if (reduceMotion) return;
       const hide = headerTranslateY.value < hiddenHeaderY / ValueConstants.two;
-      headerHidden.value = hide ? 1 : ValueConstants.zero;
+      headerHidden.value = hide ? ValueConstants.one : ValueConstants.zero;
       headerTranslateY.value = withTiming(hide ? hiddenHeaderY : ValueConstants.zero, HEADER_TIMING);
     },
   });
 
   const gridColumns = useMemo<number>(() => {
-    if (!isExpanded) return 1;
+    if (!isExpanded) return ValueConstants.one;
     const available = feedContentWidth(width);
-    return Math.max(1, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
+    return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 
   const [sortBy, setSortBy] = useState<SortKey>(SortKey.Popular);

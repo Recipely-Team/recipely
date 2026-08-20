@@ -2,7 +2,7 @@ import { type ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, controlSizes } from '@presentation/base/theme';
+import { spacing, controlSizes, iconSizes, opacities } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ValueConstants } from '@core/constants';
 
@@ -37,10 +37,17 @@ export const SettingsRow = ({
       accessibilityLabel={label}
       style={({ pressed }) => [
         styles.row,
-        { backgroundColor: colors.cardBackground, opacity: pressed && onPress ? 0.7 : 1 },
+        {
+          backgroundColor: colors.cardBackground,
+          opacity: pressed && onPress ? opacities.pressedStrong : opacities.full,
+        },
       ]}
     >
-      <Ionicons name={icon as keyof typeof Ionicons.glyphMap} size={22} color={iconColor} />
+      <Ionicons
+        name={icon as keyof typeof Ionicons.glyphMap}
+        size={iconSizes.xxl}
+        color={iconColor}
+      />
       <ThemedText
         variant="body"
         style={[styles.label, destructive ? { color: colors.danger } : undefined]}
@@ -49,7 +56,7 @@ export const SettingsRow = ({
       </ThemedText>
       {rightElement}
       {chevronVisible && !rightElement ? (
-        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+        <Ionicons name="chevron-forward" size={iconSizes.lg} color={colors.textMuted} />
       ) : null}
     </Pressable>
   );

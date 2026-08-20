@@ -4,7 +4,17 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, decorSizes, borderWidths, BrandColors } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  controlSizes,
+  decorSizes,
+  borderWidths,
+  opacities,
+  BrandColors,
+} from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
@@ -56,7 +66,7 @@ export const WebHeaderActions = ({
             styles.discoverBtn,
             {
               borderColor: colors.cardBorder,
-              opacity: pressed ? 0.85 : 1,
+              opacity: pressed ? opacities.pressedSubtle : opacities.full,
             },
           ]}
         >
@@ -74,7 +84,10 @@ export const WebHeaderActions = ({
         style={({ pressed }) => [
           styles.createBtn,
           shadows.sm,
-          { backgroundColor: colors.primary, opacity: pressed ? 0.85 : 1 },
+          {
+            backgroundColor: colors.primary,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
+          },
         ]}
       >
         <Ionicons name="add" size={16} color={colors.primaryText} />
@@ -92,7 +105,7 @@ export const WebHeaderActions = ({
           {
             backgroundColor: colors.surface,
             borderColor: colors.cardBorder,
-            opacity: pressed ? 0.85 : 1,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
           },
         ]}
       >
@@ -122,7 +135,7 @@ export const WebHeaderActions = ({
           {
             borderColor: isProfileActive ? colors.primary : colors.cardBorder,
             backgroundColor: isProfileActive ? colors.chipBackground : colors.surface,
-            opacity: pressed ? 0.85 : 1,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
           },
         ]}
       >

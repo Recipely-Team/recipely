@@ -1,6 +1,6 @@
-import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
-import type { ScheduleTimerCompleteCall } from '@application/__fixtures__/schedule-timer-complete-call';
-import { ValueConstants } from '@core/constants';
+import type { ScheduleTimerCompleteCall } from "@application/__fixtures__/schedule-timer-complete-call";
+import { ValueConstants } from "@core/constants";
+import type { NotificationServiceInterface } from "@domain/notifications/notification-service-interface";
 
 /**
  * Recording test double for `NotificationServiceInterface`. It performs no real
@@ -15,19 +15,23 @@ export class FakeNotificationService implements NotificationServiceInterface {
   cancelCalls: string[][] = [];
 
   permissionGranted = true;
-  scheduledIds: string[] = ['notif-1', 'notif-2', 'notif-3'];
+  scheduledIds: string[] = ["notif-1", "notif-2", "notif-3"];
 
   init(): Promise<void> {
-    this.initCount += 1;
+    this.initCount++;
     return Promise.resolve();
   }
 
   requestPermissions(): Promise<boolean> {
-    this.requestPermissionsCount += 1;
+    this.requestPermissionsCount++;
     return Promise.resolve(this.permissionGranted);
   }
 
-  scheduleTimerComplete(timerId: string, recipeName: string, endTimeMs: number): Promise<string[]> {
+  scheduleTimerComplete(
+    timerId: string,
+    recipeName: string,
+    endTimeMs: number,
+  ): Promise<string[]> {
     this.scheduleCalls.push({ timerId, recipeName, endTimeMs });
     return Promise.resolve(this.scheduledIds);
   }

@@ -72,8 +72,8 @@ export class CommentEntity extends BaseEntity<CommentEntityProps> {
   withLikeToggled(): CommentEntity {
     const nextLiked = !this.props.likedByMe;
     const nextCount = nextLiked
-      ? this.props.likeCount + 1
-      : Math.max(ValueConstants.zero, this.props.likeCount - 1);
+      ? this.props.likeCount + ValueConstants.one
+      : Math.max(ValueConstants.zero, this.props.likeCount - ValueConstants.one);
     return new CommentEntity({
       ...this.props,
       likedByMe: nextLiked,
