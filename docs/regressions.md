@@ -1229,3 +1229,49 @@ turn one offline launch into a session with no ads.
 *The class:* **an answer that is settled for the session should not be
 re-awaited per consumer.** `await` on a resolved promise still costs a render,
 and a render is exactly the beat a user sees.
+
+## The permission the config asked for twice and the build shipped zero times
+
+Turning the microphone on for the voice assistant, `app.json` named it in two
+places: `react-native-audio-api`'s `iosMicrophonePermission` and, when that
+produced nothing, a literal `ios.infoPlist.NSMicrophoneUsageDescription`. The
+generated Info.plist carried neither.
+
+*Why:* `expo-audio`'s config plugin runs `createPermissionsPlugin`, which
+**deletes** `NSMicrophoneUsageDescription` when its own `microphonePermission`
+is `false` — and it was, deliberately, from back when the app had no microphone
+feature. A plugin that removes a key beats every plugin and every static entry
+that merely sets one. iOS denies the first microphone access outright when the
+purpose string is missing, with no prompt and nothing to show the user, and App
+Review rejects a missing purpose string on its own.
+
+*Now:* `expo-audio` is the single owner of the microphone. `check:structure`
+rule N rejects the inert spelling on the other plugin by name, and requires
+`microphonePermission` to be a non-empty string whenever `recordAudioAndroid`
+is on. CI asserts the usage string is present in the **generated** plist,
+beside the assert that has guarded `UIBackgroundModes` since §23c.
+
+*The class:* **when two plugins touch one key, the one that removes it wins,
+and a config that names something twice can still ship it zero times.** The
+same lesson as §23c read backwards: there, config said no and the artifact said
+yes. Check the artifact, in both directions.
+
+## Two capability switches that default to on
+
+`react-native-audio-api` was added for microphone streaming. Its config plugin
+defaults `iosBackgroundMode` to true — adding `UIBackgroundModes: audio`, the
+exact key that cost two App Review rejections under guideline 2.5.4 — and also
+defaults `androidForegroundService` to true, declaring a mediaPlayback
+foreground service and requesting the two `FOREGROUND_SERVICE` permissions Play
+requires a written justification for. Neither was mentioned in the library's
+README; both were found by reading the plugin.
+
+*Now:* rule N covers this plugin too: both switches must be explicitly false,
+and `androidPermissions` must be listed explicitly, because the default list
+carries the foreground-service permissions even when the service is off. A bare
+`"react-native-audio-api"` string with no options object is rejected outright,
+since that spelling silently means every default.
+
+*The class:* **read the config plugin, not the README, before adding a native
+dependency.** The capability a library grants itself by default is the one
+nobody writes down, and it lands in the artifact rather than the diff.

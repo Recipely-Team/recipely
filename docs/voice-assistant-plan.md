@@ -67,6 +67,51 @@ mevcut üretim hattı yazar, modele tek satır özet döner.
 - **Free tier'da içerik Google tarafından ürün geliştirmede kullanılır.** Gizlilik
   politikasına eklenmesi ve ilk kullanımda sesli mod için açık onay alınması gerekiyor.
 
+## Faz 0 bulguları (2026-08-20) — planın düzeltmeleri
+
+Aşağıdakiler kod yazılırken *doğrulandı*; plan metninin geri kalanı bu bölüme göre
+okunmalı. Ölçüm yarısı (model id, dakika başına token, eşzamanlı oturum limiti) hâlâ
+açık: Gemini anahtarı gerekiyor, spike script'i hazır.
+
+**Ses hattı kararı ayakta.** `react-native-audio-api@0.13.3` kuruldu; `AudioRecorder`
+gerçekten `onAudioReady` ile float32 PCM veriyor ve `AudioBufferQueueSourceNode`
+streaming playback sağlıyor. Plan fact #4 ve #5 doğru çıktı.
+
+**Plugin iki tuzak taşıyor, biri planda yoktu.** `iosBackgroundMode` *ve*
+`androidForegroundService` varsayılan olarak açık. İkincisi mediaPlayback foreground
+servisi + iki `FOREGROUND_SERVICE` izni ekliyor (Play'de gerekçe ister). İkisi de
+kapatıldı, `check:structure` rule N ikisini de zorunlu kılıyor.
+
+**Mikrofon izninin tek sahibi `expo-audio`.** Onun `microphonePermission: false`'ı
+`NSMicrophoneUsageDescription`'ı *siliyor* — hem statik `ios.infoPlist` girdisini hem
+`react-native-audio-api`'nin `iosMicrophonePermission`'ını eziyor. Plandaki "izni
+açmak" adımı bu yüzden göründüğünden zor: config anahtarı iki yerde adlandırıp
+artefakta hiç indirmeyebilir. Ayrıntı: `docs/regressions.md`.
+
+**Kesme, planın anlattığından yarısı kadar iş — ve diğer yarısı başka yerde.**
+Playback kuyruğunu boşaltmak tek çağrı (`clearBuffers()`), el yordamıyla defter
+tutmak gerekmiyor. Buna karşılık planda hiç geçmeyen bir önkoşul var: capture
+oturumu `voiceChat` modunda olmalı (web'de `echoCancellation: true`). Olmadan
+mikrofon asistanın kendi sesini duyuyor, model kesildiğine hükmedip kendini
+susturuyor — kimse konuşmamışken.
+
+**Web'de kütüphane kullanılamaz, opsiyonel değil.** `api.web.ts` içinde `AudioRecorder`
+ve `AudioBufferQueueSourceNode` *yok*. Plan bunu "recorder belgelenmemiş" diye
+yazmıştı; gerçek durum daha sert — import `undefined` döner ve ilk `new`'de patlar.
+`.web.ts` çifti web shell'in ayakta kalma şartı.
+
+**Transport portunda `interrupt` YOK, bilerek.** Kesmeyi sunucunun VAD'ı kullanıcının
+sesi geldiği anda tespit ediyor; istemcinin borcu sessizlik, o da player'ın `flush`'ı.
+Port'ta bir metot olsaydı çağıranlar flush yerine onu kullanır ve kullanıcı
+konuştuğu cümlenin üstüne asistanın devam ettiğini duyardı.
+
+**Bir frame bir olay değil, olaylar torbası — ve sıra önemli.** Sunucu bir turu
+`interrupted` işaretleyip aynı frame'de o turun son parçalarını da gönderebiliyor,
+bu yüzden `interrupted` yanındaki sesin önünde yayılıyor. Ayrıca `turnComplete` turu
+bitirir, `generationComplete` bitirmez (ikincisi üretilen ses gönderilmeden önce
+gelir). `goAway.timeLeft` protobuf süre *string*'i (`"9.5s"`) — sayı diye okumak
+`NaN` verir ve resumption hiç zamanlanmaz.
+
 ## Token ekonomisi — tasarımın kendisi
 
 Ses pahalı: ~28 token/sn dinleme, ~25 token/sn konuşma. Yani **1 dk mikrofon ≈ 1.7k
