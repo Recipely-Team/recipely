@@ -1488,3 +1488,30 @@ answer `awaiting`.
 *The class:* **a declared invariant with no reader is worse than none.** It
 reads, in review, exactly like a question that was asked and settled — so the
 next person does not ask it either.
+
+## The reconnect that was designed, documented, and never wired
+
+The Live API drops its socket roughly every ten minutes by design, and the plan
+answered that with a resumption handle: the server sends one, the client mints
+a new token with it, and the conversation continues without paying for setup
+and context again. The transport mapped the handle, the token port took it as a
+parameter, the event union documented it — and the session store's `switch`
+sent `Resumption`, `GoAway` and `Usage` to `default: break`. Nothing ever
+supplied the handle. Every voice session died on a timer, silently, and looked
+like the socket had failed.
+
+*Why:* the path was built end to end EXCEPT the one line that consumes it, and
+every piece that exists is individually correct. `default: break` is also the
+right shape for an event union that will grow — it is what stops a server-side
+release from breaking the app — so nothing about it reads as unfinished.
+
+*Now:* a `goAway` marks the next close as a handover; the close reconnects on a
+freshly minted token carrying the handle, with the microphone and the player
+left running so the user hears a pause rather than a stop. `Usage` is kept too:
+the whole design is shaped by token cost, and the number that measures it was
+being discarded. Four tests cover it, and all four fail without the fix.
+
+*The class:* **a `default` that swallows is invisible to every check.** Ports,
+types and mappers all prove a value can travel; none of them proves anyone
+reads it. Where a union's variants are the feature, each one wants a test that
+asserts something happened — not merely that it type-checks.

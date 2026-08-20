@@ -5,7 +5,7 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assis
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 
 /**
  * Lets the assistant scroll whichever screen registered it.

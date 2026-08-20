@@ -1,4 +1,4 @@
-import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import Animated, {
   type SharedValue,
   type useAnimatedRef,

@@ -1,6 +1,6 @@
-import { rowAt } from '@presentation/base/hooks/assistant/row-at';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback, useRef } from 'react';
-import { StepCursor } from '@presentation/base/hooks/assistant/step-cursor';
+import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -16,7 +16,6 @@ interface AssistantRecipeActionsDeps {
   instructions: readonly string[];
   cookTimeMinutes: number;
   isOwner: boolean;
-  commentInput: string;
   onChangeCommentInput: (text: string) => void;
   onAddComment: () => void;
   onOpenDelete: () => void;
@@ -66,6 +65,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onResumeTimer,
     onStopTimer,
     checkedIngredients,
+    completedSteps,
     onToggleIngredient,
     onToggleStep,
   } = deps;
@@ -208,9 +208,15 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
         const index = rowAt(instructions, arg);
         if (index === null) return { ok: false, error: 'not_found' };
         onToggleStep(index);
-        return { ok: true, n: { step: instructions.length } };
+        return {
+          ok: true,
+          n: {
+            step: instructions.length,
+            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? -1 : 1),
+          },
+        };
       },
-      [instructions, onToggleStep],
+      [instructions, onToggleStep, completedSteps],
     ),
   );
 

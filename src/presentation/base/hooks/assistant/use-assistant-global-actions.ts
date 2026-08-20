@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
-import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/assistant-navigation-targets';
+import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';

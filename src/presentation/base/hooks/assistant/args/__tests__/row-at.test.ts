@@ -1,4 +1,4 @@
-import { rowAt } from '@presentation/base/hooks/assistant/row-at';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 
 const INGREDIENTS = ['2 yumurta', '200 g yoğurt', '1 tavuk göğsü', 'tuz'];
 

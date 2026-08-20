@@ -1,5 +1,5 @@
-import { rowAt } from '@presentation/base/hooks/assistant/row-at';
-import { parseKeyValue } from '@presentation/base/hooks/assistant/parse-key-value';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback, useMemo } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { Difficulty } from '@domain/recipes/difficulty';

@@ -20,15 +20,33 @@ const CREDENTIALS = { token: 't', model: 'm', wsUrl: 'wss://x', expiresAt: 'late
 // running — which is also the shape of the real bug they guard against.
 const openStores: { getState: () => { stopVoice: () => Promise<void> } }[] = [];
 
-function harness(overrides: { grantDenied?: boolean; connectFails?: boolean; micFails?: boolean } = {}) {
+function harness(
+  overrides: {
+    grantDenied?: boolean;
+    /** Denies every mint after the first — the reconnect, not the start. */
+    denyReconnect?: boolean;
+    connectFails?: boolean;
+    micFails?: boolean;
+  } = {},
+) {
   let emit: (event: AssistantSessionEventType) => void = () => {};
-  const calls = { flush: 0, enqueued: 0, micStopped: 0, toolResponses: [] as unknown[], texts: [] as string[] };
+  const calls = {
+    flush: 0,
+    enqueued: 0,
+    micStopped: 0,
+    connects: 0,
+    toolResponses: [] as unknown[],
+    texts: [] as string[],
+    mints: [] as { languageCode: string; resumptionHandle: string | undefined }[],
+  };
 
   const session: AssistantSessionInterface = {
-    connect: async () =>
-      overrides.connectFails === true
+    connect: async () => {
+      calls.connects += 1;
+      return overrides.connectFails === true
         ? { ok: false, failure: new NetworkFailure('nope') }
-        : { ok: true, value: undefined },
+        : { ok: true, value: undefined };
+    },
     sendAudio: () => {},
     sendText: (text) => calls.texts.push(text),
     respondToTool: (_id, response) => calls.toolResponses.push(response),
@@ -61,8 +79,12 @@ function harness(overrides: { grantDenied?: boolean; connectFails?: boolean; mic
   };
 
   const tokens: AssistantTokenRepositoryInterface = {
-    mintSession: async () =>
-      overrides.grantDenied === true
+    mintSession: async (languageCode, resumptionHandle) => {
+      calls.mints.push({ languageCode, resumptionHandle });
+      const denied =
+        overrides.grantDenied === true ||
+        (overrides.denyReconnect === true && calls.mints.length > 1);
+      return denied
         ? {
             ok: true,
             value: {
@@ -73,8 +95,13 @@ function harness(overrides: { grantDenied?: boolean; connectFails?: boolean; mic
           }
         : {
             ok: true,
-            value: { status: AssistantGrantStatus.Granted, credentials: CREDENTIALS, remainingSeconds: 480 },
-          },
+            value: {
+              status: AssistantGrantStatus.Granted,
+              credentials: CREDENTIALS,
+              remainingSeconds: 480,
+            },
+          };
+    },
     reportUsage: async () => ({ ok: true, value: 400 }),
   };
 
@@ -249,6 +276,99 @@ describe('assistant session store', () => {
         { ok: false, error: 'failed' },
         { ok: true, title: 'after' },
       ]);
+    });
+
+    // The server drops the socket roughly every ten minutes BY DESIGN. A
+    // session that read that as the end would die mid-conversation on a timer,
+    // which is what happened while these events fell through to `default`.
+    describe('surviving a goAway', () => {
+      const settle = async (): Promise<void> => {
+        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+      };
+
+      it('continues on a fresh socket instead of ending', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.connects = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(calls.connects).toBe(1);
+        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+      });
+
+      // Without the handle the new session would pay for setup and the whole
+      // conversation's context again — the reason the handle exists.
+      it('mints the new token with the handle and the original language', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.mints.length = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-7' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(calls.mints).toEqual([{ languageCode: 'tr-TR', resumptionHandle: 'h-7' }]);
+      });
+
+      // The microphone and the player stay up: only the transport is replaced,
+      // so the user hears a pause rather than a session ending.
+      it('leaves the microphone open across the gap', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.micStopped = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(calls.micStopped).toBe(0);
+      });
+
+      // A drop with no goAway before it is a real failure, not a scheduled
+      // handover — reconnecting into one would retry a broken connection.
+      it('does not reconnect a socket that simply died', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.connects = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(calls.connects).toBe(0);
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+      });
+
+      // The reconnect is where the daily budget is re-checked, so a user who
+      // has run out mid-conversation stops there rather than continuing free.
+      it('ends the session when the budget is gone at the handover', async () => {
+        const { store, calls, emit } = harness({ denyReconnect: true });
+        await store.getState().startVoice('tr-TR');
+        calls.micStopped = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await settle();
+
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(calls.micStopped).toBeGreaterThan(0);
+      });
+    });
+
+    it('records what the session has cost so far', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.Usage, totalTokens: 957 });
+
+      expect(store.getState().tokensUsed).toBe(957);
     });
 
     it('stands down when the socket closes', async () => {

@@ -20,7 +20,7 @@ import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/us
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/use-assistant-scroll';
 import {
   DETAIL_SCROLL_STEP_SHARE,
@@ -89,7 +89,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
     isOwner: vm.isOwner,
-    commentInput: vm.commentInput,
     onChangeCommentInput: vm.onChangeCommentInput,
     onAddComment: vm.onAddComment,
     onOpenDelete: vm.onOpenDelete,

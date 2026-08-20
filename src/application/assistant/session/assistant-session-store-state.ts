@@ -11,6 +11,14 @@ export interface AssistantSessionStoreState {
   transcript: AssistantTranscriptLine[];
   /** Seconds of voice left today, as the server last reported them. */
   remainingSeconds: number;
+  /**
+   * Tokens this session has spent, as the API last reported them.
+   *
+   * The whole design is shaped by token cost, so the number that decides it is
+   * carried rather than discarded — it is what makes the budget checkable
+   * against a real conversation instead of an estimate.
+   */
+  tokensUsed: number;
   deniedReason: AssistantDenialReasonType | null;
   error: Failure | null;
 

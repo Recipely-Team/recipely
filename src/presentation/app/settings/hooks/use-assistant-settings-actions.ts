@@ -1,4 +1,4 @@
-import { parseKeyValue } from '@presentation/base/hooks/assistant/parse-key-value';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';

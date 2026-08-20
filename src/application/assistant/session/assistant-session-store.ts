@@ -42,6 +42,11 @@ interface AssistantSessionStoreDeps {
  *   the user asks for several things, and each is meant to see what the last
  *   one did — "open the recipe and share it" is nonsense if the share runs
  *   against the screen the open was still pushing.
+ * - **A `goAway` is survived, not obeyed.** The server drops the socket roughly
+ *   every ten minutes by design; a session that read that as the end would die
+ *   mid-conversation on a timer. The handle it sent is minted into a new token
+ *   and a fresh socket continues the same conversation, with the microphone
+ *   and the player left running — the user hears a pause, not a stop.
  * - **Silence closes the session.** Voice is billed per second of an open
  *   microphone, so a session left running in a pocket is the single most
  *   expensive thing this feature can do.
@@ -67,6 +72,12 @@ export const configureAssistantSessionStore = (
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let silence: ReturnType<typeof setTimeout> | null = null;
   let lineId = ValueConstants.zero;
+  // What a reconnect needs. The handle lets the next socket continue the
+  // conversation instead of paying for setup and context again, and the
+  // language is fixed at mint time so it has to survive the old session.
+  let resumptionHandle: string | null = null;
+  let languageCode = CharConstants.empty;
+  let expectingGoAway = false;
 
   return create<AssistantSessionStoreState>((set, get) => {
     const stopTimers = (): void => {
@@ -99,6 +110,31 @@ export const configureAssistantSessionStore = (
     const appendTranscript = (speaker: ChatRole, text: string): void => {
       lineId += ValueConstants.one;
       set({ transcript: [...get().transcript, { id: String(lineId), speaker, text }] });
+    };
+
+    /**
+     * Continues the conversation on a fresh socket after a `goAway`.
+     *
+     * The microphone and the player stay up: only the transport is replaced,
+     * so the user hears a pause rather than a session ending. Frames captured
+     * during the gap are dropped by the transport, which is the right trade —
+     * a second of audio against a conversation.
+     *
+     * It goes through the backend rather than reconnecting directly, because
+     * the handle has to be minted into the new token; that round trip is also
+     * where the daily budget is re-checked, which is why running out mid-
+     * session ends it here rather than silently continuing.
+     */
+    const reconnect = async (): Promise<void> => {
+      const grant = await tokens.mintSession(languageCode, resumptionHandle ?? undefined);
+      if (!grant.ok || grant.value.status === AssistantGrantStatus.Denied) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+
+      set({ remainingSeconds: grant.value.remainingSeconds });
+      const connected = await session.connect(grant.value.credentials);
+      if (!connected.ok) await teardown(AssistantStatus.Idle);
     };
 
     const handle = (event: AssistantSessionEventType): void => {
@@ -136,7 +172,24 @@ export const configureAssistantSessionStore = (
           });
           break;
         }
+        case AssistantEventKind.Resumption:
+          resumptionHandle = event.handle;
+          break;
+        case AssistantEventKind.GoAway:
+          // Not a close: a warning that one is coming. The socket is dropped
+          // roughly every ten minutes by design, and a session that treated
+          // that as the end would die mid-conversation on a timer.
+          expectingGoAway = true;
+          break;
+        case AssistantEventKind.Usage:
+          set({ tokensUsed: event.totalTokens });
+          break;
         case AssistantEventKind.Closed:
+          if (expectingGoAway && resumptionHandle !== null) {
+            expectingGoAway = false;
+            void reconnect();
+            break;
+          }
           void teardown(AssistantStatus.Idle);
           break;
         default:
@@ -149,17 +202,21 @@ export const configureAssistantSessionStore = (
       isPanelOpen: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
+      tokensUsed: ValueConstants.zero,
       deniedReason: null,
       error: null,
 
       openPanel: () => set({ isPanelOpen: true }),
       closePanel: () => set({ isPanelOpen: false }),
 
-      startVoice: async (languageCode: string) => {
+      startVoice: async (locale: string) => {
         if (get().status !== AssistantStatus.Idle) return;
         set({ status: AssistantStatus.Connecting, error: null, deniedReason: null });
+        languageCode = locale;
+        resumptionHandle = null;
+        expectingGoAway = false;
 
-        const grant = await tokens.mintSession(languageCode);
+        const grant = await tokens.mintSession(locale);
         if (!grant.ok) {
           set({ status: AssistantStatus.Unavailable, error: grant.failure });
           return;
@@ -225,6 +282,7 @@ export const configureAssistantSessionStore = (
         set({
           transcript: [],
           remainingSeconds: ValueConstants.zero,
+          tokensUsed: ValueConstants.zero,
           deniedReason: null,
           error: null,
           isPanelOpen: false,

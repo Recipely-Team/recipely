@@ -1,4 +1,4 @@
-import { rowAt } from '@presentation/base/hooks/assistant/row-at';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
