@@ -129,6 +129,7 @@ export const DiagnosticMessage = {
     playerUnavailable: (reason: string): string => `Audio output could not start: ${reason}`,
     sessionSocketFailed: 'Live session socket failed',
     sessionClosedBeforeReady: 'Live session closed before setup completed',
+    actionFailed: (reason: string): string => `Assistant action failed: ${reason}`,
   },
 } as const;
 

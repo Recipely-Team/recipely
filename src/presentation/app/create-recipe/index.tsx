@@ -34,7 +34,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // order: a modal covers the inline dock, and the exit and save-error sheets
   // cover everything. Two live would let a "yes" read against the sheet on
   // screen answer the one behind it.
-  const exitOrErrorOpen = vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null;
+  // `photosOpen` belongs here too: `attachPhoto` can raise the picker over a
+  // pending publish confirm, and a spoken "yes" would then publish while the
+  // user is looking at their photo library.
+  const exitOrErrorOpen =
+    vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,

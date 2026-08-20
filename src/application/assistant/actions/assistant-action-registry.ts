@@ -105,6 +105,11 @@ export class AssistantActionRegistry {
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {
+    // A handler that said something more specific keeps it. My Recipes reports
+    // which tab it refreshed; overwriting that with the pathname threw away
+    // the one thing that handler bothered to say.
+    if (result.ctx !== undefined) return result;
+
     const ctx = this.describeScreen();
     return ctx === CharConstants.empty ? result : { ...result, ctx };
   }

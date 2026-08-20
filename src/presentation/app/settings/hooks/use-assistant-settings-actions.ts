@@ -1,3 +1,4 @@
+import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -43,7 +44,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         if (parsed === null) return { ok: false, error: 'expected_key_equals_value' };
 
         const { key } = parsed;
-        const value = parsed.value.toLocaleLowerCase();
+        const value = machineLower(parsed.value);
 
         if (key === LANGUAGE) {
           if (!SUPPORTED_LOCALE_LIST.includes(value)) {

@@ -899,6 +899,7 @@ export const ar = {
     publishTitle: "هل تريد نشر هذه الوصفة؟",
     publishMessage: "ستُنشر باسمك ويمكن للجميع رؤيتها.",
     publishConfirm: "نشر",
+    requestFailed: "لم يصل الطلب. حاول بعد قليل.",
     micDenied: "يحتاج Recipely إلى الميكروفون ليسمعك.",
   },
 };

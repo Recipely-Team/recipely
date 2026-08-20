@@ -1,3 +1,6 @@
+import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
+import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -44,6 +47,10 @@ const MAX_TIME = 'maxTime';
  *   need a table that goes stale every time the backend adds one.
  */
 export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void => {
+  const { taxonomyStore } = useStores();
+  const cuisineOptions = taxonomyStore((state) => state.cuisines);
+  const categoryOptions = taxonomyStore((state) => state.categories);
+
   const {
     filters,
     activeFilterCount,
@@ -66,14 +73,23 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
         if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
 
         switch (parsed.key) {
-          case CUISINE:
-            if (filters.cuisines.includes(parsed.value)) return { ok: true, n: filterCounts(filters) };
-            onToggleCuisineQuick(parsed.value);
+          case CUISINE: {
+            // The model says "Italian"; the feed filters on the backend's key.
+            // Passing the word through produced a filter that matched nothing,
+            // an empty feed, and `ok: true` reported to the model.
+            const key = resolveKey(cuisineOptions, parsed.value);
+            if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
+            if (filters.cuisines.includes(key)) return { ok: true, n: filterCounts(filters) };
+            onToggleCuisineQuick(key);
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.one) };
-          case CATEGORY:
-            if (filters.categories.includes(parsed.value)) return { ok: true, n: filterCounts(filters) };
-            onToggleCategory(parsed.value);
+          }
+          case CATEGORY: {
+            const key = resolveKey(categoryOptions, parsed.value);
+            if (key === null) return { ok: false, error: taxonomyError(categoryOptions, CATEGORY) };
+            if (filters.categories.includes(key)) return { ok: true, n: filterCounts(filters) };
+            onToggleCategory(key);
             return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.one) };
+          }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
             if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
@@ -90,7 +106,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: false, error: 'unknown_filter' };
         }
       },
-      [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime],
+      [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime, cuisineOptions, categoryOptions],
     ),
   );
 
@@ -102,15 +118,21 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
         if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
 
         switch (parsed.key) {
-          case CUISINE:
-            if (!filters.cuisines.includes(parsed.value)) return { ok: false, error: 'not_applied' };
+          case CUISINE: {
+            const key = resolveKey(cuisineOptions, parsed.value);
+            if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
+            if (!filters.cuisines.includes(key)) return { ok: false, error: 'not_applied' };
             // The quick toggle is what the chip row calls, so removing looks
             // exactly like the user tapping the chip off.
-            onToggleCuisineQuick(parsed.value);
+            onToggleCuisineQuick(key);
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.minusOne) };
-          case CATEGORY:
-            onRemoveCategory(parsed.value);
+          }
+          case CATEGORY: {
+            const key = resolveKey(categoryOptions, parsed.value);
+            if (key === null) return { ok: false, error: taxonomyError(categoryOptions, CATEGORY) };
+            onRemoveCategory(key);
             return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.minusOne) };
+          }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
             if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
@@ -124,7 +146,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: false, error: 'unknown_filter' };
         }
       },
-      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime],
+      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, cuisineOptions, categoryOptions],
     ),
   );
 
@@ -156,7 +178,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 // case-insensitively is the difference between the filter applying and the
 // model being told its own vocabulary is wrong.
 function asDifficulty(value: string): Difficulty | null {
-  const wanted = value.trim().toLocaleUpperCase();
+  const wanted = machineUpper(value);
   return Object.values(Difficulty).find((d) => d === wanted) ?? null;
 }
 
@@ -180,4 +202,22 @@ function filterCounts(filters: UiFilters, axis?: string, delta = ValueConstants.
   };
   if (axis !== undefined && counts[axis] !== undefined) counts[axis] += delta;
   return counts;
+}
+
+/** Matches a taxonomy entry by its key or by the name the screen shows. */
+function resolveKey(options: readonly TaxonomyItem[], value: string): string | null {
+  const wanted = machineLower(value);
+  const match = options.find(
+    (item) => machineLower(item.key) === wanted || machineLower(item.name) === wanted,
+  );
+  return match?.key ?? null;
+}
+
+/**
+ * An empty catalogue is not an unrecognised value — the app has simply not
+ * loaded it yet, and saying the cuisine does not exist would have the model
+ * tell the user something untrue.
+ */
+function taxonomyError(options: readonly TaxonomyItem[], kind: string): string {
+  return options.length === ValueConstants.zero ? 'taxonomy_not_loaded' : `unknown_${kind}`;
 }

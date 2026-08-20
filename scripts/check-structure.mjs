@@ -29,6 +29,8 @@
  *      assistant does not have (CLAUDE.md §5).
  *   V. Every action in CONFIRMED_ACTIONS raises a confirmation rather than
  *      acting — a declared safety list nothing reads is worse than none.
+ *   W. No callback takes an OPTIONAL first parameter — an event prop would pass
+ *      the gesture event into it and no type would object (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -528,6 +530,31 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
           `assistant action '${spelled}' is in CONFIRMED_ACTIONS but ${acting} of its ${registrations} handler(s) act without asking — each must raise a confirmation and answer awaiting (CLAUDE.md §5)`,
         );
       }
+    }
+  }
+}
+
+// --- W: no optional leading parameter on a callback (CLAUDE.md §24) -------
+// React Native calls `onPress` WITH the gesture event, and a prop declared
+// `() => void` accepts a handler that takes parameters — TypeScript allows a
+// function of fewer parameters where more are expected, and this is the mirror
+// of that rule. So a handler with an OPTIONAL first parameter silently
+// receives a `GestureResponderEvent` on an ordinary tap: that is how one ended
+// up inside `instructions: string[]` and rode into publish.
+//
+// `onPress={handler}` is idiomatic and safe when the handler takes nothing, so
+// the check is on the declaration rather than the call site. Two handlers —
+// one that takes nothing, one that takes the value — is the fix, and it makes
+// the hazard unrepresentable rather than merely absent.
+{
+  const OPTIONAL_FIRST_PARAM = /useCallback\(\s*(?:async\s*)?\(\s*(\w+)\s*(?::[^),=]+)?=\s*[^),]/g;
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(OPTIONAL_FIRST_PARAM)) {
+      errors.push(
+        `${file}: useCallback with an optional first parameter '${m[1]}' — an event prop would pass the gesture event into it and no type would object. Split it into one handler that takes nothing and one that takes the value (CLAUDE.md §24)`,
+      );
     }
   }
 }

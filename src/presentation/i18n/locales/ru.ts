@@ -899,6 +899,7 @@ export const ru = {
     publishTitle: "Опубликовать рецепт?",
     publishMessage: "Он выйдет под вашим именем и будет виден всем.",
     publishConfirm: "Опубликовать",
+    requestFailed: "Запрос не прошёл. Повторите чуть позже.",
     micDenied: "Recipely нужен микрофон, чтобы вас слышать.",
   },
 };

@@ -89,8 +89,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
     isOwner: vm.isOwner,
-    onChangeCommentInput: vm.onChangeCommentInput,
-    onAddComment: vm.onAddComment,
+    onPostComment: vm.onPostComment,
     onOpenDelete: vm.onOpenDelete,
     onRequestUnsave: () => setUnsavePending(true),
     onOpenShare: vm.onOpenShare,
@@ -108,8 +107,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // One confirmation pending at a time: delete is a modal over everything, so
   // while it is up the spoken yes belongs to it.
   useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
+  // Everything drawn above the unsave sheet takes the word away from it: the
+  // share sheet and the sign-in prompt are both rendered after it, and
+  // `shareRecipe` is an action the model can raise while an unsave is pending.
   useAssistantConfirmation(
-    unsavePending && !vm.showDeleteSheet,
+    unsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
     () => {
       setUnsavePending(false);
       vm.onToggleSave();

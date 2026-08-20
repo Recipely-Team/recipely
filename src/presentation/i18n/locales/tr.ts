@@ -906,6 +906,7 @@ export const tr: Translations = {
     publishTitle: "Tarif yayınlansın mı?",
     publishMessage: "Senin adınla yayına çıkacak ve herkes görebilecek.",
     publishConfirm: "Yayınla",
+    requestFailed: "Bu istek ulaşmadı. Birazdan tekrar dene.",
     micDenied: "Seni duyabilmek için mikrofon izni gerekiyor.",
   },
 };

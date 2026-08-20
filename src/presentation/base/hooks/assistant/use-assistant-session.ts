@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
@@ -11,6 +12,9 @@ interface AssistantSessionView {
   transcript: AssistantTranscriptLine[];
   remainingSeconds: number;
   deniedReason: AssistantDenialReasonType | null;
+  /** A failure the user has to be told about — a request that did not land. */
+  error: Failure | null;
+  clearError: () => void;
   openPanel: () => void;
   closePanel: () => void;
   toggleVoice: () => void;
@@ -37,6 +41,8 @@ export const useAssistantSession = (): AssistantSessionView => {
   const transcript = assistantSessionStore((s) => s.transcript);
   const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
   const deniedReason = assistantSessionStore((s) => s.deniedReason);
+  const error = assistantSessionStore((s) => s.error);
+  const clearError = assistantSessionStore((s) => s.clearError);
   const openPanel = assistantSessionStore((s) => s.openPanel);
   const closePanel = assistantSessionStore((s) => s.closePanel);
   const startVoice = assistantSessionStore((s) => s.startVoice);
@@ -58,6 +64,8 @@ export const useAssistantSession = (): AssistantSessionView => {
     transcript,
     remainingSeconds,
     deniedReason,
+    error,
+    clearError,
     openPanel,
     closePanel,
     toggleVoice,

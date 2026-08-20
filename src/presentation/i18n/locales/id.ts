@@ -899,6 +899,7 @@ export const id = {
     publishTitle: "Terbitkan resep ini?",
     publishMessage: "Akan tayang atas namamu dan bisa dilihat semua orang.",
     publishConfirm: "Terbitkan",
+    requestFailed: "Permintaan tidak terkirim. Coba lagi sebentar lagi.",
     micDenied: "Recipely butuh mikrofon untuk mendengarmu.",
   },
 };

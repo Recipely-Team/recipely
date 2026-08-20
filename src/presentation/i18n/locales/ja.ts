@@ -899,6 +899,7 @@ export const ja = {
     publishTitle: "このレシピを公開しますか？",
     publishMessage: "あなたの名前で公開され、誰でも見られます。",
     publishConfirm: "公開",
+    requestFailed: "送信できませんでした。少ししてからもう一度お試しください。",
     micDenied: "声を聞くにはマイクの許可が必要です。",
   },
 };

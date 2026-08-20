@@ -895,6 +895,7 @@ export const hi: Translations = {
     publishTitle: "यह रेसिपी प्रकाशित करें?",
     publishMessage: "यह आपके नाम से जाएगी और सभी देख सकेंगे।",
     publishConfirm: "प्रकाशित करें",
+    requestFailed: "यह अनुरोध नहीं पहुँचा। थोड़ी देर बाद फिर कोशिश करें।",
     micDenied: "आपको सुनने के लिए Recipely को माइक्रोफ़ोन चाहिए।",
   },
 };

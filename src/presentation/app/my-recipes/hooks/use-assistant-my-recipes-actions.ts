@@ -1,3 +1,4 @@
+import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -42,7 +43,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     AssistantAction.SwitchTab,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const wanted = (arg ?? CharConstants.empty).trim().toLocaleLowerCase();
+        const wanted = machineLower(arg ?? CharConstants.empty);
         const match = Object.values(TabType).find((value) => value === wanted);
         if (match === undefined) return { ok: false, error: 'unknown_tab' };
 

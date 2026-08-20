@@ -906,6 +906,7 @@ export const zh = {
     publishTitle: "要发布这个食谱吗？",
     publishMessage: "将以你的名义发布，所有人都能看到。",
     publishConfirm: "发布",
+    requestFailed: "请求未送达，请稍后再试。",
     micDenied: "Recipely 需要麦克风才能听到你。",
   },
 };

@@ -909,6 +909,7 @@ export const en = {
     publishTitle: "Publish this recipe?",
     publishMessage: "It goes out under your name and everyone can see it.",
     publishConfirm: "Publish",
+    requestFailed: "That did not go through. Try again in a moment.",
     micDenied: "Recipely needs the microphone to hear you.",
   },
 };

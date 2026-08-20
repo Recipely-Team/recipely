@@ -1,3 +1,5 @@
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
@@ -147,6 +149,9 @@ export const configureAssistantSessionStore = (
      * session ends it here rather than silently continuing.
      */
     const reconnect = async (): Promise<void> => {
+      // Every in-flight call belongs to the session that is ending; the epoch
+      // bump is what tells them so, and the queue starts clean for the new one.
+      epoch += ValueConstants.one;
       handovers += ValueConstants.one;
       if (handovers > MAX_HANDOVERS) {
         await teardown(AssistantStatus.Idle);
@@ -154,9 +159,6 @@ export const configureAssistantSessionStore = (
       }
 
       const startedAt = epoch;
-      // The old socket's calls can never be answered — their ids belong to a
-      // session that no longer exists — so the queue starts empty rather than
-      // replying to the new socket with the old one's callIds.
       toolQueue = Promise.resolve();
       const grant = await tokens.mintSession(languageCode, resumptionHandle ?? undefined);
       if (epoch !== startedAt) return;
@@ -216,8 +218,14 @@ export const configureAssistantSessionStore = (
           // session tore itself down mid-action and the answer never arrived.
           nudgeSilenceTimer();
           const { callId, action, arg } = event;
+          const raisedAt = epoch;
           toolQueue = toolQueue.then(async () => {
             const result = await registry.run(action, arg);
+            // Rebinding the queue on a handover does not cancel a call already
+            // running. Without this check it answered the NEW socket with a
+            // callId from the dead session — a response to a question that
+            // socket never asked.
+            if (epoch !== raisedAt) return;
             session.respondToTool(callId, { ...result });
           });
           break;
@@ -351,16 +359,44 @@ export const configureAssistantSessionStore = (
         // saying nothing.
         const screen = registry.screenContext;
         const context = screen === CharConstants.empty ? undefined : screen;
-        void messenger.ask(text, locale, context).then((answered) => {
+        const askedAt = epoch;
+        set({ status: AssistantStatus.Working });
+
+        // Queued with the spoken calls, for the same reason they are queued
+        // with each other: two typed commands in quick succession would
+        // otherwise race, and the second could act on the screen the first was
+        // still opening.
+        toolQueue = toolQueue.then(async () => {
+          const answered = await messenger.ask(text, locale, context);
+          // The user can sign out or start voice while this is in flight; a
+          // reply landing afterwards would append the previous session's line
+          // to the next one's transcript and run its action.
+          if (epoch !== askedAt) return;
+
+          // The failure is surfaced through `error`, which the panel renders.
+          // Written to state nothing read, an unreachable backend produced the
+          // user's line and then silence — the exact symptom this mode exists
+          // to remove.
           if (!answered.ok) {
-            set({ error: answered.failure });
+            set({ status: AssistantStatus.Idle, error: answered.failure });
             return;
           }
+
           if (answered.value.reply !== CharConstants.empty) {
             appendTranscript(ChatRole.Assistant, answered.value.reply);
           }
           const action = answered.value.action;
-          if (action !== undefined) void registry.run(action.name, action.arg);
+          if (action !== undefined) {
+            const result = await registry.run(action.name, action.arg);
+            // An action that could not run is news the user needs: they were
+            // told it was happening.
+            // An action that could not run is news the user needs: they were
+            // told it was happening.
+            if (!result.ok) {
+              set({ error: new UnknownFailure(DiagnosticMessage.assistant.actionFailed(result.error ?? CharConstants.empty)) });
+            }
+          }
+          set({ status: AssistantStatus.Idle });
         });
       },
 

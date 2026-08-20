@@ -1,3 +1,4 @@
+import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback, useRef } from 'react';
 import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
@@ -16,8 +17,7 @@ interface AssistantRecipeActionsDeps {
   instructions: readonly string[];
   cookTimeMinutes: number;
   isOwner: boolean;
-  onChangeCommentInput: (text: string) => void;
-  onAddComment: () => void;
+  onPostComment: (text: string) => void;
   onOpenDelete: () => void;
   onRequestUnsave: () => void;
   onOpenShare: () => void;
@@ -55,8 +55,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     instructions,
     cookTimeMinutes,
     isOwner,
-    onChangeCommentInput,
-    onAddComment,
+    onPostComment,
     onOpenDelete,
     onRequestUnsave,
     onOpenShare,
@@ -127,7 +126,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ReadStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const asked = (arg ?? StepCursor.Next).trim().toLocaleLowerCase();
+        const asked = machineLower(arg ?? StepCursor.Next);
         const index =
           asked === StepCursor.Next
             ? stepCursor.current + ValueConstants.one
@@ -167,14 +166,14 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
-        // Written into the field first so the user SEES what is about to be
-        // posted under their name — the same beat a person gets before tapping
-        // send, rather than a comment appearing from nowhere.
-        onChangeCommentInput(arg);
-        onAddComment();
+        // The text goes with the call. Writing the field and posting in the
+        // same tick meant the post read the previous render's value — empty —
+        // and reported success anyway, so the model announced a comment that
+        // was never made.
+        onPostComment(arg);
         return { ok: true, title: recipeName };
       },
-      [onChangeCommentInput, onAddComment, recipeName],
+      [onPostComment, recipeName],
     ),
   );
 

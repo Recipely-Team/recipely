@@ -1,3 +1,4 @@
+import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -112,7 +113,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         }
         if (field === DIFFICULTY_FIELD) {
           const difficulty = Object.values(Difficulty).find(
-            (d) => d === value.trim().toLocaleUpperCase(),
+            (d) => d === machineUpper(value),
           );
           if (difficulty === undefined) return { ok: false, error: 'unknown_difficulty' };
           onUpdateField(DIFFICULTY_FIELD, difficulty);
@@ -129,9 +130,9 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           if (options.length === ValueConstants.zero) {
             return { ok: false, error: 'taxonomy_not_loaded' };
           }
-          const wanted = value.toLocaleLowerCase();
+          const wanted = machineLower(value);
           const match = options.find(
-            (item) => item.key.toLocaleLowerCase() === wanted || item.name.toLocaleLowerCase() === wanted,
+            (item) => machineLower(item.key) === wanted || machineLower(item.name) === wanted,
           );
           if (match === undefined) return { ok: false, error: `unknown_${field}` };
 

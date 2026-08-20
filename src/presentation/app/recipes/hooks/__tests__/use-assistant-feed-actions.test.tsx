@@ -10,8 +10,22 @@ import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-ass
 
 const EMPTY: UiFilters = { cuisines: [], categories: [], difficulties: [], maxTime: 0 };
 
-function harness(filters: UiFilters = EMPTY, activeFilterCount = 0) {
+const CUISINES = [
+  { key: 'italian', name: 'İtalyan', emoji: '🇮🇹' },
+  { key: 'turkish', name: 'Türk', emoji: '🇹🇷' },
+];
+const CATEGORIES = [{ key: 'soup', name: 'Çorba', emoji: '🍲' }];
+
+function harness(filters: UiFilters = EMPTY, activeFilterCount = 0, loaded = true) {
   const registry = new AssistantActionRegistry();
+  // The feed filters on backend KEYS; the model says the name it saw. A stub
+  // that returned the words back would have hidden the very defect this
+  // resolution exists for.
+  const taxonomyStore = ((selector: (state: unknown) => unknown) =>
+    selector({
+      cuisines: loaded ? CUISINES : [],
+      categories: loaded ? CATEGORIES : [],
+    })) as unknown as Stores['taxonomyStore'];
   const spies = {
     onToggleCuisineQuick: jest.fn(),
     onToggleCategory: jest.fn(),
@@ -30,7 +44,7 @@ function harness(filters: UiFilters = EMPTY, activeFilterCount = 0) {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as Stores}>
       <Probe />
     </StoresProvider>,
   );
@@ -58,7 +72,7 @@ describe('useAssistantFeedActions', () => {
     const { registry, spies } = harness();
 
     await act(async () => {
-      await registry.run(AssistantAction.AddFilter, 'cuisine=italian');
+      await registry.run(AssistantAction.AddFilter, 'cuisine=İtalyan');
     });
 
     expect(spies.onToggleCuisineQuick).toHaveBeenCalledWith('italian');
@@ -147,6 +161,70 @@ describe('useAssistantFeedActions', () => {
     });
 
     expect(spies.onSetMaxTime).not.toHaveBeenCalled();
+  });
+
+  // The model says the name the screen showed it; the feed filters on the
+  // backend's key. Passing the word through produced a filter that matched
+  // nothing, an empty feed, and `ok: true` reported to the model.
+  describe('taxonomy resolution', () => {
+    it('turns the name the model saw into the key the feed filters on', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.AddFilter, 'cuisine=İtalyan');
+      });
+
+      expect(spies.onToggleCuisineQuick).toHaveBeenCalledWith('italian');
+    });
+
+    it('accepts the key itself, which is what a second turn would send back', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.AddFilter, 'cuisine=italian');
+      });
+
+      expect(spies.onToggleCuisineQuick).toHaveBeenCalledWith('italian');
+    });
+
+    it('resolves a category by name too', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.AddFilter, 'category=Çorba');
+      });
+
+      expect(spies.onToggleCategory).toHaveBeenCalledWith('soup');
+    });
+
+    it('refuses a cuisine the catalogue does not have', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.AddFilter, 'cuisine=Marslı')).resolves.toEqual({
+          ok: false,
+          error: 'unknown_cuisine',
+        });
+      });
+
+      expect(spies.onToggleCuisineQuick).not.toHaveBeenCalled();
+    });
+
+    // An empty catalogue means the app has not loaded it, not that Italian
+    // stopped being a cuisine — telling the model otherwise has it say
+    // something untrue out loud.
+    it('says the list is not loaded rather than calling the cuisine unknown', async () => {
+      const { registry, spies } = harness(EMPTY, 0, false);
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.AddFilter, 'cuisine=İtalyan')).resolves.toEqual({
+          ok: false,
+          error: 'taxonomy_not_loaded',
+        });
+      });
+
+      expect(spies.onToggleCuisineQuick).not.toHaveBeenCalled();
+    });
   });
 
   it('clears every filter at once', async () => {

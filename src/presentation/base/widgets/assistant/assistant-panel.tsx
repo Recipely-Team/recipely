@@ -27,16 +27,21 @@ import { t } from '@presentation/i18n';
  */
 export const AssistantPanel = (): React.JSX.Element => {
   const { colors } = useTheme();
-  const { status, transcript, deniedReason, closePanel, sendText } = useAssistantSession();
+  const { status, transcript, deniedReason, error, clearError, closePanel, sendText } = useAssistantSession();
   const [draft, setDraft] = useState(CharConstants.empty);
 
   const submit = (): void => {
     if (draft.trim() === CharConstants.empty) return;
+    clearError();
     sendText(draft.trim());
     setDraft(CharConstants.empty);
   };
 
-  const notice = assistantNotice(status, deniedReason);
+  // A failed request outranks the status line: the user just asked for
+  // something and it did not land, and the panel is the only place that can
+  // say so — a request answered by nothing looks exactly like being ignored.
+  const notice =
+    error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason);
 
   return (
     <View style={[styles.panel, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -46,7 +51,10 @@ export const AssistantPanel = (): React.JSX.Element => {
           {assistantStatusLabel(status)}
         </ThemedText>
         <Pressable
-          onPress={closePanel}
+          onPress={() => {
+            clearError();
+            closePanel();
+          }}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.close}
           style={styles.close}

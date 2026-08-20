@@ -1,3 +1,4 @@
+import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -23,7 +24,7 @@ export const useAssistantScroll = (
     AssistantAction.Scroll,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const direction = (arg ?? AssistantScrollDirection.Down).trim().toLocaleLowerCase();
+        const direction = machineLower(arg ?? AssistantScrollDirection.Down);
         if (!isDirection(direction)) return { ok: false, error: 'unknown_direction' };
 
         scrollBy(direction);

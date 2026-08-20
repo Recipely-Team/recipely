@@ -899,6 +899,7 @@ export const pt = {
     publishTitle: "Publicar esta receita?",
     publishMessage: "Vai sair com o seu nome e todos poderão ver.",
     publishConfirm: "Publicar",
+    requestFailed: "Não foi enviado. Tente de novo em instantes.",
     micDenied: "O Recipely precisa do microfone para ouvir você.",
   },
 };

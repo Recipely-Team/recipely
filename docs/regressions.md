@@ -1617,3 +1617,38 @@ dearer) and HTTP otherwise.
 *The class:* **a fallback that depends on what it is falling back from is not a
 fallback.** Build the alternative path against the absence it exists for, and
 test it in that state — the happy path passes either way.
+
+## Every difficulty and every filter would have failed, on Turkish first
+
+`setDraftField difficulty=medium` compared `value.toLocaleUpperCase()` against
+`Difficulty.MEDIUM`. On a Turkish device that produces `MEDİUM` — a dotted
+capital I — which never matches. `'Italian'.toLocaleLowerCase()` is `ıtalian`,
+which never matches the taxonomy key. The app's primary locale is Turkish, so
+the devices this was built for are the ones it fails on.
+
+*Why:* locale-aware casing is the careful-looking choice, and it is correct for
+the other comparison in the same feature — matching "yoğurt" against a row the
+user is reading. The two look identical and are opposite.
+
+*Now:* `machineLower` / `machineUpper` for anything compared against a constant
+or a key; `toLocale*` stays only where the text is something a person wrote.
+
+*The class:* **case-fold by what the value IS, not by where the user is.** A
+machine constant has no locale; folding it with one turns a comparison into a
+coin toss decided by the device's language.
+
+## The fallback that answered with silence
+
+The text mode's failures were written to store state nothing rendered. Offline,
+a rejected request, or a rate limit all produced the same thing: the user's
+line in the transcript and nothing after it — the exact symptom the mode was
+built to remove, reproduced by the mode itself.
+
+*Now:* the panel reads `error` and says so, the send clears it, and the typed
+turn runs through the same queue and the same epoch guard as a spoken one — so
+two typed commands cannot race, and a reply arriving after sign-out is dropped
+instead of appended to the next user's transcript.
+
+*The class:* **an error written to state nobody reads is an error that did not
+happen.** Setting it satisfies every review that checks the failure is handled;
+only following it to a rendered pixel proves the user learns anything.
