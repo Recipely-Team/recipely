@@ -27,6 +27,8 @@
  *   U. Every assistant action offered to the model has a handler registered by
  *      some screen — a word nothing answers advertises a capability the
  *      assistant does not have (CLAUDE.md §5).
+ *   V. Every action in CONFIRMED_ACTIONS raises a confirmation rather than
+ *      acting — a declared safety list nothing reads is worse than none.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -469,6 +471,49 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       errors.push(
         `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
       );
+    }
+  }
+}
+
+// --- V: a confirmed action must actually ask (CLAUDE.md §5) ----------------
+// `CONFIRMED_ACTIONS` names what the assistant must never do on a model's
+// say-so. It previously sat beside the vocabulary as a statement of intent
+// that nothing read, and `unsave` was on the list while running unconfirmed —
+// a declared invariant no code enforces is worse than none, because it reads
+// as though the question had been settled.
+//
+// The check is shallow on purpose: a handler for one of these must answer
+// `awaiting`, which is what a sheet-raising handler returns and what a
+// straight-through one never does.
+{
+  const listPath = path.join(SRC, 'domain/assistant/actions/confirmed-actions.ts');
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(listPath) && fs.existsSync(vocabularyPath)) {
+    const vocabulary = fs.readFileSync(vocabularyPath, 'utf8');
+    const confirmed = [...fs.readFileSync(listPath, 'utf8').matchAll(/AssistantAction\.(\w+)/g)]
+      .map((m) => m[1])
+      .filter((name, at, all) => all.indexOf(name) === at);
+
+    for (const member of confirmed) {
+      const registrations = files.filter((file) => {
+        if (isTest(file)) return false;
+        const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+        return new RegExp(`useAssistantAction\\(\\s*AssistantAction\\.${member}\\b`).test(src);
+      });
+      const asks = registrations.some((file) => {
+        const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+        const at = src.search(new RegExp(`useAssistantAction\\(\\s*AssistantAction\\.${member}\\b`));
+        // The handler body is what follows, up to the next registration.
+        const rest = src.slice(at);
+        const next = rest.slice(1).search(/useAssistantAction\(/);
+        return /awaiting:\s*true/.test(next === -1 ? rest : rest.slice(0, next + 1));
+      });
+      if (registrations.length > 0 && !asks) {
+        const spelled = new RegExp(`^ {2}${member}: '(\\w+)',`, 'm').exec(vocabulary)?.[1] ?? member;
+        errors.push(
+          `assistant action '${spelled}' is in CONFIRMED_ACTIONS but its handler does not answer awaiting — it must raise a confirmation instead of acting (CLAUDE.md §5)`,
+        );
+      }
     }
   }
 }

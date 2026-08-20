@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { useAssistantImportActions } from '@presentation/app/import-recipe/hooks/use-assistant-import-actions';
 import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
@@ -16,10 +17,7 @@ import { t } from '@presentation/i18n';
 import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
 import { ImportPasteView } from '@presentation/app/import-recipe/body/import-paste-view';
 import { ImportQueueView } from '@presentation/app/import-recipe/body/import-queue-view';
-import { CharConstants, ValueConstants } from '@core/constants';
-import { useCallback } from 'react';
-import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { ValueConstants } from '@core/constants';
 
 /**
  * The Instagram import, in its two states.
@@ -38,29 +36,7 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
   const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
   const vm = useImportRecipe(importUrl);
 
-  // Importing takes a link, and a link is the one thing nobody dictates out
-  // loud — it arrives from a share sheet. So the assistant's job here is to
-  // submit what was shared and to open the draft when it is ready, not to
-  // transcribe a URL.
-  useAssistantAction(
-    AssistantAction.ImportRecipe,
-    useCallback(
-      async (arg?: string) => {
-        const url = arg ?? importUrl ?? CharConstants.empty;
-        if (url === CharConstants.empty) return { ok: false, error: 'no_link' };
-        vm.onSubmitLink(url);
-        return { ok: true };
-      },
-      [vm, importUrl],
-    ),
-  );
-  useAssistantAction(
-    AssistantAction.OpenDraft,
-    useCallback(async () => {
-      vm.onOpenDraft();
-      return { ok: true };
-    }, [vm]),
-  );
+  useAssistantImportActions({ sharedUrl: importUrl, onSubmitLink: vm.onSubmitLink, onOpenDraft: vm.onOpenDraft });
   const copy = t().importRecipe;
 
   useReportFailure(vm.failure, 'ImportRecipeScreen');

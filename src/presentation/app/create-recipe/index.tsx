@@ -33,10 +33,8 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     recipe: vm.recipe,
     onUpdateField: vm.onUpdateField,
     onAddIngredient: vm.onAddIngredient,
-    onChangeIngredient: vm.onChangeIngredient,
     onRemoveIngredient: vm.onRemoveIngredient,
     onAddStep: vm.onAddStep,
-    onChangeStep: vm.onChangeStep,
     onRemoveStep: vm.onRemoveStep,
     onOpenPhotos: vm.onOpenPhotos,
     onSubmitRefine: vm.onSubmitRefine,
@@ -53,7 +51,15 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     },
     () => setAssistantPublishOpen(false),
   );
-  useAssistantConfirmation(vm.proposal !== null, vm.onAcceptProposal, vm.onRejectProposal);
+  // Exactly one confirmation is pending at a time. The publish sheet is a
+  // modal drawn over everything, so while it is up the spoken "yes" belongs to
+  // it — offering both would let a user reading the publish sheet accept the
+  // refine proposal behind it instead, and be told the publish succeeded.
+  useAssistantConfirmation(
+    vm.proposal !== null && !assistantPublishOpen,
+    vm.onAcceptProposal,
+    vm.onRejectProposal,
+  );
 
   if (vm.phase === PhaseType.Prompt) {
     return (

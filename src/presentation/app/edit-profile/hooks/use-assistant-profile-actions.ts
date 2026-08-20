@@ -1,14 +1,17 @@
+import { parseKeyValue } from '@presentation/base/hooks/assistant/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
-import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The profile-editing capability this hook needs, named where it is consumed. */
 interface AssistantProfileActionsDeps {
   onChangeName: (value: string) => void;
   onChangeBio: (value: string) => void;
 }
+
+const NAME_FIELD = 'displayName';
+const BIO_FIELD = 'bio';
 
 /**
  * Lets the assistant fill in the profile form the user is looking at.
@@ -22,10 +25,6 @@ interface AssistantProfileActionsDeps {
  *   worth having, and it arrives as `bio=<text>` like everything else rather
  *   than through a second action word — one capability, one word.
  */
-const FIELD_SEPARATOR = '=';
-const NAME_FIELD = 'displayName';
-const BIO_FIELD = 'bio';
-
 export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): void => {
   const { onChangeName, onChangeBio } = deps;
 
@@ -33,12 +32,10 @@ export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): v
     AssistantAction.UpdateProfile,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const raw = arg ?? CharConstants.empty;
-        const at = raw.indexOf(FIELD_SEPARATOR);
-        if (at < ValueConstants.zero) return { ok: false, error: 'expected_field_equals_value' };
+        const parsed = parseKeyValue(arg);
+        if (parsed === null) return { ok: false, error: 'expected_field_equals_value' };
 
-        const field = raw.slice(ValueConstants.zero, at).trim();
-        const value = raw.slice(at + FIELD_SEPARATOR.length).trim();
+        const { key: field, value } = parsed;
 
         if (field === NAME_FIELD) {
           onChangeName(value);

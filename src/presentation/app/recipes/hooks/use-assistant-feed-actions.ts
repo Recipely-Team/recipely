@@ -1,3 +1,4 @@
+import { parseKeyValue } from '@presentation/base/hooks/assistant/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -22,6 +23,11 @@ interface AssistantFeedActionsDeps {
   onChangeSort: (key: SortKey) => void;
 }
 
+const CUISINE = 'cuisine';
+const CATEGORY = 'category';
+const DIFFICULTY = 'difficulty';
+const MAX_TIME = 'maxTime';
+
 /**
  * Filtering and sorting the feed, by voice.
  *
@@ -37,12 +43,6 @@ interface AssistantFeedActionsDeps {
  *   are opaque taxonomy strings the backend owns; translating them here would
  *   need a table that goes stale every time the backend adds one.
  */
-const FIELD_SEPARATOR = '=';
-const CUISINE = 'cuisine';
-const CATEGORY = 'category';
-const DIFFICULTY = 'difficulty';
-const MAX_TIME = 'maxTime';
-
 export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void => {
   const {
     filters,
@@ -62,18 +62,18 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     AssistantAction.AddFilter,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const parsed = parseFilter(arg);
+        const parsed = parseKeyValue(arg);
         if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
 
-        switch (parsed.kind) {
+        switch (parsed.key) {
           case CUISINE:
             if (filters.cuisines.includes(parsed.value)) return { ok: true, n: filterCounts(filters) };
             onToggleCuisineQuick(parsed.value);
-            return { ok: true, n: filterCounts(filters) };
+            return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.one) };
           case CATEGORY:
             if (filters.categories.includes(parsed.value)) return { ok: true, n: filterCounts(filters) };
             onToggleCategory(parsed.value);
-            return { ok: true, n: filterCounts(filters) };
+            return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.one) };
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
             if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
@@ -98,19 +98,19 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     AssistantAction.RemoveFilter,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const parsed = parseFilter(arg);
+        const parsed = parseKeyValue(arg);
         if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
 
-        switch (parsed.kind) {
+        switch (parsed.key) {
           case CUISINE:
             if (!filters.cuisines.includes(parsed.value)) return { ok: false, error: 'not_applied' };
             // The quick toggle is what the chip row calls, so removing looks
             // exactly like the user tapping the chip off.
             onToggleCuisineQuick(parsed.value);
-            return { ok: true, n: filterCounts(filters) };
+            return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.minusOne) };
           case CATEGORY:
             onRemoveCategory(parsed.value);
-            return { ok: true, n: filterCounts(filters) };
+            return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.minusOne) };
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
             if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
@@ -131,9 +131,9 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
   useAssistantAction(
     AssistantAction.ClearFilters,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      if (activeFilterCount === ValueConstants.zero) return { ok: true, n: { filters: 0 } };
+      if (activeFilterCount === ValueConstants.zero) return { ok: true, n: { filters: ValueConstants.zero } };
       onResetFilters();
-      return { ok: true, n: { filters: 0 } };
+      return { ok: true, n: { filters: ValueConstants.zero } };
     }, [activeFilterCount, onResetFilters]),
   );
 
@@ -151,16 +151,6 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
   );
 };
 
-function parseFilter(arg: string | undefined): { kind: string; value: string } | null {
-  const raw = arg ?? CharConstants.empty;
-  const at = raw.indexOf(FIELD_SEPARATOR);
-  if (at < ValueConstants.zero) return null;
-
-  return {
-    kind: raw.slice(ValueConstants.zero, at).trim(),
-    value: raw.slice(at + FIELD_SEPARATOR.length).trim(),
-  };
-}
 
 // The wire values are upper-case (`EASY`); a person says "easy". Matching
 // case-insensitively is the difference between the filter applying and the
@@ -174,10 +164,20 @@ function isSortKey(value: string): value is SortKey {
   return (Object.values(SortKey) as string[]).includes(value);
 }
 
-function filterCounts(filters: UiFilters): Record<string, number> {
-  return {
+/**
+ * How many filters are on, after a change of `delta` on `axis`.
+ *
+ * The counts are read from the filters this render closed over, which are the
+ * ones from BEFORE the change just applied — reporting them raw told the model
+ * the state it had a moment ago, and it would say "two cuisines" having just
+ * added the third.
+ */
+function filterCounts(filters: UiFilters, axis?: string, delta = ValueConstants.zero): Record<string, number> {
+  const counts: Record<string, number> = {
     cuisine: filters.cuisines.length,
     category: filters.categories.length,
     difficulty: filters.difficulties.length,
   };
+  if (axis !== undefined && counts[axis] !== undefined) counts[axis] += delta;
+  return counts;
 }

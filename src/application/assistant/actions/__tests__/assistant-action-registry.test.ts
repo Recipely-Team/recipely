@@ -101,6 +101,47 @@ describe('AssistantActionRegistry', () => {
       });
     });
 
+    // The normal case, and the one a single slot got backwards: expo-router
+    // leaves the screen underneath mounted, so when the top one pops its
+    // cleanup ran while the outer handler was still meant to answer. Deleting
+    // the key took that handler with it and nothing re-registered it — opening
+    // My Recipes once and going back left "open the lentil soup" answering
+    // `unavailable_here` for the rest of the process.
+    it('hands the action back to the screen underneath', async () => {
+      const registry = new AssistantActionRegistry();
+      registry.register(AssistantAction.OpenRecipe, async () => ({ ok: true, title: 'global' }));
+      const unregisterInner = registry.register(AssistantAction.OpenRecipe, async () => ({
+        ok: true,
+        title: 'my-recipes',
+      }));
+
+      await expect(registry.run(AssistantAction.OpenRecipe)).resolves.toEqual({
+        ok: true,
+        title: 'my-recipes',
+      });
+
+      unregisterInner();
+
+      await expect(registry.run(AssistantAction.OpenRecipe)).resolves.toEqual({
+        ok: true,
+        title: 'global',
+      });
+    });
+
+    it('reports the action gone only once every screen has released it', async () => {
+      const registry = new AssistantActionRegistry();
+      const releaseOuter = registry.register(AssistantAction.Refresh, async () => ({ ok: true }));
+      const releaseInner = registry.register(AssistantAction.Refresh, async () => ({ ok: true }));
+
+      releaseInner();
+      releaseOuter();
+
+      await expect(registry.run(AssistantAction.Refresh)).resolves.toEqual({
+        ok: false,
+        error: 'unavailable_here',
+      });
+    });
+
     // React unmounts the outgoing screen AFTER the incoming one has mounted, so
     // a cleanup that deleted by key alone would take the live handler with it
     // and leave the action dead on a screen that implements it.

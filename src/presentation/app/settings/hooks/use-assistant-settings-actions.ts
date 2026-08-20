@@ -1,10 +1,10 @@
+import { parseKeyValue } from '@presentation/base/hooks/assistant/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
 import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
-import { CharConstants, ValueConstants } from '@core/constants';
 
 /** What settings lends the assistant, named where it is consumed. */
 interface AssistantSettingsActionsDeps {
@@ -12,6 +12,10 @@ interface AssistantSettingsActionsDeps {
   onSetThemePreference: (preference: ThemePreference) => void;
   onRequestSignOut: () => void;
 }
+
+const LANGUAGE = 'language';
+const THEME = 'theme';
+const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'];
 
 /**
  * Settings, by voice.
@@ -28,11 +32,6 @@ interface AssistantSettingsActionsDeps {
  * - **Signing out asks.** It is not destructive, but it ends the session and
  *   everything behind it, and voice mishears — a one-syllable word most of all.
  */
-const FIELD_SEPARATOR = '=';
-const LANGUAGE = 'language';
-const THEME = 'theme';
-const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'];
-
 export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps): void => {
   const { onSetLanguage, onSetThemePreference, onRequestSignOut } = deps;
 
@@ -40,12 +39,11 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
     AssistantAction.SetPreference,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const raw = arg ?? CharConstants.empty;
-        const at = raw.indexOf(FIELD_SEPARATOR);
-        if (at < ValueConstants.zero) return { ok: false, error: 'expected_key_equals_value' };
+        const parsed = parseKeyValue(arg);
+        if (parsed === null) return { ok: false, error: 'expected_key_equals_value' };
 
-        const key = raw.slice(ValueConstants.zero, at).trim();
-        const value = raw.slice(at + FIELD_SEPARATOR.length).trim().toLocaleLowerCase();
+        const { key } = parsed;
+        const value = parsed.value.toLocaleLowerCase();
 
         if (key === LANGUAGE) {
           if (!SUPPORTED_LOCALE_LIST.includes(value)) {

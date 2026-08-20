@@ -1407,3 +1407,84 @@ stray "yes" with nothing pending answers `unavailable_here`.
 interrupts.** Adding a confirmation to a voice flow and leaving it touch-only
 does not make the flow safer, it makes it unusable — and the failure is
 invisible to every test that does not act out the scenario.
+
+## The action that worked until you visited the screen that also implements it
+
+Opening My Recipes once and going back left "open the lentil soup" answering
+`unavailable_here` everywhere, for the rest of the process — even though the
+always-mounted assistant pill implements that action from anywhere.
+
+*Why:* the action registry held one handler per key. A screen that implements
+an action the pill already implements overwrote it on mount, and on unmount its
+cleanup deleted the key. Nothing re-registered the outer handler:
+`useAssistantAction`'s effect depends on the action and the registry, neither of
+which changes. The one test that existed covered the opposite ordering — a
+screen unmounting AFTER its replacement registered — so the normal case, where
+the screen underneath stays mounted and should get the action back, was the
+untested one.
+
+*Now:* each key holds a stack. `register` pushes and returns a pop that removes
+that handler wherever it sits; `run` dispatches to the top. Five actions are
+implemented by two screens each, so this was five latent instances of the same
+bug.
+
+*The class:* **an override needs a way to hand back what it shadowed.** A
+single-slot registry can express "this screen wins now" but not "and the other
+one wins again afterwards", and the second half is the one nobody writes a test
+for.
+
+## Two confirmations, and the wrong one answered "yes"
+
+On the create screen a user could ask for a refine, then ask to publish, read
+the publish sheet, say "evet" — and have the AI's rewrite accepted instead. The
+draft was silently replaced, nothing was published, and the model announced a
+successful publish because the handler answered `ok`.
+
+*Why:* both sheets registered `confirm`/`cancel` on the same keys, and the
+winner was whichever effect re-ran last. Effect order tracks state changes, not
+what is drawn on top — the refine proposal arriving after the publish sheet
+opened took the word from a modal covering it. The hook's own doc block claimed
+"the newest sheet wins, which is the one on top", which was not true and read
+as though it had been thought about.
+
+*Now:* a screen offers at most one confirmation at a time and decides which is
+pending; the hook documents that as a requirement of its callers rather than a
+property it provides.
+
+*The class:* **registration order is not z-order.** Any "the topmost one wins"
+claim made by something that cannot see the layout is a guess, and the guess is
+wrong exactly when two things are pending — the only case that matters.
+
+## Two ingredients in one breath, one row in the draft
+
+"Add two eggs and 200 g of flour" left the draft holding the flour and a blank
+row. The eggs were gone.
+
+*Why:* the model sends both as tool calls in one frame, and the session queues
+them so a later call sees what an earlier one did. It does not — not across a
+React render. The queue chains microtasks; the re-render for the first
+`onAddIngredient()` is a macrotask, so the second handler still read the
+pre-render length and both writes landed on the same index. Adding a row and
+filling it were two state updates.
+
+*Now:* `onAddIngredient(value)` appends and fills in one update. The "+" button
+still calls it with nothing, which is what a person tapping it wants.
+
+*The class:* **serialising async work does not serialise the renders it
+causes.** A queue that guarantees ordering between handlers guarantees nothing
+about the state they read, and the gap is invisible whenever calls arrive one
+at a time — which is every manual test.
+
+## A safety list nothing read
+
+`DESTRUCTIVE_ACTIONS` named the actions the assistant must never take on a
+model's say-so, and no code anywhere imported it. `unsave` was on the list and
+ran unconfirmed; the file documenting it said the opposite.
+
+*Now:* it is `CONFIRMED_ACTIONS`, `unsave` raises a sheet like the rest, and
+`check:structure` rule V fails the build if any member's handler does not
+answer `awaiting`.
+
+*The class:* **a declared invariant with no reader is worse than none.** It
+reads, in review, exactly like a question that was asked and settled — so the
+next person does not ask it either.

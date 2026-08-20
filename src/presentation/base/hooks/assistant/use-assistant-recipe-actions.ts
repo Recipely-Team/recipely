@@ -8,22 +8,6 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assis
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
-/**
- * What the assistant can do to the recipe currently on screen.
- *
- * @remarks
- * - **No argument, because "this one" is what a person says.** The user is
- *   looking at a recipe when they say "save it"; making the model repeat an id
- *   it would have to have been told first is how the whole exchange becomes a
- *   form. The screen supplies the subject, which is also why these register on
- *   mount and answer `unavailable_here` anywhere else.
- * - **`unsave` is destructive enough to confirm**, and the plan says so, but
- *   the confirmation belongs to the screen that owns the sheet — this hook is
- *   handed the already-confirmed action.
- * - **Save and like are separate**, matching the app: saving is private and
- *   liking is public, and a model told they were one thing would do the wrong
- *   one half the time.
- */
 /** What the recipe screen lends the assistant, named where it is consumed. */
 interface AssistantRecipeActionsDeps {
   recipeId: string;
@@ -36,6 +20,7 @@ interface AssistantRecipeActionsDeps {
   onChangeCommentInput: (text: string) => void;
   onAddComment: () => void;
   onOpenDelete: () => void;
+  onRequestUnsave: () => void;
   onOpenShare: () => void;
   onStartCookTimer: () => void;
   onPauseTimer: () => void;
@@ -47,6 +32,22 @@ interface AssistantRecipeActionsDeps {
   onToggleStep: (index: number) => void;
 }
 
+/**
+ * What the assistant can do to the recipe currently on screen.
+ *
+ * @remarks
+ * - **No argument, because "this one" is what a person says.** The user is
+ *   looking at a recipe when they say "save it"; making the model repeat an id
+ *   it would have to have been told first is how the whole exchange becomes a
+ *   form. The screen supplies the subject, which is also why these register on
+ *   mount and answer `unavailable_here` anywhere else.
+ * - **`unsave` asks first.** It drops a recipe out of a collection the user
+ *   curated and may not find again. The sheet belongs to the screen; this hook
+ *   raises it and answers `awaiting`.
+ * - **Save and like are separate**, matching the app: saving is private and
+ *   liking is public, and a model told they were one thing would do the wrong
+ *   one half the time.
+ */
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
     recipeId,
@@ -58,6 +59,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onChangeCommentInput,
     onAddComment,
     onOpenDelete,
+    onRequestUnsave,
     onOpenShare,
     onStartCookTimer,
     onPauseTimer,
@@ -103,7 +105,17 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   );
 
   useAssistantAction(AssistantAction.Save, useCallback(() => setSaved(true), [setSaved]));
-  useAssistantAction(AssistantAction.Unsave, useCallback(() => setSaved(false), [setSaved]));
+  useAssistantAction(
+    AssistantAction.Unsave,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // Un-saving drops a recipe out of a collection the user curated and may
+      // not be able to find again, so it asks — unlike un-liking, which is a
+      // number they can restore with one tap.
+      if (!savedIds.has(recipeId)) return { ok: true, title: recipeName };
+      onRequestUnsave();
+      return { ok: true, awaiting: true, title: recipeName };
+    }, [savedIds, recipeId, recipeName, onRequestUnsave]),
+  );
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
 

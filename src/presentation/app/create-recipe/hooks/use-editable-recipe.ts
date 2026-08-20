@@ -53,8 +53,19 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
-  const onAddIngredient = useCallback((): void => {
-    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
+  /**
+   * Appends an ingredient row. Blank for the "+" button, which is what a
+   * person tapping it wants; with text when the assistant already knows what
+   * goes in it.
+   *
+   * The optional value is not a convenience — it is the only way two additions
+   * in one breath can both land. The assistant appends then writes, and two
+   * calls arriving in one model turn run as microtasks, before React has
+   * re-rendered: both then wrote to the same index and the first ingredient
+   * vanished, leaving a blank row behind it.
+   */
+  const onAddIngredient = useCallback((value: string = CharConstants.empty): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, value] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
   /**
@@ -122,8 +133,9 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
-  const onAddStep = useCallback((): void => {
-    setRecipe((r) => ({ ...r, instructions: [...r.instructions, CharConstants.empty] }));
+  /** Appends an instruction row — see {@link onAddIngredient} on the value. */
+  const onAddStep = useCallback((value: string = CharConstants.empty): void => {
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, value] }));
     clearFieldError('instructions');
   }, [clearFieldError]);
 

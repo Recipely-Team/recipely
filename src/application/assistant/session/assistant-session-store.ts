@@ -121,9 +121,14 @@ export const configureAssistantSessionStore = (
           break;
         case AssistantEventKind.TurnComplete:
           set({ status: AssistantStatus.Listening });
+          nudgeSilenceTimer();
           break;
         case AssistantEventKind.ToolCall: {
           set({ status: AssistantStatus.Working });
+          // A generate or a refine takes longer than the silence timeout, and
+          // the user is watching it work rather than talking. Without this the
+          // session tore itself down mid-action and the answer never arrived.
+          nudgeSilenceTimer();
           const { callId, action, arg } = event;
           toolQueue = toolQueue.then(async () => {
             const result = await registry.run(action, arg);

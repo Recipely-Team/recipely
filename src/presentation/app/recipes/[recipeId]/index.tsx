@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,7 +10,9 @@ import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
+import { t } from '@presentation/i18n';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
@@ -49,6 +51,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // The detail screen is one long ScrollView, so a step is measured against
   // the window rather than a row height, and the offset is tracked here — a
   // ScrollView has no way to be asked where it currently is.
+  const [unsavePending, setUnsavePending] = useState(false);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType) => {
@@ -90,6 +93,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onChangeCommentInput: vm.onChangeCommentInput,
     onAddComment: vm.onAddComment,
     onOpenDelete: vm.onOpenDelete,
+    onRequestUnsave: () => setUnsavePending(true),
     onOpenShare: vm.onOpenShare,
     onStartCookTimer: cookTimer.start,
     onPauseTimer: cookTimer.pause,
@@ -102,7 +106,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   });
   // Deleting is the one thing on this screen nobody can undo, and it is also
   // the one the cook most needs to answer without a free hand.
+  // One confirmation pending at a time: delete is a modal over everything, so
+  // while it is up the spoken yes belongs to it.
   useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
+  useAssistantConfirmation(
+    unsavePending && !vm.showDeleteSheet,
+    () => {
+      setUnsavePending(false);
+      vm.onToggleSave();
+    },
+    () => setUnsavePending(false),
+  );
   useAssistantScroll(scrollDetail);
 
   return (
@@ -204,6 +218,18 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           <Ionicons name="chevron-back" size={iconSizes.xxl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
+
+      <ConfirmSheet
+        visible={unsavePending}
+        title={t().assistant.unsaveTitle}
+        message={t().assistant.unsaveMessage}
+        confirmLabel={t().assistant.unsaveConfirm}
+        onConfirm={() => {
+          setUnsavePending(false);
+          vm.onToggleSave();
+        }}
+        onClose={() => setUnsavePending(false)}
+      />
 
       <DeleteRecipeSheet
         visible={vm.showDeleteSheet}

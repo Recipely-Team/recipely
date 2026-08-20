@@ -12,9 +12,7 @@ import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { useCallback } from 'react';
-import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -22,26 +20,7 @@ export const ProfileScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const vm = useProfile();
 
-  // `attachPhoto` means the avatar here, the same word that means a recipe
-  // photo on the create screen — one gesture, named once, meaning whatever the
-  // screen in front of the user is about. Both open a picker and let the user
-  // choose; a model must not pick a photo that goes out under their name.
-  useAssistantAction(
-    AssistantAction.AttachPhoto,
-    useCallback(async () => {
-      vm.onPickAvatar();
-      return { ok: true, awaiting: true };
-    }, [vm]),
-  );
-  useAssistantAction(
-    AssistantAction.UpdateProfile,
-    useCallback(async () => {
-      // The profile screen only SHOWS the fields; editing them is the edit
-      // screen's job, so this opens it and that screen takes over the word.
-      vm.onEditProfile();
-      return { ok: true };
-    }, [vm]),
-  );
+  useAssistantProfileScreenActions({ onPickAvatar: vm.onPickAvatar, onEditProfile: vm.onEditProfile });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
