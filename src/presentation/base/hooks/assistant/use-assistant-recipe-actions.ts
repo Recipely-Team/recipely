@@ -1,4 +1,5 @@
-import { useCallback } from 'react';
+import { useCallback, useRef } from 'react';
+import { StepCursor } from '@presentation/base/hooks/assistant/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -26,6 +27,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 interface AssistantRecipeActionsDeps {
   recipeId: string;
   recipeName: string;
+  ingredients: readonly string[];
   instructions: readonly string[];
   cookTimeMinutes: number;
   isOwner: boolean;
@@ -35,12 +37,20 @@ interface AssistantRecipeActionsDeps {
   onOpenDelete: () => void;
   onOpenShare: () => void;
   onStartCookTimer: () => void;
+  onPauseTimer: () => void;
+  onResumeTimer: () => void;
+  onStopTimer: () => void;
+  checkedIngredients: readonly boolean[];
+  completedSteps: readonly boolean[];
+  onToggleIngredient: (index: number) => void;
+  onToggleStep: (index: number) => void;
 }
 
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
     recipeId,
     recipeName,
+    ingredients,
     instructions,
     cookTimeMinutes,
     isOwner,
@@ -49,6 +59,12 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onOpenDelete,
     onOpenShare,
     onStartCookTimer,
+    onPauseTimer,
+    onResumeTimer,
+    onStopTimer,
+    checkedIngredients,
+    onToggleIngredient,
+    onToggleStep,
   } = deps;
   const { authStore, favoritesStore, savedRecipesStore, likesStore } = useStores();
   const authState = authStore((s) => s.state);
@@ -90,17 +106,32 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
 
+  // Walking the recipe hands-free: "next" is what a cook says, far more often
+  // than a number. The cursor lives here rather than in the model, because the
+  // model's memory of where it was is exactly what a reconnect loses.
+  const stepCursor = useRef(ValueConstants.minusOne);
   useAssistantAction(
     AssistantAction.ReadStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = Number.parseInt(arg ?? CharConstants.empty, 10) - ValueConstants.one;
+        const asked = (arg ?? StepCursor.Next).trim().toLocaleLowerCase();
+        const index =
+          asked === StepCursor.Next
+            ? stepCursor.current + ValueConstants.one
+            : asked === StepCursor.Previous
+              ? stepCursor.current - ValueConstants.one
+              : asked === StepCursor.Current
+                ? Math.max(stepCursor.current, ValueConstants.zero)
+                : Number.parseInt(asked, 10) - ValueConstants.one;
+
         const step = instructions[index];
-        // The step text is the ONE place a tool result carries content rather
-        // than a count, and it has to: the model is about to read it aloud, and
-        // it has no other way to know what it says.
         if (step === undefined) return { ok: false, error: 'no_such_step' };
-        return { ok: true, title: step, n: { step: instructions.length } };
+
+        stepCursor.current = index;
+        // The step text is the ONE place a tool result carries content rather
+        // than a count, and it has to: the model is about to read it aloud and
+        // has no other way to know what it says.
+        return { ok: true, title: step, n: { step: index + ValueConstants.one, of: instructions.length } };
       },
       [instructions],
     ),
@@ -134,6 +165,66 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     ),
   );
 
+  // Checking things off is what a cook actually does with their hands, and it
+  // is the one thing they cannot do with them covered in flour. Both take a
+  // name or a 1-based position, because "the yoghurt" and "the second one" are
+  // the same request phrased two ways.
+  useAssistantAction(
+    AssistantAction.ToggleIngredient,
+    useCallback(
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        const index = indexOfRow(ingredients, arg);
+        if (index === null) return { ok: false, error: 'not_found' };
+        onToggleIngredient(index);
+        return {
+          ok: true,
+          n: {
+            ing: ingredients.length,
+            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? -1 : 1),
+          },
+        };
+      },
+      [ingredients, onToggleIngredient, checkedIngredients],
+    ),
+  );
+
+  useAssistantAction(
+    AssistantAction.ToggleStep,
+    useCallback(
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        const index = indexOfRow(instructions, arg);
+        if (index === null) return { ok: false, error: 'not_found' };
+        onToggleStep(index);
+        return { ok: true, n: { step: instructions.length } };
+      },
+      [instructions, onToggleStep],
+    ),
+  );
+
+  useAssistantAction(
+    AssistantAction.PauseTimer,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      onPauseTimer();
+      return { ok: true };
+    }, [onPauseTimer]),
+  );
+
+  useAssistantAction(
+    AssistantAction.ResumeTimer,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      onResumeTimer();
+      return { ok: true };
+    }, [onResumeTimer]),
+  );
+
+  useAssistantAction(
+    AssistantAction.StopTimer,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      onStopTimer();
+      return { ok: true };
+    }, [onStopTimer]),
+  );
+
   useAssistantAction(
     AssistantAction.ShareRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
@@ -157,3 +248,24 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     }, [isOwner, onOpenDelete, recipeName]),
   );
 };
+
+/**
+ * Finds a row by what the cook called it, or by a 1-based position.
+ *
+ * Both, because both are natural: "check off the yoghurt" and "check off the
+ * second one" are the same request phrased differently, and the model passes
+ * through whichever the user said.
+ */
+function indexOfRow(rows: readonly string[], arg: string | undefined): number | null {
+  if (arg === undefined || arg === CharConstants.empty) return null;
+
+  const position = Number.parseInt(arg, 10);
+  if (Number.isFinite(position) && String(position) === arg.trim()) {
+    const index = position - ValueConstants.one;
+    return index >= ValueConstants.zero && index < rows.length ? index : null;
+  }
+
+  const needle = arg.toLocaleLowerCase();
+  const found = rows.findIndex((row) => row.toLocaleLowerCase().includes(needle));
+  return found === ValueConstants.minusOne ? null : found;
+}

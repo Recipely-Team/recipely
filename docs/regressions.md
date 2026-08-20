@@ -1382,3 +1382,28 @@ tool.
 required parts.** When the thing being built is a *set* of capabilities, the
 completeness of the set is the requirement, and it needs a check of its own —
 the individual pieces all passing says nothing about it.
+
+## A hands-free assistant whose safety gates needed a hand
+
+Every destructive action correctly stopped and asked — publish, delete, share,
+attach a photo, accept a refine. None of them could be answered by voice. The
+assistant is built for someone whose hands are covered in flour, so "shall I
+publish it?" followed by a sheet only a thumb could dismiss was worse than not
+asking: it stranded the user mid-task with a modal they could not clear.
+
+*Why:* the confirmations were added as a safety property and reviewed as one.
+Nothing about them was wrong in isolation — a `ConfirmSheet` is exactly right —
+and the gap only exists in the scenario the feature is FOR, which no unit test
+describes.
+
+*Now:* `useAssistantConfirmation` registers a `confirm` / `cancel` pair for as
+long as a sheet is open, and every sheet the assistant can raise uses it. The
+gate is not weakened: a tool call happens because the user said yes, out loud,
+to a question they were just asked about a sheet in front of them — the same
+loop as a tap, with a different limb. Registration is scoped to `visible`, so a
+stray "yes" with nothing pending answers `unavailable_here`.
+
+*The class:* **a safety gate has to be answerable in the same modality it
+interrupts.** Adding a confirmation to a voice flow and leaving it touch-only
+does not make the flow safer, it makes it unusable — and the failure is
+invisible to every test that does not act out the scenario.

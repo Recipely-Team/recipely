@@ -450,7 +450,14 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     const registered = new Set();
     for (const file of files) {
       const src = fs.readFileSync(path.join(SRC, file), 'utf8');
-      for (const m of src.matchAll(/useAssistantAction\(\s*AssistantAction\.(\w+)/g)) {
+      // Two shapes of registration: the plain hook, and a conditional
+      // `register` for actions that only exist while something is on screen
+      // (the confirm/cancel pair a sheet owns).
+      const registrations = [
+        ...src.matchAll(/useAssistantAction\(\s*AssistantAction\.(\w+)/g),
+        ...src.matchAll(/\.register\(\s*AssistantAction\.(\w+)/g),
+      ];
+      for (const m of registrations) {
         const value = new RegExp(`^ {2}${m[1]}: '(\\w+)',`, 'm').exec(
           fs.readFileSync(vocabularyPath, 'utf8'),
         )?.[1];

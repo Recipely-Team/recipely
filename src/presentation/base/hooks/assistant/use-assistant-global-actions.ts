@@ -95,6 +95,18 @@ export const useAssistantGlobalActions = (): void => {
   );
 
   useAssistantAction(
+    AssistantAction.GoBack,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // The back gesture a thumb makes. `canGoBack` matters: popping an empty
+      // stack on web leaves the app entirely, which is not what "go back"
+      // means to anyone.
+      if (!router.canGoBack()) return { ok: false, error: 'nothing_behind' };
+      router.back();
+      return { ok: true };
+    }, []),
+  );
+
+  useAssistantAction(
     AssistantAction.Stop,
     useCallback(async (): Promise<AssistantActionResultType> => {
       await stopVoice();
