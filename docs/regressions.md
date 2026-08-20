@@ -1515,3 +1515,23 @@ being discarded. Four tests cover it, and all four fail without the fix.
 types and mappers all prove a value can travel; none of them proves anyone
 reads it. Where a union's variants are the feature, each one wants a test that
 asserts something happened — not merely that it type-checks.
+
+## "Stop" during a reconnect opened a session nobody could end
+
+Saying "stop" while the assistant was handing over to a fresh socket tore the
+session down — and then, a moment later, opened a new socket anyway. The
+microphone was already closed, so nothing was heard; the pill showed idle, so
+nothing offered to end it.
+
+*Why:* the reconnect awaits a mint and then a connect, and the user can speak
+during either. Both awaits returned into a world where the session they belonged
+to no longer existed, and neither checked.
+
+*Now:* every start and every teardown bumps an epoch, and the reconnect
+compares it after each await — returning if it changed, and closing the socket
+it just opened if the change happened during the connect.
+
+*The class:* **an await is a place the user can act.** Any async sequence that
+outlives a user-cancellable operation needs to re-check that it is still wanted
+after each suspension, not only before the first one — and the test for it has
+to interleave the cancel, which no test of the happy path ever does.

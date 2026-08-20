@@ -362,6 +362,24 @@ describe('assistant session store', () => {
       });
     });
 
+      // Saying "stop" during the handover used to open a fresh socket AFTER
+      // the microphone had been closed: a session nobody could hear, and one
+      // the pill showed as idle so nobody could end it either.
+      it('does not open a socket for a session the user already stopped', async () => {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        calls.connects = 0;
+
+        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: AssistantEventKind.Closed, expected: false });
+        await store.getState().stopVoice();
+        for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+
+        expect(calls.connects).toBe(0);
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+      });
+
     it('records what the session has cost so far', async () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');

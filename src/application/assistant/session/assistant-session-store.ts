@@ -78,6 +78,11 @@ export const configureAssistantSessionStore = (
   let resumptionHandle: string | null = null;
   let languageCode = CharConstants.empty;
   let expectingGoAway = false;
+  // Bumped by every start and every teardown, so a reconnect that was already
+  // in flight can tell whether the session it belongs to still exists. Saying
+  // "stop" during the handover otherwise opened a fresh socket AFTER the
+  // microphone had been closed — a session nobody could hear or end.
+  let epoch = ValueConstants.zero;
 
   return create<AssistantSessionStoreState>((set, get) => {
     const stopTimers = (): void => {
@@ -88,6 +93,7 @@ export const configureAssistantSessionStore = (
     };
 
     const teardown = async (status: AssistantSessionStoreState['status']): Promise<void> => {
+      epoch += ValueConstants.one;
       stopTimers();
       // A queue left holding a rejected promise would swallow every later call
       // silently; the session is over either way, so it starts clean.
@@ -126,7 +132,10 @@ export const configureAssistantSessionStore = (
      * session ends it here rather than silently continuing.
      */
     const reconnect = async (): Promise<void> => {
+      const startedAt = epoch;
       const grant = await tokens.mintSession(languageCode, resumptionHandle ?? undefined);
+      if (epoch !== startedAt) return;
+
       if (!grant.ok || grant.value.status === AssistantGrantStatus.Denied) {
         await teardown(AssistantStatus.Idle);
         return;
@@ -134,6 +143,12 @@ export const configureAssistantSessionStore = (
 
       set({ remainingSeconds: grant.value.remainingSeconds });
       const connected = await session.connect(grant.value.credentials);
+      // Checked again: the mint and the connect are both awaited, and the user
+      // can say "stop" during either.
+      if (epoch !== startedAt) {
+        session.close();
+        return;
+      }
       if (!connected.ok) await teardown(AssistantStatus.Idle);
     };
 
@@ -215,6 +230,7 @@ export const configureAssistantSessionStore = (
         languageCode = locale;
         resumptionHandle = null;
         expectingGoAway = false;
+        epoch += ValueConstants.one;
 
         const grant = await tokens.mintSession(locale);
         if (!grant.ok) {
