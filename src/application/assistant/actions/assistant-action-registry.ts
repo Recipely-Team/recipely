@@ -1,6 +1,6 @@
-import { AssistantAction, type AssistantActionType } from '@domain/assistant/assistant-action-type';
-import type { AssistantActionHandlerType } from '@domain/assistant/assistant-action-handler';
-import type { AssistantActionResultType } from '@domain/assistant/assistant-action-result';
+import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
+import type { AssistantActionHandlerType } from '@domain/assistant/actions/assistant-action-handler';
+import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CharConstants } from '@core/constants';
 
 /**

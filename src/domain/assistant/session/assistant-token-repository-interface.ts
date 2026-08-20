@@ -1,5 +1,5 @@
 import type { Failure } from '@core/failure/failure';
-import type { AssistantSessionGrantType } from '@domain/assistant/assistant-session-grant';
+import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
 import type { Result } from '@core/result/result';
 
 /**

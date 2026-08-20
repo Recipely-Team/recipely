@@ -1,16 +1,16 @@
-import { AssistantDenialReason } from '@domain/assistant/assistant-denial-reason';
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
-import { AssistantGrantStatus } from '@domain/assistant/assistant-grant-status';
-import { AssistantAction } from '@domain/assistant/assistant-action-type';
+import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
-import type { AssistantSessionInterface } from '@domain/assistant/assistant-session-interface';
-import type { AssistantTokenRepositoryInterface } from '@domain/assistant/assistant-token-repository-interface';
-import type { AudioPlayerInterface } from '@domain/assistant/audio-player-interface';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
+import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
+import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { ChatRole } from '@domain/drafts/chat-role';
-import type { MicrophoneInterface } from '@domain/assistant/microphone-interface';
+import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import { NetworkFailure } from '@core/failure';
 
 const CREDENTIALS = { token: 't', model: 'm', wsUrl: 'wss://x', expiresAt: 'later' };

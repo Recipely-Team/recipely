@@ -1,6 +1,6 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
-import type { AssistantSessionInterface } from '@domain/assistant/assistant-session-interface';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
+import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -8,7 +8,7 @@ import type { Failure } from '@core/failure/failure';
 import { float32ToPcm16Base64 } from '@infrastructure/assistant/live/pcm-codec';
 import { isString } from '@core/guards/type-guards';
 import type { LiveServerMessageDto } from '@infrastructure/assistant/live/dtos/live-server-message-dto';
-import type { LiveSessionCredentials } from '@domain/assistant/live-session-credentials';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import { LiveProtocol } from '@infrastructure/assistant/live/live-protocol';
 import { mapLiveServerMessage } from '@infrastructure/assistant/live/live-message-mapper';
 import { NetworkFailure } from '@core/failure/kinds/network-failure';

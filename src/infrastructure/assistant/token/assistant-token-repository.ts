@@ -1,8 +1,8 @@
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { AssistantHeartbeatResponseDto } from '@infrastructure/assistant/token/dtos/assistant-heartbeat-response-dto';
-import type { AssistantSessionGrantType } from '@domain/assistant/assistant-session-grant';
+import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
 import type { AssistantSessionResponseDto } from '@infrastructure/assistant/token/dtos/assistant-session-response-dto';
-import type { AssistantTokenRepositoryInterface } from '@domain/assistant/assistant-token-repository-interface';
+import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { HttpClient } from '@infrastructure/network/http/http-client';

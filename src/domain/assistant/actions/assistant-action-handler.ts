@@ -1,4 +1,4 @@
-import type { AssistantActionResultType } from '@domain/assistant/assistant-action-result';
+import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 
 /**
  * One action's implementation.

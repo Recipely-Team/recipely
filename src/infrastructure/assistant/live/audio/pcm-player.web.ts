@@ -1,5 +1,5 @@
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
-import type { AudioPlayerInterface } from '@domain/assistant/audio-player-interface';
+import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import type { Failure } from '@core/failure/failure';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';

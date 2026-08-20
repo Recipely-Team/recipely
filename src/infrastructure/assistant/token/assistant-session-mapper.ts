@@ -1,6 +1,6 @@
-import { AssistantDenialReason, type AssistantDenialReasonType } from '@domain/assistant/assistant-denial-reason';
-import { AssistantGrantStatus } from '@domain/assistant/assistant-grant-status';
-import type { AssistantSessionGrantType } from '@domain/assistant/assistant-session-grant';
+import { AssistantDenialReason, type AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
+import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
+import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
 import type { AssistantSessionResponseDto } from '@infrastructure/assistant/token/dtos/assistant-session-response-dto';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import { CharConstants, ValueConstants } from '@core/constants';

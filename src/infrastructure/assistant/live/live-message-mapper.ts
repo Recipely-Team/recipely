@@ -1,5 +1,5 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { LiveServerMessageDto } from '@infrastructure/assistant/live/dtos/live-server-message-dto';

@@ -1,9 +1,9 @@
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { AssistantSessionInterface } from '@domain/assistant/assistant-session-interface';
-import type { AssistantTokenRepositoryInterface } from '@domain/assistant/assistant-token-repository-interface';
-import type { AudioPlayerInterface } from '@domain/assistant/audio-player-interface';
+import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
+import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
-import type { MicrophoneInterface } from '@domain/assistant/microphone-interface';
+import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';

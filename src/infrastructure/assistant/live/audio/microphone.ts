@@ -1,7 +1,7 @@
 import { AudioManager, AudioRecorder } from 'react-native-audio-api';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Failure } from '@core/failure/failure';
-import type { MicrophoneInterface } from '@domain/assistant/microphone-interface';
+import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { ValidationFailure } from '@core/failure/kinds/validation-failure';

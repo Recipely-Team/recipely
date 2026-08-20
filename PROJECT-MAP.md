@@ -26,7 +26,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `ads/` _(1)_
-- `assistant/` _(13)_
+- `assistant/` — actions, audio, session _(13)_
 - `audio/` _(1)_
 - `auth/` _(7)_
 - `comments/` _(4)_
@@ -147,4 +147,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 431913767c19d800 -->
+<!-- fingerprint: dae8ef342c2315bb -->

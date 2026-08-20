@@ -1,4 +1,4 @@
-import type { AssistantDenialReasonType } from '@domain/assistant/assistant-denial-reason';
+import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import type { Failure } from '@core/failure';

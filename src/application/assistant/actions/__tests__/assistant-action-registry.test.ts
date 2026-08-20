@@ -1,4 +1,4 @@
-import { AssistantAction } from '@domain/assistant/assistant-action-type';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 
 describe('AssistantActionRegistry', () => {

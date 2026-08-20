@@ -1,4 +1,4 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import type { ChatRole } from '@domain/drafts/chat-role';
 
 /**

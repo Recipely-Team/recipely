@@ -1,17 +1,17 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
-import { AssistantGrantStatus } from '@domain/assistant/assistant-grant-status';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
-import type { AssistantSessionInterface } from '@domain/assistant/assistant-session-interface';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
+import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
-import type { AssistantTokenRepositoryInterface } from '@domain/assistant/assistant-token-repository-interface';
-import type { AudioPlayerInterface } from '@domain/assistant/audio-player-interface';
+import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
+import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import type { BoundStore } from '@application/store/bound-store';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { create } from 'zustand';
-import type { MicrophoneInterface } from '@domain/assistant/microphone-interface';
+import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 
 interface AssistantSessionStoreDeps {
   session: AssistantSessionInterface;

@@ -1,6 +1,6 @@
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { Failure } from '@core/failure/failure';
-import type { LiveSessionCredentials } from '@domain/assistant/live-session-credentials';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { Result } from '@core/result/result';
 
 /**

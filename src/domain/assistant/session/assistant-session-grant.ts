@@ -1,6 +1,6 @@
-import type { AssistantDenialReasonType } from '@domain/assistant/assistant-denial-reason';
-import type { AssistantGrantStatus } from '@domain/assistant/assistant-grant-status';
-import type { LiveSessionCredentials } from '@domain/assistant/live-session-credentials';
+import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
+import type { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 
 /**
  * The server's answer to "may I speak?", as a union rather than a bag of

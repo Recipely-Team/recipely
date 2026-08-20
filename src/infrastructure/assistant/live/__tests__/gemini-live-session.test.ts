@@ -1,7 +1,7 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
-import type { AssistantSessionEventType } from '@domain/assistant/assistant-session-event';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import { GeminiLiveSession } from '@infrastructure/assistant/live/gemini-live-session';
-import type { LiveSessionCredentials } from '@domain/assistant/live-session-credentials';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 
 /**
  * A WebSocket with the wire replaced by test control. Only the four handlers

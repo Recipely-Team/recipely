@@ -1,4 +1,4 @@
-import { AssistantEventKind } from '@domain/assistant/assistant-event-kind';
+import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { ChatRole } from '@domain/drafts/chat-role';
 import type { LiveServerMessageDto } from '@infrastructure/assistant/live/dtos/live-server-message-dto';
 import { mapLiveServerMessage } from '@infrastructure/assistant/live/live-message-mapper';
