@@ -14,6 +14,7 @@ import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
+import { formatRating } from '@presentation/base/utils/format-rating';
 
 export interface RecipeOverviewProps {
   recipe: RecipeEntity;
@@ -58,7 +59,7 @@ export const RecipeOverview = ({
           <View style={styles.captionItem}>
             <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
             <ThemedText style={[styles.captionRating, { color: colors.text }]}>
-              {recipe.rating.toFixed(1)}
+              {formatRating(recipe.rating)}
             </ThemedText>
           </View>
         ) : null}

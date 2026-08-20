@@ -74,7 +74,7 @@ export const CuisineStrip = ({ selectedCuisines, onToggle, gutter = true }: Cuis
         <ThemedText
           variant="caption"
           style={[styles.label, { color: active ? colors.primary : colors.textMuted }]}
-          numberOfLines={1}
+          numberOfLines={ValueConstants.one}
         >
           {name}
         </ThemedText>

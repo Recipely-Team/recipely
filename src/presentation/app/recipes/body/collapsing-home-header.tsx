@@ -15,9 +15,9 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, layoutSizes, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { HomeHeaderAnimation } from '@presentation/app/recipes/model/home-header-animation';
 
 /** The title is half-way shrunk at the midpoint of the scroll, so the motion reads as continuous. */
-const TITLE_SHRINK_MIDPOINT = 0.5;
 
 export interface CollapsingHomeHeaderProps {
   /** Live vertical scroll offset of the recipe list, in px. */
@@ -69,29 +69,34 @@ export const CollapsingHomeHeader = ({
 
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
-      ? 1
-      : interpolate(scrollY.value, [ValueConstants.zero, layoutSizes.homeTitleShrink], [1, 0.82], Extrapolation.CLAMP);
+      ? ValueConstants.one
+      : interpolate(
+          scrollY.value,
+          [ValueConstants.zero, layoutSizes.homeTitleShrink],
+          HomeHeaderAnimation.titleScale,
+          Extrapolation.CLAMP,
+        );
     return { transform: [{ scale }] };
   });
 
   const eyebrowStyle = useAnimatedStyle(() => ({
     opacity: reduceMotion
-      ? 1
+      ? ValueConstants.one
       : interpolate(
           scrollY.value,
-          [ValueConstants.zero, layoutSizes.homeTitleShrink * 0.5],
-          [1, ValueConstants.zero],
+          [ValueConstants.zero, layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint],
+          HomeHeaderAnimation.eyebrowOpacity,
           Extrapolation.CLAMP,
         ),
   }));
 
   const searchStyle = useAnimatedStyle(() => ({
     opacity: reduceMotion
-      ? 1
+      ? ValueConstants.one
       : interpolate(
           scrollY.value,
-          [layoutSizes.homeTitleShrink * TITLE_SHRINK_MIDPOINT, layoutSizes.homeTitleShrink],
-          [1, 0.55],
+          [layoutSizes.homeTitleShrink * HomeHeaderAnimation.midpoint, layoutSizes.homeTitleShrink],
+          HomeHeaderAnimation.searchOpacity,
           Extrapolation.CLAMP,
         ),
   }));

@@ -50,10 +50,10 @@ export const RecipeAuthorCard = ({
         >
           {upperCase(eyebrow)}
         </ThemedText>
-        <ThemedText variant="body" style={styles.name} numberOfLines={1}>
+        <ThemedText variant="body" style={styles.name} numberOfLines={ValueConstants.one}>
           {authorName}
         </ThemedText>
-        <ThemedText variant="caption" muted numberOfLines={1}>
+        <ThemedText variant="caption" muted numberOfLines={ValueConstants.one}>
           {caption}
         </ThemedText>
       </View>

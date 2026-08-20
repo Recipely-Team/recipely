@@ -11,7 +11,7 @@ import { ValueConstants } from '@core/constants';
 const DEFAULT_VALUE: LayoutContextValue = {
   width: ValueConstants.zero,
   height: ValueConstants.zero,
-  aspectRatio: 1,
+  aspectRatio: ValueConstants.one,
   orientation: OrientationType.Portrait,
   breakpoint: 'mobile',
   isWebShell: false,

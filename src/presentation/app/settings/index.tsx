@@ -18,7 +18,15 @@ import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  iconSizes,
+  controlSizes,
+  avatarSizes,
+} from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
@@ -68,7 +76,7 @@ export const SettingsScreen = (): React.JSX.Element => {
       </View>
       <ScreenContainer scrollable padded={false}>
         <View style={styles.profileSection}>
-          <AvatarImage uri={photoUrl} name={displayName} size={80} />
+          <AvatarImage uri={photoUrl} name={displayName} size={avatarSizes.xl} />
           <ThemedText variant="title" style={styles.displayName}>
             {displayName}
           </ThemedText>
@@ -81,7 +89,7 @@ export const SettingsScreen = (): React.JSX.Element => {
         <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>
           <View style={styles.stackedRow}>
             <View style={styles.stackedHeader}>
-              <Ionicons name="contrast-outline" size={20} color={colors.primary} />
+              <Ionicons name="contrast-outline" size={iconSizes.xl} color={colors.primary} />
               <ThemedText variant="body" style={styles.stackedLabel}>
                 {t().settings.mode}
               </ThemedText>

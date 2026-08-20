@@ -13,6 +13,7 @@ import {
   decorSizes,
   borderWidths,
   opacities,
+  iconSizes,
   BrandColors,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
@@ -70,7 +71,7 @@ export const WebHeaderActions = ({
             },
           ]}
         >
-          <Ionicons name="sparkles" size={15} color={colors.primary} />
+          <Ionicons name="sparkles" size={iconSizes.md} color={colors.primary} />
           <ThemedText style={[styles.createLabel, { color: colors.text }]}>
             {discoverLabel}
           </ThemedText>
@@ -90,7 +91,7 @@ export const WebHeaderActions = ({
           },
         ]}
       >
-        <Ionicons name="add" size={16} color={colors.primaryText} />
+        <Ionicons name="add" size={iconSizes.md} color={colors.primaryText} />
         <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
           {createLabel}
         </ThemedText>
@@ -111,7 +112,7 @@ export const WebHeaderActions = ({
       >
         <Ionicons
           name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
-          size={18}
+          size={iconSizes.lg}
           color={colors.text}
         />
         {unreadCount > ValueConstants.zero ? (

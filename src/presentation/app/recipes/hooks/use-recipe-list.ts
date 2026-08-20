@@ -22,7 +22,7 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
 import { t, useLocale } from '@presentation/i18n';
-import { spacing, layoutSizes } from '@presentation/base/theme';
+import { spacing, layoutSizes, durations } from '@presentation/base/theme';
 import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-width';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
@@ -32,7 +32,7 @@ import { RoutePaths } from '@presentation/base/constants';
 const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
 /** Snap/timing config for the mobile collapsing header band (Material small-top-app-bar feel). */
-const HEADER_TIMING = { duration: 220, easing: Easing.out(Easing.cubic) } as const;
+const HEADER_TIMING = { duration: durations.headerCollapse, easing: Easing.out(Easing.cubic) } as const;
 /** Cumulative upward scroll (px) before the band is revealed again. */
 const REVEAL_THRESHOLD = spacing.sm;
 

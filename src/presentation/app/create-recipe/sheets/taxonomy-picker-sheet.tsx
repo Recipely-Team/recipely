@@ -114,7 +114,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
               <ThemedText style={styles.optionEmoji}>{item.emoji}</ThemedText>
               <ThemedText
                 variant="caption"
-                numberOfLines={1}
+                numberOfLines={ValueConstants.one}
                 style={[styles.optionLabel, { color: active ? colors.primary : colors.text }]}
               >
                 {item.name}

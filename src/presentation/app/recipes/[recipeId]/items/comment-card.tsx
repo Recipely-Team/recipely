@@ -92,7 +92,7 @@ export const CommentCard = ({
           size={AVATAR_SIZE}
         />
         <View style={styles.headerText}>
-          <ThemedText variant="body" style={styles.author} numberOfLines={1}>
+          <ThemedText variant="body" style={styles.author} numberOfLines={ValueConstants.one}>
             {authorDisplayName}
           </ThemedText>
           <ThemedText variant="caption" muted>

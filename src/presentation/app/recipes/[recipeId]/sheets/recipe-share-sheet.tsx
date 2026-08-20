@@ -110,13 +110,13 @@ export const RecipeShareSheet = ({
         <View style={styles.previewText}>
           <ThemedText
             variant="body"
-            numberOfLines={1}
+            numberOfLines={ValueConstants.one}
             style={styles.previewName}
           >
             {recipeName}
           </ThemedText>
           {cuisine !== undefined ? (
-            <ThemedText variant="caption" muted numberOfLines={1}>
+            <ThemedText variant="caption" muted numberOfLines={ValueConstants.one}>
               {cuisine}
             </ThemedText>
           ) : null}
@@ -154,7 +154,7 @@ export const RecipeShareSheet = ({
           ]}
         >
           <Ionicons name="link-outline" size={iconSizes.md} color={colors.textMuted} />
-          <ThemedText variant="caption" muted numberOfLines={1} style={styles.linkText}>
+          <ThemedText variant="caption" muted numberOfLines={ValueConstants.one} style={styles.linkText}>
             {url}
           </ThemedText>
         </View>

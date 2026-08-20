@@ -89,13 +89,13 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       <View style={[styles.iconChip, { backgroundColor: accent + ICON_CHIP_ALPHA }]}>
         <Ionicons name={SEVERITY_ICON[item.severity]} size={iconSizes.md} color={accent} />
       </View>
-      <Text numberOfLines={2} style={[styles.message, { color: TOAST_FOREGROUND }]}>
+      <Text numberOfLines={ValueConstants.two} style={[styles.message, { color: TOAST_FOREGROUND }]}>
         {item.message}
       </Text>
       {item.actionLabel !== undefined ? (
         <Pressable
           onPress={handleAction}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           accessibilityRole="button"
           accessibilityLabel={item.actionLabel}
         >
@@ -104,7 +104,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       ) : (
         <Pressable
           onPress={dismiss}
-          hitSlop={8}
+          hitSlop={spacing.sm}
           accessibilityRole="button"
           accessibilityLabel={t().errors.dismiss}
         >

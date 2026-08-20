@@ -120,7 +120,7 @@ export const FilterSortFab = ({
         <Animated.View style={[styles.labelWrapper, labelStyle]}>
           <ThemedText
             variant="caption"
-            numberOfLines={1}
+            numberOfLines={ValueConstants.one}
             onLayout={onMeasureLabel}
             style={[styles.label, { color: colors.primaryText }]}
           >
@@ -131,7 +131,7 @@ export const FilterSortFab = ({
 
       {activeCount > ValueConstants.zero ? (
         <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-          <ThemedText style={styles.badgeText} numberOfLines={1}>
+          <ThemedText style={styles.badgeText} numberOfLines={ValueConstants.one}>
             {badgeText}
           </ThemedText>
         </View>

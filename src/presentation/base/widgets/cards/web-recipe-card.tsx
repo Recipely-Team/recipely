@@ -8,13 +8,23 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, controlSizes } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  lineHeights,
+  lineHeightFor,
+  iconSizes,
+  controlSizes,
+  durations,
+  aspectRatios,
+} from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
-
-const HOVER_LIFT = 1.02;
-const HOVER_DURATION = 160;
+import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
+import { formatRating } from '@presentation/base/utils/format-rating';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -47,10 +57,10 @@ export const WebRecipeCard = ({
     isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(HOVER_LIFT, { duration: HOVER_DURATION });
+            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
           },
           onMouseLeave: () => {
-            scale.value = withTiming(1, { duration: HOVER_DURATION });
+            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
           },
         }
       : {};
@@ -90,7 +100,7 @@ export const WebRecipeCard = ({
           </View>
 
           <View style={styles.body}>
-            <ThemedText variant="subtitle" numberOfLines={2} style={styles.title}>
+            <ThemedText variant="subtitle" numberOfLines={ValueConstants.two} style={styles.title}>
               {recipe.name}
             </ThemedText>
             <View style={styles.metaRow}>
@@ -112,7 +122,7 @@ export const WebRecipeCard = ({
               <View style={styles.footerItem}>
                 <MaterialCommunityIcons name="star" size={iconSizes.md} color={colors.starFilled} />
                 <ThemedText variant="caption" style={{ color: colors.text }}>
-                  {recipe.rating.toFixed(1)}
+                  {formatRating(recipe.rating)}
                 </ThemedText>
               </View>
               <View style={styles.footerItem}>
@@ -157,7 +167,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   imageWrap: {
-    aspectRatio: 4 / 3,
+    aspectRatio: aspectRatios.cardCoverTall,
     position: 'relative',
   },
   image: {

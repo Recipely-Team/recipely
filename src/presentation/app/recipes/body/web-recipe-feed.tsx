@@ -105,7 +105,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
 
 const styles = StyleSheet.create({
   list: {
-    flex: 1,
+    flex: ValueConstants.one,
   },
   // ONE content column for the whole feed. Every block inside — hero, rail,
   // grid — sits in it and shares its edges, which is the thing that stops the

@@ -8,13 +8,24 @@ import Animated, {
 } from 'react-native-reanimated';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, mediaSizes, opacities } from '@presentation/base/theme';
+import {
+  spacing,
+  radii,
+  fontSizes,
+  fontWeights,
+  mediaSizes,
+  opacities,
+  iconSizes,
+  durations,
+} from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ValueConstants } from '@core/constants';
+import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
+import { formatRating } from '@presentation/base/utils/format-rating';
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
@@ -44,9 +55,9 @@ export const RecipeCard = ({
   onPress, onLike, hoverEffect = false,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const scale = useSharedValue(1);
-  const opacity = useSharedValue(1);
-  const heartScale = useSharedValue(1);
+  const scale = useSharedValue(ValueConstants.one);
+  const opacity = useSharedValue(ValueConstants.one);
+  const heartScale = useSharedValue(ValueConstants.one);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -58,10 +69,10 @@ export const RecipeCard = ({
     hoverEffect && isWeb()
       ? {
           onMouseEnter: () => {
-            scale.value = withTiming(1.02, { duration: 160 });
+            scale.value = withTiming(CARD_HOVER_LIFT, { duration: durations.hover });
           },
           onMouseLeave: () => {
-            scale.value = withTiming(1, { duration: 160 });
+            scale.value = withTiming(ValueConstants.one, { duration: durations.hover });
           },
         }
       : {};
@@ -118,7 +129,7 @@ export const RecipeCard = ({
         </View>
       </View>
       <View style={styles.info}>
-        <ThemedText variant="subtitle" numberOfLines={1}>{name}</ThemedText>
+        <ThemedText variant="subtitle" numberOfLines={ValueConstants.one}>{name}</ThemedText>
         <View style={styles.bottomRow}>
           <View style={styles.tagsRow}>
             {tags.length > ValueConstants.zero
@@ -139,13 +150,13 @@ export const RecipeCard = ({
                   <MaterialCommunityIcons
                     key={i}
                     name={iconName}
-                    size={14}
+                    size={iconSizes.sm}
                     color={i < fullStars || (i === fullStars && hasHalf) ? colors.starFilled : colors.starEmpty}
                   />
                 );
               })}
               <ThemedText variant="caption" muted style={styles.ratingText}>
-                {rating.toFixed(1)}
+                {formatRating(rating)}
               </ThemedText>
             </View>
             {onLike !== undefined ? (
@@ -153,13 +164,13 @@ export const RecipeCard = ({
                 onPress={handleLike}
                 accessibilityRole="button"
                 accessibilityLabel={likedByMe ? t().recipes.unlike : t().recipes.like}
-                hitSlop={8}
+                hitSlop={spacing.sm}
                 style={styles.likeBtn}
               >
                 <Animated.View style={[styles.likeInner, heartStyle]}>
                   <MaterialCommunityIcons
                     name={likedByMe ? 'heart' : 'heart-outline'}
-                    size={16}
+                    size={iconSizes.md}
                     color={likedByMe ? colors.likeActive : colors.textMuted}
                   />
                   {likeCount > ValueConstants.zero ? (

@@ -36,7 +36,7 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
           >
             <ThemedText
               variant="caption"
-              numberOfLines={1}
+              numberOfLines={ValueConstants.one}
               style={[
                 styles.segmentLabel,
                 { color: active ? colors.primaryText : colors.textMuted },

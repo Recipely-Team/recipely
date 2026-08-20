@@ -18,10 +18,10 @@ export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Eleme
       <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
         <Ionicons name={icon} size={iconSizes.lg} color={colors.primary} />
       </View>
-      <ThemedText style={[styles.statValue, { color: colors.text }]} numberOfLines={1}>
+      <ThemedText style={[styles.statValue, { color: colors.text }]} numberOfLines={ValueConstants.one}>
         {value}
       </ThemedText>
-      <ThemedText variant="label" muted style={styles.statLabel} numberOfLines={1}>
+      <ThemedText variant="label" muted style={styles.statLabel} numberOfLines={ValueConstants.one}>
         {label}
       </ThemedText>
     </View>
