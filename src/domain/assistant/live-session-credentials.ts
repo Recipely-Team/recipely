@@ -9,14 +9,15 @@
  *   A model that appears in `ListModels` is not necessarily callable, and this
  *   app has already had a published id answer `NOT_FOUND`; deciding server-side
  *   means a model change ships without an app release.
- * - **`budgetRemainingSec` is the server's answer, not a local tally.** The
- *   daily allowance is enforced where it cannot be edited; zero means the
- *   assistant falls back to text and never opens a socket at all.
+ * - **The budget is not in here.** Whether a session may start at all is
+ *   answered by `AssistantSessionGrantType`; these are the credentials for one
+ *   that already may. Carrying a remaining-seconds field alongside a token
+ *   would have permitted the state "here is a credential, and you have none
+ *   left", which the server never means.
  */
 export interface LiveSessionCredentials {
   readonly token: string;
   readonly model: string;
   readonly wsUrl: string;
   readonly expiresAt: string;
-  readonly budgetRemainingSec: number;
 }

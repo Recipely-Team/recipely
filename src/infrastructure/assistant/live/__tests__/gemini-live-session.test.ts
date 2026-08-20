@@ -66,7 +66,6 @@ describe('GeminiLiveSession', () => {
     model: 'models/gemini-flash-latest',
     wsUrl: 'wss://example.test/live',
     expiresAt: '2026-08-20T00:00:00Z',
-    budgetRemainingSec: 600,
   };
 
   // Helper kept explicit rather than clever: every test needs a connected
