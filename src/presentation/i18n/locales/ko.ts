@@ -887,6 +887,8 @@ export const ko: Translations = {
     unavailable: "음성 모드를 지금 사용할 수 없어요. 계속 입력할 수 있어요.",
     busyEverywhere: "음성 모드가 지금 혼잡해요. 계속 입력할 수 있어요.",
     minutesLeft: "{{minutes}}분 남음",
+    deleteDraftTitle: "이 초안을 삭제할까요?",
+    deleteDraftMessage: "작성 중이던 내용이 사라지며 되돌릴 수 없어요.",
     publishTitle: "이 레시피를 공개할까요?",
     publishMessage: "내 이름으로 공개되어 누구나 볼 수 있어요.",
     publishConfirm: "공개",

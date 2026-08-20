@@ -16,7 +16,10 @@ import { t } from '@presentation/i18n';
 import { useImportRecipe } from '@presentation/app/import-recipe/hooks/use-import-recipe';
 import { ImportPasteView } from '@presentation/app/import-recipe/body/import-paste-view';
 import { ImportQueueView } from '@presentation/app/import-recipe/body/import-queue-view';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { useCallback } from 'react';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
 
 /**
  * The Instagram import, in its two states.
@@ -34,6 +37,30 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ importUrl?: string }>();
   const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
   const vm = useImportRecipe(importUrl);
+
+  // Importing takes a link, and a link is the one thing nobody dictates out
+  // loud — it arrives from a share sheet. So the assistant's job here is to
+  // submit what was shared and to open the draft when it is ready, not to
+  // transcribe a URL.
+  useAssistantAction(
+    AssistantAction.ImportRecipe,
+    useCallback(
+      async (arg?: string) => {
+        const url = arg ?? importUrl ?? CharConstants.empty;
+        if (url === CharConstants.empty) return { ok: false, error: 'no_link' };
+        vm.onSubmitLink(url);
+        return { ok: true };
+      },
+      [vm, importUrl],
+    ),
+  );
+  useAssistantAction(
+    AssistantAction.OpenDraft,
+    useCallback(async () => {
+      vm.onOpenDraft();
+      return { ok: true };
+    }, [vm]),
+  );
   const copy = t().importRecipe;
 
   useReportFailure(vm.failure, 'ImportRecipeScreen');

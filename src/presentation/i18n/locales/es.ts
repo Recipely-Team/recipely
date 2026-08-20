@@ -891,6 +891,8 @@ export const es = {
     unavailable: "La voz no está disponible ahora mismo. Puedes seguir escribiendo.",
     busyEverywhere: "La voz está ocupada ahora mismo. Puedes seguir escribiendo.",
     minutesLeft: "Quedan {{minutes}} min",
+    deleteDraftTitle: "¿Eliminar este borrador?",
+    deleteDraftMessage: "El trabajo sin terminar se pierde y no se puede deshacer.",
     publishTitle: "¿Publicar esta receta?",
     publishMessage: "Saldrá con tu nombre y todos podrán verla.",
     publishConfirm: "Publicar",

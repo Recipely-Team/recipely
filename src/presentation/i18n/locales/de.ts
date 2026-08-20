@@ -891,6 +891,8 @@ export const de = {
     unavailable: "Der Sprachmodus ist gerade nicht verfügbar. Du kannst weiter tippen.",
     busyEverywhere: "Der Sprachmodus ist gerade ausgelastet. Du kannst weiter tippen.",
     minutesLeft: "Noch {{minutes}} Min.",
+    deleteDraftTitle: "Diesen Entwurf löschen?",
+    deleteDraftMessage: "Unfertige Arbeit geht verloren — das lässt sich nicht rückgängig machen.",
     publishTitle: "Rezept veröffentlichen?",
     publishMessage: "Es erscheint unter deinem Namen und ist für alle sichtbar.",
     publishConfirm: "Veröffentlichen",

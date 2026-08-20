@@ -891,6 +891,8 @@ export const id = {
     unavailable: "Mode suara sedang tidak tersedia. Kamu masih bisa mengetik.",
     busyEverywhere: "Mode suara sedang sibuk. Kamu masih bisa mengetik.",
     minutesLeft: "Sisa {{minutes}} mnt",
+    deleteDraftTitle: "Hapus draf ini?",
+    deleteDraftMessage: "Pekerjaan yang belum selesai akan hilang dan tidak bisa dikembalikan.",
     publishTitle: "Terbitkan resep ini?",
     publishMessage: "Akan tayang atas namamu dan bisa dilihat semua orang.",
     publishConfirm: "Terbitkan",

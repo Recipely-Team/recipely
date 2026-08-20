@@ -891,6 +891,8 @@ export const fr = {
     unavailable: "Le mode vocal n'est pas disponible pour le moment. Tu peux continuer à écrire.",
     busyEverywhere: "La voix est occupée pour le moment. Tu peux continuer à écrire.",
     minutesLeft: "{{minutes}} min restantes",
+    deleteDraftTitle: "Supprimer ce brouillon ?",
+    deleteDraftMessage: "Le travail inachevé sera perdu — action irréversible.",
     publishTitle: "Publier cette recette ?",
     publishMessage: "Elle paraîtra à ton nom et sera visible par tous.",
     publishConfirm: "Publier",

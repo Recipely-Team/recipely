@@ -4,7 +4,10 @@ import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
+import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -116,8 +119,42 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     if (!result.ok) showErrorToast(result.failure);
   };
 
+  // Deleting a draft is unrecoverable work, so the assistant asks first — and
+  // the sheet takes a spoken answer, because the whole point is hands-free.
+  const [draftPendingDelete, setDraftPendingDelete] = useState<string | null>(null);
+  useAssistantMyRecipesActions({
+    tab,
+    items,
+    drafts,
+    onSwitchTab: setTab,
+    onOpenRecipe: openRecipe,
+    onOpenDraft: openDraft,
+    onRequestDeleteDraft: setDraftPendingDelete,
+    onRefresh,
+  });
+  useAssistantConfirmation(
+    draftPendingDelete !== null,
+    () => {
+      if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
+      setDraftPendingDelete(null);
+    },
+    () => setDraftPendingDelete(null),
+  );
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <ConfirmSheet
+        visible={draftPendingDelete !== null}
+        title={t().assistant.deleteDraftTitle}
+        message={t().assistant.deleteDraftMessage}
+        confirmLabel={t().myRecipes.deleteRecipe}
+        destructive
+        onConfirm={() => {
+          if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
+          setDraftPendingDelete(null);
+        }}
+        onClose={() => setDraftPendingDelete(null)}
+      />
       <ScreenContainer scrollable={false} padded={false}>
         <ResponsiveContainer route="myRecipes" gutter={false} fill>
           {isWebShell ? (

@@ -901,6 +901,8 @@ export const en = {
     unavailable: "Voice is not available right now. You can keep typing.",
     busyEverywhere: "Voice is busy right now. You can keep typing.",
     minutesLeft: "{{minutes}} min left",
+    deleteDraftTitle: "Delete this draft?",
+    deleteDraftMessage: "Unfinished work is lost — this cannot be undone.",
     publishTitle: "Publish this recipe?",
     publishMessage: "It goes out under your name and everyone can see it.",
     publishConfirm: "Publish",

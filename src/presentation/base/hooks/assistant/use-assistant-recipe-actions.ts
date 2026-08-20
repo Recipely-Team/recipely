@@ -1,3 +1,4 @@
+import { rowAt } from '@presentation/base/hooks/assistant/row-at';
 import { useCallback, useRef } from 'react';
 import { StepCursor } from '@presentation/base/hooks/assistant/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -173,7 +174,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ToggleIngredient,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = indexOfRow(ingredients, arg);
+        const index = rowAt(ingredients, arg);
         if (index === null) return { ok: false, error: 'not_found' };
         onToggleIngredient(index);
         return {
@@ -192,7 +193,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ToggleStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = indexOfRow(instructions, arg);
+        const index = rowAt(instructions, arg);
         if (index === null) return { ok: false, error: 'not_found' };
         onToggleStep(index);
         return { ok: true, n: { step: instructions.length } };
@@ -248,24 +249,3 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     }, [isOwner, onOpenDelete, recipeName]),
   );
 };
-
-/**
- * Finds a row by what the cook called it, or by a 1-based position.
- *
- * Both, because both are natural: "check off the yoghurt" and "check off the
- * second one" are the same request phrased differently, and the model passes
- * through whichever the user said.
- */
-function indexOfRow(rows: readonly string[], arg: string | undefined): number | null {
-  if (arg === undefined || arg === CharConstants.empty) return null;
-
-  const position = Number.parseInt(arg, 10);
-  if (Number.isFinite(position) && String(position) === arg.trim()) {
-    const index = position - ValueConstants.one;
-    return index >= ValueConstants.zero && index < rows.length ? index : null;
-  }
-
-  const needle = arg.toLocaleLowerCase();
-  const found = rows.findIndex((row) => row.toLocaleLowerCase().includes(needle));
-  return found === ValueConstants.minusOne ? null : found;
-}

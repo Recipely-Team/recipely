@@ -891,6 +891,8 @@ export const it = {
     unavailable: "La modalità vocale non è disponibile al momento. Puoi continuare a scrivere.",
     busyEverywhere: "La voce è occupata in questo momento. Puoi continuare a scrivere.",
     minutesLeft: "{{minutes}} min rimasti",
+    deleteDraftTitle: "Eliminare questa bozza?",
+    deleteDraftMessage: "Il lavoro non finito va perso e non è recuperabile.",
     publishTitle: "Pubblicare questa ricetta?",
     publishMessage: "Uscirà a tuo nome e sarà visibile a tutti.",
     publishConfirm: "Pubblica",

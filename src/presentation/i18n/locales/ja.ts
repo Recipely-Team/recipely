@@ -891,6 +891,8 @@ export const ja = {
     unavailable: "音声モードは現在利用できません。入力は続けられます。",
     busyEverywhere: "音声モードは現在混雑しています。入力は続けられます。",
     minutesLeft: "残り{{minutes}}分",
+    deleteDraftTitle: "この下書きを削除しますか？",
+    deleteDraftMessage: "未完成の内容は失われ、元に戻せません。",
     publishTitle: "このレシピを公開しますか？",
     publishMessage: "あなたの名前で公開され、誰でも見られます。",
     publishConfirm: "公開",

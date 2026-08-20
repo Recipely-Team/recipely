@@ -891,6 +891,8 @@ export const ar = {
     unavailable: "الوضع الصوتي غير متاح حاليًا. يمكنك متابعة الكتابة.",
     busyEverywhere: "الوضع الصوتي مشغول الآن. يمكنك متابعة الكتابة.",
     minutesLeft: "بقيت {{minutes}} دقيقة",
+    deleteDraftTitle: "هل تريد حذف هذه المسودة؟",
+    deleteDraftMessage: "سيُفقد العمل غير المكتمل ولا يمكن التراجع.",
     publishTitle: "هل تريد نشر هذه الوصفة؟",
     publishMessage: "ستُنشر باسمك ويمكن للجميع رؤيتها.",
     publishConfirm: "نشر",
