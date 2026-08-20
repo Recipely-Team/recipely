@@ -67,6 +67,118 @@ mevcut üretim hattı yazar, modele tek satır özet döner.
 - **Free tier'da içerik Google tarafından ürün geliştirmede kullanılır.** Gizlilik
   politikasına eklenmesi ve ilk kullanımda sesli mod için açık onay alınması gerekiyor.
 
+## Faz 0 bulguları (2026-08-20) — planın düzeltmeleri
+
+Aşağıdakiler kod yazılırken ve **canlı API'ye karşı ölçülerek** doğrulandı; plan
+metninin geri kalanı bu bölüme göre okunmalı.
+
+### Canlı ölçüm — uçtan uca çalışan akış (2026-08-20)
+
+Gerçek konuşma (macOS `say` ile üretilmiş TR ses) → 16k PCM → ephemeral token ile
+constrained WS → transkripsiyon → `runAction` tool call → tool sonucu → asistanın
+sesli cevabı. Ölçülen:
+
+| | değer |
+|---|---|
+| Duyduğu | "Elimde tavuk ve yoğurt var, bana bir tarif oluştur." |
+| Tool call | `runAction({action:'generateRecipe', arg:'chicken, yogurt'})`, 5.5 sn |
+| Söylediği | "Harika bir tarif buldum! Ekranına yansıtıyorum." — tarifi okumadı |
+| Toplam token | **957** (prompt 868 / cevap 89) |
+| Ses in | 3.7 sn → 180 token (~49 tok/sn) |
+| Ses out | 2.7 sn → 69 token (~26 tok/sn) |
+| Kesme | çalışıyor, 4 modelde de `interrupted` geldi |
+| Resumption | handle geliyor |
+
+Planın hedefi "30 sn'lik tarif oluştur akışı ≤ 3k token" idi — **957 ölçüldü**, hedefin
+üçte biri. Ses *girişi* plandaki ~28 tok/sn tahmininden pahalı (~49), çıkış tahmine
+uygun (~26). Bütçe modeli ayakta.
+
+**Model seçimi: `gemini-3.1-flash-live-preview`.** Ölçülen dört modelden tek "temiz"
+olanı. `gemini-2.5-flash-native-audio-*` ailesi düşüncesini **metin part'ı olarak
+sızdırıyor** ("**Formulating a Recipe**…") ve `thoughtsTokenCount` ~100 token ekliyor;
+`preview-09-2025`'in prompt'u 1211 token (3.1'de 247). 3.1 ayrıca resumption handle
+veren tek modeldi.
+
+### Ephemeral token — plandaki her ayrıntı yanlıştı, ama sonuç çalışıyor
+
+Plan `authTokens.create` + `liveConnectConstraints` + `v1beta` diyordu. Doğrusu:
+
+- Uç nokta **`auth_tokens`** (snake_case). `authTokens` **404** döndürüyor.
+- Kısıt alanı **`bidiGenerateContentSetup`**. `liveConnectConstraints` diye bir alan
+  yok — API "Cannot find field" diyor.
+- Bağlantı **`v1alpha`** + **`BidiGenerateContentConstrained`** (farklı RPC metodu!) +
+  **`access_token=<tam auth_tokens/... adı>`**. Normal `BidiGenerateContent`'e
+  `key=` veya `access_token=` ile bağlanmak "API key not valid" / "unregistered
+  callers" veriyor.
+
+### Bu mimariyi değiştirdi: setup'ın sahibi backend
+
+**Mint'teki setup geçerli; istemcinin setup frame'inin içeriği yok sayılıyor.** İki
+ölçümle kanıtlandı: (a) mint'te yalnızca `generationConfig` varken istemci tool
+gönderdi → oturumda tool YOK, hata da yok; (b) mint'te tam setup varken istemci
+`{setup:{model}}` gönderdi → tool'lar, transkripsiyon, sistem talimatı, resumption
+hepsi çalıştı, prompt token sayısı bile aynı. Frame yine de **zorunlu** — hiç
+göndermeyen oturum `setupComplete`'e ulaşmıyor, hata da vermiyor, asılı kalıyor.
+
+Sonuç: sistem talimatı, tool listesi ve action enum'u **backend'de** yaşıyor; istemci
+yalnızca `{setup:{model}}` yolluyor. `languageCode` ve `resumptionHandle` da socket'e
+değil **mint isteğine** gidiyor (`AssistantTokenRepositoryInterface.mintSession`).
+İstemcide kalan tek sözlük, registry'nin *dispatch* ettiği `AssistantAction`.
+
+Bu aslında planın güvenlik gerekçesiyle uyumlu: token istemcide bir bearer credential,
+kısıtın orada olması gerekiyordu — ölçüm onu zorunlu kıldı.
+
+### Frame'ler binary
+
+Live API JSON'unu **binary WebSocket frame** olarak yolluyor, `setupComplete` dahil.
+Yalnızca string kabul eden transport bağlanıp setup gönderiyor ve sonsuza kadar hiçbir
+şey duymuyor — unit testleri de geçiyor, çünkü sahte soket doğal olarak string yollar.
+`binaryType='arraybuffer'` + regresyon testi eklendi.
+
+### Hâlâ açık
+
+- Free tier eşzamanlı oturum / RPD limiti (AI Studio panelinden okunacak).
+- Cihaz üstü: mikrofonun gerçekte verdiği sample rate, kesmenin hissi. Dev build ister.
+
+**Ses hattı kararı ayakta.** `react-native-audio-api@0.13.3` kuruldu; `AudioRecorder`
+gerçekten `onAudioReady` ile float32 PCM veriyor ve `AudioBufferQueueSourceNode`
+streaming playback sağlıyor. Plan fact #4 ve #5 doğru çıktı.
+
+**Plugin iki tuzak taşıyor, biri planda yoktu.** `iosBackgroundMode` *ve*
+`androidForegroundService` varsayılan olarak açık. İkincisi mediaPlayback foreground
+servisi + iki `FOREGROUND_SERVICE` izni ekliyor (Play'de gerekçe ister). İkisi de
+kapatıldı, `check:structure` rule N ikisini de zorunlu kılıyor.
+
+**Mikrofon izninin tek sahibi `expo-audio`.** Onun `microphonePermission: false`'ı
+`NSMicrophoneUsageDescription`'ı *siliyor* — hem statik `ios.infoPlist` girdisini hem
+`react-native-audio-api`'nin `iosMicrophonePermission`'ını eziyor. Plandaki "izni
+açmak" adımı bu yüzden göründüğünden zor: config anahtarı iki yerde adlandırıp
+artefakta hiç indirmeyebilir. Ayrıntı: `docs/regressions.md`.
+
+**Kesme, planın anlattığından yarısı kadar iş — ve diğer yarısı başka yerde.**
+Playback kuyruğunu boşaltmak tek çağrı (`clearBuffers()`), el yordamıyla defter
+tutmak gerekmiyor. Buna karşılık planda hiç geçmeyen bir önkoşul var: capture
+oturumu `voiceChat` modunda olmalı (web'de `echoCancellation: true`). Olmadan
+mikrofon asistanın kendi sesini duyuyor, model kesildiğine hükmedip kendini
+susturuyor — kimse konuşmamışken.
+
+**Web'de kütüphane kullanılamaz, opsiyonel değil.** `api.web.ts` içinde `AudioRecorder`
+ve `AudioBufferQueueSourceNode` *yok*. Plan bunu "recorder belgelenmemiş" diye
+yazmıştı; gerçek durum daha sert — import `undefined` döner ve ilk `new`'de patlar.
+`.web.ts` çifti web shell'in ayakta kalma şartı.
+
+**Transport portunda `interrupt` YOK, bilerek.** Kesmeyi sunucunun VAD'ı kullanıcının
+sesi geldiği anda tespit ediyor; istemcinin borcu sessizlik, o da player'ın `flush`'ı.
+Port'ta bir metot olsaydı çağıranlar flush yerine onu kullanır ve kullanıcı
+konuştuğu cümlenin üstüne asistanın devam ettiğini duyardı.
+
+**Bir frame bir olay değil, olaylar torbası — ve sıra önemli.** Sunucu bir turu
+`interrupted` işaretleyip aynı frame'de o turun son parçalarını da gönderebiliyor,
+bu yüzden `interrupted` yanındaki sesin önünde yayılıyor. Ayrıca `turnComplete` turu
+bitirir, `generationComplete` bitirmez (ikincisi üretilen ses gönderilmeden önce
+gelir). `goAway.timeLeft` protobuf süre *string*'i (`"9.5s"`) — sayı diye okumak
+`NaN` verir ve resumption hiç zamanlanmaz.
+
 ## Token ekonomisi — tasarımın kendisi
 
 Ses pahalı: ~28 token/sn dinleme, ~25 token/sn konuşma. Yani **1 dk mikrofon ≈ 1.7k

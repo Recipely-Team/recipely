@@ -14,6 +14,7 @@ import { LayoutProvider } from '@presentation/base/responsive/layout-context';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WebShellStateProvider } from '@presentation/base/web-shell/web-shell-state';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
+import { AssistantPill } from '@presentation/base/widgets/assistant/assistant-pill';
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
@@ -164,6 +165,7 @@ const RootStack = (): React.JSX.Element => {
       </Stack>
       <RootTabBar />
       <ActiveTimersBar />
+      <AssistantPill />
       <ToastHost />
       <AlarmOverlay />
       <SplashOverlay />

@@ -1,3 +1,5 @@
+import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
 import type { BoundStore } from '@application/store/bound-store';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
@@ -19,6 +21,9 @@ import type { UserProfileStoreState } from '@application/user-profile/user-profi
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
+  assistantSessionStore: BoundStore<AssistantSessionStoreState>;
+  /** Screens register the actions only they can perform (navigate, focus, pick). */
+  assistantActionRegistry: AssistantActionRegistry;
   authStore: BoundStore<AuthStoreState>;
   recipeListStore: BoundStore<RecipeListStoreState>;
   trendingRecipesStore: BoundStore<TrendingRecipesStoreState>;

@@ -3,7 +3,7 @@ import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
+import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
@@ -99,6 +99,19 @@ export const useRecipeList = (): UseRecipeListResult => {
   const language = useLocale();
 
   const [search, setSearch] = useState(CharConstants.empty);
+
+  // The assistant searches by opening this screen with `?q=`, the way a person
+  // arrives from a link — so the query lands in the visible field and the user
+  // watches the search they asked for, rather than results appearing from a
+  // store nobody touched. Applied once per distinct query: re-applying on every
+  // render would fight the user the moment they edited the box.
+  const { q: queryParam } = useLocalSearchParams<{ q?: string }>();
+  const appliedQuery = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (queryParam === undefined || queryParam === appliedQuery.current) return;
+    appliedQuery.current = queryParam;
+    setSearch(queryParam);
+  }, [queryParam]);
 
   // Web takes the query from the shared app-header field, native from the in-header one.
   const effectiveSearch = isWebShell ? webSearchQuery : search;

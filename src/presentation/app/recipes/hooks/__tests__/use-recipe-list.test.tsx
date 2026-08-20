@@ -57,6 +57,9 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
   usePathname: jest.fn(() => '/recipes'),
+  // No `?q=`: these cover the ordinary feed. Arriving with a query — how the
+  // assistant searches — is covered in its own test below.
+  useLocalSearchParams: jest.fn(() => ({})),
   // The real hook runs its callback whenever the screen gains focus; an effect
   // is close enough here (the hook skips the mount focus via its own ref).
   useFocusEffect: jest.fn((callback: () => void) => {
@@ -689,5 +692,74 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     } finally {
       process.off('unhandledRejection', unhandled);
     }
+  });
+});
+
+// The assistant searches by opening this screen with `?q=`, the way a person
+// arrives from a shared link — so the query lands in the VISIBLE field and the
+// user watches the search happen, rather than results appearing from a store
+// nobody touched.
+describe('useRecipeList — arriving with a search query', () => {
+  let vm: ReturnType<typeof useRecipeList>;
+  let renderer: ReactTestRenderer | null = null;
+
+  const Probe = (): null => {
+    vm = useRecipeList();
+    return null;
+  };
+
+  const mountWithQuery = async (query: string | undefined): Promise<void> => {
+    const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
+    (useLocalSearchParams as unknown as jest.Mock).mockReturnValue(
+      query === undefined ? {} : { q: query },
+    );
+
+    const execute = jest.fn().mockResolvedValue(ok(recipePageOf([makeRecipe('r1')])));
+    const store = configureRecipeListStore({
+      listRecipes: { execute } as unknown as ListRecipesUseCase,
+    });
+
+    renderer = renderComponent(
+      <StoresProvider value={makeStores(store)}>
+        <Probe />
+      </StoresProvider>,
+    ).renderer;
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  afterEach(async () => {
+    await act(async () => {
+      renderer?.unmount();
+      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    });
+    const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
+    (useLocalSearchParams as unknown as jest.Mock).mockReturnValue({});
+  });
+
+  it('shows the query in the search field', async () => {
+    await mountWithQuery('mercimek');
+
+    expect(vm.search).toBe('mercimek');
+  });
+
+  it('leaves the field empty when nothing was asked for', async () => {
+    await mountWithQuery(undefined);
+
+    expect(vm.search).toBe('');
+  });
+
+  // Re-applying the param on every render would overwrite the box the moment
+  // the user started editing what the assistant put there.
+  it('lets the user edit what was seeded', async () => {
+    await mountWithQuery('mercimek');
+
+    await act(async () => {
+      vm.onSearchChange('mercimek çorbası');
+    });
+
+    expect(vm.search).toBe('mercimek çorbası');
   });
 });

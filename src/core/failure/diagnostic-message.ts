@@ -123,6 +123,13 @@ export const DiagnosticMessage = {
       caloriesNegative: 'Calories must be non-negative',
     },
   },
+  assistant: {
+    microphoneDenied: 'Microphone permission was refused',
+    microphoneUnavailable: (reason: string): string => `Microphone could not start: ${reason}`,
+    playerUnavailable: (reason: string): string => `Audio output could not start: ${reason}`,
+    sessionSocketFailed: 'Live session socket failed',
+    sessionClosedBeforeReady: 'Live session closed before setup completed',
+  },
 } as const;
 
 /**

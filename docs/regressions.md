@@ -1229,3 +1229,156 @@ turn one offline launch into a session with no ads.
 *The class:* **an answer that is settled for the session should not be
 re-awaited per consumer.** `await` on a resolved promise still costs a render,
 and a render is exactly the beat a user sees.
+
+## The permission the config asked for twice and the build shipped zero times
+
+Turning the microphone on for the voice assistant, `app.json` named it in two
+places: `react-native-audio-api`'s `iosMicrophonePermission` and, when that
+produced nothing, a literal `ios.infoPlist.NSMicrophoneUsageDescription`. The
+generated Info.plist carried neither.
+
+*Why:* `expo-audio`'s config plugin runs `createPermissionsPlugin`, which
+**deletes** `NSMicrophoneUsageDescription` when its own `microphonePermission`
+is `false` — and it was, deliberately, from back when the app had no microphone
+feature. A plugin that removes a key beats every plugin and every static entry
+that merely sets one. iOS denies the first microphone access outright when the
+purpose string is missing, with no prompt and nothing to show the user, and App
+Review rejects a missing purpose string on its own.
+
+*Now:* `expo-audio` is the single owner of the microphone. `check:structure`
+rule N rejects the inert spelling on the other plugin by name, and requires
+`microphonePermission` to be a non-empty string whenever `recordAudioAndroid`
+is on. CI asserts the usage string is present in the **generated** plist,
+beside the assert that has guarded `UIBackgroundModes` since §23c.
+
+*The class:* **when two plugins touch one key, the one that removes it wins,
+and a config that names something twice can still ship it zero times.** The
+same lesson as §23c read backwards: there, config said no and the artifact said
+yes. Check the artifact, in both directions.
+
+## Two capability switches that default to on
+
+`react-native-audio-api` was added for microphone streaming. Its config plugin
+defaults `iosBackgroundMode` to true — adding `UIBackgroundModes: audio`, the
+exact key that cost two App Review rejections under guideline 2.5.4 — and also
+defaults `androidForegroundService` to true, declaring a mediaPlayback
+foreground service and requesting the two `FOREGROUND_SERVICE` permissions Play
+requires a written justification for. Neither was mentioned in the library's
+README; both were found by reading the plugin.
+
+*Now:* rule N covers this plugin too: both switches must be explicitly false,
+and `androidPermissions` must be listed explicitly, because the default list
+carries the foreground-service permissions even when the service is off. A bare
+`"react-native-audio-api"` string with no options object is rejected outright,
+since that spelling silently means every default.
+
+*The class:* **read the config plugin, not the README, before adding a native
+dependency.** The capability a library grants itself by default is the one
+nobody writes down, and it lands in the artifact rather than the diff.
+
+## A transport that connected, sent its setup, and heard nothing forever
+
+The Live API transport passed every unit test — handshake, tool calls,
+resumption, interruption ordering — and against the real server it would have
+reached `setupComplete` never.
+
+*Why:* the API sends its JSON in **binary** WebSocket frames, not text ones,
+every frame including `setupComplete`. The transport read `typeof data ===
+'string'` and dropped everything else as unparseable. The fake socket in its
+tests sent strings, because that is what a fake naturally does, so the bug was
+invisible from inside the suite.
+
+*Now:* the socket asks for `arraybuffer` and the decoder accepts a string, an
+`ArrayBuffer` or a typed-array view. The fake socket delivers **binary**, like
+the real one, so the whole suite goes red without the fix rather than one test.
+
+*The class:* **a fake that is more convenient than the real thing tests the
+convenience.** Where a protocol has a wire format — framing, encoding,
+endianness — the double has to reproduce it, or the suite is green about
+something nobody ships.
+
+## The setup nobody was listening to
+
+The client built the session's whole configuration — system instruction, the
+single `runAction` tool and its action enum, modality, transcription, sliding
+window, resumption handle — and sent it in the setup frame. Measured against the
+live API, none of it had any effect.
+
+*Why:* with an ephemeral token, the setup baked in at mint time is
+authoritative and the client's setup frame is a trigger whose contents are
+discarded. Sending the full setup and sending `{ model }` produced sessions
+identical down to the prompt token count. Worse in the other direction: a token
+minted without tools, connected by a client that declared them, ran a session
+with **no tools at all** and no error to say so — the assistant simply never
+acted, and every explanation for that points at the prompt.
+
+*Now:* the system instruction, tool list and action enum live on the backend
+that mints the token; the client sends `{ setup: { model } }` and nothing else.
+`languageCode` and the resumption handle are arguments to the mint. The mapper's
+tests assert the deliberate **absence** of everything the plan had put there,
+with the measurement written down beside them.
+
+*The class:* **when a server takes the same configuration by two routes, find
+out which one it obeys before writing the one that is easier to reach.** A
+config that is ignored fails silently and looks, in code review, exactly like a
+config that works.
+
+## "You have used today's minutes" — to a user who had used none
+
+The assistant panel told the user their daily voice allowance was spent. The
+backend was simply unreachable; they had spent nothing, and the advice that came
+with it — come back tomorrow — was wrong twice over, since an outage can clear
+in a second.
+
+*Why:* a refusal and an outage both land on the same `Unavailable` status. The
+panel read the status and then guessed the reason, defaulting to the user's own
+limit because that is the common case. The reason it needed was right there and
+`null`.
+
+*Now:* the choice is a pure function with the rule written into it — only a
+STATED reason may claim a limit, everything else says voice is off without
+saying why — and its test asserts the outage case is not the limit copy.
+
+*The class:* **when two causes collapse into one state, the state cannot pick
+the message.** A default that names the likelier cause reads as certainty to
+the user, and it is the unlikelier cause that most needs the truth.
+
+## A floating dock that landed on the tab bar
+
+The assistant pill sat squarely over the third tab and swallowed taps meant for
+it, on every phone-width screen that has a tab bar.
+
+*Why:* it docked to the safe-area inset alone. The safe area describes the
+hardware, not the app's own chrome, and this app draws a tab bar above it. The
+timers bar had already solved exactly this and its computation was three files
+away.
+
+*Now:* the pill adds `controlSizes.tabBar` when a tab bar is actually present —
+and only then, because routes without one (onboarding, auth, detail) would
+otherwise float the pill off the screen edge.
+
+*The class:* **the safe-area inset is not the bottom of the app.** Anything
+docked to the bottom edge has to clear the chrome the app itself mounts there,
+and the second widget to learn this should have copied the first.
+
+## An assistant that could talk about the app and do nothing to it
+
+The voice assistant shipped its transport, its session, its registry and its UI,
+and answered every single tool call `unavailable_here`. Twenty-three actions
+were offered to the model; zero had a handler. It transcribed, it decided, it
+issued the command — and nothing happened, on any screen.
+
+*Why:* the registry is deliberately open — screens register what only they can
+perform — and nothing anywhere said the set had to be complete. Every gate was
+green, because an empty registry is a valid registry.
+
+*Now:* `check:structure` rule U compares the action vocabulary against every
+`useAssistantAction` registration and blocks on a word nothing answers. Two
+actions the plan invented were deleted rather than implemented — `writeBio`
+duplicated `updateProfile`, and `repeat` is something a model does without a
+tool.
+
+*The class:* **a registry with no required members is a feature with no
+required parts.** When the thing being built is a *set* of capabilities, the
+completeness of the set is the requirement, and it needs a check of its own —
+the individual pieces all passing says nothing about it.

@@ -8,6 +8,7 @@ import { formatTimer } from '@presentation/base/utils/format-timer';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 
 export interface TimeCardProps {
   label: string;
@@ -20,7 +21,6 @@ export interface TimeCardProps {
  * A recipe has exactly one timer, on its cook time, so the id needs no slot to
  * disambiguate. Prep time renders as a plain stat — see `recipe-meta-card`.
  */
-const COOK_TIMER_SLOT = 'cook';
 
 /**
  * The recipe's cook-time countdown, rendered as one segment of the meta card.
@@ -36,7 +36,7 @@ export const TimeCard = ({
 }: TimeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const timer = useRecipeTimer({
-    timerId: `${recipeId}:${COOK_TIMER_SLOT}`,
+    timerId: cookTimerId(recipeId),
     recipeId,
     recipeName,
     minutes,

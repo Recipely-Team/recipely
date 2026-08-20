@@ -37,6 +37,16 @@ export const layoutSizes = {
   maxContentXl: 460,
   /** Cap on the centered FeedbackDialog card (phone-sized on tablet/web). */
   dialogMaxWidth: 400,
+  /**
+   * How tall the assistant's transcript may grow.
+   *
+   * A cap rather than a height, and a small one: the assistant's whole premise
+   * is that it drives the app where the user can watch it work, so a panel that
+   * grew to fit the conversation would hide the screen being demonstrated.
+   */
+  assistantTranscriptMaxHeight: 220,
+  /** How wide the assistant pill's status label may run before it truncates. */
+  assistantLabelMaxWidth: 160,
   /** Cap on the centered auth card in the register/login split layout. */
   authCardMaxWidth: 520,
   /** Cap on a centered web modal. */

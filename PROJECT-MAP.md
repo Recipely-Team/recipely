@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 859 source files.
+[architecture.md](architecture.md). 908 source files.
 
 ## Layers
 
@@ -26,6 +26,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `ads/` _(1)_
+- `assistant/` — actions, audio, session _(13)_
 - `audio/` _(1)_
 - `auth/` _(7)_
 - `comments/` _(4)_
@@ -44,6 +45,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `ads/` _(2)_
+- `assistant/` — actions, session _(5)_
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
@@ -64,6 +66,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
 - `ads/` _(2)_
+- `assistant/` — live, token _(15)_
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(23)_
 - `comments/` — dtos _(4)_
@@ -84,6 +87,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 ## `src/core/` — building blocks only
 
+- `codec/` _(1)_
 - `constants/` _(6)_
 - `di/` _(1)_
 - `entity/` _(1)_
@@ -102,7 +106,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (ads, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(20)_
+- `hooks/` (ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(26)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
@@ -110,7 +114,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(7)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(57)_
+- `widgets/` (ads, assistant, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(63)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -143,4 +147,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e3e800124caf4bae -->
+<!-- fingerprint: 5c853707bb407608 -->

@@ -872,5 +872,25 @@ export const ar = {
       stepTwo: "تبّل الدجاج",
       stepThree: "اخبز"
     }
-  }
+  },
+  assistant: {
+    title: "المساعد",
+    open: "فتح المساعد",
+    close: "إغلاق المساعد",
+    start: "ابدأ التحدث",
+    stop: "إيقاف",
+    listening: "أستمع",
+    speaking: "يتحدث",
+    working: "جارٍ التنفيذ…",
+    connecting: "جارٍ الاتصال…",
+    idle: "اضغط للتحدث",
+    placeholder: "اكتب بدلاً من ذلك",
+    send: "إرسال",
+    empty: "أخبرني بما تريد طهيه.",
+    outOfMinutes: "انتهت دقائق الصوت لليوم. يمكنك متابعة الكتابة.",
+    unavailable: "الوضع الصوتي غير متاح حاليًا. يمكنك متابعة الكتابة.",
+    busyEverywhere: "الوضع الصوتي مشغول الآن. يمكنك متابعة الكتابة.",
+    minutesLeft: "بقيت {{minutes}} دقيقة",
+    micDenied: "يحتاج Recipely إلى الميكروفون ليسمعك.",
+  },
 };

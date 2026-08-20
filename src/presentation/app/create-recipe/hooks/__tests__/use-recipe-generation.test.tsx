@@ -97,6 +97,10 @@ const mockRouter = {
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => mockRouter),
+  // No params: these cover the ordinary flow where the user typed the prompt.
+  // The `?prompt=` path — the assistant opening this screen with one — is
+  // covered separately below.
+  useLocalSearchParams: jest.fn(() => ({})),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -869,5 +873,63 @@ describe('useRecipeGeneration — opening a draft', () => {
 
       expect(FailureReporter.report).not.toHaveBeenCalled();
     });
+  });
+});
+
+/**
+ * The flagship assistant flow. "Make me a recipe with chicken and yoghurt"
+ * opens THIS screen with the prompt already in it and the generating view
+ * running — the user watches the app do what they asked, which is the whole
+ * difference between this and a chat window.
+ *
+ * It also matters for cost: the recipe text is written here, by the existing
+ * pipeline, and never travels through the voice session.
+ */
+describe('useRecipeGeneration — opened with a prompt in the route', () => {
+  const withPromptParam = (prompt: string | undefined): void => {
+    const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
+    (useLocalSearchParams as unknown as jest.Mock).mockReturnValue(
+      prompt === undefined ? {} : { prompt },
+    );
+  };
+
+  afterEach(() => {
+    withPromptParam(undefined);
+  });
+
+  it('fills the prompt and generates without the user typing', async () => {
+    withPromptParam('tavuk ve yoğurt');
+    const driver = driveHook(generated());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(driver.latest().prompt).toBe('tavuk ve yoğurt');
+    expect(driver.latest().phase).toBe('preview');
+  });
+
+  it('does nothing when no prompt was passed', async () => {
+    withPromptParam(undefined);
+    const driver = driveHook(generated());
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(driver.latest().phase).toBe('prompt');
+  });
+
+  // A draft being resumed is something the user asked for directly; a prompt
+  // riding on the URL must not overwrite it and lose their work.
+  it('yields to a draft that is being resumed', async () => {
+    withPromptParam('tavuk ve yoğurt');
+    const driver = driveHook(generated(), { draftId: 'draft-9' });
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(driver.latest().phase).not.toBe('preview');
   });
 });

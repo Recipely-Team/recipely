@@ -1,3 +1,9 @@
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
+import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
+import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
+import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
@@ -187,6 +193,17 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // The registry is created here and handed to the presentation layer, because
+  // half of what the assistant does — navigate, focus a field, open the photo
+  // picker — only a screen can perform. Screens register those on mount.
+  const assistantActionRegistry = new AssistantActionRegistry();
+  const assistantSessionStore = configureAssistantSessionStore({
+    session: container.resolve<AssistantSessionInterface>(TOKENS.AssistantSession),
+    microphone: container.resolve<MicrophoneInterface>(TOKENS.AssistantMicrophone),
+    player: container.resolve<AudioPlayerInterface>(TOKENS.AssistantPlayer),
+    tokens: container.resolve<AssistantTokenRepositoryInterface>(TOKENS.AssistantTokenRepository),
+    registry: assistantActionRegistry,
+  });
   // WHY: built after every session-scoped store exists so sign-out / account
   // deletion / session expiry can wipe all of them in one place — a cache that
   // survives an account switch shows the previous user's data (stale comments,
@@ -202,9 +219,14 @@ export const registerApplication = (container: Container): ApplicationStores => 
     draftsStore.getState().clear();
     importJobStore.getState().clear();
     userProfileStore.getState().reset();
+    // The transcript is the previous user's conversation, and a live socket
+    // outlives a sign-out unless something closes it.
+    assistantSessionStore.getState().reset();
   };
   const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
   return {
+    assistantSessionStore,
+    assistantActionRegistry,
     authStore,
     recipeListStore,
     trendingRecipesStore,

@@ -21,6 +21,10 @@ export const zIndices = {
   appHeader: 50,
   /** Docked active-timers bar. */
   timersBar: 100,
+  /** The voice assistant's pill and panel — over content, under toasts, and
+   *  deliberately above the timers bar: the assistant drives the app while the
+   *  user watches, so the control that stops it must never be behind anything. */
+  assistant: 120,
   /** Transient toasts — above every page chrome, below modal takeovers. */
   toast: 150,
   /** Full-screen alarm takeover. */

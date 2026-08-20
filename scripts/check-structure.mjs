@@ -24,6 +24,9 @@
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
+ *   U. Every assistant action offered to the model has a handler registered by
+ *      some screen — a word nothing answers advertises a capability the
+ *      assistant does not have (CLAUDE.md §5).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -370,6 +373,94 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     if (video !== null && (video.supportsBackgroundPlayback === true || video.supportsPictureInPicture === true)) {
       errors.push(
         'app.json: expo-video background playback / picture-in-picture adds UIBackgroundModes:audio, which App Review rejects without a qualifying feature (CLAUDE.md §23c)',
+      );
+    }
+
+    // react-native-audio-api carries the microphone for the voice assistant, and
+    // its plugin is the worst offender of the three: BOTH switches default to on.
+    // `iosBackgroundMode` adds UIBackgroundModes:audio — the exact key that cost
+    // two rejections — and `androidForegroundService` adds a media-playback
+    // foreground service plus the two FOREGROUND_SERVICE permissions, which Play
+    // makes you justify. The assistant only ever runs on a screen the user is
+    // looking at, so both are wrong for this app; a bare "react-native-audio-api"
+    // string (no options object) silently means both are on, which is why the
+    // entry is required to carry options at all.
+    const liveAudio = optionsFor('react-native-audio-api');
+    if (liveAudio !== null) {
+      if (liveAudio.iosBackgroundMode !== false) {
+        errors.push(
+          'app.json: react-native-audio-api must set "iosBackgroundMode": false — it defaults to true and adds UIBackgroundModes:audio, which App Review rejects (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.androidForegroundService !== false) {
+        errors.push(
+          'app.json: react-native-audio-api must set "androidForegroundService": false — it defaults to true and declares a mediaPlayback foreground service the app has no feature for (CLAUDE.md §23c)',
+        );
+      }
+      const androidPermissions = liveAudio.androidPermissions;
+      if (!Array.isArray(androidPermissions)) {
+        errors.push(
+          'app.json: react-native-audio-api must list "androidPermissions" explicitly — the default adds FOREGROUND_SERVICE and FOREGROUND_SERVICE_MEDIA_PLAYBACK (CLAUDE.md §23c)',
+        );
+      } else if (androidPermissions.some((permission) => permission.includes('FOREGROUND_SERVICE'))) {
+        errors.push(
+          'app.json: react-native-audio-api androidPermissions must not request FOREGROUND_SERVICE* — the app plays no audio while backgrounded (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.iosMicrophonePermission !== undefined) {
+        errors.push(
+          'app.json: react-native-audio-api "iosMicrophonePermission" is inert here — expo-audio owns NSMicrophoneUsageDescription and overwrites it. Put the copy on expo-audio\'s "microphonePermission" instead (CLAUDE.md §23c)',
+        );
+      }
+    }
+
+    // The microphone has exactly ONE owner, and it is expo-audio. Its plugin runs
+    // `createPermissionsPlugin`, which DELETES NSMicrophoneUsageDescription when
+    // `microphonePermission` is false — beating both a static `ios.infoPlist`
+    // entry and react-native-audio-api's own `iosMicrophonePermission`. So the
+    // config could name the microphone in two places, read as correct in review,
+    // and still prebuild an Info.plist with no usage string at all: iOS then
+    // denies the first mic access with nothing to show the user. Same lesson as
+    // §23c from the other direction — the config is not the artifact.
+    if (audio !== null && audio.recordAudioAndroid !== false) {
+      if (typeof audio.microphonePermission !== 'string' || audio.microphonePermission.trim() === '') {
+        errors.push(
+          'app.json: expo-audio requests RECORD_AUDIO, so its "microphonePermission" must be the iOS usage string — false or missing deletes NSMicrophoneUsageDescription and the mic is denied with no prompt (CLAUDE.md §23c)',
+        );
+      }
+    }
+  }
+}
+
+// --- U: every assistant action has a handler (CLAUDE.md §5) ----------------
+// The action list is offered to the model as the enum of its one tool, and a
+// word nothing answers is the worst kind of bug this feature has: the model is
+// told it can do a thing, tries, and gets `unavailable_here` — so the assistant
+// looks broken for a capability it was advertised. Nothing catches that at
+// build time, and on a device it looks like the model misunderstood.
+//
+// Handlers are registered from screens via `useAssistantAction`, so the check
+// is a set comparison between the vocabulary and the registrations.
+{
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(vocabularyPath)) {
+    const vocabulary = [...fs.readFileSync(vocabularyPath, 'utf8').matchAll(/^ {2}\w+: '(\w+)',/gm)].map(
+      (m) => m[1],
+    );
+    const registered = new Set();
+    for (const file of files) {
+      const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+      for (const m of src.matchAll(/useAssistantAction\(\s*AssistantAction\.(\w+)/g)) {
+        const value = new RegExp(`^ {2}${m[1]}: '(\\w+)',`, 'm').exec(
+          fs.readFileSync(vocabularyPath, 'utf8'),
+        )?.[1];
+        if (value !== undefined) registered.add(value);
+      }
+    }
+    const unhandled = vocabulary.filter((action) => !registered.has(action));
+    if (unhandled.length > 0) {
+      errors.push(
+        `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
       );
     }
   }
