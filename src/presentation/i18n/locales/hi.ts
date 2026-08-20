@@ -887,6 +887,9 @@ export const hi: Translations = {
     unavailable: "वॉइस अभी उपलब्ध नहीं है। आप लिखना जारी रख सकते हैं।",
     busyEverywhere: "वॉइस अभी व्यस्त है। आप लिखना जारी रख सकते हैं।",
     minutesLeft: "{{minutes}} मिनट बचे",
+    publishTitle: "यह रेसिपी प्रकाशित करें?",
+    publishMessage: "यह आपके नाम से जाएगी और सभी देख सकेंगे।",
+    publishConfirm: "प्रकाशित करें",
     micDenied: "आपको सुनने के लिए Recipely को माइक्रोफ़ोन चाहिए।",
   },
 };

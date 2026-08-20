@@ -891,6 +891,9 @@ export const fr = {
     unavailable: "Le mode vocal n'est pas disponible pour le moment. Tu peux continuer à écrire.",
     busyEverywhere: "La voix est occupée pour le moment. Tu peux continuer à écrire.",
     minutesLeft: "{{minutes}} min restantes",
+    publishTitle: "Publier cette recette ?",
+    publishMessage: "Elle paraîtra à ton nom et sera visible par tous.",
+    publishConfirm: "Publier",
     micDenied: "Recipely a besoin du micro pour t'entendre.",
   },
 };

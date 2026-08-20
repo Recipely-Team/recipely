@@ -58,6 +58,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onChangeCommentInput: vm.onChangeCommentInput,
     onAddComment: vm.onAddComment,
     onOpenDelete: vm.onOpenDelete,
+    onOpenShare: vm.onOpenShare,
     onStartCookTimer: cookTimer.start,
   });
 

@@ -898,6 +898,9 @@ export const zh = {
     unavailable: "语音功能当前不可用，你仍可以打字。",
     busyEverywhere: "语音功能当前繁忙，你仍可以打字。",
     minutesLeft: "剩余 {{minutes}} 分钟",
+    publishTitle: "要发布这个食谱吗？",
+    publishMessage: "将以你的名义发布，所有人都能看到。",
+    publishConfirm: "发布",
     micDenied: "Recipely 需要麦克风才能听到你。",
   },
 };

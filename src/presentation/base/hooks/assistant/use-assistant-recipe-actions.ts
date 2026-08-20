@@ -33,6 +33,7 @@ interface AssistantRecipeActionsDeps {
   onChangeCommentInput: (text: string) => void;
   onAddComment: () => void;
   onOpenDelete: () => void;
+  onOpenShare: () => void;
   onStartCookTimer: () => void;
 }
 
@@ -46,6 +47,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onChangeCommentInput,
     onAddComment,
     onOpenDelete,
+    onOpenShare,
     onStartCookTimer,
   } = deps;
   const { authStore, favoritesStore, savedRecipesStore, likesStore } = useStores();
@@ -130,6 +132,17 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       },
       [onChangeCommentInput, onAddComment, recipeName],
     ),
+  );
+
+  useAssistantAction(
+    AssistantAction.ShareRecipe,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // Opens the app's own share sheet. The assistant does not choose WHERE a
+      // recipe goes — that names a person, and picking one on a model's say-so
+      // is the mistake nobody can take back.
+      onOpenShare();
+      return { ok: true, awaiting: true, title: recipeName };
+    }, [onOpenShare, recipeName]),
   );
 
   useAssistantAction(

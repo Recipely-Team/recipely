@@ -898,6 +898,9 @@ export const tr: Translations = {
     unavailable: "Sesli mod şu an kullanılamıyor. Yazmaya devam edebilirsin.",
     busyEverywhere: "Sesli mod şu an yoğun. Yazmaya devam edebilirsin.",
     minutesLeft: "{{minutes}} dk kaldı",
+    publishTitle: "Tarif yayınlansın mı?",
+    publishMessage: "Senin adınla yayına çıkacak ve herkes görebilecek.",
+    publishConfirm: "Yayınla",
     micDenied: "Seni duyabilmek için mikrofon izni gerekiyor.",
   },
 };

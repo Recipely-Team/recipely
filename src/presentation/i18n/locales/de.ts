@@ -891,6 +891,9 @@ export const de = {
     unavailable: "Der Sprachmodus ist gerade nicht verfügbar. Du kannst weiter tippen.",
     busyEverywhere: "Der Sprachmodus ist gerade ausgelastet. Du kannst weiter tippen.",
     minutesLeft: "Noch {{minutes}} Min.",
+    publishTitle: "Rezept veröffentlichen?",
+    publishMessage: "Es erscheint unter deinem Namen und ist für alle sichtbar.",
+    publishConfirm: "Veröffentlichen",
     micDenied: "Recipely braucht das Mikrofon, um dich zu hören.",
   },
 };

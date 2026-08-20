@@ -1,3 +1,5 @@
+import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
+import { useAssistantScroll } from '@presentation/base/hooks/assistant/use-assistant-scroll';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
@@ -9,6 +11,23 @@ import { ValueConstants } from '@core/constants';
 
 export const RecipeListScreen = (): React.JSX.Element => {
   const vm = useRecipeList();
+
+  // Filtering and sorting by voice, registered by the screen that owns the
+  // filters — everywhere else these answer `unavailable_here`.
+  useAssistantFeedActions({
+    filters: vm.filters,
+    activeFilterCount: vm.activeFilterCount,
+    onToggleCuisineQuick: vm.onToggleCuisineQuick,
+    onToggleCategory: vm.onToggleCategory,
+    onDifficultyChange: vm.onDifficultyChange,
+    onSetMaxTime: vm.onSetMaxTime,
+    onRemoveCategory: vm.onRemoveCategory,
+    onRemoveDifficulty: vm.onRemoveDifficulty,
+    onRemoveMaxTime: vm.onRemoveMaxTime,
+    onResetFilters: vm.onResetFilters,
+    onChangeSort: vm.onChangeSort,
+  });
+  useAssistantScroll(vm.onAssistantScroll);
 
   return (
     <>

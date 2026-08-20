@@ -901,6 +901,9 @@ export const en = {
     unavailable: "Voice is not available right now. You can keep typing.",
     busyEverywhere: "Voice is busy right now. You can keep typing.",
     minutesLeft: "{{minutes}} min left",
+    publishTitle: "Publish this recipe?",
+    publishMessage: "It goes out under your name and everyone can see it.",
+    publishConfirm: "Publish",
     micDenied: "Recipely needs the microphone to hear you.",
   },
 };
