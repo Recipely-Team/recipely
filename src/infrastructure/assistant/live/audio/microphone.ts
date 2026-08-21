@@ -55,9 +55,6 @@ export class Microphone implements MicrophoneInterface {
     sampleRate: number,
     onFrame: (samples: Float32Array<ArrayBuffer>) => void,
   ): Promise<Result<void, Failure>> {
-    // Restarting replaces the callback rather than reporting success and
-    // keeping the old one — the frames would have gone to a closure belonging
-    // to a session that had ended.
     const access = await this.ensureAccess();
     if (!access.ok) return access;
 

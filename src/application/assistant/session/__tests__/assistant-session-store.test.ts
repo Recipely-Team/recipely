@@ -33,6 +33,8 @@ function harness(
     connectFails?: boolean;
     micFails?: boolean;
     micRefused?: boolean;
+    /** Refuses at CAPTURE, the way a browser does — its prompt is inside getUserMedia. */
+    micStartRefused?: boolean;
     messengerFails?: boolean;
     textAction?: { action: { name: string; arg?: string } };
     /** Holds one startup step open so a test can end the session inside it. */
@@ -90,6 +92,9 @@ function harness(
         : { ok: true, value: undefined }),
     start: async (_rate, onFrame) => {
       await stall('micStart');
+      if (overrides.micStartRefused === true) {
+        return { ok: false, failure: new ForbiddenFailure('blocked') };
+      }
       calls.onFrame = onFrame;
       return overrides.micFails === true
         ? { ok: false, failure: new NetworkFailure('denied') }
@@ -238,6 +243,19 @@ describe('assistant session store', () => {
       await store.getState().startVoice('tr-TR');
 
       expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+      expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
+      expect(store.getState().error).toBeNull();
+    });
+
+    // Both halves of the web path were covered and the SEAM between them was
+    // not — which is exactly where the defect lived: the store decided a
+    // refusal by where it happened, and on the web the prompt is inside
+    // `getUserMedia`, so the refusal lands where the code assumed it could not.
+    it('recognises a refusal that arrives at capture, as the browser delivers it', async () => {
+      const { store } = harness({ micStartRefused: true });
+
+      await store.getState().startVoice('tr-TR');
+
       expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
       expect(store.getState().error).toBeNull();
     });

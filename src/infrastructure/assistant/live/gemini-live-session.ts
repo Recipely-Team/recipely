@@ -119,11 +119,14 @@ export class GeminiLiveSession implements AssistantSessionInterface {
     return new Promise((resolve) => {
       let settled = false;
       const timer = setTimeout(() => {
-        this.close();
+        // Settled BEFORE closing: a runtime whose `close()` fires `onclose`
+        // synchronously would otherwise answer with "closed before ready" and
+        // this reason would never be the one anybody reads.
         settle({
           ok: false,
           failure: new NetworkFailure(DiagnosticMessage.assistant.connectTimedOut),
         });
+        this.close();
       }, CONNECT_TIMEOUT_MS);
 
       const settle = (result: Result<void, Failure>): void => {

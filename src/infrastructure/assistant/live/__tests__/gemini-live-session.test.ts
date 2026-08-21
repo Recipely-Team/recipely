@@ -91,11 +91,6 @@ describe('GeminiLiveSession', () => {
     return { session, socket, sockets, events, result, openedWith };
   };
 
-  // The token is the ONLY thing that authenticates this socket — a browser
-  // WebSocket cannot set a header, so it is a query parameter or it is nowhere.
-  // Opened without it the handshake completes and the server then closes it,
-  // which reads in the app as "connecting, and then nothing". Every test here
-  // passed with the credential unused, because the fake ignored the URL.
   // It settled only on `Ready`, an error or a close, so a socket that opened,
   // took the setup frame and then said nothing left the promise pending
   // forever. Harmless while the microphone was opened afterwards; the store
@@ -122,6 +117,11 @@ describe('GeminiLiveSession', () => {
     }
   });
 
+  // The token is the ONLY thing that authenticates this socket — a browser
+  // WebSocket cannot set a header, so it is a query parameter or it is nowhere.
+  // Opened without it the handshake completes and the server then closes it,
+  // which reads in the app as "connecting, and then nothing". Every test here
+  // passed with the credential unused, because the fake ignored the URL.
   describe('authentication', () => {
     it('opens the socket with the minted credential on it', async () => {
       const { openedWith } = await connected();
@@ -310,9 +310,14 @@ describe('GeminiLiveSession', () => {
     const { session, events } = await connected();
     events.length = 0;
 
+    // Left unsettled on purpose — this is about the OLD socket's close event.
+    // Closed afterwards so the connect timeout does not outlive the suite: a
+    // pending timer prints "Jest did not exit" on every run, and a permanent
+    // warning over a green gate is how a real one comes to be skimmed past.
     void session.connect(credentials);
 
     expect(events).toEqual([{ kind: AssistantEventKind.Closed, expected: true }]);
+    session.close();
   });
 
   it('reports a dropped connection as unexpected', async () => {
