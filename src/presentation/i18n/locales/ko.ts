@@ -899,7 +899,7 @@ export const ko: Translations = {
     micDenied: "목소리를 들으려면 마이크 권한이 필요해요.",
     mute: "음소거",
     unmute: "음소거 해제",
-    keyboard: "입력",
+    keyboard: "글로 묻기",
     voice: "말하기",
     expand: "어시스턴트 펼치기",
     minimize: "어시스턴트 접기",

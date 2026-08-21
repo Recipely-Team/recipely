@@ -6,6 +6,7 @@ import { assistantActionLabel } from '@presentation/base/widgets/assistant/assis
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, colorAlphas, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
 import { CharConstants } from '@core/constants';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 
 export interface AssistantActionChipProps {
   action: AssistantActionType;
@@ -31,6 +32,7 @@ export const AssistantActionChip = ({ action, detail }: AssistantActionChipProps
       <View
         style={[
           styles.chip,
+          shadows.sm,
           { backgroundColor: colors.chipBackground, borderColor: colors.primary + colorAlphas.faint },
         ]}
       >

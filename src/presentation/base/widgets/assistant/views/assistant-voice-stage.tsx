@@ -8,7 +8,6 @@ import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   borderWidths,
-  colorAlphas,
   controlSizes,
   fontWeights,
   iconSizes,
@@ -16,7 +15,6 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 
 export interface AssistantVoiceStageProps {
@@ -33,10 +31,9 @@ export interface AssistantVoiceStageProps {
  * The panel's voice half: the microphone, and the two ways out of it.
  *
  * @remarks
- * - **The glow tracks the level as well as the bars do.** Two readings of the
- *   same signal is not redundancy here — the bars answer "is it hearing me" up
- *   close, the glow answers it from arm's length, which is where a phone
- *   propped against a mixing bowl actually sits.
+ * - **The bars are the whole readout.** An earlier halo behind them was a
+ *   second drawing of one signal, and it pushed the controls far enough down
+ *   the screen that the bar stopped reading as a bar.
  * - **Starting is one big target; stopping is three small ones.** Before a
  *   session the only thing to do is begin, so the button takes the width. Once
  *   live, the controls are peers — keyboard, mute, end — and none of them may
@@ -61,16 +58,6 @@ export const AssistantVoiceStage = ({
   return (
     <View style={styles.stage}>
       <View style={styles.waveRow}>
-        <View
-          pointerEvents="none"
-          style={[
-            styles.glow,
-            {
-              backgroundColor: colors.primary + (live ? colorAlphas.faint : colorAlphas.trace),
-              transform: [{ scale: ValueConstants.one + level * assistantMetrics.glowLevelGrowth }],
-            },
-          ]}
-        />
         <AssistantWave
           level={level}
           active={isSounding}
@@ -153,15 +140,8 @@ export const AssistantVoiceStage = ({
 
 
 const styles = StyleSheet.create({
-  stage: { alignItems: 'center', gap: spacing.md },
+  stage: { alignItems: 'center', gap: spacing.sm },
   waveRow: { alignItems: 'center', justifyContent: 'center', width: '100%' },
-  // Pinned: a circle of light, not a box with text.
-  glow: {
-    position: 'absolute',
-    width: assistantMetrics.glow,
-    height: assistantMetrics.glow,
-    borderRadius: radii.round,
-  },
   controls: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, flexWrap: 'wrap', justifyContent: 'center' },
   pill: {
     flexDirection: 'row',

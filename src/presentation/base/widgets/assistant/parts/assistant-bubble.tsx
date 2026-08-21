@@ -4,6 +4,7 @@ import { AssistantStatus } from '@application/assistant/session/assistant-status
 import { ChatRole } from '@domain/drafts/chat-role';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, radii, spacing } from '@presentation/base/theme';
 
@@ -22,6 +23,9 @@ export interface AssistantBubbleProps {
  *   misheard over a running extractor fan.
  * - **The tail corner marks the speaker even without colour**, which is what
  *   keeps the two sides apart for a user who cannot rely on the primary hue.
+ * - **Each bubble carries its own shadow** because there is no panel behind
+ *   the conversation: a turn is laid straight over whatever the screen is
+ *   showing, and over a photograph an unlifted bubble is unreadable.
  */
 export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.JSX.Element => {
   const { colors } = useTheme();
@@ -30,7 +34,7 @@ export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.
   return (
     <View style={[styles.row, mine ? styles.rowMine : styles.rowTheirs]}>
       {!mine ? (
-        <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
+        <View style={[styles.avatar, shadows.sm, { backgroundColor: colors.primary }]}>
           <AssistantMascot size={assistantMetrics.bubbleMascot} status={AssistantStatus.Idle} isAnimated={false} />
         </View>
       ) : null}
@@ -38,6 +42,7 @@ export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.
       <View
         style={[
           styles.bubble,
+          shadows.md,
           mine
             ? { backgroundColor: colors.primary, borderBottomRightRadius: radii.xs }
             : {

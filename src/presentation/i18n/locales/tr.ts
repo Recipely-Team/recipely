@@ -910,7 +910,7 @@ export const tr: Translations = {
     micDenied: "Seni duyabilmek için mikrofon izni gerekiyor.",
     mute: "Sustur",
     unmute: "Sesi aç",
-    keyboard: "Yaz",
+    keyboard: "Yazarak sor",
     voice: "Konuş",
     expand: "Asistanı büyüt",
     minimize: "Asistanı küçült",

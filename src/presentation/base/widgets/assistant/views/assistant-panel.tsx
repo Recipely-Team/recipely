@@ -13,7 +13,15 @@ import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { borderWidths, controlSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
+import {
+  borderWidths,
+  colorAlphas,
+  controlSizes,
+  fontWeights,
+  iconSizes,
+  radii,
+  spacing,
+} from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
@@ -31,23 +39,20 @@ export interface AssistantPanelProps {
  * The assistant's conversation surface.
  *
  * @remarks
- * - **It never covers the screen it is driving.** The whole point of this
- *   assistant is that the app changes where the user can watch, so the panel is
- *   capped at roughly half the height on a phone and takes a column down one
- *   side on a wide window — the create screen filling itself in is the thing
- *   worth seeing, and neither shape hides it.
- * - **The wide shape is a fixed height, not a content height.** Sized by its
- *   contents, an empty conversation collapsed to a strip the size of its own
- *   footer, and the transcript then grew the panel upward line by line as the
- *   session went on.
- * - **Voice and typing are two halves of one panel, not two modes of the app.**
- *   Switching between them keeps the transcript, because a session that started
- *   aloud and continued in text is one conversation.
+ * - **It is an overlay, not a sheet.** There is no panel behind the
+ *   conversation: a name chip, the turns and one control bar float over the
+ *   screen the assistant is driving. An opaque card covered the recipe being
+ *   read out and the draft being filled in — the one thing worth watching — and
+ *   this assistant exists to change the app in view.
+ * - **Only the pieces carrying text are opaque.** Each floats on its own
+ *   frosted surface with a shadow, because a bubble laid straight over a photo
+ *   is unreadable; the space between them stays clear and stays tappable, so
+ *   the screen underneath keeps working.
  * - **Minimising and closing are different decisions, and both are on screen.**
- *   The chevron puts the panel away and leaves the session running; the cross
- *   hangs up. With only a cross, "get this off my screen" ended the call — and
- *   the mini bar, the state this assistant is designed to live in, could not be
- *   reached at all.
+ *   The chevron puts the conversation away and leaves the session running; the
+ *   cross hangs up. With only a cross, "get this off my screen" ended the call
+ *   — and the mini bar, the state this assistant is designed to live in, could
+ *   not be reached at all.
  * - **A failed request outranks the status line.** A request answered by
  *   nothing looks exactly like being ignored, and this is the only surface that
  *   can say otherwise.
@@ -76,6 +81,7 @@ export const AssistantPanel = ({
 
   const live = status !== AssistantStatus.Idle;
   const notice = error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason);
+  const frosted = colors.cardBackground + colorAlphas.frosted;
 
   const send = (text: string): void => {
     clearError();
@@ -84,10 +90,9 @@ export const AssistantPanel = ({
 
   return (
     <View
+      pointerEvents="box-none"
       style={[
-        styles.panel,
-        shadows.lg,
-        { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
+        styles.overlay,
         isExpanded
           ? {
               width: assistantMetrics.panelWebWidth,
@@ -98,32 +103,32 @@ export const AssistantPanel = ({
                   bottomOffset,
               ),
             }
-          : { width: '100%', maxHeight: height * assistantMetrics.panelSheetHeightShare },
+          : { width: '100%', height: height * assistantMetrics.panelSheetHeightShare },
       ]}
     >
-      <View style={styles.header}>
-        <LinearGradient
-          colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={assistantGradient.start}
-          end={assistantGradient.end}
-          style={styles.headerMascot}
-        >
-          <AssistantMascot size={assistantMetrics.headerMascot} status={status} />
-        </LinearGradient>
+      <View pointerEvents="box-none" style={styles.header}>
+        <View style={[styles.chip, shadows.md, { backgroundColor: frosted }]}>
+          <LinearGradient
+            colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
+            start={assistantGradient.start}
+            end={assistantGradient.end}
+            style={styles.headerMascot}
+          >
+            <AssistantMascot size={assistantMetrics.headerMascot} status={status} />
+          </LinearGradient>
+          <ThemedText variant="caption" style={styles.title}>
+            {t().assistant.title}
+          </ThemedText>
+          <View style={[styles.liveDot, { backgroundColor: live ? colors.success : colors.textMuted }]} />
+        </View>
 
-        <ThemedText variant="subtitle" style={styles.title}>
-          {t().assistant.title}
-        </ThemedText>
-
-        <View
-          style={[styles.liveDot, { backgroundColor: live ? colors.success : colors.textMuted }]}
-        />
+        <View style={styles.headerSpacer} pointerEvents="none" />
 
         <Pressable
           onPress={onMinimize}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.minimize}
-          style={[styles.round, styles.minimize, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+          style={[styles.round, shadows.md, { backgroundColor: frosted }]}
         >
           <Ionicons name="chevron-down" size={iconSizes.md} color={colors.text} />
         </Pressable>
@@ -135,23 +140,25 @@ export const AssistantPanel = ({
           }}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.close}
-          style={[styles.round, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+          style={[styles.round, shadows.md, { backgroundColor: frosted }]}
         >
           <Ionicons name="close" size={iconSizes.md} color={colors.text} />
         </Pressable>
       </View>
 
       {notice !== null ? (
-        <ThemedText variant="caption" muted style={styles.notice}>
-          {notice}
-        </ThemedText>
+        <View style={[styles.notice, shadows.sm, { backgroundColor: frosted }]}>
+          <ThemedText variant="caption" muted>
+            {notice}
+          </ThemedText>
+        </View>
       ) : null}
 
-      <View style={styles.transcript}>
+      <View style={styles.transcript} pointerEvents="box-none">
         <AssistantTranscript lines={transcript} />
       </View>
 
-      <View style={[styles.stage, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+      <View style={[styles.stage, shadows.lg, { backgroundColor: frosted, borderColor: colors.cardBorder }]}>
         {isTyping ? (
           <AssistantComposer onSend={send} onSwitchToVoice={() => setIsTyping(false)} />
         ) : (
@@ -170,19 +177,19 @@ export const AssistantPanel = ({
   );
 };
 
-
 const styles = StyleSheet.create({
-  panel: {
-    borderRadius: radii.xxl,
-    borderWidth: borderWidths.hairline,
-    overflow: 'hidden',
-  },
-  header: {
+  // No surface of its own: the conversation floats over the screen it is
+  // driving, and only the pieces carrying text take a background.
+  overlay: { gap: spacing.sm },
+  header: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  headerSpacer: { flex: ValueConstants.one },
+  chip: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.md,
+    gap: spacing.xs,
+    paddingRight: spacing.md,
+    padding: spacing.xxs,
+    borderRadius: radii.round,
   },
   // Pinned: circles, not text boxes.
   headerMascot: {
@@ -196,22 +203,21 @@ const styles = StyleSheet.create({
     width: controlSizes.iconBtnSm,
     height: controlSizes.iconBtnSm,
     borderRadius: radii.round,
-    borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  minimize: { marginLeft: 'auto' },
   liveDot: { width: spacing.sm, height: spacing.sm, borderRadius: radii.round },
   title: { fontWeight: fontWeights.bold },
-  notice: { paddingHorizontal: spacing.md, paddingTop: spacing.xs },
-  // It takes the room the header and the stage do not: the stage belongs at the
-  // bottom edge the way a composer does, and left to its content height the
-  // transcript pinned both of them to the top of an otherwise empty column.
-  transcript: { flex: ValueConstants.one, minHeight: ValueConstants.zero, paddingHorizontal: spacing.md },
+  notice: {
+    alignSelf: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radii.round,
+  },
+  transcript: { flex: ValueConstants.one, minHeight: ValueConstants.zero },
   stage: {
-    margin: spacing.md,
     padding: spacing.md,
-    borderRadius: radii.xl,
+    borderRadius: radii.xxl,
     borderWidth: borderWidths.hairline,
   },
 });

@@ -903,7 +903,7 @@ export const de = {
     micDenied: "Recipely braucht das Mikrofon, um dich zu hören.",
     mute: "Stummschalten",
     unmute: "Stummschaltung aufheben",
-    keyboard: "Tippen",
+    keyboard: "Schriftlich fragen",
     voice: "Sprechen",
     expand: "Assistent vergrößern",
     minimize: "Assistent verkleinern",

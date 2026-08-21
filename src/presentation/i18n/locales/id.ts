@@ -903,7 +903,7 @@ export const id = {
     micDenied: "Recipely butuh mikrofon untuk mendengarmu.",
     mute: "Bisukan",
     unmute: "Nyalakan mikrofon",
-    keyboard: "Ketik",
+    keyboard: "Tanya lewat teks",
     voice: "Bicara",
     expand: "Perbesar asisten",
     minimize: "Perkecil asisten",
