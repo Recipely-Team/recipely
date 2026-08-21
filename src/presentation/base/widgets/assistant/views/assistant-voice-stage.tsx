@@ -3,8 +3,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
+import { assistantIsSounding } from '@presentation/base/widgets/assistant/assistant-is-sounding';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
+import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   borderWidths,
@@ -50,10 +52,7 @@ export const AssistantVoiceStage = ({
 }: AssistantVoiceStageProps): React.JSX.Element => {
   const { colors } = useTheme();
   const live = status !== AssistantStatus.Idle;
-  // Mute silences the microphone, not the assistant. While it is mid-sentence
-  // the bars are drawing ITS voice, and flattening them there claimed the
-  // session had gone quiet when it had not.
-  const isSounding = live && (!isMuted || status === AssistantStatus.Speaking);
+  const isSounding = assistantIsSounding(status, isMuted);
 
   return (
     <View style={styles.stage}>
@@ -137,7 +136,6 @@ export const AssistantVoiceStage = ({
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   stage: { alignItems: 'center', gap: spacing.sm },

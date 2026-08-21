@@ -8,7 +8,8 @@ import { AssistantStatus } from '@application/assistant/session/assistant-status
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AssistantVoiceStage } from '@presentation/base/widgets/assistant/views/assistant-voice-stage';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
+import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -103,7 +104,17 @@ export const AssistantPanel = ({
                   bottomOffset,
               ),
             }
-          : { width: '100%', height: height * assistantMetrics.panelSheetHeightShare },
+          : {
+              width: '100%',
+              // A height, not a cap: the pieces inside are anchored to its two
+              // ends, and shrink-wrapped there is no slack for the clear band
+              // to take. The floor is what keeps the controls on screen when a
+              // large accessibility font grows the header past the share.
+              height: Math.max(
+                assistantMetrics.panelMinHeight,
+                height * assistantMetrics.panelSheetHeightShare,
+              ),
+            },
       ]}
     >
       <View pointerEvents="box-none" style={styles.header}>
@@ -153,6 +164,8 @@ export const AssistantPanel = ({
           </ThemedText>
         </View>
       ) : null}
+
+      <View style={styles.gap} pointerEvents="none" />
 
       <View style={styles.transcript} pointerEvents="box-none">
         <AssistantTranscript lines={transcript} />
@@ -214,7 +227,13 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
   },
-  transcript: { flex: ValueConstants.one, minHeight: ValueConstants.zero },
+  // The clear band between the name chip and the conversation. It takes the
+  // slack so the turns sit against the control bar, and it takes no touches, so
+  // the screen underneath keeps working where there is nothing to read.
+  gap: { flex: ValueConstants.one },
+  // Shrinks rather than grows: the turns bound it, and when they outgrow the
+  // overlay this is what gives way, not the header or the controls.
+  transcript: { flexShrink: ValueConstants.one, minHeight: ValueConstants.zero },
   stage: {
     padding: spacing.md,
     borderRadius: radii.xxl,

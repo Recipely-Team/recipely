@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -108,7 +108,6 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   composer: { gap: spacing.sm },

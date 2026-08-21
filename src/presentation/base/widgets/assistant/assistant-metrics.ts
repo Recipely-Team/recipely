@@ -1,4 +1,3 @@
-import { ValueConstants } from '@core/constants';
 import { scale } from '@presentation/base/theme/tokens/scale';
 
 /**
@@ -36,8 +35,6 @@ export const assistantMetrics = {
   waveMiniHeight: scale(16),
   wavePanelBars: 42,
   wavePanelHeight: scale(30),
-  glow: scale(150),
-  glowLevelGrowth: 0.5,
   panelWebWidth: scale(400),
   panelWebTopClearance: scale(84),
   panelMinHeight: scale(280),
@@ -49,15 +46,4 @@ export const assistantMetrics = {
   bobTravel: scale(2),
   ringDurationMs: 2600,
   ringScale: 1.6,
-} as const;
-
-/**
- * The diagonal every gradient on this surface runs along.
- *
- * Declared once because five sibling files drew the same one, and rule 5's test
- * is reuse: naming a value five times is not naming it.
- */
-export const assistantGradient = {
-  start: { x: ValueConstants.zero, y: ValueConstants.zero },
-  end: { x: ValueConstants.one, y: ValueConstants.one },
 } as const;

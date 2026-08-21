@@ -2,10 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
-import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
+import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
+import { assistantIsSounding } from '@presentation/base/widgets/assistant/assistant-is-sounding';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
+import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
@@ -45,8 +47,7 @@ export const AssistantMiniBar = ({
   onEnd,
 }: AssistantMiniBarProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const live = status !== AssistantStatus.Idle;
-  const isSounding = live && (!isMuted || status === AssistantStatus.Speaking);
+  const isSounding = assistantIsSounding(status, isMuted);
 
   return (
     <View
@@ -70,7 +71,8 @@ export const AssistantMiniBar = ({
       <Pressable
         onPress={onExpand}
         accessibilityRole="button"
-        accessibilityLabel={assistantStatusLabel(status)}
+        accessibilityLabel={t().assistant.expand}
+        accessibilityValue={{ text: assistantStatusLabel(status) }}
         style={styles.status}
       >
         <ThemedText variant="caption" muted numberOfLines={1} style={styles.statusLabel}>
@@ -115,7 +117,6 @@ export const AssistantMiniBar = ({
     </View>
   );
 };
-
 
 const styles = StyleSheet.create({
   bar: {

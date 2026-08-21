@@ -24,10 +24,15 @@ import { t } from '@presentation/i18n';
 
 // The panel reads the session from the store; the views under test here are
 // about which control does what, so the session is a still life.
+// The vocabularies are required INSIDE the factory: jest hoists the factory
+// above the imports, so naming them from the outer scope is a reference error.
+// Spelling the values as raw strings instead would survive a rename of either
+// vocabulary in silence, which is what rule 5 is about.
 jest.mock('@presentation/base/hooks/assistant/use-assistant-session', () => ({
   useAssistantSession: () => ({
-    status: 'listening',
-    view: 'open',
+    status: jest.requireActual('@application/assistant/session/assistant-status').AssistantStatus
+      .Listening,
+    view: jest.requireActual('@application/assistant/session/assistant-view').AssistantView.Open,
     level: 0,
     isMuted: false,
     transcript: [],

@@ -9,8 +9,6 @@
  */
 export const colorAlphas = {
   /** ~9% — a tinted fill that barely departs from the surface beneath it. */
-  /** Barely there — for a shape that must stay visible while it is at rest. */
-  trace: '10',
   faint: '18',
   /** 25% — a tinted border on that fill. */
   soft: '40',

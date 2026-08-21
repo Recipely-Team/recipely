@@ -21,6 +21,10 @@ export interface AssistantTranscriptProps {
  *   transcription streams, so a line can appear a beat after the sound it
  *   belongs to; an action line is the app reporting a change it already made.
  *   Interleaving them is what makes the record answer "and then what happened".
+ * - **It is as tall as the conversation, no taller.** There is no panel behind
+ *   this; it floats over the app. A list stretched to fill the overlay caught
+ *   every touch in the clear space above the turns, which is the space the user
+ *   is looking through to work.
  * - **It follows the tail.** A hands-free user is not going to scroll, so a new
  *   line that lands below the fold is a line they never receive.
  */
@@ -48,7 +52,8 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
       // Ids are minted per line and never reused, so this is stable across the
       // re-render every incoming transcript fragment causes.
       keyExtractor={(line) => line.id}
-      contentContainerStyle={styles.list}
+      style={styles.list}
+      contentContainerStyle={styles.content}
       onContentSizeChange={follow}
       renderItem={({ item }) =>
         item.kind === AssistantTranscriptLineKind.Action ? (
@@ -62,6 +67,12 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
 };
 
 const styles = StyleSheet.create({
-  list: { gap: spacing.sm, paddingVertical: spacing.sm },
+  // A scrolling list cannot be transparent to touches in its own gaps, and
+  // ScrollView's base style is `flexGrow: 1` — so left to itself it filled the
+  // whole overlay and intercepted every tap meant for the screen underneath,
+  // including the empty space above the conversation. Sized to its turns, it
+  // covers only where there is something to read.
+  list: { flexGrow: ValueConstants.zero },
+  content: { gap: spacing.sm, paddingVertical: spacing.sm },
   empty: { paddingVertical: spacing.lg, alignItems: 'center' },
 });
