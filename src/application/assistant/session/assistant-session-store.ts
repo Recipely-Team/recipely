@@ -3,6 +3,7 @@ import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantLevelMeter } from '@application/assistant/session/assistant-level-meter';
+import { FailureCode } from '@core/failure/failure-code';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
@@ -112,6 +113,21 @@ const MS_PER_SECOND = 1_000;
  */
 const ECHO_TAIL_MS = 250;
 
+/** Swallows a rejection whose only useful response is to carry on regardless. */
+const noop = (): void => undefined;
+
+/**
+ * A clock that only moves forwards.
+ *
+ * The echo gate compares against a future timestamp, so a backwards system
+ * clock correction — NTP after a cold boot, a manual change — would leave the
+ * microphone deaf for the size of the jump while the user talked into it.
+ */
+const now = (): number =>
+  typeof performance !== 'undefined' && typeof performance.now === 'function'
+    ? performance.now()
+    : Date.now();
+
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
 ): BoundStore<AssistantSessionStoreState> => {
@@ -173,8 +189,20 @@ export const configureAssistantSessionStore = (
       toolQueue = Promise.resolve();
       unsubscribe?.();
       unsubscribe = null;
-      await microphone.stop();
-      await player.stop();
+      // Output first, then input. Stopping the microphone hands the audio
+      // session back to the system (`setAudioSessionActivity(false)`), and
+      // doing that while an output context is still open and running leaves
+      // the native layer holding a stream on a session it no longer owns — on
+      // a platform that answers such things with a segfault rather than an
+      // error.
+      //
+      // Each is wrapped alone because this is the one path that must always
+      // finish: a rejection here used to skip `session.close()` and the final
+      // `set`, leaving a socket open and billing, with its handler already
+      // detached, under a screen still showing the old status. iOS raises
+      // `AVAudioSessionErrorCodeIsBusy` for exactly this kind of teardown.
+      await player.stop().catch(noop);
+      await microphone.stop().catch(noop);
       session.close();
       // A waveform still moving under a session that has ended reads as a live
       // microphone, and a mute carried into the next session would silence it
@@ -307,7 +335,7 @@ export const configureAssistantSessionStore = (
           // The microphone is deaf until this audio has finished playing, plus
           // a tail — see `speakingUntil`.
           speakingUntil =
-            Math.max(speakingUntil, Date.now()) +
+            Math.max(speakingUntil, now()) +
             (event.samples.length / PLAYBACK_SAMPLE_RATE) * MS_PER_SECOND;
           player.enqueue(event.samples);
           // While the model speaks the waveform follows IT: the microphone is
@@ -425,23 +453,32 @@ export const configureAssistantSessionStore = (
         if (assistantIsLive(get().status)) return;
         set({ status: AssistantStatus.Connecting, error: null, deniedReason: null });
 
+        languageCode = locale;
+        resumptionHandle = null;
+        expectingGoAway = false;
+        handovers = ValueConstants.zero;
+        // Bumped BEFORE the first await, and every await below is followed by
+        // the same check. `Connecting` is a live status on purpose, so End is
+        // on screen while this runs — and without the guard, ending a session
+        // mid-connect tore down nothing and then this continued: socket open,
+        // microphone on, heartbeat billing, a second after the user stopped it.
+        epoch += ValueConstants.one;
+        const startedAt = epoch;
+        const abandoned = (): boolean => epoch !== startedAt;
+
         // Before the token, before the socket. Asked last, this was never
         // reached when anything earlier failed — so the user was never
         // prompted for the microphone and got "the request did not arrive"
         // for a session that had nothing to listen with.
         const access = await microphone.ensureAccess();
+        if (abandoned()) return;
         if (!access.ok) {
           set({ status: AssistantStatus.Unavailable, deniedReason: AssistantDenialReason.MicrophoneDenied });
           return;
         }
 
-        languageCode = locale;
-        resumptionHandle = null;
-        expectingGoAway = false;
-        handovers = ValueConstants.zero;
-        epoch += ValueConstants.one;
-
         const grant = await tokens.mintSession(locale);
+        if (abandoned()) return;
         if (!grant.ok) {
           set({ status: AssistantStatus.Unavailable, error: grant.failure });
           return;
@@ -456,22 +493,23 @@ export const configureAssistantSessionStore = (
         }
 
         set({ remainingSeconds: grant.value.remainingSeconds });
-        unsubscribe = session.subscribe(handle);
 
-        const connected = await session.connect(grant.value.credentials);
-        if (!connected.ok) {
-          await teardown(AssistantStatus.Idle);
-          set({ error: connected.failure });
-          return;
-        }
-
-        const output = await player.prepare(PLAYBACK_SAMPLE_RATE);
-        if (!output.ok) {
-          await teardown(AssistantStatus.Idle);
-          set({ error: output.failure });
-          return;
-        }
-
+        // The order of the next four is not arrangement, it is the only one
+        // that satisfies all three constraints at once:
+        //   - the microphone first of the two devices, because starting it is
+        //     what configures and activates the process-wide audio session,
+        //     and building the output context under a session about to change
+        //     leaves native audio holding a stream it no longer owns;
+        //   - the player before the socket, so an opening greeting has
+        //     somewhere to go instead of being dropped by its null guard while
+        //     still gating the microphone for audio nobody heard;
+        //   - the subscription before `connect`, because between a resolved
+        //     connect and a later subscribe there is no listener at all, and
+        //     whatever arrives in that window is gone rather than merely
+        //     unplayable.
+        // The cost is microphone frames captured before the socket is open,
+        // which `send` drops on a socket that is not `OPEN` — and which nobody
+        // is speaking into while the screen still says "Connecting".
         const input = await microphone.start(MIC_SAMPLE_RATE, (samples) => {
           // Muting withholds the frame itself. Anything softer — a flag the UI
           // reads, a gain of zero — still sends the room to the model, which
@@ -481,23 +519,75 @@ export const configureAssistantSessionStore = (
           // playing through its loudspeaker, and the library exposes no echo
           // cancellation on Android — its session options are iOS-only. So the
           // model heard itself, took it for the user, and answered, forever.
-          if (Date.now() < speakingUntil + ECHO_TAIL_MS) return;
+          // The zero check is not decoration: `now()` counts from process
+          // start, so without it the gate closes over its own tail for the
+          // first quarter-second of the app's life.
+          if (speakingUntil !== ValueConstants.zero && now() < speakingUntil + ECHO_TAIL_MS) return;
           session.sendAudio(samples);
           if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
         });
+        if (abandoned()) {
+          await microphone.stop().catch(noop);
+          return;
+        }
         if (!input.ok) {
-          // Not a failed request: the user said no to the microphone, and that
-          // is the one refusal here they can act on. Reported as an error it
-          // read as "this did not arrive", which invited them to retry the
-          // thing that will keep refusing.
-          await teardown(AssistantStatus.Unavailable);
-          set({ deniedReason: AssistantDenialReason.MicrophoneDenied });
+          // A refusal is identified by WHAT it is, not by where it happened.
+          // On native the prompt is in `ensureAccess`, so anything failing
+          // here is something else — a busy recorder, a call in progress, an
+          // OEM fault — and the diagnostic naming it is what tells them apart.
+          // On the web there IS no way to ask ahead: the prompt is inside
+          // `getUserMedia`, so the refusal lands here and nowhere else.
+          // Deciding by position told a user who had just pressed Block to
+          // retry a network problem.
+          await teardown(AssistantStatus.Idle);
+          if (input.failure.code === FailureCode.Forbidden) {
+            set({ status: AssistantStatus.Unavailable, deniedReason: AssistantDenialReason.MicrophoneDenied });
+            return;
+          }
+          set({ error: input.failure });
+          return;
+        }
+
+        const output = await player.prepare(PLAYBACK_SAMPLE_RATE);
+        if (abandoned()) {
+          await player.stop().catch(noop);
+          await microphone.stop().catch(noop);
+          return;
+        }
+        if (!output.ok) {
+          await teardown(AssistantStatus.Idle);
+          set({ error: output.failure });
+          return;
+        }
+
+        unsubscribe = session.subscribe(handle);
+
+        const connected = await session.connect(grant.value.credentials);
+        if (abandoned()) {
+          // Detached first, exactly as teardown does. Harmless today — `handle`
+          // is a stable reference and the only event that can follow is an
+          // expected close — but the one abort that did not mirror teardown is
+          // the one the next reader would not expect.
+          unsubscribe?.();
+          unsubscribe = null;
+          session.close();
+          await player.stop().catch(noop);
+          await microphone.stop().catch(noop);
+          return;
+        }
+        if (!connected.ok) {
+          await teardown(AssistantStatus.Idle);
+          set({ error: connected.failure });
           return;
         }
 
         heartbeat = setInterval(() => {
           void tokens.reportUsage(HEARTBEAT_SECONDS).then((reported) => {
-            if (!reported.ok) return;
+            // `clearInterval` stops the next tick, not a report already in
+            // flight. Unguarded, a late answer wrote minutes onto a session
+            // that had ended — and a zero could tear down the NEXT one on the
+            // previous one's budget.
+            if (abandoned() || !reported.ok) return;
             set({ remainingSeconds: reported.value });
             if (reported.value <= ValueConstants.zero) void teardown(AssistantStatus.Unavailable);
           });

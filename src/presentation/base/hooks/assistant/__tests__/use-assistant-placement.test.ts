@@ -36,6 +36,12 @@ describe('where the assistant is offered', () => {
     expect(useAssistantIsOffered()).toBe(true);
   });
 
+  it('stays away from the screen where a new password is typed', () => {
+    at(RoutePaths.resetPassword);
+
+    expect(useAssistantIsOffered()).toBe(false);
+  });
+
   it('is offered on a signed-out route that is not an auth screen', () => {
     at(RoutePaths.recipes + '/42');
 
@@ -46,6 +52,15 @@ describe('where the assistant is offered', () => {
 describe('clearing the screen own floating control', () => {
   it('lifts above the feed filter button', () => {
     expect(useAssistantFloatingClearance()).toBeGreaterThan(0);
+  });
+
+  // `/recipes/42` is a detail screen with no filter button. Matched by prefix,
+  // the assistant floated off the bottom edge there for a control that is not
+  // on it — and the test above walked past this by asking the other hook.
+  it('does not lift on a recipe detail screen, which has no filter button', () => {
+    at(RoutePaths.recipes + '/42');
+
+    expect(useAssistantFloatingClearance()).toBe(0);
   });
 
   it('sits at the edge where nothing else is docked', () => {

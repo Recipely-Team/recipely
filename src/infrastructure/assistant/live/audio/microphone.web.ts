@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure/failure';
 import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
-import { ValidationFailure } from '@core/failure/kinds/validation-failure';
+import { ForbiddenFailure } from '@core/failure/kinds/forbidden-failure';
 import { ValueConstants } from '@core/constants';
 import { resample } from '@infrastructure/assistant/live/pcm-codec';
 
@@ -30,6 +30,16 @@ import { resample } from '@infrastructure/assistant/live/pcm-codec';
 const PROCESSOR_BUFFER = 4096;
 const MONO = 1;
 
+/**
+ * The names a browser gives a microphone the user refused.
+ *
+ * `getUserMedia` is where the web's prompt lives — there is no way to ask
+ * ahead of it — so a refusal and a broken device arrive down the same path and
+ * only the error's name tells them apart. Reported as anything else, the user
+ * who just pressed "Block" is told to retry a network problem.
+ */
+const REFUSAL_NAMES: readonly string[] = ['NotAllowedError', 'SecurityError'];
+
 export class Microphone implements MicrophoneInterface {
   private stream: MediaStream | null = null;
   private context: AudioContext | null = null;
@@ -40,7 +50,7 @@ export class Microphone implements MicrophoneInterface {
     // `getUserMedia`, so all that can be checked here is that there is an API
     // to ask with. `start` still reports a refusal.
     if (navigator.mediaDevices === undefined) {
-      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+      return { ok: false, failure: new ForbiddenFailure(DiagnosticMessage.assistant.microphoneDenied) };
     }
     return { ok: true, value: undefined };
   }
@@ -52,7 +62,7 @@ export class Microphone implements MicrophoneInterface {
     if (this.stream !== null) return { ok: true, value: undefined };
 
     if (navigator.mediaDevices === undefined) {
-      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+      return { ok: false, failure: new ForbiddenFailure(DiagnosticMessage.assistant.microphoneDenied) };
     }
 
     try {
@@ -82,7 +92,12 @@ export class Microphone implements MicrophoneInterface {
     } catch (error) {
       await this.stop();
       // The browser reports a refused prompt as a rejected promise, so a
-      // denial and a broken device arrive down the same path.
+      // denial and a broken device arrive down the same path — and only the
+      // error's NAME tells them apart. Reported as anything else, the user who
+      // just pressed Block is told to retry a network problem.
+      if (error instanceof Error && REFUSAL_NAMES.includes(error.name)) {
+        return { ok: false, failure: new ForbiddenFailure(DiagnosticMessage.assistant.microphoneDenied) };
+      }
       const reason = error instanceof Error ? error.message : DiagnosticMessage.crypto.unknownReason;
       return { ok: false, failure: new UnknownFailure(DiagnosticMessage.assistant.microphoneUnavailable(reason)) };
     }

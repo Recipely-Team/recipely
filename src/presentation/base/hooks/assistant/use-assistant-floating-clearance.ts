@@ -22,6 +22,9 @@ const OCCUPIED_CORNERS: readonly string[] = [RoutePaths.recipes];
  */
 export const useAssistantFloatingClearance = (): number => {
   const pathname = usePathname();
-  const occupied = OCCUPIED_CORNERS.some((route) => pathname.startsWith(route));
+  // Exact, not a prefix: `/recipes/42` is a detail screen with no filter
+  // button, and matching by prefix lifted the assistant off the bottom edge on
+  // the app's second-busiest screen for a control that is not there.
+  const occupied = OCCUPIED_CORNERS.includes(pathname);
   return occupied ? controlSizes.fabExtended + spacing.md : ValueConstants.zero;
 };

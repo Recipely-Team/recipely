@@ -69,7 +69,17 @@ export function resample(
   fromRate: number,
   toRate: number,
 ): Float32Array<ArrayBuffer> {
-  if (fromRate === toRate || samples.length === ValueConstants.zero) return samples;
+  // A zero rate would make the ratio infinite and `new Float32Array(Infinity)`
+  // throws — inside the socket's synchronous dispatch, where a throw takes the
+  // whole message loop with it.
+  if (
+    fromRate === toRate ||
+    fromRate <= ValueConstants.zero ||
+    toRate <= ValueConstants.zero ||
+    samples.length === ValueConstants.zero
+  ) {
+    return samples;
+  }
 
   const ratio = fromRate / toRate;
   const count = Math.floor(samples.length / ratio);

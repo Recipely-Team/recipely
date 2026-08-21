@@ -10,6 +10,7 @@ export const RoutePaths = {
   register: '/register',
   forgotPassword: '/forgot-password',
   verifyCode: '/verify-code',
+  resetPassword: '/reset-password',
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   importRecipe: '/import-recipe',

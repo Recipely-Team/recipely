@@ -1,3 +1,4 @@
+import { ForbiddenFailure } from '@core/failure/kinds/forbidden-failure';
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
@@ -32,15 +33,29 @@ function harness(
     connectFails?: boolean;
     micFails?: boolean;
     micRefused?: boolean;
+    /** Refuses at CAPTURE, the way a browser does — its prompt is inside getUserMedia. */
+    micStartRefused?: boolean;
     messengerFails?: boolean;
     textAction?: { action: { name: string; arg?: string } };
+    /** Holds one startup step open so a test can end the session inside it. */
+    stall?: 'ensureAccess' | 'mint' | 'micStart' | 'prepare' | 'connect';
   } = {},
 ) {
   let emit: (event: AssistantSessionEventType) => void = () => {};
+  /** Resolves the stalled step, once a test has done whatever it stalled it for. */
+  let release: () => void = () => {};
+  const stall = async (step: NonNullable<typeof overrides.stall>): Promise<void> => {
+    if (overrides.stall !== step) return;
+    await new Promise<void>((resolve) => {
+      release = resolve;
+    });
+  };
   const calls = {
     flush: 0,
     enqueued: 0,
     micStopped: 0,
+    /** The order the two audio devices were released in. */
+    released: [] as string[],
     connects: 0,
     toolResponses: [] as unknown[],
     texts: [] as string[],
@@ -52,6 +67,7 @@ function harness(
 
   const session: AssistantSessionInterface = {
     connect: async () => {
+      await stall('connect');
       calls.connects += 1;
       return overrides.connectFails === true
         ? { ok: false, failure: new NetworkFailure('nope') }
@@ -70,11 +86,15 @@ function harness(
   };
 
   const microphone: MicrophoneInterface = {
-    ensureAccess: async () =>
+    ensureAccess: async () => (await stall('ensureAccess'),
       overrides.micRefused === true
-        ? { ok: false, failure: new NetworkFailure('refused') }
-        : { ok: true, value: undefined },
+        ? { ok: false, failure: new ForbiddenFailure('refused') }
+        : { ok: true, value: undefined }),
     start: async (_rate, onFrame) => {
+      await stall('micStart');
+      if (overrides.micStartRefused === true) {
+        return { ok: false, failure: new ForbiddenFailure('blocked') };
+      }
       calls.onFrame = onFrame;
       return overrides.micFails === true
         ? { ok: false, failure: new NetworkFailure('denied') }
@@ -82,23 +102,27 @@ function harness(
     },
     stop: async () => {
       calls.micStopped += 1;
+      calls.released.push('microphone');
       calls.onFrame = null;
     },
   };
 
   const player: AudioPlayerInterface = {
-    prepare: async () => ({ ok: true, value: undefined }),
+    prepare: async () => (await stall('prepare'), { ok: true, value: undefined }),
     enqueue: () => {
       calls.enqueued += 1;
     },
     flush: () => {
       calls.flush += 1;
     },
-    stop: async () => {},
+    stop: async () => {
+      calls.released.push('player');
+    },
   };
 
   const tokens: AssistantTokenRepositoryInterface = {
     mintSession: async (languageCode, resumptionHandle) => {
+      await stall('mint');
       calls.mints.push({ languageCode, resumptionHandle });
       const denied =
         overrides.grantDenied === true ||
@@ -136,7 +160,7 @@ function harness(
   const registry = new AssistantActionRegistry();
   const store = configureAssistantSessionStore({ session, microphone, player, tokens, messenger, registry });
   openStores.push(store);
-  return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event) };
+  return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event), release: () => release() };
 }
 
 type SpeechLine = Extract<AssistantTranscriptLine, { kind: typeof AssistantTranscriptLineKind.Speech }>;
@@ -153,6 +177,11 @@ const frame = (amplitude: number): Float32Array<ArrayBuffer> =>
 const settle = async (): Promise<void> => {
   for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
 };
+
+/** Lets every queued microtask run — teardown awaits two device stops, each
+ *  behind its own rejection guard, so a fixed number of `Promise.resolve()`
+ *  hops is a count that quietly goes stale. */
+const settled = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
 describe('assistant session store', () => {
   afterEach(async () => {
@@ -218,13 +247,30 @@ describe('assistant session store', () => {
       expect(store.getState().error).toBeNull();
     });
 
-    it('reports access lost between the question and the capture the same way', async () => {
-      const { store } = harness({ micFails: true });
+    // Both halves of the web path were covered and the SEAM between them was
+    // not — which is exactly where the defect lived: the store decided a
+    // refusal by where it happened, and on the web the prompt is inside
+    // `getUserMedia`, so the refusal lands where the code assumed it could not.
+    it('recognises a refusal that arrives at capture, as the browser delivers it', async () => {
+      const { store } = harness({ micStartRefused: true });
 
       await store.getState().startVoice('tr-TR');
 
       expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
       expect(store.getState().error).toBeNull();
+    });
+
+    // A refusal is `ensureAccess`'s answer. Failing at CAPTURE means something
+    // else — the recorder busy, a call in progress, an OEM fault — and only the
+    // diagnostic naming it can tell them apart. Reported as a denied
+    // permission, it sent the user to grant one they had already granted.
+    it('does not blame the permission when capture fails for another reason', async () => {
+      const { store } = harness({ micFails: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().deniedReason).toBeNull();
+      expect(store.getState().error).not.toBeNull();
     });
   });
 
@@ -239,6 +285,84 @@ describe('assistant session store', () => {
     await store.getState().startVoice('tr-TR');
 
     expect(calls.mints).toHaveLength(2);
+  });
+
+  // Stopping the microphone hands the audio session back to the system, and
+  // doing that while an output context is still open leaves the native layer
+  // holding a stream on a session it no longer owns. A Xiaomi answered the
+  // audio path with a segfault rather than an error, so the ordering here is
+  // not a matter of taste.
+  it('releases the output before handing the audio session back', async () => {
+    const { store, calls } = harness();
+    await store.getState().startVoice('tr-TR');
+
+    await store.getState().stopVoice();
+
+    expect(calls.released).toEqual(['player', 'microphone']);
+  });
+
+  // `Connecting` is a live status on purpose, so End is on screen while the
+  // session is still being established. Without an epoch check after each
+  // await, ending it there tore down nothing and `startVoice` then carried on:
+  // socket open, microphone on, heartbeat billing — a second after the user
+  // stopped it, with no control left that had any effect.
+  it('opens nothing when the session is ended while it is still connecting', async () => {
+    const { store, calls } = harness();
+    const starting = store.getState().startVoice('tr-TR');
+    await store.getState().stopVoice();
+
+    await starting;
+
+    expect(store.getState().status).toBe(AssistantStatus.Idle);
+    expect(calls.onFrame).toBeNull();
+  });
+
+  // The subscription used to be taken last, which left a window between a
+  // resolved connect and it where an arriving greeting had no listener at all
+  // — gone rather than merely unplayable.
+  it('is listening before the socket can say anything', async () => {
+    const { store, calls, emit } = harness();
+
+    await store.getState().startVoice('tr-TR');
+    emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.2]) });
+
+    expect(calls.enqueued).toBeGreaterThan(0);
+  });
+
+  // `Connecting` is a live status on purpose, so End is on screen for the whole
+  // of `startVoice` — which awaits five things. Without a check after each,
+  // ending it there tore down nothing and the function carried on: socket open,
+  // microphone on, heartbeat billing, a second after the user stopped it.
+  //
+  // Each step is held open in turn so the abort at THAT point actually runs.
+  // Only the first was reachable before, and the four that contain the cleanup
+  // code never executed in any test.
+  describe.each([
+    ['asking for the microphone', 'ensureAccess'],
+    ['minting the session', 'mint'],
+    ['opening the microphone', 'micStart'],
+    ['preparing playback', 'prepare'],
+    ['connecting the socket', 'connect'],
+  ] as const)('ended while %s', (_name, step) => {
+    it('leaves nothing open and nothing listening', async () => {
+      const { store, calls, release } = harness({ stall: step });
+      const starting = store.getState().startVoice('tr-TR');
+      await settled();
+
+      await store.getState().stopVoice();
+      release();
+      await starting;
+      await settled();
+
+      expect(store.getState().status).toBe(AssistantStatus.Idle);
+      // The device is the thing that matters: a live callback here means a
+      // microphone still recording for a session the user ended.
+      expect(calls.onFrame).toBeNull();
+      // Released output-first, the mirror of teardown. Releasing twice is
+      // harmless — both stops are idempotent — but out of order is not.
+      const tail = calls.released.slice(-2);
+      if (tail.length === 2 && tail[0] !== tail[1]) expect(tail).toEqual(['player', 'microphone']);
+    });
   });
 
   it('ignores a second start while a session is already up', async () => {
@@ -544,9 +668,7 @@ describe('assistant session store', () => {
       await store.getState().startVoice('tr-TR');
 
       emit({ kind: AssistantEventKind.Closed, expected: false });
-      // Standing down closes the microphone and the player, both async.
-      await Promise.resolve();
-      await Promise.resolve();
+      await settled();
 
       expect(store.getState().status).toBe(AssistantStatus.Idle);
     });

@@ -91,6 +91,32 @@ describe('GeminiLiveSession', () => {
     return { session, socket, sockets, events, result, openedWith };
   };
 
+  // It settled only on `Ready`, an error or a close, so a socket that opened,
+  // took the setup frame and then said nothing left the promise pending
+  // forever. Harmless while the microphone was opened afterwards; the store
+  // now opens it BEFORE, so an unbounded wait is a recording device held open
+  // with nothing counting against it.
+  it('gives up on a socket that opens and then says nothing', async () => {
+    jest.useFakeTimers();
+    try {
+      const sockets: FakeSocket[] = [];
+      const session = new GeminiLiveSession(() => {
+        const socket = new FakeSocket();
+        sockets.push(socket);
+        return socket as unknown as WebSocket;
+      });
+
+      const pending = session.connect(credentials);
+      sockets[0]!.open();
+      await jest.advanceTimersByTimeAsync(30_000);
+
+      await expect(pending).resolves.toMatchObject({ ok: false });
+      expect(sockets[0]!.readyState).toBe(FakeSocket.CLOSED);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
   // The token is the ONLY thing that authenticates this socket — a browser
   // WebSocket cannot set a header, so it is a query parameter or it is nowhere.
   // Opened without it the handshake completes and the server then closes it,
@@ -284,9 +310,14 @@ describe('GeminiLiveSession', () => {
     const { session, events } = await connected();
     events.length = 0;
 
+    // Left unsettled on purpose — this is about the OLD socket's close event.
+    // Closed afterwards so the connect timeout does not outlive the suite: a
+    // pending timer prints "Jest did not exit" on every run, and a permanent
+    // warning over a green gate is how a real one comes to be skimmed past.
     void session.connect(credentials);
 
     expect(events).toEqual([{ kind: AssistantEventKind.Closed, expected: true }]);
+    session.close();
   });
 
   it('reports a dropped connection as unexpected', async () => {

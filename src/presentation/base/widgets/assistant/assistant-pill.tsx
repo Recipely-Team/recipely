@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
@@ -37,6 +38,9 @@ import { ValueConstants } from '@core/constants';
  *   safe-area inset alone, it landed squarely on the third tab and swallowed
  *   taps meant for it. Routes without a tab bar — onboarding, auth, detail —
  *   must NOT reserve that height, or the control floats away from the edge.
+ * - **Leaving those routes is not the same as hiding.** A session running when
+ *   an expired token redirects to sign-in would keep its microphone open with
+ *   no control left on screen to close it, so the route change ends it.
  * - **It is absent where it could only get in the way.** Signing in,
  *   registering and recovering a password are screens where every action is
  *   the user's own; the assistant cannot type a password and must not appear
@@ -58,6 +62,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   useAssistantScreenContext();
 
   const isOffered = useAssistantIsOffered();
+  const live = assistantIsLive(status);
   const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const bottom =
@@ -66,10 +71,15 @@ export const AssistantPill = (): React.JSX.Element | null => {
     floatingClearance +
     spacing.lg;
 
+  // Hiding the controls does not stop a session. Landing on the sign-in screen
+  // mid-conversation — an expired token redirects there — would otherwise leave
+  // the microphone open with nothing on screen able to close it.
+  useEffect(() => {
+    if (!isOffered && live) void toggleVoice();
+  }, [isOffered, live, toggleVoice]);
+
   // Below every hook, so the order never changes with the route.
   if (!isOffered) return null;
-
-  const live = assistantIsLive(status);
 
   // Hanging up is a decision. Putting the panel away is not, so it keeps a
   // running session alive in the mini bar and only closes outright when there

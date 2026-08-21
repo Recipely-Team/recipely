@@ -52,6 +52,16 @@ type SocketFactory = (url: string) => WebSocket;
 
 const SOCKET_OPEN = 1;
 const ARRAY_BUFFER = 'arraybuffer';
+/**
+ * How long a socket may take to reach `setupComplete` before it is abandoned.
+ *
+ * It settled only on `Ready`, an error or a close, so a socket that opened,
+ * took the setup frame and then said nothing left the promise pending forever
+ * — the exact symptom this whole area started with. Harmless while the
+ * microphone was opened afterwards; once it is opened BEFORE, an unbounded
+ * wait is a recording device held open with nothing counting against it.
+ */
+const CONNECT_TIMEOUT_MS = 15_000;
 const QUERY_START = '?';
 const QUERY_JOIN = '&';
 
@@ -108,9 +118,21 @@ export class GeminiLiveSession implements AssistantSessionInterface {
 
     return new Promise((resolve) => {
       let settled = false;
+      const timer = setTimeout(() => {
+        // Settled BEFORE closing: a runtime whose `close()` fires `onclose`
+        // synchronously would otherwise answer with "closed before ready" and
+        // this reason would never be the one anybody reads.
+        settle({
+          ok: false,
+          failure: new NetworkFailure(DiagnosticMessage.assistant.connectTimedOut),
+        });
+        this.close();
+      }, CONNECT_TIMEOUT_MS);
+
       const settle = (result: Result<void, Failure>): void => {
         if (settled) return;
         settled = true;
+        clearTimeout(timer);
         resolve(result);
       };
 
@@ -147,6 +169,10 @@ export class GeminiLiveSession implements AssistantSessionInterface {
 
   sendAudio(samples: Float32Array<ArrayBuffer>): void {
     if (samples.length === ValueConstants.zero) return;
+    // Checked before encoding, not after: capture now starts before the socket
+    // does, so every frame in that window used to be converted to base64 and
+    // then dropped by `send`.
+    if (!this.isOpen) return;
 
     this.send({
       realtimeInput: { audio: { data: float32ToPcm16Base64(samples), mimeType: LiveProtocol.inputAudioMime } },
@@ -181,12 +207,17 @@ export class GeminiLiveSession implements AssistantSessionInterface {
     socket.close();
   }
 
+  private get isOpen(): boolean {
+    return this.socket !== null && this.socket.readyState === SOCKET_OPEN;
+  }
+
   private send(message: unknown): void {
     // A frame produced after the socket went away is dropped: it is one frame
     // of audio, and there is nothing a screen could usefully do about it.
-    if (this.socket === null || this.socket.readyState !== SOCKET_OPEN) return;
+    const socket = this.socket;
+    if (socket === null || socket.readyState !== SOCKET_OPEN) return;
 
-    this.socket.send(JSON.stringify(message));
+    socket.send(JSON.stringify(message));
   }
 
   private parse(data: unknown): AssistantSessionEventType[] {

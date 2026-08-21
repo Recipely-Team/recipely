@@ -4,7 +4,7 @@ import type { Failure } from '@core/failure/failure';
 import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
-import { ValidationFailure } from '@core/failure/kinds/validation-failure';
+import { ForbiddenFailure } from '@core/failure/kinds/forbidden-failure';
 import { ValueConstants } from '@core/constants';
 import { resample } from '@infrastructure/assistant/live/pcm-codec';
 
@@ -12,12 +12,6 @@ import { resample } from '@infrastructure/assistant/live/pcm-codec';
  * Microphone capture for the voice assistant, over `react-native-audio-api`.
  *
  * @remarks
- * - **`voiceChat` mode is what makes interruption possible at all.** It turns
- *   on the platform's echo canceller, and without it the microphone hears the
- *   assistant's own reply coming out of the speaker: the model detects speech,
- *   decides it has been interrupted, and cuts itself off mid-sentence with
- *   nobody having said anything. The category has to be `playAndRecord` for
- *   the same reason — capture and playback run at once, not in turns.
  * - **The requested rate is a wish; the delivered rate is a fact.** The
  *   recorder documents `sampleRate` as a preference, so every frame is
  *   converted from the rate the buffer actually reports rather than from the
@@ -25,6 +19,11 @@ import { resample } from '@infrastructure/assistant/live/pcm-codec';
  *   model simply hears them sped up, which is far harder to notice.
  * - **Permission is requested here** so no caller can reach `start` without it,
  *   and a refusal comes back as a `Result` like any other failure.
+ * - **The session options are iOS-only.** `voiceChat` gives that platform an
+ *   echo canceller; Android gets none, because the library exposes none. The
+ *   application layer closes the microphone while the assistant speaks
+ *   instead — see `speakingUntil` in the session store. Do not read the
+ *   options below as protection on both platforms; they are not.
  */
 // 100 ms at the wire rate: small enough that the model hears the user promptly,
 // large enough that a socket write per frame is not a per-20-ms tax.
@@ -44,11 +43,11 @@ export class Microphone implements MicrophoneInterface {
     try {
       const permission = await AudioManager.requestRecordingPermissions();
       if (permission !== PERMISSION_GRANTED) {
-        return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+        return { ok: false, failure: new ForbiddenFailure(DiagnosticMessage.assistant.microphoneDenied) };
       }
       return { ok: true, value: undefined };
     } catch {
-      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+      return { ok: false, failure: new ForbiddenFailure(DiagnosticMessage.assistant.microphoneDenied) };
     }
   }
 
@@ -56,12 +55,16 @@ export class Microphone implements MicrophoneInterface {
     sampleRate: number,
     onFrame: (samples: Float32Array<ArrayBuffer>) => void,
   ): Promise<Result<void, Failure>> {
-    if (this.recorder !== null) return { ok: true, value: undefined };
-
     const access = await this.ensureAccess();
     if (!access.ok) return access;
 
     try {
+      // Restarting replaces the callback rather than reporting success and
+      // keeping the old one — the frames would have gone to a closure
+      // belonging to a session that had ended. Inside the try, because a
+      // rejecting native stop must not escape a method promising a Result.
+      if (this.recorder !== null) await this.stop();
+
       AudioManager.setAudioSessionOptions({
         iosCategory: 'playAndRecord',
         iosMode: 'voiceChat',
@@ -78,7 +81,12 @@ export class Microphone implements MicrophoneInterface {
       this.recorder = recorder;
       return { ok: true, value: undefined };
     } catch (error) {
+      // `stop()` returns early when `this.recorder` is still null — which it is
+      // if the constructor or `start()` threw — so the session is handed back
+      // here explicitly. Left active it is exclusive: the user's music stays
+      // dead until the app is restarted, after a failed attempt to talk.
       await this.stop();
+      await AudioManager.setAudioSessionActivity(false).catch(() => undefined);
       const reason = error instanceof Error ? error.message : DiagnosticMessage.crypto.unknownReason;
       return { ok: false, failure: new UnknownFailure(DiagnosticMessage.assistant.microphoneUnavailable(reason)) };
     }
