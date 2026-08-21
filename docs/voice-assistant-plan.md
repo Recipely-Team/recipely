@@ -301,6 +301,71 @@ gönderilir. `attachPhoto` galeriyi açar, seçimi kullanıcı yapar.
 4. **Gizlilik**: free tier içeriği Google ürün geliştirmede kullanıyor → politika metni +
    ilk kullanımda sesli mod onayı.
 
+## Premium — planlandı, YAPILMADI
+
+Asistan premium bir özellik olarak tasarlandı. Karar 2026-08-21'de verildi;
+**kod yazılmayacak, önce özelliğin düzgün çalıştığı doğrulanacak.** Bu bölüm o
+gün gelince yeniden türetilmesin diye duruyor.
+
+**Kapı tek bir yerde: mint.** Cihaz token olmadan soket açamıyor, yani
+yetkilendirme `POST /assistant/session`'da kontrol edilir ve başka hiçbir yerde
+edilmez — bütçenin orada olmasının sebebiyle aynı sebep. **İkinci kapı
+`POST /assistant/message`**: unutulursa premium yazarak sızar, çünkü o uç
+soketten bağımsız çalışıyor.
+
+**İstemci tarafı zaten hazır.** `AssistantSessionGrantType` bir birlik ve
+`Denied` bir gerekçe taşıyor; üçüncü bir gerekçe (`not_premium`) yeni tesisat
+gerektirmiyor, panel de gerekçeye özel metni zaten gösteriyor.
+
+**`isAvailable` premium için YANLIŞ kaldıraç.** O, asistanı tamamen gizlemek
+için var (token hiç üretilemediğinde). Premium bunun tersini ister: özellik
+görünsün, ne olduğu anlatılsın, yükseltme teklif edilsin. Yani premium olmayan
+kullanıcı `Denied(not_premium)` alır — pill durur, panel satışı yapar.
+
+**Bütçe bir kademe özelliği olur.** Bugün herkese 600 sn/gün. Kademeli hâlde
+ücretsiz kullanıcı 0 sn (yalnızca yazılı) ya da küçük bir pay alır, premium
+600'ü alır. `ASSISTANT_DAILY_SECONDS` tek bir sayı olmaktan çıkıp kademeye göre
+çözülür.
+
+**Eksik olan tek şey abonelik kaynağı.** İki repoda da premium/abonelik kavramı
+yok — arandı, yok. Gerçek ön koşul bu: kim premium, nereden biliniyor, iptal
+nasıl yansıyor. Store içi satın alma da işin içine girerse App Store ve Play
+kuralları ayrı bir iş kalemi.
+
+**Hesap değişiminde sıfırlanmalı.** `clearSessionCaches` yetkilendirmeyi de
+temizlemeli, yoksa çıkış yapan premium kullanıcının hakkı sonraki kullanıcıya
+kalır — [[project-session-cache-reset]] ile aynı sınıf.
+
+**Etkilenmeyenler:** `CONFIRMED_ACTIONS` ve rule V, action sözlüğü, transport.
+Premium kimin konuşabildiğini değiştirir, asistanın ne yaptığını değil.
+
+## Coğrafya — ölçüldü, engel görülmedi (2026-08-21)
+
+"Gemini free tier İsviçre'den çalışmıyor" varsayımı Zürih kutusuna karşı
+ölçüldü. Aynı anahtar, aynı model (`gemini-flash-latest`), beşer deneme:
+
+| Konum | `generateContent` | `auth_tokens` |
+|---|---|---|
+| Zürih (api sunucusu) | 3/5 başarı | 200 |
+| Türkiye (yerel) | 1/5 başarı | 200 |
+
+Başarısızlıklar iki konumda da birebir aynı: `503 — This model is currently
+experiencing high demand`. Coğrafi engelin imzası olan `400 — User location is
+not supported for the API use` **hiçbir denemede** görülmedi. Yani o gün, o
+anahtarla, engel yoktu; dalgalanma vardı ve her yerdeydi.
+
+Tekrar bakmak gerekirse tek satır:
+
+```
+ssh recipely-api-dev 'curl -s -X POST "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=SENIN_ANAHTARIN" -H "content-type: application/json" -d "{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"selam\"}]}]}" | head -c 300'
+```
+
+**Sesli mod sunucunun konumuna zaten bağlı değil.** Sunucu yalnızca
+`auth_tokens` çağırır; WebSocket cihazdan Google'a gider. `generateContent`'i
+sadece yazılı mod kullanır. Coğrafya bir gün gerçekten sorun olursa sesi değil,
+yalnızca yazılı yedeği etkiler — ve çözümü Frankfurt'taki bir kutudan geçen tek
+bir egress yolu olur, sunucu taşımak değil.
+
 ## Fazlar
 
 **Faz 0 — spike (UI'dan önce, her şeyi de-riske eder).** Dev build + throwaway ekran:
