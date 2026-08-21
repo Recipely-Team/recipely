@@ -53,8 +53,27 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
+  /** Appends a blank ingredient row — what a person tapping "+" wants. */
   const onAddIngredient = useCallback((): void => {
     setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, CharConstants.empty] }));
+    clearFieldError('ingredients');
+  }, [clearFieldError]);
+
+  /**
+   * Appends an ingredient row that already has its text.
+   *
+   * Separate from {@link onAddIngredient} rather than an optional parameter on
+   * it. The blank version is wired straight to a Pressable's `onPress`, which
+   * calls it WITH the gesture event — an optional first parameter therefore
+   * pushed a `GestureResponderEvent` into a `string[]` on an ordinary tap, and
+   * neither the type (three levels of `() => void` props) nor any test saw it.
+   *
+   * It exists at all because the assistant adds two things in one breath: two
+   * tool calls in one model turn run as microtasks, before React re-renders,
+   * so appending and then writing had both calls land on the same index.
+   */
+  const onAppendIngredient = useCallback((value: string): void => {
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, value] }));
     clearFieldError('ingredients');
   }, [clearFieldError]);
   /**
@@ -122,8 +141,15 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
+  /** Appends a blank instruction row — what a person tapping "+" wants. */
   const onAddStep = useCallback((): void => {
     setRecipe((r) => ({ ...r, instructions: [...r.instructions, CharConstants.empty] }));
+    clearFieldError('instructions');
+  }, [clearFieldError]);
+
+  /** Appends an instruction that already has its text — see {@link onAppendIngredient}. */
+  const onAppendStep = useCallback((value: string): void => {
+    setRecipe((r) => ({ ...r, instructions: [...r.instructions, value] }));
     clearFieldError('instructions');
   }, [clearFieldError]);
 
@@ -153,6 +179,7 @@ export const useEditableRecipe = () => {
     onChangeIngredient,
     onRemoveIngredient,
     onAddIngredient,
+    onAppendIngredient,
     onAddIngredientAt,
     onMoveIngredient,
     onAddIngredientGroup,
@@ -160,6 +187,7 @@ export const useEditableRecipe = () => {
     onChangeStep,
     onRemoveStep,
     onAddStep,
+    onAppendStep,
     onAddMedia,
     onRemoveMedia,
     onSetCover,

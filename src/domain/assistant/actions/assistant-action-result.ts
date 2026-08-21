@@ -29,4 +29,14 @@ export interface AssistantActionResultType {
   readonly awaiting?: boolean;
   /** A short machine-readable reason when `ok` is false. */
   readonly error?: string;
+  /**
+   * Set when this handler is not the right one to answer — the screen looked,
+   * and the subject is not its own.
+   *
+   * The registry then tries the handler underneath rather than reporting a
+   * failure. My Recipes answers `openRecipe` for the rows it is showing; a
+   * recipe the user names from anywhere else belongs to the always-mounted
+   * handler, and without this the innermost screen simply denied it.
+   */
+  readonly notMine?: boolean;
 }

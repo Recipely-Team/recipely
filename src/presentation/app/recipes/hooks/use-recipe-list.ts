@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/assistant-scroll-direction';
+} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { SCROLL_STEP_SHARE } from '@presentation/app/recipes/model/scroll-step-share';

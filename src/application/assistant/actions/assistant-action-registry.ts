@@ -1,7 +1,7 @@
 import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionHandlerType } from '@domain/assistant/actions/assistant-action-handler';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
  * Routes a tool call from the model to the code that performs it.
@@ -14,6 +14,15 @@ import { CharConstants } from '@core/constants';
  *   unknown action is a normal outcome, not a bug: the enum the model chooses
  *   from is declared by the backend, so a deploy there can teach it a word this
  *   build has never heard.
+ * - **A handler may decline.** Answering `notMine` passes the call outward to
+ *   the handler underneath instead of failing — the list screen answers for
+ *   the rows it is showing, and anything else falls through to the one that
+ *   works from anywhere.
+ * - **A key holds a STACK, not one handler.** Several actions are implemented
+ *   by more than one screen — the pill answers `openRecipe` from anywhere, My
+ *   Recipes answers it from the list in front of the user — and the innermost
+ *   screen should win while it is open, then hand the action back when it
+ *   leaves. A single slot could not hand anything back.
  * - **Handlers register themselves.** Half of these are UI gestures — navigate,
  *   focus a field, open the photo picker — which only the presentation layer
  *   can perform, and half are use cases. Both arrive through `register`, so
@@ -24,22 +33,41 @@ import { CharConstants } from '@core/constants';
  *   the handler was registered would describe the screen the user has left.
  */
 export class AssistantActionRegistry {
-  private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType>();
+  private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
   private describeScreen: () => string = () => CharConstants.empty;
 
   register(action: AssistantActionType, handler: AssistantActionHandlerType): () => void {
-    this.handlers.set(action, handler);
+    const stack = this.handlers.get(action) ?? [];
+    stack.push(handler);
+    this.handlers.set(action, stack);
+
     return () => {
-      // Only clear it if it is still ours: a screen unmounting after its
-      // replacement registered the same action would otherwise delete the
-      // live handler on its way out.
-      if (this.handlers.get(action) === handler) this.handlers.delete(action);
+      const current = this.handlers.get(action);
+      if (current === undefined) return;
+
+      // Remove THIS handler wherever it sits, rather than clearing the key.
+      // Five actions are implemented by two screens each — the always-mounted
+      // pill answers `openRecipe`, and My Recipes answers it better while it
+      // is open — and expo-router leaves the screen underneath mounted. A
+      // cleanup that deleted the key took the shadowed handler with it, and
+      // nothing re-registered it: `useAssistantAction`'s effect depends only
+      // on the action and the registry, neither of which changes. Opening My
+      // Recipes once and going back left "open the lentil soup" answering
+      // `unavailable_here` for the rest of the process.
+      const at = current.lastIndexOf(handler);
+      if (at !== ValueConstants.minusOne) current.splice(at, ValueConstants.one);
+      if (current.length === ValueConstants.zero) this.handlers.delete(action);
     };
   }
 
   /** Supplies the one-line screen state appended to every result. */
   setScreenDescriber(describe: () => string): void {
     this.describeScreen = describe;
+  }
+
+  /** The one-line screen state, for a caller that needs it outside a result. */
+  get screenContext(): string {
+    return this.describeScreen();
   }
 
   get registeredActions(): AssistantActionType[] {
@@ -51,23 +79,37 @@ export class AssistantActionRegistry {
       return this.withContext({ ok: false, error: 'unknown_action' });
     }
 
-    const handler = this.handlers.get(action);
-    if (handler === undefined) {
+    const stack = this.handlers.get(action) ?? [];
+    if (stack.length === ValueConstants.zero) {
       // The action exists but nothing on this screen can do it — "open the
       // photo picker" with no draft open. The model can recover from being
       // told so; it cannot recover from silence.
       return this.withContext({ ok: false, error: 'unavailable_here' });
     }
 
-    try {
-      return this.withContext(await handler(arg));
-    } catch {
-      // A handler that throws is a bug, and it must still not hang the session.
-      return this.withContext({ ok: false, error: 'failed' });
+    // Innermost first, then outward while a handler says the subject is not
+    // its own. A screen showing a list answers for the rows it is showing; a
+    // recipe named from anywhere else belongs to the handler underneath, and
+    // stopping at the top meant the innermost screen denied it.
+    for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
+      try {
+        const result = await stack[at]!(arg);
+        if (result.notMine !== true) return this.withContext(result);
+      } catch {
+        // A handler that throws is a bug, and it must still not hang the
+        // session — but it also must not silently promote the one beneath it.
+        return this.withContext({ ok: false, error: 'failed' });
+      }
     }
+    return this.withContext({ ok: false, error: 'not_found' });
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {
+    // A handler that said something more specific keeps it. My Recipes reports
+    // which tab it refreshed; overwriting that with the pathname threw away
+    // the one thing that handler bothered to say.
+    if (result.ctx !== undefined) return result;
+
     const ctx = this.describeScreen();
     return ctx === CharConstants.empty ? result : { ...result, ctx };
   }

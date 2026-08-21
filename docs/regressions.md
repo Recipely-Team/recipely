@@ -1407,3 +1407,248 @@ stray "yes" with nothing pending answers `unavailable_here`.
 interrupts.** Adding a confirmation to a voice flow and leaving it touch-only
 does not make the flow safer, it makes it unusable — and the failure is
 invisible to every test that does not act out the scenario.
+
+## The action that worked until you visited the screen that also implements it
+
+Opening My Recipes once and going back left "open the lentil soup" answering
+`unavailable_here` everywhere, for the rest of the process — even though the
+always-mounted assistant pill implements that action from anywhere.
+
+*Why:* the action registry held one handler per key. A screen that implements
+an action the pill already implements overwrote it on mount, and on unmount its
+cleanup deleted the key. Nothing re-registered the outer handler:
+`useAssistantAction`'s effect depends on the action and the registry, neither of
+which changes. The one test that existed covered the opposite ordering — a
+screen unmounting AFTER its replacement registered — so the normal case, where
+the screen underneath stays mounted and should get the action back, was the
+untested one.
+
+*Now:* each key holds a stack. `register` pushes and returns a pop that removes
+that handler wherever it sits; `run` dispatches to the top. Five actions are
+implemented by two screens each, so this was five latent instances of the same
+bug.
+
+*The class:* **an override needs a way to hand back what it shadowed.** A
+single-slot registry can express "this screen wins now" but not "and the other
+one wins again afterwards", and the second half is the one nobody writes a test
+for.
+
+## Two confirmations, and the wrong one answered "yes"
+
+On the create screen a user could ask for a refine, then ask to publish, read
+the publish sheet, say "evet" — and have the AI's rewrite accepted instead. The
+draft was silently replaced, nothing was published, and the model announced a
+successful publish because the handler answered `ok`.
+
+*Why:* both sheets registered `confirm`/`cancel` on the same keys, and the
+winner was whichever effect re-ran last. Effect order tracks state changes, not
+what is drawn on top — the refine proposal arriving after the publish sheet
+opened took the word from a modal covering it. The hook's own doc block claimed
+"the newest sheet wins, which is the one on top", which was not true and read
+as though it had been thought about.
+
+*Now:* a screen offers at most one confirmation at a time and decides which is
+pending; the hook documents that as a requirement of its callers rather than a
+property it provides.
+
+*The class:* **registration order is not z-order.** Any "the topmost one wins"
+claim made by something that cannot see the layout is a guess, and the guess is
+wrong exactly when two things are pending — the only case that matters.
+
+## Two ingredients in one breath, one row in the draft
+
+"Add two eggs and 200 g of flour" left the draft holding the flour and a blank
+row. The eggs were gone.
+
+*Why:* the model sends both as tool calls in one frame, and the session queues
+them so a later call sees what an earlier one did. It does not — not across a
+React render. The queue chains microtasks; the re-render for the first
+`onAddIngredient()` is a macrotask, so the second handler still read the
+pre-render length and both writes landed on the same index. Adding a row and
+filling it were two state updates.
+
+*Now:* `onAddIngredient(value)` appends and fills in one update. The "+" button
+still calls it with nothing, which is what a person tapping it wants.
+
+*The class:* **serialising async work does not serialise the renders it
+causes.** A queue that guarantees ordering between handlers guarantees nothing
+about the state they read, and the gap is invisible whenever calls arrive one
+at a time — which is every manual test.
+
+## A safety list nothing read
+
+`DESTRUCTIVE_ACTIONS` named the actions the assistant must never take on a
+model's say-so, and no code anywhere imported it. `unsave` was on the list and
+ran unconfirmed; the file documenting it said the opposite.
+
+*Now:* it is `CONFIRMED_ACTIONS`, `unsave` raises a sheet like the rest, and
+`check:structure` rule V fails the build if any member's handler does not
+answer `awaiting`.
+
+*The class:* **a declared invariant with no reader is worse than none.** It
+reads, in review, exactly like a question that was asked and settled — so the
+next person does not ask it either.
+
+## The reconnect that was designed, documented, and never wired
+
+The Live API drops its socket roughly every ten minutes by design, and the plan
+answered that with a resumption handle: the server sends one, the client mints
+a new token with it, and the conversation continues without paying for setup
+and context again. The transport mapped the handle, the token port took it as a
+parameter, the event union documented it — and the session store's `switch`
+sent `Resumption`, `GoAway` and `Usage` to `default: break`. Nothing ever
+supplied the handle. Every voice session died on a timer, silently, and looked
+like the socket had failed.
+
+*Why:* the path was built end to end EXCEPT the one line that consumes it, and
+every piece that exists is individually correct. `default: break` is also the
+right shape for an event union that will grow — it is what stops a server-side
+release from breaking the app — so nothing about it reads as unfinished.
+
+*Now:* a `goAway` marks the next close as a handover; the close reconnects on a
+freshly minted token carrying the handle, with the microphone and the player
+left running so the user hears a pause rather than a stop. `Usage` is kept too:
+the whole design is shaped by token cost, and the number that measures it was
+being discarded. Four tests cover it, and all four fail without the fix.
+
+*The class:* **a `default` that swallows is invisible to every check.** Ports,
+types and mappers all prove a value can travel; none of them proves anyone
+reads it. Where a union's variants are the feature, each one wants a test that
+asserts something happened — not merely that it type-checks.
+
+## "Stop" during a reconnect opened a session nobody could end
+
+Saying "stop" while the assistant was handing over to a fresh socket tore the
+session down — and then, a moment later, opened a new socket anyway. The
+microphone was already closed, so nothing was heard; the pill showed idle, so
+nothing offered to end it.
+
+*Why:* the reconnect awaits a mint and then a connect, and the user can speak
+during either. Both awaits returned into a world where the session they belonged
+to no longer existed, and neither checked.
+
+*Now:* every start and every teardown bumps an epoch, and the reconnect
+compares it after each await — returning if it changed, and closing the socket
+it just opened if the change happened during the connect.
+
+*The class:* **an await is a place the user can act.** Any async sequence that
+outlives a user-cancellable operation needs to re-check that it is still wanted
+after each suspension, not only before the first one — and the test for it has
+to interleave the cancel, which no test of the happy path ever does.
+
+## An optional parameter, and the "+" button pushed an event into a string array
+
+Adding a value parameter to `onAddStep` so the assistant could append a filled
+row broke the ordinary button beside it: the "+" is wired `onPress={onAdd}`,
+and React Native calls `onPress` WITH the gesture event. Tapping it pushed a
+`GestureResponderEvent` into `instructions: string[]`, which rendered as an
+object in a `TextInput` and rode into publish.
+
+*Why:* the prop is declared `() => void` at three levels between the button and
+the hook, so a handler that accepts a first argument still satisfies every one
+of them — TypeScript allows a function of fewer parameters where more are
+expected, and this is the mirror of that rule. No test covers the "+" button.
+
+*Now:* the blank append and the filled append are two functions.
+`onAddIngredient()` takes nothing and can never receive anything;
+`onAppendIngredient(value)` requires it. The hazard is structural rather than
+patched at one call site.
+
+*The class:* **never give an optional leading parameter to a function that is
+handed to an event handler.** The event arrives in it, the types cannot see it
+because fewer-parameter functions are assignable to more-parameter ones, and
+the value that lands is an object where a string was expected.
+
+## The innermost screen denied what the outer one could have done
+
+While My Recipes was open, "open the lentil soup" for anything not in the
+current tab answered `not_found` — even though the always-mounted handler
+underneath can open any recipe by name or id. On the Drafts tab the list it
+checked was not even the same collection, so the entire feed was unreachable by
+voice from that screen.
+
+*Why:* the registry dispatches to the topmost handler only. The code's own
+comment claimed "the feed's handler takes over", which was never true — it read
+as a described behaviour rather than an assumption.
+
+*Now:* a handler can answer `notMine` and the registry tries the one beneath
+it. A thrown handler does NOT fall through: that is a bug in that screen, and
+promoting the one underneath would run the wrong thing and look like it worked.
+
+*The class:* **a comment describing a fallback is not a fallback.** Where one
+layer narrows what another could have answered, the narrowing needs a way to
+say "not mine" — otherwise the more specific handler silently removes
+capability instead of adding it.
+
+## A confirmation on a screen that was not showing it
+
+The create screen registered its publish confirmation regardless of phase,
+while the sheet that renders it sits after three early returns. In the prompt,
+resuming and generating phases, `publishDraft` opened an invisible confirmation
+that still accepted a spoken "yes" — the user agreeing to something they could
+not see. The exit and save-error sheets could likewise be on screen while the
+refine proposal held the word.
+
+*Now:* every confirmation is scoped to the phase that renders it and to the
+absence of any sheet drawn above it.
+
+*The class:* **a confirmation's registration must be conditioned on the same
+thing its sheet is.** An early return that skips the render does not skip the
+effect, and the gap between them is a gate that accepts answers to a question
+nobody was asked.
+
+## "You can keep typing" — into a field that went nowhere
+
+Running out of the daily voice allowance is a normal outcome, and the panel
+says so: it offers the text field as the way through. Typing into it wrote the
+user's message into the transcript and dropped it. Out of budget there is no
+socket, and `sendText` wrote to the socket.
+
+*Why:* the text mode was designed as the fallback and built as a method on the
+session. Everything about it worked while a session existed — which is exactly
+when it is not needed. The one state it exists for is the one where its
+dependency is absent.
+
+*Now:* it is its own port with its own backend endpoint, one request and no
+socket. The store uses the socket while a session is live (that turn carries
+the conversation's context and a second contextless request would be slower and
+dearer) and HTTP otherwise.
+
+*The class:* **a fallback that depends on what it is falling back from is not a
+fallback.** Build the alternative path against the absence it exists for, and
+test it in that state — the happy path passes either way.
+
+## Every difficulty and every filter would have failed, on Turkish first
+
+`setDraftField difficulty=medium` compared `value.toLocaleUpperCase()` against
+`Difficulty.MEDIUM`. On a Turkish device that produces `MEDİUM` — a dotted
+capital I — which never matches. `'Italian'.toLocaleLowerCase()` is `ıtalian`,
+which never matches the taxonomy key. The app's primary locale is Turkish, so
+the devices this was built for are the ones it fails on.
+
+*Why:* locale-aware casing is the careful-looking choice, and it is correct for
+the other comparison in the same feature — matching "yoğurt" against a row the
+user is reading. The two look identical and are opposite.
+
+*Now:* `machineLower` / `machineUpper` for anything compared against a constant
+or a key; `toLocale*` stays only where the text is something a person wrote.
+
+*The class:* **case-fold by what the value IS, not by where the user is.** A
+machine constant has no locale; folding it with one turns a comparison into a
+coin toss decided by the device's language.
+
+## The fallback that answered with silence
+
+The text mode's failures were written to store state nothing rendered. Offline,
+a rejected request, or a rate limit all produced the same thing: the user's
+line in the transcript and nothing after it — the exact symptom the mode was
+built to remove, reproduced by the mode itself.
+
+*Now:* the panel reads `error` and says so, the send clears it, and the typed
+turn runs through the same queue and the same epoch guard as a spoken one — so
+two typed commands cannot race, and a reply arriving after sign-out is dropped
+instead of appended to the next user's transcript.
+
+*The class:* **an error written to state nobody reads is an error that did not
+happen.** Setting it satisfies every review that checks the failure is handled;
+only following it to a rendered pixel proves the user learns anything.

@@ -27,6 +27,10 @@
  *   U. Every assistant action offered to the model has a handler registered by
  *      some screen — a word nothing answers advertises a capability the
  *      assistant does not have (CLAUDE.md §5).
+ *   V. Every action in CONFIRMED_ACTIONS raises a confirmation rather than
+ *      acting — a declared safety list nothing reads is worse than none.
+ *   W. No callback takes an OPTIONAL first parameter — an event prop would pass
+ *      the gesture event into it and no type would object (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -468,6 +472,88 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     if (unhandled.length > 0) {
       errors.push(
         `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
+      );
+    }
+  }
+}
+
+// --- V: a confirmed action must actually ask (CLAUDE.md §5) ----------------
+// `CONFIRMED_ACTIONS` names what the assistant must never do on a model's
+// say-so. It previously sat beside the vocabulary as a statement of intent
+// that nothing read, and `unsave` was on the list while running unconfirmed —
+// a declared invariant no code enforces is worse than none, because it reads
+// as though the question had been settled.
+//
+// The check is shallow on purpose: a handler for one of these must answer
+// `awaiting`, which is what a sheet-raising handler returns and what a
+// straight-through one never does.
+{
+  const listPath = path.join(SRC, 'domain/assistant/actions/confirmed-actions.ts');
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(listPath) && fs.existsSync(vocabularyPath)) {
+    const vocabulary = fs.readFileSync(vocabularyPath, 'utf8');
+    const confirmed = [...fs.readFileSync(listPath, 'utf8').matchAll(/AssistantAction\.(\w+)/g)]
+      .map((m) => m[1])
+      .filter((name, at, all) => all.indexOf(name) === at);
+
+    for (const member of confirmed) {
+      // Both registration shapes count, the same two rule U accepts: a
+      // confirmed action registered through `registry.register` was invisible
+      // to the first version of this, which is the shape the confirm/cancel
+      // pair itself uses.
+      const pattern = new RegExp(
+        `(?:useAssistantAction|\\.register)\\(\\s*AssistantAction\\.${member}\\b`,
+        'g',
+      );
+      let registrations = 0;
+      let acting = 0;
+      for (const file of files) {
+        if (isTest(file)) continue;
+        const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+        for (const match of src.matchAll(pattern)) {
+          registrations += 1;
+          // The handler runs from this registration to the next one, or to the
+          // end of the file. Bounding it matters: without the bound, an
+          // unrelated `awaiting` further down the file satisfied the check.
+          const rest = src.slice(match.index ?? 0);
+          const nextAt = rest.slice(1).search(/(?:useAssistantAction|\.register)\(/);
+          const body = nextAt === -1 ? rest : rest.slice(0, nextAt + 1);
+          if (!/awaiting:\s*true/.test(body)) acting += 1;
+        }
+      }
+      // EVERY registration must ask, not merely one of them — the action is
+      // implemented by more than one screen for several of these, and one
+      // screen doing it right says nothing about the others.
+      if (registrations > 0 && acting > 0) {
+        const spelled = new RegExp(`^ {2}${member}: '(\\w+)',`, 'm').exec(vocabulary)?.[1] ?? member;
+        errors.push(
+          `assistant action '${spelled}' is in CONFIRMED_ACTIONS but ${acting} of its ${registrations} handler(s) act without asking — each must raise a confirmation and answer awaiting (CLAUDE.md §5)`,
+        );
+      }
+    }
+  }
+}
+
+// --- W: no optional leading parameter on a callback (CLAUDE.md §24) -------
+// React Native calls `onPress` WITH the gesture event, and a prop declared
+// `() => void` accepts a handler that takes parameters — TypeScript allows a
+// function of fewer parameters where more are expected, and this is the mirror
+// of that rule. So a handler with an OPTIONAL first parameter silently
+// receives a `GestureResponderEvent` on an ordinary tap: that is how one ended
+// up inside `instructions: string[]` and rode into publish.
+//
+// `onPress={handler}` is idiomatic and safe when the handler takes nothing, so
+// the check is on the declaration rather than the call site. Two handlers —
+// one that takes nothing, one that takes the value — is the fix, and it makes
+// the hazard unrepresentable rather than merely absent.
+{
+  const OPTIONAL_FIRST_PARAM = /useCallback\(\s*(?:async\s*)?\(\s*(\w+)\s*(?::[^),=]+)?=\s*[^),]/g;
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(OPTIONAL_FIRST_PARAM)) {
+      errors.push(
+        `${file}: useCallback with an optional first parameter '${m[1]}' — an event prop would pass the gesture event into it and no type would object. Split it into one handler that takes nothing and one that takes the value (CLAUDE.md §24)`,
       );
     }
   }

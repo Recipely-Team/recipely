@@ -25,6 +25,20 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // already looking at the button they pressed; a spoken "yayınla" is a word
   // that may have been misheard, and publishing is not undoable.
   const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
+  // Every sheet below lives in the preview phase; the prompt, resuming and
+  // generating phases return early and render none of them. A confirmation
+  // registered outside that phase was invisible and still accepted a spoken
+  // "yes" — the user agreeing to nothing they could see.
+  const isPreview = vm.phase === PhaseType.Preview;
+  // At most ONE of these is live at a time, and the order is the drawing
+  // order: a modal covers the inline dock, and the exit and save-error sheets
+  // cover everything. Two live would let a "yes" read against the sheet on
+  // screen answer the one behind it.
+  // `photosOpen` belongs here too: `attachPhoto` can raise the picker over a
+  // pending publish confirm, and a spoken "yes" would then publish while the
+  // user is looking at their photo library.
+  const exitOrErrorOpen =
+    vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
@@ -32,11 +46,9 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   useAssistantDraftActions({
     recipe: vm.recipe,
     onUpdateField: vm.onUpdateField,
-    onAddIngredient: vm.onAddIngredient,
-    onChangeIngredient: vm.onChangeIngredient,
+    onAppendIngredient: vm.onAppendIngredient,
     onRemoveIngredient: vm.onRemoveIngredient,
-    onAddStep: vm.onAddStep,
-    onChangeStep: vm.onChangeStep,
+    onAppendStep: vm.onAppendStep,
     onRemoveStep: vm.onRemoveStep,
     onOpenPhotos: vm.onOpenPhotos,
     onSubmitRefine: vm.onSubmitRefine,
@@ -46,14 +58,22 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // Each sheet that stops the assistant also takes a spoken answer, or the
   // hands-free flow ends at the gate meant to protect it.
   useAssistantConfirmation(
-    assistantPublishOpen,
+    isPreview && assistantPublishOpen && !exitOrErrorOpen,
     () => {
       setAssistantPublishOpen(false);
       vm.onSave();
     },
     () => setAssistantPublishOpen(false),
   );
-  useAssistantConfirmation(vm.proposal !== null, vm.onAcceptProposal, vm.onRejectProposal);
+  // Exactly one confirmation is pending at a time. The publish sheet is a
+  // modal drawn over everything, so while it is up the spoken "yes" belongs to
+  // it — offering both would let a user reading the publish sheet accept the
+  // refine proposal behind it instead, and be told the publish succeeded.
+  useAssistantConfirmation(
+    isPreview && vm.proposal !== null && !assistantPublishOpen && !exitOrErrorOpen,
+    vm.onAcceptProposal,
+    vm.onRejectProposal,
+  );
 
   if (vm.phase === PhaseType.Prompt) {
     return (

@@ -28,6 +28,10 @@ export const AssistantAction = {
   Navigate: 'navigate',
   GoBack: 'goBack',
   OpenRecipe: 'openRecipe',
+  OpenDraft: 'openDraft',
+  DeleteDraft: 'deleteDraft',
+  SwitchTab: 'switchTab',
+  Refresh: 'refresh',
   Search: 'search',
   AddFilter: 'addFilter',
   RemoveFilter: 'removeFilter',
@@ -53,6 +57,10 @@ export const AssistantAction = {
   ShareRecipe: 'shareRecipe',
   AddComment: 'addComment',
   UpdateProfile: 'updateProfile',
+  SetPreference: 'setPreference',
+  SignOut: 'signOut',
+  MarkAllRead: 'markAllRead',
+  ImportRecipe: 'importRecipe',
   ToggleIngredient: 'toggleIngredient',
   ToggleStep: 'toggleStep',
   StartTimer: 'startTimer',
@@ -65,19 +73,3 @@ export const AssistantAction = {
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];
-
-/**
- * The actions that must not happen because a model decided they should.
- *
- * Each of these either destroys something the user cannot get back or publishes
- * under their name, so the handler opens a `ConfirmSheet` and answers the model
- * `awaiting_confirmation` rather than a result. Membership is declared here,
- * beside the vocabulary, because a new action added without asking this
- * question is precisely how one of them ends up running unconfirmed.
- */
-export const DESTRUCTIVE_ACTIONS: readonly AssistantActionType[] = [
-  AssistantAction.DeleteRecipe,
-  AssistantAction.PublishDraft,
-  AssistantAction.UpdateProfile,
-  AssistantAction.Unsave,
-];

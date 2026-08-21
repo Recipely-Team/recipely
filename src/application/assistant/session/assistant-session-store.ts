@@ -1,10 +1,13 @@
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
-import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import type { BoundStore } from '@application/store/bound-store';
@@ -18,6 +21,7 @@ interface AssistantSessionStoreDeps {
   microphone: MicrophoneInterface;
   player: AudioPlayerInterface;
   tokens: AssistantTokenRepositoryInterface;
+  messenger: AssistantMessengerInterface;
   registry: AssistantActionRegistry;
 }
 
@@ -42,6 +46,11 @@ interface AssistantSessionStoreDeps {
  *   the user asks for several things, and each is meant to see what the last
  *   one did — "open the recipe and share it" is nonsense if the share runs
  *   against the screen the open was still pushing.
+ * - **A `goAway` is survived, not obeyed.** The server drops the socket roughly
+ *   every ten minutes by design; a session that read that as the end would die
+ *   mid-conversation on a timer. The handle it sent is minted into a new token
+ *   and a fresh socket continues the same conversation, with the microphone
+ *   and the player left running — the user hears a pause, not a stop.
  * - **Silence closes the session.** Voice is billed per second of an open
  *   microphone, so a session left running in a pocket is the single most
  *   expensive thing this feature can do.
@@ -49,13 +58,22 @@ interface AssistantSessionStoreDeps {
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
 const SILENCE_TIMEOUT_MS = 8_000;
+/**
+ * How many handovers in a row are tolerated before the session is given up.
+ *
+ * A `goAway` is normal roughly every ten minutes, so several in a session is
+ * expected over a long conversation — but several with no completed turn
+ * between them means the handover itself is failing, and retrying it forever
+ * bills the backend for a session nobody is having.
+ */
+const MAX_HANDOVERS = 3;
 const MIC_SAMPLE_RATE = 16_000;
 const PLAYBACK_SAMPLE_RATE = 24_000;
 
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
 ): BoundStore<AssistantSessionStoreState> => {
-  const { session, microphone, player, tokens, registry } = deps;
+  const { session, microphone, player, tokens, messenger, registry } = deps;
 
   let unsubscribe: (() => void) | null = null;
   // Tool calls run ONE AT A TIME, in arrival order. The model routinely sends
@@ -67,6 +85,21 @@ export const configureAssistantSessionStore = (
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let silence: ReturnType<typeof setTimeout> | null = null;
   let lineId = ValueConstants.zero;
+  // What a reconnect needs. The handle lets the next socket continue the
+  // conversation instead of paying for setup and context again, and the
+  // language is fixed at mint time so it has to survive the old session.
+  let resumptionHandle: string | null = null;
+  let languageCode = CharConstants.empty;
+  let expectingGoAway = false;
+  // Bumped by every start and every teardown, so a reconnect that was already
+  // in flight can tell whether the session it belongs to still exists. Saying
+  // "stop" during the handover otherwise opened a fresh socket AFTER the
+  // microphone had been closed — a session nobody could hear or end.
+  let epoch = ValueConstants.zero;
+  // Consecutive handovers with no conversation between them. A server that
+  // re-issues goAway immediately would otherwise mint and connect in a loop,
+  // billing the backend for a session nobody is having.
+  let handovers = ValueConstants.zero;
 
   return create<AssistantSessionStoreState>((set, get) => {
     const stopTimers = (): void => {
@@ -77,6 +110,7 @@ export const configureAssistantSessionStore = (
     };
 
     const teardown = async (status: AssistantSessionStoreState['status']): Promise<void> => {
+      epoch += ValueConstants.one;
       stopTimers();
       // A queue left holding a rejected promise would swallow every later call
       // silently; the session is over either way, so it starts clean.
@@ -101,6 +135,57 @@ export const configureAssistantSessionStore = (
       set({ transcript: [...get().transcript, { id: String(lineId), speaker, text }] });
     };
 
+    /**
+     * Continues the conversation on a fresh socket after a `goAway`.
+     *
+     * The microphone and the player stay up: only the transport is replaced,
+     * so the user hears a pause rather than a session ending. Frames captured
+     * during the gap are dropped by the transport, which is the right trade —
+     * a second of audio against a conversation.
+     *
+     * It goes through the backend rather than reconnecting directly, because
+     * the handle has to be minted into the new token; that round trip is also
+     * where the daily budget is re-checked, which is why running out mid-
+     * session ends it here rather than silently continuing.
+     */
+    const reconnect = async (): Promise<void> => {
+      // Every in-flight call belongs to the session that is ending; the epoch
+      // bump is what tells them so, and the queue starts clean for the new one.
+      epoch += ValueConstants.one;
+      handovers += ValueConstants.one;
+      if (handovers > MAX_HANDOVERS) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+
+      const startedAt = epoch;
+      toolQueue = Promise.resolve();
+      const grant = await tokens.mintSession(languageCode, resumptionHandle ?? undefined);
+      if (epoch !== startedAt) return;
+
+      if (!grant.ok || grant.value.status === AssistantGrantStatus.Denied) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+
+      set({ remainingSeconds: grant.value.remainingSeconds });
+      const connected = await session.connect(grant.value.credentials);
+      // Checked again: the mint and the connect are both awaited, and the user
+      // can say "stop" during either.
+      if (epoch !== startedAt) {
+        session.close();
+        return;
+      }
+      if (!connected.ok) {
+        await teardown(AssistantStatus.Idle);
+        return;
+      }
+      // The pill was left mid-utterance — the turn it was showing died with
+      // the socket — so it goes back to listening rather than staying stuck on
+      // "speaking" until the next event arrives.
+      set({ status: AssistantStatus.Listening });
+    };
+
     const handle = (event: AssistantSessionEventType): void => {
       switch (event.kind) {
         case AssistantEventKind.Transcript:
@@ -120,22 +205,64 @@ export const configureAssistantSessionStore = (
           set({ status: AssistantStatus.Listening });
           break;
         case AssistantEventKind.TurnComplete:
+          // A completed turn is a conversation that is happening, so the
+          // handover counter starts again from here.
+          handovers = ValueConstants.zero;
           set({ status: AssistantStatus.Listening });
+          nudgeSilenceTimer();
           break;
         case AssistantEventKind.ToolCall: {
           set({ status: AssistantStatus.Working });
+          // A generate or a refine takes longer than the silence timeout, and
+          // the user is watching it work rather than talking. Without this the
+          // session tore itself down mid-action and the answer never arrived.
+          nudgeSilenceTimer();
           const { callId, action, arg } = event;
+          const raisedAt = epoch;
           toolQueue = toolQueue.then(async () => {
             const result = await registry.run(action, arg);
+            // Rebinding the queue on a handover does not cancel a call already
+            // running. Without this check it answered the NEW socket with a
+            // callId from the dead session — a response to a question that
+            // socket never asked.
+            if (epoch !== raisedAt) return;
             session.respondToTool(callId, { ...result });
           });
           break;
         }
+        case AssistantEventKind.Resumption:
+          resumptionHandle = event.handle;
+          break;
+        case AssistantEventKind.GoAway:
+          // Not a close: a warning that one is coming. The socket is dropped
+          // roughly every ten minutes by design, and a session that treated
+          // that as the end would die mid-conversation on a timer.
+          expectingGoAway = true;
+          break;
+        case AssistantEventKind.Usage:
+          set({ tokensUsed: event.totalTokens });
+          break;
         case AssistantEventKind.Closed:
+          // A close the app asked for is already being handled by whoever
+          // asked; re-entering teardown here would fight it.
+          if (event.expected) break;
+          if (expectingGoAway && resumptionHandle !== null) {
+            expectingGoAway = false;
+            void reconnect();
+            break;
+          }
           void teardown(AssistantStatus.Idle);
           break;
-        default:
+        case AssistantEventKind.Ready:
+          // `connect` already resolved on this; nothing further to do.
           break;
+        default:
+          // Exhaustive: the union is closed and the mapper is its only
+          // producer, so a new kind must be handled here rather than silently
+          // dropped. `Resumption`, `GoAway` and `Usage` were dropped for
+          // exactly as long as this was a bare `break` — the whole
+          // reconnect path was dead and nothing said so.
+          assertNever(event);
       }
     };
 
@@ -144,17 +271,23 @@ export const configureAssistantSessionStore = (
       isPanelOpen: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
+      tokensUsed: ValueConstants.zero,
       deniedReason: null,
       error: null,
 
       openPanel: () => set({ isPanelOpen: true }),
       closePanel: () => set({ isPanelOpen: false }),
 
-      startVoice: async (languageCode: string) => {
+      startVoice: async (locale: string) => {
         if (get().status !== AssistantStatus.Idle) return;
         set({ status: AssistantStatus.Connecting, error: null, deniedReason: null });
+        languageCode = locale;
+        resumptionHandle = null;
+        expectingGoAway = false;
+        handovers = ValueConstants.zero;
+        epoch += ValueConstants.one;
 
-        const grant = await tokens.mintSession(languageCode);
+        const grant = await tokens.mintSession(locale);
         if (!grant.ok) {
           set({ status: AssistantStatus.Unavailable, error: grant.failure });
           return;
@@ -207,10 +340,64 @@ export const configureAssistantSessionStore = (
         await teardown(AssistantStatus.Idle);
       },
 
-      sendText: (text: string) => {
+      sendText: (text: string, locale: string) => {
         if (text === CharConstants.empty) return;
         appendTranscript(ChatRole.User, text);
-        session.sendText(text);
+
+        // A live session carries the turn; anything else goes over HTTP. The
+        // list is positive on purpose — `Connecting` has a socket that is not
+        // yet acknowledged, and a turn written into that window is discarded
+        // by the server, which is the same silence this whole path exists to
+        // remove.
+        if (LIVE_STATUSES.includes(get().status)) {
+          session.sendText(text);
+          return;
+        }
+
+        // An empty screen line is omitted rather than sent: the backend
+        // appends it to the prompt, and an empty bracket is a token spent
+        // saying nothing.
+        const screen = registry.screenContext;
+        const context = screen === CharConstants.empty ? undefined : screen;
+        const askedAt = epoch;
+        set({ status: AssistantStatus.Working });
+
+        // Queued with the spoken calls, for the same reason they are queued
+        // with each other: two typed commands in quick succession would
+        // otherwise race, and the second could act on the screen the first was
+        // still opening.
+        toolQueue = toolQueue.then(async () => {
+          const answered = await messenger.ask(text, locale, context);
+          // The user can sign out or start voice while this is in flight; a
+          // reply landing afterwards would append the previous session's line
+          // to the next one's transcript and run its action.
+          if (epoch !== askedAt) return;
+
+          // The failure is surfaced through `error`, which the panel renders.
+          // Written to state nothing read, an unreachable backend produced the
+          // user's line and then silence — the exact symptom this mode exists
+          // to remove.
+          if (!answered.ok) {
+            set({ status: AssistantStatus.Idle, error: answered.failure });
+            return;
+          }
+
+          if (answered.value.reply !== CharConstants.empty) {
+            appendTranscript(ChatRole.Assistant, answered.value.reply);
+          }
+          const action = answered.value.action;
+          if (action !== undefined) {
+            const result = await registry.run(action.name, action.arg);
+            // An action that could not run is news the user needs: they were
+            // told it was happening.
+            // An action that could not run is news the user needs: they were
+            // told it was happening.
+            if (!result.ok) {
+              set({ error: new UnknownFailure(DiagnosticMessage.assistant.actionFailed(result.error ?? CharConstants.empty)) });
+            }
+          }
+          set({ status: AssistantStatus.Idle });
+        });
       },
 
       clearError: () => set({ error: null }),
@@ -220,6 +407,7 @@ export const configureAssistantSessionStore = (
         set({
           transcript: [],
           remainingSeconds: ValueConstants.zero,
+          tokensUsed: ValueConstants.zero,
           deniedReason: null,
           error: null,
           isPanelOpen: false,
@@ -228,3 +416,15 @@ export const configureAssistantSessionStore = (
     };
   });
 };
+
+/**
+ * Fails to compile when a new event kind is added without being handled.
+ *
+ * The alternative — a `default` that breaks — is right for a union that grows
+ * server-side, and wrong for this one: it is declared in the domain and the
+ * mapper is its only producer, so every variant is known at build time. Three
+ * of them were being discarded, and nothing anywhere reported it.
+ */
+function assertNever(event: never): void {
+  void event;
+}

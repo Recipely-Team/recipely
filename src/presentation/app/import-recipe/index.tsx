@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { useAssistantImportActions } from '@presentation/app/import-recipe/hooks/use-assistant-import-actions';
 import { isString } from '@core/guards/type-guards';
 import { useLocalSearchParams } from 'expo-router';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
@@ -34,6 +35,8 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
   const params = useLocalSearchParams<{ importUrl?: string }>();
   const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
   const vm = useImportRecipe(importUrl);
+
+  useAssistantImportActions({ sharedUrl: importUrl, onSubmitLink: vm.onSubmitLink, onOpenDraft: vm.onOpenDraft });
   const copy = t().importRecipe;
 
   useReportFailure(vm.failure, 'ImportRecipeScreen');

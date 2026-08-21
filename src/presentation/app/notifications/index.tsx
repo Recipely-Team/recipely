@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
+import { buildSections } from '@presentation/app/notifications/model/build-sections';
 import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
 import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { StoreStatus } from '@application/store/store-status';
@@ -25,7 +27,6 @@ import type { NotificationEntity } from '@domain/notifications/notification-enti
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
-import type { SectionData } from '@presentation/app/notifications/model/section-data';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { TimeConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -68,18 +69,6 @@ const toNotifItem = (n: NotificationEntity): NotifItem => ({
   target: n.target,
 });
 
-const buildSections = (items: NotifItem[], filter: NotificationFilter): SectionData[] => {
-  const visible = filter === NotificationFilter.Unread ? items.filter((n) => !n.read) : items;
-  const today = visible.filter((n) => n.daysAgo === ValueConstants.zero);
-  const yesterday = visible.filter((n) => n.daysAgo === ValueConstants.one);
-  const earlier = visible.filter((n) => n.daysAgo > ValueConstants.one);
-  const sections: SectionData[] = [];
-  const labels = t().notifications;
-  if (today.length > ValueConstants.zero) sections.push({ title: labels.today, data: today });
-  if (yesterday.length > ValueConstants.zero) sections.push({ title: labels.yesterday, data: yesterday });
-  if (earlier.length > ValueConstants.zero) sections.push({ title: labels.earlier, data: earlier });
-  return sections;
-};
 
 export const NotificationsScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -132,6 +121,12 @@ export const NotificationsScreen = (): React.JSX.Element => {
         : path) as Href,
     );
   };
+
+  useAssistantNotificationActions({
+    unreadCount,
+    onMarkAllRead: () => void markAllRead(),
+    onReload: () => void load(),
+  });
 
   const tap = (item: NotifItem): void => {
     if (!item.read) void markOneRead(item.id);

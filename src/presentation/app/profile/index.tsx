@@ -12,12 +12,15 @@ import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
   const vm = useProfile();
+
+  useAssistantProfileScreenActions({ onPickAvatar: vm.onPickAvatar, onEditProfile: vm.onEditProfile });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>

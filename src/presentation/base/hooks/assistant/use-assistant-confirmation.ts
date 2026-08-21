@@ -18,9 +18,13 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  * - **Only while the sheet is open.** Registration is scoped to `visible`, so
  *   a stray "yes" with nothing pending answers `unavailable_here` rather than
  *   confirming whatever was last on screen.
- * - **The newest sheet wins.** Two overlapping confirmations would both hold
- *   the same two words; the registry keeps the last registration, which is the
- *   one on top and the one the user is looking at.
+ * - **A screen must have at most ONE of these pending at a time.** Both words
+ *   are registered on the same two keys, and what decides the winner is which
+ *   effect re-ran last — which tracks state changes, not what is drawn on top.
+ *   With two live, a user reading a modal could say "yes" and answer the
+ *   inline dock behind it: the wrong action runs and the model announces the
+ *   one that did not. A caller with two possible sheets decides which is
+ *   pending and passes `visible` accordingly, rather than registering both.
  */
 export const useAssistantConfirmation = (
   visible: boolean,

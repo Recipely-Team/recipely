@@ -11,6 +11,14 @@ export interface AssistantSessionStoreState {
   transcript: AssistantTranscriptLine[];
   /** Seconds of voice left today, as the server last reported them. */
   remainingSeconds: number;
+  /**
+   * Tokens this session has spent, as the API last reported them.
+   *
+   * The whole design is shaped by token cost, so the number that decides it is
+   * carried rather than discarded — it is what makes the budget checkable
+   * against a real conversation instead of an estimate.
+   */
+  tokensUsed: number;
   deniedReason: AssistantDenialReasonType | null;
   error: Failure | null;
 
@@ -18,7 +26,12 @@ export interface AssistantSessionStoreState {
   closePanel: () => void;
   startVoice: (languageCode: string) => Promise<void>;
   stopVoice: () => Promise<void>;
-  sendText: (text: string) => void;
+  /**
+   * Sends a typed turn. `locale` is required because this path also runs with
+   * no session behind it — out of budget there is no socket and no minted
+   * language, and this is exactly the case the text mode exists for.
+   */
+  sendText: (text: string, locale: string) => void;
   clearError: () => void;
   reset: () => void;
 }

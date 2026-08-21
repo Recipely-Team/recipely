@@ -1,5 +1,7 @@
+import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback, useRef } from 'react';
-import { StepCursor } from '@presentation/base/hooks/assistant/step-cursor';
+import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -7,22 +9,6 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assis
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
-/**
- * What the assistant can do to the recipe currently on screen.
- *
- * @remarks
- * - **No argument, because "this one" is what a person says.** The user is
- *   looking at a recipe when they say "save it"; making the model repeat an id
- *   it would have to have been told first is how the whole exchange becomes a
- *   form. The screen supplies the subject, which is also why these register on
- *   mount and answer `unavailable_here` anywhere else.
- * - **`unsave` is destructive enough to confirm**, and the plan says so, but
- *   the confirmation belongs to the screen that owns the sheet — this hook is
- *   handed the already-confirmed action.
- * - **Save and like are separate**, matching the app: saving is private and
- *   liking is public, and a model told they were one thing would do the wrong
- *   one half the time.
- */
 /** What the recipe screen lends the assistant, named where it is consumed. */
 interface AssistantRecipeActionsDeps {
   recipeId: string;
@@ -31,10 +17,9 @@ interface AssistantRecipeActionsDeps {
   instructions: readonly string[];
   cookTimeMinutes: number;
   isOwner: boolean;
-  commentInput: string;
-  onChangeCommentInput: (text: string) => void;
-  onAddComment: () => void;
+  onPostComment: (text: string) => void;
   onOpenDelete: () => void;
+  onRequestUnsave: () => void;
   onOpenShare: () => void;
   onStartCookTimer: () => void;
   onPauseTimer: () => void;
@@ -46,6 +31,22 @@ interface AssistantRecipeActionsDeps {
   onToggleStep: (index: number) => void;
 }
 
+/**
+ * What the assistant can do to the recipe currently on screen.
+ *
+ * @remarks
+ * - **No argument, because "this one" is what a person says.** The user is
+ *   looking at a recipe when they say "save it"; making the model repeat an id
+ *   it would have to have been told first is how the whole exchange becomes a
+ *   form. The screen supplies the subject, which is also why these register on
+ *   mount and answer `unavailable_here` anywhere else.
+ * - **`unsave` asks first.** It drops a recipe out of a collection the user
+ *   curated and may not find again. The sheet belongs to the screen; this hook
+ *   raises it and answers `awaiting`.
+ * - **Save and like are separate**, matching the app: saving is private and
+ *   liking is public, and a model told they were one thing would do the wrong
+ *   one half the time.
+ */
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
     recipeId,
@@ -54,15 +55,16 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     instructions,
     cookTimeMinutes,
     isOwner,
-    onChangeCommentInput,
-    onAddComment,
+    onPostComment,
     onOpenDelete,
+    onRequestUnsave,
     onOpenShare,
     onStartCookTimer,
     onPauseTimer,
     onResumeTimer,
     onStopTimer,
     checkedIngredients,
+    completedSteps,
     onToggleIngredient,
     onToggleStep,
   } = deps;
@@ -102,7 +104,17 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   );
 
   useAssistantAction(AssistantAction.Save, useCallback(() => setSaved(true), [setSaved]));
-  useAssistantAction(AssistantAction.Unsave, useCallback(() => setSaved(false), [setSaved]));
+  useAssistantAction(
+    AssistantAction.Unsave,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // Un-saving drops a recipe out of a collection the user curated and may
+      // not be able to find again, so it asks — unlike un-liking, which is a
+      // number they can restore with one tap.
+      if (!savedIds.has(recipeId)) return { ok: true, title: recipeName };
+      onRequestUnsave();
+      return { ok: true, awaiting: true, title: recipeName };
+    }, [savedIds, recipeId, recipeName, onRequestUnsave]),
+  );
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
 
@@ -114,7 +126,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ReadStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const asked = (arg ?? StepCursor.Next).trim().toLocaleLowerCase();
+        const asked = machineLower(arg ?? StepCursor.Next);
         const index =
           asked === StepCursor.Next
             ? stepCursor.current + ValueConstants.one
@@ -154,14 +166,14 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
-        // Written into the field first so the user SEES what is about to be
-        // posted under their name — the same beat a person gets before tapping
-        // send, rather than a comment appearing from nowhere.
-        onChangeCommentInput(arg);
-        onAddComment();
+        // The text goes with the call. Writing the field and posting in the
+        // same tick meant the post read the previous render's value — empty —
+        // and reported success anyway, so the model announced a comment that
+        // was never made.
+        onPostComment(arg);
         return { ok: true, title: recipeName };
       },
-      [onChangeCommentInput, onAddComment, recipeName],
+      [onPostComment, recipeName],
     ),
   );
 
@@ -173,7 +185,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ToggleIngredient,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = indexOfRow(ingredients, arg);
+        const index = rowAt(ingredients, arg);
         if (index === null) return { ok: false, error: 'not_found' };
         onToggleIngredient(index);
         return {
@@ -192,12 +204,18 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.ToggleStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const index = indexOfRow(instructions, arg);
+        const index = rowAt(instructions, arg);
         if (index === null) return { ok: false, error: 'not_found' };
         onToggleStep(index);
-        return { ok: true, n: { step: instructions.length } };
+        return {
+          ok: true,
+          n: {
+            step: instructions.length,
+            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? -1 : 1),
+          },
+        };
       },
-      [instructions, onToggleStep],
+      [instructions, onToggleStep, completedSteps],
     ),
   );
 
@@ -248,24 +266,3 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     }, [isOwner, onOpenDelete, recipeName]),
   );
 };
-
-/**
- * Finds a row by what the cook called it, or by a 1-based position.
- *
- * Both, because both are natural: "check off the yoghurt" and "check off the
- * second one" are the same request phrased differently, and the model passes
- * through whichever the user said.
- */
-function indexOfRow(rows: readonly string[], arg: string | undefined): number | null {
-  if (arg === undefined || arg === CharConstants.empty) return null;
-
-  const position = Number.parseInt(arg, 10);
-  if (Number.isFinite(position) && String(position) === arg.trim()) {
-    const index = position - ValueConstants.one;
-    return index >= ValueConstants.zero && index < rows.length ? index : null;
-  }
-
-  const needle = arg.toLocaleLowerCase();
-  const found = rows.findIndex((row) => row.toLocaleLowerCase().includes(needle));
-  return found === ValueConstants.minusOne ? null : found;
-}

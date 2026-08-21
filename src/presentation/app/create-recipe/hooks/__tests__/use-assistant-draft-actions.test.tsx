@@ -1,0 +1,202 @@
+import { act } from 'react-test-renderer';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import { Difficulty } from '@domain/recipes/difficulty';
+import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import { renderComponent } from '@presentation/base/test-support/render-component';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
+
+const CUISINES = [{ key: 'italian', name: 'İtalyan', emoji: '🇮🇹' }];
+const CATEGORIES = [{ key: 'soup', name: 'Çorba', emoji: '🍲' }];
+
+const emptyRecipe = (): EditableRecipe => ({
+  name: 'Taslak',
+  cuisine: null,
+  category: '',
+  difficulty: Difficulty.Easy,
+  prepTimeMinutes: 0,
+  cookTimeMinutes: 0,
+  servings: 2,
+  ingredients: ['2 yumurta'],
+  instructions: ['Fırını ısıt'],
+  media: [],
+});
+
+function harness(loaded = true) {
+  const registry = new AssistantActionRegistry();
+  const taxonomyStore = ((selector: (state: unknown) => unknown) =>
+    selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as Stores['taxonomyStore'];
+
+  const spies = {
+    onUpdateField: jest.fn(),
+    onAppendIngredient: jest.fn(),
+    onRemoveIngredient: jest.fn(),
+    onAppendStep: jest.fn(),
+    onRemoveStep: jest.fn(),
+    onOpenPhotos: jest.fn(),
+    onSubmitRefine: jest.fn(),
+    onRegenerate: jest.fn(),
+    onRequestPublish: jest.fn(),
+  };
+
+  const Probe = (): null => {
+    useAssistantDraftActions({ recipe: emptyRecipe(), ...spies });
+    return null;
+  };
+
+  renderComponent(
+    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as Stores}>
+      <Probe />
+    </StoresProvider>,
+  );
+
+  return { registry, spies };
+}
+
+describe('useAssistantDraftActions', () => {
+  // Two calls arrive in ONE model turn and run as microtasks, before React has
+  // re-rendered. Appending a blank row and then writing into it made the second
+  // call read the same pre-render length, so both wrote to the same index: the
+  // first ingredient disappeared and a blank row took its place.
+  it('adds each ingredient in one call, so two in a breath both land', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.AddIngredient, '2 yumurta');
+      await registry.run(AssistantAction.AddIngredient, '200 g un');
+    });
+
+    expect(spies.onAppendIngredient.mock.calls).toEqual([['2 yumurta'], ['200 g un']]);
+  });
+
+  it('adds each step in one call too', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.AddStep, 'Yoğur');
+      await registry.run(AssistantAction.AddStep, 'Pişir');
+    });
+
+    expect(spies.onAppendStep.mock.calls).toEqual([['Yoğur'], ['Pişir']]);
+  });
+
+  describe('setDraftField', () => {
+    // The draft holds a `Difficulty` enum. One cast covering four fields let
+    // the lower-case word straight in: the chip rendered nothing selected and
+    // publish sent the backend a value it rejects.
+    it('resolves a difficulty to its enum value', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=easy');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('difficulty', Difficulty.Easy);
+    });
+
+    // On a Turkish device `'medium'.toLocaleUpperCase()` is `MEDİUM`, which
+    // never equals `MEDIUM` — every difficulty the assistant set would have
+    // failed on exactly the devices this app is built for.
+    it('matches a difficulty regardless of the device locale', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=MEDIUM');
+        await registry.run(AssistantAction.SetDraftField, 'difficulty=medium');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(1, 'difficulty', Difficulty.Medium);
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(2, 'difficulty', Difficulty.Medium);
+    });
+
+    it('refuses a difficulty that is not one', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'difficulty=trivial')).resolves.toMatchObject({
+          ok: false,
+          error: 'unknown_difficulty',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+
+    // `cuisine` is a backend KEY, not the label the model saw. Writing the
+    // label made the chip fall back to its placeholder and publish send a
+    // value the backend rejects.
+    it('turns a cuisine name into the key the draft holds', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'cuisine=İtalyan');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('cuisine', 'italian');
+    });
+
+    it('accepts the key itself as well', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'category=soup');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('category', 'soup');
+    });
+
+    // An empty catalogue means the app has not loaded it, not that Italian
+    // stopped being a cuisine.
+    it('says the list is not loaded rather than calling the cuisine unknown', async () => {
+      const { registry, spies } = harness(false);
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'cuisine=İtalyan')).resolves.toMatchObject({
+          ok: false,
+          error: 'taxonomy_not_loaded',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+
+    it('sets the name, which really is free text', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'name=Yoğurtlu Tavuk');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('name', 'Yoğurtlu Tavuk');
+    });
+
+    it('refuses a field the draft does not have', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.SetDraftField, 'colour=blue')).resolves.toMatchObject({
+          ok: false,
+          error: 'unknown_field',
+        });
+      });
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+    });
+  });
+
+  // Publishing is not undoable and voice mishears; the picker names a photo
+  // that goes out under the user's name.
+  it('asks before publishing and before attaching a photo', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.PublishDraft)).resolves.toMatchObject({ awaiting: true });
+      await expect(registry.run(AssistantAction.AttachPhoto)).resolves.toMatchObject({ awaiting: true });
+    });
+
+    expect(spies.onRequestPublish).toHaveBeenCalled();
+    expect(spies.onOpenPhotos).toHaveBeenCalled();
+  });
+});

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
-import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/assistant-navigation-targets';
+import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
@@ -28,7 +28,6 @@ import { CharConstants } from '@core/constants';
  */
 export const useAssistantGlobalActions = (): void => {
   const { assistantSessionStore, recipeListStore } = useStores();
-  const listState = recipeListStore((s) => s.state);
   const stopVoice = assistantSessionStore((s) => s.stopVoice);
 
   useAssistantAction(
@@ -79,6 +78,11 @@ export const useAssistantGlobalActions = (): void => {
         if (arg === undefined || arg === CharConstants.empty) {
           return { ok: false, error: 'not_found' };
         }
+        // Read at call time rather than subscribed: this hook lives in the
+        // pill, which is mounted for the app's whole life, and subscribing
+        // re-rendered it on every feed state change for a list only this one
+        // handler ever looks at.
+        const listState = recipeListStore.getState().state;
         const loaded = listState.status === StoreStatus.Loaded ? listState.recipes : [];
         const match = loaded.find((recipe) =>
           recipe.name.toLocaleLowerCase().includes(arg.toLocaleLowerCase()),
@@ -90,7 +94,7 @@ export const useAssistantGlobalActions = (): void => {
         router.push(RoutePaths.recipeDetail(id) as Href);
         return { ok: true, ...(match !== undefined ? { title: match.name } : {}) };
       },
-      [listState],
+      [recipeListStore],
     ),
   );
 
