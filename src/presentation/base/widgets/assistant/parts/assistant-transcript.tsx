@@ -5,7 +5,9 @@ import { AssistantBubble } from '@presentation/base/widgets/assistant/parts/assi
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { spacing } from '@presentation/base/theme';
+import { radii, spacing } from '@presentation/base/theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -29,6 +31,7 @@ export interface AssistantTranscriptProps {
  *   line that lands below the fold is a line they never receive.
  */
 export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.JSX.Element => {
+  const { colors } = useTheme();
   const list = useRef<FlatList<AssistantTranscriptLine>>(null);
 
   const follow = useCallback(() => {
@@ -37,10 +40,10 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
 
   if (lines.length === ValueConstants.zero) {
     return (
-      <View style={styles.empty}>
-        <ThemedText variant="body" muted>
-          {t().assistant.empty}
-        </ThemedText>
+      <View style={styles.emptyRow}>
+        <View style={[styles.empty, shadows.md, { backgroundColor: colors.cardBackground }]}>
+          <ThemedText variant="body">{t().assistant.empty}</ThemedText>
+        </View>
       </View>
     );
   }
@@ -74,5 +77,12 @@ const styles = StyleSheet.create({
   // covers only where there is something to read.
   list: { flexGrow: ValueConstants.zero },
   content: { gap: spacing.sm, paddingVertical: spacing.sm },
-  empty: { paddingVertical: spacing.lg, alignItems: 'center' },
+  emptyRow: { alignItems: 'center' },
+  // It floats over the app like everything else here, so it needs its own
+  // ground: laid bare over a recipe photo the invitation was unreadable.
+  empty: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
+    borderRadius: radii.round,
+  },
 });

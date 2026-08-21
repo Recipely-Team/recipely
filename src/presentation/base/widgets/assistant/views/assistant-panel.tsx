@@ -16,7 +16,6 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   borderWidths,
-  colorAlphas,
   controlSizes,
   fontWeights,
   iconSizes,
@@ -24,7 +23,8 @@ import {
   spacing,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { IS_DEV_BUILD } from '@infrastructure/constants/build-variant';
 import { t } from '@presentation/i18n';
 
 export interface AssistantPanelProps {
@@ -45,10 +45,12 @@ export interface AssistantPanelProps {
  *   screen the assistant is driving. An opaque card covered the recipe being
  *   read out and the draft being filled in — the one thing worth watching — and
  *   this assistant exists to change the app in view.
- * - **Only the pieces carrying text are opaque.** Each floats on its own
- *   frosted surface with a shadow, because a bubble laid straight over a photo
- *   is unreadable; the space between them stays clear and stays tappable, so
- *   the screen underneath keeps working.
+ * - **Every piece carrying text takes a solid surface and a shadow.** Over a
+ *   recipe feed the pieces sit on whatever photograph happens to be under them,
+ *   and a translucent panel dissolved into a bright one; the empty line had no
+ *   surface at all and was simply unreadable. The space BETWEEN the pieces
+ *   stays clear and stays tappable, which is what keeps the app usable — that
+ *   is the transparency worth having, not transparency in the text.
  * - **Minimising and closing are different decisions, and both are on screen.**
  *   The chevron puts the conversation away and leaves the session running; the
  *   cross hangs up. With only a cross, "get this off my screen" ended the call
@@ -81,8 +83,14 @@ export const AssistantPanel = ({
   const [isTyping, setIsTyping] = useState(false);
 
   const live = status !== AssistantStatus.Idle;
-  const notice = error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason);
-  const frosted = colors.cardBackground + colorAlphas.frosted;
+  // In the dev build the diagnostic rides along with the line. Two rounds of
+  // "it errors and we do not know why" went by with the screen able to say
+  // exactly which step failed and choosing not to; the message is a diagnostic
+  // and never reaches anyone outside an internal build.
+  const notice =
+    error !== null
+      ? t().assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
+      : assistantNotice(status, deniedReason);
 
   const send = (text: string): void => {
     clearError();
@@ -118,7 +126,7 @@ export const AssistantPanel = ({
       ]}
     >
       <View pointerEvents="box-none" style={styles.header}>
-        <View style={[styles.chip, shadows.md, { backgroundColor: frosted }]}>
+        <View style={[styles.chip, shadows.md, { backgroundColor: colors.cardBackground }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={assistantGradient.start}
@@ -139,7 +147,7 @@ export const AssistantPanel = ({
           onPress={onMinimize}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.minimize}
-          style={[styles.round, shadows.md, { backgroundColor: frosted }]}
+          style={[styles.round, shadows.md, { backgroundColor: colors.cardBackground }]}
         >
           <Ionicons name="chevron-down" size={iconSizes.md} color={colors.text} />
         </Pressable>
@@ -151,17 +159,15 @@ export const AssistantPanel = ({
           }}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.close}
-          style={[styles.round, shadows.md, { backgroundColor: frosted }]}
+          style={[styles.round, shadows.md, { backgroundColor: colors.cardBackground }]}
         >
           <Ionicons name="close" size={iconSizes.md} color={colors.text} />
         </Pressable>
       </View>
 
       {notice !== null ? (
-        <View style={[styles.notice, shadows.sm, { backgroundColor: frosted }]}>
-          <ThemedText variant="caption" muted>
-            {notice}
-          </ThemedText>
+        <View style={[styles.notice, shadows.md, { backgroundColor: colors.cardBackground }]}>
+          <ThemedText variant="caption">{notice}</ThemedText>
         </View>
       ) : null}
 
@@ -171,7 +177,7 @@ export const AssistantPanel = ({
         <AssistantTranscript lines={transcript} />
       </View>
 
-      <View style={[styles.stage, shadows.lg, { backgroundColor: frosted, borderColor: colors.cardBorder }]}>
+      <View style={[styles.stage, shadows.lg, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
         {isTyping ? (
           <AssistantComposer onSend={send} onSwitchToVoice={() => setIsTyping(false)} />
         ) : (

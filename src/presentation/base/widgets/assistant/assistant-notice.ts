@@ -18,6 +18,7 @@ export function assistantNotice(
   reason: AssistantDenialReasonType | null,
 ): string | null {
   if (status !== AssistantStatus.Unavailable) return null;
+  if (reason === AssistantDenialReason.MicrophoneDenied) return t().assistant.micDenied;
   if (reason === AssistantDenialReason.GlobalDailyLimit) return t().assistant.busyEverywhere;
   if (reason === AssistantDenialReason.UserDailyLimit) return t().assistant.outOfMinutes;
   return t().assistant.unavailable;
