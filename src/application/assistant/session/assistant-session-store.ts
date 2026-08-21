@@ -156,6 +156,14 @@ export const configureAssistantSessionStore = (
    * not one they could interrupt anyway.
    */
   let speakingUntil = ValueConstants.zero;
+  /**
+   * The id of the line still being spoken into, or null between turns.
+   *
+   * An action chip landing mid-sentence, or the other party starting to speak,
+   * closes it — so a turn only ever grows while it is genuinely the last thing
+   * said.
+   */
+  let openTurn: string | null = null;
   let lineId = ValueConstants.zero;
   // What a reconnect needs. The handle lets the next socket continue the
   // conversation instead of paying for setup and context again, and the
@@ -209,6 +217,7 @@ export const configureAssistantSessionStore = (
       // before the user had said anything.
       meter.reset();
       speakingUntil = ValueConstants.zero;
+      openTurn = null;
       set({ status, level: ValueConstants.zero, isMuted: false });
     };
 
@@ -242,9 +251,34 @@ export const configureAssistantSessionStore = (
       return String(lineId);
     };
 
+    /**
+     * Adds spoken text to the turn in progress, or starts one.
+     *
+     * Transcription STREAMS: the API sends a sentence a fragment at a time.
+     * Appending each as its own line turned one answer into a column of
+     * one-word bubbles — "Baklava" / "yapay" / "zeka" / "tarafından" — which
+     * is most of why the conversation did not read as one. Fragments carry
+     * their own spacing, so they are joined as they arrive rather than
+     * re-spaced.
+     */
     const appendTranscript = (speaker: ChatRole, text: string): void => {
+      const transcript = get().transcript;
+      const last = transcript[transcript.length - ValueConstants.one];
+
+      if (
+        openTurn !== null &&
+        openTurn === last?.id &&
+        last.kind === AssistantTranscriptLineKind.Speech &&
+        last.speaker === speaker
+      ) {
+        const grown = { ...last, text: last.text + text };
+        set({ transcript: [...transcript.slice(ValueConstants.zero, -ValueConstants.one), grown] });
+        return;
+      }
+
       const line = { kind: AssistantTranscriptLineKind.Speech, id: nextLineId(), speaker, text } as const;
-      set({ transcript: [...get().transcript, line] });
+      openTurn = line.id;
+      set({ transcript: [...transcript, line] });
     };
 
     /**
@@ -351,12 +385,14 @@ export const configureAssistantSessionStore = (
           player.flush();
           // Nothing is queued any more, so the microphone reopens at once.
           speakingUntil = ValueConstants.zero;
+          openTurn = null;
           silenceLevel();
           set({ status: AssistantStatus.Listening });
           break;
         case AssistantEventKind.TurnComplete:
           // A completed turn is a conversation that is happening, so the
           // handover counter starts again from here.
+          openTurn = null;
           handovers = ValueConstants.zero;
           set({ status: AssistantStatus.Listening });
           nudgeSilenceTimer();

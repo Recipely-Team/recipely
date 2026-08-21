@@ -51,11 +51,11 @@ export function mapLiveServerMessage(dto: LiveServerMessageDto): AssistantSessio
 
     const heard = content.inputTranscription?.text;
     if (isNonEmptyString(heard)) {
-      events.push({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: heard, final: false });
+      events.push({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: heard });
     }
     const said = content.outputTranscription?.text;
     if (isNonEmptyString(said)) {
-      events.push({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: said, final: false });
+      events.push({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: said });
     }
 
     for (const part of content.modelTurn?.parts ?? []) {

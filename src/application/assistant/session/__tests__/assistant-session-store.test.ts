@@ -402,8 +402,8 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var', final: true });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam', final: true });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
 
       expect(spoken(store.getState().transcript).map((l) => [l.speaker, l.text])).toEqual([
         [ChatRole.User, 'tavuk var'],
@@ -832,6 +832,45 @@ describe('assistant session store', () => {
       await store.getState().stopVoice();
 
       expect(store.getState().isMuted).toBe(false);
+    });
+  });
+
+  describe('how a spoken turn reads', () => {
+    // Transcription streams. Each fragment became its own line, so one answer
+    // arrived as a column of one-word bubbles — "Baklava" / "yapay" / "zeka" /
+    // "tarafından" — which is most of why the conversation did not read as one.
+    it('grows one bubble as the sentence arrives', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'Baklava' });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: ' yapay zeka' });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: ' hazırlıyor.' });
+
+      expect(store.getState().transcript).toEqual([
+        expect.objectContaining({ speaker: ChatRole.Assistant, text: 'Baklava yapay zeka hazırlıyor.' }),
+      ]);
+    });
+
+    it('starts a new bubble when the other party speaks', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
+
+      expect(store.getState().transcript).toHaveLength(2);
+    });
+
+    it('starts a new bubble for the next turn', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
+      emit({ kind: AssistantEventKind.TurnComplete });
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'peki' });
+
+      expect(store.getState().transcript).toHaveLength(2);
     });
   });
 
