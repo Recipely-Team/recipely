@@ -1,7 +1,8 @@
-import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
+import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionHandlerType } from '@domain/assistant/actions/assistant-action-handler';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 
 /**
  * Routes a tool call from the model to the code that performs it.
@@ -75,7 +76,7 @@ export class AssistantActionRegistry {
   }
 
   async run(action: string, arg?: string): Promise<AssistantActionResultType> {
-    if (!isKnownAction(action)) {
+    if (!isAssistantAction(action)) {
       return this.withContext({ ok: false, error: 'unknown_action' });
     }
 
@@ -113,8 +114,4 @@ export class AssistantActionRegistry {
     const ctx = this.describeScreen();
     return ctx === CharConstants.empty ? result : { ...result, ctx };
   }
-}
-
-function isKnownAction(action: string): action is AssistantActionType {
-  return (Object.values(AssistantAction) as string[]).includes(action);
 }

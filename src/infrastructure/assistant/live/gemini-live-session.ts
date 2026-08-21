@@ -20,6 +20,11 @@ import { toLiveSetupRequest } from '@infrastructure/assistant/live/live-setup-re
  * frames in both directions.
  *
  * @remarks
+ * - **The token rides on the URL, and nothing else authenticates.** A browser
+ *   WebSocket cannot set a header, so the credential is a query parameter or it
+ *   is nowhere. Opened without it the handshake still completes and the server
+ *   then closes the socket — which looks, from the app, exactly like a
+ *   connection that hangs.
  * - **Connected means `setupComplete`, not open.** The socket opens before the
  *   server has accepted the model, the tool list or the modality, and audio
  *   sent in that window is discarded silently rather than rejected. `connect`
@@ -47,6 +52,26 @@ type SocketFactory = (url: string) => WebSocket;
 
 const SOCKET_OPEN = 1;
 const ARRAY_BUFFER = 'arraybuffer';
+const QUERY_START = '?';
+const QUERY_JOIN = '&';
+
+/**
+ * The socket URL with the session's credential on it.
+ *
+ * The token is the ONLY thing that authenticates this connection — there is no
+ * header to put it in, because a browser WebSocket cannot set one. Opened
+ * without it the socket completes its handshake and is then closed by the
+ * server, which reads as "connecting, and then nothing".
+ *
+ * `access_token` is deliberately NOT percent-encoded. The name contains a
+ * slash (`auth_tokens/…`), and encoding it produced a socket the server
+ * refused — measured against the live API, along with the `key=` spelling,
+ * which it also refuses.
+ */
+function authenticatedUrl(credentials: LiveSessionCredentials): string {
+  const separator = credentials.wsUrl.includes(QUERY_START) ? QUERY_JOIN : QUERY_START;
+  return `${credentials.wsUrl}${separator}access_token=${credentials.token}`;
+}
 
 /**
  * Reads one incoming frame as text.
@@ -89,7 +114,7 @@ export class GeminiLiveSession implements AssistantSessionInterface {
         resolve(result);
       };
 
-      const socket = this.createSocket(credentials.wsUrl);
+      const socket = this.createSocket(authenticatedUrl(credentials));
       // The server sends its JSON in BINARY frames. Without this the runtime
       // hands them over as Blob, which cannot be read synchronously.
       socket.binaryType = ARRAY_BUFFER;

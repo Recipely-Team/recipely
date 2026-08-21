@@ -16,6 +16,8 @@ export const CharConstants = {
   slash: '/' as string,
   colon: ':' as string,
   dash: '-' as string,
+  /** Separates a label from its detail inline — never a bullet list marker. */
+  middotSpaced: ' · ' as string,
   /** Display placeholder for a value the backend never sent — NOT a zero. */
   emDash: '—' as string,
   newline: '\n' as string,

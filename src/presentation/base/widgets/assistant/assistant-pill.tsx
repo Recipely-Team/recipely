@@ -1,33 +1,26 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useLayout } from '@presentation/base/responsive/use-layout';
-import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
-import { ValueConstants } from '@core/constants';
-import { AssistantMicOrb } from '@presentation/base/widgets/assistant/assistant-mic-orb';
+import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
+import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
+import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
-import { AssistantPanel } from '@presentation/base/widgets/assistant/assistant-panel';
-import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AssistantView } from '@application/assistant/session/assistant-view';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
-import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { borderWidths, controlSizes, layoutSizes, radii, spacing, zIndices } from '@presentation/base/theme';
-import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { t } from '@presentation/i18n';
+import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
+import { controlSizes, spacing, zIndices } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 /**
  * The assistant's permanent handle, mounted once at the root.
  *
  * @remarks
- * - **A pill, not a sheet.** This assistant works by driving the app where the
- *   user can watch — "create a recipe" opens the create screen and fills the
- *   draft in. A modal takeover would hide the one thing worth seeing, so the
- *   control stays small and the screen underneath stays live.
- * - **Two targets, two jobs.** The orb starts and stops the microphone; the
- *   label opens the panel. Tapping the pill to talk and tapping it to read are
- *   different intentions, and one target for both meant a user who wanted to
- *   check the transcript hung up the call instead.
+ * - **Three states, one corner.** Closed is a chef waiting; mini is a live
+ *   session out of the way; open is the conversation. Minimising a live session
+ *   goes to mini rather than closing it, because hanging up is a decision and
+ *   should never be what "get this off my screen" does.
  * - **It sits above the timers bar** (see `zIndices`): the assistant can be
  *   speaking and acting on the app's behalf, so the control that stops it must
  *   never be the thing that is covered.
@@ -37,13 +30,16 @@ import { t } from '@presentation/i18n';
  * - **It clears the tab bar the same way the timers bar does.** Docked to the
  *   safe-area inset alone, it landed squarely on the third tab and swallowed
  *   taps meant for it. Routes without a tab bar — onboarding, auth, detail —
- *   must NOT reserve that height, or the pill floats away from the edge.
+ *   must NOT reserve that height, or the control floats away from the edge.
+ * - **Voice being unavailable does not remove the assistant.** Both refusals the
+ *   backend can send — this user's minutes, everyone's minutes — close voice and
+ *   leave typing working, so hiding the launcher would take away the half that
+ *   still runs. The panel says which limit was reached instead.
  */
 export const AssistantPill = (): React.JSX.Element => {
-  const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const { isWebShell } = useLayout();
-  const { status, isPanelOpen, openPanel, toggleVoice } = useAssistantSession();
+  const { isWebShell, isExpanded } = useLayout();
+  const { status, view, setView, level, isMuted, toggleMute, toggleVoice } = useAssistantSession();
 
   // The pill is the one component mounted for the whole app's life, so the
   // actions that work from anywhere — and the screen line every tool result
@@ -53,40 +49,43 @@ export const AssistantPill = (): React.JSX.Element => {
 
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const bottom =
-    insets.bottom +
-    (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +
-    spacing.lg;
+    insets.bottom + (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) + spacing.lg;
+
+  const live = status !== AssistantStatus.Idle;
+
+  // Hanging up is a decision. Putting the panel away is not, so it keeps a
+  // running session alive in the mini bar and only closes outright when there
+  // is nothing left to keep.
+  const minimize = (): void => {
+    setView(live ? AssistantView.Mini : AssistantView.Closed);
+  };
+
+  const end = (): void => {
+    if (live) void toggleVoice();
+    setView(AssistantView.Closed);
+  };
 
   return (
-    <View style={[styles.dock, { bottom }]} pointerEvents="box-none">
-      {isPanelOpen ? <AssistantPanel /> : null}
+    <View
+      style={[styles.dock, { bottom }, isExpanded ? styles.dockWide : null]}
+      pointerEvents="box-none"
+    >
+      {view === AssistantView.Open ? <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={bottom} /> : null}
 
-      <View
-        style={[
-          styles.pill,
-          shadows.md,
-          { backgroundColor: colors.surface, borderColor: colors.border },
-        ]}
-      >
-        <Pressable
-          onPress={toggleVoice}
-          accessibilityRole="button"
-          accessibilityLabel={status === AssistantStatus.Idle ? t().assistant.start : t().assistant.stop}
-        >
-          <AssistantMicOrb status={status} />
-        </Pressable>
+      {view === AssistantView.Mini ? (
+        <AssistantMiniBar
+          status={status}
+          level={level}
+          isMuted={isMuted}
+          onExpand={() => setView(AssistantView.Open)}
+          onToggleMute={toggleMute}
+          onEnd={end}
+        />
+      ) : null}
 
-        <Pressable
-          onPress={isPanelOpen ? undefined : openPanel}
-          accessibilityRole="button"
-          accessibilityLabel={t().assistant.open}
-          style={styles.label}
-        >
-          <ThemedText variant="caption" muted numberOfLines={1}>
-            {assistantStatusLabel(status)}
-          </ThemedText>
-        </Pressable>
-      </View>
+      {view === AssistantView.Closed ? (
+        <AssistantFab status={status} onOpen={() => setView(AssistantView.Open)} />
+      ) : null}
     </View>
   );
 };
@@ -94,9 +93,9 @@ export const AssistantPill = (): React.JSX.Element => {
 const styles = StyleSheet.create({
   // Both edges are pinned so the dock spans the screen: the panel's own
   // `width: '100%'` needs something to be a percentage OF, and without a left
-  // edge the dock shrank to its widest child — the pill — leaving the panel
-  // about a third of its cap. `box-none` keeps the empty span click-through,
-  // and `flex-end` keeps the pill in its corner regardless.
+  // edge the dock shrank to its widest child, leaving the panel about a third
+  // of its cap. `box-none` keeps the empty span click-through, and `flex-end`
+  // keeps the control in its corner regardless.
   dock: {
     position: 'absolute',
     left: spacing.md,
@@ -105,14 +104,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: spacing.sm,
   },
-  pill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.xs,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.hairline,
-  },
-  label: { paddingRight: spacing.sm, maxWidth: layoutSizes.assistantLabelMaxWidth },
+  // On a wide window the panel is a docked side column, so the dock stops
+  // spanning and lets its child size itself.
+  dockWide: { left: 'auto' },
 });

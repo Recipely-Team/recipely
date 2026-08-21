@@ -4,6 +4,9 @@ import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
+import { AssistantView } from '@application/assistant/session/assistant-view';
+import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
@@ -131,6 +134,16 @@ function harness(
   return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event) };
 }
 
+type SpeechLine = Extract<AssistantTranscriptLine, { kind: typeof AssistantTranscriptLineKind.Speech }>;
+
+/** The lines that were SAID. An action line carries a key, not words. */
+const spoken = (transcript: AssistantTranscriptLine[]): SpeechLine[] =>
+  transcript.filter((line): line is SpeechLine => line.kind === AssistantTranscriptLineKind.Speech);
+
+/** One capture frame, loud enough to move a waveform: RMS is `amplitude`. */
+const frame = (amplitude: number): Float32Array<ArrayBuffer> =>
+  new Float32Array([amplitude, amplitude, amplitude, amplitude]);
+
 /** Lets every queued microtask — the tool queue, a reconnect — run to a stop. */
 const settle = async (): Promise<void> => {
   for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
@@ -223,7 +236,7 @@ describe('assistant session store', () => {
       emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var', final: true });
       emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam', final: true });
 
-      expect(store.getState().transcript.map((l) => [l.speaker, l.text])).toEqual([
+      expect(spoken(store.getState().transcript).map((l) => [l.speaker, l.text])).toEqual([
         [ChatRole.User, 'tavuk var'],
         [ChatRole.Assistant, 'tamam'],
       ]);
@@ -504,6 +517,248 @@ describe('assistant session store', () => {
     expect(calls.micStopped).toBeGreaterThan(0);
   });
 
+  describe('the level a waveform is drawn from', () => {
+    it('rises with what the microphone hears', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      calls.onFrame?.(frame(0.25));
+
+      expect(store.getState().level).toBeGreaterThan(0);
+    });
+
+    // While the model talks the microphone is still open, so a bar driven by
+    // the room would move to whatever is happening in it rather than to the
+    // voice the user is listening to.
+    it('follows the model while it is speaking', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.Audio, samples: frame(0.25) });
+
+      expect(store.getState().level).toBeGreaterThan(0);
+    });
+
+    // A bar left at half height after hanging up reads as a live microphone.
+    it('falls to zero when the session stops', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+      calls.onFrame?.(frame(0.25));
+      expect(store.getState().level).toBeGreaterThan(0);
+
+      await store.getState().stopVoice();
+
+      expect(store.getState().level).toBe(0);
+    });
+
+    // Capture frames arrive dozens of times a second and every published value
+    // re-renders each subscriber: a panel repainted at the frame rate is a
+    // defect, not a waveform. Loudness alternates on purpose, so what holds the
+    // updates back is the interval rather than an unchanged reading.
+    it('publishes at a screen rate rather than once per frame', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, calls } = harness();
+        await store.getState().startVoice('tr-TR');
+        let published = 0;
+        const stopWatching = store.subscribe(() => {
+          published += 1;
+        });
+
+        for (let at = 0; at < 20; at += 1) calls.onFrame?.(frame(at % 2 === 0 ? 0.05 : 0.25));
+        const withinOneInterval = published;
+        jest.advanceTimersByTime(100);
+        calls.onFrame?.(frame(0.25));
+        stopWatching();
+
+        expect(withinOneInterval).toBe(1);
+        expect(published).toBe(2);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+  });
+
+  describe('muting', () => {
+    // A mute that only labels itself still sends the room to the model, which
+    // is the one thing the button promises it does not.
+    it('keeps captured frames off the socket', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+      store.getState().toggleMute();
+      calls.audioFrames = 0;
+
+      calls.onFrame?.(frame(0.3));
+
+      expect(store.getState().isMuted).toBe(true);
+      expect(calls.audioFrames).toBe(0);
+    });
+
+    it('silences the waveform along with the microphone', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+      calls.onFrame?.(frame(0.3));
+      expect(store.getState().level).toBeGreaterThan(0);
+
+      store.getState().toggleMute();
+      calls.onFrame?.(frame(0.3));
+
+      expect(store.getState().level).toBe(0);
+    });
+
+    it('sends again once it is switched off', async () => {
+      const { store, calls } = harness();
+      await store.getState().startVoice('tr-TR');
+      store.getState().toggleMute();
+
+      store.getState().toggleMute();
+      calls.audioFrames = 0;
+      calls.onFrame?.(frame(0.3));
+
+      expect(store.getState().isMuted).toBe(false);
+      expect(calls.audioFrames).toBe(1);
+    });
+
+    // The watchdog exists to notice a socket that has gone quiet on US. A muted
+    // microphone sends nothing, so nothing comes back, so it fired eight
+    // seconds after the user pressed a control that offered to unmute — the
+    // session was gone, and with it the mute state, with no notice either way.
+    it('does not let the silence watchdog end a session the user muted', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+        store.getState().toggleMute();
+
+        await jest.advanceTimersByTimeAsync(30_000);
+
+        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().isMuted).toBe(true);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('starts watching again as soon as the microphone comes back', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+        store.getState().toggleMute();
+        store.getState().toggleMute();
+
+        await jest.advanceTimersByTimeAsync(30_000);
+
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    // A mute carried into the next session would silence it before the user
+    // had said anything, with a control they had already switched off.
+    it('is forgotten when the session ends', async () => {
+      const { store } = harness();
+      await store.getState().startVoice('tr-TR');
+      store.getState().toggleMute();
+
+      await store.getState().stopVoice();
+
+      expect(store.getState().isMuted).toBe(false);
+    });
+  });
+
+  describe('what the transcript records about actions', () => {
+    it('records an action that ran, with the phrase it ran on', async () => {
+      const { store, registry, emit } = harness();
+      registry.register(AssistantAction.Search, async () => ({ ok: true }));
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.Search, arg: 'mercimek' });
+      await settle();
+
+      expect(store.getState().transcript.at(-1)).toEqual({
+        kind: AssistantTranscriptLineKind.Action,
+        id: expect.any(String),
+        action: AssistantAction.Search,
+        detail: 'mercimek',
+      });
+    });
+
+    // A chip saying the app opened a recipe it could not open is worse than no
+    // chip: the transcript is what the user reads to see whether it obeyed.
+    it('records nothing for a call nothing could perform', async () => {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+
+      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.AttachPhoto });
+      await settle();
+
+      expect(store.getState().transcript).toEqual([]);
+    });
+
+    // What the handler named beats what the model asked for: the request was
+    // "something with what is in the fridge", the recipe is what now exists.
+    it('prefers the title the handler reported over the argument', async () => {
+      const { store, registry, emit } = harness();
+      registry.register(AssistantAction.GenerateRecipe, async () => ({ ok: true, title: 'Mercimek çorbası' }));
+      await store.getState().startVoice('tr-TR');
+
+      emit({
+        kind: AssistantEventKind.ToolCall,
+        callId: 'c1',
+        action: AssistantAction.GenerateRecipe,
+        arg: 'buzdolabındakilerle bir şeyler',
+      });
+      await settle();
+
+      expect(store.getState().transcript.at(-1)).toMatchObject({ detail: 'Mercimek çorbası' });
+    });
+
+    // An argument carrying structure is a payload the model wrote for a
+    // handler, and a chip is one short line.
+    it('leaves a payload argument off the line', async () => {
+      const { store, registry, emit } = harness();
+      registry.register(AssistantAction.SetDraftField, async () => ({ ok: true }));
+      await store.getState().startVoice('tr-TR');
+
+      emit({
+        kind: AssistantEventKind.ToolCall,
+        callId: 'c1',
+        action: AssistantAction.SetDraftField,
+        arg: '{"field":"title","value":"x"}',
+      });
+      await settle();
+
+      expect(store.getState().transcript.at(-1)).toEqual({
+        kind: AssistantTranscriptLineKind.Action,
+        id: expect.any(String),
+        action: AssistantAction.SetDraftField,
+      });
+    });
+  });
+
+  describe('how much of the assistant is showing', () => {
+    it('starts closed and moves to the view it is given', () => {
+      const { store } = harness();
+      expect(store.getState().view).toBe(AssistantView.Closed);
+
+      store.getState().setView(AssistantView.Mini);
+
+      expect(store.getState().view).toBe(AssistantView.Mini);
+    });
+
+    it('closes again on reset', async () => {
+      const { store } = harness();
+      store.getState().setView(AssistantView.Open);
+
+      store.getState().reset();
+      await settle();
+
+      expect(store.getState().view).toBe(AssistantView.Closed);
+    });
+  });
+
   // The mode the whole budget design promises. Out of budget there is no
   // socket, and this used to write the user's message into the transcript and
   // drop it — which looked exactly like being ignored.
@@ -518,7 +773,7 @@ describe('assistant session store', () => {
       expect(calls.asks).toEqual([
         { message: 'tavuklu bir şey öner', languageCode: 'tr-TR', screenContext: undefined },
       ]);
-      expect(store.getState().transcript.at(-1)?.text).toBe('tamam');
+      expect(spoken(store.getState().transcript).at(-1)?.text).toBe('tamam');
     });
 
     it('performs the action the answer chose', async () => {
@@ -587,6 +842,6 @@ describe('assistant session store', () => {
     store.getState().sendText('yayınla', 'tr-TR');
 
     expect(calls.texts).toEqual(['yayınla']);
-    expect(store.getState().transcript.at(-1)?.text).toBe('yayınla');
+    expect(spoken(store.getState().transcript).at(-1)?.text).toBe('yayınla');
   });
 });

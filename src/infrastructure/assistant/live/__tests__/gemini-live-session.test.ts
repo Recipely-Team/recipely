@@ -72,7 +72,9 @@ describe('GeminiLiveSession', () => {
   // session, and the handshake is two steps that are easy to get out of order.
   const connected = async () => {
     const sockets: FakeSocket[] = [];
-    const session = new GeminiLiveSession(() => {
+    const openedWith: string[] = [];
+    const session = new GeminiLiveSession((url) => {
+      openedWith.push(url);
       const socket = new FakeSocket();
       sockets.push(socket);
       return socket as unknown as WebSocket;
@@ -86,8 +88,57 @@ describe('GeminiLiveSession', () => {
     socket.deliver({ setupComplete: {} });
     const result = await pending;
 
-    return { session, socket, sockets, events, result };
+    return { session, socket, sockets, events, result, openedWith };
   };
+
+  // The token is the ONLY thing that authenticates this socket — a browser
+  // WebSocket cannot set a header, so it is a query parameter or it is nowhere.
+  // Opened without it the handshake completes and the server then closes it,
+  // which reads in the app as "connecting, and then nothing". Every test here
+  // passed with the credential unused, because the fake ignored the URL.
+  describe('authentication', () => {
+    it('opens the socket with the minted credential on it', async () => {
+      const { openedWith } = await connected();
+
+      expect(openedWith).toEqual(['wss://example.test/live?access_token=t']);
+    });
+
+    it('joins onto a URL that already carries a query', async () => {
+      const openedWith: string[] = [];
+      const session = new GeminiLiveSession((url) => {
+        openedWith.push(url);
+        const socket = new FakeSocket();
+        setTimeout(() => {
+          socket.open();
+          socket.deliver({ setupComplete: {} });
+        }, 0);
+        return socket as unknown as WebSocket;
+      });
+
+      await session.connect({ ...credentials, wsUrl: 'wss://example.test/live?v=1' });
+
+      expect(openedWith).toEqual(['wss://example.test/live?v=1&access_token=t']);
+    });
+
+    // The name contains a slash, and percent-encoding it produced a socket the
+    // server refused — measured against the live API.
+    it('does not encode the credential', async () => {
+      const openedWith: string[] = [];
+      const session = new GeminiLiveSession((url) => {
+        openedWith.push(url);
+        const socket = new FakeSocket();
+        setTimeout(() => {
+          socket.open();
+          socket.deliver({ setupComplete: {} });
+        }, 0);
+        return socket as unknown as WebSocket;
+      });
+
+      await session.connect({ ...credentials, token: 'auth_tokens/abc123' });
+
+      expect(openedWith[0]).toContain('access_token=auth_tokens/abc123');
+    });
+  });
 
   it('sends the setup frame as soon as the socket opens', async () => {
     const { socket } = await connected();
