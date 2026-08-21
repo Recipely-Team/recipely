@@ -50,8 +50,8 @@ describe('live-message-mapper', () => {
     });
 
     expect(events).toEqual([
-      { kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var', final: false },
-      { kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam', final: false },
+      { kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' },
+      { kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' },
     ]);
   });
 

@@ -8,8 +8,9 @@ import type { ChatRole } from '@domain/drafts/chat-role';
  * - **`transcript` carries text the model never sent as text.** Native-audio
  *   models support only the `AUDIO` response modality, so what the screen
  *   prints comes from the input/output transcription streams rather than from
- *   a text part. `final` marks the end of an utterance; partials arrive first
- *   and replace each other.
+ *   a text part. Fragments of one utterance arrive in order and are joined by
+ *   the store; the API marks no boundary within a turn, so `turnComplete` is
+ *   the only end there is.
  * - **`interrupted` is an event, not a flag.** It is the moment the playback
  *   queue must be dropped, and treating it as state to be polled is how a
  *   sentence the user cut off finishes anyway.
@@ -31,7 +32,6 @@ export type AssistantSessionEventType =
       readonly kind: typeof AssistantEventKind.Transcript;
       readonly speaker: ChatRole;
       readonly text: string;
-      readonly final: boolean;
     }
   | { readonly kind: typeof AssistantEventKind.Audio; readonly samples: Float32Array<ArrayBuffer> }
   | {
