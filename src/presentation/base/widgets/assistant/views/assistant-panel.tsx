@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
-import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AssistantVoiceStage } from '@presentation/base/widgets/assistant/views/assistant-voice-stage';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -82,7 +82,7 @@ export const AssistantPanel = ({
   } = useAssistantSession();
   const [isTyping, setIsTyping] = useState(false);
 
-  const live = status !== AssistantStatus.Idle;
+  const live = assistantIsLive(status);
   // In the dev build the diagnostic rides along with the line. Two rounds of
   // "it errors and we do not know why" went by with the screen able to say
   // exactly which step failed and choosing not to; the message is a diagnostic

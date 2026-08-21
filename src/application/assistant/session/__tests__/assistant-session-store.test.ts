@@ -228,6 +228,19 @@ describe('assistant session store', () => {
     });
   });
 
+  // The first press after any failure called STOP, because the status was
+  // Unavailable rather than Idle and both the hook and the store asked "is it
+  // idle". Seen on an emulator: the button did nothing until pressed twice.
+  it('starts on the first press after a session failed to begin', async () => {
+    const { store, calls } = harness({ grantDenied: true });
+    await store.getState().startVoice('tr-TR');
+    expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+
+    await store.getState().startVoice('tr-TR');
+
+    expect(calls.mints).toHaveLength(2);
+  });
+
   it('ignores a second start while a session is already up', async () => {
     const { store } = harness();
     await store.getState().startVoice('tr-TR');
@@ -679,7 +692,7 @@ describe('assistant session store', () => {
         store.getState().toggleMute();
         store.getState().toggleMute();
 
-        await jest.advanceTimersByTimeAsync(30_000);
+        await jest.advanceTimersByTimeAsync(120_000);
 
         expect(store.getState().status).toBe(AssistantStatus.Idle);
       } finally {
@@ -697,6 +710,96 @@ describe('assistant session store', () => {
       await store.getState().stopVoice();
 
       expect(store.getState().isMuted).toBe(false);
+    });
+  });
+
+  describe('the assistant hearing itself', () => {
+    // Reported from a phone: "it hears what it says and takes it as a command,
+    // and talks one after another." The loudspeaker feeds back into the
+    // microphone, and the library exposes no echo cancellation on Android — its
+    // session options are iOS-only. So the model answered its own sentence,
+    // forever.
+    it('sends nothing while its own audio is playing', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        // One second of playback at 24 kHz.
+        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+        calls.audioFrames = 0;
+
+        calls.onFrame?.(frame(0.3));
+
+        expect(calls.audioFrames).toBe(0);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('listens again once the audio has finished', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, calls, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+        calls.audioFrames = 0;
+
+        // A second of audio, plus the tail the room takes to go quiet.
+        await jest.advanceTimersByTimeAsync(1_500);
+        calls.onFrame?.(frame(0.3));
+
+        expect(calls.audioFrames).toBe(1);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    // Talking over it drops the queue, so there is nothing left to echo.
+    it('reopens the microphone the moment it is interrupted', async () => {
+      const { store, calls, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+      emit({ kind: AssistantEventKind.Interrupted });
+      calls.audioFrames = 0;
+
+      calls.onFrame?.(frame(0.3));
+
+      expect(calls.audioFrames).toBe(1);
+    });
+  });
+
+  describe('a session that hears nothing', () => {
+    // Observed on an emulator: the session connected and was gone eight
+    // seconds later, silently. The Live API sends nothing while nobody speaks,
+    // so every pause cooking actually has — reading a step, walking to the
+    // fridge — was indistinguishable from a dead socket.
+    it('survives a pause long enough to think about what to ask', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+
+        await jest.advanceTimersByTimeAsync(30_000);
+
+        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('gives up eventually, and says so rather than vanishing', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+
+        await jest.advanceTimersByTimeAsync(120_000);
+
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+        expect(store.getState().transcript.at(-1)).toMatchObject({ action: AssistantAction.Stop });
+      } finally {
+        jest.useRealTimers();
+      }
     });
   });
 

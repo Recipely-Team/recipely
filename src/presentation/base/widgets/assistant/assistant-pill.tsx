@@ -3,8 +3,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
 import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
-import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantView } from '@application/assistant/session/assistant-view';
+import { useAssistantFloatingClearance } from '@presentation/base/hooks/assistant/use-assistant-floating-clearance';
+import { useAssistantIsOffered } from '@presentation/base/hooks/assistant/use-assistant-is-offered';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
@@ -27,16 +29,24 @@ import { ValueConstants } from '@core/constants';
  * - **It registers the global actions**, because it is the only component
  *   mounted for the whole app's life. Screen-scoped actions belong to their
  *   screens, which is what makes "save it" mean the recipe in front of you.
+ * - **It also clears the screen's own floating control.** The feed's filter
+ *   button docks to the same corner at the same height, and the chef landed
+ *   squarely on top of it — covering the one control that screen exists to
+ *   offer. See `useAssistantFloatingClearance`.
  * - **It clears the tab bar the same way the timers bar does.** Docked to the
  *   safe-area inset alone, it landed squarely on the third tab and swallowed
  *   taps meant for it. Routes without a tab bar — onboarding, auth, detail —
  *   must NOT reserve that height, or the control floats away from the edge.
+ * - **It is absent where it could only get in the way.** Signing in,
+ *   registering and recovering a password are screens where every action is
+ *   the user's own; the assistant cannot type a password and must not appear
+ *   to try. See `useAssistantIsOffered`.
  * - **Voice being unavailable does not remove the assistant.** Both refusals the
  *   backend can send — this user's minutes, everyone's minutes — close voice and
  *   leave typing working, so hiding the launcher would take away the half that
  *   still runs. The panel says which limit was reached instead.
  */
-export const AssistantPill = (): React.JSX.Element => {
+export const AssistantPill = (): React.JSX.Element | null => {
   const insets = useSafeAreaInsets();
   const { isWebShell, isExpanded } = useLayout();
   const { status, view, setView, level, isMuted, toggleMute, toggleVoice } = useAssistantSession();
@@ -47,11 +57,19 @@ export const AssistantPill = (): React.JSX.Element => {
   useAssistantGlobalActions();
   useAssistantScreenContext();
 
+  const isOffered = useAssistantIsOffered();
+  const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const bottom =
-    insets.bottom + (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) + spacing.lg;
+    insets.bottom +
+    (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +
+    floatingClearance +
+    spacing.lg;
 
-  const live = status !== AssistantStatus.Idle;
+  // Below every hook, so the order never changes with the route.
+  if (!isOffered) return null;
+
+  const live = assistantIsLive(status);
 
   // Hanging up is a decision. Putting the panel away is not, so it keeps a
   // running session alive in the mini bar and only closes outright when there
