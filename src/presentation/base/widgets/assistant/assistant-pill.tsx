@@ -3,7 +3,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
 import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
-import { AssistantStatus } from '@application/assistant/session/assistant-status';
+import { assistantIsLive } from '@presentation/base/widgets/assistant/assistant-is-live';
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
@@ -51,7 +51,7 @@ export const AssistantPill = (): React.JSX.Element => {
   const bottom =
     insets.bottom + (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) + spacing.lg;
 
-  const live = status !== AssistantStatus.Idle;
+  const live = assistantIsLive(status);
 
   // Hanging up is a decision. Putting the panel away is not, so it keeps a
   // running session alive in the mini bar and only closes outright when there

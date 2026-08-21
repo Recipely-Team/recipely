@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
+import { assistantIsLive } from '@presentation/base/widgets/assistant/assistant-is-live';
+import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { assistantIsSounding } from '@presentation/base/widgets/assistant/assistant-is-sounding';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -51,7 +52,7 @@ export const AssistantVoiceStage = ({
   onSwitchToText,
 }: AssistantVoiceStageProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const live = status !== AssistantStatus.Idle;
+  const live = assistantIsLive(status);
   const isSounding = assistantIsSounding(status, isMuted);
 
   return (
