@@ -5,6 +5,7 @@ import type { Failure } from '@core/failure/failure';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { ValueConstants } from '@core/constants';
+import { resample } from '@infrastructure/assistant/live/pcm-codec';
 
 /**
  * Streaming playback of the assistant's reply, over `react-native-audio-api`.
@@ -26,12 +27,21 @@ const MONO = 1;
 export class PcmPlayer implements AudioPlayerInterface {
   private context: AudioContext | null = null;
   private queue: AudioBufferQueueSourceNode | null = null;
+  /** The rate the model sends at, which is not necessarily one the device runs at. */
+  private sourceRate = ValueConstants.zero;
 
   async prepare(sampleRate: number): Promise<Result<void, Failure>> {
     if (this.queue !== null) return { ok: true, value: undefined };
 
     try {
-      const context = new AudioContext({ sampleRate });
+      this.sourceRate = sampleRate;
+      // Deliberately NOT `new AudioContext({ sampleRate })`. Asking Android's
+      // audio HAL for a rate it does not run at is a request it may honour, may
+      // quietly refuse, or may crash on — and a native SIGSEGV inside
+      // libaudioclient.so is what a device reported. The context is opened at
+      // whatever the hardware actually wants and the samples are converted to
+      // meet it.
+      const context = new AudioContext();
       const queue = context.createBufferQueueSource();
       queue.connect(context.destination);
       // Both arguments are passed explicitly because the library's own default
@@ -54,8 +64,13 @@ export class PcmPlayer implements AudioPlayerInterface {
     const queue = this.queue;
     if (context === null || queue === null || samples.length === ValueConstants.zero) return;
 
-    const buffer = context.createBuffer(MONO, samples.length, context.sampleRate);
-    buffer.copyToChannel(samples, ValueConstants.zero);
+    // The frames arrive at `sourceRate`; the buffer is read back at the
+    // context's rate. Labelling them with the context's rate without
+    // converting played them at whatever ratio the two happened to have — it
+    // only ever sounded right because the context was forced to match.
+    const playable = resample(samples, this.sourceRate, context.sampleRate);
+    const buffer = context.createBuffer(MONO, playable.length, context.sampleRate);
+    buffer.copyToChannel(playable, ValueConstants.zero);
     queue.enqueueBuffer(buffer);
   }
 
