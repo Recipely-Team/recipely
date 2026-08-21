@@ -31,6 +31,9 @@ import { t } from '@presentation/i18n';
  * - **It sits above the timers bar** (see `zIndices`): the assistant can be
  *   speaking and acting on the app's behalf, so the control that stops it must
  *   never be the thing that is covered.
+ * - **It disappears when the assistant cannot work.** Not when the voice
+ *   budget is spent — that still types — but when a session could not be
+ *   minted at all. An offer that fails on every tap is worse than no offer.
  * - **It registers the global actions**, because it is the only component
  *   mounted for the whole app's life. Screen-scoped actions belong to their
  *   screens, which is what makes "save it" mean the recipe in front of you.
@@ -39,11 +42,11 @@ import { t } from '@presentation/i18n';
  *   taps meant for it. Routes without a tab bar — onboarding, auth, detail —
  *   must NOT reserve that height, or the pill floats away from the edge.
  */
-export const AssistantPill = (): React.JSX.Element => {
+export const AssistantPill = (): React.JSX.Element | null => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
-  const { status, isPanelOpen, openPanel, toggleVoice } = useAssistantSession();
+  const { isAvailable, status, isPanelOpen, openPanel, toggleVoice } = useAssistantSession();
 
   // The pill is the one component mounted for the whole app's life, so the
   // actions that work from anywhere — and the screen line every tool result
@@ -52,6 +55,16 @@ export const AssistantPill = (): React.JSX.Element => {
   useAssistantScreenContext();
 
   const hasTabBar = useTabBarState() !== null && !isWebShell;
+
+  // Nothing at all rather than something broken. A session that could not be
+  // minted means no key, no model, or no backend — and a pill that opens a
+  // panel which can never answer advertises a feature and then fails in front
+  // of the user every time they reach for it. Being out of budget is NOT this:
+  // that is a working assistant with its voice spent, and typing still answers.
+  // Every hook above this line, without exception: an early return that sits
+  // between two of them changes the hook order between renders, which React
+  // fails on rather than tolerates.
+  if (!isAvailable) return null;
   const bottom =
     insets.bottom +
     (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +

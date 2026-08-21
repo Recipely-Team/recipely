@@ -7,6 +7,7 @@ import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 interface AssistantSessionView {
+  isAvailable: boolean;
   status: AssistantStatusType;
   isPanelOpen: boolean;
   transcript: AssistantTranscriptLine[];
@@ -36,6 +37,7 @@ export const useAssistantSession = (): AssistantSessionView => {
   const { assistantSessionStore } = useStores();
   const locale = useLocale();
 
+  const isAvailable = assistantSessionStore((s) => s.isAvailable);
   const status = assistantSessionStore((s) => s.status);
   const isPanelOpen = assistantSessionStore((s) => s.isPanelOpen);
   const transcript = assistantSessionStore((s) => s.transcript);
@@ -59,6 +61,7 @@ export const useAssistantSession = (): AssistantSessionView => {
   }, [status, startVoice, stopVoice, locale]);
 
   return {
+    isAvailable,
     status,
     isPanelOpen,
     transcript,

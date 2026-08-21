@@ -268,6 +268,7 @@ export const configureAssistantSessionStore = (
 
     return {
       status: AssistantStatus.Idle,
+      isAvailable: true,
       isPanelOpen: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
@@ -289,7 +290,11 @@ export const configureAssistantSessionStore = (
 
         const grant = await tokens.mintSession(locale);
         if (!grant.ok) {
-          set({ status: AssistantStatus.Unavailable, error: grant.failure });
+          // Not a refusal — the session could not be minted at all. The
+          // assistant is not working on this install, so it stops offering
+          // itself rather than failing again on the next tap.
+          set({ status: AssistantStatus.Unavailable, isAvailable: false, error: grant.failure });
+          await teardown(AssistantStatus.Unavailable);
           return;
         }
         if (grant.value.status === AssistantGrantStatus.Denied) {
@@ -405,6 +410,7 @@ export const configureAssistantSessionStore = (
       reset: () => {
         void teardown(AssistantStatus.Idle);
         set({
+          isAvailable: true,
           transcript: [],
           remainingSeconds: ValueConstants.zero,
           tokensUsed: ValueConstants.zero,

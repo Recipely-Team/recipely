@@ -24,6 +24,8 @@ const openStores: { getState: () => { stopVoice: () => Promise<void> } }[] = [];
 function harness(
   overrides: {
     grantDenied?: boolean;
+    /** The mint itself fails — no key, no model, no backend. */
+    mintFails?: boolean;
     /** Denies every mint after the first — the reconnect, not the start. */
     denyReconnect?: boolean;
     connectFails?: boolean;
@@ -92,6 +94,9 @@ function harness(
   const tokens: AssistantTokenRepositoryInterface = {
     mintSession: async (languageCode, resumptionHandle) => {
       calls.mints.push({ languageCode, resumptionHandle });
+      if (overrides.mintFails === true) {
+        return { ok: false, failure: new NetworkFailure('no key') };
+      }
       const denied =
         overrides.grantDenied === true ||
         (overrides.denyReconnect === true && calls.mints.length > 1);
@@ -181,6 +186,52 @@ describe('assistant session store', () => {
 
     expect(store.getState().status).toBe(AssistantStatus.Idle);
     expect(store.getState().error).not.toBeNull();
+  });
+
+  // A pill that opens a panel which can never answer advertises a feature and
+  // then fails in front of the user on every tap. Once a session cannot be
+  // minted at all — no key, no model, no backend — the assistant stops
+  // offering itself.
+  describe('when the assistant cannot work at all', () => {
+    it('marks itself unavailable after a mint it could not complete', async () => {
+      const { store } = harness({ mintFails: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().isAvailable).toBe(false);
+    });
+
+    it('leaves nothing running behind it', async () => {
+      const { store, calls } = harness({ mintFails: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+      expect(calls.connects).toBe(0);
+    });
+
+    // Being out of budget is a WORKING assistant with its voice spent, and the
+    // text mode still answers — hiding it there would remove the way through.
+    it('stays available when the budget is merely spent', async () => {
+      const { store } = harness({ grantDenied: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().isAvailable).toBe(true);
+      expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+    });
+
+    // A new user on the same device gets a fresh answer rather than inheriting
+    // the previous session's verdict.
+    it('offers itself again after a reset', async () => {
+      const { store } = harness({ mintFails: true });
+      await store.getState().startVoice('tr-TR');
+
+      store.getState().reset();
+      await settle();
+
+      expect(store.getState().isAvailable).toBe(true);
+    });
   });
 
   it('ignores a second start while a session is already up', async () => {

@@ -5,6 +5,18 @@ import type { Failure } from '@core/failure';
 
 export interface AssistantSessionStoreState {
   status: AssistantStatusType;
+  /**
+   * Whether the assistant is usable at all on this install.
+   *
+   * False once a session could not be minted — no key configured, the model
+   * unreachable, the backend down. A pill that opens a panel which can never
+   * answer is worse than no pill: it advertises a feature and then fails in
+   * front of the user every time they try it.
+   *
+   * Running OUT OF BUDGET does not clear this. That is a working assistant
+   * with its voice spent, and the text mode still answers.
+   */
+  isAvailable: boolean;
   /** Open panel vs. collapsed pill. The assistant drives the app in view, so
    *  the panel never covers the screen it is working on. */
   isPanelOpen: boolean;
