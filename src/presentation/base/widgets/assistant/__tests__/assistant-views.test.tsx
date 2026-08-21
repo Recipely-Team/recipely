@@ -12,6 +12,7 @@ import { act } from 'react-test-renderer';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
+import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
@@ -20,6 +21,26 @@ import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assist
 import { ChatRole } from '@domain/drafts/chat-role';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { t } from '@presentation/i18n';
+
+// The panel reads the session from the store; the views under test here are
+// about which control does what, so the session is a still life.
+jest.mock('@presentation/base/hooks/assistant/use-assistant-session', () => ({
+  useAssistantSession: () => ({
+    status: 'listening',
+    view: 'open',
+    level: 0,
+    isMuted: false,
+    transcript: [],
+    remainingSeconds: 600,
+    deniedReason: null,
+    error: null,
+    clearError: jest.fn(),
+    setView: jest.fn(),
+    toggleMute: jest.fn(),
+    toggleVoice: jest.fn(),
+    sendText: jest.fn(),
+  }),
+}));
 
 // The mascot blinks and the launcher pulses on a loop for as long as they are
 // mounted, so a renderer left alive keeps firing timers into a torn-down Jest
@@ -94,17 +115,48 @@ describe('assistant views', () => {
     });
   });
 
+  describe('mini bar reachability', () => {
+    // Putting the panel away and hanging up were the same button, so "get this
+    // off my screen" ended the call — and the mini bar, the state this
+    // assistant is designed to live in, could not be reached at all.
+    it('separates putting the panel away from ending the session', () => {
+      const onClose = jest.fn();
+      const onMinimize = jest.fn();
+      const { root } = render(
+        <AssistantPanel onClose={onClose} onMinimize={onMinimize} bottomOffset={0} />,
+      );
+
+      press(root, t().assistant.minimize);
+
+      expect(onMinimize).toHaveBeenCalledTimes(1);
+      expect(onClose).not.toHaveBeenCalled();
+    });
+  });
+
   describe('waveform', () => {
-    // The bars are the only proof the microphone is open, so they must not keep
-    // moving once it is not: a row still animating after a session ended reads
-    // as a live microphone.
-    it('renders the same bars whether or not it is active', () => {
+    const opacities = (root: ReactTestInstance): number[] =>
+      root
+        .findAll((node) => Array.isArray(node.props.style))
+        .map((node) => {
+          const style = node.props.style as { opacity?: number }[];
+          return Number(style[style.length - 1]?.opacity);
+        })
+        .filter((value) => !Number.isNaN(value));
+
+    // The bars are the only proof the microphone is open, so they must not look
+    // alive once it is not: a row still standing tall after a session ended
+    // reads as a live microphone. Asserting the trees merely differ passed for
+    // any styling change at all.
+    it('drops every bar to the resting opacity when it is not active', () => {
       const active = render(<AssistantWave level={0.8} active color="#000000" bars={6} height={20} />);
       const resting = render(
         <AssistantWave level={0.8} active={false} color="#000000" bars={6} height={20} />,
       );
 
-      expect(active.renderer.toJSON()).not.toEqual(resting.renderer.toJSON());
+      const atRest = opacities(resting.root);
+      expect(atRest.length).toBe(6);
+      expect(new Set(atRest).size).toBe(1);
+      expect(Math.max(...opacities(active.root))).toBeGreaterThan(atRest[0]!);
     });
   });
 

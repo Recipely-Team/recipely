@@ -902,6 +902,7 @@ export const ko: Translations = {
     keyboard: "입력",
     voice: "말하기",
     expand: "어시스턴트 펼치기",
+    minimize: "어시스턴트 접기",
     end: "종료",
     actionDone: "완료",
     suggestions: [

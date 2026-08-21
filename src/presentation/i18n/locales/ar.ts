@@ -906,6 +906,7 @@ export const ar = {
     keyboard: "اكتب",
     voice: "تحدّث",
     expand: "توسيع المساعد",
+    minimize: "تصغير المساعد",
     end: "إنهاء",
     actionDone: "تم",
     suggestions: [

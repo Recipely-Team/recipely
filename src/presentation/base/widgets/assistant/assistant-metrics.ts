@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 import { scale } from '@presentation/base/theme/tokens/scale';
 
 /**
@@ -15,7 +16,10 @@ import { scale } from '@presentation/base/theme/tokens/scale';
  * - **The web panel is a full-height column, not a box that hugs its content.**
  *   Docked to the bottom edge with only the height its transcript needed, an
  *   empty conversation rendered as a strip barely taller than its own footer.
- *   `panelWebTopClearance` is the room the site header wants above it.
+ *   `panelWebTopClearance` is the room the site HEADER wants above it, so it is
+ *   spent only where that header is mounted — a tablet is wide without being a
+ *   browser. `panelMinHeight` is the floor: a short window subtracted its way
+ *   past zero without one.
  * - **`levelSettleMs` matches the store's publish interval.** Level arrives at
  *   most every 80ms; animating over roughly that long turns a staircase into a
  *   line without adding lag the user can feel.
@@ -36,6 +40,7 @@ export const assistantMetrics = {
   glowLevelGrowth: 0.5,
   panelWebWidth: scale(400),
   panelWebTopClearance: scale(84),
+  panelMinHeight: scale(280),
   panelSheetHeightShare: 0.52,
   levelSettleMs: 90,
   blinkIntervalMs: 3600,
@@ -44,4 +49,15 @@ export const assistantMetrics = {
   bobTravel: scale(2),
   ringDurationMs: 2600,
   ringScale: 1.6,
+} as const;
+
+/**
+ * The diagonal every gradient on this surface runs along.
+ *
+ * Declared once because five sibling files drew the same one, and rule 5's test
+ * is reuse: naming a value five times is not naming it.
+ */
+export const assistantGradient = {
+  start: { x: ValueConstants.zero, y: ValueConstants.zero },
+  end: { x: ValueConstants.one, y: ValueConstants.one },
 } as const;

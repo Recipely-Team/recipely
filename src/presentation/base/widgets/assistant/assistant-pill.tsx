@@ -53,13 +53,15 @@ export const AssistantPill = (): React.JSX.Element => {
 
   const live = status !== AssistantStatus.Idle;
 
-  const close = (): void => {
-    if (live) void toggleVoice();
-    setView(AssistantView.Closed);
+  // Hanging up is a decision. Putting the panel away is not, so it keeps a
+  // running session alive in the mini bar and only closes outright when there
+  // is nothing left to keep.
+  const minimize = (): void => {
+    setView(live ? AssistantView.Mini : AssistantView.Closed);
   };
 
   const end = (): void => {
-    void toggleVoice();
+    if (live) void toggleVoice();
     setView(AssistantView.Closed);
   };
 
@@ -68,7 +70,7 @@ export const AssistantPill = (): React.JSX.Element => {
       style={[styles.dock, { bottom }, isExpanded ? styles.dockWide : null]}
       pointerEvents="box-none"
     >
-      {view === AssistantView.Open ? <AssistantPanel onClose={close} bottomOffset={bottom} /> : null}
+      {view === AssistantView.Open ? <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={bottom} /> : null}
 
       {view === AssistantView.Mini ? (
         <AssistantMiniBar

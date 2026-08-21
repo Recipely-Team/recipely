@@ -3,7 +3,7 @@ import { Animated, Easing, Pressable, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
-import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, opacities, radii } from '@presentation/base/theme';
@@ -81,8 +81,8 @@ export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.E
       />
       <LinearGradient
         colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-        start={gradientStart}
-        end={gradientEnd}
+        start={assistantGradient.start}
+        end={assistantGradient.end}
         style={[styles.fab, shadows.lg]}
       >
         <AssistantMascot size={assistantMetrics.fabMascot} status={status} />
@@ -93,8 +93,6 @@ export const AssistantFab = ({ status, onOpen }: AssistantFabProps): React.JSX.E
 
 // Named because a bare pair of coordinate objects inline is exactly the magic
 // value rule 5 is about; the diagonal is what gives the button its lit edge.
-const gradientStart = { x: 0, y: 0 } as const;
-const gradientEnd = { x: 1, y: 1 } as const;
 
 const styles = StyleSheet.create({
   wrapper: { alignItems: 'center', justifyContent: 'center' },

@@ -906,6 +906,7 @@ export const es = {
     keyboard: "Escribir",
     voice: "Hablar",
     expand: "Ampliar el asistente",
+    minimize: "Minimizar el asistente",
     end: "Terminar",
     actionDone: "Hecho",
     suggestions: [

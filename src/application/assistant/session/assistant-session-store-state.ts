@@ -14,7 +14,9 @@ export interface AssistantSessionStoreState {
    *
    * Already scaled for a waveform to render directly — see
    * `AssistantLevelMeter`, which also decides how often this changes. It is 0
-   * whenever nothing is being captured or played, including while muted.
+   * whenever nothing is being captured, and muting the microphone drops it to
+   * 0 — but playback keeps publishing, because mute silences the user, not the
+   * assistant, and a flat line while it is mid-sentence would say otherwise.
    */
   level: number;
   /**

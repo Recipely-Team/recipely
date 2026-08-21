@@ -906,6 +906,7 @@ export const pt = {
     keyboard: "Escrever",
     voice: "Falar",
     expand: "Ampliar o assistente",
+    minimize: "Minimizar o assistente",
     end: "Terminar",
     actionDone: "Feito",
     suggestions: [

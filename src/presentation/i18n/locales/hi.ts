@@ -902,6 +902,7 @@ export const hi: Translations = {
     keyboard: "लिखें",
     voice: "बोलें",
     expand: "असिस्टेंट बड़ा करें",
+    minimize: "असिस्टेंट छोटा करें",
     end: "खत्म करें",
     actionDone: "हो गया",
     suggestions: [

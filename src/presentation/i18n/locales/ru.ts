@@ -906,6 +906,7 @@ export const ru = {
     keyboard: "Написать",
     voice: "Говорить",
     expand: "Развернуть помощника",
+    minimize: "Свернуть помощника",
     end: "Завершить",
     actionDone: "Готово",
     suggestions: [

@@ -619,6 +619,42 @@ describe('assistant session store', () => {
       expect(calls.audioFrames).toBe(1);
     });
 
+    // The watchdog exists to notice a socket that has gone quiet on US. A muted
+    // microphone sends nothing, so nothing comes back, so it fired eight
+    // seconds after the user pressed a control that offered to unmute — the
+    // session was gone, and with it the mute state, with no notice either way.
+    it('does not let the silence watchdog end a session the user muted', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+        store.getState().toggleMute();
+
+        await jest.advanceTimersByTimeAsync(30_000);
+
+        expect(store.getState().status).not.toBe(AssistantStatus.Idle);
+        expect(store.getState().isMuted).toBe(true);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('starts watching again as soon as the microphone comes back', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness();
+        await store.getState().startVoice('tr-TR');
+        store.getState().toggleMute();
+        store.getState().toggleMute();
+
+        await jest.advanceTimersByTimeAsync(30_000);
+
+        expect(store.getState().status).toBe(AssistantStatus.Idle);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     // A mute carried into the next session would silence it before the user
     // had said anything, with a control they had already switched off.
     it('is forgotten when the session ends', async () => {

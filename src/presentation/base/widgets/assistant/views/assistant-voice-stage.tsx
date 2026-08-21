@@ -4,7 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   borderWidths,
@@ -53,6 +53,10 @@ export const AssistantVoiceStage = ({
 }: AssistantVoiceStageProps): React.JSX.Element => {
   const { colors } = useTheme();
   const live = status !== AssistantStatus.Idle;
+  // Mute silences the microphone, not the assistant. While it is mid-sentence
+  // the bars are drawing ITS voice, and flattening them there claimed the
+  // session had gone quiet when it had not.
+  const isSounding = live && (!isMuted || status === AssistantStatus.Speaking);
 
   return (
     <View style={styles.stage}>
@@ -62,14 +66,14 @@ export const AssistantVoiceStage = ({
           style={[
             styles.glow,
             {
-              backgroundColor: colors.primary + (live ? colorAlphas.faint : CLEAR_GLOW),
+              backgroundColor: colors.primary + (live ? colorAlphas.faint : colorAlphas.trace),
               transform: [{ scale: ValueConstants.one + level * assistantMetrics.glowLevelGrowth }],
             },
           ]}
         />
         <AssistantWave
           level={level}
-          active={live && !isMuted}
+          active={isSounding}
           color={colors.primary}
           bars={assistantMetrics.wavePanelBars}
           height={assistantMetrics.wavePanelHeight}
@@ -131,8 +135,8 @@ export const AssistantVoiceStage = ({
           <Pressable onPress={onStart} accessibilityRole="button" accessibilityLabel={t().assistant.start}>
             <LinearGradient
               colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-              start={gradientStart}
-              end={gradientEnd}
+              start={assistantGradient.start}
+              end={assistantGradient.end}
               style={[styles.startButton, shadows.md]}
             >
               <Ionicons name="sparkles" size={iconSizes.lg} color={colors.onOverlay} />
@@ -147,10 +151,6 @@ export const AssistantVoiceStage = ({
   );
 };
 
-// The glow never disappears entirely — an unlit stage reads as a dead control.
-const CLEAR_GLOW = '10';
-const gradientStart = { x: 0, y: 0 } as const;
-const gradientEnd = { x: 1, y: 1 } as const;
 
 const styles = StyleSheet.create({
   stage: { alignItems: 'center', gap: spacing.md },

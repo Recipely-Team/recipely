@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -66,8 +67,8 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
         <Pressable onPress={onSwitchToVoice} accessibilityRole="button" accessibilityLabel={t().assistant.voice}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-            start={gradientStart}
-            end={gradientEnd}
+            start={assistantGradient.start}
+            end={assistantGradient.end}
             style={styles.round}
           >
             <Ionicons name="mic" size={iconSizes.lg} color={colors.onOverlay} />
@@ -108,8 +109,6 @@ export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposer
   );
 };
 
-const gradientStart = { x: 0, y: 0 } as const;
-const gradientEnd = { x: 1, y: 1 } as const;
 
 const styles = StyleSheet.create({
   composer: { gap: spacing.sm },

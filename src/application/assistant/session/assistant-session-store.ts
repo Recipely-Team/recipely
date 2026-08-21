@@ -143,8 +143,13 @@ export const configureAssistantSessionStore = (
       set({ status, level: ValueConstants.zero, isMuted: false });
     };
 
-    const nudgeSilenceTimer = (): void => {
+    const stopSilenceTimer = (): void => {
       if (silence !== null) clearTimeout(silence);
+      silence = null;
+    };
+
+    const nudgeSilenceTimer = (): void => {
+      stopSilenceTimer();
       silence = setTimeout(() => {
         void teardown(AssistantStatus.Idle);
       }, SILENCE_TIMEOUT_MS);
@@ -343,11 +348,19 @@ export const configureAssistantSessionStore = (
       setView: (view) => set({ view }),
 
       toggleMute: () => {
+        const isMuted = !get().isMuted;
+        // The watchdog exists to notice a socket that has gone quiet on us. A
+        // muted microphone sends nothing, so nothing comes back, and it fired
+        // eight seconds after the user pressed a control offering to unmute —
+        // the session was gone, along with the mute state itself. Silence the
+        // user chose is not silence to recover from.
+        if (isMuted) stopSilenceTimer();
+        else nudgeSilenceTimer();
         // The waveform goes with the mute, in the same set: a bar still moving
         // over a muted microphone says audio is going out, which is the one
         // thing the control promises it is not.
         meter.reset();
-        set({ isMuted: !get().isMuted, level: ValueConstants.zero });
+        set({ isMuted, level: ValueConstants.zero });
       },
 
       startVoice: async (locale: string) => {

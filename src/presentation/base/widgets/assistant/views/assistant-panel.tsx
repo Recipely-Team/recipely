@@ -8,7 +8,7 @@ import { AssistantStatus } from '@application/assistant/session/assistant-status
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AssistantVoiceStage } from '@presentation/base/widgets/assistant/views/assistant-voice-stage';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -19,7 +19,10 @@ import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 
 export interface AssistantPanelProps {
+  /** Ends the session and puts the assistant away. */
   onClose: () => void;
+  /** Puts the panel away while the session keeps running. */
+  onMinimize: () => void;
   /** How far the dock sits above the bottom edge, so the column can reach it. */
   bottomOffset: number;
 }
@@ -40,13 +43,22 @@ export interface AssistantPanelProps {
  * - **Voice and typing are two halves of one panel, not two modes of the app.**
  *   Switching between them keeps the transcript, because a session that started
  *   aloud and continued in text is one conversation.
+ * - **Minimising and closing are different decisions, and both are on screen.**
+ *   The chevron puts the panel away and leaves the session running; the cross
+ *   hangs up. With only a cross, "get this off my screen" ended the call — and
+ *   the mini bar, the state this assistant is designed to live in, could not be
+ *   reached at all.
  * - **A failed request outranks the status line.** A request answered by
  *   nothing looks exactly like being ignored, and this is the only surface that
  *   can say otherwise.
  */
-export const AssistantPanel = ({ onClose, bottomOffset }: AssistantPanelProps): React.JSX.Element => {
+export const AssistantPanel = ({
+  onClose,
+  onMinimize,
+  bottomOffset,
+}: AssistantPanelProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const { isExpanded } = useLayout();
+  const { isExpanded, isWebShell } = useLayout();
   const { height } = useWindowDimensions();
   const {
     status,
@@ -79,7 +91,12 @@ export const AssistantPanel = ({ onClose, bottomOffset }: AssistantPanelProps): 
         isExpanded
           ? {
               width: assistantMetrics.panelWebWidth,
-              height: height - assistantMetrics.panelWebTopClearance - bottomOffset,
+              height: Math.max(
+                assistantMetrics.panelMinHeight,
+                height -
+                  (isWebShell ? assistantMetrics.panelWebTopClearance : spacing.xl) -
+                  bottomOffset,
+              ),
             }
           : { width: '100%', maxHeight: height * assistantMetrics.panelSheetHeightShare },
       ]}
@@ -87,8 +104,8 @@ export const AssistantPanel = ({ onClose, bottomOffset }: AssistantPanelProps): 
       <View style={styles.header}>
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={gradientStart}
-          end={gradientEnd}
+          start={assistantGradient.start}
+          end={assistantGradient.end}
           style={styles.headerMascot}
         >
           <AssistantMascot size={assistantMetrics.headerMascot} status={status} />
@@ -103,13 +120,22 @@ export const AssistantPanel = ({ onClose, bottomOffset }: AssistantPanelProps): 
         />
 
         <Pressable
+          onPress={onMinimize}
+          accessibilityRole="button"
+          accessibilityLabel={t().assistant.minimize}
+          style={[styles.round, styles.minimize, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+        >
+          <Ionicons name="chevron-down" size={iconSizes.md} color={colors.text} />
+        </Pressable>
+
+        <Pressable
           onPress={() => {
             clearError();
             onClose();
           }}
           accessibilityRole="button"
           accessibilityLabel={t().assistant.close}
-          style={[styles.close, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
+          style={[styles.round, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
         >
           <Ionicons name="close" size={iconSizes.md} color={colors.text} />
         </Pressable>
@@ -144,8 +170,6 @@ export const AssistantPanel = ({ onClose, bottomOffset }: AssistantPanelProps): 
   );
 };
 
-const gradientStart = { x: 0, y: 0 } as const;
-const gradientEnd = { x: 1, y: 1 } as const;
 
 const styles = StyleSheet.create({
   panel: {
@@ -168,15 +192,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  close: {
+  round: {
     width: controlSizes.iconBtnSm,
     height: controlSizes.iconBtnSm,
     borderRadius: radii.round,
     borderWidth: borderWidths.hairline,
     alignItems: 'center',
     justifyContent: 'center',
-    marginLeft: 'auto',
   },
+  minimize: { marginLeft: 'auto' },
   liveDot: { width: spacing.sm, height: spacing.sm, borderRadius: radii.round },
   title: { fontWeight: fontWeights.bold },
   notice: { paddingHorizontal: spacing.md, paddingTop: spacing.xs },

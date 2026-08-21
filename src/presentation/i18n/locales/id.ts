@@ -906,6 +906,7 @@ export const id = {
     keyboard: "Ketik",
     voice: "Bicara",
     expand: "Perbesar asisten",
+    minimize: "Perkecil asisten",
     end: "Selesai",
     actionDone: "Selesai",
     suggestions: [

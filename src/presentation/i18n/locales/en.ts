@@ -916,6 +916,7 @@ export const en = {
     keyboard: "Type",
     voice: "Talk",
     expand: "Expand the assistant",
+    minimize: "Minimize the assistant",
     end: "End",
     actionDone: "Done",
     suggestions: [

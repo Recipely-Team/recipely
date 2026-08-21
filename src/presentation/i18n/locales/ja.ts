@@ -906,6 +906,7 @@ export const ja = {
     keyboard: "入力する",
     voice: "話す",
     expand: "アシスタントを広げる",
+    minimize: "アシスタントを小さくする",
     end: "終了",
     actionDone: "完了",
     suggestions: [

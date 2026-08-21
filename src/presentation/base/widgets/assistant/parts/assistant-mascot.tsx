@@ -14,6 +14,13 @@ const AnimatedEllipse = Animated.createAnimatedComponent(Ellipse);
 export interface AssistantMascotProps {
   size: number;
   status: AssistantStatusType;
+  /**
+   * Whether this mascot is the live one. A transcript shows one avatar per
+   * assistant turn, and each running its own blink put twenty JS-driven loops
+   * on the thread decoding audio — undoing the work the level meter does to
+   * keep renders rare. Portraits hold still.
+   */
+  isAnimated?: boolean;
 }
 
 /**
@@ -25,23 +32,28 @@ export interface AssistantMascotProps {
  *   listening and opens its mouth while speaking says the same thing in one
  *   they already have. The dot survives elsewhere for the states a face cannot
  *   carry — connecting, out of minutes.
- * - **Every animation is a transform**, so `useNativeDriver` holds and the
- *   mascot keeps moving while the JS thread is busy dispatching a tool call —
- *   which is exactly when it is on screen.
+ * - **The bob is a transform and runs natively; the blink cannot.** Squashing
+ *   an eye means animating an SVG `ry`, which is a property rather than a
+ *   layer transform, so it costs JS-thread work — which is why only the live
+ *   mascot blinks and every avatar in the transcript is still.
  * - **It holds still under Reduce Motion.** The blink and the bob are
  *   decoration; the mouth is not, so that one stays: it is the only signal that
  *   distinguishes the assistant speaking from the assistant waiting.
  */
-export const AssistantMascot = ({ size, status }: AssistantMascotProps): React.JSX.Element => {
+export const AssistantMascot = ({
+  size,
+  status,
+  isAnimated = true,
+}: AssistantMascotProps): React.JSX.Element => {
   const speaking = status === AssistantStatus.Speaking;
   const listening = status === AssistantStatus.Listening;
-  const reduceMotion = useReduceMotion();
+  const isStill = useReduceMotion() || !isAnimated;
 
   const blink = useRef(new Animated.Value(mascotGeometry.eyes.r)).current;
   const bob = useRef(new Animated.Value(ValueConstants.zero)).current;
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (isStill) return;
     const loop = Animated.loop(
       Animated.sequence([
         Animated.delay(assistantMetrics.blinkIntervalMs),
@@ -59,10 +71,10 @@ export const AssistantMascot = ({ size, status }: AssistantMascotProps): React.J
     );
     loop.start();
     return () => loop.stop();
-  }, [blink, reduceMotion]);
+  }, [blink, isStill]);
 
   useEffect(() => {
-    if (reduceMotion || !listening) {
+    if (isStill || !listening) {
       bob.setValue(ValueConstants.zero);
       return;
     }
@@ -84,7 +96,7 @@ export const AssistantMascot = ({ size, status }: AssistantMascotProps): React.J
     );
     loop.start();
     return () => loop.stop();
-  }, [bob, listening, reduceMotion]);
+  }, [bob, listening, isStill]);
 
   const translateY = bob.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],

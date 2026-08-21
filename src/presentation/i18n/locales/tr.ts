@@ -913,6 +913,7 @@ export const tr: Translations = {
     keyboard: "Yaz",
     voice: "Konuş",
     expand: "Asistanı büyüt",
+    minimize: "Asistanı küçült",
     end: "Bitir",
     actionDone: "Yapıldı",
     suggestions: [

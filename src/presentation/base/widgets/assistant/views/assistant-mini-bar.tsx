@@ -5,7 +5,7 @@ import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assi
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantGradient, assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
@@ -46,6 +46,7 @@ export const AssistantMiniBar = ({
 }: AssistantMiniBarProps): React.JSX.Element => {
   const { colors } = useTheme();
   const live = status !== AssistantStatus.Idle;
+  const isSounding = live && (!isMuted || status === AssistantStatus.Speaking);
 
   return (
     <View
@@ -58,8 +59,8 @@ export const AssistantMiniBar = ({
       <Pressable onPress={onExpand} accessibilityRole="button" accessibilityLabel={t().assistant.expand}>
         <LinearGradient
           colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
-          start={gradientStart}
-          end={gradientEnd}
+          start={assistantGradient.start}
+          end={assistantGradient.end}
           style={styles.mascot}
         >
           <AssistantMascot size={assistantMetrics.miniMascot} status={status} />
@@ -69,7 +70,7 @@ export const AssistantMiniBar = ({
       <Pressable
         onPress={onExpand}
         accessibilityRole="button"
-        accessibilityLabel={t().assistant.expand}
+        accessibilityLabel={assistantStatusLabel(status)}
         style={styles.status}
       >
         <ThemedText variant="caption" muted numberOfLines={1} style={styles.statusLabel}>
@@ -77,7 +78,7 @@ export const AssistantMiniBar = ({
         </ThemedText>
         <AssistantWave
           level={level}
-          active={live && !isMuted}
+          active={isSounding}
           color={colors.primary}
           bars={assistantMetrics.waveMiniBars}
           height={assistantMetrics.waveMiniHeight}
@@ -115,8 +116,6 @@ export const AssistantMiniBar = ({
   );
 };
 
-const gradientStart = { x: 0, y: 0 } as const;
-const gradientEnd = { x: 1, y: 1 } as const;
 
 const styles = StyleSheet.create({
   bar: {

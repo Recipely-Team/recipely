@@ -906,6 +906,7 @@ export const de = {
     keyboard: "Tippen",
     voice: "Sprechen",
     expand: "Assistent vergrößern",
+    minimize: "Assistent verkleinern",
     end: "Beenden",
     actionDone: "Erledigt",
     suggestions: [

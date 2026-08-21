@@ -913,6 +913,7 @@ export const zh = {
     keyboard: "打字",
     voice: "说话",
     expand: "展开助手",
+    minimize: "收起助手",
     end: "结束",
     actionDone: "已完成",
     suggestions: [

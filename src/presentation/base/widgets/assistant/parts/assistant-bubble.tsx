@@ -31,7 +31,7 @@ export const AssistantBubble = ({ speaker, text }: AssistantBubbleProps): React.
     <View style={[styles.row, mine ? styles.rowMine : styles.rowTheirs]}>
       {!mine ? (
         <View style={[styles.avatar, { backgroundColor: colors.primary }]}>
-          <AssistantMascot size={assistantMetrics.bubbleMascot} status={AssistantStatus.Idle} />
+          <AssistantMascot size={assistantMetrics.bubbleMascot} status={AssistantStatus.Idle} isAnimated={false} />
         </View>
       ) : null}
 
