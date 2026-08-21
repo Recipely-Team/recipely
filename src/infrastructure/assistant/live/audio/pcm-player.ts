@@ -18,9 +18,12 @@ import { resample } from '@infrastructure/assistant/live/pcm-codec';
  * - **`clearBuffers` IS the interruption.** It drops everything enqueued but
  *   not yet heard in a single call — no bookkeeping of which chunk is playing,
  *   which is the part that would have gone wrong under a race.
- * - **The context runs at the stream's rate**, so the platform resamples to
- *   the output device rather than this code doing it per chunk on the JS
- *   thread while chunks are still arriving.
+ * - **The context runs at the DEVICE's rate, and the stream is converted to
+ *   meet it.** It used to be opened at the stream's rate on the theory that
+ *   the platform would resample; asking Android's audio HAL for a rate it does
+ *   not run at is a request it may honour, quietly refuse, or crash on. The
+ *   conversion costs a pass per chunk on the JS thread and is free when the
+ *   rates already agree.
  */
 const MONO = 1;
 
@@ -31,10 +34,14 @@ export class PcmPlayer implements AudioPlayerInterface {
   private sourceRate = ValueConstants.zero;
 
   async prepare(sampleRate: number): Promise<Result<void, Failure>> {
+    // Set before the early return: a second prepare at a different rate would
+    // otherwise be ignored in silence, leaving the buffers labelled with a rate
+    // they are not — the same disagreement between label and data this file
+    // already had once.
+    this.sourceRate = sampleRate;
     if (this.queue !== null) return { ok: true, value: undefined };
 
     try {
-      this.sourceRate = sampleRate;
       // Deliberately NOT `new AudioContext({ sampleRate })`. Asking Android's
       // audio HAL for a rate it does not run at is a request it may honour, may
       // quietly refuse, or may crash on — and a native SIGSEGV inside

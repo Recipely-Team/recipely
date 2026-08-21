@@ -128,6 +128,7 @@ export const DiagnosticMessage = {
     microphoneUnavailable: (reason: string): string => `Microphone could not start: ${reason}`,
     playerUnavailable: (reason: string): string => `Audio output could not start: ${reason}`,
     sessionSocketFailed: 'Live session socket failed',
+    connectTimedOut: 'Live session did not complete setup in time',
     sessionClosedBeforeReady: 'Live session closed before setup completed',
     actionFailed: (reason: string): string => `Assistant action failed: ${reason}`,
   },

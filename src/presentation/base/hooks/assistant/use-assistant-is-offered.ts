@@ -15,6 +15,7 @@ const CLOSED_TO_ASSISTANT: readonly string[] = [
   RoutePaths.register,
   RoutePaths.forgotPassword,
   RoutePaths.verifyCode,
+  RoutePaths.resetPassword,
 ];
 
 /**
