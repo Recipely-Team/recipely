@@ -1652,3 +1652,5 @@ instead of appended to the next user's transcript.
 *The class:* **an error written to state nobody reads is an error that did not
 happen.** Setting it satisfies every review that checks the failure is handled;
 only following it to a rendered pixel proves the user learns anything.
+
+| Asistan "Bağlanıyor" der, sonra hiçbir şey olmaz | Minted token soketе hiç geçmiyordu: backend `wsUrl`'i tokensız döndürdü, istemci `credentials.token`'ı hiç okumadı. Bir tarayıcı WebSocket'i header koyamaz, yani kimlik ya query parametresidir ya da hiç yoktur. Kimliksiz soketin el sıkışması TAMAMLANIR, sunucu sonra kapatır — uygulamadan bakınca askıda kalmış bir bağlantıdan ayırt edilemez. | Sahte soket artık açıldığı URL'yi kaydediyor ve üç test kimliği doğruluyor (var mı, mevcut query'ye ekleniyor mu, encode EDİLMİYOR mu — isim `/` içeriyor ve encode edilmişini sunucu reddetti). Testlerin tamamı kimlik hiç kullanılmazken geçiyordu, çünkü sahte URL'ye bakmıyordu. |
