@@ -34,7 +34,10 @@ export class PcmPlayer implements AudioPlayerInterface {
       const context = new AudioContext({ sampleRate });
       const queue = context.createBufferQueueSource();
       queue.connect(context.destination);
-      queue.start();
+      // Both arguments are passed explicitly because the library's own default
+      // for `offset` is -1 and its own guard rejects -1 — so the no-argument
+      // call its types invite throws every time, on every platform.
+      queue.start(ValueConstants.zero, ValueConstants.zero);
 
       this.context = context;
       this.queue = queue;
