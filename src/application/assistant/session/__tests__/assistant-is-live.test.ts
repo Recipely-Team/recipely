@@ -1,5 +1,5 @@
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
-import { assistantIsLive } from '@presentation/base/widgets/assistant/assistant-is-live';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 
 /**
  * Seen on an emulator: the session mint answered 404, the store went to

@@ -3,6 +3,8 @@ import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantLevelMeter } from '@application/assistant/session/assistant-level-meter';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
@@ -73,7 +75,22 @@ interface AssistantSessionStoreDeps {
  */
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
-const SILENCE_TIMEOUT_MS = 8_000;
+/**
+ * How long a live session may hear nothing at all before it is torn down.
+ *
+ * This was 8 seconds, which is shorter than thinking about what to ask. The
+ * Live API sends nothing while nobody speaks, so every natural pause — reading
+ * a step, walking to the fridge, chopping — looked identical to a dead socket
+ * and the session died silently, on the one screen designed for a user whose
+ * hands are busy. Observed on an emulator: connect, then gone eight seconds
+ * later with nothing said about it.
+ *
+ * It cannot be unlimited either: an open session bills against the daily
+ * allowance through the heartbeat, so a forgotten one would drain it. Ninety
+ * seconds is long enough for the pauses cooking actually has and short enough
+ * that walking away does not cost the day's minutes.
+ */
+const SILENCE_TIMEOUT_MS = 90_000;
 /**
  * How many handovers in a row are tolerated before the session is given up.
  *
@@ -85,6 +102,15 @@ const SILENCE_TIMEOUT_MS = 8_000;
 const MAX_HANDOVERS = 3;
 const MIC_SAMPLE_RATE = 16_000;
 const PLAYBACK_SAMPLE_RATE = 24_000;
+const MS_PER_SECOND = 1_000;
+/**
+ * How long the microphone stays shut after the assistant's last queued audio.
+ *
+ * The speaker keeps ringing briefly after the samples run out, and the room
+ * keeps reflecting. Reopening the microphone exactly on the last sample let the
+ * tail back in, which is the whole problem in miniature.
+ */
+const ECHO_TAIL_MS = 250;
 
 export const configureAssistantSessionStore = (
   deps: AssistantSessionStoreDeps,
@@ -101,6 +127,19 @@ export const configureAssistantSessionStore = (
   let toolQueue: Promise<void> = Promise.resolve();
   let heartbeat: ReturnType<typeof setInterval> | null = null;
   let silence: ReturnType<typeof setTimeout> | null = null;
+  /**
+   * When the assistant's queued audio will have finished playing.
+   *
+   * Until then the microphone sends nothing. On a phone standing on a kitchen
+   * counter the loudspeaker feeds straight back into it, and the model treated
+   * its own sentence as the user's next instruction and answered it — out loud,
+   * on repeat. The library offers no acoustic echo cancellation on Android (its
+   * session options are iOS-only), so the only reliable cure is not to listen
+   * while speaking. The cost is that a user cannot interrupt by voice mid-
+   * answer; Mute and End still work, and a session that talks over itself is
+   * not one they could interrupt anyway.
+   */
+  let speakingUntil = ValueConstants.zero;
   let lineId = ValueConstants.zero;
   // What a reconnect needs. The handle lets the next socket continue the
   // conversation instead of paying for setup and context again, and the
@@ -141,6 +180,7 @@ export const configureAssistantSessionStore = (
       // microphone, and a mute carried into the next session would silence it
       // before the user had said anything.
       meter.reset();
+      speakingUntil = ValueConstants.zero;
       set({ status, level: ValueConstants.zero, isMuted: false });
     };
 
@@ -152,6 +192,9 @@ export const configureAssistantSessionStore = (
     const nudgeSilenceTimer = (): void => {
       stopSilenceTimer();
       silence = setTimeout(() => {
+        // Say that it ended. Torn down in silence, the session simply was not
+        // there any more and the screen offered no account of why.
+        recordAction(AssistantAction.Stop);
         void teardown(AssistantStatus.Idle);
       }, SILENCE_TIMEOUT_MS);
     };
@@ -183,19 +226,23 @@ export const configureAssistantSessionStore = (
      * performed did not happen, and a chip claiming it did is worse than no
      * chip at all — they are watching the app to see whether it obeyed.
      */
+    const recordAction = (action: AssistantActionType, detail?: string): void => {
+      const line: AssistantTranscriptLine = {
+        kind: AssistantTranscriptLineKind.Action,
+        id: nextLineId(),
+        action,
+        detail,
+      };
+      set({ transcript: [...get().transcript, line] });
+    };
+
     const appendAction = (
       action: AssistantActionType,
       arg: string | undefined,
       result: AssistantActionResultType,
     ): void => {
       if (!result.ok) return;
-      const line: AssistantTranscriptLine = {
-        kind: AssistantTranscriptLineKind.Action,
-        id: nextLineId(),
-        action,
-        detail: actionDetail(arg, result),
-      };
-      set({ transcript: [...get().transcript, line] });
+      recordAction(action, actionDetail(arg, result));
     };
 
     /**
@@ -257,6 +304,11 @@ export const configureAssistantSessionStore = (
           break;
         case AssistantEventKind.Audio:
           set({ status: AssistantStatus.Speaking });
+          // The microphone is deaf until this audio has finished playing, plus
+          // a tail — see `speakingUntil`.
+          speakingUntil =
+            Math.max(speakingUntil, Date.now()) +
+            (event.samples.length / PLAYBACK_SAMPLE_RATE) * MS_PER_SECOND;
           player.enqueue(event.samples);
           // While the model speaks the waveform follows IT: the microphone is
           // still open, and a bar driven by the room would move to whatever is
@@ -269,6 +321,8 @@ export const configureAssistantSessionStore = (
           // stop, a fade — leaves the assistant finishing the sentence the
           // user just talked over.
           player.flush();
+          // Nothing is queued any more, so the microphone reopens at once.
+          speakingUntil = ValueConstants.zero;
           silenceLevel();
           set({ status: AssistantStatus.Listening });
           break;
@@ -365,7 +419,10 @@ export const configureAssistantSessionStore = (
       },
 
       startVoice: async (locale: string) => {
-        if (get().status !== AssistantStatus.Idle) return;
+        // Not "is it idle": a refused or unreachable session leaves the status
+        // at Unavailable, and refusing to start from there meant the button did
+        // nothing at all on the first press after any failure.
+        if (assistantIsLive(get().status)) return;
         set({ status: AssistantStatus.Connecting, error: null, deniedReason: null });
 
         // Before the token, before the socket. Asked last, this was never
@@ -420,6 +477,11 @@ export const configureAssistantSessionStore = (
           // reads, a gain of zero — still sends the room to the model, which
           // is what the user pressed the button to stop.
           if (get().isMuted) return;
+          // And so does the assistant's own voice. The phone is on a counter
+          // playing through its loudspeaker, and the library exposes no echo
+          // cancellation on Android — its session options are iOS-only. So the
+          // model heard itself, took it for the user, and answered, forever.
+          if (Date.now() < speakingUntil + ECHO_TAIL_MS) return;
           session.sendAudio(samples);
           if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
         });

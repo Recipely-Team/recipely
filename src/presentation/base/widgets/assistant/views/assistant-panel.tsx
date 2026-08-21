@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
-import { assistantIsLive } from '@presentation/base/widgets/assistant/assistant-is-live';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AssistantVoiceStage } from '@presentation/base/widgets/assistant/views/assistant-voice-stage';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

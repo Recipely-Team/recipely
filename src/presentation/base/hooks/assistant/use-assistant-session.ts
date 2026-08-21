@@ -1,7 +1,8 @@
 import { useCallback } from 'react';
 import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
-import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
+import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
 import { useLocale } from '@presentation/i18n/use-locale';
@@ -57,7 +58,10 @@ export const useAssistantSession = (): AssistantSessionView => {
   const sendText = useCallback((text: string) => send(text, locale), [send, locale]);
 
   const toggleVoice = useCallback(() => {
-    if (status === AssistantStatus.Idle) {
+    // Asked as "is it idle", this called STOP when the status was Unavailable —
+    // so the first press after any failure appeared to do nothing, and the user
+    // had to press the same button twice to get a session.
+    if (!assistantIsLive(status)) {
       void startVoice(locale);
       return;
     }

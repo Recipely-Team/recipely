@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { assistantIsLive } from '@presentation/base/widgets/assistant/assistant-is-live';
+import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { assistantIsSounding } from '@presentation/base/widgets/assistant/assistant-is-sounding';
