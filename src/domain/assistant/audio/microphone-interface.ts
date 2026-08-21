@@ -14,11 +14,24 @@ import type { Result } from '@core/result/result';
  * - **Frames arrive by callback, not by pull.** Audio is produced by the
  *   hardware on its own clock; a caller that polled would either lag it or
  *   spin, and the socket wants each frame as soon as it exists.
- * - **Permission is part of starting.** There is no separate `requestAccess`
- *   for a caller to forget: `start` answers with a failure when the user says
- *   no, which is the only answer a screen can act on anyway.
+ * - **Asking is a separate step, and it comes first.** It used to be folded
+ *   into `start`, which ran LAST — after a token was minted and a socket was
+ *   open — so a session that failed earlier never reached it and the user was
+ *   never asked for the microphone at all. A voice session without one is
+ *   pointless, so the question is asked before anything is spent on it.
+ * - **`start` still answers with a failure when access is missing**, because
+ *   permission can be revoked between the two calls.
  */
 export interface MicrophoneInterface {
+  /**
+   * Asks for microphone access, prompting the user the first time.
+   *
+   * Fails when the user refuses, and when the platform cannot ask at all —
+   * the Android implementation reaches through the current activity, which
+   * is absent if the app is backgrounded as the call is made.
+   */
+  ensureAccess(): Promise<Result<void, Failure>>;
+
   /**
    * Begins capture, delivering mono float samples at exactly `sampleRate`.
    *

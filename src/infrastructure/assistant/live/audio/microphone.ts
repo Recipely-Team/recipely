@@ -30,9 +30,27 @@ import { resample } from '@infrastructure/assistant/live/pcm-codec';
 // large enough that a socket write per frame is not a per-20-ms tax.
 const BUFFER_FRAMES = 1600;
 const MONO = 1;
+// The library's own word for a granted permission — see its `PermissionStatus`.
+const PERMISSION_GRANTED = 'Granted';
 
 export class Microphone implements MicrophoneInterface {
   private recorder: AudioRecorder | null = null;
+
+  async ensureAccess(): Promise<Result<void, Failure>> {
+    // Wrapped because this can THROW rather than resolve: the Android module
+    // reaches for `currentActivity` and force-unwraps it, so an app that is not
+    // foregrounded when the call lands raises instead of answering — and a
+    // method promising a Result must not be the one to propagate that.
+    try {
+      const permission = await AudioManager.requestRecordingPermissions();
+      if (permission !== PERMISSION_GRANTED) {
+        return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+      }
+      return { ok: true, value: undefined };
+    } catch {
+      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+    }
+  }
 
   async start(
     sampleRate: number,
@@ -40,10 +58,8 @@ export class Microphone implements MicrophoneInterface {
   ): Promise<Result<void, Failure>> {
     if (this.recorder !== null) return { ok: true, value: undefined };
 
-    const permission = await AudioManager.requestRecordingPermissions();
-    if (permission !== 'Granted') {
-      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
-    }
+    const access = await this.ensureAccess();
+    if (!access.ok) return access;
 
     try {
       AudioManager.setAudioSessionOptions({

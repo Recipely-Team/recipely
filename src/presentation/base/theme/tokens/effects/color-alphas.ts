@@ -14,6 +14,4 @@ export const colorAlphas = {
   soft: '40',
   /** 40% — an inactive indicator sitting over media. */
   medium: '66',
-  /** Frosted: a surface you can just see the page through, for glass over live content. */
-  frosted: 'E6',
 } as const;

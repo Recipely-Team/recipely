@@ -3,6 +3,7 @@ import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantLevelMeter } from '@application/assistant/session/assistant-level-meter';
+import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { AssistantView } from '@application/assistant/session/assistant-view';
@@ -366,6 +367,17 @@ export const configureAssistantSessionStore = (
       startVoice: async (locale: string) => {
         if (get().status !== AssistantStatus.Idle) return;
         set({ status: AssistantStatus.Connecting, error: null, deniedReason: null });
+
+        // Before the token, before the socket. Asked last, this was never
+        // reached when anything earlier failed — so the user was never
+        // prompted for the microphone and got "the request did not arrive"
+        // for a session that had nothing to listen with.
+        const access = await microphone.ensureAccess();
+        if (!access.ok) {
+          set({ status: AssistantStatus.Unavailable, deniedReason: AssistantDenialReason.MicrophoneDenied });
+          return;
+        }
+
         languageCode = locale;
         resumptionHandle = null;
         expectingGoAway = false;
@@ -412,8 +424,12 @@ export const configureAssistantSessionStore = (
           if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
         });
         if (!input.ok) {
-          await teardown(AssistantStatus.Idle);
-          set({ error: input.failure });
+          // Not a failed request: the user said no to the microphone, and that
+          // is the one refusal here they can act on. Reported as an error it
+          // read as "this did not arrive", which invited them to retry the
+          // thing that will keep refusing.
+          await teardown(AssistantStatus.Unavailable);
+          set({ deniedReason: AssistantDenialReason.MicrophoneDenied });
           return;
         }
 

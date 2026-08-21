@@ -31,6 +31,7 @@ function harness(
     denyReconnect?: boolean;
     connectFails?: boolean;
     micFails?: boolean;
+    micRefused?: boolean;
     messengerFails?: boolean;
     textAction?: { action: { name: string; arg?: string } };
   } = {},
@@ -69,6 +70,10 @@ function harness(
   };
 
   const microphone: MicrophoneInterface = {
+    ensureAccess: async () =>
+      overrides.micRefused === true
+        ? { ok: false, failure: new NetworkFailure('refused') }
+        : { ok: true, value: undefined },
     start: async (_rate, onFrame) => {
       calls.onFrame = onFrame;
       return overrides.micFails === true
@@ -187,13 +192,40 @@ describe('assistant session store', () => {
     expect(calls.micStopped).toBeGreaterThan(0);
   });
 
-  it('reports a refused microphone and does not sit in connecting', async () => {
-    const { store } = harness({ micFails: true });
+  describe('the microphone', () => {
+    // The user reported never being asked for the microphone at all. It was
+    // requested LAST — after the token was minted and the socket was open — so
+    // anything failing earlier meant the prompt was never reached, and the
+    // screen said "this request did not arrive" for a session that had nothing
+    // to listen with.
+    it('is asked for before a token is spent on the session', async () => {
+      const { store, calls } = harness({ micRefused: true });
 
-    await store.getState().startVoice('tr-TR');
+      await store.getState().startVoice('tr-TR');
 
-    expect(store.getState().status).toBe(AssistantStatus.Idle);
-    expect(store.getState().error).not.toBeNull();
+      expect(calls.mints).toHaveLength(0);
+    });
+
+    // "The request did not arrive" invites a retry of the thing that will keep
+    // refusing. A refusal the user can act on has to say so.
+    it('reports a refusal as a reason, not as a failed request', async () => {
+      const { store } = harness({ micRefused: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+      expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
+      expect(store.getState().error).toBeNull();
+    });
+
+    it('reports access lost between the question and the capture the same way', async () => {
+      const { store } = harness({ micFails: true });
+
+      await store.getState().startVoice('tr-TR');
+
+      expect(store.getState().deniedReason).toBe(AssistantDenialReason.MicrophoneDenied);
+      expect(store.getState().error).toBeNull();
+    });
   });
 
   it('ignores a second start while a session is already up', async () => {

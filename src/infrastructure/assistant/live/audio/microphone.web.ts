@@ -35,6 +35,16 @@ export class Microphone implements MicrophoneInterface {
   private context: AudioContext | null = null;
   private processor: ScriptProcessorNode | null = null;
 
+  async ensureAccess(): Promise<Result<void, Failure>> {
+    // The browser has no way to ask ahead of use: the prompt belongs to
+    // `getUserMedia`, so all that can be checked here is that there is an API
+    // to ask with. `start` still reports a refusal.
+    if (navigator.mediaDevices === undefined) {
+      return { ok: false, failure: new ValidationFailure(DiagnosticMessage.assistant.microphoneDenied) };
+    }
+    return { ok: true, value: undefined };
+  }
+
   async start(
     sampleRate: number,
     onFrame: (samples: Float32Array<ArrayBuffer>) => void,
