@@ -3,20 +3,24 @@ import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantViewType } from '@application/assistant/session/assistant-view';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 interface AssistantSessionView {
   status: AssistantStatusType;
-  isPanelOpen: boolean;
+  view: AssistantViewType;
+  /** 0..1, already scaled for a bar — see the store. Scaling it again pins a whisper at the top. */
+  level: number;
+  isMuted: boolean;
   transcript: AssistantTranscriptLine[];
   remainingSeconds: number;
   deniedReason: AssistantDenialReasonType | null;
   /** A failure the user has to be told about — a request that did not land. */
   error: Failure | null;
   clearError: () => void;
-  openPanel: () => void;
-  closePanel: () => void;
+  setView: (view: AssistantViewType) => void;
+  toggleMute: () => void;
   toggleVoice: () => void;
   sendText: (text: string) => void;
 }
@@ -25,7 +29,7 @@ interface AssistantSessionView {
  * The assistant, as a screen sees it.
  *
  * @remarks
- * - **One toggle, not start and stop.** The pill is a single control, and a
+ * - **One toggle, not start and stop.** The controls are single targets, and a
  *   caller deciding which of two calls to make would be re-deriving state the
  *   store already holds — and getting it wrong while connecting.
  * - **The language comes from the app's locale**, not from the device's, so the
@@ -37,14 +41,16 @@ export const useAssistantSession = (): AssistantSessionView => {
   const locale = useLocale();
 
   const status = assistantSessionStore((s) => s.status);
-  const isPanelOpen = assistantSessionStore((s) => s.isPanelOpen);
+  const view = assistantSessionStore((s) => s.view);
+  const level = assistantSessionStore((s) => s.level);
+  const isMuted = assistantSessionStore((s) => s.isMuted);
   const transcript = assistantSessionStore((s) => s.transcript);
   const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
   const deniedReason = assistantSessionStore((s) => s.deniedReason);
   const error = assistantSessionStore((s) => s.error);
   const clearError = assistantSessionStore((s) => s.clearError);
-  const openPanel = assistantSessionStore((s) => s.openPanel);
-  const closePanel = assistantSessionStore((s) => s.closePanel);
+  const setView = assistantSessionStore((s) => s.setView);
+  const toggleMute = assistantSessionStore((s) => s.toggleMute);
   const startVoice = assistantSessionStore((s) => s.startVoice);
   const stopVoice = assistantSessionStore((s) => s.stopVoice);
   const send = assistantSessionStore((s) => s.sendText);
@@ -60,14 +66,16 @@ export const useAssistantSession = (): AssistantSessionView => {
 
   return {
     status,
-    isPanelOpen,
+    view,
+    level,
+    isMuted,
     transcript,
     remainingSeconds,
     deniedReason,
     error,
     clearError,
-    openPanel,
-    closePanel,
+    setView,
+    toggleMute,
     toggleVoice,
     sendText,
   };

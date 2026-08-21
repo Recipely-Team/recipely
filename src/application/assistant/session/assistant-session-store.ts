@@ -2,11 +2,17 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
+import { AssistantLevelMeter } from '@application/assistant/session/assistant-level-meter';
 import { AssistantStatus, LIVE_STATUSES } from '@application/assistant/session/assistant-status';
+import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
+import { AssistantView } from '@application/assistant/session/assistant-view';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
+import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
+import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
@@ -14,6 +20,7 @@ import type { BoundStore } from '@application/store/bound-store';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { create } from 'zustand';
+import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 
 interface AssistantSessionStoreDeps {
@@ -54,6 +61,14 @@ interface AssistantSessionStoreDeps {
  * - **Silence closes the session.** Voice is billed per second of an open
  *   microphone, so a session left running in a pocket is the single most
  *   expensive thing this feature can do.
+ * - **The level is published on a clock, not per frame.** Audio arrives dozens
+ *   of times a second from both sides, and each value written here re-renders
+ *   every subscriber; `AssistantLevelMeter` decides which frames are worth a
+ *   render, and this file decides when the answer is silence — a bar left
+ *   moving after a session ends reads as a microphone that is still open.
+ * - **Muting is a withheld frame.** The capture callback returns without
+ *   sending, so the model hears silence; a flag the UI merely renders would
+ *   leave the room going out over the socket with a crossed-out icon on top.
  */
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
@@ -76,6 +91,7 @@ export const configureAssistantSessionStore = (
   const { session, microphone, player, tokens, messenger, registry } = deps;
 
   let unsubscribe: (() => void) | null = null;
+  const meter = new AssistantLevelMeter();
   // Tool calls run ONE AT A TIME, in arrival order. The model routinely sends
   // several in a single frame — "make a recipe and then share it" is two — and
   // running them concurrently raced: the share fired against the screen the
@@ -120,7 +136,11 @@ export const configureAssistantSessionStore = (
       await microphone.stop();
       await player.stop();
       session.close();
-      set({ status });
+      // A waveform still moving under a session that has ended reads as a live
+      // microphone, and a mute carried into the next session would silence it
+      // before the user had said anything.
+      meter.reset();
+      set({ status, level: ValueConstants.zero, isMuted: false });
     };
 
     const nudgeSilenceTimer = (): void => {
@@ -130,9 +150,46 @@ export const configureAssistantSessionStore = (
       }, SILENCE_TIMEOUT_MS);
     };
 
-    const appendTranscript = (speaker: ChatRole, text: string): void => {
+    const publishLevel = (samples: Float32Array<ArrayBuffer>): void => {
+      const level = meter.measure(samples);
+      if (level !== null) set({ level });
+    };
+
+    const silenceLevel = (): void => {
+      meter.reset();
+      set({ level: ValueConstants.zero });
+    };
+
+    const nextLineId = (): string => {
       lineId += ValueConstants.one;
-      set({ transcript: [...get().transcript, { id: String(lineId), speaker, text }] });
+      return String(lineId);
+    };
+
+    const appendTranscript = (speaker: ChatRole, text: string): void => {
+      const line = { kind: AssistantTranscriptLineKind.Speech, id: nextLineId(), speaker, text } as const;
+      set({ transcript: [...get().transcript, line] });
+    };
+
+    /**
+     * Records that something was DONE, between the lines that were said.
+     *
+     * Only for an action that ran: one the user refused or that could not be
+     * performed did not happen, and a chip claiming it did is worse than no
+     * chip at all — they are watching the app to see whether it obeyed.
+     */
+    const appendAction = (
+      action: AssistantActionType,
+      arg: string | undefined,
+      result: AssistantActionResultType,
+    ): void => {
+      if (!result.ok) return;
+      const line: AssistantTranscriptLine = {
+        kind: AssistantTranscriptLineKind.Action,
+        id: nextLineId(),
+        action,
+        detail: actionDetail(arg, result),
+      };
+      set({ transcript: [...get().transcript, line] });
     };
 
     /**
@@ -195,6 +252,10 @@ export const configureAssistantSessionStore = (
         case AssistantEventKind.Audio:
           set({ status: AssistantStatus.Speaking });
           player.enqueue(event.samples);
+          // While the model speaks the waveform follows IT: the microphone is
+          // still open, and a bar driven by the room would move to whatever is
+          // happening in it rather than to the voice the user is listening to.
+          publishLevel(event.samples);
           nudgeSilenceTimer();
           break;
         case AssistantEventKind.Interrupted:
@@ -202,6 +263,7 @@ export const configureAssistantSessionStore = (
           // stop, a fade — leaves the assistant finishing the sentence the
           // user just talked over.
           player.flush();
+          silenceLevel();
           set({ status: AssistantStatus.Listening });
           break;
         case AssistantEventKind.TurnComplete:
@@ -226,6 +288,7 @@ export const configureAssistantSessionStore = (
             // callId from the dead session — a response to a question that
             // socket never asked.
             if (epoch !== raisedAt) return;
+            if (isAssistantAction(action)) appendAction(action, arg, result);
             session.respondToTool(callId, { ...result });
           });
           break;
@@ -268,15 +331,24 @@ export const configureAssistantSessionStore = (
 
     return {
       status: AssistantStatus.Idle,
-      isPanelOpen: false,
+      view: AssistantView.Closed,
+      level: ValueConstants.zero,
+      isMuted: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
       tokensUsed: ValueConstants.zero,
       deniedReason: null,
       error: null,
 
-      openPanel: () => set({ isPanelOpen: true }),
-      closePanel: () => set({ isPanelOpen: false }),
+      setView: (view) => set({ view }),
+
+      toggleMute: () => {
+        // The waveform goes with the mute, in the same set: a bar still moving
+        // over a muted microphone says audio is going out, which is the one
+        // thing the control promises it is not.
+        meter.reset();
+        set({ isMuted: !get().isMuted, level: ValueConstants.zero });
+      },
 
       startVoice: async (locale: string) => {
         if (get().status !== AssistantStatus.Idle) return;
@@ -318,7 +390,14 @@ export const configureAssistantSessionStore = (
           return;
         }
 
-        const input = await microphone.start(MIC_SAMPLE_RATE, (samples) => session.sendAudio(samples));
+        const input = await microphone.start(MIC_SAMPLE_RATE, (samples) => {
+          // Muting withholds the frame itself. Anything softer — a flag the UI
+          // reads, a gain of zero — still sends the room to the model, which
+          // is what the user pressed the button to stop.
+          if (get().isMuted) return;
+          session.sendAudio(samples);
+          if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
+        });
         if (!input.ok) {
           await teardown(AssistantStatus.Idle);
           set({ error: input.failure });
@@ -388,8 +467,7 @@ export const configureAssistantSessionStore = (
           const action = answered.value.action;
           if (action !== undefined) {
             const result = await registry.run(action.name, action.arg);
-            // An action that could not run is news the user needs: they were
-            // told it was happening.
+            if (isAssistantAction(action.name)) appendAction(action.name, action.arg, result);
             // An action that could not run is news the user needs: they were
             // told it was happening.
             if (!result.ok) {
@@ -410,12 +488,35 @@ export const configureAssistantSessionStore = (
           tokensUsed: ValueConstants.zero,
           deniedReason: null,
           error: null,
-          isPanelOpen: false,
+          view: AssistantView.Closed,
+          level: ValueConstants.zero,
+          isMuted: false,
         });
       },
     };
   });
 };
+
+/** Longer than a phrase is not a chip: it wraps, and the transcript stops
+ *  being scannable at exactly the moment it has something to report. */
+const MAX_DETAIL_CHARS = 40;
+/** An argument carrying structure is a payload the model wrote for a handler,
+ *  not a phrase written for a person. */
+const STRUCTURED_DETAIL = /[{}[\]<>]/;
+
+/**
+ * The phrase an action chip shows beside its label, when there is one.
+ *
+ * What the handler NAMED wins over what the model asked for: "generate a
+ * recipe with what is in the fridge" is the request, and the title of the
+ * recipe that came back is the thing that now exists.
+ */
+function actionDetail(arg: string | undefined, result: AssistantActionResultType): string | undefined {
+  const candidate = result.title ?? arg;
+  if (candidate === undefined || candidate === CharConstants.empty) return undefined;
+  if (candidate.length > MAX_DETAIL_CHARS || STRUCTURED_DETAIL.test(candidate)) return undefined;
+  return candidate;
+}
 
 /**
  * Fails to compile when a new event kind is added without being handled.

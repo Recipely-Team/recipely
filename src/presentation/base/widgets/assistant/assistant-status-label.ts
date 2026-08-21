@@ -1,7 +1,14 @@
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { t } from '@presentation/i18n';
 
-type AssistantCopyKey = keyof ReturnType<typeof t>['assistant'];
+type AssistantCopy = ReturnType<typeof t>['assistant'];
+
+// Only the entries that ARE a line — the namespace also holds the action
+// dictionary and the suggestion list, and a status pointing at either of those
+// would put an object on screen.
+type AssistantCopyKey = {
+  [K in keyof AssistantCopy]: AssistantCopy[K] extends string ? K : never;
+}[keyof AssistantCopy];
 
 /**
  * The one line the pill shows for each state.
