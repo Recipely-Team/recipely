@@ -1,3 +1,6 @@
+import { router } from 'expo-router';
+import type { Href } from 'expo-router';
+import { RoutePaths } from '@presentation/base/constants';
 import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { useCallback, useRef } from 'react';
@@ -241,6 +244,18 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       onStopTimer();
       return { ok: true };
     }, [onStopTimer]),
+  );
+
+  useAssistantAction(
+    AssistantAction.DuplicateRecipe,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // The create screen is opened seeded FROM this recipe, rather than the
+      // words being handed to the generator — which invented something
+      // adjacent and called it the same recipe. What the user gets is a copy
+      // they can then change, in the editor, where they can see it.
+      router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href);
+      return { ok: true, title: recipeName };
+    }, [recipeId, recipeName]),
   );
 
   useAssistantAction(

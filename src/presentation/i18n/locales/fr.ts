@@ -946,6 +946,7 @@ export const fr = {
       publishDraft: "A publié la recette",
       deleteRecipe: "A supprimé la recette",
       shareRecipe: "A partagé la recette",
+      duplicateRecipe: "A copié la recette",
       addComment: "A écrit un commentaire",
       updateProfile: "A mis à jour le profil",
       setPreference: "A changé un réglage",

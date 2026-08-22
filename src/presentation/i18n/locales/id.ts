@@ -946,6 +946,7 @@ export const id = {
       publishDraft: "Menerbitkan resep",
       deleteRecipe: "Menghapus resep",
       shareRecipe: "Membagikan resep",
+      duplicateRecipe: "Menyalin resep",
       addComment: "Menulis komentar",
       updateProfile: "Memperbarui profil",
       setPreference: "Mengubah pengaturan",

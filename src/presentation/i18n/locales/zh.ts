@@ -953,6 +953,7 @@ export const zh = {
       publishDraft: "发布了食谱",
       deleteRecipe: "删除了食谱",
       shareRecipe: "分享了食谱",
+      duplicateRecipe: "复制了食谱",
       addComment: "写了评论",
       updateProfile: "更新了资料",
       setPreference: "更改了设置",

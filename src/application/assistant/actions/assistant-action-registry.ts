@@ -35,12 +35,15 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
  */
 export class AssistantActionRegistry {
   private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
+  /** Woken whenever a handler registers, so a caller can wait for a screen to arrive. */
+  private readonly watchers = new Set<() => void>();
   private describeScreen: () => string = () => CharConstants.empty;
 
   register(action: AssistantActionType, handler: AssistantActionHandlerType): () => void {
     const stack = this.handlers.get(action) ?? [];
     stack.push(handler);
     this.handlers.set(action, stack);
+    for (const wake of this.watchers) wake();
 
     return () => {
       const current = this.handlers.get(action);
@@ -59,6 +62,55 @@ export class AssistantActionRegistry {
       if (at !== ValueConstants.minusOne) current.splice(at, ValueConstants.one);
       if (current.length === ValueConstants.zero) this.handlers.delete(action);
     };
+  }
+
+  /**
+   * The handler for `action` that is not `exclude`, innermost first.
+   *
+   * The one caller is the fallback that navigates to a screen and then runs
+   * what that screen registered. It asks for a handler DIRECTLY rather than
+   * calling `run` again, because it is itself in that action's stack and
+   * re-entering would find itself.
+   */
+  handlerOtherThan(
+    action: AssistantActionType,
+    exclude: AssistantActionHandlerType,
+  ): AssistantActionHandlerType | null {
+    const stack = this.handlers.get(action) ?? [];
+    for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
+      const handler = stack[at]!;
+      if (handler !== exclude) return handler;
+    }
+    return null;
+  }
+
+  /**
+   * Waits for a screen that answers `action` to finish mounting.
+   *
+   * Navigation is not instant and a screen registers its handlers on mount, so
+   * a fallback that pushed a route and immediately looked would always find
+   * nothing. Resolves false if nothing arrives in time — a route that does not
+   * exist, or a guard that sent the user somewhere else.
+   */
+  async waitForHandlerOtherThan(
+    action: AssistantActionType,
+    exclude: AssistantActionHandlerType,
+    timeoutMs: number,
+  ): Promise<boolean> {
+    if (this.handlerOtherThan(action, exclude) !== null) return true;
+
+    return new Promise<boolean>((resolve) => {
+      const settle = (arrived: boolean): void => {
+        clearTimeout(timer);
+        this.watchers.delete(check);
+        resolve(arrived);
+      };
+      const check = (): void => {
+        if (this.handlerOtherThan(action, exclude) !== null) settle(true);
+      };
+      const timer = setTimeout(() => settle(false), timeoutMs);
+      this.watchers.add(check);
+    });
   }
 
   /** Supplies the one-line screen state appended to every result. */

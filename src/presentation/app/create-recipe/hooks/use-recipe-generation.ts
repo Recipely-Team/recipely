@@ -17,6 +17,7 @@ import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draf
 import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
+import { fromRecipeIdOf } from '@presentation/app/create-recipe/model/drafting/from-recipe-id-of';
 import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
 import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 import { useRefineProposal } from '@presentation/app/create-recipe/hooks/use-refine-proposal';
@@ -76,7 +77,18 @@ const GEN_STEP_INTERVAL_MS = 620;
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
-  const { createdRecipesStore, draftsStore } = useStores();
+  // Read before the stores that depend on it. `useLocalSearchParams` answers
+  // undefined where the route has none, so the pair is destructured defensively
+  // rather than assumed.
+  const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>() ?? {};
+  const promptParam = params.prompt;
+  const fromRecipeId = params.fromRecipeId;
+
+  const { createdRecipesStore, draftsStore, recipeDetailStore } = useStores();
+  const loadRecipeDetail = recipeDetailStore((st) => st.load);
+  const copiedFrom = recipeDetailStore((st) =>
+    fromRecipeIdOf(st.byId, fromRecipeId),
+  );
   const refineState = createdRecipesStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
@@ -98,7 +110,6 @@ const GEN_STEP_INTERVAL_MS = 620;
   // exactly as a person would type it in and tap generate — the prompt appears
   // in the field and the generating view runs where they can see it. A draft
   // being resumed wins: `?draftId=` means the user asked for something else.
-  const { prompt: promptParam } = useLocalSearchParams<{ prompt?: string }>();
   const startedFromParam = useRef(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
@@ -255,6 +266,34 @@ const GEN_STEP_INTERVAL_MS = 620;
     setPrompt(promptParam);
     void runGenerate(promptParam);
   }, [promptParam, draftId, runGenerate]);
+
+  /**
+   * Fills the editor from a recipe that already exists.
+   *
+   * @remarks
+   * Asked to make the same recipe, the assistant used to hand the words to the
+   * generator, which invented something adjacent — a different ingredient
+   * list, different times, a different name. A copy is a copy: the fields are
+   * read from the recipe itself and the user edits from there.
+   *
+   * Media is deliberately NOT carried over. The photographs belong to whoever
+   * took them, and a copy that arrives wearing someone else's picture is a
+   * claim the user did not make.
+   */
+  useEffect(() => {
+    if (fromRecipeId === undefined || fromRecipeId === CharConstants.empty) return;
+    if (draftId !== undefined || startedFromParam.current) return;
+    startedFromParam.current = true;
+
+    void loadRecipeDetail(fromRecipeId);
+  }, [fromRecipeId, draftId, loadRecipeDetail]);
+
+  useEffect(() => {
+    if (copiedFrom === null) return;
+
+    setRecipe(recipeToEditable(copiedFrom, []));
+    setPhase(PhaseType.Preview);
+  }, [copiedFrom, setRecipe]);
 
   const onChangePrompt = useCallback((value: string): void => {
     setPrompt(value);

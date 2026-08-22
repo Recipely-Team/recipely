@@ -8,6 +8,7 @@ import { assistantIsLive } from '@application/assistant/session/assistant-is-liv
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { useAssistantFloatingClearance } from '@presentation/base/hooks/assistant/use-assistant-floating-clearance';
 import { useAssistantIsOffered } from '@presentation/base/hooks/assistant/use-assistant-is-offered';
+import { useAssistantReachActions } from '@presentation/base/hooks/assistant/use-assistant-reach-actions';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
@@ -27,7 +28,8 @@ import { ValueConstants } from '@core/constants';
  * - **It sits above the timers bar** (see `zIndices`): the assistant can be
  *   speaking and acting on the app's behalf, so the control that stops it must
  *   never be the thing that is covered.
- * - **It registers the global actions**, because it is the only component
+ * - **It registers the global actions**, and the fallback that carries an
+ *   action to the screen that answers it, because it is the only component
  *   mounted for the whole app's life. Screen-scoped actions belong to their
  *   screens, which is what makes "save it" mean the recipe in front of you.
  * - **It also clears the screen's own floating control.** The feed's filter
@@ -59,6 +61,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   // actions that work from anywhere — and the screen line every tool result
   // carries — are registered from here.
   useAssistantGlobalActions();
+  useAssistantReachActions();
   useAssistantScreenContext();
 
   const isOffered = useAssistantIsOffered();

@@ -946,6 +946,7 @@ export const ja = {
       publishDraft: "レシピを公開しました",
       deleteRecipe: "レシピを削除しました",
       shareRecipe: "レシピを共有しました",
+      duplicateRecipe: "レシピを複製しました",
       addComment: "コメントを書きました",
       updateProfile: "プロフィールを更新しました",
       setPreference: "設定を変えました",

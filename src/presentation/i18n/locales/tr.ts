@@ -953,6 +953,7 @@ export const tr: Translations = {
       publishDraft: "Tarifi yayınladı",
       deleteRecipe: "Tarifi sildi",
       shareRecipe: "Tarifi paylaştı",
+      duplicateRecipe: "Tarifi kopyaladı",
       addComment: "Yorum yazdı",
       updateProfile: "Profili güncelledi",
       setPreference: "Ayarı değiştirdi",

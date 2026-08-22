@@ -55,6 +55,8 @@ export const AssistantAction = {
   PublishDraft: 'publishDraft',
   DeleteRecipe: 'deleteRecipe',
   ShareRecipe: 'shareRecipe',
+  /** Opens the create screen already filled with an existing recipe, to change and re-publish. */
+  DuplicateRecipe: 'duplicateRecipe',
   AddComment: 'addComment',
   UpdateProfile: 'updateProfile',
   SetPreference: 'setPreference',

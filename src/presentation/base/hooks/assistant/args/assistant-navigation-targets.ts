@@ -13,6 +13,9 @@ import { TabType } from '@presentation/app/my-recipes/model/tab-type';
  *   assistant must not be able to talk a signed-in user into a login flow, and
  *   nothing it does needs one.
  */
+// `app/ai-generate/` is registered in the root layout but nothing in the app
+// navigates to it — the AI banner opens the create screen — so it is not a
+// destination the assistant can be asked for either.
 export const ASSISTANT_NAVIGATION_TARGETS: Readonly<Record<string, string>> = {
   recipes: RoutePaths.recipes,
   feed: RoutePaths.recipes,

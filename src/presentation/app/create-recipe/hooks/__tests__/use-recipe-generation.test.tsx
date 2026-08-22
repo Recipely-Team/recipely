@@ -257,7 +257,13 @@ const makeStores = (
     deleteDraftUseCase: unusedUseCase<DeleteDraftUseCase>(),
   });
 
-  return { createdRecipesStore, draftsStore } as unknown as Stores;
+  // The screen can also be opened seeded from an existing recipe, so it reads
+  // the detail store by id. Nothing in these tests copies one, so it answers
+  // with an empty cache rather than a stub that would have to be kept in step.
+  const recipeDetailStore = ((select: (st: unknown) => unknown) =>
+    select({ byId: {}, load: async () => undefined })) as unknown as Stores['recipeDetailStore'];
+
+  return { createdRecipesStore, draftsStore, recipeDetailStore } as unknown as Stores;
 };
 
 type Generation = ReturnType<typeof useRecipeGeneration>;
