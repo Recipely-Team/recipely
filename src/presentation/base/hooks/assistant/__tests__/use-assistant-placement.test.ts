@@ -16,11 +16,27 @@ jest.mock('expo-router', () => ({
   usePathname: () => (globalThis as never as { __pathname: string }).__pathname,
 }));
 
+// The hook reads the session as well as the path now: nearly everything the
+// assistant does belongs to the signed-in user.
+jest.mock('@presentation/bootstrap/use-stores', () => ({
+  useStores: () => ({
+    authStore: (select: (s: { state: { status: string } }) => unknown) =>
+      select({ state: { status: (globalThis as never as { __auth: string }).__auth } }),
+  }),
+}));
+
 const at = (path: string): void => {
   (globalThis as never as { __pathname: string }).__pathname = path;
 };
 
-beforeEach(() => at(RoutePaths.recipes));
+const signedIn = (yes: boolean): void => {
+  (globalThis as never as { __auth: string }).__auth = yes ? 'authenticated' : 'unauthenticated';
+};
+
+beforeEach(() => {
+  at(RoutePaths.recipes);
+  signedIn(true);
+});
 
 describe('where the assistant is offered', () => {
   it.each([RoutePaths.login, RoutePaths.register, RoutePaths.forgotPassword, RoutePaths.verifyCode, RoutePaths.onboarding])(
@@ -31,6 +47,15 @@ describe('where the assistant is offered', () => {
       expect(useAssistantIsOffered()).toBe(false);
     },
   );
+
+  // Nearly everything it does is the user's own — their drafts, their saved
+  // recipes, their profile — so offering it to someone with no account can
+  // only fail at most of it, after spending a session's minutes finding out.
+  it('is not offered at all without a signed-in session', () => {
+    signedIn(false);
+
+    expect(useAssistantIsOffered()).toBe(false);
+  });
 
   it('is offered on the feed', () => {
     expect(useAssistantIsOffered()).toBe(true);

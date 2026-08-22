@@ -1,3 +1,4 @@
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -219,5 +220,7 @@ function resolveKey(options: readonly TaxonomyItem[], value: string): string | n
  * tell the user something untrue.
  */
 function taxonomyError(options: readonly TaxonomyItem[], kind: string): string {
-  return options.length === ValueConstants.zero ? 'taxonomy_not_loaded' : `unknown_${kind}`;
+  return options.length === ValueConstants.zero
+    ? AssistantActionError.NotReady
+    : `unknown_${kind}`;
 }

@@ -956,6 +956,7 @@ export const en = {
       publishDraft: "Published the recipe",
       deleteRecipe: "Deleted the recipe",
       shareRecipe: "Shared the recipe",
+      duplicateRecipe: "Copied the recipe",
       addComment: "Wrote a comment",
       updateProfile: "Updated the profile",
       setPreference: "Changed a setting",

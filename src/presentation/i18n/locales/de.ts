@@ -946,6 +946,7 @@ export const de = {
       publishDraft: "Hat das Rezept veröffentlicht",
       deleteRecipe: "Hat das Rezept gelöscht",
       shareRecipe: "Hat das Rezept geteilt",
+      duplicateRecipe: "Hat das Rezept kopiert",
       addComment: "Hat einen Kommentar geschrieben",
       updateProfile: "Hat das Profil aktualisiert",
       setPreference: "Hat eine Einstellung geändert",

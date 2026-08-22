@@ -946,6 +946,7 @@ export const ru = {
       publishDraft: "Опубликовал рецепт",
       deleteRecipe: "Удалил рецепт",
       shareRecipe: "Поделился рецептом",
+      duplicateRecipe: "Скопировал рецепт",
       addComment: "Написал комментарий",
       updateProfile: "Обновил профиль",
       setPreference: "Изменил настройку",

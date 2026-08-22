@@ -942,6 +942,7 @@ export const hi: Translations = {
       publishDraft: "रेसिपी छापी",
       deleteRecipe: "रेसिपी मिटाई",
       shareRecipe: "रेसिपी शेयर की",
+      duplicateRecipe: "रेसिपी की नकल बनाई",
       addComment: "कमेंट लिखा",
       updateProfile: "प्रोफ़ाइल अपडेट की",
       setPreference: "सेटिंग बदली",

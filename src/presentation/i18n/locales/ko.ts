@@ -942,6 +942,7 @@ export const ko: Translations = {
       publishDraft: "레시피를 공개했어요",
       deleteRecipe: "레시피를 삭제했어요",
       shareRecipe: "레시피를 공유했어요",
+      duplicateRecipe: "레시피를 복사했어요",
       addComment: "댓글을 남겼어요",
       updateProfile: "프로필을 수정했어요",
       setPreference: "설정을 바꿨어요",

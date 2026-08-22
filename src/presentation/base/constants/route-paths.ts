@@ -39,6 +39,15 @@ export const RoutePaths = {
    */
   recipesWithSearch: (query: string): string => `/recipes?q=${encodeURIComponent(query)}`,
   /** The create screen, arriving with the prompt filled and generation started. */
+  /**
+   * The create screen, seeded from a recipe that already exists.
+   *
+   * Asked to "make the same recipe", the assistant used to hand the words to
+   * the generator, which invented something adjacent. A copy is a copy: the
+   * fields are read from the recipe, and the user edits from there.
+   */
+  createRecipeFromRecipe: (recipeId: string): string =>
+    `/create-recipe?fromRecipeId=${encodeURIComponent(recipeId)}`,
   createRecipeWithPrompt: (prompt: string): string =>
     `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
   /** My Recipes opened on one of its tabs — saved, liked, created, drafts. */

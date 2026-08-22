@@ -946,6 +946,7 @@ export const ar = {
       publishDraft: "نشر الوصفة",
       deleteRecipe: "حذف الوصفة",
       shareRecipe: "شارك الوصفة",
+      duplicateRecipe: "نسخ الوصفة",
       addComment: "كتب تعليقاً",
       updateProfile: "حدّث الملف الشخصي",
       setPreference: "غيّر إعداداً",

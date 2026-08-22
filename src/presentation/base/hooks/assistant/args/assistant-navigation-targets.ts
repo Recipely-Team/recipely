@@ -13,7 +13,10 @@ import { TabType } from '@presentation/app/my-recipes/model/tab-type';
  *   assistant must not be able to talk a signed-in user into a login flow, and
  *   nothing it does needs one.
  */
-export const ASSISTANT_NAVIGATION_TARGETS: Readonly<Record<string, string>> = {
+// `app/ai-generate/` is registered in the root layout but nothing in the app
+// navigates to it — the AI banner opens the create screen — so it is not a
+// destination the assistant can be asked for either.
+export const ASSISTANT_NAVIGATION_TARGETS = {
   recipes: RoutePaths.recipes,
   feed: RoutePaths.recipes,
   home: RoutePaths.recipes,
@@ -32,4 +35,11 @@ export const ASSISTANT_NAVIGATION_TARGETS: Readonly<Record<string, string>> = {
   profile: RoutePaths.profile,
   editProfile: RoutePaths.editProfile,
   settings: RoutePaths.settings,
-};
+} as const satisfies Readonly<Record<string, string>>;
+
+/** A screen the assistant can be asked for, by the name the model is given. */
+export type AssistantScreenName = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
+
+/** Whether a spoken word names a screen — the model is given the list, but it is not held to it. */
+export const isAssistantScreenName = (name: string): name is AssistantScreenName =>
+  Object.hasOwn(ASSISTANT_NAVIGATION_TARGETS, name);
