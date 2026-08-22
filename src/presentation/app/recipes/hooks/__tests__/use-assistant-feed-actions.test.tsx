@@ -1,3 +1,4 @@
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -219,7 +220,7 @@ describe('useAssistantFeedActions', () => {
       await act(async () => {
         await expect(registry.run(AssistantAction.AddFilter, 'cuisine=İtalyan')).resolves.toEqual({
           ok: false,
-          error: 'taxonomy_not_loaded',
+          error: AssistantActionError.NotReady,
         });
       });
 

@@ -147,8 +147,9 @@ export class AssistantActionRegistry {
     }
 
     // Only now. The fallback carries an action to the screen that owns it, so
-    // it must never answer for a screen that is already open — including one
-    // that said `notMine`, which means "not this one", not "not here".
+    // it must not pre-empt a screen that is open and willing. `notMine` is a
+    // screen saying "not THIS one" rather than "not here", so the stack is
+    // genuinely exhausted at this point and the fallback does run.
     const fallback = this.fallbacks.get(action);
     if (fallback !== undefined) {
       try {
