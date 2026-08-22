@@ -254,7 +254,11 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       // adjacent and called it the same recipe. What the user gets is a copy
       // they can then change, in the editor, where they can see it.
       router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href);
-      return { ok: true, title: recipeName };
+      // `awaiting`, because the copy is not made yet: the screen still has to
+      // fetch the recipe and lay it in, and a chip saying it was copied before
+      // that happened would be claiming something the user could look at and
+      // find untrue.
+      return { ok: true, awaiting: true, title: recipeName };
     }, [recipeId, recipeName]),
   );
 

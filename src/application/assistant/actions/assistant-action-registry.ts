@@ -35,6 +35,17 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
  */
 export class AssistantActionRegistry {
   private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
+  /**
+   * Handlers of last resort, kept OUT of the stack.
+   *
+   * A fallback registered into the stack was only outermost by accident of
+   * React's effect order — children flush before parents, so a screen mounting
+   * in the same commit as the root registered FIRST and the fallback ended up
+   * innermost, answering for a screen the user was already on. A separate tier
+   * makes "after everything else" true by construction rather than by the
+   * order of two lines in a layout file.
+   */
+  private readonly fallbacks = new Map<AssistantActionType, AssistantActionHandlerType>();
   /** Woken whenever a handler registers, so a caller can wait for a screen to arrive. */
   private readonly watchers = new Set<() => void>();
   private describeScreen: () => string = () => CharConstants.empty;
@@ -65,23 +76,20 @@ export class AssistantActionRegistry {
   }
 
   /**
-   * The handler for `action` that is not `exclude`, innermost first.
+   * Registers the handler to try when no screen answered.
    *
-   * The one caller is the fallback that navigates to a screen and then runs
-   * what that screen registered. It asks for a handler DIRECTLY rather than
-   * calling `run` again, because it is itself in that action's stack and
-   * re-entering would find itself.
+   * One per action: it belongs to the root, which is mounted once.
    */
-  handlerOtherThan(
-    action: AssistantActionType,
-    exclude: AssistantActionHandlerType,
-  ): AssistantActionHandlerType | null {
-    const stack = this.handlers.get(action) ?? [];
-    for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
-      const handler = stack[at]!;
-      if (handler !== exclude) return handler;
-    }
-    return null;
+  registerFallback(action: AssistantActionType, handler: AssistantActionHandlerType): () => void {
+    this.fallbacks.set(action, handler);
+    return () => {
+      if (this.fallbacks.get(action) === handler) this.fallbacks.delete(action);
+    };
+  }
+
+  /** Whether some screen — not the fallback — answers `action` right now. */
+  hasScreenHandler(action: AssistantActionType): boolean {
+    return (this.handlers.get(action) ?? []).length > ValueConstants.zero;
   }
 
   /**
@@ -92,12 +100,8 @@ export class AssistantActionRegistry {
    * nothing. Resolves false if nothing arrives in time — a route that does not
    * exist, or a guard that sent the user somewhere else.
    */
-  async waitForHandlerOtherThan(
-    action: AssistantActionType,
-    exclude: AssistantActionHandlerType,
-    timeoutMs: number,
-  ): Promise<boolean> {
-    if (this.handlerOtherThan(action, exclude) !== null) return true;
+  async waitForScreenHandler(action: AssistantActionType, timeoutMs: number): Promise<boolean> {
+    if (this.hasScreenHandler(action)) return true;
 
     return new Promise<boolean>((resolve) => {
       const settle = (arrived: boolean): void => {
@@ -106,7 +110,7 @@ export class AssistantActionRegistry {
         resolve(arrived);
       };
       const check = (): void => {
-        if (this.handlerOtherThan(action, exclude) !== null) settle(true);
+        if (this.hasScreenHandler(action)) settle(true);
       };
       const timer = setTimeout(() => settle(false), timeoutMs);
       this.watchers.add(check);
@@ -133,26 +137,29 @@ export class AssistantActionRegistry {
     }
 
     const stack = this.handlers.get(action) ?? [];
-    if (stack.length === ValueConstants.zero) {
-      // The action exists but nothing on this screen can do it — "open the
-      // photo picker" with no draft open. The model can recover from being
-      // told so; it cannot recover from silence.
-      return this.withContext({ ok: false, error: 'unavailable_here' });
-    }
-
-    // Innermost first, then outward while a handler says the subject is not
-    // its own. A screen showing a list answers for the rows it is showing; a
-    // recipe named from anywhere else belongs to the handler underneath, and
-    // stopping at the top meant the innermost screen denied it.
     for (let at = stack.length - ValueConstants.one; at >= ValueConstants.zero; at -= ValueConstants.one) {
       try {
         const result = await stack[at]!(arg);
         if (result.notMine !== true) return this.withContext(result);
       } catch {
-        // A handler that throws is a bug, and it must still not hang the
-        // session — but it also must not silently promote the one beneath it.
         return this.withContext({ ok: false, error: 'failed' });
       }
+    }
+
+    // Only now. The fallback carries an action to the screen that owns it, so
+    // it must never answer for a screen that is already open — including one
+    // that said `notMine`, which means "not this one", not "not here".
+    const fallback = this.fallbacks.get(action);
+    if (fallback !== undefined) {
+      try {
+        return this.withContext(await fallback(arg));
+      } catch {
+        return this.withContext({ ok: false, error: 'failed' });
+      }
+    }
+
+    if (stack.length === ValueConstants.zero) {
+      return this.withContext({ ok: false, error: 'unavailable_here' });
     }
     return this.withContext({ ok: false, error: 'not_found' });
   }

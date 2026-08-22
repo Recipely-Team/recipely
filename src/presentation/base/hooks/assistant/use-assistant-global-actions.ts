@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
-import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
+import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
@@ -33,10 +33,12 @@ export const useAssistantGlobalActions = (): void => {
   useAssistantAction(
     AssistantAction.Navigate,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
-      const target = ASSISTANT_NAVIGATION_TARGETS[arg ?? CharConstants.empty];
-      if (target === undefined) return { ok: false, error: 'unknown_screen' };
+      const name = arg ?? CharConstants.empty;
+      if (!isAssistantScreenName(name)) return { ok: false, error: 'unknown_screen' };
 
-      router.push(target as Href);
+      // `navigate`, not `push`: asked to go somewhere the user is already
+      // standing, `push` stacks a second copy of it and back stops leaving.
+      router.navigate(ASSISTANT_NAVIGATION_TARGETS[name] as Href);
       return { ok: true };
     }, []),
   );

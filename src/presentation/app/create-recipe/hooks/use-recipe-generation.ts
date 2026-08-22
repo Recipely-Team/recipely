@@ -77,9 +77,9 @@ const GEN_STEP_INTERVAL_MS = 620;
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
-  // Read before the stores that depend on it. `useLocalSearchParams` answers
-  // undefined where the route has none, so the pair is destructured defensively
-  // rather than assumed.
+  // Read before the stores that depend on it. The `?? {}` is for test harnesses
+  // that stub the hook — the real one returns `{}` for a route with no params,
+  // never undefined.
   const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>() ?? {};
   const promptParam = params.prompt;
   const fromRecipeId = params.fromRecipeId;
@@ -111,6 +111,14 @@ const GEN_STEP_INTERVAL_MS = 620;
   // in the field and the generating view runs where they can see it. A draft
   // being resumed wins: `?draftId=` means the user asked for something else.
   const startedFromParam = useRef(false);
+  /**
+   * Whether the copy has already been laid into the editor.
+   *
+   * `startedFromParam` latches the LOAD; without this, any later change to the
+   * cached recipe re-ran the seed and threw away whatever the user had edited
+   * in their copy, dropping them back to preview.
+   */
+  const seeded = useRef(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -289,7 +297,8 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [fromRecipeId, draftId, loadRecipeDetail]);
 
   useEffect(() => {
-    if (copiedFrom === null) return;
+    if (copiedFrom === null || seeded.current) return;
+    seeded.current = true;
 
     setRecipe(recipeToEditable(copiedFrom, []));
     setPhase(PhaseType.Preview);
