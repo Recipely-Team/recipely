@@ -1,13 +1,15 @@
 import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, RadialGradient, Stop } from 'react-native-svg';
+import { AssistantOrbAura } from '@presentation/base/widgets/assistant/parts/assistant-orb-aura';
+import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { colorAlphas, opacities, radii } from '@presentation/base/theme';
+import { borderWidths, colorAlphas, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface AssistantOrbProps {
@@ -91,6 +93,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
 
   return (
     <View style={styles.halo} pointerEvents="none">
+      {live && !isMuted ? <AssistantOrbAura isSpeaking={speaking} /> : null}
       <Animated.View
         style={[
           styles.orb,
@@ -155,7 +158,18 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
       </Animated.View>
 
       {live && !isMuted ? (
-        <View style={[styles.lift, { backgroundColor: colors.primary + colorAlphas.faint }]} />
+        <>
+          <View style={[styles.lift, { backgroundColor: colors.primary + colorAlphas.faint }]} />
+          <View style={[styles.waveBadge, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
+            <AssistantWave
+              level={level}
+              active
+              color={colors.primary}
+              bars={assistantMetrics.orbWaveBars}
+              height={assistantMetrics.orbWaveHeight}
+            />
+          </View>
+        </>
       ) : null}
     </View>
   );
@@ -189,6 +203,16 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: assistantMetrics.orb * 0.35,
     height: assistantMetrics.orb * 1.6,
+  },
+  // Sits ON the orb's lower edge: the level belongs to the object making the
+  // sound, not to a bar somewhere else on the screen.
+  waveBadge: {
+    position: 'absolute',
+    bottom: ValueConstants.zero,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xxs,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.hairline,
   },
   lift: {
     position: 'absolute',
