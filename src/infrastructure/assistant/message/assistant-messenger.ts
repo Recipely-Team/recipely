@@ -1,3 +1,4 @@
+import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { AssistantMessageResponseDto } from '@infrastructure/assistant/message/dtos/assistant-message-response-dto';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
@@ -24,11 +25,19 @@ export class AssistantMessenger implements AssistantMessengerInterface {
     languageCode: string,
     screenContext?: string,
   ): Promise<Result<AssistantTextReply, Failure>> {
-    const result = await this.http.post<AssistantMessageResponseDto>(ApiRoutes.assistant.message, {
-      message,
-      languageCode,
-      ...(screenContext === undefined ? {} : { screenContext }),
-    });
+    const result = await this.http.post<AssistantMessageResponseDto>(
+      ApiRoutes.assistant.message,
+      {
+        message,
+        languageCode,
+        ...(screenContext === undefined ? {} : { screenContext }),
+      },
+      // This is a model call, not a lookup. On the default ten seconds the
+      // request was cancelled mid-answer and the screen said "that did not go
+      // through" — for a question the assistant was still working on. The
+      // repository already keeps the number that AI calls are allowed.
+      { timeout: AI_REQUEST_TIMEOUT_MS },
+    );
     if (!result.ok) return fail(result.failure);
 
     const name = result.value.action?.name;
