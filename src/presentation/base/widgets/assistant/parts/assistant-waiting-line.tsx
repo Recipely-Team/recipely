@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantStatusLabel } from '@presentation/base/widgets/assistant/assistant-status-label';
 import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-reduce-motion';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { t } from '@presentation/i18n';
 import { durations, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
@@ -15,6 +16,7 @@ const DOT_STAGGER_MS = 160;
 
 export interface AssistantWaitingLineProps {
   status: AssistantStatusType;
+  isMuted?: boolean;
 }
 
 /**
@@ -31,11 +33,18 @@ export interface AssistantWaitingLineProps {
  * - **The dots are the only part that is decoration**, so they stop under
  *   Reduce Motion and the sentence stays.
  */
-export const AssistantWaitingLine = ({ status }: AssistantWaitingLineProps): React.JSX.Element | null => {
+export const AssistantWaitingLine = ({
+  status,
+  isMuted = false,
+}: AssistantWaitingLineProps): React.JSX.Element | null => {
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const pulse = useRef(new Animated.Value(ValueConstants.zero)).current;
-  const isWaiting = WAITING.includes(status);
+  // Muted outranks the rest: it is the one state where the assistant looks
+  // alive and is deliberately not hearing anything, and the slash on the orb
+  // is the only thing that has been saying so.
+  const isMutedLive = isMuted && status !== AssistantStatus.Idle;
+  const isWaiting = WAITING.includes(status) || isMutedLive;
 
   useEffect(() => {
     if (reduceMotion || !isWaiting) return;
@@ -56,9 +65,10 @@ export const AssistantWaitingLine = ({ status }: AssistantWaitingLineProps): Rea
   return (
     <View style={[styles.line, { backgroundColor: colors.cardBackground }]}>
       <ThemedText variant="caption" muted style={styles.label}>
-        {assistantStatusLabel(status)}
+        {isMutedLive ? t().assistant.muted : assistantStatusLabel(status)}
       </ThemedText>
 
+      {isMutedLive ? null : (
       <View style={styles.dots}>
         {DOTS.map((index) => (
           <Animated.View
@@ -94,6 +104,7 @@ export const AssistantWaitingLine = ({ status }: AssistantWaitingLineProps): Rea
           />
         ))}
       </View>
+      )}
     </View>
   );
 };

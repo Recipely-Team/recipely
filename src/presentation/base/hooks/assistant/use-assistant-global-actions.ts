@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
+import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
@@ -26,6 +27,18 @@ import { CharConstants } from '@core/constants';
  *   model say something useful out loud instead of falling silent; that is the
  *   whole reason handlers answer with a shape rather than a boolean.
  */
+/**
+ * Whether a phrase could be a recipe id rather than something the user said.
+ *
+ * Ids are opaque and long; "2" and "the chicken one" are not. Trying anything
+ * as an id pushed a detail route for a recipe that cannot exist, which is a
+ * worse answer than saying it was not found.
+ */
+const ID_MIN_LENGTH = 12;
+
+const looksLikeId = (arg: string): boolean =>
+  arg.length >= ID_MIN_LENGTH && !arg.includes(CharConstants.space);
+
 export const useAssistantGlobalActions = (): void => {
   const { assistantSessionStore, recipeListStore } = useStores();
   const stopVoice = assistantSessionStore((s) => s.stopVoice);
@@ -89,12 +102,21 @@ export const useAssistantGlobalActions = (): void => {
         // handler ever looks at.
         const listState = recipeListStore.getState().state;
         const loaded = listState.status === StoreStatus.Loaded ? listState.recipes : [];
-        const match = loaded.find((recipe) =>
-          recipe.name.toLocaleLowerCase().includes(arg.toLocaleLowerCase()),
+
+        // `rowAt` rather than a name search, because "the second one" is a
+        // thing people say and it used to fall through to the id branch —
+        // pushing `/recipes/2` and landing the user on an error screen.
+        const at = rowAt(
+          loaded.map((recipe) => recipe.name),
+          arg,
         );
-        // An argument that matches no loaded recipe is tried as an id, so a
-        // reference from a previous turn or a deep link still opens.
-        const id = match?.id ?? arg;
+        const match = at === null ? undefined : loaded[at];
+
+        // Only an argument that could BE an id is tried as one, so a reference
+        // from a previous turn or a deep link still opens while a phrase that
+        // matched nothing says so instead of opening a page that cannot exist.
+        const id = match?.id ?? (looksLikeId(arg) ? arg : null);
+        if (id === null) return { ok: false, error: 'not_found' };
 
         router.push(RoutePaths.recipeDetail(id) as Href);
         return { ok: true, ...(match !== undefined ? { title: match.name } : {}) };

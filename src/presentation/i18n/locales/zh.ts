@@ -910,6 +910,7 @@ export const zh = {
     micDenied: "Recipely 需要麦克风才能听到你。",
     mute: "静音",
     unmute: "取消静音",
+    muted: "麦克风已静音",
     keyboard: "打字提问",
     voice: "说话",
     expand: "展开助手",

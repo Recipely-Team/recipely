@@ -44,6 +44,10 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // belong to the SCREEN: they are available exactly while a draft is open,
   // and answer `unavailable_here` everywhere else.
   useAssistantDraftActions({
+    // Only while the editor is on screen. In the prompt phase there is nothing
+    // to edit and no confirmation sheet — the same condition the two
+    // confirmations below already carry.
+    isDraftVisible: isPreview,
     recipe: vm.recipe,
     onUpdateField: vm.onUpdateField,
     onAppendIngredient: vm.onAppendIngredient,

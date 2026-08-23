@@ -23,14 +23,26 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 export const useAssistantAction = (
   action: AssistantActionType,
   handler: AssistantActionHandlerType,
+  /**
+   * Whether this handler should be offered at all right now.
+   *
+   * A screen is not always in a state where its actions mean anything: the
+   * create screen registered its draft actions in the PROMPT phase, where
+   * "add two eggs" wrote into an editor the user could not see and reported
+   * success — and `publishDraft` answered `awaiting` for a confirmation sheet
+   * that phase never renders, so the spoken "yes" landed on nothing.
+   * Unregistering says `unavailable_here`, which is the truth.
+   */
+  isEnabled = true,
 ): void => {
   const { assistantActionRegistry } = useStores();
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
 
   useEffect(() => {
+    if (!isEnabled) return;
     // The stable wrapper is what gets registered; it forwards to whatever the
     // latest render passed, so the registry is written once per mount.
     return assistantActionRegistry.register(action, (arg) => handlerRef.current(arg));
-  }, [action, assistantActionRegistry]);
+  }, [action, assistantActionRegistry, isEnabled]);
 };

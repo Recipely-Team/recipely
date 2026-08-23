@@ -72,7 +72,7 @@ export const AssistantVoiceStage = ({
         />
       </View>
 
-      <AssistantWaitingLine status={status} />
+      <AssistantWaitingLine status={status} isMuted={isMuted} />
 
       <View style={styles.controls}>
         <Pressable

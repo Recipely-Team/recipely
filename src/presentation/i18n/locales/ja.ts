@@ -903,6 +903,7 @@ export const ja = {
     micDenied: "声を聞くにはマイクの許可が必要です。",
     mute: "ミュート",
     unmute: "ミュート解除",
+    muted: "マイクはオフ",
     keyboard: "文字で聞く",
     voice: "話す",
     expand: "アシスタントを広げる",
