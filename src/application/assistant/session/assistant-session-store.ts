@@ -113,6 +113,17 @@ const MS_PER_SECOND = 1_000;
  */
 const ECHO_TAIL_MS = 250;
 
+/**
+ * How long a spoken turn stays open with nothing arriving for it.
+ *
+ * One utterance's transcription arrives as a run of fragments; a gap this long
+ * means the next thing said is a new one. Without it, two things said in a row
+ * with no reply between them merged into a single bubble reading
+ * "…ekrandakiEkrandaki ilk tarif" — the API marks no boundary within a turn,
+ * so the pause is the only one there is.
+ */
+const UTTERANCE_GAP_MS = 1_200;
+
 /** Swallows a rejection whose only useful response is to carry on regardless. */
 const noop = (): void => undefined;
 
@@ -164,6 +175,7 @@ export const configureAssistantSessionStore = (
    * said.
    */
   let openTurn: string | null = null;
+  let openTurnTimer: ReturnType<typeof setTimeout> | null = null;
   let lineId = ValueConstants.zero;
   // What a reconnect needs. The handle lets the next socket continue the
   // conversation instead of paying for setup and context again, and the
@@ -218,6 +230,8 @@ export const configureAssistantSessionStore = (
       meter.reset();
       speakingUntil = ValueConstants.zero;
       openTurn = null;
+      if (openTurnTimer !== null) clearTimeout(openTurnTimer);
+      openTurnTimer = null;
       set({ status, level: ValueConstants.zero, isMuted: false });
     };
 
@@ -261,7 +275,15 @@ export const configureAssistantSessionStore = (
      * their own spacing, so they are joined as they arrive rather than
      * re-spaced.
      */
+    const closeTurnAfterGap = (): void => {
+      if (openTurnTimer !== null) clearTimeout(openTurnTimer);
+      openTurnTimer = setTimeout(() => {
+        openTurn = null;
+      }, UTTERANCE_GAP_MS);
+    };
+
     const appendTranscript = (speaker: ChatRole, text: string): void => {
+      closeTurnAfterGap();
       const transcript = get().transcript;
       const last = transcript[transcript.length - ValueConstants.one];
 

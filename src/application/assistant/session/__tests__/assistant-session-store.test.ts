@@ -852,6 +852,41 @@ describe('assistant session store', () => {
       ]);
     });
 
+    // Two things said in a row with no reply between them merged into one
+    // bubble reading "…ekrandakiEkrandaki ilk tarif". The API marks no boundary
+    // within a turn, so the pause between utterances is the only one there is.
+    it('starts a new bubble for the next thing said after a pause', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+
+        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki' });
+        await jest.advanceTimersByTimeAsync(3_000);
+        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ilk tarif' });
+
+        expect(store.getState().transcript).toHaveLength(2);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    it('keeps one bubble while the fragments keep arriving', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, emit } = harness();
+        await store.getState().startVoice('tr-TR');
+
+        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
+        await jest.advanceTimersByTimeAsync(200);
+        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: ' tarifi' });
+
+        expect(store.getState().transcript).toHaveLength(1);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('starts a new bubble when the other party speaks', async () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
