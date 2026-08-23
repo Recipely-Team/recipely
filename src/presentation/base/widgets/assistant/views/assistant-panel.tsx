@@ -105,11 +105,20 @@ export const AssistantPanel = ({
         isExpanded
           ? {
               width: assistantMetrics.panelWebWidth,
-              height: Math.max(
-                assistantMetrics.panelMinHeight,
-                height -
-                  (isWebShell ? assistantMetrics.panelWebTopClearance : spacing.xl) -
-                  bottomOffset,
+              // Capped, not stretched. Given the whole viewport the column put
+              // the name chip against the top edge and the controls against
+              // the bottom, seven hundred pixels of unrelated page between
+              // them — two floating objects rather than one conversation. The
+              // cap is what keeps them close enough to read as one thing; the
+              // available height is only the ceiling.
+              height: Math.min(
+                assistantMetrics.panelWebMaxHeight,
+                Math.max(
+                  assistantMetrics.panelMinHeight,
+                  height -
+                    (isWebShell ? assistantMetrics.panelWebTopClearance : spacing.xl) -
+                    bottomOffset,
+                ),
               ),
             }
           : {

@@ -15,7 +15,11 @@ import { scale } from '@presentation/base/theme/tokens/scale';
  * - **The web panel is a full-height column, not a box that hugs its content.**
  *   Docked to the bottom edge with only the height its transcript needed, an
  *   empty conversation rendered as a strip barely taller than its own footer.
- *   `panelWebTopClearance` is the room the site HEADER wants above it, so it is
+ *   `panelWebMaxHeight` caps it: a desktop viewport is tall enough that a
+ *   full-height column pushed the name chip and the control bar to opposite
+ *   edges with the page between them, which reads as two loose objects rather
+ *   than one conversation. `panelWebTopClearance` is the room the site HEADER
+ *   wants above it, so it is
  *   spent only where that header is mounted — a tablet is wide without being a
  *   browser. `panelMinHeight` is the floor: a short window subtracted its way
  *   past zero without one.
@@ -38,6 +42,19 @@ export const assistantMetrics = {
   panelWebWidth: scale(400),
   panelWebTopClearance: scale(84),
   panelMinHeight: scale(280),
+  panelWebMaxHeight: scale(520),
+  orb: scale(104),
+  orbHalo: scale(126),
+  orbMascot: scale(84),
+  orbLevelGrowth: 0.14,
+  orbBobTravel: scale(3),
+  orbBobMs: 5_000,
+  orbSpeakingBobMs: 1_600,
+  orbGlowMs: 3_600,
+  orbSpeakingGlowMs: 1_500,
+  orbSweepMs: 1_100,
+  menuPillHeight: scale(34),
+  sheetHeightShare: 0.46,
   panelSheetHeightShare: 0.52,
   levelSettleMs: 90,
   blinkIntervalMs: 3600,

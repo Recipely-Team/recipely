@@ -3,6 +3,9 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
 import { AssistantMiniBar } from '@presentation/base/widgets/assistant/views/assistant-mini-bar';
+import { AssistantOrbSurface } from '@presentation/base/widgets/assistant/views/assistant-orb-surface';
+import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
+import { t } from '@presentation/i18n';
 import { AssistantPanel } from '@presentation/base/widgets/assistant/views/assistant-panel';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { AssistantView } from '@application/assistant/session/assistant-view';
@@ -55,7 +58,20 @@ import { ValueConstants } from '@core/constants';
 export const AssistantPill = (): React.JSX.Element | null => {
   const insets = useSafeAreaInsets();
   const { isWebShell, isExpanded } = useLayout();
-  const { status, view, setView, level, isMuted, toggleMute, toggleVoice } = useAssistantSession();
+  const {
+    status,
+    view,
+    setView,
+    level,
+    isMuted,
+    transcript,
+    deniedReason,
+    error,
+    clearError,
+    toggleMute,
+    toggleVoice,
+    sendText,
+  } = useAssistantSession();
 
   // The pill is the one component mounted for the whole app's life, so the
   // actions that work from anywhere — and the screen line every tool result
@@ -96,12 +112,46 @@ export const AssistantPill = (): React.JSX.Element | null => {
     setView(AssistantView.Closed);
   };
 
+  // On a phone the assistant IS the orb: there is no smaller form to minimise
+  // into, so `Mini` and `Open` are the same surface. The wide layout keeps the
+  // panel and the bar, which is where the extra room makes them worth having.
+  const isOpen = view === AssistantView.Open || view === AssistantView.Mini;
+
+  if (!isExpanded) {
+    return (
+      <>
+        {isOpen ? (
+          <AssistantOrbSurface
+            status={status}
+            level={level}
+            isMuted={isMuted}
+            transcript={transcript}
+            notice={error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason)}
+            onToggleVoice={toggleVoice}
+            onToggleMute={toggleMute}
+            onSend={(text) => {
+              clearError();
+              sendText(text);
+            }}
+            onClose={end}
+            restingBottom={bottom}
+          />
+        ) : null}
+
+        {view === AssistantView.Closed ? (
+          <View style={[styles.dock, { bottom }]} pointerEvents="box-none">
+            <AssistantFab status={status} onOpen={() => setView(AssistantView.Open)} />
+          </View>
+        ) : null}
+      </>
+    );
+  }
+
   return (
-    <View
-      style={[styles.dock, { bottom }, isExpanded ? styles.dockWide : null]}
-      pointerEvents="box-none"
-    >
-      {view === AssistantView.Open ? <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={bottom} /> : null}
+    <View style={[styles.dock, styles.dockWide, { bottom }]} pointerEvents="box-none">
+      {view === AssistantView.Open ? (
+        <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={bottom} />
+      ) : null}
 
       {view === AssistantView.Mini ? (
         <AssistantMiniBar
