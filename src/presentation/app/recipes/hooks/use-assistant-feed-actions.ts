@@ -9,7 +9,7 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { Difficulty } from '@domain/recipes/difficulty';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The feed capability the assistant borrows, named where it is consumed. */

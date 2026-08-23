@@ -882,6 +882,7 @@ export const ru = {
     listening: "Слушаю",
     speaking: "Говорит",
     working: "Выполняю…",
+    thinking: "Думаю…",
     connecting: "Подключение…",
     idle: "Нажмите, чтобы говорить",
     placeholder: "Напишите вместо этого",

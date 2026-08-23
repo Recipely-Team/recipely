@@ -29,7 +29,7 @@ import { t } from '@presentation/i18n';
 // The screen is rendered bare here, without a StoresProvider — these cover
 // what it displays, not how it is wired. The assistant hook only registers
 // actions, so stubbing it keeps that focus.
-jest.mock('@presentation/base/hooks/assistant/use-assistant-action', () => ({
+jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-action', () => ({
   useAssistantAction: (): void => {},
 }));
 

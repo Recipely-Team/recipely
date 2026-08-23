@@ -8,9 +8,16 @@ import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor'
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
+
+/** Between the facts on one screen line, matching the registry's own joiner. */
+const SCREEN_PART_SEPARATOR = '; ';
+
+/** How the screen line answers a yes-or-no about the recipe on screen. */
+const Answer = { yes: 'yes', no: 'no' } as const;
 
 /** What the recipe screen lends the assistant, named where it is consumed. */
 interface AssistantRecipeActionsDeps {
@@ -49,6 +56,11 @@ interface AssistantRecipeActionsDeps {
  * - **Save and like are separate**, matching the app: saving is private and
  *   liking is public, and a model told they were one thing would do the wrong
  *   one half the time.
+ * - **The screen line names the recipe and its state.** Without it "delete it"
+ *   was a request the model could only relay and hope: it did not know whose
+ *   recipe this was, so it could not say "that one is not yours" before trying,
+ *   and it re-saved things that were already saved because it had no way to
+ *   know. `mine` is what lets it warn before asking to delete rather than after.
  */
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
@@ -104,6 +116,16 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       return result.ok ? { ok: true, title: recipeName } : { ok: false, error: 'failed' };
     },
     [userId, likeState, recipeId, recipeName, toggleLike],
+  );
+
+  useAssistantScreenContent(() =>
+    [
+      `recipe=${recipeName}`,
+      `saved=${savedIds.has(recipeId) ? Answer.yes : Answer.no}`,
+      `liked=${likeState?.likedByMe === true ? Answer.yes : Answer.no}`,
+      `mine=${isOwner ? Answer.yes : Answer.no}`,
+      `steps=${instructions.length}`,
+    ].join(SCREEN_PART_SEPARATOR),
   );
 
   useAssistantAction(AssistantAction.Save, useCallback(() => setSaved(true), [setSaved]));

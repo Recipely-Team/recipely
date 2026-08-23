@@ -223,3 +223,77 @@ describe('AssistantActionRegistry', () => {
     expect(registry.registeredActions).toEqual([AssistantAction.Save, AssistantAction.Like]);
   });
 });
+
+/**
+ * The screen line carried a route and nothing else, so every reference to
+ * something the user could see — "the second one", "the chicken one" — reached
+ * a handler as an unexplained phrase, and "is there anything on this screen?"
+ * could not be answered at all. Screens now describe their own rows, and the
+ * innermost one wins for the same reason handlers do: expo-router leaves the
+ * screen underneath mounted, so a single slot would be cleared by the recipe
+ * screen leaving and the feed would go on describing nothing.
+ */
+describe('AssistantActionRegistry — what is on the screen', () => {
+  it('joins the route and the rows into one line', async () => {
+    const registry = new AssistantActionRegistry();
+    registry.setScreenDescriber(() => 'screen=/recipes');
+    registry.registerScreenContent(() => 'recipes=1) Baklava');
+
+    expect(registry.screenContext).toBe('screen=/recipes; recipes=1) Baklava');
+  });
+
+  it('lets the screen on top describe the screen, and hands it back on the way out', () => {
+    const registry = new AssistantActionRegistry();
+    registry.setScreenDescriber(() => 'screen=/recipes');
+    registry.registerScreenContent(() => 'recipes=1) Baklava');
+    const leave = registry.registerScreenContent(() => 'recipe=Baklava; mine=yes');
+
+    expect(registry.screenContext).toBe('screen=/recipes; recipe=Baklava; mine=yes');
+
+    leave();
+
+    expect(registry.screenContext).toBe('screen=/recipes; recipes=1) Baklava');
+  });
+
+  it('reads the describer when the result is built, not when it was registered', async () => {
+    const registry = new AssistantActionRegistry();
+    let rows = 'recipes=none';
+    registry.setScreenDescriber(() => 'screen=/recipes');
+    registry.registerScreenContent(() => rows);
+    registry.register(AssistantAction.Refresh, async () => ({ ok: true }));
+
+    rows = 'recipes=1) Baklava';
+    const result = await registry.run(AssistantAction.Refresh);
+
+    expect(result.ctx).toBe('screen=/recipes; recipes=1) Baklava');
+  });
+
+  it('carries the line on every result, so a screen with nothing on it still says where it is', () => {
+    const registry = new AssistantActionRegistry();
+    registry.setScreenDescriber(() => 'screen=/settings');
+
+    expect(registry.screenContext).toBe('screen=/settings');
+  });
+});
+
+/**
+ * A screen describer is code a screen wrote, closing over its own state. The
+ * registry's whole contract is that it ALWAYS answers — a live session that
+ * gets no tool response simply stops — and the screen line is the least
+ * important thing in that answer. It must not be able to swallow it.
+ */
+describe('AssistantActionRegistry — a broken describer is not a broken session', () => {
+  it('still answers when the screen cannot say what it is showing', async () => {
+    const registry = new AssistantActionRegistry();
+    registry.setScreenDescriber(() => 'screen=/recipes');
+    registry.registerScreenContent(() => {
+      throw new Error('rows not loaded');
+    });
+    registry.register(AssistantAction.Refresh, async () => ({ ok: true }));
+
+    await expect(registry.run(AssistantAction.Refresh)).resolves.toMatchObject({
+      ok: true,
+      ctx: 'screen=/recipes',
+    });
+  });
+});

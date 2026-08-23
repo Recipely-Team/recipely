@@ -15,13 +15,13 @@ import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/d
 import { t } from '@presentation/i18n';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
-import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/use-assistant-recipe-actions';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
+import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-recipe-actions';
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
 } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import { useAssistantScroll } from '@presentation/base/hooks/assistant/use-assistant-scroll';
+import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
 import {
   DETAIL_SCROLL_STEP_SHARE,
   SCROLL_EVENT_THROTTLE_MS,

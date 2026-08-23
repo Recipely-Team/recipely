@@ -889,6 +889,7 @@ export const tr: Translations = {
     listening: "Dinliyorum",
     speaking: "Konuşuyor",
     working: "Yapıyorum…",
+    thinking: "Düşünüyor…",
     connecting: "Bağlanıyor…",
     idle: "Konuşmak için dokun",
     placeholder: "Yazarak anlat",

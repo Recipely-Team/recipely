@@ -124,6 +124,21 @@ const ECHO_TAIL_MS = 250;
  */
 const UTTERANCE_GAP_MS = 1_200;
 
+/**
+ * How long a turn may sit with the model before the app admits nothing came.
+ *
+ * Reported with a screenshot: three things said in a row, the last of them
+ * "can you hear me?", and not one answer — while the pill said "listening" and
+ * the waveform sat flat, because between the end of an utterance and the first
+ * sound of a reply this store changed no state at all. A model that IS
+ * answering starts audio in a second or two, and one that decided to act sends
+ * a tool call, which is its own status; neither is what this waits out.
+ *
+ * Generous on purpose: it must never fire on an answer that was merely slow,
+ * only on one that is not coming.
+ */
+const ANSWER_TIMEOUT_MS = 12_000;
+
 /** Swallows a rejection whose only useful response is to carry on regardless. */
 const noop = (): void => undefined;
 
@@ -176,6 +191,7 @@ export const configureAssistantSessionStore = (
    */
   let openTurn: string | null = null;
   let openTurnTimer: ReturnType<typeof setTimeout> | null = null;
+  let answerTimer: ReturnType<typeof setTimeout> | null = null;
   let lineId = ValueConstants.zero;
   // What a reconnect needs. The handle lets the next socket continue the
   // conversation instead of paying for setup and context again, and the
@@ -232,7 +248,37 @@ export const configureAssistantSessionStore = (
       openTurn = null;
       if (openTurnTimer !== null) clearTimeout(openTurnTimer);
       openTurnTimer = null;
+      stopAnswerTimer();
       set({ status, level: ValueConstants.zero, isMuted: false });
+    };
+
+    /**
+     * Marks the turn as handed over, and bounds how long that may last.
+     *
+     * Only from `Listening`: audio or a tool call arriving inside the
+     * utterance gap means the model has already started, and stepping back to
+     * "thinking" over it would describe the session as less advanced than it
+     * is.
+     */
+    const beginThinking = (): void => {
+      if (get().status !== AssistantStatus.Listening) return;
+      set({ status: AssistantStatus.Thinking });
+      stopAnswerTimer();
+      answerTimer = setTimeout(() => {
+        if (get().status !== AssistantStatus.Thinking) return;
+        // Back to listening, not torn down: the socket is fine and the user
+        // can simply say it again. The notice is what turns "it ignored me"
+        // into something they can act on.
+        set({
+          status: AssistantStatus.Listening,
+          error: new UnknownFailure(DiagnosticMessage.assistant.noAnswer),
+        });
+      }, ANSWER_TIMEOUT_MS);
+    };
+
+    const stopAnswerTimer = (): void => {
+      if (answerTimer !== null) clearTimeout(answerTimer);
+      answerTimer = null;
     };
 
     const stopSilenceTimer = (): void => {
@@ -275,15 +321,19 @@ export const configureAssistantSessionStore = (
      * their own spacing, so they are joined as they arrive rather than
      * re-spaced.
      */
-    const closeTurnAfterGap = (): void => {
+    const closeTurnAfterGap = (speaker: ChatRole): void => {
       if (openTurnTimer !== null) clearTimeout(openTurnTimer);
       openTurnTimer = setTimeout(() => {
         openTurn = null;
+        // The same pause that ends an utterance is the moment the turn becomes
+        // the model's. Nothing else in the protocol marks it: there is no
+        // "your turn" event, which is why this state did not exist before.
+        if (speaker === ChatRole.User) beginThinking();
       }, UTTERANCE_GAP_MS);
     };
 
     const appendTranscript = (speaker: ChatRole, text: string): void => {
-      closeTurnAfterGap();
+      closeTurnAfterGap(speaker);
       const transcript = get().transcript;
       const last = transcript[transcript.length - ValueConstants.one];
 
@@ -381,6 +431,11 @@ export const configureAssistantSessionStore = (
     };
 
     const handle = (event: AssistantSessionEventType): void => {
+      // Anything arriving at all is the answer to "did anything come back",
+      // so the wait is over regardless of which event it was — and a notice
+      // saying nothing came must not outlive the thing arriving.
+      stopAnswerTimer();
+      if (get().error !== null) set({ error: null });
       switch (event.kind) {
         case AssistantEventKind.Transcript:
           appendTranscript(event.speaker, event.text);

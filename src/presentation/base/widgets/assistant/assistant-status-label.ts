@@ -25,6 +25,7 @@ const LABEL_KEYS: Record<AssistantStatusType, AssistantCopyKey> = {
   [AssistantStatus.Idle]: 'idle',
   [AssistantStatus.Connecting]: 'connecting',
   [AssistantStatus.Listening]: 'listening',
+  [AssistantStatus.Thinking]: 'thinking',
   [AssistantStatus.Speaking]: 'speaking',
   [AssistantStatus.Working]: 'working',
   [AssistantStatus.Unavailable]: 'idle',

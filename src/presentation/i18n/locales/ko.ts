@@ -878,6 +878,7 @@ export const ko: Translations = {
     listening: "듣고 있어요",
     speaking: "말하는 중",
     working: "실행 중…",
+    thinking: "생각 중…",
     connecting: "연결 중…",
     idle: "탭해서 말하기",
     placeholder: "대신 입력하기",

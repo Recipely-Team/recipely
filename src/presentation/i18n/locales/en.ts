@@ -892,6 +892,7 @@ export const en = {
     listening: "Listening",
     speaking: "Speaking",
     working: "Working…",
+    thinking: "Thinking…",
     connecting: "Connecting…",
     idle: "Tap to talk",
     placeholder: "Type instead",

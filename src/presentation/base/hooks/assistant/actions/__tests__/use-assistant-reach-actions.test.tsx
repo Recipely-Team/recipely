@@ -14,7 +14,7 @@ import { act, create } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import { useAssistantReachActions } from '@presentation/base/hooks/assistant/use-assistant-reach-actions';
+import { useAssistantReachActions } from '@presentation/base/hooks/assistant/actions/use-assistant-reach-actions';
 
 interface Probe {
   pathname: string;

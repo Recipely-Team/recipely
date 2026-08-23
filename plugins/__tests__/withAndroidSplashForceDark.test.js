@@ -1,7 +1,9 @@
 const {
   NIGHT_STYLES,
   REQUIRED_SPLASH_ITEMS,
+  REQUIRED_APP_THEME_ITEMS,
 } = require('../withAndroidSplashForceDark');
+const appJson = require('../../app.json');
 
 /** The items inside one named `<style>` block. */
 const blockOf = (xml, name) =>
@@ -57,6 +59,30 @@ describe('the night styles this plugin writes', () => {
     );
     expect(NIGHT_STYLES).toContain(
       '<style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">',
+    );
+  });
+
+  // ─── the second regression: a black screen between splash and first frame ──
+  // `Theme.AppCompat.DayNight` paints near-black in dark mode, and that window
+  // is what the user looks at from the moment the native splash hands over
+  // until React Native draws. The launch screen went off-white, black, app.
+  it.each(REQUIRED_APP_THEME_ITEMS)(
+    'carries %s on the app theme, because an override replaces the whole style',
+    (item) => {
+      expect(blockOf(NIGHT_STYLES, 'AppTheme')).toContain(`name="${item}"`);
+    },
+  );
+
+  it('paints the window the launch colour rather than the DayNight default', () => {
+    // Points at the resource prebuild writes from `expo.backgroundColor`; the
+    // colour itself is not overridden for night, so both appearances resolve
+    // to the one off-white — the same commitment the splash makes.
+    expect(blockOf(NIGHT_STYLES, 'AppTheme')).toContain(
+      '<item name="android:windowBackground">@color/activityBackground</item>',
+    );
+    expect(appJson.expo.backgroundColor).toBe(
+      appJson.expo.plugins.find((p) => Array.isArray(p) && p[0] === 'expo-splash-screen')[1]
+        .backgroundColor,
     );
   });
 

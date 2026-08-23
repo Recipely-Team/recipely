@@ -28,7 +28,7 @@ import {
   avatarSizes,
 } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantSettingsActions } from '@presentation/app/settings/hooks/use-assistant-settings-actions';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';

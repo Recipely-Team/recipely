@@ -23,6 +23,13 @@ import { scale } from '@presentation/base/theme/tokens/scale';
  *   spent only where that header is mounted — a tablet is wide without being a
  *   browser. `panelMinHeight` is the floor: a short window subtracted its way
  *   past zero without one.
+ * - **The resting orb has to be visibly alive.** It was drifting three pixels
+ *   over five seconds, which is not a slow animation — it is a still image. The
+ *   aura, the orbit and the waveform all belong to a LIVE session and correctly
+ *   are not drawn otherwise, so those five seconds were the entire animated
+ *   vocabulary of an orb sitting on a phone with no session running, and the
+ *   app read as frozen. A breath is seven pixels and two and a half percent of
+ *   scale, on a period a person breathes at.
  * - **`levelSettleMs` matches the store's publish interval.** Level arrives at
  *   most every 80ms; animating over roughly that long turns a staircase into a
  *   line without adding lag the user can feel.
@@ -47,8 +54,9 @@ export const assistantMetrics = {
   orbHalo: scale(126),
   orbMascot: scale(84),
   orbLevelGrowth: 0.14,
-  orbBobTravel: scale(3),
-  orbBobMs: 5_000,
+  orbBobTravel: scale(7),
+  orbBobMs: 2_800,
+  orbBreathGrowth: 0.025,
   orbSpeakingBobMs: 1_600,
   orbGlowMs: 3_600,
   orbSpeakingGlowMs: 1_500,

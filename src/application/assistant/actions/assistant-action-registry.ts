@@ -4,6 +4,9 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CharConstants, ValueConstants } from '@core/constants';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 
+/** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
+const SCREEN_LINE_SEPARATOR = '; ';
+
 /**
  * Routes a tool call from the model to the code that performs it.
  *
@@ -32,6 +35,13 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
  *   travels inside every result, and it has to be read at the moment the result
  *   is built: the assistant navigates while it works, so a value captured when
  *   the handler was registered would describe the screen the user has left.
+ * - **The screen line says WHERE and WHAT.** A path alone told the model the
+ *   user was on `/recipes` and nothing else, so "open the second one" and "save
+ *   the chicken one" could only ever be guesses handed to a handler to resolve
+ *   — and "is there anything here?" had no answer at all. Screens that are
+ *   showing something register a describer of their own; the innermost one
+ *   wins, exactly as handlers do, so a recipe pushed over the feed describes
+ *   itself and hands the feed back on the way out.
  */
 export class AssistantActionRegistry {
   private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
@@ -49,6 +59,14 @@ export class AssistantActionRegistry {
   /** Woken whenever a handler registers, so a caller can wait for a screen to arrive. */
   private readonly watchers = new Set<() => void>();
   private describeScreen: () => string = () => CharConstants.empty;
+  /**
+   * What each mounted screen is showing, innermost last.
+   *
+   * A stack rather than a slot, for the reason handlers are: expo-router leaves
+   * the screen underneath mounted, so a single slot would be cleared by the
+   * detail screen leaving and the feed would go on describing nothing.
+   */
+  private readonly contentDescribers: (() => string)[] = [];
 
   register(action: AssistantActionType, handler: AssistantActionHandlerType): () => void {
     const stack = this.handlers.get(action) ?? [];
@@ -117,14 +135,48 @@ export class AssistantActionRegistry {
     });
   }
 
-  /** Supplies the one-line screen state appended to every result. */
+  /** Supplies the route half of the screen line appended to every result. */
   setScreenDescriber(describe: () => string): void {
     this.describeScreen = describe;
   }
 
+  /**
+   * Registers what the calling screen is showing, for the screen line.
+   *
+   * Called at read time, so a describer may close over live state; the screen
+   * does not have to re-register when its list changes.
+   */
+  registerScreenContent(describe: () => string): () => void {
+    this.contentDescribers.push(describe);
+    return () => {
+      const at = this.contentDescribers.lastIndexOf(describe);
+      if (at !== ValueConstants.minusOne) {
+        this.contentDescribers.splice(at, ValueConstants.one);
+      }
+    };
+  }
+
   /** The one-line screen state, for a caller that needs it outside a result. */
   get screenContext(): string {
-    return this.describeScreen();
+    // Screen describers are written by screens and close over their own state,
+    // so one of them throwing must not take the tool RESPONSE with it: a live
+    // session that gets no response simply stops, and the screen line is the
+    // least important thing in it. `run` promises to always answer, and this
+    // is on the path of every answer it gives.
+    const route = this.describe(() => this.describeScreen());
+    const last = this.contentDescribers[this.contentDescribers.length - ValueConstants.one];
+    const content = last === undefined ? CharConstants.empty : this.describe(last);
+    return [route, content]
+      .filter((part) => part !== CharConstants.empty)
+      .join(SCREEN_LINE_SEPARATOR);
+  }
+
+  private describe(from: () => string): string {
+    try {
+      return from();
+    } catch {
+      return CharConstants.empty;
+    }
   }
 
   get registeredActions(): AssistantActionType[] {
@@ -171,7 +223,7 @@ export class AssistantActionRegistry {
     // the one thing that handler bothered to say.
     if (result.ctx !== undefined) return result;
 
-    const ctx = this.describeScreen();
+    const ctx = this.screenContext;
     return ctx === CharConstants.empty ? result : { ...result, ctx };
   }
 }

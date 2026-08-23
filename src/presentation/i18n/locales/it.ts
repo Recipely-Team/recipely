@@ -882,6 +882,7 @@ export const it = {
     listening: "Ti ascolto",
     speaking: "Sta parlando",
     working: "Sto lavorando…",
+    thinking: "Sto pensando…",
     connecting: "Connessione…",
     idle: "Tocca per parlare",
     placeholder: "Scrivi invece",

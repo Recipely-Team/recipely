@@ -6,7 +6,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
 import { StoreStatus } from '@application/store/store-status';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { CharConstants } from '@core/constants';
 

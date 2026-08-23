@@ -1176,3 +1176,89 @@ describe('assistant session store', () => {
     expect(spoken(store.getState().transcript).at(-1)?.text).toBe('yayınla');
   });
 });
+
+/**
+ * Reported with a screenshot: three things said in a row — the last of them
+ * "can you hear me?" — and not one answer on screen. Between the end of an
+ * utterance and the first sound of a reply this store changed no state at all,
+ * so the pill went on saying "listening" and the waveform sat flat. A user
+ * cannot tell a model composing an answer from a session that has died, and
+ * the app was not telling them.
+ */
+describe('assistant session store — the wait after the user speaks', () => {
+  it('says it is thinking once the utterance has ended', async () => {
+    jest.useFakeTimers();
+    try {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki tarifi oku' });
+
+      expect(store.getState().status).toBe(AssistantStatus.Listening);
+
+      // The pause that ends an utterance is also the moment the turn becomes
+      // the model's — the protocol marks no other.
+      await jest.advanceTimersByTimeAsync(1_500);
+
+      expect(store.getState().status).toBe(AssistantStatus.Thinking);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('does not step back to thinking once the answer has already started', async () => {
+    jest.useFakeTimers();
+    try {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'merhaba' });
+      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+
+      await jest.advanceTimersByTimeAsync(1_500);
+
+      // Speaking is further along than thinking; describing it as less would
+      // be a status that moves backwards while the user listens to a voice.
+      expect(store.getState().status).toBe(AssistantStatus.Speaking);
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('admits nothing came back rather than thinking for ever', async () => {
+    jest.useFakeTimers();
+    try {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
+      await jest.advanceTimersByTimeAsync(1_500);
+
+      await jest.advanceTimersByTimeAsync(13_000);
+
+      // Back to listening, not torn down: the socket is fine and saying it
+      // again is all the user has to do. The notice is what turns "it ignored
+      // me" into something they can act on.
+      expect(store.getState().status).toBe(AssistantStatus.Listening);
+      expect(store.getState().error).not.toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+
+  it('clears that notice the moment something does come back', async () => {
+    jest.useFakeTimers();
+    try {
+      const { store, emit } = harness();
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
+      await jest.advanceTimersByTimeAsync(14_500);
+      expect(store.getState().error).not.toBeNull();
+
+      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(240) });
+
+      // A notice that outlives the failure it describes reads as the app still
+      // being broken.
+      expect(store.getState().error).toBeNull();
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});

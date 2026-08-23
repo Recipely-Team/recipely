@@ -30,10 +30,10 @@ import { t } from '@presentation/i18n';
 
 // Rendered bare, without a StoresProvider: these cover the delete-account
 // sheet, not the assistant wiring. Both assistant hooks only register actions.
-jest.mock('@presentation/base/hooks/assistant/use-assistant-action', () => ({
+jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-action', () => ({
   useAssistantAction: (): void => {},
 }));
-jest.mock('@presentation/base/hooks/assistant/use-assistant-confirmation', () => ({
+jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-confirmation', () => ({
   useAssistantConfirmation: (): void => {},
 }));
 jest.mock('@presentation/app/settings/hooks/use-assistant-settings-actions', () => ({

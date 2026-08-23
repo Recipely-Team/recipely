@@ -4,7 +4,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 
 /**
  * Without a spoken answer the whole assistant stops at its own safety gate:

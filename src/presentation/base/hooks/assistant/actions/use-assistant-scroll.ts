@@ -2,7 +2,7 @@ import { machineLower } from '@presentation/base/hooks/assistant/args/machine-ca
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,

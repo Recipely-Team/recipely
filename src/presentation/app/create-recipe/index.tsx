@@ -4,7 +4,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';

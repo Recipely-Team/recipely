@@ -6,8 +6,12 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/use-assistant-confirmation';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
+import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -31,6 +35,9 @@ import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
 const WEB_CONTENT_MAX = WEB_CONTENT_MAX_WIDTH.myRecipes;
+
+/** Stable identity, so the Drafts tab does not hand the hook a new array a render. */
+const EMPTY_ROWS: readonly { id: string; name: string }[] = [];
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -132,6 +139,18 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     onRequestDeleteDraft: setDraftPendingDelete,
     onRefresh,
   });
+  // The tab is half the answer: "delete the lentil soup" means a different
+  // collection on Saved than it does on Created, and the model cannot tell
+  // which list it is looking at from the route alone — they share one.
+  // Empty on Drafts: `items` falls through to the created recipes there, and a
+  // handler answering for rows the user cannot see is how "save that one" ends
+  // up saving something else entirely.
+  useAssistantListRecipeActions(tab === TabType.Drafts ? EMPTY_ROWS : items);
+  useAssistantScreenContent(() =>
+    tab === TabType.Drafts
+      ? recipeRoster(TabType.Drafts, drafts.map(draftName))
+      : recipeRoster(tab, items.map((recipe) => recipe.name)),
+  );
   useAssistantConfirmation(
     draftPendingDelete !== null,
     () => {

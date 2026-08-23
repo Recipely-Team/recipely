@@ -882,6 +882,7 @@ export const ja = {
     listening: "聞いています",
     speaking: "話しています",
     working: "実行中…",
+    thinking: "考えています…",
     connecting: "接続中…",
     idle: "タップして話す",
     placeholder: "入力してもOK",

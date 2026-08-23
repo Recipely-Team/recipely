@@ -882,6 +882,7 @@ export const id = {
     listening: "Mendengarkan",
     speaking: "Berbicara",
     working: "Sedang bekerja…",
+    thinking: "Sedang berpikir…",
     connecting: "Menghubungkan…",
     idle: "Ketuk untuk bicara",
     placeholder: "Ketik saja",
