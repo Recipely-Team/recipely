@@ -42,7 +42,7 @@ function harness(loaded = true) {
   };
 
   const Probe = (): null => {
-    useAssistantDraftActions({ recipe: emptyRecipe(), ...spies });
+    useAssistantDraftActions({ isDraftVisible: true, recipe: emptyRecipe(), ...spies });
     return null;
   };
 

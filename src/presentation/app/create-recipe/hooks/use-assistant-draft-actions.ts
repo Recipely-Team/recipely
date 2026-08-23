@@ -12,6 +12,15 @@ import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The draft-editing capability this hook needs, named where it is consumed. */
 interface AssistantDraftActionsDeps {
+  /**
+   * Whether a draft is actually on screen.
+   *
+   * The prompt phase has no editor and no confirmation sheets, so registering
+   * there let "add two eggs" write into something invisible and report
+   * success, and `publishDraft` answer `awaiting` for a sheet that phase never
+   * renders — leaving the spoken "yes" with nothing to land on.
+   */
+  isDraftVisible: boolean;
   recipe: EditableRecipe;
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
   onAppendIngredient: (value: string) => void;
@@ -76,6 +85,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   const categories = taxonomyStore((state) => state.categories);
 
   const {
+    isDraftVisible,
     recipe,
     onUpdateField,
     onAppendIngredient,
@@ -147,6 +157,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [onUpdateField, counts, recipe.name, cuisines, categories],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -162,6 +173,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [onAppendIngredient, counts],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -175,6 +187,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [recipe.ingredients, onRemoveIngredient, counts],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -187,6 +200,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [onAppendStep, counts],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -200,6 +214,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [recipe.instructions, onRemoveStep, counts],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -210,6 +225,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       onOpenPhotos();
       return { ok: true, awaiting: true };
     }, [onOpenPhotos]),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -225,6 +241,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       },
       [onSubmitRefine, counts],
     ),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -236,6 +253,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       onRegenerate();
       return { ok: true };
     }, [onRegenerate]),
+    isDraftVisible,
   );
 
   useAssistantAction(
@@ -244,5 +262,6 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       onRequestPublish();
       return { ok: true, awaiting: true, title: recipe.name, n: counts };
     }, [onRequestPublish, recipe.name, counts]),
+    isDraftVisible,
   );
 };
