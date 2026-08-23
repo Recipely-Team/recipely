@@ -678,6 +678,12 @@ export const configureAssistantSessionStore = (
             return;
           }
 
+          // An answer arriving IS the previous one having gone through. The
+          // screen clears it on the way out too, but a notice that outlives the
+          // failure it describes is the kind of thing a user reads as the app
+          // still being broken.
+          set({ error: null });
+
           if (answered.value.reply !== CharConstants.empty) {
             appendTranscript(ChatRole.Assistant, answered.value.reply);
           }
