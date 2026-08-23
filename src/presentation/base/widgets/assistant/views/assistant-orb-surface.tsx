@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { AssistantOrb } from '@presentation/base/widgets/assistant/parts/assistant-orb';
+import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts/assistant-waiting-line';
 import { AssistantOrbMenu } from '@presentation/base/widgets/assistant/views/assistant-orb-menu';
 import { AssistantSheet } from '@presentation/base/widgets/assistant/views/assistant-sheet';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
@@ -32,6 +33,9 @@ export interface AssistantOrbSurfaceProps {
  *   the way, and the screen it is driving is the thing worth seeing. The orb
  *   carries the state on its own surface; the words are for when there are
  *   words to read.
+ * - **Connecting says so.** The orb sweeps a light across itself, but a
+ *   sweep is not a sentence: the line names what is happening for the second
+ *   or two before it can hear anything.
  * - **Tapping the orb offers three things**, which is all there is: change how
  *   you are talking to it, silence it, or end it.
  * - **Typing raises a sheet and lifts the orb clear of it**, so the object you
@@ -120,6 +124,8 @@ export const AssistantOrbSurface = ({
 
       <View style={[styles.dock, { bottom: orbBottom }]} pointerEvents="box-none">
         {isMenuOpen ? <AssistantOrbMenu items={items} /> : null}
+
+        <AssistantWaitingLine status={status} />
 
         <Pressable
           onPress={() => setIsMenuOpen((open) => !open)}
