@@ -53,7 +53,10 @@ export const useAssistantGlobalActions = (): void => {
       // its back: the field shows what was asked for and the user watches the
       // search happen, which is the whole point of an assistant that drives
       // the app instead of talking about it.
-      router.push(RoutePaths.recipesWithSearch(arg) as Href);
+      // `navigate`, not `push`: the feed is usually the screen the user is
+      // already on, and pushing it again stacks a second copy whose only
+      // difference is the query.
+      router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
       return { ok: true };
     }, []),
   );
