@@ -67,6 +67,16 @@ jest.mock('expo-router', () => ({
   }),
 }));
 
+// The feed reads its query from ITS OWN state on a phone and from the shared
+// header field on the web, so a `?q=` that lands in only one of them does
+// nothing on the other shell.
+jest.mock('@presentation/base/web-shell/use-web-shell-state', () => ({
+  useWebShellState: () => ({
+    searchQuery: '',
+    setSearchQuery: (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch,
+  }),
+}));
+
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
 }));
@@ -708,6 +718,10 @@ describe('useRecipeList — arriving with a search query', () => {
     return null;
   };
 
+  beforeEach(() => {
+    (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = () => undefined;
+  });
+
   const mountWithQuery = async (query: string | undefined): Promise<void> => {
     const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
     (useLocalSearchParams as unknown as jest.Mock).mockReturnValue(
@@ -737,6 +751,19 @@ describe('useRecipeList — arriving with a search query', () => {
     });
     const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
     (useLocalSearchParams as unknown as jest.Mock).mockReturnValue({});
+  });
+
+  // The action chip said "searched" and the feed never moved: `?q=` was written
+  // into the field the WEB shell does not read, so on that shell the
+  // assistant's search did nothing at all.
+  it('puts the query where the web shell reads it, too', async () => {
+    const written: string[] = [];
+    (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = (q) =>
+      written.push(q);
+
+    await mountWithQuery('baklava');
+
+    expect(written).toContain('baklava');
   });
 
   it('shows the query in the search field', async () => {

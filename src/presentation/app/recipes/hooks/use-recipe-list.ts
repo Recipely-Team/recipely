@@ -99,7 +99,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const load = recipeListStore((s) => s.load);
   const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
-  const { searchQuery: webSearchQuery } = useWebShellState();
+  const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
   const language = useLocale();
@@ -116,8 +116,13 @@ export const useRecipeList = (): UseRecipeListResult => {
   useEffect(() => {
     if (queryParam === undefined || queryParam === appliedQuery.current) return;
     appliedQuery.current = queryParam;
+    // Both fields, because which one this screen READS depends on the shell —
+    // and writing only its own left the assistant's search doing nothing at
+    // all on the web, where the header's field is the one that counts. The
+    // action chip said "searched" and the feed never moved.
     setSearch(queryParam);
-  }, [queryParam]);
+    setWebSearchQuery(queryParam);
+  }, [queryParam, setWebSearchQuery]);
 
   // Web takes the query from the shared app-header field, native from the in-header one.
   const effectiveSearch = isWebShell ? webSearchQuery : search;
