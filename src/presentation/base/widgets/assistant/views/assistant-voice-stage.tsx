@@ -3,6 +3,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
+import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts/assistant-waiting-line';
 import { AssistantWave } from '@presentation/base/widgets/assistant/parts/assistant-wave';
 import { assistantIsSounding } from '@presentation/base/widgets/assistant/assistant-is-sounding';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -34,6 +35,10 @@ export interface AssistantVoiceStageProps {
  * The panel's voice half: the microphone, and the two ways out of it.
  *
  * @remarks
+ * - **Connecting says so.** Opening a session takes a second or two of token,
+ *   socket and two audio devices, and the controls read "mute" and "end" for
+ *   the whole of it — for a session that did not exist yet, with nothing on
+ *   screen explaining why nothing was happening.
  * - **The bars are the whole readout.** An earlier halo behind them was a
  *   second drawing of one signal, and it pushed the controls far enough down
  *   the screen that the bar stopped reading as a bar.
@@ -66,6 +71,8 @@ export const AssistantVoiceStage = ({
           height={assistantMetrics.wavePanelHeight}
         />
       </View>
+
+      <AssistantWaitingLine status={status} />
 
       <View style={styles.controls}>
         <Pressable
