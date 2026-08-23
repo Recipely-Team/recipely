@@ -913,6 +913,7 @@ export const en = {
     micDenied: "Recipely needs the microphone to hear you.",
     mute: "Mute",
     unmute: "Unmute",
+    muted: "Mic muted",
     keyboard: "Ask by typing",
     voice: "Talk",
     expand: "Expand the assistant",

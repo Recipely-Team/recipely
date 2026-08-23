@@ -899,6 +899,7 @@ export const hi: Translations = {
     micDenied: "आपको सुनने के लिए Recipely को माइक्रोफ़ोन चाहिए।",
     mute: "माइक बंद करें",
     unmute: "माइक चालू करें",
+    muted: "माइक बंद है",
     keyboard: "लिखकर पूछें",
     voice: "बोलें",
     expand: "असिस्टेंट बड़ा करें",

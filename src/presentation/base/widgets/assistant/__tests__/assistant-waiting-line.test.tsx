@@ -10,8 +10,13 @@ import { t } from '@presentation/i18n';
  * saying why nothing was happening.
  */
 describe('AssistantWaitingLine', () => {
-  const textOf = (status: Parameters<typeof AssistantWaitingLine>[0]['status']): string[] => {
-    const { root, renderer } = renderComponent(<AssistantWaitingLine status={status} />);
+  const textOf = (
+    status: Parameters<typeof AssistantWaitingLine>[0]['status'],
+    isMuted = false,
+  ): string[] => {
+    const { root, renderer } = renderComponent(
+      <AssistantWaitingLine status={status} isMuted={isMuted} />,
+    );
     const found = root
       .findAll((node) => typeof node.props.children === 'string')
       .map((node) => String(node.props.children));
@@ -25,6 +30,16 @@ describe('AssistantWaitingLine', () => {
 
   it('says so while it is carrying out a request', () => {
     expect(textOf(AssistantStatus.Working)).toContain(t().assistant.working);
+  });
+
+  // The one state where the assistant looks alive and is deliberately not
+  // hearing anything. The slash on the orb was the only thing saying so.
+  it('says the microphone is muted while a session is running', () => {
+    expect(textOf(AssistantStatus.Listening, true)).toContain(t().assistant.muted);
+  });
+
+  it('says nothing about muting once the session has ended', () => {
+    expect(textOf(AssistantStatus.Idle, true)).toEqual([]);
   });
 
   // A permanent status line would mostly repeat what the surface already

@@ -125,7 +125,7 @@ export const AssistantOrbSurface = ({
       <View style={[styles.dock, { bottom: orbBottom }]} pointerEvents="box-none">
         {isMenuOpen ? <AssistantOrbMenu items={items} /> : null}
 
-        <AssistantWaitingLine status={status} />
+        <AssistantWaitingLine status={status} isMuted={isMuted} />
 
         <Pressable
           onPress={() => setIsMenuOpen((open) => !open)}

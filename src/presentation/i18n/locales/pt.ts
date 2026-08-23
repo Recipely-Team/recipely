@@ -903,6 +903,7 @@ export const pt = {
     micDenied: "O Recipely precisa do microfone para ouvir você.",
     mute: "Silenciar",
     unmute: "Ativar microfone",
+    muted: "Microfone silenciado",
     keyboard: "Perguntar por escrito",
     voice: "Falar",
     expand: "Ampliar o assistente",

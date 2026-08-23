@@ -903,6 +903,7 @@ export const ar = {
     micDenied: "يحتاج Recipely إلى الميكروفون ليسمعك.",
     mute: "كتم الصوت",
     unmute: "إلغاء الكتم",
+    muted: "الميكروفون مكتوم",
     keyboard: "اسأل كتابةً",
     voice: "تحدّث",
     expand: "توسيع المساعد",
