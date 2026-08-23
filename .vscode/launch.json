@@ -1,25 +1,72 @@
 {
+  // Recipely — run configurations.
+  //
+  // Pick `(Dev)` unless you specifically want to test the production build:
+  // `APP_VARIANT=development` is what points the app at dev-api.recipely.net
+  // AND what turns on the dev-build diagnostics (the assistant prints the real
+  // failure next to "that did not go through"). Overriding only the API host
+  // gives you the dev server without the diagnostics.
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Recipely: Expo (Dev)",
+      // Start here for day-to-day work: Metro only. Open the already-installed
+      // dev build on the emulator/device, or press `a` / `i` in the terminal.
+      "name": "Recipely: Metro (Dev)",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run start:dev",
       "cwd": "${workspaceFolder}"
     },
     {
-      "name": "Recipely: Expo (Prod)",
+      // Use when native code or app.json changed — this rebuilds and installs.
+      // Boot an emulator first (Android Studio → Device Manager), or plug a
+      // phone in with USB debugging on. Takes a few minutes the first time.
+      "name": "Recipely: Android — build & install (Dev)",
       "type": "node-terminal",
       "request": "launch",
-      "command": "npm start",
+      "command": "npm run android:dev",
       "cwd": "${workspaceFolder}"
     },
     {
+      "name": "Recipely: iOS — build & install (Dev)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run ios:dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      // The web shell. The assistant needs a signed-in session, and signing in
+      // from localhost needs the API to accept that origin — if the feed says
+      // "Bağlantı koptu", that is what is missing, not the app.
       "name": "Recipely: Web (Dev)",
       "type": "node-terminal",
       "request": "launch",
       "command": "npm run web:dev",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      // All four gates, in the order they fail fastest. Same set CI runs, so a
+      // green run here means a green run there.
+      "name": "Recipely: gates (lint · types · structure · tests)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm run lint && npm run typecheck && npm run check:structure && npm test",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      "name": "Recipely: tests (watch)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npx jest --watch",
+      "cwd": "${workspaceFolder}"
+    },
+    {
+      // Production variant — points at api.recipely.net. Only for checking what
+      // ships; day-to-day work belongs on the dev configurations above.
+      "name": "Recipely: Metro (Prod)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm start",
       "cwd": "${workspaceFolder}"
     },
     {
