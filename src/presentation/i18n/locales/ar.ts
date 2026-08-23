@@ -882,6 +882,7 @@ export const ar = {
     listening: "أستمع",
     speaking: "يتحدث",
     working: "جارٍ التنفيذ…",
+    thinking: "يفكّر…",
     connecting: "جارٍ الاتصال…",
     idle: "اضغط للتحدث",
     placeholder: "اكتب بدلاً من ذلك",

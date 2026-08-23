@@ -2,7 +2,7 @@ import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 
 /** The profile-editing capability this hook needs, named where it is consumed. */
 interface AssistantProfileActionsDeps {

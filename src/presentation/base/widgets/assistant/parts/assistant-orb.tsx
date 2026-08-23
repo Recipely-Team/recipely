@@ -34,6 +34,11 @@ const HIGHLIGHT_STOPS = ['0.42', '0'] as const;
  *   idle, swells with the level while speaking, sweeps a light across itself
  *   while connecting, and dims behind a slash when muted — the same facts the
  *   status line carries, for someone glancing from across a kitchen.
+ * - **The idle breath is the only motion an orb with no session has**, which is
+ *   why its amplitude matters more than it looks like it should. The rings, the
+ *   orbit and the waveform all say "this is listening" and are correctly absent
+ *   otherwise; with the breath set to three pixels over five seconds, what was
+ *   left was indistinguishable from a frozen screen.
  * - **Drawn in SVG, not stacked views.** The sphere is two radial gradients
  *   and two drifting highlights; React Native has no radial gradient and no
  *   blur, so a CSS translation of this design would have been flat circles.
@@ -90,6 +95,13 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
     inputRange: [ValueConstants.zero, ValueConstants.one],
     outputRange: [ValueConstants.zero, -assistantMetrics.orbBobTravel],
   });
+  // The breath and the level are the same handle, so they cannot both hold it:
+  // while the assistant is speaking the orb's size means loudness, and that is
+  // the more informative of the two.
+  const breath = drift.interpolate({
+    inputRange: [ValueConstants.zero, ValueConstants.one],
+    outputRange: [ValueConstants.one, ValueConstants.one + assistantMetrics.orbBreathGrowth],
+  });
 
   return (
     <View style={styles.halo} pointerEvents="none">
@@ -101,7 +113,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
             opacity: isMuted ? opacities.disabledFaint : opacities.full,
             transform: [
               { translateY: bob },
-              { scale: speaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : ValueConstants.one },
+              { scale: speaking ? ValueConstants.one + level * assistantMetrics.orbLevelGrowth : breath },
             ],
           },
         ]}

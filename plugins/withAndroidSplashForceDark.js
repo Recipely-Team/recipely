@@ -3,7 +3,8 @@ const path = require('path');
 const { withDangerousMod } = require('@expo/config-plugins');
 
 /**
- * Stops Android's Force Dark from repainting the splash screen in dark mode.
+ * Keeps the launch WINDOW off-white in dark mode, and stops Android's Force
+ * Dark from repainting the splash screen.
  *
  * **The symptom.** In dark mode the launch screen showed a lighter orange
  * SQUARE floating on a darker orange field. Measured from a device screenshot:
@@ -37,6 +38,19 @@ const { withDangerousMod } = require('@expo/config-plugins');
  * in dark mode — which is the only mode Force Dark exists in. The override is
  * therefore both durable and exactly as narrow as the problem.
  *
+ * **What the night `AppTheme` is now also for.** `Theme.AppCompat.DayNight`
+ * paints a near-black `windowBackground` in dark mode, and that window is what
+ * the user looks at between the native splash handing over and React Native's
+ * first frame — measured on the emulator at over a minute while a bundle was
+ * being fetched, and a visible black flash even on a warm start. So the launch
+ * screen was off-white, then black, then the app. `expo.backgroundColor` in
+ * `app.json` fixes the DAY theme (prebuild writes `activityBackground` and
+ * points `android:windowBackground` at it), but it writes only `values/`, and
+ * a night override REPLACES the whole style — which is why every item the day
+ * theme carries is repeated below rather than only the one being added. The
+ * colour resource itself is not overridden in `values-night/`, so both
+ * appearances resolve to the one off-white, exactly as the splash does.
+ *
  * `android/` is git-ignored and regenerated on every CI run, so this cannot be
  * a hand-edit. Idempotent: the file is written wholesale each prebuild.
  *
@@ -65,12 +79,18 @@ const NIGHT_STYLES = `<?xml version="1.0" encoding="utf-8"?>
 -->
 <resources>
   <style name="AppTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <item name="android:editTextBackground">@drawable/rn_edit_text_material</item>
+    <item name="colorPrimary">@color/colorPrimary</item>
+    <item name="android:statusBarColor">@android:color/transparent</item>
+    <item name="android:navigationBarColor">@android:color/transparent</item>
+    <item name="android:windowBackground">@color/activityBackground</item>
     <item name="android:forceDarkAllowed">false</item>
   </style>
   <style name="Theme.App.SplashScreen" parent="Theme.SplashScreen">
     <item name="windowSplashScreenBackground">@color/splashscreen_background</item>
     <item name="windowSplashScreenAnimatedIcon">@drawable/splashscreen_logo</item>
     <item name="postSplashScreenTheme">@style/AppTheme</item>
+    <item name="android:windowSplashScreenBehavior">icon_preferred</item>
     <item name="android:forceDarkAllowed">false</item>
   </style>
 </resources>
@@ -81,6 +101,23 @@ const REQUIRED_SPLASH_ITEMS = [
   'windowSplashScreenBackground',
   'windowSplashScreenAnimatedIcon',
   'postSplashScreenTheme',
+  'android:windowSplashScreenBehavior',
+  'android:forceDarkAllowed',
+];
+
+/**
+ * Every item the night app theme must carry, for the same reason: an override
+ * replaces the style, so anything omitted here is silently lost in dark mode.
+ * `android:windowBackground` is the one this list was written for — without it
+ * the DayNight parent paints near-black behind the app until React Native's
+ * first frame.
+ */
+const REQUIRED_APP_THEME_ITEMS = [
+  'android:editTextBackground',
+  'colorPrimary',
+  'android:statusBarColor',
+  'android:navigationBarColor',
+  'android:windowBackground',
   'android:forceDarkAllowed',
 ];
 
@@ -98,3 +135,4 @@ module.exports = function withAndroidSplashForceDark(config) {
 
 module.exports.NIGHT_STYLES = NIGHT_STYLES;
 module.exports.REQUIRED_SPLASH_ITEMS = REQUIRED_SPLASH_ITEMS;
+module.exports.REQUIRED_APP_THEME_ITEMS = REQUIRED_APP_THEME_ITEMS;

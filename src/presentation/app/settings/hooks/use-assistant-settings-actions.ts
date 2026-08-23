@@ -5,7 +5,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
 import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 
 /** What settings lends the assistant, named where it is consumed. */
 interface AssistantSettingsActionsDeps {

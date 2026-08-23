@@ -882,6 +882,7 @@ export const fr = {
     listening: "J'écoute",
     speaking: "Parle",
     working: "Je travaille…",
+    thinking: "Réflexion…",
     connecting: "Connexion…",
     idle: "Touche pour parler",
     placeholder: "Écris plutôt",

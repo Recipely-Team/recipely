@@ -1,5 +1,8 @@
 import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
-import { useAssistantScroll } from '@presentation/base/hooks/assistant/use-assistant-scroll';
+import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
@@ -28,6 +31,11 @@ export const RecipeListScreen = (): React.JSX.Element => {
     onChangeSort: vm.onChangeSort,
   });
   useAssistantScroll(vm.onAssistantScroll);
+  // What is actually on the feed, so "the second one" and "is there anything
+  // here?" are questions the model can answer instead of guess at.
+  useAssistantScreenContent(() => recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name)));
+  // Saving, liking and deleting a row the user can see, by name or by position.
+  useAssistantListRecipeActions(vm.recipes);
 
   return (
     <>

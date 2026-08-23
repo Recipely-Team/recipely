@@ -889,6 +889,7 @@ export const zh = {
     listening: "正在聆听",
     speaking: "正在说话",
     working: "处理中…",
+    thinking: "思考中…",
     connecting: "连接中…",
     idle: "点按说话",
     placeholder: "也可以打字",

@@ -878,6 +878,7 @@ export const hi: Translations = {
     listening: "सुन रहा हूँ",
     speaking: "बोल रहा है",
     working: "काम कर रहा हूँ…",
+    thinking: "सोच रहा है…",
     connecting: "कनेक्ट हो रहा है…",
     idle: "बोलने के लिए टैप करें",
     placeholder: "इसके बजाय लिखें",

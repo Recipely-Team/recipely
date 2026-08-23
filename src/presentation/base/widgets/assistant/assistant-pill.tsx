@@ -11,9 +11,9 @@ import { assistantIsLive } from '@application/assistant/session/assistant-is-liv
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { useAssistantFloatingClearance } from '@presentation/base/hooks/assistant/use-assistant-floating-clearance';
 import { useAssistantIsOffered } from '@presentation/base/hooks/assistant/use-assistant-is-offered';
-import { useAssistantTimerActions } from '@presentation/base/hooks/assistant/use-assistant-timer-actions';
-import { useAssistantReachActions } from '@presentation/base/hooks/assistant/use-assistant-reach-actions';
-import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/use-assistant-global-actions';
+import { useAssistantTimerActions } from '@presentation/base/hooks/assistant/actions/use-assistant-timer-actions';
+import { useAssistantReachActions } from '@presentation/base/hooks/assistant/actions/use-assistant-reach-actions';
+import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/actions/use-assistant-global-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -87,11 +87,15 @@ export const AssistantPill = (): React.JSX.Element | null => {
   const live = assistantIsLive(status);
   const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
+  // A phone hugs its edges; a desktop window does not. Docked at the same
+  // twelve pixels the phone uses, the panel read as glued to the side of the
+  // browser — an object stuck to the chrome rather than floating over the page.
+  const edge = isExpanded ? spacing.xl : spacing.lg;
   const bottom =
     insets.bottom +
     (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +
     floatingClearance +
-    spacing.lg;
+    edge;
 
   // Hiding the controls does not stop a session. Landing on the sign-in screen
   // mid-conversation — an expired token redirects there — would otherwise leave
@@ -189,6 +193,7 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   // On a wide window the panel is a docked side column, so the dock stops
-  // spanning and lets its child size itself.
-  dockWide: { left: 'auto' },
+  // spanning and lets its child size itself — and stands further off the edge,
+  // because a browser window has room and a phone does not.
+  dockWide: { left: 'auto', right: spacing.xl },
 });

@@ -38,7 +38,7 @@ const registryRef = { current: registry };
 
 // Imported after the mocks so the hook picks them up.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAssistantTimerActions } = require('@presentation/base/hooks/assistant/use-assistant-timer-actions') as typeof import('@presentation/base/hooks/assistant/use-assistant-timer-actions');
+const { useAssistantTimerActions } = require('@presentation/base/hooks/assistant/actions/use-assistant-timer-actions') as typeof import('@presentation/base/hooks/assistant/actions/use-assistant-timer-actions');
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { createElement } = require('react') as typeof import('react');
 // eslint-disable-next-line @typescript-eslint/no-require-imports

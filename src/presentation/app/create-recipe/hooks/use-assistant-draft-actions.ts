@@ -7,7 +7,9 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The draft-editing capability this hook needs, named where it is consumed. */
@@ -32,6 +34,13 @@ interface AssistantDraftActionsDeps {
   onRegenerate: () => void;
   onRequestPublish: () => void;
 }
+
+/** What the screen line says while the editor has not been reached yet. */
+const NO_DRAFT = 'draft=none';
+/** A generated draft can reach the editor before it has been given a name. */
+const NO_NAME = 'untitled';
+/** Between the facts on one screen line, matching the registry's own joiner. */
+const SCREEN_PART_SEPARATOR = '; ';
 
 const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as const;
 /**
@@ -97,6 +106,22 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     onRegenerate,
     onRequestPublish,
   } = deps;
+
+  // The ingredients by NAME, not just a count — the one screen line in the app
+  // that carries content rather than numbers, and for the same reason
+  // `readStep` does: the user asked the assistant to read the draft's
+  // ingredients out loud, and it had no way to know what they were. Bounded to
+  // the first eight by `recipeRoster`, and only while the editor is open, so
+  // what it costs is paid on the screen that needs it.
+  useAssistantScreenContent(() =>
+    !isDraftVisible
+      ? NO_DRAFT
+      : [
+          `draft=${recipe.name === CharConstants.empty ? NO_NAME : recipe.name}`,
+          recipeRoster('ingredients', recipe.ingredients),
+          `steps=${recipe.instructions.length}`,
+        ].join(SCREEN_PART_SEPARATOR),
+  );
 
   // Memoised because every handler below carries it into a `useCallback`
   // dependency list; a fresh object per render would re-create all six on

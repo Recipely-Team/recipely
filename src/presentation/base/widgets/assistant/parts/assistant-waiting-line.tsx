@@ -9,8 +9,12 @@ import { t } from '@presentation/i18n';
 import { durations, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
-/** The two states where the user is waiting on something they cannot see. */
-const WAITING: readonly AssistantStatusType[] = [AssistantStatus.Connecting, AssistantStatus.Working];
+/** The states where the user is waiting on something they cannot see. */
+const WAITING: readonly AssistantStatusType[] = [
+  AssistantStatus.Connecting,
+  AssistantStatus.Thinking,
+  AssistantStatus.Working,
+];
 const DOTS = [ValueConstants.zero, ValueConstants.one, ValueConstants.two];
 const DOT_STAGGER_MS = 160;
 
@@ -27,6 +31,11 @@ export interface AssistantWaitingLineProps {
  *   opening a socket and starting two audio devices — a second or two in which
  *   the controls said "mute" and "end" for a session that did not exist yet,
  *   and nothing on screen said why nothing was happening.
+ * - **The longest of those gaps is the one after the user speaks.** Between
+ *   the end of an utterance and the first sound of an answer the pill went on
+ *   saying "listening", the waveform sat flat, and there was nothing to
+ *   distinguish a model composing a reply from a session that had died. The
+ *   user asked "can you hear me?" — three times.
  * - **It renders nothing the rest of the time.** A permanent status line would
  *   be a label that mostly says what the surface already shows: the orb's own
  *   face, and the waveform, carry listening and speaking better than a word.

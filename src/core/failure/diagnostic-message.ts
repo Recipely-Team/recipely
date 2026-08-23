@@ -131,6 +131,7 @@ export const DiagnosticMessage = {
     connectTimedOut: 'Live session did not complete setup in time',
     sessionClosedBeforeReady: 'Live session closed before setup completed',
     actionFailed: (reason: string): string => `Assistant action failed: ${reason}`,
+    noAnswer: 'The model did not answer the turn',
   },
 } as const;
 

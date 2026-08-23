@@ -4,9 +4,10 @@ import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useAssistantAction } from '@presentation/base/hooks/assistant/use-assistant-action';
+import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants } from '@core/constants';
 
 /** What this screen lends the assistant, named where it is consumed. */
@@ -109,14 +110,3 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
   );
 };
 
-/**
- * What to call a draft out loud.
- *
- * A draft has no title of its own — it holds a snapshot of a recipe that may
- * still be unnamed — so the prompt it was created from is the fallback. That
- * is also what the user would call it: "the one I asked for with chicken".
- */
-function draftName(draft: RecipeDraft): string {
-  const name = draft.snapshot.name;
-  return name !== undefined && name !== CharConstants.empty ? name : draft.prompt;
-}

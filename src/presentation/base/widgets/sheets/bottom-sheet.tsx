@@ -5,6 +5,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { BottomSheetHeader } from '@presentation/base/widgets/sheets/bottom-sheet-header';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useDragToDismiss } from '@presentation/base/hooks/interaction/use-drag-to-dismiss';
+import { useSheetPresentation } from '@presentation/base/hooks/interaction/use-sheet-presentation';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, radii, controlSizes, borderWidths, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -38,15 +39,21 @@ export interface BottomSheetProps {
  * Modal sheet with a header, optional close button, a scrollable content area
  * and an optional pinned {@link BottomSheetProps.footer}.
  *
- * PRESENTATION IS PER VIEWPORT. On a phone it is a bottom sheet, dragged or
- * tapped away by its grabber. Once the viewport is expanded it is a centred
- * dialog: a panel glued to the bottom edge of a desktop window is a touch idiom
- * with nothing to reach for it there, and the grabber promises a drag gesture a
- * mouse never performs. A 13" tablet lands on the same answer for its own
- * reason — the bottom edge is a thumb-stretch away and iPadOS centres its
- * sheets — so this asks `isExpanded`, not `isWebShell`. Every sheet in the app
- * goes through this component, so the rule holds app-wide rather than per call
- * site.
+ * @remarks
+ * - **Presentation is per viewport.** On a phone it is a bottom sheet, dragged
+ *   or tapped away by its grabber. Once the viewport is expanded it is a
+ *   centred dialog: a panel glued to the bottom edge of a desktop window is a
+ *   touch idiom with nothing to reach for it there, and the grabber promises a
+ *   drag gesture a mouse never performs. A 13" tablet lands on the same answer
+ *   for its own reason — the bottom edge is a thumb-stretch away and iPadOS
+ *   centres its sheets — so this asks `isExpanded`, not `isWebShell`. Every
+ *   sheet in the app goes through this component, so the rule holds app-wide
+ *   rather than per call site.
+ * - **The window does not animate itself.** `Modal`'s own `animationType`
+ *   moves everything it contains, backdrop included, so closing a sheet slid
+ *   the dimming down the screen with the panel. Opening and closing therefore
+ *   belong to {@link useSheetPresentation}, which keeps the scrim out of the
+ *   panel's motion and holds the `Modal` open for the length of the exit.
  */
 export const BottomSheet = ({
   visible,
@@ -61,26 +68,39 @@ export const BottomSheet = ({
   const insets = useSafeAreaInsets();
   const { isExpanded } = useLayout();
   const { translateY, panHandlers } = useDragToDismiss(onClose, visible);
+  const { isMounted, scrim, panelMotion, measure } = useSheetPresentation(
+    visible,
+    isExpanded,
+    translateY,
+  );
 
   return (
     <Modal
-      visible={visible}
+      visible={isMounted}
       transparent
-      animationType={isExpanded ? 'fade' : 'slide'}
+      // Owned here, not by the window: see the scrim remark above.
+      animationType="none"
       onRequestClose={onClose}
       statusBarTranslucent
     >
       <KeyboardAvoider style={[styles.root, isExpanded ? styles.rootWeb : null]}>
-        <Pressable style={[styles.backdrop, { backgroundColor: colors.overlay }]} onPress={onClose} />
         <Animated.View
+          style={[styles.backdrop, { backgroundColor: colors.overlay, opacity: scrim }]}
+          pointerEvents={visible ? 'auto' : 'none'}
+        >
+          <Pressable style={StyleSheet.absoluteFill} onPress={onClose} accessible={false} />
+        </Animated.View>
+        <Animated.View
+          onLayout={measure}
+          pointerEvents={visible ? 'auto' : 'none'}
           style={[
             styles.sheet,
             isExpanded ? styles.dialog : null,
             {
               backgroundColor: colors.background,
               paddingBottom: isExpanded ? spacing.lg : Math.max(insets.bottom, spacing.lg),
-              transform: [{ translateY: isExpanded ? ValueConstants.zero : translateY }],
             },
+            panelMotion,
           ]}
         >
           {isExpanded ? null : (
