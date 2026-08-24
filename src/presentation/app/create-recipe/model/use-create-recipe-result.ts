@@ -22,7 +22,12 @@ export interface UseCreateRecipeResult {
   onGenerate: () => void;
   onStartBlank: () => void;
   onImportFromInstagram: () => void;
-  onClose: () => void;
+  /**
+   * Leaves the flow, or opens the exit sheet when there is work to decide
+   * about. Returns true in the second case — the assistant's `goBack` reports
+   * a pending question rather than announcing it left.
+   */
+  onClose: () => boolean;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;
 

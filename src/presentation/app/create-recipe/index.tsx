@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
+import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
@@ -39,15 +40,32 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // user is looking at their photo library.
   const exitOrErrorOpen =
     vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
+  // The exit sheet is a question with three answers and it was the only sheet
+  // here the assistant could not answer: "çık" reached the global handler,
+  // which pops the route and leaves the autosaved draft saved — the opposite
+  // of what the user had just said out loud.
+  const isExitPending =
+    vm.exitOpen && vm.saveError === null && vm.saveIssue === null && !vm.photosOpen;
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
   // and answer `unavailable_here` everywhere else.
+  useAssistantExitActions({
+    isExitPending,
+    onClose: vm.onClose,
+    onSaveDraftAndExit: vm.onSaveDraftAndExit,
+    onDiscardAndExit: vm.onDiscardAndExit,
+  });
   useAssistantDraftActions({
     // Only while the editor is on screen. In the prompt phase there is nothing
     // to edit and no confirmation sheet — the same condition the two
     // confirmations below already carry.
     isDraftVisible: isPreview,
+    // The prompt phase offers exactly one draft to continue, and "taslağıma
+    // devam et" is a thing people say to a screen that shows the card.
+    isPromptVisible: vm.phase === PhaseType.Prompt,
+    resumableDraft: vm.latestDraft,
+    onResumeDraft: vm.onResumeDraft,
     recipe: vm.recipe,
     onUpdateField: vm.onUpdateField,
     onAppendIngredient: vm.onAppendIngredient,

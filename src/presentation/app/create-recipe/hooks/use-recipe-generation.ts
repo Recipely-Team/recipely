@@ -335,15 +335,20 @@ const GEN_STEP_INTERVAL_MS = 620;
   // and backing out is not that — nothing was written, so there is nothing to
   // keep or throw away. It asked anyway, and its only non-destructive answer
   // re-saved a draft that was already saved, on every single exit.
-  const onClose = useCallback((): void => {
+  // Returns whether it ASKED rather than left, which is what lets the
+  // assistant's `goBack` answer `awaiting` and say the question out loud. It
+  // used to report a clean exit while a sheet the user had to answer was
+  // opening in front of them.
+  const onClose = useCallback((): boolean => {
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
     if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
-      return;
+      return true;
     }
     goBackOrHome();
+    return false;
   }, [phase, recipe, goBackOrHome]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
