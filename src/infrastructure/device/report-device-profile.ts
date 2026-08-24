@@ -16,16 +16,23 @@ import { AnalyticsEvent } from '@infrastructure/constants/analytics';
  * - **At launch, not at the crash.** Crashlytics flushes what it holds when
  *   the process dies; anything gathered inside a crash handler is gathered too
  *   late, and a process killed by the OS never runs one at all.
- * - **It cannot fail loudly.** Both sinks swallow their own errors and the
- *   profile never throws, so a diagnostic can never be what stops a launch.
+ * - **It cannot fail loudly.** Both sinks swallow their own errors, and the
+ *   read is wrapped even though it is written not to throw — this runs inside
+ *   the launch effect, ahead of the auth hydrate, the notification service and
+ *   the onboarding read, and a diagnostic must never be the reason those never
+ *   ran. Every other statement in that effect is guarded; so is this one.
  */
 export const reportDeviceProfile = (): void => {
-  const profile = readDeviceProfile();
+  try {
+    const profile = readDeviceProfile();
 
-  setCrashAttributes({ ...profile });
-  void logAnalyticsEvent(AnalyticsEvent.deviceProfile, { ...profile });
+    setCrashAttributes({ ...profile });
+    void logAnalyticsEvent(AnalyticsEvent.deviceProfile, { ...profile });
 
-  // Local visibility only — the production channels are the two above, and an
-  // unguarded console line raises a LogBox over the app in a dev build (rule 22).
-  if (__DEV__) console.log('[device]', profile);
+    // Local visibility only — the production channels are the two above, and an
+    // unguarded console line raises a LogBox over the app in a dev build (rule 22).
+    if (__DEV__) console.log('[device]', profile);
+  } catch {
+    // Nothing to report the failure to report with.
+  }
 };

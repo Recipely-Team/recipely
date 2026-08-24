@@ -7,7 +7,10 @@
  *   `null` on one platform would otherwise need a different fallback per field.
  * - **Nothing here identifies a person.** Model, OS, build and locale describe
  *   the machine; there is no id, no token and no name — a crash report is read
- *   by whoever can open the console, and a device is not a user.
+ *   by whoever can open the console, and a device is not a user. This is a
+ *   rule the fields are checked against, not a hope: the iOS device NAME
+ *   ("Ali's iPhone") reached this shape once as a stand-in for the model, and
+ *   would have shipped a first name to the crash console on every launch.
  */
 export interface DeviceProfileType {
   platform: string;
@@ -17,6 +20,4 @@ export interface DeviceProfileType {
   appVersion: string;
   build: string;
   locale: string;
-  /** `simulator` for an emulator or a browser, `physical` for real hardware. */
-  hardware: string;
 }
