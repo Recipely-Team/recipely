@@ -19,8 +19,14 @@ export const EditProfileScreen = (): React.JSX.Element => {
   const vm = useEditProfile();
 
   // Registered by the screen that owns the form, so the assistant can fill in
-  // a name or a bio here and nowhere else.
-  useAssistantProfileActions({ onChangeName: vm.onChangeName, onChangeBio: vm.onChangeBio });
+  // a name or a bio — and press Save — here and nowhere else.
+  useAssistantProfileActions({
+    displayName: vm.displayName,
+    onChangeName: vm.onChangeName,
+    onChangeBio: vm.onChangeBio,
+    onSave: vm.onSave,
+    isDirty: vm.isDirty,
+  });
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -29,7 +35,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
         saveEnabled={vm.saveEnabled}
         isSaving={vm.isSaving}
         onBack={vm.onBack}
-        onSave={vm.onSave}
+        onSave={() => void vm.onSave()}
       />
 
       {/* No keyboardVerticalOffset: the avoider's own layout already sits below
