@@ -13,7 +13,7 @@ import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/u
  * user said they did not want it saved and watched it be saved.
  */
 
-function harness(isExitPending: boolean, asks = true) {
+function harness(isExitPending: boolean, asks = true, canLeave = true) {
   const registry = new AssistantActionRegistry();
   const spies = {
     onClose: jest.fn(() => asks),
@@ -22,7 +22,7 @@ function harness(isExitPending: boolean, asks = true) {
   };
 
   const Probe = (): null => {
-    useAssistantExitActions({ isExitPending, ...spies });
+    useAssistantExitActions({ canLeave, isExitPending, ...spies });
     return null;
   };
 
@@ -112,6 +112,20 @@ describe('useAssistantExitActions', () => {
   // Nothing is pending, so a "yes" said to something else must not answer a
   // sheet that is not on screen — and `save` here would mean the recipe, not
   // the draft.
+  // Opening the exit question UNDER the publish confirmation stacked two
+  // sheets: the publish one on top, and a spoken "hayır" now wired to the exit
+  // sheet underneath — which discards the draft. The user would have been
+  // looking at "Yayınlansın mı?" while their work was deleted.
+  it('does not offer to leave from behind another sheet', async () => {
+    const { registry, spies } = harness(false, true, false);
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.GoBack)).resolves.toMatchObject({ ok: false });
+    });
+
+    expect(spies.onClose).not.toHaveBeenCalled();
+  });
+
   it('answers neither yes, no nor save while the sheet is closed', async () => {
     const { registry, spies } = harness(false);
 

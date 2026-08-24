@@ -38,19 +38,30 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // `photosOpen` belongs here too: `attachPhoto` can raise the picker over a
   // pending publish confirm, and a spoken "yes" would then publish while the
   // user is looking at their photo library.
-  const exitOrErrorOpen =
-    vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
+  // Everything that draws a question over the editor EXCEPT the exit sheet
+  // itself — the one condition both the exit sheet and leaving are measured
+  // against.
+  const otherSheetOpen =
+    assistantPublishOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
+  const exitOrErrorOpen = vm.exitOpen || otherSheetOpen;
   // The exit sheet is a question with three answers and it was the only sheet
   // here the assistant could not answer: "çık" reached the global handler,
   // which pops the route and leaves the autosaved draft saved — the opposite
   // of what the user had just said out loud.
-  const isExitPending =
-    vm.exitOpen && vm.saveError === null && vm.saveIssue === null && !vm.photosOpen;
+  //
+  // `assistantPublishOpen` is in the condition for a reason the rest of this
+  // block already knows: leaving is not offered while another sheet is up, and
+  // the exit sheet is not answerable behind one. Without that, "çık" said to
+  // the publish confirmation opened the exit sheet UNDER it, moved `cancel`
+  // from "don't publish" to "discard the draft", and left the user looking at
+  // the publish sheet while a spoken no deleted their work.
+  const isExitPending = vm.exitOpen && !otherSheetOpen;
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
   // and answer `unavailable_here` everywhere else.
   useAssistantExitActions({
+    canLeave: !otherSheetOpen,
     isExitPending,
     onClose: vm.onClose,
     onSaveDraftAndExit: vm.onSaveDraftAndExit,

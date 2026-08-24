@@ -18,8 +18,9 @@ export const SCROLL_STEP_SHARE = 0.85;
 /**
  * How often a screen samples its scroll offset for the assistant.
  *
- * It only feeds relative steps, so a coarse rate is right: the handler runs on
- * every frame of every scroll the user makes with their thumb.
+ * Left unthrottled the handler runs on every frame of every scroll the user
+ * makes with their thumb, and all it feeds is the starting point of a relative
+ * step — a tenth of a second is more than accurate enough for that.
  */
 export const SCROLL_EVENT_THROTTLE_MS = 100;
 

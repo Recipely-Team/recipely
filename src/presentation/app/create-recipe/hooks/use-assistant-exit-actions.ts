@@ -7,6 +7,14 @@ import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/act
 /** Leaving the create flow, as the screen itself performs it. */
 interface AssistantExitActionsDeps {
   /**
+   * Whether leaving is a thing to offer at all right now.
+   *
+   * False while any other sheet is up. Leaving opens a question of its own, so
+   * doing it behind one stacks two — and the second one silently re-points the
+   * spoken yes and no at different outcomes than the sheet on screen shows.
+   */
+  canLeave: boolean;
+  /**
    * Whether the exit sheet is the thing the user is looking at.
    *
    * Nothing else may be drawn over it: a spoken answer read against a photo
@@ -33,6 +41,11 @@ interface AssistantExitActionsDeps {
  * - **It answers `awaiting` when it asked.** A sheet opened and reported as a
  *   clean exit leaves the model announcing it left while the user reads a
  *   question nobody told them to answer.
+ * - **Leaving is not offered from behind another sheet.** `goBack` opens a
+ *   question of its own, and opening it under the publish confirmation left
+ *   two sheets stacked: the publish sheet on top, and a spoken "hayır" wired
+ *   to the exit sheet underneath — which discards the draft. A question that
+ *   is already on screen is answered before a new one is asked.
  * - **The sheet's three answers, in the user's words.** "Keep this draft?" is
  *   answered yes by `confirm` and by `save` — both save it to drafts and
  *   leave — and no by `cancel`, which discards it. Discarding deletes work, so
@@ -41,7 +54,7 @@ interface AssistantExitActionsDeps {
  *   limb, and out of reach at every other moment.
  */
 export const useAssistantExitActions = (deps: AssistantExitActionsDeps): void => {
-  const { isExitPending, onClose, onSaveDraftAndExit, onDiscardAndExit } = deps;
+  const { canLeave, isExitPending, onClose, onSaveDraftAndExit, onDiscardAndExit } = deps;
 
   useAssistantAction(
     AssistantAction.GoBack,
@@ -49,6 +62,7 @@ export const useAssistantExitActions = (deps: AssistantExitActionsDeps): void =>
       const asked = onClose();
       return asked ? { ok: true, awaiting: true } : { ok: true };
     }, [onClose]),
+    canLeave,
   );
 
   useAssistantAction(
