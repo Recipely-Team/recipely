@@ -14,6 +14,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { EditProfileScreen } from '@presentation/app/edit-profile';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
+import { EditProfileSaveOutcome } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 
 const mockVm: UseEditProfileResult = {
   displayName: 'E2E Test',
@@ -26,8 +27,9 @@ const mockVm: UseEditProfileResult = {
   showNameError: false,
   bioAtLimit: false,
   saveEnabled: false,
+  isDirty: false,
   isSaving: false,
-  onSave: jest.fn(),
+  onSave: jest.fn(async () => EditProfileSaveOutcome.Unchanged),
   onBack: jest.fn(),
   errorDialog: null,
   onCloseErrorDialog: jest.fn(),

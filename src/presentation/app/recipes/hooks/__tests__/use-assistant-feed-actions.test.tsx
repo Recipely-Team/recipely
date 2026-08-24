@@ -17,7 +17,7 @@ const CUISINES = [
 ];
 const CATEGORIES = [{ key: 'soup', name: 'Çorba', emoji: '🍲' }];
 
-function harness(filters: UiFilters = EMPTY, activeFilterCount = 0, loaded = true) {
+function harness(filters: UiFilters = EMPTY, loaded = true) {
   const registry = new AssistantActionRegistry();
   // The feed filters on backend KEYS; the model says the name it saw. A stub
   // that returned the words back would have hidden the very defect this
@@ -35,12 +35,13 @@ function harness(filters: UiFilters = EMPTY, activeFilterCount = 0, loaded = tru
     onRemoveCategory: jest.fn(),
     onRemoveDifficulty: jest.fn(),
     onRemoveMaxTime: jest.fn(),
-    onResetFilters: jest.fn(),
+    onClearSearch: jest.fn(),
+    onClearAllFilters: jest.fn(),
     onChangeSort: jest.fn(),
   };
 
   const Probe = (): null => {
-    useAssistantFeedActions({ filters, activeFilterCount, ...spies });
+    useAssistantFeedActions({ filters, ...spies });
     return null;
   };
 
@@ -215,7 +216,7 @@ describe('useAssistantFeedActions', () => {
     // stopped being a cuisine — telling the model otherwise has it say
     // something untrue out loud.
     it('says the list is not loaded rather than calling the cuisine unknown', async () => {
-      const { registry, spies } = harness(EMPTY, 0, false);
+      const { registry, spies } = harness(EMPTY, false);
 
       await act(async () => {
         await expect(registry.run(AssistantAction.AddFilter, 'cuisine=İtalyan')).resolves.toEqual({
@@ -229,25 +230,43 @@ describe('useAssistantFeedActions', () => {
   });
 
   it('clears every filter at once', async () => {
-    const { registry, spies } = harness({ ...EMPTY, cuisines: ['italian'] }, 1);
+    const { registry, spies } = harness({ ...EMPTY, cuisines: ['italian'] });
 
     await act(async () => {
       await registry.run(AssistantAction.ClearFilters);
     });
 
-    expect(spies.onResetFilters).toHaveBeenCalled();
+    expect(spies.onClearAllFilters).toHaveBeenCalled();
   });
 
-  // Resetting an already-clean feed would blank the rows and refetch for
-  // nothing — an outcome that already holds is a success, not work to do.
-  it('does not reload when there was nothing to clear', async () => {
+  // The bug the user watched: the feed was narrowed by a SEARCH, "clear the
+  // filters" answered ok, and nothing on screen moved. The count this handler
+  // used to guard on counts chips, not the query — and it is read from the
+  // previous render, so it is also zero for a filter the same turn just
+  // applied. Clearing is cheap; being told it happened when it did not is not.
+  it('clears a feed narrowed only by a search, instead of reporting a no-op', async () => {
     const { registry, spies } = harness();
 
     await act(async () => {
       await expect(registry.run(AssistantAction.ClearFilters)).resolves.toMatchObject({ ok: true });
     });
 
-    expect(spies.onResetFilters).not.toHaveBeenCalled();
+    expect(spies.onClearAllFilters).toHaveBeenCalled();
+  });
+
+  // "Take the search off but keep the Italian filter" — one query box, so the
+  // value after `search=` is whatever the model heard and is not read.
+  it('removes the search on its own', async () => {
+    const { registry, spies } = harness({ ...EMPTY, cuisines: ['italian'] });
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.RemoveFilter, 'search=tavuk')).resolves.toMatchObject({
+        ok: true,
+      });
+    });
+
+    expect(spies.onClearSearch).toHaveBeenCalled();
+    expect(spies.onToggleCuisineQuick).not.toHaveBeenCalled();
   });
 
   it('sorts by a key the UI offers, and refuses one it does not', async () => {

@@ -950,6 +950,7 @@ export const ko: Translations = {
       setPreference: "설정을 바꿨어요",
       signOut: "로그아웃했어요",
       markAllRead: "알림을 읽음으로 표시했어요",
+      markRead: "알림 하나를 읽음으로 표시했어요",
       importRecipe: "레시피를 가져왔어요",
       toggleIngredient: "재료를 체크했어요",
       toggleStep: "단계를 체크했어요",

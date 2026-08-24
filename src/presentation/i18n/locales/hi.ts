@@ -950,6 +950,7 @@ export const hi: Translations = {
       setPreference: "सेटिंग बदली",
       signOut: "साइन आउट किया",
       markAllRead: "सूचनाएँ पढ़ी हुई कीं",
+      markRead: "एक सूचना पढ़ी हुई की",
       importRecipe: "रेसिपी इम्पोर्ट की",
       toggleIngredient: "सामग्री पर निशान लगाया",
       toggleStep: "स्टेप पर निशान लगाया",

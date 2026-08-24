@@ -3,6 +3,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -24,7 +25,16 @@ const emptyRecipe = (): EditableRecipe => ({
   media: [],
 });
 
-function harness(loaded = true) {
+/** The one draft the prompt phase offers to continue. */
+const RESUMABLE: RecipeDraft = {
+  id: 'draft-1',
+  prompt: 'mercimek',
+  snapshot: { name: 'Mercimek çorbası' },
+  chatHistory: [],
+  updatedAt: new Date(0),
+} as unknown as RecipeDraft;
+
+function harness(loaded = true, phase: { isDraftVisible: boolean; resumable: RecipeDraft | null } = { isDraftVisible: true, resumable: null }) {
   const registry = new AssistantActionRegistry();
   const taxonomyStore = ((selector: (state: unknown) => unknown) =>
     selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as Stores['taxonomyStore'];
@@ -39,10 +49,17 @@ function harness(loaded = true) {
     onSubmitRefine: jest.fn(),
     onRegenerate: jest.fn(),
     onRequestPublish: jest.fn(),
+    onResumeDraft: jest.fn(),
   };
 
   const Probe = (): null => {
-    useAssistantDraftActions({ isDraftVisible: true, recipe: emptyRecipe(), ...spies });
+    useAssistantDraftActions({
+      isDraftVisible: phase.isDraftVisible,
+      isPromptVisible: !phase.isDraftVisible,
+      resumableDraft: phase.resumable,
+      recipe: emptyRecipe(),
+      ...spies,
+    });
     return null;
   };
 
@@ -198,5 +215,64 @@ describe('useAssistantDraftActions', () => {
 
     expect(spies.onRequestPublish).toHaveBeenCalled();
     expect(spies.onOpenPhotos).toHaveBeenCalled();
+  });
+
+  // "Taslağıma devam et", said to the screen showing the resume card, reached
+  // nothing: `openDraft` was registered by My Recipes and by no one else, so
+  // the one screen that offers a draft to continue could not continue it.
+  describe('the resume card', () => {
+    it('continues the draft on offer', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft)).resolves.toMatchObject({ ok: true });
+      });
+
+      expect(spies.onResumeDraft).toHaveBeenCalled();
+    });
+
+    it('matches it by the words the user said', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await registry.run(AssistantAction.OpenDraft, 'mercimek');
+      });
+
+      expect(spies.onResumeDraft).toHaveBeenCalled();
+    });
+
+    // A different draft belongs to the drafts list, not to this card — the
+    // handler declines instead of opening the wrong recipe.
+    it('declines a draft that is not the one on offer', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft, 'karnıyarık')).resolves.toMatchObject({
+          ok: false,
+        });
+      });
+
+      expect(spies.onResumeDraft).not.toHaveBeenCalled();
+    });
+
+    it('is not offered in the editor, where there is no card', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await expect(registry.run(AssistantAction.OpenDraft)).resolves.toMatchObject({ ok: false });
+      });
+
+      expect(spies.onResumeDraft).not.toHaveBeenCalled();
+    });
+
+    // The screen line is how the model learns there is anything to continue.
+    it('names the resumable draft on the screen line', async () => {
+      const { registry } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });
+
+      await act(async () => {
+        const result = await registry.run(AssistantAction.OpenDraft);
+        expect(result.ctx).toContain('resumable=Mercimek çorbası');
+      });
+    });
   });
 });

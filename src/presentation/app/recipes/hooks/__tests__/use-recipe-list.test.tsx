@@ -543,6 +543,55 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       expect(execute.mock.calls.at(-1)?.[0]).not.toHaveProperty('search');
     });
 
+    /**
+     * "Filtreleri temizle" said to a feed narrowed by a SEARCH cleared nothing:
+     * the handler guarded on the chip count, which knows nothing about the
+     * query, and reported success to a screen that had not moved. Clearing
+     * both in one request also matters — clearing them separately fired two,
+     * and the first, still carrying the old query, could land second and leave
+     * the feed withholding rows that no longer answered it.
+     */
+    it('clears the query and the filters in one request that carries neither', async () => {
+      const execute = jest.fn();
+      // Which field the screen READS depends on the shell, so clearing has to
+      // write both — the same reason the `?q=` seeding does.
+      const webQueries: string[] = [];
+      (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = (q) =>
+        webQueries.push(q);
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
+      act(() => {
+        vm.onSearchChange('tavuk');
+      });
+      await settleSearch();
+      act(() => {
+        vm.onToggleCuisineQuick(CuisineKey.Turkish);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(execute).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: 'tavuk', cuisines: [CuisineKey.Turkish] }),
+      );
+
+      const callsBefore = execute.mock.calls.length;
+      act(() => {
+        vm.onClearAllFilters();
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const lastCall = execute.mock.calls.at(-1)?.[0];
+      expect(lastCall).not.toHaveProperty('search');
+      expect(lastCall).not.toHaveProperty('cuisines');
+      expect(vm.search).toBe('');
+      expect(webQueries.at(-1)).toBe('');
+      // ONE request, not one for the filters and another for the query.
+      expect(execute.mock.calls.length - callsBefore).toBe(1);
+    });
+
     it('keeps the query when a filter changes, so the two compose', async () => {
       const execute = jest.fn();
       await mountLoaded(execute);

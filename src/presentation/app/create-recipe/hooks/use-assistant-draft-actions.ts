@@ -7,9 +7,11 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The draft-editing capability this hook needs, named where it is consumed. */
@@ -23,6 +25,15 @@ interface AssistantDraftActionsDeps {
    * renders — leaving the spoken "yes" with nothing to land on.
    */
   isDraftVisible: boolean;
+  /**
+   * Whether the prompt phase — the one with the resume card on it — is what
+   * the user is looking at. The draft actions belong to the editor; this one
+   * belongs to the screen before it.
+   */
+  isPromptVisible: boolean;
+  /** The draft the prompt phase offers to continue, or null when there is none. */
+  resumableDraft: RecipeDraft | null;
+  onResumeDraft: () => void;
   recipe: EditableRecipe;
   onUpdateField: <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]) => void;
   onAppendIngredient: (value: string) => void;
@@ -39,8 +50,6 @@ interface AssistantDraftActionsDeps {
 const NO_DRAFT = 'draft=none';
 /** A generated draft can reach the editor before it has been given a name. */
 const NO_NAME = 'untitled';
-/** Between the facts on one screen line, matching the registry's own joiner. */
-const SCREEN_PART_SEPARATOR = '; ';
 
 const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as const;
 /**
@@ -95,6 +104,9 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
 
   const {
     isDraftVisible,
+    isPromptVisible,
+    resumableDraft,
+    onResumeDraft,
     recipe,
     onUpdateField,
     onAppendIngredient,
@@ -115,12 +127,32 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   // what it costs is paid on the screen that needs it.
   useAssistantScreenContent(() =>
     !isDraftVisible
-      ? NO_DRAFT
+      ? resumeLine(resumableDraft)
       : [
           `draft=${recipe.name === CharConstants.empty ? NO_NAME : recipe.name}`,
           recipeRoster('ingredients', recipe.ingredients),
           `steps=${recipe.instructions.length}`,
         ].join(SCREEN_PART_SEPARATOR),
+  );
+
+  // The resume card's own press, by voice. Registered only where the card is:
+  // in the editor `openDraft` would mean some OTHER draft, and there is no
+  // list here to choose one from.
+  useAssistantAction(
+    AssistantAction.OpenDraft,
+    useCallback(
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        if (resumableDraft === null) return { ok: false, notMine: true };
+        // A named draft that is not the one on offer belongs to the drafts
+        // list, not to this card — declining passes the request outward
+        // instead of opening the wrong recipe.
+        if (!namesTheDraft(arg, resumableDraft)) return { ok: false, notMine: true };
+        onResumeDraft();
+        return { ok: true, title: draftTitle(resumableDraft) };
+      },
+      [resumableDraft, onResumeDraft],
+    ),
+    isPromptVisible && resumableDraft !== null,
   );
 
   // Memoised because every handler below carries it into a `useCallback`
@@ -290,3 +322,29 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     isDraftVisible,
   );
 };
+
+/** What the screen line says before the editor: nothing open, and what is on offer. */
+function resumeLine(draft: RecipeDraft | null): string {
+  return draft === null
+    ? NO_DRAFT
+    : [NO_DRAFT, `resumable=${draftTitle(draft)}`].join(SCREEN_PART_SEPARATOR);
+}
+
+function draftTitle(draft: RecipeDraft): string {
+  const name = draft.snapshot.name?.trim() ?? CharConstants.empty;
+  return name === CharConstants.empty ? NO_NAME : name;
+}
+
+/**
+ * Whether what the model said refers to the one draft on offer.
+ *
+ * Loose on purpose: the model passes back the words it heard, and "the lentil
+ * soup" is how a person names "Mercimek çorbası (taslak)". An empty argument —
+ * "continue my draft" — is the common case and always matches.
+ */
+function namesTheDraft(arg: string | undefined, draft: RecipeDraft): boolean {
+  const said = machineLower(arg ?? CharConstants.empty);
+  if (said === CharConstants.empty) return true;
+  const name = machineLower(draftTitle(draft));
+  return name.includes(said) || said.includes(name);
+}

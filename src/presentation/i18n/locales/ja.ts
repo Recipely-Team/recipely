@@ -954,6 +954,7 @@ export const ja = {
       setPreference: "設定を変えました",
       signOut: "サインアウトしました",
       markAllRead: "通知を既読にしました",
+      markRead: "通知を1件既読にしました",
       importRecipe: "レシピを取り込みました",
       toggleIngredient: "材料にチェックを入れました",
       toggleStep: "手順にチェックを入れました",

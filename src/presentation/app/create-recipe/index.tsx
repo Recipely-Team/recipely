@@ -6,8 +6,10 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
+import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { assistantSheetGates } from '@presentation/app/create-recipe/model/assistant-sheet-gates';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
 import { ResumingView } from '@presentation/app/create-recipe/body/resuming-view';
@@ -30,24 +32,38 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // registered outside that phase was invisible and still accepted a spoken
   // "yes" — the user agreeing to nothing they could see.
   const isPreview = vm.phase === PhaseType.Preview;
-  // At most ONE of these is live at a time, and the order is the drawing
-  // order: a modal covers the inline dock, and the exit and save-error sheets
-  // cover everything. Two live would let a "yes" read against the sheet on
-  // screen answer the one behind it.
-  // `photosOpen` belongs here too: `attachPhoto` can raise the picker over a
-  // pending publish confirm, and a spoken "yes" would then publish while the
-  // user is looking at their photo library.
-  const exitOrErrorOpen =
-    vm.exitOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
+  // Which sheet owns the spoken yes and no. Derived in one place, and tested
+  // there: at most one confirmation may be live, and each gate has to exclude
+  // the sheet it is about — a rule that is invisible in a screen file, and was
+  // broken twice while it lived here as three boolean expressions.
+  const { exitOrErrorOpen, canLeave, isExitPending } = assistantSheetGates({
+    exitOpen: vm.exitOpen,
+    publishOpen: assistantPublishOpen,
+    saveErrorOpen: vm.saveError !== null,
+    saveIssueOpen: vm.saveIssue !== null,
+    photosOpen: vm.photosOpen,
+  });
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
   // and answer `unavailable_here` everywhere else.
+  useAssistantExitActions({
+    canLeave,
+    isExitPending,
+    onClose: vm.onClose,
+    onSaveDraftAndExit: vm.onSaveDraftAndExit,
+    onDiscardAndExit: vm.onDiscardAndExit,
+  });
   useAssistantDraftActions({
     // Only while the editor is on screen. In the prompt phase there is nothing
     // to edit and no confirmation sheet — the same condition the two
     // confirmations below already carry.
     isDraftVisible: isPreview,
+    // The prompt phase offers exactly one draft to continue, and "taslağıma
+    // devam et" is a thing people say to a screen that shows the card.
+    isPromptVisible: vm.phase === PhaseType.Prompt,
+    resumableDraft: vm.latestDraft,
+    onResumeDraft: vm.onResumeDraft,
     recipe: vm.recipe,
     onUpdateField: vm.onUpdateField,
     onAppendIngredient: vm.onAppendIngredient,

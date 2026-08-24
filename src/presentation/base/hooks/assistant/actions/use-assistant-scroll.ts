@@ -19,6 +19,8 @@ import {
  */
 export const useAssistantScroll = (
   scrollBy: (direction: AssistantScrollDirectionType) => void,
+  /** False where the screen has nothing scrollable mounted right now. */
+  isEnabled = true,
 ): void => {
   useAssistantAction(
     AssistantAction.Scroll,
@@ -32,6 +34,7 @@ export const useAssistantScroll = (
       },
       [scrollBy],
     ),
+    isEnabled,
   );
 };
 

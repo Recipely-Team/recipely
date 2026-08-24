@@ -129,6 +129,8 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   onRemoveDifficulty: jest.fn(),
   onRemoveMaxTime: jest.fn(),
   onResetFilters: jest.fn(),
+  onClearSearch: jest.fn(),
+  onClearAllFilters: jest.fn(),
   sheetOpen: null,
   pendingFilters: emptyFilters,
   pendingSort: 'popular',

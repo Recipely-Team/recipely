@@ -19,7 +19,6 @@ export const RecipeListScreen = (): React.JSX.Element => {
   // filters — everywhere else these answer `unavailable_here`.
   useAssistantFeedActions({
     filters: vm.filters,
-    activeFilterCount: vm.activeFilterCount,
     onToggleCuisineQuick: vm.onToggleCuisineQuick,
     onToggleCategory: vm.onToggleCategory,
     onDifficultyChange: vm.onDifficultyChange,
@@ -27,7 +26,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
     onRemoveCategory: vm.onRemoveCategory,
     onRemoveDifficulty: vm.onRemoveDifficulty,
     onRemoveMaxTime: vm.onRemoveMaxTime,
-    onResetFilters: vm.onResetFilters,
+    onClearSearch: vm.onClearSearch,
+    onClearAllFilters: vm.onClearAllFilters,
     onChangeSort: vm.onChangeSort,
   });
   useAssistantScroll(vm.onAssistantScroll);

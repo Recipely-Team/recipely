@@ -62,6 +62,7 @@ export const AssistantAction = {
   SetPreference: 'setPreference',
   SignOut: 'signOut',
   MarkAllRead: 'markAllRead',
+  MarkRead: 'markRead',
   ImportRecipe: 'importRecipe',
   ToggleIngredient: 'toggleIngredient',
   ToggleStep: 'toggleStep',

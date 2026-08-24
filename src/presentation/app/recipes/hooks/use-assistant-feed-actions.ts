@@ -15,7 +15,6 @@ import { CharConstants, ValueConstants } from '@core/constants';
 /** The feed capability the assistant borrows, named where it is consumed. */
 interface AssistantFeedActionsDeps {
   filters: UiFilters;
-  activeFilterCount: number;
   onToggleCuisineQuick: (cuisine: string) => void;
   onToggleCategory: (category: string) => void;
   onDifficultyChange: (difficulty: Difficulty | null) => void;
@@ -23,7 +22,8 @@ interface AssistantFeedActionsDeps {
   onRemoveCategory: (category: string) => void;
   onRemoveDifficulty: (difficulty: Difficulty) => void;
   onRemoveMaxTime: () => void;
-  onResetFilters: () => void;
+  onClearSearch: () => void;
+  onClearAllFilters: () => void;
   onChangeSort: (key: SortKey) => void;
 }
 
@@ -31,6 +31,14 @@ const CUISINE = 'cuisine';
 const CATEGORY = 'category';
 const DIFFICULTY = 'difficulty';
 const MAX_TIME = 'maxTime';
+/**
+ * The search box, which narrows the feed exactly as a filter does.
+ *
+ * A user looking at three results does not classify what is doing the
+ * narrowing; they say "clear it". Leaving the query out made "clear the
+ * filters" answer `ok` with the feed unchanged.
+ */
+const SEARCH = 'search';
 
 /**
  * Filtering and sorting the feed, by voice.
@@ -54,7 +62,6 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 
   const {
     filters,
-    activeFilterCount,
     onToggleCuisineQuick,
     onToggleCategory,
     onDifficultyChange,
@@ -62,7 +69,8 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     onRemoveCategory,
     onRemoveDifficulty,
     onRemoveMaxTime,
-    onResetFilters,
+    onClearSearch,
+    onClearAllFilters,
     onChangeSort,
   } = deps;
 
@@ -143,21 +151,30 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
           case MAX_TIME:
             onRemoveMaxTime();
             return { ok: true, n: filterCounts(filters) };
+          case SEARCH:
+            // The value is ignored: there is one query box, so "remove the
+            // search" is unambiguous however the model spells the subject.
+            onClearSearch();
+            return { ok: true, n: filterCounts(filters) };
           default:
             return { ok: false, error: 'unknown_filter' };
         }
       },
-      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, cuisineOptions, categoryOptions],
+      [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, onClearSearch, cuisineOptions, categoryOptions],
     ),
   );
 
   useAssistantAction(
     AssistantAction.ClearFilters,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      if (activeFilterCount === ValueConstants.zero) return { ok: true, n: { filters: ValueConstants.zero } };
-      onResetFilters();
+      // Unconditional, and it clears the query too. Both halves were bugs the
+      // user watched: a count read from the previous render is zero for a
+      // filter this same turn had just applied, so the clear was skipped and
+      // reported done — and a feed narrowed only by a search was "cleared"
+      // without anything moving at all.
+      onClearAllFilters();
       return { ok: true, n: { filters: ValueConstants.zero } };
-    }, [activeFilterCount, onResetFilters]),
+    }, [onClearAllFilters]),
   );
 
   useAssistantAction(

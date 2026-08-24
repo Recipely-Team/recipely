@@ -17,15 +17,12 @@ import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/re
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-recipe-actions';
-import {
-  AssistantScrollDirection,
-  type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
 import {
-  DETAIL_SCROLL_STEP_SHARE,
   SCROLL_EVENT_THROTTLE_MS,
-} from '@presentation/app/recipes/[recipeId]/model/scroll-tuning';
+  scrollTargetFor,
+} from '@presentation/base/hooks/assistant/args/scroll-tuning';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
@@ -55,15 +52,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType) => {
-      const step = Dimensions.get('window').height * DETAIL_SCROLL_STEP_SHARE;
-      const y =
-        direction === AssistantScrollDirection.Top
-          ? ValueConstants.zero
-          : direction === AssistantScrollDirection.Bottom
-            ? Number.MAX_SAFE_INTEGER
-            : direction === AssistantScrollDirection.Up
-              ? Math.max(ValueConstants.zero, scrollOffset.current - step)
-              : scrollOffset.current + step;
+      const y = scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height);
       vm.scrollViewRef.current?.scrollTo({ y, animated: true });
     },
     [vm.scrollViewRef],

@@ -681,11 +681,16 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     expect(latest().phase).toBe('preview');
     expect(latest().prompt).toBe(PROMPT);
 
+    let asked: boolean | undefined;
     act(() => {
-      latest().onClose();
+      asked = latest().onClose();
     });
 
     expect(latest().exitOpen).toBe(false);
+    // What it RETURNS is what the assistant answers with: reporting a clean
+    // exit while a sheet was opening left the model announcing it had left,
+    // over a question the user was being asked.
+    expect(asked).toBe(false);
   });
 
   it('asks once the draft has actually been edited', async () => {
@@ -694,9 +699,13 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
     act(() => {
       setRecipe((prev) => ({ ...prev, name: 'Garlic Pasta with chilli' }));
     });
+    let asked: boolean | undefined;
     act(() => {
-      latest().onClose();
+      asked = latest().onClose();
     });
+
+    // Says it asked, so the assistant answers `awaiting` rather than "done".
+    expect(asked).toBe(true);
 
     expect(latest().exitOpen).toBe(true);
   });
