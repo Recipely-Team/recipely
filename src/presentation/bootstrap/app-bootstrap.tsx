@@ -7,6 +7,7 @@ import { timersBarStore } from '@presentation/base/timers/timers-bar-store';
 import { onboardingStore } from '@application/onboarding/onboarding-store';
 import { getNotificationService } from '@application/notifications/get-notification-service';
 import { initFirebase } from '@infrastructure/firebase/firebase-init';
+import { reportDeviceProfile } from '@infrastructure/device/report-device-profile';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { AppErrorBoundary } from '@presentation/base/widgets/feedback/app-error-boundary';
 import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
@@ -73,6 +74,10 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     });
     void hydrateLocale();
     void initFirebase();
+    // After Firebase, so the keys reach a live Crashlytics instance, and once
+    // per launch: what this session is running on, on every crash report it
+    // files and as one analytics event.
+    reportDeviceProfile();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
       // `recordCrash` is the production channel (Crashlytics); the console line
       // only exists for local visibility, so it stays behind __DEV__ — an

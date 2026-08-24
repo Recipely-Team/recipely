@@ -14,6 +14,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { EditProfileScreen } from '@presentation/app/edit-profile';
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
+import { EditProfileSaveOutcome } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 
 const mockVm: UseEditProfileResult = {
   displayName: 'E2E Test',
@@ -26,12 +27,20 @@ const mockVm: UseEditProfileResult = {
   showNameError: false,
   bioAtLimit: false,
   saveEnabled: false,
+  isDirty: false,
   isSaving: false,
-  onSave: jest.fn(),
+  onSave: jest.fn(async () => EditProfileSaveOutcome.Unchanged),
   onBack: jest.fn(),
   errorDialog: null,
   onCloseErrorDialog: jest.fn(),
 };
+
+// This suite renders the screen bare, without a StoresProvider — it is about
+// keyboard avoidance, not wiring. The assistant hook only registers actions,
+// so stubbing it keeps that focus rather than dragging a store container in.
+jest.mock('@presentation/app/edit-profile/hooks/use-assistant-profile-actions', () => ({
+  useAssistantProfileActions: (): void => {},
+}));
 
 jest.mock('@presentation/app/edit-profile/hooks/use-edit-profile', () => ({
   useEditProfile: (): UseEditProfileResult => mockVm,

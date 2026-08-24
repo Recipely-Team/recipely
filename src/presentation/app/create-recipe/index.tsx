@@ -1,10 +1,15 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
+import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
+import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { assistantSheetGates } from '@presentation/app/create-recipe/model/assistant-sheet-gates';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
 import { ResumingView } from '@presentation/app/create-recipe/body/resuming-view';
@@ -18,6 +23,77 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
+  // Only the assistant's publish goes through here. A tap on Save is the user
+  // already looking at the button they pressed; a spoken "yayınla" is a word
+  // that may have been misheard, and publishing is not undoable.
+  const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
+  // Every sheet below lives in the preview phase; the prompt, resuming and
+  // generating phases return early and render none of them. A confirmation
+  // registered outside that phase was invisible and still accepted a spoken
+  // "yes" — the user agreeing to nothing they could see.
+  const isPreview = vm.phase === PhaseType.Preview;
+  // Which sheet owns the spoken yes and no. Derived in one place, and tested
+  // there: at most one confirmation may be live, and each gate has to exclude
+  // the sheet it is about — a rule that is invisible in a screen file, and was
+  // broken twice while it lived here as three boolean expressions.
+  const { exitOrErrorOpen, canLeave, isExitPending } = assistantSheetGates({
+    exitOpen: vm.exitOpen,
+    publishOpen: assistantPublishOpen,
+    saveErrorOpen: vm.saveError !== null,
+    saveIssueOpen: vm.saveIssue !== null,
+    photosOpen: vm.photosOpen,
+  });
+
+  // Registered here rather than deeper down because the assistant's actions
+  // belong to the SCREEN: they are available exactly while a draft is open,
+  // and answer `unavailable_here` everywhere else.
+  useAssistantExitActions({
+    canLeave,
+    isExitPending,
+    onClose: vm.onClose,
+    onSaveDraftAndExit: vm.onSaveDraftAndExit,
+    onDiscardAndExit: vm.onDiscardAndExit,
+  });
+  useAssistantDraftActions({
+    // Only while the editor is on screen. In the prompt phase there is nothing
+    // to edit and no confirmation sheet — the same condition the two
+    // confirmations below already carry.
+    isDraftVisible: isPreview,
+    // The prompt phase offers exactly one draft to continue, and "taslağıma
+    // devam et" is a thing people say to a screen that shows the card.
+    isPromptVisible: vm.phase === PhaseType.Prompt,
+    resumableDraft: vm.latestDraft,
+    onResumeDraft: vm.onResumeDraft,
+    recipe: vm.recipe,
+    onUpdateField: vm.onUpdateField,
+    onAppendIngredient: vm.onAppendIngredient,
+    onRemoveIngredient: vm.onRemoveIngredient,
+    onAppendStep: vm.onAppendStep,
+    onRemoveStep: vm.onRemoveStep,
+    onOpenPhotos: vm.onOpenPhotos,
+    onSubmitRefine: vm.onSubmitRefine,
+    onRegenerate: vm.onRegenerate,
+    onRequestPublish: () => setAssistantPublishOpen(true),
+  });
+  // Each sheet that stops the assistant also takes a spoken answer, or the
+  // hands-free flow ends at the gate meant to protect it.
+  useAssistantConfirmation(
+    isPreview && assistantPublishOpen && !exitOrErrorOpen,
+    () => {
+      setAssistantPublishOpen(false);
+      vm.onSave();
+    },
+    () => setAssistantPublishOpen(false),
+  );
+  // Exactly one confirmation is pending at a time. The publish sheet is a
+  // modal drawn over everything, so while it is up the spoken "yes" belongs to
+  // it — offering both would let a user reading the publish sheet accept the
+  // refine proposal behind it instead, and be told the publish succeeded.
+  useAssistantConfirmation(
+    isPreview && vm.proposal !== null && !assistantPublishOpen && !exitOrErrorOpen,
+    vm.onAcceptProposal,
+    vm.onRejectProposal,
+  );
 
   if (vm.phase === PhaseType.Prompt) {
     return (
@@ -81,6 +157,18 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onDiscard={vm.onDiscardAndExit}
         onKeepEditing={vm.onKeepEditing}
       />
+      <ConfirmSheet
+        visible={assistantPublishOpen}
+        title={t().assistant.publishTitle}
+        message={t().assistant.publishMessage}
+        confirmLabel={t().assistant.publishConfirm}
+        onConfirm={() => {
+          setAssistantPublishOpen(false);
+          vm.onSave();
+        }}
+        onClose={() => setAssistantPublishOpen(false)}
+      />
+
       <ConfirmSheet
         visible={vm.saveError !== null}
         title={t().createRecipe.saveErrorTitle}

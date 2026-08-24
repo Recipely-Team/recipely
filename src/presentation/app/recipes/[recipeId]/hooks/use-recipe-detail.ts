@@ -126,8 +126,17 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     [commentsStore, recipeId],
   );
 
-  const handleAddComment = useCallback(async () => {
-    const trimmed = commentInput.trim();
+  /**
+   * Posts `text`, or the field's contents when called without one.
+   *
+   * The parameter exists for the assistant: writing the field and posting in
+   * the same tick meant the post read the PREVIOUS render's value — normally
+   * empty, which this drops — while still reporting success, so the model
+   * announced a comment that was never made. Same class as the append-then-
+   * write bug in the draft editor.
+   */
+  const handleAddComment = useCallback(async (text?: string) => {
+    const trimmed = (text ?? commentInput).trim();
     if (trimmed.length === ValueConstants.zero) return;
     const ok = await commentsStore.getState().addComment(recipeId, trimmed);
     if (ok) {
@@ -280,6 +289,9 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleLike: () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
     onToggleSave: () => requestGate(() => void handleToggleSave(), t().recipes.signInToSave),
     onAddComment: () => requestGate(() => void handleAddComment(), t().comments.signInToComment),
+    /** Posts text the caller already has — the assistant's path. */
+    onPostComment: (text: string) =>
+      requestGate(() => void handleAddComment(text), t().comments.signInToComment),
     onLoadMoreComments: () => void commentsStore.getState().loadMore(recipeId),
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),

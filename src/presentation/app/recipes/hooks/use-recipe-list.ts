@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
+import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
-import { type Href, useFocusEffect, usePathname, useRouter } from 'expo-router';
+import Animated, { Easing, useAnimatedRef, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { hiddenHeaderOffset } from '@presentation/app/recipes/model/hidden-header-offset';
@@ -92,13 +95,31 @@ export const useRecipeList = (): UseRecipeListResult => {
   const state = recipeListStore((s) => s.state);
   const load = recipeListStore((s) => s.load);
   const loadMore = recipeListStore((s) => s.loadMore);
-  const { isWebShell, isExpanded, width } = useLayout();
-  const { searchQuery: webSearchQuery } = useWebShellState();
+  const { isWebShell, isExpanded, width, height } = useLayout();
+  const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
   const reduceMotion = useReducedMotion();
   // Subscribe to locale so the screen re-renders (and reloads) on a language switch.
   const language = useLocale();
 
   const [search, setSearch] = useState(CharConstants.empty);
+
+  // The assistant searches by opening this screen with `?q=`, the way a person
+  // arrives from a link — so the query lands in the visible field and the user
+  // watches the search they asked for, rather than results appearing from a
+  // store nobody touched. Applied once per distinct query: re-applying on every
+  // render would fight the user the moment they edited the box.
+  const { q: queryParam } = useLocalSearchParams<{ q?: string }>();
+  const appliedQuery = useRef<string | undefined>(undefined);
+  useEffect(() => {
+    if (queryParam === undefined || queryParam === appliedQuery.current) return;
+    appliedQuery.current = queryParam;
+    // Both fields, because which one this screen READS depends on the shell —
+    // and writing only its own left the assistant's search doing nothing at
+    // all on the web, where the header's field is the one that counts. The
+    // action chip said "searched" and the feed never moved.
+    setSearch(queryParam);
+    setWebSearchQuery(queryParam);
+  }, [queryParam, setWebSearchQuery]);
 
   // Web takes the query from the shared app-header field, native from the in-header one.
   const effectiveSearch = isWebShell ? webSearchQuery : search;
@@ -107,6 +128,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const isSearching = trimmedSearch.length > ValueConstants.zero;
 
   const scrollY = useSharedValue(ValueConstants.zero);
+  const listRef = useAnimatedRef<Animated.FlatList<RecipeSummaryEntity>>();
   const headerTranslateY = useSharedValue(ValueConstants.zero);
   const insets = useSafeAreaInsets();
   const hiddenHeaderY = hiddenHeaderOffset(insets.top);
@@ -290,6 +312,26 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
+  // Both fields, for the reason the `?q=` effect writes both: which one this
+  // screen READS depends on the shell, and clearing only its own left the
+  // query in place on web. The debounced-search effect above reloads on the
+  // change, so this does not fetch for itself.
+  const onClearSearch = (): void => {
+    setSearch(CharConstants.empty);
+    setWebSearchQuery(CharConstants.empty);
+  };
+
+  // Everything narrowing the feed, in ONE reload with the values it will end
+  // up at. Clearing the query and resetting the filters separately fired two
+  // fetches, and the first one — still carrying the old query — could land
+  // second and leave the feed withholding rows that no longer answered it.
+  const onClearAllFilters = (): void => {
+    setFilters(emptyFilters);
+    setPendingFilters(emptyFilters);
+    onClearSearch();
+    void reload(buildApiFilters(emptyFilters, sortBy, CharConstants.empty));
+  };
+
   // The query the stored rows answer — empty for the feed and before any load.
   const answeredQuery = state.status === StoreStatus.Loaded ? state.query : CharConstants.empty;
   const answersCurrentQuery = answeredQuery === trimmedSearch;
@@ -329,6 +371,14 @@ export const useRecipeList = (): UseRecipeListResult => {
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
     unreadCount,
+    listRef,
+    // A step is one viewport minus a sliver, so a line of the previous screen
+    // stays visible — scrolling a whole screen away loses the reader's place,
+    // which is exactly the complaint about page-down keys.
+    onAssistantScroll: (direction: AssistantScrollDirectionType) => {
+      const target = scrollTargetFor(direction, scrollY.value, height);
+      listRef.current?.scrollToOffset({ offset: target, animated: true });
+    },
     scrollY,
     headerTranslateY,
     reduceMotion,
@@ -348,10 +398,17 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     onToggleCuisineQuick: (cuisine: string) => applyAndLoad(mutate.toggleCuisineQuick(filters, cuisine)),
     onDifficultyChange: (d: Difficulty | null) => applyAndLoad(mutate.setDifficultyQuick(filters, d)),
+    // Direct category / max-time setters, applied and loaded the same way the
+    // quick cuisine chip is. The sheet reaches these through its pending copy;
+    // the assistant asks for one change at a time and has no sheet to open.
+    onToggleCategory: (c: string) => applyAndLoad(mutate.toggleCategory(filters, c)),
+    onSetMaxTime: (minutes: number) => applyAndLoad(mutate.setMaxTime(filters, minutes)),
     onRemoveCategory: (c: string) => applyAndLoad(mutate.removeCategory(filters, c)),
     onRemoveDifficulty: (d: Difficulty) => applyAndLoad(mutate.removeDifficulty(filters, d)),
     onRemoveMaxTime: () => applyAndLoad(mutate.removeMaxTime(filters)),
     onResetFilters,
+    onClearSearch,
+    onClearAllFilters,
     sheetOpen,
     pendingFilters,
     pendingSort,

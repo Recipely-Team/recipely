@@ -24,6 +24,13 @@
  *      crashes the app on the New Architecture (CLAUDE.md §6c).
  *   S. The store hub draws no status bar — a drawn one got 1.0.43 rejected under
  *      App Store guideline 2.3.10 (fastlane/store-hub/README.md).
+ *   U. Every assistant action offered to the model has a handler registered by
+ *      some screen — a word nothing answers advertises a capability the
+ *      assistant does not have (CLAUDE.md §5).
+ *   V. Every action in CONFIRMED_ACTIONS raises a confirmation rather than
+ *      acting — a declared safety list nothing reads is worse than none.
+ *   W. No callback takes an OPTIONAL first parameter — an event prop would pass
+ *      the gesture event into it and no type would object (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -370,6 +377,183 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     if (video !== null && (video.supportsBackgroundPlayback === true || video.supportsPictureInPicture === true)) {
       errors.push(
         'app.json: expo-video background playback / picture-in-picture adds UIBackgroundModes:audio, which App Review rejects without a qualifying feature (CLAUDE.md §23c)',
+      );
+    }
+
+    // react-native-audio-api carries the microphone for the voice assistant, and
+    // its plugin is the worst offender of the three: BOTH switches default to on.
+    // `iosBackgroundMode` adds UIBackgroundModes:audio — the exact key that cost
+    // two rejections — and `androidForegroundService` adds a media-playback
+    // foreground service plus the two FOREGROUND_SERVICE permissions, which Play
+    // makes you justify. The assistant only ever runs on a screen the user is
+    // looking at, so both are wrong for this app; a bare "react-native-audio-api"
+    // string (no options object) silently means both are on, which is why the
+    // entry is required to carry options at all.
+    const liveAudio = optionsFor('react-native-audio-api');
+    if (liveAudio !== null) {
+      if (liveAudio.iosBackgroundMode !== false) {
+        errors.push(
+          'app.json: react-native-audio-api must set "iosBackgroundMode": false — it defaults to true and adds UIBackgroundModes:audio, which App Review rejects (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.androidForegroundService !== false) {
+        errors.push(
+          'app.json: react-native-audio-api must set "androidForegroundService": false — it defaults to true and declares a mediaPlayback foreground service the app has no feature for (CLAUDE.md §23c)',
+        );
+      }
+      const androidPermissions = liveAudio.androidPermissions;
+      if (!Array.isArray(androidPermissions)) {
+        errors.push(
+          'app.json: react-native-audio-api must list "androidPermissions" explicitly — the default adds FOREGROUND_SERVICE and FOREGROUND_SERVICE_MEDIA_PLAYBACK (CLAUDE.md §23c)',
+        );
+      } else if (androidPermissions.some((permission) => permission.includes('FOREGROUND_SERVICE'))) {
+        errors.push(
+          'app.json: react-native-audio-api androidPermissions must not request FOREGROUND_SERVICE* — the app plays no audio while backgrounded (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.iosMicrophonePermission !== undefined) {
+        errors.push(
+          'app.json: react-native-audio-api "iosMicrophonePermission" is inert here — expo-audio owns NSMicrophoneUsageDescription and overwrites it. Put the copy on expo-audio\'s "microphonePermission" instead (CLAUDE.md §23c)',
+        );
+      }
+    }
+
+    // The microphone has exactly ONE owner, and it is expo-audio. Its plugin runs
+    // `createPermissionsPlugin`, which DELETES NSMicrophoneUsageDescription when
+    // `microphonePermission` is false — beating both a static `ios.infoPlist`
+    // entry and react-native-audio-api's own `iosMicrophonePermission`. So the
+    // config could name the microphone in two places, read as correct in review,
+    // and still prebuild an Info.plist with no usage string at all: iOS then
+    // denies the first mic access with nothing to show the user. Same lesson as
+    // §23c from the other direction — the config is not the artifact.
+    if (audio !== null && audio.recordAudioAndroid !== false) {
+      if (typeof audio.microphonePermission !== 'string' || audio.microphonePermission.trim() === '') {
+        errors.push(
+          'app.json: expo-audio requests RECORD_AUDIO, so its "microphonePermission" must be the iOS usage string — false or missing deletes NSMicrophoneUsageDescription and the mic is denied with no prompt (CLAUDE.md §23c)',
+        );
+      }
+    }
+  }
+}
+
+// --- U: every assistant action has a handler (CLAUDE.md §5) ----------------
+// The action list is offered to the model as the enum of its one tool, and a
+// word nothing answers is the worst kind of bug this feature has: the model is
+// told it can do a thing, tries, and gets `unavailable_here` — so the assistant
+// looks broken for a capability it was advertised. Nothing catches that at
+// build time, and on a device it looks like the model misunderstood.
+//
+// Handlers are registered from screens via `useAssistantAction`, so the check
+// is a set comparison between the vocabulary and the registrations.
+{
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(vocabularyPath)) {
+    const vocabulary = [...fs.readFileSync(vocabularyPath, 'utf8').matchAll(/^ {2}\w+: '(\w+)',/gm)].map(
+      (m) => m[1],
+    );
+    const registered = new Set();
+    for (const file of files) {
+      const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+      // Two shapes of registration: the plain hook, and a conditional
+      // `register` for actions that only exist while something is on screen
+      // (the confirm/cancel pair a sheet owns).
+      const registrations = [
+        ...src.matchAll(/useAssistantAction\(\s*AssistantAction\.(\w+)/g),
+        ...src.matchAll(/\.register\(\s*AssistantAction\.(\w+)/g),
+      ];
+      for (const m of registrations) {
+        const value = new RegExp(`^ {2}${m[1]}: '(\\w+)',`, 'm').exec(
+          fs.readFileSync(vocabularyPath, 'utf8'),
+        )?.[1];
+        if (value !== undefined) registered.add(value);
+      }
+    }
+    const unhandled = vocabulary.filter((action) => !registered.has(action));
+    if (unhandled.length > 0) {
+      errors.push(
+        `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
+      );
+    }
+  }
+}
+
+// --- V: a confirmed action must actually ask (CLAUDE.md §5) ----------------
+// `CONFIRMED_ACTIONS` names what the assistant must never do on a model's
+// say-so. It previously sat beside the vocabulary as a statement of intent
+// that nothing read, and `unsave` was on the list while running unconfirmed —
+// a declared invariant no code enforces is worse than none, because it reads
+// as though the question had been settled.
+//
+// The check is shallow on purpose: a handler for one of these must answer
+// `awaiting`, which is what a sheet-raising handler returns and what a
+// straight-through one never does.
+{
+  const listPath = path.join(SRC, 'domain/assistant/actions/confirmed-actions.ts');
+  const vocabularyPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  if (fs.existsSync(listPath) && fs.existsSync(vocabularyPath)) {
+    const vocabulary = fs.readFileSync(vocabularyPath, 'utf8');
+    const confirmed = [...fs.readFileSync(listPath, 'utf8').matchAll(/AssistantAction\.(\w+)/g)]
+      .map((m) => m[1])
+      .filter((name, at, all) => all.indexOf(name) === at);
+
+    for (const member of confirmed) {
+      // Both registration shapes count, the same two rule U accepts: a
+      // confirmed action registered through `registry.register` was invisible
+      // to the first version of this, which is the shape the confirm/cancel
+      // pair itself uses.
+      const pattern = new RegExp(
+        `(?:useAssistantAction|\\.register)\\(\\s*AssistantAction\\.${member}\\b`,
+        'g',
+      );
+      let registrations = 0;
+      let acting = 0;
+      for (const file of files) {
+        if (isTest(file)) continue;
+        const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+        for (const match of src.matchAll(pattern)) {
+          registrations += 1;
+          // The handler runs from this registration to the next one, or to the
+          // end of the file. Bounding it matters: without the bound, an
+          // unrelated `awaiting` further down the file satisfied the check.
+          const rest = src.slice(match.index ?? 0);
+          const nextAt = rest.slice(1).search(/(?:useAssistantAction|\.register)\(/);
+          const body = nextAt === -1 ? rest : rest.slice(0, nextAt + 1);
+          if (!/awaiting:\s*true/.test(body)) acting += 1;
+        }
+      }
+      // EVERY registration must ask, not merely one of them — the action is
+      // implemented by more than one screen for several of these, and one
+      // screen doing it right says nothing about the others.
+      if (registrations > 0 && acting > 0) {
+        const spelled = new RegExp(`^ {2}${member}: '(\\w+)',`, 'm').exec(vocabulary)?.[1] ?? member;
+        errors.push(
+          `assistant action '${spelled}' is in CONFIRMED_ACTIONS but ${acting} of its ${registrations} handler(s) act without asking — each must raise a confirmation and answer awaiting (CLAUDE.md §5)`,
+        );
+      }
+    }
+  }
+}
+
+// --- W: no optional leading parameter on a callback (CLAUDE.md §24) -------
+// React Native calls `onPress` WITH the gesture event, and a prop declared
+// `() => void` accepts a handler that takes parameters — TypeScript allows a
+// function of fewer parameters where more are expected, and this is the mirror
+// of that rule. So a handler with an OPTIONAL first parameter silently
+// receives a `GestureResponderEvent` on an ordinary tap: that is how one ended
+// up inside `instructions: string[]` and rode into publish.
+//
+// `onPress={handler}` is idiomatic and safe when the handler takes nothing, so
+// the check is on the declaration rather than the call site. Two handlers —
+// one that takes nothing, one that takes the value — is the fix, and it makes
+// the hazard unrepresentable rather than merely absent.
+{
+  const OPTIONAL_FIRST_PARAM = /useCallback\(\s*(?:async\s*)?\(\s*(\w+)\s*(?::[^),=]+)?=\s*[^),]/g;
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(OPTIONAL_FIRST_PARAM)) {
+      errors.push(
+        `${file}: useCallback with an optional first parameter '${m[1]}' — an event prop would pass the gesture event into it and no type would object. Split it into one handler that takes nothing and one that takes the value (CLAUDE.md §24)`,
       );
     }
   }

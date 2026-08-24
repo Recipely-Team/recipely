@@ -72,7 +72,6 @@ describe('BottomSheet — presentation per viewport', () => {
     const rendered = render(false);
     renderer = rendered.renderer;
 
-    expect(rendered.root.findByType(Modal).props.animationType).toBe('slide');
     // Anchored: rounded at the top only, sitting on the bottom edge.
     expect(panelStyle(rendered.root).borderTopLeftRadius).toBeGreaterThan(0);
     expect(panelStyle(rendered.root).borderRadius).toBeUndefined();
@@ -82,7 +81,6 @@ describe('BottomSheet — presentation per viewport', () => {
     const rendered = render(true);
     renderer = rendered.renderer;
 
-    expect(rendered.root.findByType(Modal).props.animationType).toBe('fade');
     // Free-floating: rounded all round and capped in width.
     expect(panelStyle(rendered.root).borderRadius).toBeGreaterThan(0);
     expect(panelStyle(rendered.root).maxWidth).toBeGreaterThan(0);
@@ -112,9 +110,35 @@ describe('BottomSheet — presentation per viewport', () => {
     const tablet = render(true, false);
     renderer = tablet.renderer;
 
-    expect(tablet.root.findByType(Modal).props.animationType).toBe('fade');
     expect(panelStyle(tablet.root).borderRadius).toBeGreaterThan(0);
     expect(panelStyle(tablet.root).maxWidth).toBeGreaterThan(0);
+  });
+
+  // The window's own `animationType` is what used to slide the scrim off the
+  // bottom of the screen along with the panel. Nothing may hand that back.
+  it('animates itself rather than letting the window do it', () => {
+    const rendered = render(false);
+    renderer = rendered.renderer;
+
+    expect(rendered.root.findByType(Modal).props.animationType).toBe('none');
+  });
+
+  // Which is only safe while the component still draws the distinction the
+  // window used to: a sheet travels, a dialog has nowhere to travel to.
+  it('travels on a phone and fades once expanded', () => {
+    const phone = render(false);
+    renderer = phone.renderer;
+    expect(panelStyle(phone.root).transform).toBeDefined();
+    expect(panelStyle(phone.root).opacity).toBeUndefined();
+
+    act(() => {
+      phone.renderer.unmount();
+    });
+
+    const wide = render(true);
+    renderer = wide.renderer;
+    expect(panelStyle(wide.root).opacity).toBeDefined();
+    expect(panelStyle(wide.root).transform).toBeUndefined();
   });
 
   it('keeps the grabber on mobile, where it is the dismiss affordance', () => {

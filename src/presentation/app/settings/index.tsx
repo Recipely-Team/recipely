@@ -28,6 +28,8 @@ import {
   avatarSizes,
 } from '@presentation/base/theme';
 import { t, useLocale, setLocale } from '@presentation/i18n';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
+import { useAssistantSettingsActions } from '@presentation/app/settings/hooks/use-assistant-settings-actions';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -49,6 +51,15 @@ export const SettingsScreen = (): React.JSX.Element => {
     await signOut();
     router.replace(RoutePaths.login);
   };
+
+  useAssistantSettingsActions({
+    onSetLanguage: setLocale,
+    onSetThemePreference: setPreference,
+    onRequestSignOut: () => setSignOutVisible(true),
+  });
+  // The sign-out sheet already existed for the button; it now also takes a
+  // spoken answer, so a voice session is not a session that cannot end.
+  useAssistantConfirmation(signOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
 
   const displayName =
     authState.status === StoreStatus.Authenticated ? authState.session.user.displayName : CharConstants.empty;

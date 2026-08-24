@@ -9,4 +9,6 @@
 export const AnalyticsEvent = {
   /** A failure was shown to the user. Carries its `code` and where it surfaced. */
   failureShown: 'failure_shown',
+  /** One per launch: the device, OS, build and locale the session ran on. */
+  deviceProfile: 'device_profile',
 } as const;

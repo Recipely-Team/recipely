@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -17,6 +17,7 @@ import { useDraftAutosave } from '@presentation/app/create-recipe/hooks/use-draf
 import { editableHasContent } from '@presentation/app/create-recipe/model/drafting/editable-has-content';
 import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafting/editable-to-snapshot';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
+import { fromRecipeIdOf } from '@presentation/app/create-recipe/model/drafting/from-recipe-id-of';
 import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
 import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
 import { useRefineProposal } from '@presentation/app/create-recipe/hooks/use-refine-proposal';
@@ -76,7 +77,18 @@ const GEN_STEP_INTERVAL_MS = 620;
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
-  const { createdRecipesStore, draftsStore } = useStores();
+  // Read before the stores that depend on it. The `?? {}` is for test harnesses
+  // that stub the hook — the real one returns `{}` for a route with no params,
+  // never undefined.
+  const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>() ?? {};
+  const promptParam = params.prompt;
+  const fromRecipeId = params.fromRecipeId;
+
+  const { createdRecipesStore, draftsStore, recipeDetailStore } = useStores();
+  const loadRecipeDetail = recipeDetailStore((st) => st.load);
+  const copiedFrom = recipeDetailStore((st) =>
+    fromRecipeIdOf(st.byId, fromRecipeId),
+  );
   const refineState = createdRecipesStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
@@ -93,6 +105,20 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [prompt, setPrompt] = useState(CharConstants.empty);
   const [generateError, setGenerateError] = useState<string | null>(null);
   const originalPrompt = useRef(CharConstants.empty);
+
+  // The assistant creates a recipe by opening this screen with `?prompt=`,
+  // exactly as a person would type it in and tap generate — the prompt appears
+  // in the field and the generating view runs where they can see it. A draft
+  // being resumed wins: `?draftId=` means the user asked for something else.
+  const startedFromParam = useRef(false);
+  /**
+   * Whether the copy has already been laid into the editor.
+   *
+   * `startedFromParam` latches the LOAD; without this, any later change to the
+   * cached recipe re-ran the seed and threw away whatever the user had edited
+   * in their copy, dropping them back to preview.
+   */
+  const seeded = useRef(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [chatInput, setChatInput] = useState(CharConstants.empty);
   const [chatExpanded, setChatExpanded] = useState(false);
@@ -241,6 +267,43 @@ const GEN_STEP_INTERVAL_MS = 620;
 
   // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
   // for a failed run, so any change to it drops the stale error.
+  useEffect(() => {
+    if (promptParam === undefined || promptParam === CharConstants.empty) return;
+    if (draftId !== undefined || startedFromParam.current) return;
+    startedFromParam.current = true;
+    setPrompt(promptParam);
+    void runGenerate(promptParam);
+  }, [promptParam, draftId, runGenerate]);
+
+  /**
+   * Fills the editor from a recipe that already exists.
+   *
+   * @remarks
+   * Asked to make the same recipe, the assistant used to hand the words to the
+   * generator, which invented something adjacent — a different ingredient
+   * list, different times, a different name. A copy is a copy: the fields are
+   * read from the recipe itself and the user edits from there.
+   *
+   * Media is deliberately NOT carried over. The photographs belong to whoever
+   * took them, and a copy that arrives wearing someone else's picture is a
+   * claim the user did not make.
+   */
+  useEffect(() => {
+    if (fromRecipeId === undefined || fromRecipeId === CharConstants.empty) return;
+    if (draftId !== undefined || startedFromParam.current) return;
+    startedFromParam.current = true;
+
+    void loadRecipeDetail(fromRecipeId);
+  }, [fromRecipeId, draftId, loadRecipeDetail]);
+
+  useEffect(() => {
+    if (copiedFrom === null || seeded.current) return;
+    seeded.current = true;
+
+    setRecipe(recipeToEditable(copiedFrom, []));
+    setPhase(PhaseType.Preview);
+  }, [copiedFrom, setRecipe]);
+
   const onChangePrompt = useCallback((value: string): void => {
     setPrompt(value);
     setGenerateError(null);
@@ -272,15 +335,20 @@ const GEN_STEP_INTERVAL_MS = 620;
   // and backing out is not that — nothing was written, so there is nothing to
   // keep or throw away. It asked anyway, and its only non-destructive answer
   // re-saved a draft that was already saved, on every single exit.
-  const onClose = useCallback((): void => {
+  // Returns whether it ASKED rather than left, which is what lets the
+  // assistant's `goBack` answer `awaiting` and say the question out loud. It
+  // used to report a clean exit while a sheet the user had to answer was
+  // opening in front of them.
+  const onClose = useCallback((): boolean => {
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
     if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
       setExitOpen(true);
-      return;
+      return true;
     }
     goBackOrHome();
+    return false;
   }, [phase, recipe, goBackOrHome]);
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {

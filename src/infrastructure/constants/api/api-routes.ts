@@ -54,4 +54,9 @@ export const ApiRoutes = {
     byId: (userId: string): string => `/users/${encodeURIComponent(userId)}`,
   },
   feedback: '/feedback',
+  assistant: {
+    session: '/assistant/session',
+    heartbeat: '/assistant/heartbeat',
+    message: '/assistant/message',
+  },
 } as const;

@@ -47,6 +47,8 @@ export interface UseRecipeDetailResult {
   onToggleLike: () => void;
   onToggleSave: () => void;
   onAddComment: () => void;
+  /** Posts text the caller already has — the assistant does not type into the field. */
+  onPostComment: (text: string) => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;

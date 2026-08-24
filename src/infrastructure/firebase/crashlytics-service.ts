@@ -52,6 +52,24 @@ if (isWeb() || mod === null) return;
 };
 
 /**
+ * Attaches facts that every later crash report carries.
+ *
+ * Custom keys rather than a log line: a breadcrumb is only readable inside the
+ * report it was written into, while a key is a column — "which OS version" and
+ * "only on that one model" are questions asked of the WHOLE crash list, and
+ * they could not be asked at all when the report said nothing about the
+ * device.
+ */
+export const setCrashAttributes = (attributes: Record<string, string>): void => {
+  if (isWeb() || mod === null) return;
+  try {
+    void mod.setAttributes(mod.getCrashlytics(), attributes);
+  } catch {
+    // no-op
+  }
+};
+
+/**
  * Adds a breadcrumb attached to the next crash report.
  *
  * @remarks

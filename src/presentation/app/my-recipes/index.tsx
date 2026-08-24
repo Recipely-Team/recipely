@@ -4,7 +4,15 @@ import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
+import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
+import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -28,6 +36,9 @@ import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
 const WEB_CONTENT_MAX = WEB_CONTENT_MAX_WIDTH.myRecipes;
+
+/** Stable identity, so the Drafts tab does not hand the hook a new array a render. */
+const EMPTY_ROWS: readonly { id: string; name: string }[] = [];
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -116,8 +127,58 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     if (!result.ok) showErrorToast(result.failure);
   };
 
+  // Deleting a draft is unrecoverable work, so the assistant asks first — and
+  // the sheet takes a spoken answer, because the whole point is hands-free.
+  const [draftPendingDelete, setDraftPendingDelete] = useState<string | null>(null);
+  useAssistantMyRecipesActions({
+    tab,
+    items,
+    drafts,
+    onSwitchTab: setTab,
+    onOpenRecipe: openRecipe,
+    onOpenDraft: openDraft,
+    onRequestDeleteDraft: setDraftPendingDelete,
+    onRefresh,
+  });
+  // The tab is half the answer: "delete the lentil soup" means a different
+  // collection on Saved than it does on Created, and the model cannot tell
+  // which list it is looking at from the route alone — they share one.
+  // Empty on Drafts: `items` falls through to the created recipes there, and a
+  // handler answering for rows the user cannot see is how "save that one" ends
+  // up saving something else entirely.
+  useAssistantListRecipeActions(tab === TabType.Drafts ? EMPTY_ROWS : items);
+  // Four list branches, one set of props: whichever is on screen is the one
+  // that moves. Without this the screen with the longest lists in the app
+  // answered "aşağı kaydır" with `unavailable_here`.
+  const scrollable = useAssistantScrollable();
+  useAssistantScreenContent(() =>
+    tab === TabType.Drafts
+      ? recipeRoster(TabType.Drafts, drafts.map(draftName))
+      : recipeRoster(tab, items.map((recipe) => recipe.name)),
+  );
+  useAssistantConfirmation(
+    draftPendingDelete !== null,
+    () => {
+      if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
+      setDraftPendingDelete(null);
+    },
+    () => setDraftPendingDelete(null),
+  );
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <ConfirmSheet
+        visible={draftPendingDelete !== null}
+        title={t().assistant.deleteDraftTitle}
+        message={t().assistant.deleteDraftMessage}
+        confirmLabel={t().myRecipes.deleteRecipe}
+        destructive
+        onConfirm={() => {
+          if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
+          setDraftPendingDelete(null);
+        }}
+        onClose={() => setDraftPendingDelete(null)}
+      />
       <ScreenContainer scrollable={false} padded={false}>
         <ResponsiveContainer route="myRecipes" gutter={false} fill>
           {isWebShell ? (
@@ -156,6 +217,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
+            scrollable={scrollable}
           />
         </ResponsiveContainer>
       </ScreenContainer>

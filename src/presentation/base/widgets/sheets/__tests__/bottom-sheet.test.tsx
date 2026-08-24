@@ -5,8 +5,9 @@
  * close button is hidden unless a consumer opts in via `showCloseButton`.
  */
 
+import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import { ScrollView, StyleSheet } from 'react-native';
+import { Modal, ScrollView, StyleSheet } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
@@ -178,5 +179,60 @@ describe('BottomSheet', () => {
 
       expect(textContent(root)).not.toContain('apply');
     });
+  });
+});
+
+/**
+ * Reported from the app: closing any sheet slid the dark layer down the screen
+ * along with the panel, so for a fifth of a second the app was visible with a
+ * receding shadow over it. The cause was `Modal`'s own `animationType="slide"`,
+ * which moves the whole window — backdrop included. The scrim answers one
+ * question, "is there something in front of this screen", and the moment the
+ * answer is no it must stop being drawn.
+ */
+describe('BottomSheet — the scrim does not travel with the panel', () => {
+  /** The absolutely-filled layer carrying the overlay colour. */
+  const backdropOpacity = (root: RenderResult['root']): number => {
+    const layer = root.findAll((node) => {
+      const style = StyleSheet.flatten(node.props.style as StyleProp<ViewStyle>);
+      return style?.position === 'absolute' && style?.backgroundColor !== undefined
+        && style?.opacity !== undefined && style?.top === 0 && style?.left === 0;
+    })[0];
+    if (layer === undefined) throw new Error('no backdrop rendered');
+    const style = StyleSheet.flatten(layer.props.style as StyleProp<ViewStyle>) ?? {};
+    return (style.opacity as unknown as { __getValue: () => number }).__getValue();
+  };
+
+  /** Owns `visible` so the sheet closes the way a screen closes it: by re-render. */
+  let close: () => void = () => undefined;
+  const Harness = (): React.JSX.Element => {
+    const [visible, setVisible] = useState(true);
+    close = () => setVisible(false);
+    return (
+      <BottomSheet visible={visible} title="Title" onClose={jest.fn()}>
+        <ThemedText variant="body">content</ThemedText>
+      </BottomSheet>
+    );
+  };
+
+  it('clears the dimming in the frame the sheet is dismissed, while the panel is still leaving', async () => {
+    const { root, renderer } = renderComponent(<Harness />);
+    // Long enough for the fade-in to finish, so what follows is a fall from
+    // full dimming rather than from a value that had not arrived yet.
+    await act(async () => {
+      await new Promise((settle) => setTimeout(settle, 400));
+    });
+    expect(backdropOpacity(root)).toBeGreaterThan(0);
+
+    act(() => close());
+
+    // Not "on its way to zero" — zero, with the panel still on screen behind it.
+    expect(backdropOpacity(root)).toBe(0);
+    expect(root.findByType(Modal).props.visible).toBe(true);
+
+    await act(async () => {
+      await new Promise((settle) => setTimeout(settle, 400));
+    });
+    act(() => renderer.unmount());
   });
 });

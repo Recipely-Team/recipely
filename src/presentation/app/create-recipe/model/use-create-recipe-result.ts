@@ -22,7 +22,12 @@ export interface UseCreateRecipeResult {
   onGenerate: () => void;
   onStartBlank: () => void;
   onImportFromInstagram: () => void;
-  onClose: () => void;
+  /**
+   * Leaves the flow, or opens the exit sheet when there is work to decide
+   * about. Returns true in the second case — the assistant's `goBack` reports
+   * a pending question rather than announcing it left.
+   */
+  onClose: () => boolean;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;
 
@@ -43,6 +48,8 @@ export interface UseCreateRecipeResult {
   onChangeIngredient: (index: number, value: string) => void;
   onRemoveIngredient: (index: number) => void;
   onAddIngredient: () => void;
+  /** Appends a row that already has its text — the assistant's path. */
+  onAppendIngredient: (value: string) => void;
   onAddIngredientAt: (index: number) => void;
   onMoveIngredient: (from: number, to: number) => void;
   onRemoveIngredientGroup: (headerIndex: number, itemIndices: readonly number[], keepItems: boolean) => void;
@@ -51,6 +58,8 @@ export interface UseCreateRecipeResult {
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onAddStep: () => void;
+  /** Appends a step that already has its text — the assistant's path. */
+  onAppendStep: (value: string) => void;
   onOpenPhotos: () => void;
 
   // Refine dock.

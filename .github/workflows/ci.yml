@@ -506,6 +506,24 @@ jobs:
           fi
           echo "OK — no background-audio mode in $plist"
 
+      # The microphone has one owner and it is expo-audio: its plugin DELETES
+      # NSMicrophoneUsageDescription when `microphonePermission` is false,
+      # beating a static ios.infoPlist entry and react-native-audio-api's own
+      # `iosMicrophonePermission`. The config can therefore name the microphone
+      # twice, read as correct, and still ship a plist with no usage string —
+      # iOS then denies the first mic access with nothing to show the user, and
+      # App Review treats a missing purpose string as a rejection on its own.
+      - name: Assert the microphone usage string reached the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          usage="$(/usr/libexec/PlistBuddy -c 'Print :NSMicrophoneUsageDescription' "$plist" 2>/dev/null || true)"
+          if [ -z "$usage" ]; then
+            echo "::error file=app.json::$plist has no NSMicrophoneUsageDescription, but the app requests RECORD_AUDIO. Set expo-audio's microphonePermission to the usage string in app.json — setting it on react-native-audio-api does nothing, expo-audio overwrites it."
+            exit 1
+          fi
+          echo "OK — microphone usage string present in $plist"
+
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.
       - uses: actions/cache@v4
@@ -971,6 +989,24 @@ jobs:
             exit 1
           fi
           echo "OK — no background-audio mode in $plist"
+
+      # The microphone has one owner and it is expo-audio: its plugin DELETES
+      # NSMicrophoneUsageDescription when `microphonePermission` is false,
+      # beating a static ios.infoPlist entry and react-native-audio-api's own
+      # `iosMicrophonePermission`. The config can therefore name the microphone
+      # twice, read as correct, and still ship a plist with no usage string —
+      # iOS then denies the first mic access with nothing to show the user, and
+      # App Review treats a missing purpose string as a rejection on its own.
+      - name: Assert the microphone usage string reached the generated Info.plist
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          usage="$(/usr/libexec/PlistBuddy -c 'Print :NSMicrophoneUsageDescription' "$plist" 2>/dev/null || true)"
+          if [ -z "$usage" ]; then
+            echo "::error file=app.json::$plist has no NSMicrophoneUsageDescription, but the app requests RECORD_AUDIO. Set expo-audio's microphonePermission to the usage string in app.json — setting it on react-native-audio-api does nothing, expo-audio overwrites it."
+            exit 1
+          fi
+          echo "OK — microphone usage string present in $plist"
 
       # Same lesson, other direction: app.json listing skAdNetworkItems proves
       # nothing, because the ads config plugin only writes them when the option

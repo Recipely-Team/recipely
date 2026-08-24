@@ -1229,3 +1229,481 @@ turn one offline launch into a session with no ads.
 *The class:* **an answer that is settled for the session should not be
 re-awaited per consumer.** `await` on a resolved promise still costs a render,
 and a render is exactly the beat a user sees.
+
+## The permission the config asked for twice and the build shipped zero times
+
+Turning the microphone on for the voice assistant, `app.json` named it in two
+places: `react-native-audio-api`'s `iosMicrophonePermission` and, when that
+produced nothing, a literal `ios.infoPlist.NSMicrophoneUsageDescription`. The
+generated Info.plist carried neither.
+
+*Why:* `expo-audio`'s config plugin runs `createPermissionsPlugin`, which
+**deletes** `NSMicrophoneUsageDescription` when its own `microphonePermission`
+is `false` — and it was, deliberately, from back when the app had no microphone
+feature. A plugin that removes a key beats every plugin and every static entry
+that merely sets one. iOS denies the first microphone access outright when the
+purpose string is missing, with no prompt and nothing to show the user, and App
+Review rejects a missing purpose string on its own.
+
+*Now:* `expo-audio` is the single owner of the microphone. `check:structure`
+rule N rejects the inert spelling on the other plugin by name, and requires
+`microphonePermission` to be a non-empty string whenever `recordAudioAndroid`
+is on. CI asserts the usage string is present in the **generated** plist,
+beside the assert that has guarded `UIBackgroundModes` since §23c.
+
+*The class:* **when two plugins touch one key, the one that removes it wins,
+and a config that names something twice can still ship it zero times.** The
+same lesson as §23c read backwards: there, config said no and the artifact said
+yes. Check the artifact, in both directions.
+
+## Two capability switches that default to on
+
+`react-native-audio-api` was added for microphone streaming. Its config plugin
+defaults `iosBackgroundMode` to true — adding `UIBackgroundModes: audio`, the
+exact key that cost two App Review rejections under guideline 2.5.4 — and also
+defaults `androidForegroundService` to true, declaring a mediaPlayback
+foreground service and requesting the two `FOREGROUND_SERVICE` permissions Play
+requires a written justification for. Neither was mentioned in the library's
+README; both were found by reading the plugin.
+
+*Now:* rule N covers this plugin too: both switches must be explicitly false,
+and `androidPermissions` must be listed explicitly, because the default list
+carries the foreground-service permissions even when the service is off. A bare
+`"react-native-audio-api"` string with no options object is rejected outright,
+since that spelling silently means every default.
+
+*The class:* **read the config plugin, not the README, before adding a native
+dependency.** The capability a library grants itself by default is the one
+nobody writes down, and it lands in the artifact rather than the diff.
+
+## A transport that connected, sent its setup, and heard nothing forever
+
+The Live API transport passed every unit test — handshake, tool calls,
+resumption, interruption ordering — and against the real server it would have
+reached `setupComplete` never.
+
+*Why:* the API sends its JSON in **binary** WebSocket frames, not text ones,
+every frame including `setupComplete`. The transport read `typeof data ===
+'string'` and dropped everything else as unparseable. The fake socket in its
+tests sent strings, because that is what a fake naturally does, so the bug was
+invisible from inside the suite.
+
+*Now:* the socket asks for `arraybuffer` and the decoder accepts a string, an
+`ArrayBuffer` or a typed-array view. The fake socket delivers **binary**, like
+the real one, so the whole suite goes red without the fix rather than one test.
+
+*The class:* **a fake that is more convenient than the real thing tests the
+convenience.** Where a protocol has a wire format — framing, encoding,
+endianness — the double has to reproduce it, or the suite is green about
+something nobody ships.
+
+## The setup nobody was listening to
+
+The client built the session's whole configuration — system instruction, the
+single `runAction` tool and its action enum, modality, transcription, sliding
+window, resumption handle — and sent it in the setup frame. Measured against the
+live API, none of it had any effect.
+
+*Why:* with an ephemeral token, the setup baked in at mint time is
+authoritative and the client's setup frame is a trigger whose contents are
+discarded. Sending the full setup and sending `{ model }` produced sessions
+identical down to the prompt token count. Worse in the other direction: a token
+minted without tools, connected by a client that declared them, ran a session
+with **no tools at all** and no error to say so — the assistant simply never
+acted, and every explanation for that points at the prompt.
+
+*Now:* the system instruction, tool list and action enum live on the backend
+that mints the token; the client sends `{ setup: { model } }` and nothing else.
+`languageCode` and the resumption handle are arguments to the mint. The mapper's
+tests assert the deliberate **absence** of everything the plan had put there,
+with the measurement written down beside them.
+
+*The class:* **when a server takes the same configuration by two routes, find
+out which one it obeys before writing the one that is easier to reach.** A
+config that is ignored fails silently and looks, in code review, exactly like a
+config that works.
+
+## "You have used today's minutes" — to a user who had used none
+
+The assistant panel told the user their daily voice allowance was spent. The
+backend was simply unreachable; they had spent nothing, and the advice that came
+with it — come back tomorrow — was wrong twice over, since an outage can clear
+in a second.
+
+*Why:* a refusal and an outage both land on the same `Unavailable` status. The
+panel read the status and then guessed the reason, defaulting to the user's own
+limit because that is the common case. The reason it needed was right there and
+`null`.
+
+*Now:* the choice is a pure function with the rule written into it — only a
+STATED reason may claim a limit, everything else says voice is off without
+saying why — and its test asserts the outage case is not the limit copy.
+
+*The class:* **when two causes collapse into one state, the state cannot pick
+the message.** A default that names the likelier cause reads as certainty to
+the user, and it is the unlikelier cause that most needs the truth.
+
+## A floating dock that landed on the tab bar
+
+The assistant pill sat squarely over the third tab and swallowed taps meant for
+it, on every phone-width screen that has a tab bar.
+
+*Why:* it docked to the safe-area inset alone. The safe area describes the
+hardware, not the app's own chrome, and this app draws a tab bar above it. The
+timers bar had already solved exactly this and its computation was three files
+away.
+
+*Now:* the pill adds `controlSizes.tabBar` when a tab bar is actually present —
+and only then, because routes without one (onboarding, auth, detail) would
+otherwise float the pill off the screen edge.
+
+*The class:* **the safe-area inset is not the bottom of the app.** Anything
+docked to the bottom edge has to clear the chrome the app itself mounts there,
+and the second widget to learn this should have copied the first.
+
+## An assistant that could talk about the app and do nothing to it
+
+The voice assistant shipped its transport, its session, its registry and its UI,
+and answered every single tool call `unavailable_here`. Twenty-three actions
+were offered to the model; zero had a handler. It transcribed, it decided, it
+issued the command — and nothing happened, on any screen.
+
+*Why:* the registry is deliberately open — screens register what only they can
+perform — and nothing anywhere said the set had to be complete. Every gate was
+green, because an empty registry is a valid registry.
+
+*Now:* `check:structure` rule U compares the action vocabulary against every
+`useAssistantAction` registration and blocks on a word nothing answers. Two
+actions the plan invented were deleted rather than implemented — `writeBio`
+duplicated `updateProfile`, and `repeat` is something a model does without a
+tool.
+
+*The class:* **a registry with no required members is a feature with no
+required parts.** When the thing being built is a *set* of capabilities, the
+completeness of the set is the requirement, and it needs a check of its own —
+the individual pieces all passing says nothing about it.
+
+## A hands-free assistant whose safety gates needed a hand
+
+Every destructive action correctly stopped and asked — publish, delete, share,
+attach a photo, accept a refine. None of them could be answered by voice. The
+assistant is built for someone whose hands are covered in flour, so "shall I
+publish it?" followed by a sheet only a thumb could dismiss was worse than not
+asking: it stranded the user mid-task with a modal they could not clear.
+
+*Why:* the confirmations were added as a safety property and reviewed as one.
+Nothing about them was wrong in isolation — a `ConfirmSheet` is exactly right —
+and the gap only exists in the scenario the feature is FOR, which no unit test
+describes.
+
+*Now:* `useAssistantConfirmation` registers a `confirm` / `cancel` pair for as
+long as a sheet is open, and every sheet the assistant can raise uses it. The
+gate is not weakened: a tool call happens because the user said yes, out loud,
+to a question they were just asked about a sheet in front of them — the same
+loop as a tap, with a different limb. Registration is scoped to `visible`, so a
+stray "yes" with nothing pending answers `unavailable_here`.
+
+*The class:* **a safety gate has to be answerable in the same modality it
+interrupts.** Adding a confirmation to a voice flow and leaving it touch-only
+does not make the flow safer, it makes it unusable — and the failure is
+invisible to every test that does not act out the scenario.
+
+## The action that worked until you visited the screen that also implements it
+
+Opening My Recipes once and going back left "open the lentil soup" answering
+`unavailable_here` everywhere, for the rest of the process — even though the
+always-mounted assistant pill implements that action from anywhere.
+
+*Why:* the action registry held one handler per key. A screen that implements
+an action the pill already implements overwrote it on mount, and on unmount its
+cleanup deleted the key. Nothing re-registered the outer handler:
+`useAssistantAction`'s effect depends on the action and the registry, neither of
+which changes. The one test that existed covered the opposite ordering — a
+screen unmounting AFTER its replacement registered — so the normal case, where
+the screen underneath stays mounted and should get the action back, was the
+untested one.
+
+*Now:* each key holds a stack. `register` pushes and returns a pop that removes
+that handler wherever it sits; `run` dispatches to the top. Five actions are
+implemented by two screens each, so this was five latent instances of the same
+bug.
+
+*The class:* **an override needs a way to hand back what it shadowed.** A
+single-slot registry can express "this screen wins now" but not "and the other
+one wins again afterwards", and the second half is the one nobody writes a test
+for.
+
+## Two confirmations, and the wrong one answered "yes"
+
+On the create screen a user could ask for a refine, then ask to publish, read
+the publish sheet, say "evet" — and have the AI's rewrite accepted instead. The
+draft was silently replaced, nothing was published, and the model announced a
+successful publish because the handler answered `ok`.
+
+*Why:* both sheets registered `confirm`/`cancel` on the same keys, and the
+winner was whichever effect re-ran last. Effect order tracks state changes, not
+what is drawn on top — the refine proposal arriving after the publish sheet
+opened took the word from a modal covering it. The hook's own doc block claimed
+"the newest sheet wins, which is the one on top", which was not true and read
+as though it had been thought about.
+
+*Now:* a screen offers at most one confirmation at a time and decides which is
+pending; the hook documents that as a requirement of its callers rather than a
+property it provides.
+
+*The class:* **registration order is not z-order.** Any "the topmost one wins"
+claim made by something that cannot see the layout is a guess, and the guess is
+wrong exactly when two things are pending — the only case that matters.
+
+## Two ingredients in one breath, one row in the draft
+
+"Add two eggs and 200 g of flour" left the draft holding the flour and a blank
+row. The eggs were gone.
+
+*Why:* the model sends both as tool calls in one frame, and the session queues
+them so a later call sees what an earlier one did. It does not — not across a
+React render. The queue chains microtasks; the re-render for the first
+`onAddIngredient()` is a macrotask, so the second handler still read the
+pre-render length and both writes landed on the same index. Adding a row and
+filling it were two state updates.
+
+*Now:* `onAddIngredient(value)` appends and fills in one update. The "+" button
+still calls it with nothing, which is what a person tapping it wants.
+
+*The class:* **serialising async work does not serialise the renders it
+causes.** A queue that guarantees ordering between handlers guarantees nothing
+about the state they read, and the gap is invisible whenever calls arrive one
+at a time — which is every manual test.
+
+## A safety list nothing read
+
+`DESTRUCTIVE_ACTIONS` named the actions the assistant must never take on a
+model's say-so, and no code anywhere imported it. `unsave` was on the list and
+ran unconfirmed; the file documenting it said the opposite.
+
+*Now:* it is `CONFIRMED_ACTIONS`, `unsave` raises a sheet like the rest, and
+`check:structure` rule V fails the build if any member's handler does not
+answer `awaiting`.
+
+*The class:* **a declared invariant with no reader is worse than none.** It
+reads, in review, exactly like a question that was asked and settled — so the
+next person does not ask it either.
+
+## The reconnect that was designed, documented, and never wired
+
+The Live API drops its socket roughly every ten minutes by design, and the plan
+answered that with a resumption handle: the server sends one, the client mints
+a new token with it, and the conversation continues without paying for setup
+and context again. The transport mapped the handle, the token port took it as a
+parameter, the event union documented it — and the session store's `switch`
+sent `Resumption`, `GoAway` and `Usage` to `default: break`. Nothing ever
+supplied the handle. Every voice session died on a timer, silently, and looked
+like the socket had failed.
+
+*Why:* the path was built end to end EXCEPT the one line that consumes it, and
+every piece that exists is individually correct. `default: break` is also the
+right shape for an event union that will grow — it is what stops a server-side
+release from breaking the app — so nothing about it reads as unfinished.
+
+*Now:* a `goAway` marks the next close as a handover; the close reconnects on a
+freshly minted token carrying the handle, with the microphone and the player
+left running so the user hears a pause rather than a stop. `Usage` is kept too:
+the whole design is shaped by token cost, and the number that measures it was
+being discarded. Four tests cover it, and all four fail without the fix.
+
+*The class:* **a `default` that swallows is invisible to every check.** Ports,
+types and mappers all prove a value can travel; none of them proves anyone
+reads it. Where a union's variants are the feature, each one wants a test that
+asserts something happened — not merely that it type-checks.
+
+## "Stop" during a reconnect opened a session nobody could end
+
+Saying "stop" while the assistant was handing over to a fresh socket tore the
+session down — and then, a moment later, opened a new socket anyway. The
+microphone was already closed, so nothing was heard; the pill showed idle, so
+nothing offered to end it.
+
+*Why:* the reconnect awaits a mint and then a connect, and the user can speak
+during either. Both awaits returned into a world where the session they belonged
+to no longer existed, and neither checked.
+
+*Now:* every start and every teardown bumps an epoch, and the reconnect
+compares it after each await — returning if it changed, and closing the socket
+it just opened if the change happened during the connect.
+
+*The class:* **an await is a place the user can act.** Any async sequence that
+outlives a user-cancellable operation needs to re-check that it is still wanted
+after each suspension, not only before the first one — and the test for it has
+to interleave the cancel, which no test of the happy path ever does.
+
+## An optional parameter, and the "+" button pushed an event into a string array
+
+Adding a value parameter to `onAddStep` so the assistant could append a filled
+row broke the ordinary button beside it: the "+" is wired `onPress={onAdd}`,
+and React Native calls `onPress` WITH the gesture event. Tapping it pushed a
+`GestureResponderEvent` into `instructions: string[]`, which rendered as an
+object in a `TextInput` and rode into publish.
+
+*Why:* the prop is declared `() => void` at three levels between the button and
+the hook, so a handler that accepts a first argument still satisfies every one
+of them — TypeScript allows a function of fewer parameters where more are
+expected, and this is the mirror of that rule. No test covers the "+" button.
+
+*Now:* the blank append and the filled append are two functions.
+`onAddIngredient()` takes nothing and can never receive anything;
+`onAppendIngredient(value)` requires it. The hazard is structural rather than
+patched at one call site.
+
+*The class:* **never give an optional leading parameter to a function that is
+handed to an event handler.** The event arrives in it, the types cannot see it
+because fewer-parameter functions are assignable to more-parameter ones, and
+the value that lands is an object where a string was expected.
+
+## The innermost screen denied what the outer one could have done
+
+While My Recipes was open, "open the lentil soup" for anything not in the
+current tab answered `not_found` — even though the always-mounted handler
+underneath can open any recipe by name or id. On the Drafts tab the list it
+checked was not even the same collection, so the entire feed was unreachable by
+voice from that screen.
+
+*Why:* the registry dispatches to the topmost handler only. The code's own
+comment claimed "the feed's handler takes over", which was never true — it read
+as a described behaviour rather than an assumption.
+
+*Now:* a handler can answer `notMine` and the registry tries the one beneath
+it. A thrown handler does NOT fall through: that is a bug in that screen, and
+promoting the one underneath would run the wrong thing and look like it worked.
+
+*The class:* **a comment describing a fallback is not a fallback.** Where one
+layer narrows what another could have answered, the narrowing needs a way to
+say "not mine" — otherwise the more specific handler silently removes
+capability instead of adding it.
+
+## A confirmation on a screen that was not showing it
+
+The create screen registered its publish confirmation regardless of phase,
+while the sheet that renders it sits after three early returns. In the prompt,
+resuming and generating phases, `publishDraft` opened an invisible confirmation
+that still accepted a spoken "yes" — the user agreeing to something they could
+not see. The exit and save-error sheets could likewise be on screen while the
+refine proposal held the word.
+
+*Now:* every confirmation is scoped to the phase that renders it and to the
+absence of any sheet drawn above it.
+
+*The class:* **a confirmation's registration must be conditioned on the same
+thing its sheet is.** An early return that skips the render does not skip the
+effect, and the gap between them is a gate that accepts answers to a question
+nobody was asked.
+
+## "You can keep typing" — into a field that went nowhere
+
+Running out of the daily voice allowance is a normal outcome, and the panel
+says so: it offers the text field as the way through. Typing into it wrote the
+user's message into the transcript and dropped it. Out of budget there is no
+socket, and `sendText` wrote to the socket.
+
+*Why:* the text mode was designed as the fallback and built as a method on the
+session. Everything about it worked while a session existed — which is exactly
+when it is not needed. The one state it exists for is the one where its
+dependency is absent.
+
+*Now:* it is its own port with its own backend endpoint, one request and no
+socket. The store uses the socket while a session is live (that turn carries
+the conversation's context and a second contextless request would be slower and
+dearer) and HTTP otherwise.
+
+*The class:* **a fallback that depends on what it is falling back from is not a
+fallback.** Build the alternative path against the absence it exists for, and
+test it in that state — the happy path passes either way.
+
+## Every difficulty and every filter would have failed, on Turkish first
+
+`setDraftField difficulty=medium` compared `value.toLocaleUpperCase()` against
+`Difficulty.MEDIUM`. On a Turkish device that produces `MEDİUM` — a dotted
+capital I — which never matches. `'Italian'.toLocaleLowerCase()` is `ıtalian`,
+which never matches the taxonomy key. The app's primary locale is Turkish, so
+the devices this was built for are the ones it fails on.
+
+*Why:* locale-aware casing is the careful-looking choice, and it is correct for
+the other comparison in the same feature — matching "yoğurt" against a row the
+user is reading. The two look identical and are opposite.
+
+*Now:* `machineLower` / `machineUpper` for anything compared against a constant
+or a key; `toLocale*` stays only where the text is something a person wrote.
+
+*The class:* **case-fold by what the value IS, not by where the user is.** A
+machine constant has no locale; folding it with one turns a comparison into a
+coin toss decided by the device's language.
+
+## The fallback that answered with silence
+
+The text mode's failures were written to store state nothing rendered. Offline,
+a rejected request, or a rate limit all produced the same thing: the user's
+line in the transcript and nothing after it — the exact symptom the mode was
+built to remove, reproduced by the mode itself.
+
+*Now:* the panel reads `error` and says so, the send clears it, and the typed
+turn runs through the same queue and the same epoch guard as a spoken one — so
+two typed commands cannot race, and a reply arriving after sign-out is dropped
+instead of appended to the next user's transcript.
+
+*The class:* **an error written to state nobody reads is an error that did not
+happen.** Setting it satisfies every review that checks the failure is handled;
+only following it to a rendered pixel proves the user learns anything.
+
+| Asistan "Bağlanıyor" der, sonra hiçbir şey olmaz | Minted token soketе hiç geçmiyordu: backend `wsUrl`'i tokensız döndürdü, istemci `credentials.token`'ı hiç okumadı. Bir tarayıcı WebSocket'i header koyamaz, yani kimlik ya query parametresidir ya da hiç yoktur. Kimliksiz soketin el sıkışması TAMAMLANIR, sunucu sonra kapatır — uygulamadan bakınca askıda kalmış bir bağlantıdan ayırt edilemez. | Sahte soket artık açıldığı URL'yi kaydediyor ve üç test kimliği doğruluyor (var mı, mevcut query'ye ekleniyor mu, encode EDİLMİYOR mu — isim `/` içeriyor ve encode edilmişini sunucu reddetti). Testlerin tamamı kimlik hiç kullanılmazken geçiyordu, çünkü sahte URL'ye bakmıyordu. |
+
+| Sessize alınan oturum sekiz saniye sonra kendiliğinden ölüyordu | Sessizlik gözcüsü, sokedin bize karşı sustuğunu fark etmek için var. Sessize alınmış mikrofon hiçbir şey göndermez, dolayısıyla hiçbir şey geri gelmez — ve gözcü, kullanıcının "sesi aç" öneren bir düğmeye bastığı yerde ateşleniyordu. Oturum da gidiyordu, sessize alma durumu da, üstelik hiçbir bildirim olmadan. **Kullanıcının seçtiği sessizlik, toparlanılacak bir sessizlik değildir.** | Sessize alırken gözcü duruyor, açarken yeniden kuruluyor. İki test: sessize alınmış oturum 30 saniye sonra hâlâ canlı, sesi açılmış oturum ise ölüyor (ikincisi olmadan birincisi yanlış sebeple geçerdi — teardown asenkron olduğu için zamanlayıcıyı senkron ilerletmek yetmiyor, `advanceTimersByTimeAsync` şart). |
+| Bir bileşen sevk edildi ama uygulamada ona ulaşan yol yoktu | Mini bar yazıldı, testleri yeşildi, kendi doküman bloğu onu "asistanın yaşaması gereken durum" diye tanımlıyordu — ve `setView(Mini)` çağrısı hiçbir yerde yoktu. Paneli kapatan tek düğme oturumu da kapatıyordu. Test paketi yeşil kaldı, çünkü test bileşeni doğrudan mount ediyordu: **bir bileşeni doğrudan kurgulayan test, ona giden yolun var olduğunu kanıtlamaz.** | Panel başlığı küçültme ile kapatmayı ayrı düğmelere böldü; küçültme oturumu canlı bırakıyor. Test, kullanıcının bulacağı erişilebilirlik etiketinden basıp iki geri çağrının karışmadığını doğruluyor. Yeni bir görünüm durumu eklerken sorulacak soru: ona hangi kullanıcı hareketi götürüyor? |
+
+| Sohbet, altındaki ekranın dokunuşlarını yutuyordu | Asistan artık uygulamanın üstünde yüzüyor, arkasında panel yok. Sarmalayıcıya `pointerEvents="box-none"` koymak yetmedi: muafiyet yalnızca sarmalayıcıya işliyor, çocuk hâlâ isabet hedefi — ve o çocuk bir `FlatList`. ScrollView'ün temel stili `flexGrow: 1` olduğu için liste bütün bandı dolduruyor ve **balonlar arasındaki şeffaf boşluklar dahil** her dokunuşu kesiyordu. Gözden kaçmasının sebebi: boş transcript içerik boyutunda bir View döndürüyor, yani tek pass-through durumu tam da test ettiğim durumdu. | Liste turlarına göre boyutlanıyor (`flexGrow: 0` + daralan kapsayıcı), üstündeki boşluğu `pointerEvents="none"` bir ara alıyor. Doğrulama göz kararıyla değil isabet testiyle: `elementFromPoint` boş bantta sayfanın kendi içeriğini, düğmelerde düğmeyi döndürüyor. **Kural: yüzen bir katmanı boş durumunda sınamak hiçbir şey kanıtlamaz.** |
+
+| Mikrofon izni kullanıcıya hiç sorulmadı | İzin `startVoice`'ın **son** adımıydı: token üretimi, soket ve oynatıcı hazırlığı ondan önce geliyordu. Daha erken bir adım düştüğünde izin istemine hiç ulaşılmıyordu — kullanıcı hiç sorulmadan "Bu istek ulaşmadı" görüyordu. Üstüne panel her `Failure`'ı o tek cümleye indirdiği için, on dört katalogda duran `micDenied` cümlesi hiçbir zaman ekrana gelmedi. **Sesli oturumun mikrofonsuz anlamı yok; o halde ilk sorulacak şey odur.** | `MicrophoneInterface.ensureAccess()` ayrı bir adım ve `startVoice`'ın ilk işi; reddedilirse token bile harcanmıyor ve `AssistantDenialReason.MicrophoneDenied` olarak bildiriliyor. Test: reddedildiğinde `calls.mints` boş kalıyor. Ayrıca yerli izin çağrısı `try` içine alındı — kütüphane `currentActivity`'yi zorla açıyor ve uygulama ön planda değilse cevap vermek yerine **fırlatıyor**. |
+| Dev derlemesinde hata kendi adını söylemiyordu | `__DEV__` dağıtılan her artefaktta false — dev APK dahil, çünkü release modda derleniyor. Yani gerçek bir derlemeyi denerken hiçbir tanılama görünmüyordu ve iki tur "hata veriyor ama neden bilmiyoruz" ile geçti. | `IS_DEV_BUILD` (varyanttan okunur, `__DEV__`'den farklı) altında panel `Failure.message`'ı satıra ekliyor. **Asla davranış bu bayrağa bağlanmaz** — kullanıcının aldığından farklı davranan bir derleme hiçbir şey kanıtlamaz. |
+
+| Sesli oturum "Audio output could not start: offset must be a finite non-negative number: -1" ile açılmıyordu | Kütüphanenin kendi imzası `start(when = 0, offset = -1)` ve kendi koruması negatif offset'i reddediyor — yani **tiplerinin davet ettiği argümansız çağrı her seferinde patlıyor**. Elle yazılmış bir sahte nesne her argümanı kabul edeceği için hiçbir birim testi bunu göremezdi: doğrulama bizim kodumuzda değil, kütüphanede. | `start` artık iki argümanı da açıkça geçiyor. Test, sahte bir düğüm yerine **kütüphanenin gerçek `start`'ını** kullanıyor (modül dosyası doğrudan require ediliyor; paket kökü Jest'te yerli modül arayıp fırlatıyor) — argümanlar düşerse test, cihazın verdiği mesajın aynısıyla düşüyor. **Kural: bir kütüphane çağrısını, o kütüphanenin kendi doğrulamasına karşı sına.** |
+| Webde doğruladım, cihazda çıktı | Platform çiftlerinde tarayıcı `*.web.ts`'i, telefon `*.ts`'i çalıştırır — ortak satır yoktur. Asistanın ses yolunu tarayıcıda üç kez doğruladım; kırılan dosyaya hiç dokunmamıştım. | Yerli yarının artık kendi testleri var (`pcm-player.test.ts`, `microphone.test.ts`). **Kural: tarayıcıda yapılan doğrulama, `*.web.ts` dışındaki hiçbir şey hakkında kanıt değildir** — bir platform çifti gördüğünde hangi yarıyı sınadığını sor. |
+
+| Başlamamış bir oturum canlı görünüyordu | `live` üç ayrı yerde `status !== Idle` diye yazılmıştı, ve `Unavailable` de `Idle` değil. Mint 404/401 döndüğünde panel **yeşil nokta + Sustur + Bitir** gösteriyordu — olmayan bir oturum için, üstelik oturumu başlatan düğmeye dönüş yolu bırakmadan. Emülatörde görüldü; tarayıcıda görülmemişti çünkü orada mint hiç denenmiyordu. | Tek bir `assistantIsLive` var: `Idle` ve `Unavailable` canlı değil, `Connecting` canlı (kullanıcı kurulmakta olan bağlantıyı iptal edebilmeli). Testi her durumu tek tek sabitliyor. **Aynı soruyu üç yerde ayrı ayrı yazmak, üçünün de aynı anda yanlış olmasının yoludur.** |
+
+| Asistan kendi sesini duyup kendine cevap veriyordu | Telefon tezgâhta, hoparlörden çıkan ses mikrofona geri giriyor; model kendi cümlesini kullanıcının yeni komutu sanıp cevaplıyor ve bu sonsuza kadar sürüyordu. Kütüphanenin oturum ayarları **yalnızca iOS** (`iosMode`, `iosCategory`…), yani Android'de akustik yankı bastırmayı JS'ten açmanın yolu yok. | Kuyruğa alınan sesin süresi hesaplanıyor ve o bitene + kısa bir kuyruk payına kadar mikrofon **hiçbir şey göndermiyor**; kesme geldiğinde kuyruk boşaldığı için anında açılıyor. Bedeli: asistan konuşurken sesle sözünü kesmek çalışmıyor (Sustur ve Bitir çalışıyor) — kendi kendine konuşan bir oturumu zaten kesemezdin. **Kural: yankı bastırma yoksa, konuşurken dinleme.** |
+| Duraklarsan oturum sessizce ölüyordu | `SILENCE_TIMEOUT_MS = 8_000` idi. Live API kimse konuşmazken hiçbir şey göndermez, yani yemek yaparken doğal olan her duraklama — adımı okumak, buzdolabına gitmek — ölü soketten ayırt edilemiyordu. Emülatörde görüldü: bağlandı, sekiz saniye sonra hiçbir açıklama olmadan yok oldu. | 90 saniye (sınırsız olamaz: açık oturum heartbeat ile günlük hakkı yiyor) ve süre dolunca transcript'e "Durdu" rozeti düşüyor — sessizce kaybolmuyor. |
+| Hatadan sonra başlatma düğmesi ilk basışta çalışmıyordu | Hem kanca hem mağaza "Idle mi?" diye soruyordu; başarısız oturum `Unavailable` bırakıyor, o da Idle değil — dolayısıyla ilk basış **durdurma** çağırıyordu. Kullanıcı aynı düğmeye iki kez basmak zorundaydı. Emülatörde sayarak görüldü: tek dokunuşta 0 istek, ikincisinde 1. | İkisi de `assistantIsLive` soruyor. **Aynı soruyu iki katmanda ayrı ayrı yazmak, ikisinin de aynı anda yanlış olmasının yolu.** |
+| Asistan giriş ekranında görünüyordu | Kök yerleşimde bir kez mount ediliyor ve rotaya bakmıyordu. Şifre yazamayacağı bir ekranda durup yazacakmış gibi görünüyordu. | `useAssistantIsOffered`: onboarding/login/register/forgot-password/verify-code'da hiç render edilmiyor, her biri testli. |
+| Şef düğmesi akışın filtre düğmesini örtüyordu | İkisi de sağ alt köşede, aynı yükseklikte. Asistan uygulama geneli olduğu için ekranın kendi yüzen kontrolünden habersizdi. | `useAssistantFloatingClearance` — `useTabBarState` ile aynı desen: yol bazlı. Emülatörde görsel olarak doğrulandı. |
+
+| Ses çıkışı, cihazın çalışmadığı bir hızı dayatıyordu | Bağlam `new AudioContext({ sampleRate: 24000 })` ile açılıyordu — modelin gönderdiği hız. Android'in ses HAL'ine çalışmadığı bir hızı sormak; kabul edebileceği, sessizce reddedebileceği ya da **çökebileceği** bir istektir. Bir Xiaomi'de `libaudioclient.so` içinde SIGSEGV bildirildi (sembolsüz, o yüzden kanıt değil güçlü şüphe). Yanında yatan gerçek hata: `createBuffer(..., context.sampleRate)` 24 kHz örnekleri bağlamın hızıyla etiketliyordu — **sadece bağlamı zorla eşitlediğimiz için doğru çalıyordu**; cihaz başka bir hız verse ses yanlış hızda çalardı. | Bağlam donanımın istediği hızda açılıyor, örnekler `resample` ile ona uyduruluyor (mikrofon yolunun zaten kullandığı fonksiyon) ve tampon gerçek hızıyla etiketleniyor. Test bağlamı bilerek 48 kHz: 2400 örnek girip 4800 çıkıyor. **Kural: yerli ses katmanına bir yapılandırma dayatma — ne verdiğini sor ve ona uy.** |
+
+| Bağlanırken "Bitir"e basmak hiçbir şey yapmıyordu | `startVoice` beş şeyi `await` ediyor ve hiçbirinden sonra oturumun iptal edilip edilmediğine bakmıyordu. `Connecting` bilerek canlı bir durum (kullanıcı kurulmakta olan bağlantıyı iptal edebilsin diye), yani Bitir ekranda. Basıldığında `teardown` henüz açılmamış şeyleri kapatıyor, sonra `startVoice` kaldığı yerden devam edip **soketi açıyor, mikrofonu açıyor, faturalandırmayı başlatıyor**. Üstelik `heartbeat` tek değişken olduğu için üst üste binen iki başlatma, birincinin zamanlayıcısını asla temizlenemez hale getiriyordu. | `epoch` ilk `await`'ten önce artırılıyor, `startedAt` yakalanıyor ve beş noktanın her birinde `abandoned()` kontrolü var; her iptal o ana kadar açılanı çıkış-önce sırasıyla bırakıyor. Koşum her adımı ayrı ayrı askıda tutuyor — **temizlik kodu içeren dört nokta daha önce hiçbir testte çalışmıyordu**, yani yanlış bırakma sırası yeşil geçerdi. |
+| `connect` sonsuza kadar bekleyebiliyordu | Yalnızca `Ready`, hata veya kapanma ile sonuçlanıyordu; açılıp sonra susan bir soket promise'i süresiz asılı bırakıyordu — bu sabah başladığımız semptomun ta kendisi. Mikrofon ondan **sonra** açıldığı sürece bedeli yoktu; sıralamayı düzeltip mikrofonu öne aldığımda bu, **açık ve kayıt yapan bir mikrofonun süresiz tutulması** oldu: kayıt göstergesi yanıyor, sessizlik gözcüsü henüz kurulmamış, hiçbir şey saymıyor. | 15 saniyelik sınır, `NetworkFailure` ile sonuçlanıp soketi kapatıyor. **Ders: bir cihazı soketin önüne almak, soketin sınırsız beklemesini cihaz sızıntısına çevirir.** |
+| Webde mikrofonu reddetmek "istek ulaşmadı" diyordu | Reddi **nerede olduğuna** göre ayırt ediyordum: yerlide istem `ensureAccess`'te olduğu için `start`'ta düşen her şey başka bir sebep demek. Webde öyle değil — tarayıcı önceden sormaya izin vermez, istem `getUserMedia`'nın içindedir. Yani Block'a basan kullanıcıya ağ hatası tekrar denetiliyordu ve `micDenied` o platformda tamamen ulaşılamaz olmuştu. | Ret artık **türüyle** tanınıyor: `FailureCode.Forbidden`. Tarayıcının `NotAllowedError`/`SecurityError`'ı buna eşleniyor. `microphone.web.ts`'in ilk testleri de bununla geldi — o dosyanın hiç testi yoktu ve tarayıcıda yaptığım her doğrulama tam olarak orayı çalıştırıyordu. |
+
+| Asistanın her cevabı kelime kelime ayrı baloncuk oluyordu | Transkripsiyon **akış halinde** gelir; her parçayı yeni satır olarak eklemek tek bir cümleyi "Baklava" / "yapay" / "zeka" / "tarafından" diye bir sütuna çeviriyordu. Konuşmanın akıcı görünmemesinin büyük kısmı buydu. | Aynı konuşan tarafın parçaları açık satıra ekleniyor; sıra `turnComplete`, konuşanın değişmesi ya da kesilme ile kapanıyor. Parçalar kendi boşluklarını taşıdığı için geldiği gibi birleştiriliyor. Bu arada olayın `final` alanının **hiçbir zaman true olmadığı** ortaya çıktı — mapper her yerde false yazıyordu, hiçbir üretim kodu okumuyordu ve testler true geçerek uygulamanın ulaşamayacağı bir durumu sınıyordu. Alan silindi: **kimsenin sağlamadığı bir garantiyi belgeleyen alan, yokluğundan daha kötüdür.** |
+
+| Asistanın "hangi ekrandaysan oradan çalış" yedeği, kullanıcının zaten durduğu ekranın ikinci kopyasını açıyordu | Yedek, kayıt defterinin normal yığınına konmuştu ve "en dışta" olması yalnızca React'in efekt sırasının tesadüfüydü: çocuklar ebeveynlerden **önce** boşaltılır, yani kökle aynı commit'te mount olan bir ekran önce kaydoluyor ve yedek en içe düşüyordu. Uygulama doğrudan o ekrana açıldığında (web yenilemesi, bildirim, derin bağlantı) yedek önce cevap veriyor, zaten açık olan ekranı tekrar push ediyordu — geri tuşu artık oradan çıkmıyor. | Kayıt defterinde ayrı bir **yedek katmanı** var; yığın tükendikten sonra bakılıyor, yani "en son" mimari olarak doğru, bir layout dosyasındaki satır sırasına bağlı değil. **Kural: görünmez bir davranışı, birinin z-order için değiştirebileceği bir satıra dayandırma.** |
+| Var olan bir şey istendiğinde yenisini uyduruyordu — ikinci kez | "Aynısını üret"i tariflerde düzelttim, aynı commit'te taslaklarda geri getirdim: taslak eylemleri oluşturma ekranına haritalanmıştı ve o ekran varışta **yeni boş bir taslak** yapıyor. Yani akıştan "iki yumurta ekle" demek, boş bir editör açıp içine iki yumurta koyuyordu. | Öznesi olmayan hiçbir eylem haritada değil. **Ölçüt: eylemin öznesi zaten var mı?** Profil bir tane, ayarlar bir tane, bildirimler bir tane — oraya gidip yapmak, kullanıcının parmağıyla yapacağının aynısı. Taslak ve tarif eylemlerinin öznesi seçilmeden yoktur, ve onu yaratmak bir tahmindir. |
+
+| Asistana yazarak sorunca 10 saniyede "Bu istek ulaşmadı" diyordu | Yazma yolu `DEFAULT_REQUEST_TIMEOUT_MS` (10 sn) kullanıyordu — oysa bu bir **model çağrısı**, veritabanı sorgusu değil. Repoda tam bunun için `AI_REQUEST_TIMEOUT_MS` (90 sn) zaten vardı ve bu çağrı onu hiç istememişti. İstek yanıt gelmeden iptal ediliyor, ekran ise asistanın hâlâ üzerinde çalıştığı bir soru için "ulaşmadı" diyordu. | İstek AI zaman aşımını açıkça istiyor; testi hem bunu hem de o değerin düz bir sorgudan belirgin şekilde uzun olduğunu sabitliyor. **Kural: bir modelden cevap bekleyen çağrı, bir tablodan cevap bekleyen çağrıyla aynı sabrı paylaşmaz.** |
+
+| Asistan "Aradı · baklava" diyordu ama webde hiçbir şey aramıyordu | Arama, akışı `?q=` ile açıyor ve o parametre ekranın **kendi** `search` state'ine yazılıyordu. Ama aynı dosyada tek satır var: `const effectiveSearch = isWebShell ? webSearchQuery : search;` — yani webde okunan alan üstteki ortak başlığın alanı. Parametre okunmayan yere yazılıyor, işleyici başarı döndürüyor, transcript'e "Aradı" rozeti düşüyor ve akış hiç kımıldamıyordu. **Bir işleyicinin `ok` dönmesi, işin görüldüğü anlamına gelmez.** | Parametre iki alana da yazılıyor; hangisinin okunacağını kabuk belirler. Test, web alanına yazıldığını sabitliyor ve düzeltme olmadan düşüyor. Arama da `push` yerine `navigate` kullanıyor — kullanıcı zaten akıştayken push, yalnızca sorgusu farklı ikinci bir kopya yığıyordu. |
+
+| Arka arkaya söylenen iki şey tek baloncukta birleşiyordu | Baloncuk birleştirmesi turu yalnızca `turnComplete`, konuşanın değişmesi ve kesilmeyle kapatıyordu. Araya cevap girmeyen iki söyleyiş arasında hiçbir olay yok, dolayısıyla ikisi birleşip "…ekrandakiEkrandaki ilk tarif" diye okunuyordu. API bir turun içinde sınır işaretlemiyor. | Parça akışında 1,2 saniyelik boşluk turu kapatıyor — bir söyleyişin parçaları kesintisiz gelir, bu yüzden **duraklamanın kendisi tek sınırdır**. İki test: boşluktan sonra yeni baloncuk, parçalar akarken tek baloncuk. |
+
+| Asistanın eylemleri, o ekranda anlamlı olmadıkları hâlde kayıtlıydı | Oluşturma ekranı taslak eylemlerini **prompt fazında da** kaydediyordu. Orada editör yok: "iki yumurta ekle" kullanıcının göremediği bir nesneye yazıp başarı diyordu, `publishDraft` ise onay sayfası açılacakmış gibi `awaiting` dönüyordu — ama o fazda sayfa hiç render edilmiyor, dolayısıyla kullanıcının söylediği "evet" hiçbir şeye çarpmıyordu. Aynı dosyadaki iki onay zaten `isPreview` ile korunuyordu; eylemlerin kendisi korunmuyordu. | `useAssistantAction` artık bir `isEnabled` alıyor ve taslak eylemleri onaylarla aynı koşula bağlı. **Kural: bir eylem, o ekranda anlamlı olduğu sürece kayıtlı olmalı — "ekran açık" ile "eylem anlamlı" aynı şey değil.** |
+| "İkinciyi aç" hata ekranına götürüyordu | Akıştaki `openRecipe` yalnızca ada göre eşleşiyor, eşleşmezse argümanı **id sanıp** deniyordu. "2" hiçbir tarif adına uymadığı için `/recipes/2` açılıyor ve var olmayan tarif ekranına düşülüyordu. | Sıralı referansı zaten çözen `rowAt` kullanılıyor, ve id denemesi yalnızca gerçekten id'ye benzeyen argümanlar için yapılıyor. Eşleşme yoksa "bulunamadı" — açılamayacak bir sayfayı açmaktan iyidir. |
+| Zamanlayıcıyı durdurmak yalnızca tarif ekranında çalışıyordu | Zamanlayıcı çubuğu **uygulama geneli** mount ediliyor ve üstünde duraklat/durdur düğmeleri var; ama eylemler yalnızca tarif detayında kayıtlıydı. Ocakta bir şeyle akışa yürüyüp "zamanlayıcıyı duraklat" demek, düğmesi ekranda dururken `unavailable_here` alıyordu — özelliğin var olma sebebi olan an. | Kontroller pill'de, yani çubukla aynı ömürde kayıtlı. Tek zamanlayıcı varken isim gerekmiyor, birden fazlaysa ada/sıraya göre seçiliyor, hiç yoksa **durdurmadığı bir şeyi durdurdum demiyor**. |
+| Modal kapanırken karartma da panelle birlikte aşağı kayıyordu | Sunum `Modal`'ın kendi `animationType="slide"`'ına bırakılmıştı ve o, arka plan dâhil **tüm pencereyi** kaydırır. Kapanışın beşte bir saniyesi boyunca uygulama görünüyor ama üstünde geri çekilen bir gölge duruyordu. Karartma tek bir soruyu yanıtlar — "bu ekranın önünde bir şey var mı" — ve cevap hayır olduğu anda çizilmeyi bırakmalıdır. | Pencerenin animasyonu kapatıldı (`animationType="none"`); panel kendi yüksekliği kadar yol alıyor, karartma yalnızca **açılışta** beliriyor ve kapanışta aynı karede sıfırlanıyor. Panel çıkışını tamamlayana kadar `Modal` mount kalıyor. **Kural: bir katmanın animasyonu, o katmanın anlamına ait olmalı — pencereye devredilen animasyon her şeyi aynı anda taşır.** |
+| Karanlık modda açılış ekranı beyazdan siyaha atlıyordu | `Theme.AppCompat.DayNight` karanlık modda neredeyse siyah bir `windowBackground` boyar ve native splash devredip React Native ilk kareyi çizene kadar kullanıcının baktığı pencere odur — emülatörde bundle beklenirken bir dakikadan uzun ölçüldü. `app.json`'da `expo.backgroundColor` yoktu; olsa bile prebuild yalnızca `values/` yazar ve gece override'ı stilin tamamını değiştirdiği için gündüz temasındaki her item düşerdi (`statusBarColor` ve `navigationBarColor` şeffaflığı dâhil — bunlar zaten sessizce kayboluyordu). | `expo.backgroundColor: #F5F5F4` + gece `AppTheme` gündüzdeki bütün item'ları yineliyor. **Üretilen artefakt kontrol edildi**, config değil: `values/colors.xml`'de `activityBackground`, iki `styles.xml`'de de `android:windowBackground`, iOS `Info.plist`'te `RCTRootViewBackgroundColor`. **Kural: bir Android stil override'ı stilin tamamını değiştirir — eklemek için önce hepsini yinele.** |
+| Yazılan bir soru "bu istek ulaşmadı" ile dönüyordu | Google `generateContent` için 503 "high demand" veriyordu ve `GeminiAssistantResponder` tek deneme yapıp pes ediyordu. Dev kutusunun bir öğleden sonrasındaki loglarda beş adet `assistant_message_rejected` (hepsi 503) ve bir zaman aşımı var; her biri kullanıcının cümlesini yazıp ekranın "gitmedi" demesini izlemesiyle bitmiş, oysa tekrar sormak işe yarayacaktı. | Geçici olanlar (429/500/502/503/504, ağ hatası, boş cevap) havuzdan yeni anahtarla üç kez deneniyor; kalıcı olanlar (400/403) denenmiyor — aynı cevabı üç kez almak kullanıcıyı sadece bekletir. Üç deneme, uygulamanın 90 sn'lik AI bütçesine sığıyor. |
+| Duran orb "animasyon yok" gibi görünüyordu | Halka, yörünge ve dalga formunun tamamı **canlı oturuma** ait ve doğru olarak başka zaman çizilmiyor. Geriye kalan tek hareket 5 saniyede 3 piksellik bir sürüklenmeydi: bu yavaş bir animasyon değil, durağan bir görüntüdür. Ses bağlanamayınca (yukarıdaki 503) ekranda hiç hareket kalmıyordu. | Nefes 7 piksele ve 2,8 saniyeye çekildi, üzerine %2,5'lik bir ölçek nabzı eklendi; konuşurken ölçek yine seviyeyi gösteriyor, çünkü o daha bilgilendirici. **Kural: algı eşiğinin altındaki bir animasyon, olmayan animasyondur.** |
+| Kullanıcı konuştuktan sonra hiçbir şey olmuyormuş gibi görünüyordu | Bir söyleyişin bitmesiyle cevabın ilk sesi arasında store **hiçbir durum değiştirmiyordu**: pill "dinliyor" demeye devam ediyor, dalga formu düz duruyordu. Kullanıcı cevap üreten bir modeli ölmüş bir oturumdan ayırt edemiyor — ekran görüntüsünde üst üste üç söyleyiş var, sonuncusu "Duyabiliyor musun?". Protokolde "sıra sende" diye bir olay yok; tek işaret, söyleyişi bitiren duraklamanın kendisi. | Yeni bir `Thinking` durumu (`Working`'den ayrı: orada **uygulama** görünür bir iş yapıyor, burada hiçbir şey yapmıyor, modeli bekliyor) — söyleyişi kapatan 1,2 sn'lik boşlukta giriliyor, ama yalnızca `Listening`'den, yoksa gelmiş bir cevabın üstüne geri adım atardı. Ayrıca 12 saniyelik bir tavan: cevap gelmezse `Listening`'e dönüp "ulaşmadı" diyor. **Kural: kullanıcının beklediği her aralığın bir durumu olmalı — durum değişmiyorsa ekran susuyordur.** |
+| "Filtreleri temizledim" diyordu ama hiçbir şey temizlenmiyordu | İşleyici, önce `activeFilterCount === 0` diye bakıp erken dönüyordu. İki ayrı şekilde yanlış: (a) o sayı **çipleri** sayar, arama kutusunu değil — yalnızca aramayla daraltılmış bir akış "temizlendi" diye rapor ediliyor, ekranda hiçbir şey kımıldamıyordu; (b) sayı bir **önceki render**'dan okunur, dolayısıyla aynı turda uygulanmış bir filtre için de sıfırdır. Kullanıcıya söylenen ile ekrandaki durum ayrışıyordu. | Temizleme koşulsuz ve **aramayı da** kapsıyor: `onClearAllFilters` filtreleri ve sorguyu tek `reload` ile boşaltıyor (ayrı ayrı temizlemek iki istek çıkarıyor ve eskisi ikinci gelirse akış cevaplamayan satırları saklıyordu). `removeFilter search=` ile arama tek başına kaldırılabiliyor. **Kural: bir turda değişen state'ten okunan sayı, o turun kararını veremez.** |
+| Profili düzenle ekranında asistan alanları dolduruyor ama kaydedemiyordu | Ekran yalnızca `updateProfile` kaydediyordu ve o da yalnızca alana yazıp `awaiting` dönüyordu — "kaydet" ise `unavailable_here` alıyordu. Elleri hamurlu biri için yapılmış bir asistan, tek işi Kaydet düğmesi olan ekranda o düğmeye basamıyordu. | Ekran `save` (ve soruya cevap olarak `confirm`/`cancel`) kaydediyor; hepsi başlığın kendi `onSave`'ini çağırıyor. `onSave` artık **ne yaptığını** dönüyor ve form değerlerini bir ref'ten okuyor: alan yazma + kaydet aynı turda arka arkaya çalışır ve React araya render etmez — render'ın değerini kaydetmek eski adı kaydedip "oldu" demek olurdu. Ekran satırı `unsaved=yes|no` taşıyor. |
+| "Aşağı kaydır" çoğu ekranda çalışmıyordu | `scroll` yalnızca akış ve tarif detayı tarafından kaydedilmişti; uygulamanın en uzun listeleri (Oluşturduklarım, bildirimler, ayarlar, profil) hiç cevap vermiyordu — kullanıcı kaydırma çubuğuna bakarken `unavailable_here`. Ayrıca aynı hedef aritmetiği iki ekranda ayrı ayrı yazılmıştı, iki ayrı 0.85 sabitiyle. | Tek `useAssistantScrollable`: ref + offset takibi + `scroll` kaydı; ekran onu listesine `{...scrollable}` diye yayıyor (Oluşturduklarım'ın dört dalı da dâhil). `ScreenContainer scrollable` olduğunda kendi kendine kaydoluyor. Aritmetik ve adım oranı tek dosyada (`scroll-tuning.ts`), testi yönleri tek tek sabitliyor. |
+| "Kaydetmek istemiyorum" dendiği hâlde taslak kaydedilmiş kalıyordu | Çıkış sayfası üç cevaplı bir soru ve asistanın cevaplayabildiği tek sayfa **o değildi**. "Çık" genel `goBack`'e gidiyor, o da `router.back()` çağırıyordu: soru hiç sorulmadan ekrandan çıkılıyor, otomatik kaydetmenin yazdığı taslak Tariflerim'de duruyordu. | Oluşturma ekranı kendi `goBack`'ini kaydediyor — kapatma düğmesinin ta kendisi — ve soru açıldıysa `awaiting` dönüyor. Sayfa açıkken `confirm`/`save` taslağı kaydedip çıkıyor, `cancel` **atıyor**: silme yalnızca üstünde "Vazgeç" yazan sayfa kullanıcının önündeyken erişilebilir. **Kural: bir ekranın çıkış sorusu varsa, geri gitmek o sorudan geçmeli.** |
+| Asistan "yalnızca tümünü okundu yapabiliyorum" diyordu | Bildirimler ekranı yalnızca `markAllRead` kaydediyordu; tek satırı okundu yapmak sözlükte yoktu. Üstelik ekran içeriğini de tanımlamıyordu, yani "ikincisini" diyecek bir referans bile yoktu. | `markRead` sözlüğe eklendi ve ekran onu `rowAt` ile çözüyor (sıraya ya da kullanıcının söylediği ada göre); ekran satırı satırları ve okunmamış sayısını taşıyor. Zaten okunmuş bir satır istek çıkarmadan başarı dönüyor. Modelin kelimeyi öğrenmesi için backend'deki action enum'ı da güncellendi. |
+| Prompt ekranındaki "taslağına devam et" kartına sesle basılamıyordu | `openDraft` yalnızca Tariflerim'in taslaklar sekmesinde kayıtlıydı. Kartı gösteren ekran — kullanıcının "taslağıma devam et" dediği yer — o eylemi hiç cevaplamıyordu. | Prompt fazı kartı varken `openDraft` kaydediyor; argüman verilmezse tek taslağı sürdürüyor, başka bir ad söylenmişse `notMine` ile dışarı devrediyor. Ekran satırı `resumable=<ad>` taşıyor, böylece model sürdürülecek bir şey olduğunu biliyor. |
+| Bir sayfa, kendisinin cevaplanıp cevaplanamayacağına karar veren koşulun içindeydi — iki kez | (1) Oluşturma ekranının `goBack`'i koşulsuz kayıtlıydı: yayınlama onayı ekrandayken "çık" denince çıkış sayfası **onun altında** açılıyor, `exitOrErrorOpen` true olduğu için yayınlama onayının evet/hayır'ı iptal ediliyor ve `cancel` taslağı **silmeye** bağlanıyordu — kullanıcı "Yayınlansın mı?" sayfasına bakarken sesli bir "hayır" işini siliyordu. (2) Bunu düzeltirken `assistantPublishOpen`, yayınlama onayının **kendi** koşulunun (`publishOpen && !exitOrErrorOpen`) değillediği değere kondu: koşul artık hiçbir durumda sağlanamıyor, yani yayınlama onayı sesle hiç cevaplanamıyordu. Aynı hata, bir satır ötede, ters yönde. | Üç boole ifadesi bir ekran dosyasından çıkıp saf bir fonksiyona taşındı (`assistantSheetGates`) ve testi her kapıyı tek tek sabitliyor — "açık olan sayfa kendi kapısında yer almaz" artık okunarak değil çalıştırılarak doğrulanıyor. **Kural: bir koşulun içine, o koşulun hakkında olduğu şeyi koyma; ve karşılıklı dışlama mantığı bir bileşenin gövdesinde saklanamayacak kadar kolay bozulur.** |
+| Cihaz teşhisi, var olmayan iki alanı okuyup üçüncüsünde kullanıcının adını gönderiyordu | `Constants.isDevice` ve `Constants.nativeBuildVersion` doğru isimler gibi duruyor ama `expo-device` ve `expo-application`'a ait — ikisi de bu uygulamanın bağımlılığı değil, yani gerçek cihazda ikisi de `undefined`: "gerçek donanım mı" her telefonda **simulator** cevabını veriyor, build numarası hep `unknown` oluyordu. Testin kendisi bu iki alanı mock'ta **uydurduğu** için yeşil kalıyordu. Üstelik iOS'ta model için `Constants.deviceName`'e düşülüyordu; o da `UIDevice.name`, yani çoğu telefonda "Ali'nin iPhone'u" — modülün "kimseyi tanımlamaz" diyen sözleşmesine rağmen her açılışta bir ismi crash konsoluna gönderecekti. | Yalnızca uygulamanın **beyan ettiği** paketlerin gerçekten yayınladığı alanlar okunuyor (`Constants.platform.ios.model` / `buildNumber`, `platform.android.versionCode`); donanım alanı kaldırıldı. Test artık gerçek `expo-constants` yüzeyinden kurulu ve profildeki **hiçbir değerin** cihaz adını içermediğini tek tek doğruluyor. **Kural: sabit bir yanlış cevap veren alan, olmayan alandan kötüdür — ve bir mock, olmayan bir API'yi var gibi göstermeye yarayan en kolay araçtır.** |

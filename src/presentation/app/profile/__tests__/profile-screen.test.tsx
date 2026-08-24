@@ -26,6 +26,14 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { t } from '@presentation/i18n';
 
+// The screen is rendered bare here, without a StoresProvider — these cover
+// what it displays, not how it is wired. The assistant hook only registers
+// actions, so stubbing it keeps that focus.
+jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-action', () => ({
+  useAssistantAction: (): void => {},
+}));
+
+
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
 }));

@@ -10,6 +10,7 @@ export const RoutePaths = {
   register: '/register',
   forgotPassword: '/forgot-password',
   verifyCode: '/verify-code',
+  resetPassword: '/reset-password',
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   importRecipe: '/import-recipe',
@@ -29,5 +30,27 @@ export const RoutePaths = {
   editProfile: '/edit-profile',
   settings: '/settings',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /**
+   * The feed, arriving with the search box already filled.
+   *
+   * The assistant navigates like a person rather than reaching into the feed's
+   * store: it opens the screen with the query, the field shows it, and the
+   * user watches the search they asked for happen.
+   */
+  recipesWithSearch: (query: string): string => `/recipes?q=${encodeURIComponent(query)}`,
+  /** The create screen, arriving with the prompt filled and generation started. */
+  /**
+   * The create screen, seeded from a recipe that already exists.
+   *
+   * Asked to "make the same recipe", the assistant used to hand the words to
+   * the generator, which invented something adjacent. A copy is a copy: the
+   * fields are read from the recipe, and the user edits from there.
+   */
+  createRecipeFromRecipe: (recipeId: string): string =>
+    `/create-recipe?fromRecipeId=${encodeURIComponent(recipeId)}`,
+  createRecipeWithPrompt: (prompt: string): string =>
+    `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
+  /** My Recipes opened on one of its tabs — saved, liked, created, drafts. */
+  myRecipesTab: (tab: string): string => `/my-recipes?tab=${encodeURIComponent(tab)}`,
   loginWithRedirect: (pathname: string): string => `/login?redirect=${encodeURIComponent(pathname)}`,
 } as const;

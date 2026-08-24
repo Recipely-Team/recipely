@@ -31,6 +31,11 @@ import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
+import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
+import { AssistantTokenRepository } from '@infrastructure/assistant/token/assistant-token-repository';
+import { GeminiLiveSession } from '@infrastructure/assistant/live/gemini-live-session';
+import { Microphone } from '@infrastructure/assistant/live/audio/microphone';
+import { PcmPlayer } from '@infrastructure/assistant/live/audio/pcm-player';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
 import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
@@ -58,6 +63,17 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
+  container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());
+  container.register(TOKENS.AssistantMicrophone, () => new Microphone());
+  container.register(TOKENS.AssistantPlayer, () => new PcmPlayer());
+  container.register(
+    TOKENS.AssistantTokenRepository,
+    () => new AssistantTokenRepository(container.resolve(TOKENS.HttpClient)),
+  );
+  container.register(
+    TOKENS.AssistantMessenger,
+    () => new AssistantMessenger(container.resolve(TOKENS.HttpClient)),
+  );
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 
   // The app-wide single source of truth for the active language. Everything

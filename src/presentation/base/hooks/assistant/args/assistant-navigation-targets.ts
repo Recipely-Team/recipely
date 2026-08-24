@@ -1,0 +1,45 @@
+import { RoutePaths } from '@presentation/base/constants/route-paths';
+import { TabType } from '@presentation/app/my-recipes/model/tab-type';
+
+/**
+ * The screens the assistant may send the user to, by the word it says.
+ *
+ * @remarks
+ * - **Keyed on what a model would say, not on a route.** The model picks a
+ *   destination from meaning, so `navigate` arrives carrying a word like
+ *   "profile" or "createRecipe" — never a path. Translating here keeps route
+ *   strings out of the assistant's vocabulary entirely.
+ * - **A deliberate subset.** Auth and verification screens are absent: the
+ *   assistant must not be able to talk a signed-in user into a login flow, and
+ *   nothing it does needs one.
+ */
+// `app/ai-generate/` is registered in the root layout but nothing in the app
+// navigates to it — the AI banner opens the create screen — so it is not a
+// destination the assistant can be asked for either.
+export const ASSISTANT_NAVIGATION_TARGETS = {
+  recipes: RoutePaths.recipes,
+  feed: RoutePaths.recipes,
+  home: RoutePaths.recipes,
+  createRecipe: RoutePaths.createRecipe,
+  create: RoutePaths.createRecipe,
+  importRecipe: RoutePaths.importRecipe,
+  myRecipes: RoutePaths.myRecipes,
+  // The four My Recipes tabs are destinations in their own right — "open my
+  // saved ones" names one of them, and landing on the tab the screen happened
+  // to remember is not what was asked for.
+  saved: RoutePaths.myRecipesTab(TabType.Saved),
+  liked: RoutePaths.myRecipesTab(TabType.Liked),
+  created: RoutePaths.myRecipesTab(TabType.Created),
+  drafts: RoutePaths.myRecipesTab(TabType.Drafts),
+  notifications: RoutePaths.notifications,
+  profile: RoutePaths.profile,
+  editProfile: RoutePaths.editProfile,
+  settings: RoutePaths.settings,
+} as const satisfies Readonly<Record<string, string>>;
+
+/** A screen the assistant can be asked for, by the name the model is given. */
+export type AssistantScreenName = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
+
+/** Whether a spoken word names a screen — the model is given the list, but it is not held to it. */
+export const isAssistantScreenName = (name: string): name is AssistantScreenName =>
+  Object.hasOwn(ASSISTANT_NAVIGATION_TARGETS, name);

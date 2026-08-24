@@ -57,10 +57,23 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
   usePathname: jest.fn(() => '/recipes'),
+  // No `?q=`: these cover the ordinary feed. Arriving with a query — how the
+  // assistant searches — is covered in its own test below.
+  useLocalSearchParams: jest.fn(() => ({})),
   // The real hook runs its callback whenever the screen gains focus; an effect
   // is close enough here (the hook skips the mount focus via its own ref).
   useFocusEffect: jest.fn((callback: () => void) => {
     jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
+  }),
+}));
+
+// The feed reads its query from ITS OWN state on a phone and from the shared
+// header field on the web, so a `?q=` that lands in only one of them does
+// nothing on the other shell.
+jest.mock('@presentation/base/web-shell/use-web-shell-state', () => ({
+  useWebShellState: () => ({
+    searchQuery: '',
+    setSearchQuery: (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch,
   }),
 }));
 
@@ -530,6 +543,55 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       expect(execute.mock.calls.at(-1)?.[0]).not.toHaveProperty('search');
     });
 
+    /**
+     * "Filtreleri temizle" said to a feed narrowed by a SEARCH cleared nothing:
+     * the handler guarded on the chip count, which knows nothing about the
+     * query, and reported success to a screen that had not moved. Clearing
+     * both in one request also matters — clearing them separately fired two,
+     * and the first, still carrying the old query, could land second and leave
+     * the feed withholding rows that no longer answered it.
+     */
+    it('clears the query and the filters in one request that carries neither', async () => {
+      const execute = jest.fn();
+      // Which field the screen READS depends on the shell, so clearing has to
+      // write both — the same reason the `?q=` seeding does.
+      const webQueries: string[] = [];
+      (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = (q) =>
+        webQueries.push(q);
+      await mountLoaded(execute);
+
+      execute.mockReturnValue(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
+      act(() => {
+        vm.onSearchChange('tavuk');
+      });
+      await settleSearch();
+      act(() => {
+        vm.onToggleCuisineQuick(CuisineKey.Turkish);
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+      expect(execute).toHaveBeenLastCalledWith(
+        expect.objectContaining({ search: 'tavuk', cuisines: [CuisineKey.Turkish] }),
+      );
+
+      const callsBefore = execute.mock.calls.length;
+      act(() => {
+        vm.onClearAllFilters();
+      });
+      await act(async () => {
+        await Promise.resolve();
+      });
+
+      const lastCall = execute.mock.calls.at(-1)?.[0];
+      expect(lastCall).not.toHaveProperty('search');
+      expect(lastCall).not.toHaveProperty('cuisines');
+      expect(vm.search).toBe('');
+      expect(webQueries.at(-1)).toBe('');
+      // ONE request, not one for the filters and another for the query.
+      expect(execute.mock.calls.length - callsBefore).toBe(1);
+    });
+
     it('keeps the query when a filter changes, so the two compose', async () => {
       const execute = jest.fn();
       await mountLoaded(execute);
@@ -689,5 +751,91 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     } finally {
       process.off('unhandledRejection', unhandled);
     }
+  });
+});
+
+// The assistant searches by opening this screen with `?q=`, the way a person
+// arrives from a shared link — so the query lands in the VISIBLE field and the
+// user watches the search happen, rather than results appearing from a store
+// nobody touched.
+describe('useRecipeList — arriving with a search query', () => {
+  let vm: ReturnType<typeof useRecipeList>;
+  let renderer: ReactTestRenderer | null = null;
+
+  const Probe = (): null => {
+    vm = useRecipeList();
+    return null;
+  };
+
+  beforeEach(() => {
+    (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = () => undefined;
+  });
+
+  const mountWithQuery = async (query: string | undefined): Promise<void> => {
+    const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
+    (useLocalSearchParams as unknown as jest.Mock).mockReturnValue(
+      query === undefined ? {} : { q: query },
+    );
+
+    const execute = jest.fn().mockResolvedValue(ok(recipePageOf([makeRecipe('r1')])));
+    const store = configureRecipeListStore({
+      listRecipes: { execute } as unknown as ListRecipesUseCase,
+    });
+
+    renderer = renderComponent(
+      <StoresProvider value={makeStores(store)}>
+        <Probe />
+      </StoresProvider>,
+    ).renderer;
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+  };
+
+  afterEach(async () => {
+    await act(async () => {
+      renderer?.unmount();
+      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    });
+    const { useLocalSearchParams } = jest.requireMock<typeof import('expo-router')>('expo-router');
+    (useLocalSearchParams as unknown as jest.Mock).mockReturnValue({});
+  });
+
+  // The action chip said "searched" and the feed never moved: `?q=` was written
+  // into the field the WEB shell does not read, so on that shell the
+  // assistant's search did nothing at all.
+  it('puts the query where the web shell reads it, too', async () => {
+    const written: string[] = [];
+    (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch = (q) =>
+      written.push(q);
+
+    await mountWithQuery('baklava');
+
+    expect(written).toContain('baklava');
+  });
+
+  it('shows the query in the search field', async () => {
+    await mountWithQuery('mercimek');
+
+    expect(vm.search).toBe('mercimek');
+  });
+
+  it('leaves the field empty when nothing was asked for', async () => {
+    await mountWithQuery(undefined);
+
+    expect(vm.search).toBe('');
+  });
+
+  // Re-applying the param on every render would overwrite the box the moment
+  // the user started editing what the assistant put there.
+  it('lets the user edit what was seeded', async () => {
+    await mountWithQuery('mercimek');
+
+    await act(async () => {
+      vm.onSearchChange('mercimek çorbası');
+    });
+
+    expect(vm.search).toBe('mercimek çorbası');
   });
 });

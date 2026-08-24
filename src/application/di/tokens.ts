@@ -45,4 +45,9 @@ export const TOKENS = {
   NotificationService: Symbol.for('NotificationService'),
   AlarmAudioService: Symbol.for('AlarmAudioService'),
   AdsService: Symbol.for('AdsService'),
+  AssistantSession: Symbol.for('AssistantSession'),
+  AssistantMicrophone: Symbol.for('AssistantMicrophone'),
+  AssistantPlayer: Symbol.for('AssistantPlayer'),
+  AssistantTokenRepository: Symbol.for('AssistantTokenRepository'),
+  AssistantMessenger: Symbol.for('AssistantMessenger'),
 } as const;

@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -9,8 +10,20 @@ import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
+import { t } from '@presentation/i18n';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
+import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
+import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-recipe-actions';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
+import {
+  SCROLL_EVENT_THROTTLE_MS,
+  scrollTargetFor,
+} from '@presentation/base/hooks/assistant/args/scroll-tuning';
+import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
@@ -19,7 +32,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -32,17 +45,79 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // Composed here rather than inside useRecipeDetail: the deep-link concern is
   // self-contained (it only needs the comment state + scroll ref the vm already
   // exposes), and useRecipeDetail is at its size budget already.
+  // The detail screen is one long ScrollView, so a step is measured against
+  // the window rather than a row height, and the offset is tracked here — a
+  // ScrollView has no way to be asked where it currently is.
+  const [unsavePending, setUnsavePending] = useState(false);
+  const scrollOffset = useRef(ValueConstants.zero);
+  const scrollDetail = useCallback(
+    (direction: AssistantScrollDirectionType) => {
+      const y = scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height);
+      vm.scrollViewRef.current?.scrollTo({ y, animated: true });
+    },
+    [vm.scrollViewRef],
+  );
+
   const commentHighlight = useCommentHighlight({
     recipeId: vm.recipeId,
     commentState: vm.commentState,
     scrollViewRef: vm.scrollViewRef,
   });
+  // "Save it" means the recipe on screen. Registering here is what supplies
+  // the subject the user never says out loud.
+  const cookTimer = useRecipeTimer({
+    timerId: cookTimerId(vm.recipeId),
+    recipeId: vm.recipeId,
+    recipeName: vm.recipe?.name ?? CharConstants.empty,
+    minutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+  });
+  useAssistantRecipeActions({
+    recipeId: vm.recipeId,
+    recipeName: vm.recipe?.name ?? CharConstants.empty,
+    ingredients: vm.recipe?.ingredients ?? [],
+    instructions: vm.recipe?.instructions ?? [],
+    cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+    isOwner: vm.isOwner,
+    onPostComment: vm.onPostComment,
+    onOpenDelete: vm.onOpenDelete,
+    onRequestUnsave: () => setUnsavePending(true),
+    onOpenShare: vm.onOpenShare,
+    onStartCookTimer: cookTimer.start,
+    onPauseTimer: cookTimer.pause,
+    onResumeTimer: () => cookTimer.resume(),
+    onStopTimer: cookTimer.stop,
+    checkedIngredients: vm.checkedIngredients,
+    completedSteps: vm.completedSteps,
+    onToggleIngredient: vm.onToggleIngredient,
+    onToggleStep: vm.onToggleStep,
+  });
+  // Deleting is the one thing on this screen nobody can undo, and it is also
+  // the one the cook most needs to answer without a free hand.
+  // One confirmation pending at a time: delete is a modal over everything, so
+  // while it is up the spoken yes belongs to it.
+  useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
+  // Everything drawn above the unsave sheet takes the word away from it: the
+  // share sheet and the sign-in prompt are both rendered after it, and
+  // `shareRecipe` is an action the model can raise while an unsave is pending.
+  useAssistantConfirmation(
+    unsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
+    () => {
+      setUnsavePending(false);
+      vm.onToggleSave();
+    },
+    () => setUnsavePending(false),
+  );
+  useAssistantScroll(scrollDetail);
 
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
         <ScrollView
           ref={vm.scrollViewRef}
+          scrollEventThrottle={SCROLL_EVENT_THROTTLE_MS}
+          onScroll={(event) => {
+            scrollOffset.current = event.nativeEvent.contentOffset.y;
+          }}
           contentContainerStyle={styles.scroll}
           {...commentHighlight.scrollViewProps}
           // After the spread on purpose, so a later addition to
@@ -133,6 +208,18 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           <Ionicons name="chevron-back" size={iconSizes.xxl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
+
+      <ConfirmSheet
+        visible={unsavePending}
+        title={t().assistant.unsaveTitle}
+        message={t().assistant.unsaveMessage}
+        confirmLabel={t().assistant.unsaveConfirm}
+        onConfirm={() => {
+          setUnsavePending(false);
+          vm.onToggleSave();
+        }}
+        onClose={() => setUnsavePending(false)}
+      />
 
       <DeleteRecipeSheet
         visible={vm.showDeleteSheet}

@@ -1,4 +1,9 @@
-import type { SharedValue, useAnimatedScrollHandler } from 'react-native-reanimated';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import Animated, {
+  type SharedValue,
+  type useAnimatedRef,
+  type useAnimatedScrollHandler,
+} from 'react-native-reanimated';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
@@ -48,6 +53,9 @@ export interface UseRecipeListResult {
   unreadCount: number;
 
   // Mobile collapsing-header scroll state.
+  /** The feed list, so the assistant can scroll it. */
+  listRef: ReturnType<typeof useAnimatedRef<Animated.FlatList<RecipeSummaryEntity>>>;
+  onAssistantScroll: (direction: AssistantScrollDirectionType) => void;
   scrollY: SharedValue<number>;
   headerTranslateY: SharedValue<number>;
   reduceMotion: boolean;
@@ -81,10 +89,16 @@ export interface UseRecipeListResult {
   // Applied-filter quick actions (web grid + mobile chips).
   onToggleCuisineQuick: (cuisine: string) => void;
   onDifficultyChange: (difficulty: Difficulty | null) => void;
+  onToggleCategory: (category: string) => void;
+  onSetMaxTime: (minutes: number) => void;
   onRemoveCategory: (category: string) => void;
   onRemoveDifficulty: (difficulty: Difficulty) => void;
   onRemoveMaxTime: () => void;
   onResetFilters: () => void;
+  /** Empties the query in BOTH shells' fields; the search effect reloads. */
+  onClearSearch: () => void;
+  /** Filters AND the query, cleared in one reload — what "clear filters" means out loud. */
+  onClearAllFilters: () => void;
 
   // Filter sheet / modal state + pending edits.
   sheetOpen: 'filter' | null;
