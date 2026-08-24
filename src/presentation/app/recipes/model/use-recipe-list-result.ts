@@ -95,6 +95,10 @@ export interface UseRecipeListResult {
   onRemoveDifficulty: (difficulty: Difficulty) => void;
   onRemoveMaxTime: () => void;
   onResetFilters: () => void;
+  /** Empties the query in BOTH shells' fields; the search effect reloads. */
+  onClearSearch: () => void;
+  /** Filters AND the query, cleared in one reload — what "clear filters" means out loud. */
+  onClearAllFilters: () => void;
 
   // Filter sheet / modal state + pending edits.
   sheetOpen: 'filter' | null;
