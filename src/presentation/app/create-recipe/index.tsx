@@ -9,6 +9,7 @@ import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/
 import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
 import { useCreateRecipe } from '@presentation/app/create-recipe/hooks/use-create-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
+import { assistantSheetGates } from '@presentation/app/create-recipe/model/assistant-sheet-gates';
 import { PromptPhase } from '@presentation/app/create-recipe/body/prompt-phase';
 import { GeneratingView } from '@presentation/app/create-recipe/body/generating-view';
 import { ResumingView } from '@presentation/app/create-recipe/body/resuming-view';
@@ -31,37 +32,23 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   // registered outside that phase was invisible and still accepted a spoken
   // "yes" — the user agreeing to nothing they could see.
   const isPreview = vm.phase === PhaseType.Preview;
-  // At most ONE of these is live at a time, and the order is the drawing
-  // order: a modal covers the inline dock, and the exit and save-error sheets
-  // cover everything. Two live would let a "yes" read against the sheet on
-  // screen answer the one behind it.
-  // `photosOpen` belongs here too: `attachPhoto` can raise the picker over a
-  // pending publish confirm, and a spoken "yes" would then publish while the
-  // user is looking at their photo library.
-  // Everything that draws a question over the editor EXCEPT the exit sheet
-  // itself — the one condition both the exit sheet and leaving are measured
-  // against.
-  const otherSheetOpen =
-    assistantPublishOpen || vm.saveError !== null || vm.saveIssue !== null || vm.photosOpen;
-  const exitOrErrorOpen = vm.exitOpen || otherSheetOpen;
-  // The exit sheet is a question with three answers and it was the only sheet
-  // here the assistant could not answer: "çık" reached the global handler,
-  // which pops the route and leaves the autosaved draft saved — the opposite
-  // of what the user had just said out loud.
-  //
-  // `assistantPublishOpen` is in the condition for a reason the rest of this
-  // block already knows: leaving is not offered while another sheet is up, and
-  // the exit sheet is not answerable behind one. Without that, "çık" said to
-  // the publish confirmation opened the exit sheet UNDER it, moved `cancel`
-  // from "don't publish" to "discard the draft", and left the user looking at
-  // the publish sheet while a spoken no deleted their work.
-  const isExitPending = vm.exitOpen && !otherSheetOpen;
+  // Which sheet owns the spoken yes and no. Derived in one place, and tested
+  // there: at most one confirmation may be live, and each gate has to exclude
+  // the sheet it is about — a rule that is invisible in a screen file, and was
+  // broken twice while it lived here as three boolean expressions.
+  const { exitOrErrorOpen, canLeave, isExitPending } = assistantSheetGates({
+    exitOpen: vm.exitOpen,
+    publishOpen: assistantPublishOpen,
+    saveErrorOpen: vm.saveError !== null,
+    saveIssueOpen: vm.saveIssue !== null,
+    photosOpen: vm.photosOpen,
+  });
 
   // Registered here rather than deeper down because the assistant's actions
   // belong to the SCREEN: they are available exactly while a draft is open,
   // and answer `unavailable_here` everywhere else.
   useAssistantExitActions({
-    canLeave: !otherSheetOpen,
+    canLeave,
     isExitPending,
     onClose: vm.onClose,
     onSaveDraftAndExit: vm.onSaveDraftAndExit,
