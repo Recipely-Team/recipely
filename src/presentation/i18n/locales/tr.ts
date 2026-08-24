@@ -961,6 +961,7 @@ export const tr: Translations = {
       setPreference: "Ayarı değiştirdi",
       signOut: "Çıkış yaptı",
       markAllRead: "Bildirimleri okundu işaretledi",
+      markRead: "Bir bildirimi okundu işaretledi",
       importRecipe: "Tarifi içeri aktardı",
       toggleIngredient: "Malzemeyi işaretledi",
       toggleStep: "Adımı işaretledi",

@@ -954,6 +954,7 @@ export const id = {
       setPreference: "Mengubah pengaturan",
       signOut: "Keluar",
       markAllRead: "Menandai notifikasi telah dibaca",
+      markRead: "Menandai satu notifikasi telah dibaca",
       importRecipe: "Mengimpor resep",
       toggleIngredient: "Menandai bahan",
       toggleStep: "Menandai langkah",

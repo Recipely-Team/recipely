@@ -954,6 +954,7 @@ export const ar = {
       setPreference: "غيّر إعداداً",
       signOut: "سجّل الخروج",
       markAllRead: "علّم الإشعارات كمقروءة",
+      markRead: "علّم إشعارًا كمقروء",
       importRecipe: "استورد الوصفة",
       toggleIngredient: "أشّر على مكوّن",
       toggleStep: "أشّر على خطوة",

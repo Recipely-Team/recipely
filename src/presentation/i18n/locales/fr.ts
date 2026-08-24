@@ -954,6 +954,7 @@ export const fr = {
       setPreference: "A changé un réglage",
       signOut: "S'est déconnecté",
       markAllRead: "A marqué les notifications comme lues",
+      markRead: "A marqué une notification comme lue",
       importRecipe: "A importé la recette",
       toggleIngredient: "A coché un ingrédient",
       toggleStep: "A coché une étape",

@@ -954,6 +954,7 @@ export const ru = {
       setPreference: "Изменил настройку",
       signOut: "Вышел из аккаунта",
       markAllRead: "Отметил уведомления прочитанными",
+      markRead: "Отметил уведомление прочитанным",
       importRecipe: "Импортировал рецепт",
       toggleIngredient: "Отметил ингредиент",
       toggleStep: "Отметил шаг",

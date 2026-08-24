@@ -954,6 +954,7 @@ export const pt = {
       setPreference: "Mudou uma definição",
       signOut: "Terminou sessão",
       markAllRead: "Marcou as notificações como lidas",
+      markRead: "Marcou uma notificação como lida",
       importRecipe: "Importou a receita",
       toggleIngredient: "Marcou um ingrediente",
       toggleStep: "Marcou um passo",

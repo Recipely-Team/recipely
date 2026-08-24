@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
 import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
 import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
@@ -23,51 +24,13 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
-import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
 
-const KNOWN_KINDS = new Set<NotifKind>([
-  'comment',
-  'like',
-  'favorite',
-  'ai_done',
-  'import_done',
-  'moderation_approved',
-  'moderation_pending',
-  'follow',
-]);
-
-const resolveKind = (raw: string): NotifKind => {
-  return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : 'generic';
-};
-
-const daysSince = (createdAt: Date): number => {
-  const ms = Date.now() - createdAt.getTime();
-  return Math.max(ValueConstants.zero, Math.floor(
-      ms /
-        (TimeConstants.millisecondsPerSecond *
-          TimeConstants.secondsPerMinute *
-          TimeConstants.minutesPerHour *
-          TimeConstants.hoursPerDay),
-    ));
-};
-
-const toNotifItem = (n: NotificationEntity): NotifItem => ({
-  id: n.id,
-  kind: resolveKind(n.type),
-  actor: n.senderDisplayName ?? 'Recipely',
-  recipeName: n.recipeTitle ?? undefined,
-  daysAgo: daysSince(n.createdAt),
-  read: n.read,
-  // Surface free-text payload (e.g. the comment body) as the secondary line.
-  body: n.message ?? undefined,
-  target: n.target,
-});
 
 
 export const NotificationsScreen = (): React.JSX.Element => {
@@ -122,11 +85,18 @@ export const NotificationsScreen = (): React.JSX.Element => {
     );
   };
 
+  // Flattened in the order the sections render them, so "the second one" is
+  // the second row the user can see — not the second row of the raw feed,
+  // which the date grouping and the unread filter both reorder.
+  const visibleItems = useMemo(() => sections.flatMap((section) => section.data), [sections]);
   useAssistantNotificationActions({
     unreadCount,
+    items: visibleItems,
     onMarkAllRead: () => void markAllRead(),
+    onMarkOneRead: (id: string) => void markOneRead(id),
     onReload: () => void load(),
   });
+  const scrollable = useAssistantScrollable();
 
   const tap = (item: NotifItem): void => {
     if (!item.read) void markOneRead(item.id);
@@ -210,6 +180,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         />
       ) : (
       <SectionList
+        {...scrollable}
         sections={sections}
         keyExtractor={(item) => String(item.id)}
         renderItem={({ item }) => <NotifRow item={item} onTap={tap} />}

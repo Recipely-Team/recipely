@@ -954,6 +954,7 @@ export const de = {
       setPreference: "Hat eine Einstellung geändert",
       signOut: "Hat sich abgemeldet",
       markAllRead: "Hat Benachrichtigungen als gelesen markiert",
+      markRead: "Hat eine Benachrichtigung als gelesen markiert",
       importRecipe: "Hat das Rezept importiert",
       toggleIngredient: "Hat eine Zutat abgehakt",
       toggleStep: "Hat einen Schritt abgehakt",

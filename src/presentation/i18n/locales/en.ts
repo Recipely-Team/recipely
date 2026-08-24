@@ -964,6 +964,7 @@ export const en = {
       setPreference: "Changed a setting",
       signOut: "Signed out",
       markAllRead: "Marked notifications read",
+      markRead: "Marked one notification read",
       importRecipe: "Imported the recipe",
       toggleIngredient: "Ticked an ingredient",
       toggleStep: "Ticked a step",

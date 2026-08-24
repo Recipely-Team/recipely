@@ -961,6 +961,7 @@ export const zh = {
       setPreference: "更改了设置",
       signOut: "退出了登录",
       markAllRead: "将通知标记为已读",
+      markRead: "将一条通知标记为已读",
       importRecipe: "导入了食谱",
       toggleIngredient: "勾选了食材",
       toggleStep: "勾选了步骤",
