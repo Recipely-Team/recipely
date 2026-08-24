@@ -21,6 +21,7 @@ import {
 import { t } from '@presentation/i18n';
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
@@ -60,6 +61,11 @@ export interface MyRecipesListProps {
   isLoadingMoreDrafts: boolean;
   isRefreshing: boolean;
   onRefresh: () => void;
+  /**
+   * Spread onto whichever branch renders, so "aşağı kaydır" moves the list the
+   * user is actually looking at rather than the one that happens to be first.
+   */
+  scrollable: AssistantScrollableProps;
 }
 
 /**
@@ -91,6 +97,7 @@ export const MyRecipesList = ({
   isLoadingMoreDrafts,
   isRefreshing,
   onRefresh,
+  scrollable,
 }: MyRecipesListProps): React.JSX.Element => {
   const colors = useTheme().colors;
   // `tintColor` is iOS-only and `colors` is Android-only; both are needed for the
@@ -128,6 +135,7 @@ export const MyRecipesList = ({
     if (drafts.length === ValueConstants.zero) {
       return (
         <ScrollView
+          {...scrollable}
           style={styles.list}
           contentContainerStyle={styles.emptyContent}
           refreshControl={refreshControl}
@@ -143,6 +151,7 @@ export const MyRecipesList = ({
     }
     return (
       <FlatList
+        {...scrollable}
         refreshControl={refreshControl}
         data={drafts}
         keyExtractor={(d) => d.id}
@@ -166,6 +175,7 @@ export const MyRecipesList = ({
   if (items.length === ValueConstants.zero) {
     return (
       <ScrollView
+        {...scrollable}
         style={styles.list}
         contentContainerStyle={styles.emptyContent}
         refreshControl={refreshControl}
@@ -182,6 +192,7 @@ export const MyRecipesList = ({
 
   return (
     <FlatList
+      {...scrollable}
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
       data={items as RecipeSummaryEntity[]}

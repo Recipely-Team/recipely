@@ -13,6 +13,7 @@ import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -21,10 +22,12 @@ export const ProfileScreen = (): React.JSX.Element => {
   const vm = useProfile();
 
   useAssistantProfileScreenActions({ onPickAvatar: vm.onPickAvatar, onEditProfile: vm.onEditProfile });
+  const scrollable = useAssistantScrollable();
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ScrollView
+        {...scrollable}
         contentContainerStyle={{
           paddingTop: isWebShell ? ValueConstants.zero : insets.top + spacing.sm,
           // Mobile: the root TabBar (hosted in _layout) sits below the page,

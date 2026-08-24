@@ -73,7 +73,11 @@ const makeDraft = (id: string): RecipeDraft => ({
   updatedAt: new Date('2026-07-02T10:00:00.000Z'),
 });
 
+/** The assistant's scroll props: attached to every branch, inert in a test. */
+const SCROLLABLE = { ref: () => {}, onScroll: () => {}, scrollEventThrottle: 100 };
+
 const baseProps = (): MyRecipesListProps => ({
+  scrollable: SCROLLABLE,
   tab: 'saved',
   drafts: [],
   items: [],

@@ -1,11 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  AssistantScrollDirection,
-  type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
-import { SCROLL_STEP_SHARE } from '@presentation/app/recipes/model/scroll-step-share';
+import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Animated, { Easing, useAnimatedRef, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
@@ -315,6 +312,26 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
+  // Both fields, for the reason the `?q=` effect writes both: which one this
+  // screen READS depends on the shell, and clearing only its own left the
+  // query in place on web. The debounced-search effect above reloads on the
+  // change, so this does not fetch for itself.
+  const onClearSearch = (): void => {
+    setSearch(CharConstants.empty);
+    setWebSearchQuery(CharConstants.empty);
+  };
+
+  // Everything narrowing the feed, in ONE reload with the values it will end
+  // up at. Clearing the query and resetting the filters separately fired two
+  // fetches, and the first one — still carrying the old query — could land
+  // second and leave the feed withholding rows that no longer answered it.
+  const onClearAllFilters = (): void => {
+    setFilters(emptyFilters);
+    setPendingFilters(emptyFilters);
+    onClearSearch();
+    void reload(buildApiFilters(emptyFilters, sortBy, CharConstants.empty));
+  };
+
   // The query the stored rows answer — empty for the feed and before any load.
   const answeredQuery = state.status === StoreStatus.Loaded ? state.query : CharConstants.empty;
   const answersCurrentQuery = answeredQuery === trimmedSearch;
@@ -359,15 +376,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     // stays visible — scrolling a whole screen away loses the reader's place,
     // which is exactly the complaint about page-down keys.
     onAssistantScroll: (direction: AssistantScrollDirectionType) => {
-      const step = height * SCROLL_STEP_SHARE;
-      const target =
-        direction === AssistantScrollDirection.Top
-          ? ValueConstants.zero
-          : direction === AssistantScrollDirection.Bottom
-            ? Number.MAX_SAFE_INTEGER
-            : direction === AssistantScrollDirection.Up
-              ? Math.max(ValueConstants.zero, scrollY.value - step)
-              : scrollY.value + step;
+      const target = scrollTargetFor(direction, scrollY.value, height);
       listRef.current?.scrollToOffset({ offset: target, animated: true });
     },
     scrollY,
@@ -398,6 +407,8 @@ export const useRecipeList = (): UseRecipeListResult => {
     onRemoveDifficulty: (d: Difficulty) => applyAndLoad(mutate.removeDifficulty(filters, d)),
     onRemoveMaxTime: () => applyAndLoad(mutate.removeMaxTime(filters)),
     onResetFilters,
+    onClearSearch,
+    onClearAllFilters,
     sheetOpen,
     pendingFilters,
     pendingSort,

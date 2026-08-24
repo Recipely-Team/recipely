@@ -10,6 +10,7 @@ import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/act
 import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
 import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
@@ -146,6 +147,10 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // handler answering for rows the user cannot see is how "save that one" ends
   // up saving something else entirely.
   useAssistantListRecipeActions(tab === TabType.Drafts ? EMPTY_ROWS : items);
+  // Four list branches, one set of props: whichever is on screen is the one
+  // that moves. Without this the screen with the longest lists in the app
+  // answered "aşağı kaydır" with `unavailable_here`.
+  const scrollable = useAssistantScrollable();
   useAssistantScreenContent(() =>
     tab === TabType.Drafts
       ? recipeRoster(TabType.Drafts, drafts.map(draftName))
@@ -212,6 +217,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
+            scrollable={scrollable}
           />
         </ResponsiveContainer>
       </ScreenContainer>

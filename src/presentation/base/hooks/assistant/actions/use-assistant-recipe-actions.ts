@@ -10,14 +10,9 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
-
-/** Between the facts on one screen line, matching the registry's own joiner. */
-const SCREEN_PART_SEPARATOR = '; ';
-
-/** How the screen line answers a yes-or-no about the recipe on screen. */
-const Answer = { yes: 'yes', no: 'no' } as const;
 
 /** What the recipe screen lends the assistant, named where it is consumed. */
 interface AssistantRecipeActionsDeps {
