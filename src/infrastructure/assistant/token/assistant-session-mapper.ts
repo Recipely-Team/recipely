@@ -18,6 +18,10 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   refuse for something this build has never heard of, and the safe reading of
  *   "no token, unknown reason" is that voice is unavailable — the app falls
  *   back to text, which is what it would have done anyway.
+ * - **`unlimited` is read as a flag, never inferred from the number.** An
+ *   unmetered account is sent a large floor so that builds predating the flag
+ *   keep working; taking a big number to mean "no limit" would have made the
+ *   two indistinguishable, and made every generous allowance unlimited.
  */
 export function toAssistantSessionGrant(dto: AssistantSessionResponseDto): AssistantSessionGrantType {
   const remainingSeconds = dto.budgetRemainingSec ?? ValueConstants.zero;
@@ -36,6 +40,7 @@ export function toAssistantSessionGrant(dto: AssistantSessionResponseDto): Assis
         expiresAt: dto.expiresAt ?? CharConstants.empty,
       },
       remainingSeconds,
+      isUnlimited: dto.unlimited === true,
     };
   }
 

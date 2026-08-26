@@ -2,6 +2,7 @@ import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { AssistantHeartbeatResponseDto } from '@infrastructure/assistant/token/dtos/assistant-heartbeat-response-dto';
 import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
 import type { AssistantSessionResponseDto } from '@infrastructure/assistant/token/dtos/assistant-session-response-dto';
+import type { AssistantUsageReportType } from '@domain/assistant/session/assistant-usage-report';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
@@ -35,13 +36,16 @@ export class AssistantTokenRepository implements AssistantTokenRepositoryInterfa
     return ok(toAssistantSessionGrant(result.value));
   }
 
-  async reportUsage(seconds: number): Promise<Result<number, Failure>> {
+  async reportUsage(seconds: number): Promise<Result<AssistantUsageReportType, Failure>> {
     const result = await this.http.post<AssistantHeartbeatResponseDto>(
       ApiRoutes.assistant.heartbeat,
       { seconds },
     );
     if (!result.ok) return fail(result.failure);
 
-    return ok(result.value.budgetRemainingSec ?? ValueConstants.zero);
+    return ok({
+      remainingSeconds: result.value.budgetRemainingSec ?? ValueConstants.zero,
+      isUnlimited: result.value.unlimited === true,
+    });
   }
 }

@@ -412,7 +412,7 @@ export const configureAssistantSessionStore = (
         return;
       }
 
-      set({ remainingSeconds: grant.value.remainingSeconds });
+      set({ remainingSeconds: grant.value.remainingSeconds, isUnlimited: grant.value.isUnlimited });
       const connected = await session.connect(grant.value.credentials);
       // Checked again: the mint and the connect are both awaited, and the user
       // can say "stop" during either.
@@ -537,6 +537,7 @@ export const configureAssistantSessionStore = (
       isMuted: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
+      isUnlimited: false,
       tokensUsed: ValueConstants.zero,
       deniedReason: null,
       error: null,
@@ -601,11 +602,12 @@ export const configureAssistantSessionStore = (
             status: AssistantStatus.Unavailable,
             deniedReason: grant.value.reason,
             remainingSeconds: grant.value.remainingSeconds,
+            isUnlimited: false,
           });
           return;
         }
 
-        set({ remainingSeconds: grant.value.remainingSeconds });
+        set({ remainingSeconds: grant.value.remainingSeconds, isUnlimited: grant.value.isUnlimited });
 
         // The order of the next four is not arrangement, it is the only one
         // that satisfies all three constraints at once:
@@ -701,8 +703,18 @@ export const configureAssistantSessionStore = (
             // that had ended — and a zero could tear down the NEXT one on the
             // previous one's budget.
             if (abandoned() || !reported.ok) return;
-            set({ remainingSeconds: reported.value });
-            if (reported.value <= ValueConstants.zero) void teardown(AssistantStatus.Unavailable);
+            set({
+              remainingSeconds: reported.value.remainingSeconds,
+              isUnlimited: reported.value.isUnlimited,
+            });
+            // An unmetered account has no zero to reach: the number beside the
+            // flag is a floor the server sends so that builds predating the
+            // flag keep working, and counting it down would end an admin's
+            // session on a limit the server had already decided not to apply.
+            if (reported.value.isUnlimited) return;
+            if (reported.value.remainingSeconds <= ValueConstants.zero) {
+              void teardown(AssistantStatus.Unavailable);
+            }
           });
         }, HEARTBEAT_INTERVAL_MS);
         nudgeSilenceTimer();
@@ -785,6 +797,7 @@ export const configureAssistantSessionStore = (
         set({
           transcript: [],
           remainingSeconds: ValueConstants.zero,
+          isUnlimited: false,
           tokensUsed: ValueConstants.zero,
           deniedReason: null,
           error: null,

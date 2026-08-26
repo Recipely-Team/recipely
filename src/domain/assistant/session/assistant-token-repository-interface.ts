@@ -1,5 +1,6 @@
 import type { Failure } from '@core/failure/failure';
 import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
+import type { AssistantUsageReportType } from '@domain/assistant/session/assistant-usage-report';
 import type { Result } from '@core/result/result';
 
 /**
@@ -21,6 +22,10 @@ import type { Result } from '@core/result/result';
  *   times a day and the screen answers it by offering the text mode, so it
  *   arrives as a successful `Denied` grant. The failure channel means the
  *   backend could not be reached or could not reach Google.
+ * - **Some accounts are not metered at all.** An admin is granted without a
+ *   budget check and reported back to without one, so both answers carry an
+ *   `isUnlimited` flag; a caller that only compared the seconds to zero would
+ *   close a session the server had no intention of closing.
  */
 export interface AssistantTokenRepositoryInterface {
   /**
@@ -33,9 +38,9 @@ export interface AssistantTokenRepositoryInterface {
   ): Promise<Result<AssistantSessionGrantType, Failure>>;
 
   /**
-   * Reports the seconds spent since the last heartbeat and answers how many
-   * remain. A delta, never a running total: a client trusted to remember its
+   * Reports the seconds spent since the last heartbeat and answers what is
+   * left. A delta, never a running total: a client trusted to remember its
    * total across a reconnect would refund itself by forgetting.
    */
-  reportUsage(seconds: number): Promise<Result<number, Failure>>;
+  reportUsage(seconds: number): Promise<Result<AssistantUsageReportType, Failure>>;
 }
