@@ -30,6 +30,14 @@ export interface AssistantSessionStoreState {
   /** Seconds of voice left today, as the server last reported them. */
   remainingSeconds: number;
   /**
+   * Whether this account is metered at all.
+   *
+   * Admins are not, so `remainingSeconds` is then a floor the server sends to
+   * keep older builds working rather than a balance — nothing may count it
+   * down, and running out cannot end the session.
+   */
+  isUnlimited: boolean;
+  /**
    * Tokens this session has spent, as the API last reported them.
    *
    * The whole design is shaped by token cost, so the number that decides it is

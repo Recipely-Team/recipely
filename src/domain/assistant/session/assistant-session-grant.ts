@@ -11,12 +11,18 @@ import type { LiveSessionCredentials } from '@domain/assistant/session/live-sess
  * credentials, and an answer that is neither. Narrowing at the mapper means no
  * screen ever writes `if (token !== undefined)` and then has to decide what a
  * missing `reason` meant.
+ *
+ * `isUnlimited` belongs to the grant alone: an unmetered account — an admin —
+ * is never refused, so there is no denial for it to describe. Where it is set,
+ * `remainingSeconds` is a floor the server sends to keep older builds working
+ * rather than a balance, and nothing may count it down.
  */
 export type AssistantSessionGrantType =
   | {
       readonly status: typeof AssistantGrantStatus.Granted;
       readonly credentials: LiveSessionCredentials;
       readonly remainingSeconds: number;
+      readonly isUnlimited: boolean;
     }
   | {
       readonly status: typeof AssistantGrantStatus.Denied;
