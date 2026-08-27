@@ -1,10 +1,6 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
-import { Linking } from 'react-native';
-import {
-  ASSISTANT_EXTERNAL_TARGETS,
-  isAssistantExternalName,
-} from '@presentation/base/hooks/assistant/args/assistant-external-targets';
+import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/assistant-external-targets';
 import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -52,13 +48,13 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.Navigate,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       const name = arg ?? CharConstants.empty;
-      // Legal pages live on the web, so they are opened rather than navigated
-      // to. Without this branch the assistant answered "sayfa bulunamadı" for a
-      // row sitting on the screen in front of the user — reporting a capability
-      // it lacked as a page that does not exist.
+      // Recognised, and refused. These are web pages: opening one ends the
+      // voice session and hands the user to a browser they must find their own
+      // way back from. The row is on the screen for them to tap. Saying so is
+      // the whole point of naming them — the alternative was "sayfa
+      // bulunamadı", which was untrue about a link the user was looking at.
       if (isAssistantExternalName(name)) {
-        await Linking.openURL(ASSISTANT_EXTERNAL_TARGETS[name]);
-        return { ok: true };
+        return { ok: false, error: 'leaves_the_app' };
       }
       if (!isAssistantScreenName(name)) return { ok: false, error: 'unknown_screen' };
 

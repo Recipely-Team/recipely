@@ -39,7 +39,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
   return (
   <>
   <ScrollView
-    ref={vm.attachList}
+    {...vm.assistantScroll}
     style={styles.list}
     contentContainerStyle={[styles.webContent, { paddingHorizontal: feedGutter(width) }]}
     refreshControl={<RefreshControl refreshing={false} onRefresh={vm.onRefresh} />}

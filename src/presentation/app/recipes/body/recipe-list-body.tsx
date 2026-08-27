@@ -114,7 +114,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         recipes={recipes}
         isLoading={vm.isRefetching}
         onOpenRecipe={vm.onOpenRecipe}
-        attachList={vm.attachList}
+        assistantScroll={vm.assistantScroll}
       />
     );
   } else {

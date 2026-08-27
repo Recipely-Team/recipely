@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import { scrollThrottleMs , RoutePaths } from '@presentation/base/constants';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
@@ -31,7 +33,6 @@ import { feedContentWidth } from '@presentation/app/recipes/model/feed-content-w
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { RoutePaths } from '@presentation/base/constants';
 
 const RECIPE_CARD_MIN_WIDTH = 300;
 const GRID_GAP = spacing.lg2;
@@ -392,6 +393,22 @@ export const useRecipeList = (): UseRecipeListResult => {
     unreadCount,
     // A callback, not the ref object: each branch attaches a different list
     // class and only a callback ref accepts the wider shape they share.
+    // One object, so a caller cannot attach the ref and forget the offset.
+    // That is exactly what happened: the wide-layout feed took `attachList` and
+    // no `onScroll`, so `scrollY` stayed 0 there forever — "en alta kaydır"
+    // worked (a fixed target) and "biraz daha aşağı" did not (a relative one,
+    // measured from a zero that never moved).
+    assistantScroll: {
+      ref: (instance: AssistantScrollHandleType): void => {
+        listRef.current = instance;
+      },
+      onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
+        scrollY.value = event.nativeEvent.contentOffset.y;
+      },
+      // Coarse: only the assistant reads this. The collapsing header on the
+      // phone runs off `scrollHandler` and needs every frame; this does not.
+      scrollEventThrottle: scrollThrottleMs.coarse,
+    },
     attachList: (instance: AssistantScrollHandleType): void => {
       listRef.current = instance;
     },

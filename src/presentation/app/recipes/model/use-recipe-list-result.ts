@@ -60,6 +60,17 @@ export interface UseRecipeListResult {
    * FlatList-specific type that left the other branches with nothing to
    * attach and the assistant reporting scrolls that never happened.
    */
+  /**
+   * Everything a plain scroller needs so the assistant can move it: the handle
+   * AND the offset it steps from, together. Spread it — attaching half is the
+   * bug this shape exists to prevent.
+   */
+  assistantScroll: AssistantScrollableProps;
+  /**
+   * The handle alone, for the mobile `Animated.FlatList` — its offset is
+   * written by {@link scrollHandler}, which the collapsing header needs at
+   * frame rate anyway. Every PLAIN scroller takes {@link assistantScroll}.
+   */
   attachList: AssistantScrollableProps['ref'];
   /** Whether a list was actually there to move. */
   onAssistantScroll: (direction: AssistantScrollDirectionType) => boolean;

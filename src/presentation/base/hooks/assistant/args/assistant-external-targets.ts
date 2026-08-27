@@ -1,28 +1,27 @@
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
-
 /**
- * Destinations that are pages on the web, not screens in the app.
+ * Destinations the assistant RECOGNISES but will not open, because they are not
+ * in the app.
  *
  * @remarks
- * - **Why they are separate from {@link ASSISTANT_NAVIGATION_TARGETS}.** The
- *   router cannot reach them; they open in a browser. Keeping them in the same
- *   table would have meant `router.navigate` being handed an `https://` URL,
- *   which is a different act with different consequences — it leaves the app.
- * - **Why they exist at all.** "Gizlilik politikasını aç" was answered
- *   "Gizlilik politikası sayfası bulunamadı" with the row visible on the
- *   settings screen the user was looking at. The page is not missing; the
- *   assistant simply had no word for it, and reported that as absence.
+ * - **Recognised, so the refusal is honest.** "Gizlilik politikasını aç" was
+ *   once answered "sayfa bulunamadı" with the row visible on the settings
+ *   screen the user was looking at. The page is not missing. Naming it here is
+ *   what lets the assistant say what is actually true: it cannot go there.
+ * - **Not opened, because that leaves the app.** Sending someone into a browser
+ *   is not a step back — it ends the voice session, drops the screen they were
+ *   on, and the way back is the OS, not the assistant. That is a decision for
+ *   the person holding the phone, and the row is right there for them to tap.
+ * - **A list of names, not of URLs.** Nothing here needs a destination, which
+ *   is the point: an assistant that held the URLs would eventually be asked to
+ *   use them.
  */
-export const ASSISTANT_EXTERNAL_TARGETS = {
-  privacyPolicy: PRIVACY_POLICY_URL,
-  privacy: PRIVACY_POLICY_URL,
-  terms: TERMS_OF_USE_URL,
-  termsOfUse: TERMS_OF_USE_URL,
-} as const satisfies Readonly<Record<string, string>>;
-
-/** A web page the assistant can open, by the name the model is given. */
-export type AssistantExternalName = keyof typeof ASSISTANT_EXTERNAL_TARGETS;
+export const ASSISTANT_EXTERNAL_NAMES: readonly string[] = [
+  'privacyPolicy',
+  'privacy',
+  'terms',
+  'termsOfUse',
+];
 
 /** Whether a spoken word names a page that lives outside the app. */
-export const isAssistantExternalName = (name: string): name is AssistantExternalName =>
-  Object.hasOwn(ASSISTANT_EXTERNAL_TARGETS, name);
+export const isAssistantExternalName = (name: string): boolean =>
+  ASSISTANT_EXTERNAL_NAMES.includes(name);
