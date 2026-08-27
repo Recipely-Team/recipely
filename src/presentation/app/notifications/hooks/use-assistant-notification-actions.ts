@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
@@ -52,10 +53,16 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
   useAssistantAction(
     AssistantAction.MarkAllRead,
     useCallback(async (): Promise<AssistantActionResultType> => {
+      // Zero unread and zero loaded look identical from here. Before the list
+      // arrives every count is zero, so "hepsini okundu yap" reported success
+      // over notifications it had never seen.
+      if (items.length === ValueConstants.zero && unreadCount === ValueConstants.zero) {
+        return { ok: false, error: AssistantActionError.NotReady };
+      }
       if (unreadCount === ValueConstants.zero) return { ok: true, n: { unread: ValueConstants.zero } };
       onMarkAllRead();
       return { ok: true, n: { unread: ValueConstants.zero } };
-    }, [unreadCount, onMarkAllRead]),
+    }, [items, unreadCount, onMarkAllRead]),
   );
 
   useAssistantAction(
