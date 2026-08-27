@@ -3,6 +3,9 @@ import { isString } from '@core/guards/type-guards';
 import { act, create, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import { StoresProvider } from '@presentation/bootstrap/stores-context';
+import type { Stores } from '@presentation/bootstrap/stores';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -23,16 +26,37 @@ const SAFE_AREA_METRICS = {
 } as const;
 
 /**
- * Renders a presentation component inside the providers it depends on (theme +
- * safe area) using react-test-renderer wrapped in `act`. Keeps the harness
- * identical across the mobile-home component suites.
+ * Renders a presentation component inside the providers it depends on (theme,
+ * safe area and stores) using react-test-renderer wrapped in `act`.
+ *
+ * @remarks
+ * - **Stores are provided by default because otherwise adopting an assistant
+ *   hook breaks a screen's tests.** `useAssistantAction` reads `useStores`,
+ *   which throws outside a provider, so every component that registered an
+ *   assistant capability became unrenderable here — the reason only a handful
+ *   of screens had adopted `useAssistantScrollable`. The cost of saying
+ *   "the assistant can scroll this" should not be a red suite.
+ * - **The bundle is a cast, not a real one.** Building the whole DI graph for
+ *   a component test would drag in the HTTP client and storage; a component
+ *   reads the one store it needs, so the harness supplies that one and lets a
+ *   caller pass more.
+ * - **A test wanting specific stores still wraps its own `StoresProvider`**
+ *   inside `element` — the inner provider wins, so existing suites are
+ *   unaffected.
  */
-export const renderComponent = (element: ReactElement): RenderResult => {
+export const renderComponent = (element: ReactElement, stores?: Partial<Stores>): RenderResult => {
   let renderer!: ReactTestRenderer;
+  const value = {
+    assistantActionRegistry: new AssistantActionRegistry(),
+    ...stores,
+  } as unknown as Stores;
+
   act(() => {
     renderer = create(
       <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-        <AppThemeProvider>{element}</AppThemeProvider>
+        <AppThemeProvider>
+          <StoresProvider value={value}>{element}</StoresProvider>
+        </AppThemeProvider>
       </SafeAreaProvider>,
     );
   });

@@ -5,6 +5,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { useAssistantProfileActions } from '@presentation/app/edit-profile/hooks/use-assistant-profile-actions';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
@@ -17,6 +18,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const vm = useEditProfile();
+  const scrollable = useAssistantScrollable();
 
   // Registered by the screen that owns the form, so the assistant can fill in
   // a name or a bio — and press Save — here and nowhere else.
@@ -43,6 +45,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
           same-sized blank band above the keyboard. */}
       <KeyboardAvoider style={styles.flex}>
         <ScrollView
+          {...scrollable}
           contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}

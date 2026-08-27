@@ -21,6 +21,7 @@ import { ImportStageList } from '@presentation/app/import-recipe/body/import-sta
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ImportJobStatus as ImportJobStatusType } from '@domain/recipes/import/import-job-status';
 import { ValueConstants } from '@core/constants';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
 export interface ImportQueueViewProps {
   jobStatus: ImportJobStatusType | null;
@@ -61,6 +62,7 @@ export const ImportQueueView = ({
   onPrimary,
 }: ImportQueueViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scrollable = useAssistantScrollable();
   const copy = t().importRecipe;
 
   const statusLabel = isDone
@@ -76,7 +78,7 @@ export const ImportQueueView = ({
 
   return (
     <>
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
+      <ScrollView {...scrollable} style={styles.scroll} contentContainerStyle={styles.content}>
         <ImportProgressRing progress={progress} done={isDone} />
 
         <View style={styles.heading}>

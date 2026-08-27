@@ -13,6 +13,7 @@ import { InstagramEntryCard } from '@presentation/app/create-recipe/items/instag
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
 export interface PromptPhaseProps {
   insets: EdgeInsets;
@@ -44,6 +45,7 @@ export const PromptPhase = ({
   onResumeDraft,
 }: PromptPhaseProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scrollable = useAssistantScrollable();
   const canGenerate = prompt.trim().length > ValueConstants.zero;
   const ideaChips = t().createRecipe.ideaChips;
   const draftName = latestDraft?.snapshot.name?.trim();
@@ -67,6 +69,7 @@ export const PromptPhase = ({
       </View>
 
       <ScrollView
+        {...scrollable}
         contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + spacing.xxl }]}
         keyboardShouldPersistTaps="handled"
       >
