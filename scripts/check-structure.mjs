@@ -783,6 +783,94 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+/** The text of a JSX opening tag, brace-balanced so `=>` inside a prop does not end it. */
+function openingTag(src, at) {
+  let depth = 0;
+  for (let i = at; i < src.length; i += 1) {
+    const ch = src[i];
+    if (ch === '{') depth += 1;
+    else if (ch === '}') depth -= 1;
+    else if (ch === '>' && depth === 0 && src[i - 1] !== '=') return src.slice(at, i);
+  }
+  return src.slice(at, at + 400);
+}
+
+// --- X: every page with a scroller must be reachable by the assistant (§24)
+// "Asistan sayfalarda scroll yapamıyor" was reported for most of the app, and
+// the cause was not forgetfulness: `useAssistantAction` reads `useStores`,
+// which throws outside a provider, so adopting the scroll hook turned a
+// screen's component tests red. The harness now supplies stores, which removed
+// the cost — this rule removes the option of forgetting.
+//
+// **The question is asked of the PAGE, not the file.** A screen splits its list
+// across body/ and items/, and there are three wirings in the tree already: the
+// route component calling `useAssistantScroll` with a view-model callback, a
+// child receiving `AssistantScrollableProps` down a prop, and `ScreenContainer`
+// wiring it for whatever it wraps. Asking each file produced nine false alarms
+// for lists that move perfectly well. Asking whether ANY file in the page
+// registers scroll catches the regression that matters — a new page shipped
+// with a scroller nothing can move — and nothing else.
+{
+  const APP = path.join(SRC, 'presentation/app');
+
+  // Pages the assistant is not offered on at all. Derived from the source so
+  // the two lists cannot drift: it is closed there on purpose — it cannot type
+  // a password — so registering scroll would be dead code.
+  const closedSegments = new Set();
+  const offeredPath = path.join(SRC, 'presentation/base/hooks/assistant/use-assistant-is-offered.ts');
+  if (fs.existsSync(offeredPath)) {
+    const routesPath = path.join(SRC, 'presentation/base/constants/route-paths.ts');
+    const routes = fs.existsSync(routesPath) ? fs.readFileSync(routesPath, 'utf8') : '';
+    const closedSrc = /CLOSED_TO_ASSISTANT[^=]*=\s*\[([^\]]*)\]/s.exec(fs.readFileSync(offeredPath, 'utf8'));
+    for (const m of (closedSrc?.[1] ?? '').matchAll(/RoutePaths\.(\w+)/g)) {
+      const value = new RegExp(`^\\s*${m[1]}: '/([\\w-]+)'`, 'm').exec(routes)?.[1];
+      if (value !== undefined) closedSegments.add(value);
+    }
+  }
+
+  const COVERAGE = /useAssistantScroll\b|useAssistantScrollable\b|\{\.\.\.scrollable\}|AssistantScrollableProps|<ScreenContainer(?![^>]*scrollable=\{false\})[^>]*\sscrollable\b/;
+  const SCROLLERS = /<(?:Animated\.)?(ScrollView|FlatList|SectionList)\b/g;
+
+  const pageFiles = (dir, into) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name !== '__tests__') pageFiles(full, into);
+      } else if (entry.name.endsWith('.tsx')) into.push(full);
+    }
+    return into;
+  };
+
+  if (fs.existsSync(APP)) {
+    for (const entry of fs.readdirSync(APP, { withFileTypes: true })) {
+      if (!entry.isDirectory() || entry.name === '__tests__') continue;
+      if (closedSegments.has(entry.name)) continue;
+
+      const sources = pageFiles(path.join(APP, entry.name), []).map((f) => ({
+        rel: path.relative(APP, f).split(path.sep).join('/'),
+        text: fs.readFileSync(f, 'utf8'),
+      }));
+      if (sources.some((f) => COVERAGE.test(f.text))) continue;
+
+      // Not covered anywhere on the page — is there anything to scroll?
+      for (const file of sources) {
+        const found = [...file.text.matchAll(SCROLLERS)].find(
+          // A horizontal strip (chip rows, carousels) is not page content. The
+          // opening tag is brace-balanced rather than read to the next '>':
+          // an arrow function in an earlier prop ends in one, and stopping
+          // there hid the `horizontal` that came after it.
+          (m) => !/\bhorizontal\b/.test(openingTag(file.text, m.index)),
+        );
+        if (found === undefined) continue;
+        errors.push(
+          `presentation/app/${file.rel}: <${found[1]}> is a page scroller the assistant cannot move — no file under app/${entry.name}/ registers scroll (CLAUDE.md §24)`,
+        );
+        break;
+      }
+    }
+  }
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);

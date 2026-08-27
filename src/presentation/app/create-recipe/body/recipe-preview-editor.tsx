@@ -23,6 +23,7 @@ import { FieldErrorText } from '@presentation/app/create-recipe/items/field-erro
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { MediaType } from '@domain/recipes/media/media-type';
 
 export interface RecipePreviewEditorProps {
@@ -73,6 +74,7 @@ export const RecipePreviewEditor = ({
   onOpenPhotos,
 }: RecipePreviewEditorProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scrollable = useAssistantScrollable();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const [picker, setPicker] = useState<TaxonomyPickerKind | null>(null);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
@@ -89,7 +91,11 @@ export const RecipePreviewEditor = ({
   const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
-    <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={styles.scroll}>
+    <ScrollView
+      {...scrollable}
+      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={styles.scroll}
+    >
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
         <RecipeImage uri={cover?.url} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
         <Pressable
