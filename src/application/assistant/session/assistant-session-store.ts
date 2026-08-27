@@ -194,14 +194,24 @@ export const configureAssistantSessionStore = (
   /**
    * When the assistant's queued audio will have finished playing.
    *
-   * Until then the microphone sends nothing. On a phone standing on a kitchen
-   * counter the loudspeaker feeds straight back into it, and the model treated
-   * its own sentence as the user's next instruction and answered it — out loud,
-   * on repeat. The library offers no acoustic echo cancellation on Android (its
-   * session options are iOS-only), so the only reliable cure is not to listen
-   * while speaking. The cost is that a user cannot interrupt by voice mid-
-   * answer; Mute and End still work, and a session that talks over itself is
-   * not one they could interrupt anyway.
+   * Until then the microphone sends nothing — but ONLY where the capture path
+   * cannot cancel the app's own output.
+   *
+   * On a phone standing on a kitchen counter the loudspeaker feeds straight
+   * back into the microphone, and the model treated its own sentence as the
+   * user's next instruction and answered it, out loud, on repeat. Not listening
+   * while speaking cures that, at the price of a session the user cannot
+   * interrupt — which is the price they noticed: "konuşurken beni dinlemiyor".
+   *
+   * Where the platform DOES cancel the echo, that price buys nothing, so it is
+   * not paid: iOS runs the session in `voiceChat` (Apple's Voice-Processing I/O)
+   * and the web asks `getUserMedia` for `echoCancellation`. Both subtract the
+   * loudspeaker before the samples arrive, so the microphone can stay open and
+   * a spoken interruption reaches the model — which is what every other
+   * assistant does, and how it does it.
+   *
+   * Android is the exception until its recorder opens the input stream with
+   * `VoiceCommunication`; see `Microphone.cancelsEcho`.
    */
   let speakingUntil = ValueConstants.zero;
   /**
@@ -659,7 +669,16 @@ export const configureAssistantSessionStore = (
           // The zero check is not decoration: `now()` counts from process
           // start, so without it the gate closes over its own tail for the
           // first quarter-second of the app's life.
-          if (speakingUntil !== ValueConstants.zero && now() < speakingUntil + ECHO_TAIL_MS) return;
+          // Held open when the capture path removes our own output: the user
+          // can then talk over the answer and be heard, and the Live API's own
+          // interruption handling takes it from there.
+          if (
+            !microphone.cancelsEcho &&
+            speakingUntil !== ValueConstants.zero &&
+            now() < speakingUntil + ECHO_TAIL_MS
+          ) {
+            return;
+          }
           session.sendAudio(samples);
           if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
         });

@@ -42,4 +42,22 @@ export interface MicrophoneInterface {
 
   /** Ends capture and releases the input device. Safe to call when idle. */
   stop(): Promise<void>;
+
+  /**
+   * Whether this capture path removes the app's own output from what it hears.
+   *
+   * @remarks
+   * The one fact that decides whether the user can interrupt. With echo
+   * cancellation the microphone can stay open while the assistant speaks — the
+   * loudspeaker's contribution is subtracted before the samples arrive, so a
+   * live session hears the room and not itself. Without it the model treats its
+   * own sentence as the next instruction and answers it, out loud, on repeat —
+   * which is why the session used to stop listening while speaking, and why it
+   * could not be interrupted.
+   *
+   * Declared by the capture layer because only it knows: the platform's echo
+   * canceller is engaged by HOW the input is opened, not by anything a screen
+   * or a store can see.
+   */
+  readonly cancelsEcho: boolean;
 }
