@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import { AudioManager, AudioRecorder } from 'react-native-audio-api';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Failure } from '@core/failure/failure';
@@ -33,6 +34,19 @@ const MONO = 1;
 const PERMISSION_GRANTED = 'Granted';
 
 export class Microphone implements MicrophoneInterface {
+  /**
+   * iOS only, and the split is the library's rather than a choice.
+   *
+   * `voiceChat` below puts the session on Apple's Voice-Processing I/O unit,
+   * which cancels the app's own output — the same thing `echoCancellation`
+   * does for the web build. Android has no equivalent here: the recorder opens
+   * its Oboe input stream without `setInputPreset`, so it gets the default
+   * `VoiceRecognition` preset, and Android engages its echo canceller only for
+   * `VoiceCommunication`. Until that reaches the library, the Android session
+   * keeps its microphone shut while the assistant speaks.
+   */
+  readonly cancelsEcho = Platform.OS === 'ios';
+
   private recorder: AudioRecorder | null = null;
 
   async ensureAccess(): Promise<Result<void, Failure>> {
