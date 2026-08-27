@@ -18,7 +18,7 @@ import {
  *   says so — on a screen with nothing to scroll.
  */
 export const useAssistantScroll = (
-  scrollBy: (direction: AssistantScrollDirectionType) => void,
+  scrollBy: (direction: AssistantScrollDirectionType) => boolean,
   /** False where the screen has nothing scrollable mounted right now. */
   isEnabled = true,
 ): void => {
@@ -29,7 +29,11 @@ export const useAssistantScroll = (
         const direction = machineLower(arg ?? AssistantScrollDirection.Down);
         if (!isDirection(direction)) return { ok: false, error: 'unknown_direction' };
 
-        scrollBy(direction);
+        // Reported success unconditionally until a user found the screens
+        // where nothing was attached to move: the feed's wide-layout and
+        // search branches both answered "kaydırdım" over a list that had not
+        // budged. The handler now says what happened.
+        if (!scrollBy(direction)) return { ok: false, error: 'nothing_to_scroll' };
         return { ok: true };
       },
       [scrollBy],

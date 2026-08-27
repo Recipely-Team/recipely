@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
+import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Animated, { Easing, useAnimatedRef, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
+import { Easing, useAnimatedScrollHandler, useReducedMotion, useSharedValue, withTiming } from 'react-native-reanimated';
 import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
@@ -78,6 +79,9 @@ const REVEAL_THRESHOLD = spacing.sm;
  *   is intercepted here; letting the auth guard bounce a guest lands them on a
  *   bare login screen with no explanation.
  */
+/** The handle any of the feed's five branches hands back; only this hook names it. */
+type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
+
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
@@ -128,7 +132,11 @@ export const useRecipeList = (): UseRecipeListResult => {
   const isSearching = trimmedSearch.length > ValueConstants.zero;
 
   const scrollY = useSharedValue(ValueConstants.zero);
-  const listRef = useAnimatedRef<Animated.FlatList<RecipeSummaryEntity>>();
+  // A plain ref of the shared handle shape, not `useAnimatedRef`: no worklet
+  // ever read it, and typing it to the mobile FlatList is what stopped the
+  // other four branches — the wide-layout feed, the grid and the search
+  // overlay — from being able to attach anything at all.
+  const listRef = useRef<AssistantScrollHandleType>(null);
   const headerTranslateY = useSharedValue(ValueConstants.zero);
   const insets = useSafeAreaInsets();
   const hiddenHeaderY = hiddenHeaderOffset(insets.top);
@@ -371,14 +379,16 @@ export const useRecipeList = (): UseRecipeListResult => {
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
     unreadCount,
-    listRef,
+    // A callback, not the ref object: each branch attaches a different list
+    // class and only a callback ref accepts the wider shape they share.
+    attachList: (instance: AssistantScrollHandleType): void => {
+      listRef.current = instance;
+    },
     // A step is one viewport minus a sliver, so a line of the previous screen
     // stays visible — scrolling a whole screen away loses the reader's place,
     // which is exactly the complaint about page-down keys.
-    onAssistantScroll: (direction: AssistantScrollDirectionType) => {
-      const target = scrollTargetFor(direction, scrollY.value, height);
-      listRef.current?.scrollToOffset({ offset: target, animated: true });
-    },
+    onAssistantScroll: (direction: AssistantScrollDirectionType): boolean =>
+      moveScrollTo(listRef.current, scrollTargetFor(direction, scrollY.value, height)),
     scrollY,
     headerTranslateY,
     reduceMotion,

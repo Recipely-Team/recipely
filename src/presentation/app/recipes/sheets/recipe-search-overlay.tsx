@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
+import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
@@ -22,6 +23,13 @@ export interface RecipeSearchOverlayProps {
    */
   isLoading: boolean;
   onOpenRecipe: (id: string) => void;
+  /**
+   * Attaches the results list to the feed's scroll handle. These results
+   * REPLACE the browse list, so while they are up they are the page — and
+   * without this the assistant answered "kaydırdım" over a list it held no
+   * reference to at all.
+   */
+  attachList: AssistantScrollableProps['ref'];
 }
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
@@ -38,6 +46,7 @@ export const RecipeSearchOverlay = ({
   recipes,
   isLoading,
   onOpenRecipe,
+  attachList,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -72,6 +81,7 @@ export const RecipeSearchOverlay = ({
         </View>
       ) : (
         <FlatList
+          ref={attachList}
           data={recipes}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (

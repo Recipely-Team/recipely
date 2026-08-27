@@ -102,4 +102,29 @@ describe('useAssistantScrollable', () => {
       });
     });
   });
+
+  // The screens that reported "kaydırdım" over a motionless list: the feed's
+  // wide-layout, search and loading branches never attached anything, and the
+  // action's answer did not depend on whether they had.
+  it('answers nothing_to_scroll when no list was ever attached', async () => {
+    const { registry } = harness(null);
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.Scroll, 'down')).resolves.toMatchObject({
+        ok: false,
+        error: 'nothing_to_scroll',
+      });
+    });
+  });
+
+  it('answers nothing_to_scroll for a handle that can do none of the three', async () => {
+    const { registry } = harness({});
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.Scroll, 'down')).resolves.toMatchObject({
+        ok: false,
+        error: 'nothing_to_scroll',
+      });
+    });
+  });
 });
