@@ -7,6 +7,7 @@ import { useCallback, useRef } from 'react';
 import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
@@ -84,33 +85,44 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
   const addFavorite = favoritesStore((s) => s.addFavorite);
   const removeFavorite = favoritesStore((s) => s.removeFavorite);
-  const toggleLike = likesStore((s) => s.toggle);
+  const setLikedInStore = likesStore((s) => s.setLiked);
   const savedIds = savedRecipesStore((s) => s.savedIds);
+  const savedListState = savedRecipesStore((s) => s.listState);
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: 'signed_out' };
-      // Already in the wanted state is a success, not a no-op to report: the
-      // user asked for an outcome, and the outcome holds.
-      if (savedIds.has(recipeId) === wanted) return { ok: true, title: recipeName };
+      if (savedIds.has(recipeId) === wanted) {
+        // An unloaded set answers "not saved" about every recipe in the app, so
+        // this branch reported an unsave that never happened. It only misleads
+        // in that direction: reading "not saved" when asked to SAVE just means
+        // the save runs, which is what the user wanted anyway.
+        if (!wanted && savedListState.status !== StoreStatus.Loaded) {
+          return { ok: false, error: AssistantActionError.NotReady };
+        }
+        return { ok: true, title: recipeName };
+      }
 
       if (wanted) await addFavorite(userId, recipeId);
       else await removeFavorite(userId, recipeId);
       return { ok: true, title: recipeName };
     },
-    [userId, savedIds, recipeId, recipeName, addFavorite, removeFavorite],
+    [userId, savedIds, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
   );
 
   const setLiked = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: 'signed_out' };
-      if ((likeState?.likedByMe ?? false) === wanted) return { ok: true, title: recipeName };
+      // No early return on the render's `likeState`: an absent entry read as
+      // "not liked", so the FIRST spoken "beğen" flipped nothing and said it
+      // had. The store owns that question now and answers it truthfully.
+      if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
-      const result = await toggleLike(recipeId);
+      const result = await setLikedInStore(recipeId, wanted);
       return result.ok ? { ok: true, title: recipeName } : { ok: false, error: 'failed' };
     },
-    [userId, likeState, recipeId, recipeName, toggleLike],
+    [userId, likeState, recipeId, recipeName, setLikedInStore],
   );
 
   useAssistantScreenContent(() =>

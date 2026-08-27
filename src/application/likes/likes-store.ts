@@ -1,12 +1,14 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
-import { ok } from '@core/result/result-helpers';
+import { fail, ok } from '@core/result/result-helpers';
+import { ConflictFailure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import { ValueConstants } from '@/src/core/constants/value-constants';
+import { ValueConstants } from '@core/constants';
 
 interface LikesStoreDeps {
   likeRecipe: LikeRecipeUseCase;
@@ -92,6 +94,25 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       }
 
       return result;
+    },
+
+    setLiked: async (recipeId, wanted) => {
+      const current = get().byRecipe[recipeId];
+
+      // Nothing to flip FROM is not the same as nothing to do. `toggle`
+      // answered ok here, so the assistant's first "beğen" reported success
+      // over an untouched heart and only the second one — after a detail fetch
+      // had filled this entry — actually liked anything.
+      if (current === undefined) {
+        return fail(new ConflictFailure(DiagnosticMessage.assistant.likeStateNotLoaded));
+      }
+      if (current.isLoading) {
+        return fail(new ConflictFailure(DiagnosticMessage.assistant.likeAlreadyInFlight));
+      }
+      // Already the wanted outcome: the user asked for a state, and it holds.
+      if (current.likedByMe === wanted) return ok(undefined);
+
+      return get().toggle(recipeId);
     },
 
     clear: () => set({ byRecipe: {} }),

@@ -1,5 +1,6 @@
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
@@ -222,11 +223,20 @@ function filterCounts(filters: UiFilters, axis?: string, delta = ValueConstants.
   return counts;
 }
 
-/** Matches a taxonomy entry by its key or by the name the screen shows. */
+/**
+ * Matches a taxonomy entry by its key or by the name the screen shows.
+ *
+ * The two halves fold differently on purpose. A key is an ASCII machine
+ * constant, so `machineLower` is right and folding it could collide two of
+ * them. A name is text a person reads and says back, and folding it is what
+ * lets "italyan" reach `İtalyan` — whose `toLowerCase()` carries a combining
+ * dot and so matched nothing any user could pronounce.
+ */
 function resolveKey(options: readonly TaxonomyItem[], value: string): string | null {
-  const wanted = machineLower(value);
+  const wantedKey = machineLower(value);
+  const wantedName = foldForMatch(value);
   const match = options.find(
-    (item) => machineLower(item.key) === wanted || machineLower(item.name) === wanted,
+    (item) => machineLower(item.key) === wantedKey || foldForMatch(item.name) === wantedName,
   );
   return match?.key ?? null;
 }
