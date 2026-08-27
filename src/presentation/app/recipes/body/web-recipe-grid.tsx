@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
+import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
 import { WebSortMenu } from '@presentation/app/recipes/items/filters/web-sort-menu';
 import { SkeletonCard } from '@presentation/base/widgets/cards/skeleton-card';
@@ -76,7 +76,7 @@ export const WebRecipeGrid = ({
   const renderItem = useCallback(
     ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
       <View style={[styles.gridCell, { maxWidth: gridCellMaxWidth }]}>
-        <WebRecipeCard
+        <WebRecipeListItem
           recipe={item}
           saved={isSaved(item.id)}
           onOpen={onOpenRecipe}
