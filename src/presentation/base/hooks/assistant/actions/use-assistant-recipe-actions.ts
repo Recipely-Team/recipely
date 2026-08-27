@@ -142,10 +142,16 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       // Un-saving drops a recipe out of a collection the user curated and may
       // not be able to find again, so it asks — unlike un-liking, which is a
       // number they can restore with one tap.
+      // The same hole `setSaved` had, in a handler that does not go through it:
+      // an unloaded id set answers "not saved" about every recipe in the app, so
+      // a spoken "kaydı kaldır" reported success and never raised the sheet.
+      if (savedListState.status !== StoreStatus.Loaded) {
+        return { ok: false, error: AssistantActionError.NotReady };
+      }
       if (!savedIds.has(recipeId)) return { ok: true, title: recipeName };
       onRequestUnsave();
       return { ok: true, awaiting: true, title: recipeName };
-    }, [savedIds, recipeId, recipeName, onRequestUnsave]),
+    }, [savedIds, savedListState, recipeId, recipeName, onRequestUnsave]),
   );
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));

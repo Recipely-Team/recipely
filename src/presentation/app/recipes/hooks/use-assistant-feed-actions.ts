@@ -1,13 +1,15 @@
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
-import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
-import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
+import { machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
+import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
-import { Difficulty } from '@domain/recipes/difficulty';
+import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
@@ -87,14 +89,14 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             // The model says "Italian"; the feed filters on the backend's key.
             // Passing the word through produced a filter that matched nothing,
             // an empty feed, and `ok: true` reported to the model.
-            const key = resolveKey(cuisineOptions, parsed.value);
+            const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
             if (filters.cuisines.includes(key)) return { ok: true, n: filterCounts(filters) };
             onToggleCuisineQuick(key);
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.one) };
           }
           case CATEGORY: {
-            const key = resolveKey(categoryOptions, parsed.value);
+            const key = resolveTaxonomyKey(categoryOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(categoryOptions, CATEGORY) };
             if (filters.categories.includes(key)) return { ok: true, n: filterCounts(filters) };
             onToggleCategory(key);
@@ -129,7 +131,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 
         switch (parsed.key) {
           case CUISINE: {
-            const key = resolveKey(cuisineOptions, parsed.value);
+            const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
             if (!filters.cuisines.includes(key)) return { ok: false, error: 'not_applied' };
             // The quick toggle is what the chip row calls, so removing looks
@@ -138,7 +140,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.minusOne) };
           }
           case CATEGORY: {
-            const key = resolveKey(categoryOptions, parsed.value);
+            const key = resolveTaxonomyKey(categoryOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(categoryOptions, CATEGORY) };
             onRemoveCategory(key);
             return { ok: true, n: filterCounts(filters, CATEGORY, ValueConstants.minusOne) };
@@ -182,8 +184,8 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     AssistantAction.Sort,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const key = arg ?? CharConstants.empty;
-        if (!isSortKey(key)) return { ok: false, error: 'unknown_sort' };
+        const key = asSortKey(arg ?? CharConstants.empty);
+        if (key === null) return { ok: false, error: 'unknown_sort' };
         onChangeSort(key);
         return { ok: true };
       },
@@ -193,16 +195,42 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 };
 
 
-// The wire values are upper-case (`EASY`); a person says "easy". Matching
-// case-insensitively is the difference between the filter applying and the
-// model being told its own vocabulary is wrong.
+/**
+ * The wire value (`MEDIUM`) or the word on the chip ("Orta"), whichever arrived.
+ *
+ * Case-folding the wire value was only half of it: a Turkish speaker asking for
+ * "orta zorluk" was told no such difficulty existed while the Orta chip sat on
+ * the screen, because the enum was the only vocabulary consulted. The label is
+ * what the user can see, so it is what they say.
+ */
 function asDifficulty(value: string): Difficulty | null {
   const wanted = machineUpper(value);
-  return Object.values(Difficulty).find((d) => d === wanted) ?? null;
+  const byWire = Object.values(Difficulty).find((d) => d === wanted);
+  if (byWire !== undefined) return byWire;
+
+  const matched = resolveTaxonomyKey(
+    DIFFICULTY_VALUES.map((d) => ({ key: d, name: difficultyLabel(d) })),
+    value,
+  );
+  return DIFFICULTY_VALUES.find((d) => d === matched) ?? null;
 }
 
-function isSortKey(value: string): value is SortKey {
-  return (Object.values(SortKey) as string[]).includes(value);
+/**
+ * The same, for sorting. "En yüksek puanlı olarak sırala" was answered with
+ * "puana göre sıralayamıyorum" — by a screen holding a `rating` sort whose
+ * label is exactly the phrase the user had just said.
+ */
+function asSortKey(value: string): SortKey | null {
+  if ((Object.values(SortKey) as string[]).includes(value)) return value as SortKey;
+
+  const labels = sortKeyLabels();
+  const matched = resolveTaxonomyKey(
+    (Object.values(SortKey) as SortKey[]).map((key) => ({ key, name: labels[key] })),
+    value,
+  );
+  return (Object.values(SortKey) as string[]).includes(matched ?? CharConstants.empty)
+    ? (matched as SortKey)
+    : null;
 }
 
 /**
@@ -223,23 +251,7 @@ function filterCounts(filters: UiFilters, axis?: string, delta = ValueConstants.
   return counts;
 }
 
-/**
- * Matches a taxonomy entry by its key or by the name the screen shows.
- *
- * The two halves fold differently on purpose. A key is an ASCII machine
- * constant, so `machineLower` is right and folding it could collide two of
- * them. A name is text a person reads and says back, and folding it is what
- * lets "italyan" reach `İtalyan` — whose `toLowerCase()` carries a combining
- * dot and so matched nothing any user could pronounce.
- */
-function resolveKey(options: readonly TaxonomyItem[], value: string): string | null {
-  const wantedKey = machineLower(value);
-  const wantedName = foldForMatch(value);
-  const match = options.find(
-    (item) => machineLower(item.key) === wantedKey || foldForMatch(item.name) === wantedName,
-  );
-  return match?.key ?? null;
-}
+
 
 /**
  * An empty catalogue is not an unrecognised value — the app has simply not
