@@ -1,3 +1,4 @@
+import { scrollThrottleMs } from '@presentation/base/constants';
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
@@ -22,7 +23,7 @@ export const SCROLL_STEP_SHARE = 0.85;
  * makes with their thumb, and all it feeds is the starting point of a relative
  * step — a tenth of a second is more than accurate enough for that.
  */
-export const SCROLL_EVENT_THROTTLE_MS = 100;
+export const SCROLL_EVENT_THROTTLE_MS = scrollThrottleMs.coarse;
 
 /**
  * Where a scroll in this direction should land.

@@ -37,6 +37,12 @@ export interface WebHeroSectionProps {
  * locale change — server localizes content via `Accept-Language`). Renders a
  * skeleton while loading and `null` on error or fewer than 3 recipes.
  */
+/**
+ * The badge numbers on the two cards beside the hero. The hero itself is #1,
+ * so these continue its ranking rather than starting their own.
+ */
+const MINI_CARD_RANKS = { first: 2, second: 3 } as const;
+
 export const WebHeroSection = ({
   onOpenRecipe,
   onOpenCreate,
@@ -128,8 +134,8 @@ export const WebHeroSection = ({
       </View>
       {stacked ? null : (
         <View style={[styles.mini, miniFlex]}>
-          <WebHeroMiniCard recipe={mini1} rank={2} onPress={onOpenRecipe} />
-          <WebHeroMiniCard recipe={mini2} rank={3} onPress={onOpenRecipe} />
+          <WebHeroMiniCard recipe={mini1} rank={MINI_CARD_RANKS.first} onPress={onOpenRecipe} />
+          <WebHeroMiniCard recipe={mini2} rank={MINI_CARD_RANKS.second} onPress={onOpenRecipe} />
         </View>
       )}
       {stacked ? null : (

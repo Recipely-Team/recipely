@@ -16,9 +16,15 @@ export const decorSizes = {
    */
   notifBadgeLineHeight: scale(12),
   /** Unread-count badge on a tab or bell icon. */
+  /** A meta line in a card skeleton — the short grey bar under the title. */
+  skeletonLineSm: scale(14),
+
   notifBadge: scale(18),
   /** Width of the active page dot in a carousel (the inactive dot is round). */
   dotActiveWidth: scale(18),
+
+  /** A title line in a card skeleton. */
+  skeletonLineMd: scale(18),
   /** Rank medallion on the web leaderboard cards. */
   rankBadge: scale(26),
   /** Numbered step / count badge. */
@@ -29,6 +35,9 @@ export const decorSizes = {
   aiBannerIconCompact: scale(40),
   /** Circular icon plate on the AI banner. */
   aiBannerIcon: scale(52),
+
+  /** Width of a short meta placeholder — a cuisine or a time, before it loads. */
+  skeletonChipWidth: scale(60),
   /** Severity disc behind the icon in a FeedbackDialog. */
   feedbackDisc: scale(64),
   /** Success/error status circle on the reset-password views. */
