@@ -88,6 +88,7 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
       activeDifficulty={vm.filters.difficulties[ValueConstants.zero] ?? null}
       onDifficultyChange={vm.onDifficultyChange}
       gridColumns={vm.gridColumns}
+      gridCellMaxWidth={vm.gridCellMaxWidth}
       onOpenRecipe={vm.onOpenRecipe}
       isSaved={vm.isSaved}
       onToggleSave={vm.onToggleSave}

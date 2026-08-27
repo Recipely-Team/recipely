@@ -48,6 +48,8 @@ export interface WebRecipeGridProps {
   activeDifficulty: Difficulty | null;
   onDifficultyChange: (d: Difficulty | null) => void;
   gridColumns: number;
+  /** Cap for one card — `numColumns` does not pad a short last row. */
+  gridCellMaxWidth: number;
   onOpenRecipe: (id: string) => void;
   /** True when the recipe id is in the signed-in user's saved set. */
   isSaved: (id: string) => boolean;
@@ -61,7 +63,7 @@ export interface WebRecipeGridProps {
 export const WebRecipeGrid = ({
   recipes, isSearching, activeCuisineLabel, sortBy, onChangeSort,
   onOpenFilter, activeFilterCount, activeDifficulty, onDifficultyChange,
-  gridColumns, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave,
+  gridColumns, gridCellMaxWidth, isLoading, isRefreshing, onOpenRecipe, isSaved, onToggleSave,
 }: WebRecipeGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -73,7 +75,7 @@ export const WebRecipeGrid = ({
 
   const renderItem = useCallback(
     ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
-      <View style={styles.gridCell}>
+      <View style={[styles.gridCell, { maxWidth: gridCellMaxWidth }]}>
         <WebRecipeCard
           recipe={item}
           saved={isSaved(item.id)}
@@ -82,7 +84,7 @@ export const WebRecipeGrid = ({
         />
       </View>
     ),
-    [onOpenRecipe, isSaved, onToggleSave],
+    [onOpenRecipe, isSaved, onToggleSave, gridCellMaxWidth],
   );
 
   const segButton = (key: string, label: string, active: boolean, onPress: () => void): React.JSX.Element => (

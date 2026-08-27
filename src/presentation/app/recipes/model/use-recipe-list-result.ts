@@ -44,6 +44,8 @@ export interface UseRecipeListResult {
   onEndReached: () => void;
   activeFilterCount: number;
   gridColumns: number;
+  /** Cap for one card, so a short last row does not stretch its cells. */
+  gridCellMaxWidth: number;
   sortBy: SortKey;
   filters: UiFilters;
   activeCuisineLabel: string | null;

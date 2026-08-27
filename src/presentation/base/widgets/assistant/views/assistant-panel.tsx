@@ -1,4 +1,7 @@
 import { useState } from 'react';
+import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -91,6 +94,7 @@ export const AssistantPanel = ({
     error !== null
       ? t().assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
       : assistantNotice(status, deniedReason);
+  const noticeTone = assistantNoticeTone(error !== null, deniedReason);
 
   const send = (text: string): void => {
     clearError();
@@ -175,9 +179,22 @@ export const AssistantPanel = ({
       </View>
 
       {notice !== null ? (
-        <View style={[styles.notice, shadows.md, { backgroundColor: colors.cardBackground }]}>
-          <ThemedText variant="caption">{notice}</ThemedText>
-        </View>
+        noticeTone === SeverityType.Neutral ? (
+          <View style={[styles.notice, shadows.md, { backgroundColor: colors.cardBackground }]}>
+            <ThemedText variant="caption">{notice}</ThemedText>
+          </View>
+        ) : (
+          // A failure gets the app's own error surface rather than a caption on
+          // a card: on the dark panel the two were indistinguishable, and the
+          // one that mattered was the one nobody saw.
+          <View style={styles.notice}>
+            <FormBanner
+              message={notice}
+              severity={noticeTone}
+              icon={noticeTone === SeverityType.Danger ? 'alert-circle' : 'time-outline'}
+            />
+          </View>
+        )
       ) : null}
 
       <View style={styles.gap} pointerEvents="none" />

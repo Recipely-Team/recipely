@@ -46,6 +46,7 @@ const baseProps: WebRecipeGridProps = {
   activeDifficulty: null,
   onDifficultyChange: jest.fn(),
   gridColumns: 3,
+  gridCellMaxWidth: 320,
   isLoading: false,
   isRefreshing: false,
   onOpenRecipe: jest.fn(),

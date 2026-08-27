@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
@@ -23,6 +25,11 @@ export interface AssistantSheetProps {
   height: number;
   transcript: AssistantTranscriptLine[];
   notice: string | null;
+  /**
+   * How loudly to show it. A failure used to render as the same muted caption
+   * as a note about voice being off, and on the dark sheet it disappeared.
+   */
+  noticeTone: SeverityType;
   onSend: (text: string) => void;
   onCollapse: () => void;
 }
@@ -42,6 +49,7 @@ export const AssistantSheet = ({
   height,
   transcript,
   notice,
+  noticeTone,
   onSend,
   onCollapse,
 }: AssistantSheetProps): React.JSX.Element => {
@@ -73,9 +81,19 @@ export const AssistantSheet = ({
       </Pressable>
 
       {notice !== null ? (
-        <ThemedText variant="caption" muted style={styles.notice}>
-          {notice}
-        </ThemedText>
+        noticeTone === SeverityType.Neutral ? (
+          <ThemedText variant="caption" muted style={styles.notice}>
+            {notice}
+          </ThemedText>
+        ) : (
+          <View style={styles.noticeBanner}>
+            <FormBanner
+              message={notice}
+              severity={noticeTone}
+              icon={noticeTone === SeverityType.Danger ? 'alert-circle' : 'time-outline'}
+            />
+          </View>
+        )
       ) : null}
 
       <View style={styles.transcript}>
@@ -128,6 +146,10 @@ const styles = StyleSheet.create({
   grabberRow: { paddingVertical: spacing.sm, alignItems: 'center' },
   // Pinned: a bar, not a text box.
   grabber: { width: decorSizes.cardOverlap, height: spacing.xs, borderRadius: radii.xs },
+  noticeBanner: {
+    paddingHorizontal: spacing.lg,
+    paddingBottom: spacing.sm,
+  },
   notice: { paddingHorizontal: spacing.md, paddingBottom: spacing.xs },
   transcript: { flex: ValueConstants.one, minHeight: ValueConstants.zero, paddingHorizontal: spacing.md },
   composer: {
