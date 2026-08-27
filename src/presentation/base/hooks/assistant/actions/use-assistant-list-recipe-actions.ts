@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { router, type Href } from 'expo-router';
 import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { AssistantRecipeRow } from '@presentation/base/hooks/assistant/args/assistant-recipe-row';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
@@ -22,13 +23,12 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  *   user says "save the baklava" or "save the second one", and `rowAt` answers
  *   both. The screen line now carries those rows numbered, so what the model
  *   passes back is what this resolves.
- * - **Saving happens here; everything else happens on the recipe.** Every card
- *   in these lists carries a bookmark, so a save is a change the user WATCHES.
- *   There is no like control on a card — liking from the list would be a
- *   success the screen could not show, which is the failure mode this codebase
- *   has already been bitten by: a handler answering `ok` is not the same as the
- *   work having visibly happened. So a like opens the recipe and likes it
- *   there, in front of the user, exactly as their thumb would have.
+ * - **Saving and liking both happen here.** Every card in these lists carries a
+ *   bookmark AND a heart — `RecipeCard` renders one and animates it — so both
+ *   are changes the user WATCHES. Liking used to open the recipe first, on the
+ *   grounds that a card had no like control to show the result on. That stopped
+ *   being true, and the detour became the bug: "beğen bunu" on the feed walked
+ *   the user off the screen they were reading.
  * - **Un-saving and deleting travel for a second reason**: both are in
  *   `CONFIRMED_ACTIONS`, and the sheet that asks lives on the recipe screen. A
  *   recipe the user is about to destroy is also one they should be looking at
@@ -39,7 +39,8 @@ const SCREEN_ARRIVAL_TIMEOUT_MS = 4_000;
  *   instead of ending it.
  */
 export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[]): void => {
-  const { assistantActionRegistry: registry, authStore } = useStores();
+  const { assistantActionRegistry: registry, authStore, likesStore } = useStores();
+  const setLikedInStore = likesStore((s) => s.setLiked);
   const favourites = useSaveRecipe();
   const authState = authStore((s) => s.state);
   // Held in a ref, and read when a handler runs. A list re-renders on every
@@ -95,14 +96,30 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
     [find, registry],
   );
 
+  const setLiked = useCallback(
+    async (arg: string | undefined, wanted: boolean): Promise<AssistantActionResultType> => {
+      const { isSignedIn } = latest.current;
+      if (!isSignedIn) return { ok: false, error: 'signed_out' };
+      const row = find(arg);
+      if (row === null) return { ok: false, notMine: true };
+
+      // `RecipeListItem` seeds each row's like state on mount, so the entry is
+      // there for a row the user can see. When it genuinely is not, the store
+      // says so rather than reporting a heart it never touched.
+      const result = await setLikedInStore(row.id, wanted);
+      return result.ok ? { ok: true, title: row.name } : { ok: false, error: AssistantActionError.NotReady };
+    },
+    [find, setLikedInStore],
+  );
+
   useAssistantAction(AssistantAction.Save, save);
   useAssistantAction(
     AssistantAction.Like,
-    useCallback((arg?: string) => runOnRecipe(arg, AssistantAction.Like), [runOnRecipe]),
+    useCallback((arg?: string) => setLiked(arg, true), [setLiked]),
   );
   useAssistantAction(
     AssistantAction.Unlike,
-    useCallback((arg?: string) => runOnRecipe(arg, AssistantAction.Unlike), [runOnRecipe]),
+    useCallback((arg?: string) => setLiked(arg, false), [setLiked]),
   );
 
   // Both of these are in `CONFIRMED_ACTIONS`, and the sheet that asks lives on

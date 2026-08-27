@@ -19,6 +19,7 @@ interface Probe {
   saved: Set<string>;
   toggled: string[];
   pushed: string[];
+  liked: { id: string; wanted: boolean }[];
   signedIn: boolean;
 }
 
@@ -57,6 +58,14 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
             : mockAuth.out,
         },
       }),
+    likesStore: (select: (s: { setLiked: unknown }) => unknown) =>
+      select({
+        setLiked: async (id: string, wanted: boolean) => {
+          const state = (globalThis as never as { __rows: Probe }).__rows;
+          state.liked.push({ id, wanted });
+          return { ok: true, value: undefined };
+        },
+      }),
   }),
 }));
 const registry = mockRegistry;
@@ -90,6 +99,7 @@ beforeEach(() => {
     saved: new Set<string>(),
     toggled: [],
     pushed: [],
+    liked: [],
     signedIn: true,
   };
 });
@@ -135,17 +145,39 @@ describe('useAssistantListRecipeActions', () => {
     expect(probe().toggled).toEqual([]);
   });
 
-  it('opens the recipe to like it, because a card has nowhere to show a like', async () => {
+  // "Ana sayfada şunu beğen dediğimde detayına gidiyor." Liking used to travel
+  // to the recipe screen because a card supposedly had nowhere to show the
+  // result. `RecipeCard` renders an animated heart, so it does — and the detour
+  // walked the reader off the screen they were on.
+  it('likes the row in place, without opening the recipe', async () => {
     mount();
 
-    const answer = registry.run(AssistantAction.Like, 'baklava');
-    await Promise.resolve();
+    await expect(registry.run(AssistantAction.Like, 'baklava')).resolves.toMatchObject({
+      ok: true,
+      title: 'Baklava',
+    });
+    expect(probe().liked).toEqual([{ id: 'r-baklava', wanted: true }]);
+    expect(probe().pushed).toEqual([]);
+  });
 
-    expect(probe().pushed).toEqual(['/recipes/r-baklava']);
-    // Nothing registers `like` in this test, so the wait times out and the
-    // action reports that rather than claiming a like nobody performed.
-    await expect(answer).resolves.toMatchObject({ ok: false });
-  }, 10_000);
+  it('unlikes the row in place too', async () => {
+    mount();
+
+    await expect(registry.run(AssistantAction.Unlike, 'baklava')).resolves.toMatchObject({ ok: true });
+    expect(probe().liked).toEqual([{ id: 'r-baklava', wanted: false }]);
+    expect(probe().pushed).toEqual([]);
+  });
+
+  it('declines a like for a row it is not showing, so the screen underneath can answer', async () => {
+    mount();
+
+    // Declined, so the registry falls through; with nothing underneath in this
+    // test that surfaces as not_found. The point is that it liked nothing.
+    await expect(registry.run(AssistantAction.Like, 'karniyarik')).resolves.toMatchObject({
+      ok: false,
+    });
+    expect(probe().liked).toEqual([]);
+  });
 
   it('refuses to save while signed out instead of failing silently', async () => {
     probe().signedIn = false;

@@ -1,3 +1,4 @@
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -29,7 +30,10 @@ export function rowAt(rows: readonly string[], arg: string | undefined): number 
     return index >= ValueConstants.zero && index < rows.length ? index : null;
   }
 
-  const needle = trimmed.toLocaleLowerCase();
-  const found = rows.findIndex((row) => row.toLocaleLowerCase().includes(needle));
+  // Folded, not locale-lowercased: `toLocaleLowerCase` is the mirror of the
+  // taxonomy bug — on a Turkish device it turns "Italian" into "ıtalian", and
+  // it leaves "İ" as an i plus a combining dot that no spoken word carries.
+  const needle = foldForMatch(trimmed);
+  const found = rows.findIndex((row) => foldForMatch(row).includes(needle));
   return found === ValueConstants.minusOne ? null : found;
 }

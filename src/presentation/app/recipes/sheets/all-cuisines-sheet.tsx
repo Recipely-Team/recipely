@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
@@ -45,9 +46,9 @@ export const AllCuisinesSheet = ({
   const [query, setQuery] = useState(CharConstants.empty);
 
   const matches = useMemo(() => {
-    const needle = query.trim().toLocaleLowerCase();
+    const needle = foldForMatch(query);
     if (needle.length === ValueConstants.zero) return cuisineKeys;
-    return cuisineKeys.filter((key) => cuisineLabel(key).name.toLocaleLowerCase().includes(needle));
+    return cuisineKeys.filter((key) => foldForMatch(cuisineLabel(key).name).includes(needle));
   }, [cuisineKeys, cuisineLabel, query]);
 
   const footer = (
