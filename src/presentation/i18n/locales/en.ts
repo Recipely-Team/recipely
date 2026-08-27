@@ -973,6 +973,7 @@ export const en = {
       resumeTimer: "Resumed the timer",
       stopTimer: "Stopped the timer",
       readStep: "Read the step out",
+      readIngredients: 'Read the ingredients',
       scroll: "Scrolled the screen",
       stop: "Stopped",
     },

@@ -22,6 +22,16 @@ interface AssistantRecipeActionsDeps {
   ingredients: readonly string[];
   instructions: readonly string[];
   cookTimeMinutes: number;
+  /**
+   * The facts printed beside the recipe: times, servings, difficulty and the
+   * macros when the backend has them.
+   *
+   * On the screen line rather than behind an action, because "how long does
+   * this take" and "how many calories" are asked while both hands are busy and
+   * a round trip to find out is a round trip the cook waits through. They are
+   * short; the recipe TEXT is what has to stay out of the context.
+   */
+  facts: readonly string[];
   isOwner: boolean;
   onPostComment: (text: string) => void;
   onOpenDelete: () => void;
@@ -58,6 +68,9 @@ interface AssistantRecipeActionsDeps {
  *   and it re-saved things that were already saved because it had no way to
  *   know. `mine` is what lets it warn before asking to delete rather than after.
  */
+/** Joins ingredient lines into one spoken list. Only this hook reads it. */
+const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
+
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
     recipeId,
@@ -65,6 +78,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     ingredients,
     instructions,
     cookTimeMinutes,
+    facts,
     isOwner,
     onPostComment,
     onOpenDelete,
@@ -132,6 +146,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       `liked=${likeState?.likedByMe === true ? Answer.yes : Answer.no}`,
       `mine=${isOwner ? Answer.yes : Answer.no}`,
       `steps=${instructions.length}`,
+      ...facts,
     ].join(SCREEN_PART_SEPARATOR),
   );
 
@@ -185,6 +200,21 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       },
       [instructions],
     ),
+  );
+
+  useAssistantAction(
+    AssistantAction.ReadIngredients,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      if (ingredients.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
+      // The list as text, for the same reason `readStep` carries its step: the
+      // model is about to say it out loud and has no other way to know what it
+      // says. Reading is not ticking — see the action's own note.
+      return {
+        ok: true,
+        title: ingredients.join(INGREDIENT_SEPARATOR),
+        n: { ingredients: ingredients.length },
+      };
+    }, [ingredients]),
   );
 
   useAssistantAction(
