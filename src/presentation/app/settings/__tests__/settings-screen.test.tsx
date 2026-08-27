@@ -95,15 +95,35 @@ const makeAuthStore = (deleteAccount: jest.Mock) =>
     deleteAccount,
   }));
 
+/**
+ * Every renderer this file made, so they can be torn down.
+ *
+ * `requestAnimationFrame` is shimmed in jest as a `setTimeout` that calls
+ * `jest.now()`, so a frame still queued when the suite ends fires into an
+ * environment that no longer has `jest` in it. The screen animates (the theme
+ * grid, the mode switch), the tests never unmounted, and the resulting
+ * ReferenceError is enough to fail the run even with every assertion green —
+ * which is exactly how it failed in the pre-commit hook.
+ */
+const mounted: RenderResult[] = [];
+
+afterEach(() => {
+  act(() => {
+    for (const rendered of mounted.splice(0)) rendered.renderer.unmount();
+  });
+});
+
 const renderSettings = (
   deleteAccount: jest.Mock,
 ): RenderResult => {
   const stores = { authStore: makeAuthStore(deleteAccount) } as unknown as Stores;
-  return renderComponent(
+  const rendered = renderComponent(
     <StoresProvider value={stores}>
       <SettingsScreen />
     </StoresProvider>,
   );
+  mounted.push(rendered);
+  return rendered;
 };
 
 /** The composite `SettingsRow` whose rendered label matches `label`. */

@@ -1,5 +1,10 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
+import { Linking } from 'react-native';
+import {
+  ASSISTANT_EXTERNAL_TARGETS,
+  isAssistantExternalName,
+} from '@presentation/base/hooks/assistant/args/assistant-external-targets';
 import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -47,6 +52,14 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.Navigate,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       const name = arg ?? CharConstants.empty;
+      // Legal pages live on the web, so they are opened rather than navigated
+      // to. Without this branch the assistant answered "sayfa bulunamadı" for a
+      // row sitting on the screen in front of the user — reporting a capability
+      // it lacked as a page that does not exist.
+      if (isAssistantExternalName(name)) {
+        await Linking.openURL(ASSISTANT_EXTERNAL_TARGETS[name]);
+        return { ok: true };
+      }
       if (!isAssistantScreenName(name)) return { ok: false, error: 'unknown_screen' };
 
       // `navigate`, not `push`: asked to go somewhere the user is already
