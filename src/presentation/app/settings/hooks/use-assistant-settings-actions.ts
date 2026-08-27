@@ -1,9 +1,15 @@
 import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
+import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import { getLocale } from '@presentation/i18n';
+import { LocaleConstants } from '@application/i18n/locale-constants';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
+import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
 import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 
@@ -11,11 +17,21 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/u
 interface AssistantSettingsActionsDeps {
   onSetLanguage: (locale: string) => void;
   onSetThemePreference: (preference: ThemePreference) => void;
+  onSetThemeId: (themeId: ThemeId) => void;
   onRequestSignOut: () => void;
 }
 
 const LANGUAGE = 'language';
 const THEME = 'theme';
+/**
+ * The colour palette, which is NOT `theme`.
+ *
+ * Light-or-dark and which palette are two different settings sitting under one
+ * word in ordinary speech, and only one of them was wired: asked for "İnci
+ * Beyazı" while its swatch was on screen, the assistant answered that no such
+ * theme was in the list.
+ */
+const PALETTE = 'palette';
 const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'];
 
 /**
@@ -34,7 +50,7 @@ const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'
  *   everything behind it, and voice mishears — a one-syllable word most of all.
  */
 export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps): void => {
-  const { onSetLanguage, onSetThemePreference, onRequestSignOut } = deps;
+  const { onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } = deps;
 
   useAssistantAction(
     AssistantAction.SetPreference,
@@ -47,10 +63,35 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         const value = machineLower(parsed.value);
 
         if (key === LANGUAGE) {
-          if (!SUPPORTED_LOCALE_LIST.includes(value)) {
+          // The code first, then the name the picker shows. "Almanca" reached
+          // here as a word and was compared against `de` — so German, Spanish
+          // and Russian were each refused as unavailable while all three are
+          // selectable. The model is told to send a code; matching the endonym
+          // as well means a spoken "Español" lands even when it does not.
+          const locale = SUPPORTED_LOCALE_LIST.includes(value)
+            ? value
+            : resolveTaxonomyKey(
+                SUPPORTED_LOCALE_LIST.map((code) => ({ key: code, name: LANGUAGE_NAMES[code] ?? code })),
+                parsed.value,
+              );
+          if (locale === null || !SUPPORTED_LOCALE_LIST.includes(locale)) {
             return { ok: false, error: 'unknown_language' };
           }
-          onSetLanguage(value);
+          onSetLanguage(locale);
+          return { ok: true };
+        }
+        if (key === PALETTE) {
+          // Matched by NAME, through the same resolver the cuisine chips use:
+          // the id is `pearl`, the swatch says "İnci Beyazı", and the user says
+          // what the swatch says.
+          const themeId = resolveTaxonomyKey(
+            ALL_THEMES.map((id) => ({ key: id, name: paletteName(id) })),
+            parsed.value,
+          );
+          if (themeId === null || !(ALL_THEMES as string[]).includes(themeId)) {
+            return { ok: false, error: 'unknown_palette' };
+          }
+          onSetThemeId(themeId as ThemeId);
           return { ok: true };
         }
         if (key === THEME) {
@@ -61,7 +102,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         }
         return { ok: false, error: 'unknown_preference' };
       },
-      [onSetLanguage, onSetThemePreference],
+      [onSetLanguage, onSetThemePreference, onSetThemeId],
     ),
   );
 
@@ -73,3 +114,9 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
     }, [onRequestSignOut]),
   );
 };
+
+/** The palette's name in the language the user is reading, as the swatch shows it. */
+function paletteName(id: ThemeId): string {
+  const def = getThemeDefinition(id);
+  return getLocale() === LocaleConstants.tr ? def.nameTr : def.name;
+}

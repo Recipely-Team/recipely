@@ -55,6 +55,7 @@ export const SettingsScreen = (): React.JSX.Element => {
   useAssistantSettingsActions({
     onSetLanguage: setLocale,
     onSetThemePreference: setPreference,
+    onSetThemeId: setThemeId,
     onRequestSignOut: () => setSignOutVisible(true),
   });
   // The sign-out sheet already existed for the button; it now also takes a
