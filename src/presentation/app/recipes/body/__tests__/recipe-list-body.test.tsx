@@ -104,6 +104,7 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   onEndReached: jest.fn(),
   activeFilterCount: 0,
   gridColumns: 1,
+  gridCellMaxWidth: 320,
   sortBy: 'popular',
   filters: emptyFilters,
   activeCuisineLabel: null,

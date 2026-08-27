@@ -77,6 +77,28 @@ interface AssistantSessionStoreDeps {
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
 /**
+ * How much budget is left when the assistant says out loud that it is running
+ * out.
+ *
+ * The session used to end mid-sentence with nothing but a caption to explain it
+ * — "asistan bir anda kesildi". A warning has to arrive while the socket is
+ * still open, because once the budget is spent there is nothing left to speak
+ * with. One heartbeat of slack past a round minute, so a tick cannot straddle
+ * the threshold and skip it.
+ */
+const BUDGET_WARNING_SECONDS = 60 + HEARTBEAT_SECONDS;
+/**
+ * What the model is told when the budget is nearly gone.
+ *
+ * An instruction, not a sentence to repeat: the session already knows which
+ * language it is speaking, so telling it WHAT to say rather than HOW keeps this
+ * out of the i18n catalogues and out of sync with nothing.
+ */
+const BUDGET_WARNING_PROMPT =
+  'SYSTEM: about one minute of voice time remains today. Tell the user briefly, ' +
+  'in the language you are speaking, that you are almost out of time and they ' +
+  'can keep going by typing. Say nothing else and call no action.';
+/**
  * How long a live session may hear nothing at all before it is torn down.
  *
  * This was 8 seconds, which is shorter than thinking about what to ask. The
@@ -696,6 +718,10 @@ export const configureAssistantSessionStore = (
           return;
         }
 
+        // Reset per session: the warning is once per session, not once per app
+        // run, or a second session would run out in silence.
+        let warnedOfBudget = false;
+
         heartbeat = setInterval(() => {
           void tokens.reportUsage(HEARTBEAT_SECONDS).then((reported) => {
             // `clearInterval` stops the next tick, not a report already in
@@ -714,6 +740,15 @@ export const configureAssistantSessionStore = (
             if (reported.value.isUnlimited) return;
             if (reported.value.remainingSeconds <= ValueConstants.zero) {
               void teardown(AssistantStatus.Unavailable);
+              return;
+            }
+            // Said by the MODEL rather than played as a tone, so it arrives in
+            // the user's language and in the voice they have been talking to —
+            // and so it waits for a gap in the conversation instead of cutting
+            // across the sentence it is warning about.
+            if (!warnedOfBudget && reported.value.remainingSeconds <= BUDGET_WARNING_SECONDS) {
+              warnedOfBudget = true;
+              session.sendText(BUDGET_WARNING_PROMPT);
             }
           });
         }, HEARTBEAT_INTERVAL_MS);

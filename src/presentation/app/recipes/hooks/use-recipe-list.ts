@@ -184,6 +184,16 @@ export const useRecipeList = (): UseRecipeListResult => {
     return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 
+  // The width ONE card may occupy. `numColumns` does not pad a short last row,
+  // so a `flex: 1` cell in a row holding fewer items than columns stretches to
+  // the whole row — one recipe left after a filter became a card the width of
+  // the feed. Derived from the same width and gap the column count is, because
+  // two constants that disagree is how this feed once shipped with no gutter.
+  const gridCellMaxWidth = useMemo<number>(() => {
+    const available = feedContentWidth(width);
+    return (available - GRID_GAP * (gridColumns - ValueConstants.one)) / gridColumns;
+  }, [width, gridColumns]);
+
   const [sortBy, setSortBy] = useState<SortKey>(SortKey.Popular);
   const [filters, setFilters] = useState<UiFilters>(emptyFilters);
   const [pendingFilters, setPendingFilters] = useState<UiFilters>(emptyFilters);
@@ -375,6 +385,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     onEndReached,
     activeFilterCount: mutate.countActiveFilters(filters),
     gridColumns,
+    gridCellMaxWidth,
     sortBy,
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,

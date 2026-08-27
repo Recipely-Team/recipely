@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AssistantFab } from '@presentation/base/widgets/assistant/views/assistant-fab';
@@ -119,6 +120,22 @@ export const AssistantPill = (): React.JSX.Element | null => {
     setView(AssistantView.Closed);
   };
 
+  /**
+   * Opening the assistant starts it listening.
+   *
+   * Tapping the launcher used only to raise the panel, so speaking required a
+   * second, separate press — "ilk tıkladığımızda direk başlamıyor". The tap on
+   * a microphone IS the request to talk; making the user confirm it once the
+   * panel was already up was a step that carried no decision.
+   *
+   * Guarded on `live` so re-opening a session that is already running (from the
+   * mini bar, or a second tap that raced the first) does not hang it up.
+   */
+  const open = (): void => {
+    setView(AssistantView.Open);
+    if (!live) void toggleVoice();
+  };
+
   // On a phone the assistant IS the orb: there is no smaller form to minimise
   // into, so `Mini` and `Open` are the same surface. The wide layout keeps the
   // panel and the bar, which is where the extra room makes them worth having.
@@ -134,6 +151,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
             isMuted={isMuted}
             transcript={transcript}
             notice={error !== null ? t().assistant.requestFailed : assistantNotice(status, deniedReason)}
+            noticeTone={assistantNoticeTone(error !== null, deniedReason)}
             onToggleVoice={toggleVoice}
             onToggleMute={toggleMute}
             onSend={(text) => {
@@ -147,7 +165,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
 
         {view === AssistantView.Closed ? (
           <View style={[styles.dock, { bottom }]} pointerEvents="box-none">
-            <AssistantFab status={status} onOpen={() => setView(AssistantView.Open)} />
+            <AssistantFab status={status} onOpen={open} />
           </View>
         ) : null}
       </>
@@ -172,7 +190,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
       ) : null}
 
       {view === AssistantView.Closed ? (
-        <AssistantFab status={status} onOpen={() => setView(AssistantView.Open)} />
+        <AssistantFab status={status} onOpen={open} />
       ) : null}
     </View>
   );
