@@ -959,6 +959,7 @@ export const ko: Translations = {
       resumeTimer: "타이머를 다시 켰어요",
       stopTimer: "타이머를 껐어요",
       readStep: "단계를 읽어 줬어요",
+      readIngredients: 'Read the ingredients',
       scroll: "화면을 넘겼어요",
       stop: "멈췄어요",
     },

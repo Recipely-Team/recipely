@@ -959,6 +959,7 @@ export const hi: Translations = {
       resumeTimer: "टाइमर फिर चालू किया",
       stopTimer: "टाइमर बंद किया",
       readStep: "स्टेप पढ़कर सुनाया",
+      readIngredients: 'Read the ingredients',
       scroll: "स्क्रीन स्क्रॉल की",
       stop: "रुक गया",
     },

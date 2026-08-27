@@ -963,6 +963,7 @@ export const ja = {
       resumeTimer: "タイマーを再開しました",
       stopTimer: "タイマーを停止しました",
       readStep: "手順を読み上げました",
+      readIngredients: 'Read the ingredients',
       scroll: "画面をスクロールしました",
       stop: "停止しました",
     },

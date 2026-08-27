@@ -963,6 +963,7 @@ export const ru = {
       resumeTimer: "Продолжил таймер",
       stopTimer: "Остановил таймер",
       readStep: "Прочитал шаг вслух",
+      readIngredients: 'Read the ingredients',
       scroll: "Прокрутил экран",
       stop: "Остановился",
     },

@@ -970,6 +970,7 @@ export const zh = {
       resumeTimer: "继续了计时器",
       stopTimer: "停止了计时器",
       readStep: "朗读了步骤",
+      readIngredients: 'Read the ingredients',
       scroll: "滚动了屏幕",
       stop: "停止了",
     },

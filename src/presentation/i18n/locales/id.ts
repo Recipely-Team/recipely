@@ -963,6 +963,7 @@ export const id = {
       resumeTimer: "Melanjutkan pengatur waktu",
       stopTimer: "Menghentikan pengatur waktu",
       readStep: "Membacakan langkah",
+      readIngredients: 'Read the ingredients',
       scroll: "Menggulir layar",
       stop: "Berhenti",
     },

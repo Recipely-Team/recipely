@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
 import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -79,6 +80,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     ingredients: vm.recipe?.ingredients ?? [],
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+    facts: recipeFacts(vm.recipe ?? null),
     isOwner: vm.isOwner,
     onPostComment: vm.onPostComment,
     onOpenDelete: vm.onOpenDelete,
