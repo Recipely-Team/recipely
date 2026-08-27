@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import { scrollThrottleMs } from '@presentation/base/constants';
 import {
   type LayoutChangeEvent,
   type NativeScrollEvent,
@@ -73,7 +74,7 @@ export const OnboardingMobile = ({ slides, actions }: OnboardingMobileProps): Re
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onScroll={onScroll}
-            scrollEventThrottle={16}
+            scrollEventThrottle={scrollThrottleMs.perFrame}
           >
             {slides.map((slide, i) => (
               <OnboardingSlide

@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 980 source files.
+[architecture.md](architecture.md). 981 source files.
 
 ## Layers
 
@@ -103,7 +103,7 @@ locale list `application/i18n/locale-constants.ts`.
 
 ## `src/presentation/base/` — shared UI
 
-- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(5)_
+- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(6)_
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
@@ -148,4 +148,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f8213c6674b2877f -->
+<!-- fingerprint: 5c953079ed4c0e21 -->

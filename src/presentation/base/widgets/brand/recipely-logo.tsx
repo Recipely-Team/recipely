@@ -5,7 +5,7 @@ import Svg, {
   Path,
   Stop,
 } from 'react-native-svg';
-import { BrandColors } from '@presentation/base/theme';
+import { BrandColors, opacities } from '@presentation/base/theme';
 
 export interface RecipelyLogoProps {
   size?: number;
@@ -45,7 +45,7 @@ export const RecipelyLogo = ({
         </G>
         <Path
           fill={mono}
-          fillOpacity={0.18}
+          fillOpacity={opacities.scrim}
           d="M 562.389 218.388 L 563.267 218.414 C 563.705 218.908 564.144 219.402 564.582 219.895 C 564.431 246.514 564.487 293.605 564.5 318.733 C 538.741 319.733 525.891 324.236 504.476 338.201 C 484.578 324.968 469.825 319.55 445.793 318.811 L 444.045 318.604 C 442.071 315.869 443.005 281.094 442.989 275.152 C 442.938 256.314 442.931 237.195 442.839 218.338 C 470.277 220.073 480.657 223.863 503.264 239.45 C 526.315 224.608 535.36 221.025 562.389 218.388 z"
         />
       </Svg>

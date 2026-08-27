@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
+import { scrollThrottleMs , ListConstants } from '@presentation/base/constants';
 import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
-import { ListConstants } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -178,7 +178,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         }
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
-        scrollEventThrottle={16}
+        scrollEventThrottle={scrollThrottleMs.perFrame}
         onEndReached={vm.onEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}

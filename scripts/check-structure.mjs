@@ -871,6 +871,82 @@ function openingTag(src, at) {
   }
 }
 
+// --- Y: no unnamed numeric literal in a style or a JSX prop (CLAUDE.md §5) --
+// Rule 5 forbids magic values, and until now nothing checked it — the tree was
+// clean because people were careful, which is not a guarantee. The three
+// `scrollEventThrottle={16}` this found were the instructive case: a fourth
+// site spelled the same idea `100`, so what looked like one repeated constant
+// was actually two different decisions nobody had named.
+//
+// **Unnamed is the target, not "a number".** A value only one file reads may
+// live in that file (rule 5 says the test is reuse, not type), so a named
+// `const RING_START_ROTATION = -90` passes and only the literal at the point of
+// use fails. That keeps the rule enforcing readability rather than churning
+// every number into a distant module.
+{
+  const PRESENTATION = path.join(SRC, 'presentation');
+
+  // Value modules: holding numbers IS their job. A geometry table or a token
+  // ladder is the destination this rule pushes things toward, so flagging it
+  // would be circular.
+  const isValueModule = (rel) =>
+    rel.startsWith('base/theme/') ||
+    rel.startsWith('base/constants/') ||
+    rel.startsWith('i18n/locales/') ||
+    /(^|\/)model\//.test(rel) ||
+    /-geometry\.ts$/.test(rel) ||
+    /-constants\.ts$/.test(rel) ||
+    /-tuning\.ts$/.test(rel);
+
+  // 0 and 1 are structural rather than designed — `flex: 1`, `opacity: 1`,
+  // `zIndex: 0`. Rule 5 routes those to ValueConstants, which is a separate
+  // (and much noisier) argument than the one this rule is making.
+  const STRUCTURAL = new Set(['0', '1', '-1']);
+
+  const STYLE_PROP =
+    '(?:width|height|minWidth|maxWidth|minHeight|maxHeight|top|bottom|left|right|' +
+    'margin\\w*|padding\\w*|borderRadius|border\\w*Width|fontSize|lineHeight|opacity|' +
+    'zIndex|gap|rowGap|columnGap|flexBasis|elevation|letterSpacing|aspectRatio|' +
+    'shadowRadius|shadowOpacity)';
+  const styleLiteral = new RegExp(`\\b${STYLE_PROP}:\\s*(-?\\d+(?:\\.\\d+)?)\\b`, 'g');
+  const jsxLiteral = /\s([a-z]\w*)=\{(-?\d+(?:\.\d+)?)\}/g;
+
+  // Props whose number IS the meaning and has no name worth inventing.
+  const PLAIN_PROPS = new Set(['key', 'index', 'tabIndex', 'span', 'colSpan', 'rowSpan']);
+
+  const walk = (dir) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!['__tests__', '__fixtures__', '__mocks__'].includes(entry.name)) walk(full);
+        continue;
+      }
+      if (!entry.name.endsWith('.ts') && !entry.name.endsWith('.tsx')) continue;
+
+      const rel = path.relative(PRESENTATION, full).split(path.sep).join('/');
+      if (isValueModule(rel)) continue;
+
+      const src = fs.readFileSync(full, 'utf8');
+      const found = [];
+      for (const m of src.matchAll(styleLiteral)) {
+        if (!STRUCTURAL.has(m[1])) found.push(`${m[0].trim()}`);
+      }
+      for (const m of src.matchAll(jsxLiteral)) {
+        if (STRUCTURAL.has(m[2]) || PLAIN_PROPS.has(m[1])) continue;
+        found.push(`${m[1]}={${m[2]}}`);
+      }
+      if (found.length > 0) {
+        const shown = [...new Set(found)].slice(0, 3).join(', ');
+        errors.push(
+          `presentation/${rel}: unnamed numeric literal(s) — ${shown} — name it in a theme token, a constants module, or a local const (CLAUDE.md §5)`,
+        );
+      }
+    }
+  };
+
+  if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);
