@@ -114,12 +114,13 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         recipes={recipes}
         isLoading={vm.isRefetching}
         onOpenRecipe={vm.onOpenRecipe}
+        attachList={vm.attachList}
       />
     );
   } else {
     body = (
       <Animated.FlatList
-        ref={vm.listRef}
+        ref={vm.attachList}
         // Emptied on purpose while the next set is fetched: the rows on screen
         // answer the PREVIOUS filter, and leaving them up read as a second
         // load. `ListEmptyComponent` carries the loading placeholder, so the

@@ -121,7 +121,7 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   onChangeSort: jest.fn(),
   onToggleCuisineQuick: jest.fn(),
   onDifficultyChange: jest.fn(),
-  listRef: { current: null } as unknown as UseRecipeListResult['listRef'],
+  attachList: jest.fn(),
   onAssistantScroll: jest.fn(),
   onToggleCategory: jest.fn(),
   onSetMaxTime: jest.fn(),

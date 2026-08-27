@@ -60,7 +60,7 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
 describe('RecipeSearchOverlay', () => {
   it('shows the zero-results empty state when the backend returned no matches', () => {
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} />,
+      <RecipeSearchOverlay recipes={[]} isLoading={false} onOpenRecipe={jest.fn()} attachList={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -71,7 +71,7 @@ describe('RecipeSearchOverlay', () => {
   it('renders the result count and every matching recipe row when results exist', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta'), buildRecipe('r2', 'Search Salad')];
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={jest.fn()} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={jest.fn()} attachList={jest.fn()} />,
     );
 
     const texts = textContent(root);
@@ -85,7 +85,7 @@ describe('RecipeSearchOverlay', () => {
     const recipes = [buildRecipe('r1', 'Search Pasta')];
     const onOpenRecipe = jest.fn();
     const { root } = renderComponent(
-      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={onOpenRecipe} />,
+      <RecipeSearchOverlay recipes={recipes} isLoading={false} onOpenRecipe={onOpenRecipe} attachList={jest.fn()} />,
     );
 
     const row = root.find(
@@ -106,7 +106,7 @@ describe('RecipeSearchOverlay', () => {
   describe('while the typed query is unanswered', () => {
     it('suppresses the no-results copy instead of accusing the query of failing', () => {
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={[]} isLoading onOpenRecipe={jest.fn()} />,
+        <RecipeSearchOverlay recipes={[]} isLoading onOpenRecipe={jest.fn()} attachList={jest.fn()} />,
       );
 
       expect(textContent(root)).not.toContain(t().recipes.noResults);
@@ -115,7 +115,7 @@ describe('RecipeSearchOverlay', () => {
     it('replaces the stale result count with the refreshing label', () => {
       const recipes = [buildRecipe('r1', 'Search Pasta')];
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} />,
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} attachList={jest.fn()} />,
       );
 
       const texts = textContent(root);
@@ -128,12 +128,30 @@ describe('RecipeSearchOverlay', () => {
     it('keeps the previous rows visible rather than blanking the list', () => {
       const recipes = [buildRecipe('r1', 'Search Pasta')];
       const { root } = renderComponent(
-        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} />,
+        <RecipeSearchOverlay recipes={recipes} isLoading onOpenRecipe={jest.fn()} attachList={jest.fn()} />,
       );
 
       // Stale-while-revalidate: emptying the list on every keystroke would make
       // the surface flicker between results and a spinner as the user types.
       expect(textContent(root)).toContain('Search Pasta');
     });
+  });
+
+  // While search results are up they REPLACE the browse list, so they are the
+  // page — and the feed held no reference to them, which is why "aşağı kaydır"
+  // in a search did nothing while reporting success.
+  it('attaches its results list to the feed scroll handle', () => {
+    const attachList = jest.fn();
+    renderComponent(
+      <RecipeSearchOverlay
+        recipes={[buildRecipe('r1', 'Search Pasta')]}
+        isLoading={false}
+        onOpenRecipe={jest.fn()}
+        attachList={attachList}
+      />,
+    );
+
+    expect(attachList).toHaveBeenCalled();
+    expect(attachList.mock.calls[0][0]).not.toBeNull();
   });
 });

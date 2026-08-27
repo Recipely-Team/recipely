@@ -1,9 +1,6 @@
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import Animated, {
-  type SharedValue,
-  type useAnimatedRef,
-  type useAnimatedScrollHandler,
-} from 'react-native-reanimated';
+import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
+import { type SharedValue, type useAnimatedScrollHandler } from 'react-native-reanimated';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { RecipeListState } from '@application/recipes/list/recipe-list-state';
@@ -54,8 +51,16 @@ export interface UseRecipeListResult {
 
   // Mobile collapsing-header scroll state.
   /** The feed list, so the assistant can scroll it. */
-  listRef: ReturnType<typeof useAnimatedRef<Animated.FlatList<RecipeSummaryEntity>>>;
-  onAssistantScroll: (direction: AssistantScrollDirectionType) => void;
+  /**
+   * Attached by whichever of the feed's branches is rendering — the mobile
+   * list, the wide-layout feed, the grid or the search results. Typed to the
+   * shared handle rather than to the mobile FlatList, because it was the
+   * FlatList-specific type that left the other branches with nothing to
+   * attach and the assistant reporting scrolls that never happened.
+   */
+  attachList: AssistantScrollableProps['ref'];
+  /** Whether a list was actually there to move. */
+  onAssistantScroll: (direction: AssistantScrollDirectionType) => boolean;
   scrollY: SharedValue<number>;
   headerTranslateY: SharedValue<number>;
   reduceMotion: boolean;

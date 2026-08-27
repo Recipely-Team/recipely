@@ -8,7 +8,7 @@ import {
   scrollTargetFor,
 } from '@presentation/base/hooks/assistant/args/scroll-tuning';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import { hasKey } from '@core/guards/type-guards';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
 import { ValueConstants } from '@core/constants';
 
 /** The handle the props carry, named here so the ref that holds it has a type. */
@@ -45,9 +45,8 @@ export const useAssistantScrollable = (
   const offset = useRef(ValueConstants.zero);
 
   const scrollBy = useCallback(
-    (direction: AssistantScrollDirectionType): void => {
-      moveTo(handle.current, scrollTargetFor(direction, offset.current, height));
-    },
+    (direction: AssistantScrollDirectionType): boolean =>
+      moveScrollTo(handle.current, scrollTargetFor(direction, offset.current, height)),
     [height],
   );
 
@@ -70,30 +69,3 @@ export const useAssistantScrollable = (
     [],
   );
 };
-
-/**
- * Moves whichever kind of list is attached.
- *
- * `FlatList` takes an offset, `ScrollView` a coordinate, and `SectionList`
- * neither — it hands out the scroll responder underneath instead. Asking for
- * the method that exists is what lets one hook serve all three.
- */
-function moveTo(handle: ScrollHandleType, y: number): void {
-  if (handle === null) return;
-  if (handle.scrollToOffset !== undefined) {
-    handle.scrollToOffset({ offset: y, animated: true });
-    return;
-  }
-  if (handle.scrollTo !== undefined) {
-    handle.scrollTo({ y, animated: true });
-    return;
-  }
-  // A SectionList has neither method; it hands out the scroll view underneath.
-  const responder = handle.getScrollResponder?.();
-  if (hasKey(responder, 'scrollTo') && typeof responder.scrollTo === 'function') {
-    (responder.scrollTo as (options: { y: number; animated?: boolean }) => void)({
-      y,
-      animated: true,
-    });
-  }
-}
