@@ -24,12 +24,14 @@ export interface RecipeSearchOverlayProps {
   isLoading: boolean;
   onOpenRecipe: (id: string) => void;
   /**
-   * Attaches the results list to the feed's scroll handle. These results
-   * REPLACE the browse list, so while they are up they are the page — and
-   * without this the assistant answered "kaydırdım" over a list it held no
-   * reference to at all.
+   * Wires the results list to the feed's scroll handle AND its offset. These
+   * results REPLACE the browse list, so while they are up they are the page.
+   *
+   * Both halves, in one object, on purpose: attaching only the handle left
+   * "biraz daha aşağı" stepping from an offset that never moved, so it went to
+   * the same place every time while reporting a scroll each time.
    */
-  attachList: AssistantScrollableProps['ref'];
+  assistantScroll: AssistantScrollableProps;
 }
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
@@ -46,7 +48,7 @@ export const RecipeSearchOverlay = ({
   recipes,
   isLoading,
   onOpenRecipe,
-  attachList,
+  assistantScroll,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -81,7 +83,7 @@ export const RecipeSearchOverlay = ({
         </View>
       ) : (
         <FlatList
-          ref={attachList}
+          {...assistantScroll}
           data={recipes}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (
