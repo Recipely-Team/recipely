@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
-import { WebRecipeCard } from '@presentation/base/widgets/cards/web-recipe-card';
+import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
@@ -201,7 +201,7 @@ export const MyRecipesList = ({
       renderItem={({ item }) => (
         <View style={gridColumns > ValueConstants.one ? styles.gridCell : null}>
           {isExpanded ? (
-            <WebRecipeCard
+            <WebRecipeListItem
               recipe={item}
               saved={isSaved(item.id)}
               onOpen={onOpenRecipe}

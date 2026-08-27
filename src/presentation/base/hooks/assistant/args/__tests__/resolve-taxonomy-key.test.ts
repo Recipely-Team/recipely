@@ -50,3 +50,59 @@ describe('resolveTaxonomyKey', () => {
     expect(resolveTaxonomyKey(CUISINES, 'İsveç mutfağı')).toBeNull();
   });
 });
+
+/**
+ * A dense SAMPLE of names, not the app's list.
+ *
+ * The cuisines are served by the backend and read from the taxonomy store;
+ * nothing here or in production hard-codes them, and `resolveTaxonomyKey` never
+ * sees a list it did not receive as an argument. This fixture exists because a
+ * matcher that looks INSIDE a phrase carries one risk — a name answering for
+ * another — and that risk only appears when the list is crowded. A snapshot of
+ * a crowded list is the cheapest way to hold the matcher to it; if the backend
+ * adds a cuisine that collides, the honest place to catch it is here.
+ */
+describe('every cuisine on the strip', () => {
+  const NAMES = [
+    'Türk', 'İtalyan', 'Meksika', 'Çin', 'Japon', 'Hint', 'Fransız', 'Yunan', 'Amerikan',
+    'Akdeniz', 'Tayland', 'İspanyol', 'Kore', 'Orta Doğu', 'Alman', 'İngiliz', 'Vietnam',
+    'Lübnan', 'Fas', 'Brezilya', 'Rus', 'İran', 'Karayip', 'Filipin', 'Endonezya', 'Pakistan',
+    'Kafkas', 'Afrika', 'Gürcü', 'Azerbaycan', 'Ermeni', 'Özbek', 'Orta Asya', 'Suriye',
+    'Mısır', 'Tunus', 'Balkan', 'Portekiz', 'Polonya', 'İsveç', 'Malezya', 'Peru',
+    'Arjantin', 'Diğer',
+  ];
+  const ALL = NAMES.map((name, at) => ({ key: `cuisine-${at}`, name }));
+
+  it.each(ALL)('resolves $name to itself, bare', ({ key, name }) => {
+    expect(resolveTaxonomyKey(ALL, name)).toBe(key);
+  });
+
+  it.each(ALL)('resolves $name to itself inside a sentence', ({ key, name }) => {
+    expect(resolveTaxonomyKey(ALL, `${name} mutfağını filtreye ekle`)).toBe(key);
+  });
+});
+
+/**
+ * The taxonomy is served by the backend. Nothing in the app decides what a
+ * cuisine is, and the assistant must not either — a cuisine added on the server
+ * has to be filterable by voice the day it appears, without a release.
+ */
+describe('a cuisine the app has never heard of', () => {
+  it('resolves from the list the store supplies, with no local catalogue entry', () => {
+    const fromBackend = [
+      { key: 'uygur', name: 'Uygur' },
+      { key: 'sicilian', name: 'Sicilya' },
+    ];
+
+    expect(resolveTaxonomyKey(fromBackend, 'Uygur mutfağı')).toBe('uygur');
+    expect(resolveTaxonomyKey(fromBackend, 'Sicilya yemekleri')).toBe('sicilian');
+  });
+
+  it('takes the list as an argument and holds no list of its own', () => {
+    // The same word against two different backend lists gives two answers,
+    // which is only possible if nothing here is hard-coded.
+    expect(resolveTaxonomyKey([{ key: 'a', name: 'Türk' }], 'Türk')).toBe('a');
+    expect(resolveTaxonomyKey([{ key: 'b', name: 'Türk' }], 'Türk')).toBe('b');
+    expect(resolveTaxonomyKey([], 'Türk')).toBeNull();
+  });
+});

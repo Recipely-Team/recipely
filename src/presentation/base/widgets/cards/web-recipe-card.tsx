@@ -33,6 +33,16 @@ export interface WebRecipeCardProps {
   onOpen: (id: string) => void;
   /** Toggles the saved state; the bookmark button never opens the card. */
   onToggleSave: (id: string) => void;
+  /**
+   * The live like state, when a caller is tracking it.
+   *
+   * Defaulted from the entity so existing callers are unchanged, but a caller
+   * that subscribes should pass these: the payload's copy is whatever the list
+   * fetch happened to say, and it never moves again. The web grid rendered that
+   * frozen heart, so a like — by voice or otherwise — could not show.
+   */
+  likedByMe?: boolean;
+  likeCount?: number;
   /** Optional "Yours" badge for the My Recipes "Created" tab. */
   ownedByMe?: boolean;
 }
@@ -46,6 +56,7 @@ export interface WebRecipeCardProps {
  */
 export const WebRecipeCard = ({
   recipe, saved, onOpen, onToggleSave, ownedByMe = false,
+  likedByMe = recipe.likedByMe, likeCount = recipe.likeCount,
 }: WebRecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -127,12 +138,12 @@ export const WebRecipeCard = ({
               </View>
               <View style={styles.footerItem}>
                 <MaterialCommunityIcons
-                  name={recipe.likedByMe ? 'heart' : 'heart-outline'}
+                  name={likedByMe ? 'heart' : 'heart-outline'}
                   size={iconSizes.md}
-                  color={recipe.likedByMe ? colors.likeActive : colors.textMuted}
+                  color={likedByMe ? colors.likeActive : colors.textMuted}
                 />
                 <ThemedText variant="caption" muted>
-                  {recipe.likeCount}
+                  {likeCount}
                 </ThemedText>
               </View>
             </View>
