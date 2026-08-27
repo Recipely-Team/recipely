@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
-import { scrollThrottleMs , RoutePaths } from '@presentation/base/constants';
+import { ListConstants, scrollThrottleMs, RoutePaths } from '@presentation/base/constants';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
@@ -403,7 +403,18 @@ export const useRecipeList = (): UseRecipeListResult => {
         listRef.current = instance;
       },
       onScroll: (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
-        scrollY.value = event.nativeEvent.contentOffset.y;
+        const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
+        scrollY.value = contentOffset.y;
+
+        // The wide layout's grid is a FlatList INSIDE this ScrollView, and a
+        // nested list neither virtualises nor fires `onEndReached` — the parent
+        // owns the scrolling. So the page that actually scrolls is the one that
+        // has to ask for the next page, and the web feed had nothing asking at
+        // all: it showed the first page and stopped.
+        const remaining = contentSize.height - (contentOffset.y + layoutMeasurement.height);
+        if (remaining <= layoutMeasurement.height * ListConstants.endReachedThreshold) {
+          onEndReached();
+        }
       },
       // Coarse: only the assistant reads this. The collapsing header on the
       // phone runs off `scrollHandler` and needs every frame; this does not.
