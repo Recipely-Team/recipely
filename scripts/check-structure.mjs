@@ -31,6 +31,9 @@
  *      acting — a declared safety list nothing reads is worse than none.
  *   W. No callback takes an OPTIONAL first parameter — an event prop would pass
  *      the gesture event into it and no type would object (CLAUDE.md §24).
+ *   AA. Every routed screen has an analytics screen name — an unmapped route
+ *      falls back to the platform's own name, which is one `MainActivity` for
+ *      the whole app (CLAUDE.md §25).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -46,6 +49,12 @@ const ROOT = process.cwd();
 // reported violations) are relative to SRC so the layer logic stays src-free.
 const SRC = path.join(ROOT, 'src');
 const LAYERS = ['core', 'domain', 'application', 'infrastructure', 'presentation'];
+/**
+ * The folders a routed page may co-locate its parts in (CLAUDE.md §14). Named
+ * once because two rules ask about it — E, which places files, and AA, which
+ * walks the route tree and must not mistake a part for a page.
+ */
+const CO_LOCATION_FOLDERS = ['body', 'items', 'sheets', 'hooks', 'model', 'shared', '__tests__'];
 const errors = [];
 
 /** Pre-existing layer-rule violations. Burn down; never grow. */
@@ -208,7 +217,7 @@ for (const file of files) {
     const rel = file.slice('presentation/app/'.length);
     const base = path.basename(rel).replace(/\.(ts|tsx)$/, '');
     const isRouteFile = /^(index|_layout|_sitemap|\+[\w-]+|\[[^/\]]+\])(\.(android|ios|native|web))?$/.test(base) && rel.endsWith('.tsx');
-    const inConventionFolder = /(^|\/)(body|items|sheets|hooks|model|shared|__tests__)\//.test(rel);
+    const inConventionFolder = new RegExp(`(^|/)(${CO_LOCATION_FOLDERS.join('|')})/`).test(rel);
     // An index/_layout file INSIDE a convention folder would still match the
     // route-context regex and silently register as a route — never allow it.
     if (inConventionFolder && /^(index|_layout|\+|\[)/.test(base)) {
@@ -970,6 +979,107 @@ function openingTag(src, at) {
   };
 
   if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
+// --- AA: every routed screen reports its own name to analytics (CLAUDE.md §25)
+// Nothing logged a screen view, so the only screen names Firebase ever had were
+// the ones the platforms invent: one `MainActivity` for the whole Android app,
+// and — because `+html.tsx` serves one `<title>` for the entire web export —
+// one page for the whole site. Adding a route and forgetting the map would put
+// that screen back into the same nameless bucket, silently, so the map is
+// checked against the routes that exist rather than trusted.
+{
+  const APP = path.join(SRC, 'presentation/app');
+  const TRACKER = 'presentation/bootstrap/use-screen-tracking.ts';
+  const PATHS_FILE = 'presentation/base/constants/route-paths.ts';
+  const trackerPath = path.join(SRC, TRACKER);
+  // Comments are stripped everywhere below: a route named only in a `// TODO:
+  // restore RoutePaths.settings` satisfied a substring search while reporting
+  // nothing, which is the exact failure this rule exists to prevent.
+  const stripComments = (src) =>
+    src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|\s)\/\/.*$/gm, '');
+
+  if (!fs.existsSync(trackerPath)) {
+    errors.push(`src/${TRACKER}: missing — no route would report a screen name and every screen collapses into one row`);
+  } else {
+    const tracker = stripComments(fs.readFileSync(trackerPath, 'utf8'));
+    const routePaths = fs.readFileSync(path.join(SRC, PATHS_FILE), 'utf8');
+    // Static entries only: a builder function (`recipeDetail: (id) => …`) is not
+    // a path this gate can compare against a folder.
+    const pathByKey = new Map(
+      [...routePaths.matchAll(/^\s{2}(\w+):\s*'([^']+)',/gm)].map((m) => [m[1], m[2]]),
+    );
+    const mentionsKey = (key) => new RegExp(`RoutePaths\\.${key}\\b`).test(tracker);
+    const covered = new Set(
+      [...pathByKey].filter(([key]) => mentionsKey(key)).map(([, value]) => value),
+    );
+
+    // A route that only renders <Redirect> is not a screen — logging a view for
+    // it would count an impression of a page that was never on screen. The `<`
+    // must not follow a word character, or `new Set<RoutePathsKey>()` would read
+    // as a second tag and the route would be demanded a name it cannot have.
+    const isRedirectOnly = (src) => {
+      const tags = [...stripComments(src).matchAll(/(?<![\w])<([A-Z]\w*)/g)].map((m) => m[1]);
+      return tags.length > 0 && tags.every((tag) => tag === 'Redirect');
+    };
+
+    const walkRoutes = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (!CO_LOCATION_FOLDERS.includes(entry.name)) walkRoutes(full);
+          continue;
+        }
+        if (entry.name !== 'index.tsx') continue;
+        const relDir = path.relative(APP, dir).split(path.sep).join('/');
+        const segments = relDir === '' ? [] : relDir.split('/');
+        const src = fs.readFileSync(full, 'utf8');
+        if (isRedirectOnly(src)) continue;
+
+        const dynamicAt = segments.findIndex((s) => s.startsWith('['));
+        if (dynamicAt === -1) {
+          const routePath = `/${segments.join('/')}`;
+          if (!covered.has(routePath)) {
+            errors.push(
+              `src/${TRACKER}: no analytics screen name for route ${routePath} — add it to SCREEN_BY_PATH (CLAUDE.md §25)`,
+            );
+          }
+          continue;
+        }
+        // A parameterised route is matched by the prefix of its parent, because
+        // the parameter itself must never become part of the screen name. The
+        // check is on coverage, not on spelling: how the prefix is built is the
+        // hook's business.
+        const parent = `/${segments.slice(0, dynamicAt).join('/')}`;
+        const parentKey = [...pathByKey].find(([, value]) => value === parent)?.[0];
+        if (parentKey === undefined || !mentionsKey(parentKey) || !/startsWith\(/.test(tracker)) {
+          errors.push(
+            `src/${TRACKER}: no analytics screen name for the ${parent === '/' ? '' : parent}/<param> route — match it by prefix (CLAUDE.md §25)`,
+          );
+        }
+      }
+    };
+
+    if (fs.existsSync(APP)) walkRoutes(APP);
+  }
+
+  // The other half of the same concern: with automatic reporting left on,
+  // Android keeps reporting its single Activity ALONGSIDE the names above, and
+  // the console shows both. The flag reaches the artifact late — a build-phase
+  // script writes `FirebaseAutomaticScreenReportingEnabled` into the iOS plist,
+  // and a manifest placeholder writes the meta-data into Android's merged
+  // manifest — so neither is visible after `expo prebuild`. What IS checkable
+  // here is that the switch has not quietly gone missing from the config.
+  {
+    const FIREBASE_JSON = 'firebase.json';
+    const KEY = 'google_analytics_automatic_screen_reporting_enabled';
+    const config = JSON.parse(fs.readFileSync(path.join(ROOT, FIREBASE_JSON), 'utf8'));
+    if (config['react-native']?.[KEY] !== false) {
+      errors.push(
+        `${FIREBASE_JSON}: ${KEY} must be false — otherwise Android reports its Activity next to the real screen names (CLAUDE.md §25)`,
+      );
+    }
+  }
 }
 
 if (errors.length) {
