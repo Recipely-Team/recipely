@@ -5,6 +5,7 @@
  *
  *   - `index.tsx` at any depth        → the page component of its folder
  *   - `_layout.tsx` at any depth      → layouts
+ *   - `_sitemap.tsx` at the app root  → replaces expo-router's own dev screen
  *   - `+special.tsx` (e.g. +not-found), `[param].tsx`
  *
  * Everything else under `presentation/app/` (body/, items/, sheets/, hooks/,
@@ -30,6 +31,20 @@
  * harmless: `redirectSystemPath` passes any non-share URL straight through.
  * Guarded by `check:structure` rule Q.
  *
+ * `_sitemap` is admitted for the same class of reason as `+native-intent`, and
+ * it is a crash rather than a missing feature. expo-router appends its OWN
+ * `_sitemap` route whenever the context does not supply one
+ * (`getRoutesCore.js`: `if (!directory.files.has('_sitemap'))`), and that screen
+ * renders `SystemInfo`, which reads `window.location.origin`. There is no
+ * `window.location` on native, so reaching `/_sitemap` on a device is a fatal
+ * `TypeError: Cannot read property 'origin' of undefined` — a developer screen,
+ * shipped, that kills the app. Nothing in the app links to it; a crawler that
+ * walks routes finds it, and Crashlytics logged exactly that from an emulator.
+ * There is no config switch: `qualified-entry.js` renders `<ExpoRoot>` with no
+ * `config` prop, so `sitemap` is always its `true` default. Supplying the route
+ * ourselves is the only supported way to take that screen out of a build.
+ * Guarded by `check:structure` rule Z.
+ *
  * The app-dir argument MUST stay a hard-coded relative path, NOT
  * `process.env.EXPO_ROUTER_APP_ROOT`: @expo/cli resets the `routerRoot`
  * transform option to its default `'app'` for every file outside
@@ -41,6 +56,6 @@
 export const ctx = require.context(
   '../app',
   true,
-  /^\.\/(?!(?:.*\+api|\+middleware|\+html)\.[tj]sx?$)(?:.*\/)?(?:index|_layout|\+[\w-]+|\[[^/\]]+\])(?:\.(?:android|ios|native|web))?\.[tj]sx?$/,
+  /^\.\/(?!(?:.*\+api|\+middleware|\+html)\.[tj]sx?$)(?:.*\/)?(?:index|_layout|_sitemap|\+[\w-]+|\[[^/\]]+\])(?:\.(?:android|ios|native|web))?\.[tj]sx?$/,
   process.env.EXPO_ROUTER_IMPORT_MODE
 );
