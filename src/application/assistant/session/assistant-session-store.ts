@@ -77,6 +77,28 @@ interface AssistantSessionStoreDeps {
 const HEARTBEAT_INTERVAL_MS = 15_000;
 const HEARTBEAT_SECONDS = 15;
 /**
+ * How much budget is left when the assistant says out loud that it is running
+ * out.
+ *
+ * The session used to end mid-sentence with nothing but a caption to explain it
+ * — "asistan bir anda kesildi". A warning has to arrive while the socket is
+ * still open, because once the budget is spent there is nothing left to speak
+ * with. One heartbeat of slack past a round minute, so a tick cannot straddle
+ * the threshold and skip it.
+ */
+const BUDGET_WARNING_SECONDS = 60 + HEARTBEAT_SECONDS;
+/**
+ * What the model is told when the budget is nearly gone.
+ *
+ * An instruction, not a sentence to repeat: the session already knows which
+ * language it is speaking, so telling it WHAT to say rather than HOW keeps this
+ * out of the i18n catalogues and out of sync with nothing.
+ */
+const BUDGET_WARNING_PROMPT =
+  'SYSTEM: about one minute of voice time remains today. Tell the user briefly, ' +
+  'in the language you are speaking, that you are almost out of time and they ' +
+  'can keep going by typing. Say nothing else and call no action.';
+/**
  * How long a live session may hear nothing at all before it is torn down.
  *
  * This was 8 seconds, which is shorter than thinking about what to ask. The
@@ -172,14 +194,24 @@ export const configureAssistantSessionStore = (
   /**
    * When the assistant's queued audio will have finished playing.
    *
-   * Until then the microphone sends nothing. On a phone standing on a kitchen
-   * counter the loudspeaker feeds straight back into it, and the model treated
-   * its own sentence as the user's next instruction and answered it — out loud,
-   * on repeat. The library offers no acoustic echo cancellation on Android (its
-   * session options are iOS-only), so the only reliable cure is not to listen
-   * while speaking. The cost is that a user cannot interrupt by voice mid-
-   * answer; Mute and End still work, and a session that talks over itself is
-   * not one they could interrupt anyway.
+   * Until then the microphone sends nothing — but ONLY where the capture path
+   * cannot cancel the app's own output.
+   *
+   * On a phone standing on a kitchen counter the loudspeaker feeds straight
+   * back into the microphone, and the model treated its own sentence as the
+   * user's next instruction and answered it, out loud, on repeat. Not listening
+   * while speaking cures that, at the price of a session the user cannot
+   * interrupt — which is the price they noticed: "konuşurken beni dinlemiyor".
+   *
+   * Where the platform DOES cancel the echo, that price buys nothing, so it is
+   * not paid: iOS runs the session in `voiceChat` (Apple's Voice-Processing I/O)
+   * and the web asks `getUserMedia` for `echoCancellation`. Both subtract the
+   * loudspeaker before the samples arrive, so the microphone can stay open and
+   * a spoken interruption reaches the model — which is what every other
+   * assistant does, and how it does it.
+   *
+   * Android is the exception until its recorder opens the input stream with
+   * `VoiceCommunication`; see `Microphone.cancelsEcho`.
    */
   let speakingUntil = ValueConstants.zero;
   /**
@@ -412,7 +444,7 @@ export const configureAssistantSessionStore = (
         return;
       }
 
-      set({ remainingSeconds: grant.value.remainingSeconds });
+      set({ remainingSeconds: grant.value.remainingSeconds, isUnlimited: grant.value.isUnlimited });
       const connected = await session.connect(grant.value.credentials);
       // Checked again: the mint and the connect are both awaited, and the user
       // can say "stop" during either.
@@ -537,6 +569,7 @@ export const configureAssistantSessionStore = (
       isMuted: false,
       transcript: [],
       remainingSeconds: ValueConstants.zero,
+      isUnlimited: false,
       tokensUsed: ValueConstants.zero,
       deniedReason: null,
       error: null,
@@ -601,11 +634,12 @@ export const configureAssistantSessionStore = (
             status: AssistantStatus.Unavailable,
             deniedReason: grant.value.reason,
             remainingSeconds: grant.value.remainingSeconds,
+            isUnlimited: false,
           });
           return;
         }
 
-        set({ remainingSeconds: grant.value.remainingSeconds });
+        set({ remainingSeconds: grant.value.remainingSeconds, isUnlimited: grant.value.isUnlimited });
 
         // The order of the next four is not arrangement, it is the only one
         // that satisfies all three constraints at once:
@@ -635,7 +669,16 @@ export const configureAssistantSessionStore = (
           // The zero check is not decoration: `now()` counts from process
           // start, so without it the gate closes over its own tail for the
           // first quarter-second of the app's life.
-          if (speakingUntil !== ValueConstants.zero && now() < speakingUntil + ECHO_TAIL_MS) return;
+          // Held open when the capture path removes our own output: the user
+          // can then talk over the answer and be heard, and the Live API's own
+          // interruption handling takes it from there.
+          if (
+            !microphone.cancelsEcho &&
+            speakingUntil !== ValueConstants.zero &&
+            now() < speakingUntil + ECHO_TAIL_MS
+          ) {
+            return;
+          }
           session.sendAudio(samples);
           if (get().status !== AssistantStatus.Speaking) publishLevel(samples);
         });
@@ -694,6 +737,10 @@ export const configureAssistantSessionStore = (
           return;
         }
 
+        // Reset per session: the warning is once per session, not once per app
+        // run, or a second session would run out in silence.
+        let warnedOfBudget = false;
+
         heartbeat = setInterval(() => {
           void tokens.reportUsage(HEARTBEAT_SECONDS).then((reported) => {
             // `clearInterval` stops the next tick, not a report already in
@@ -701,8 +748,27 @@ export const configureAssistantSessionStore = (
             // that had ended — and a zero could tear down the NEXT one on the
             // previous one's budget.
             if (abandoned() || !reported.ok) return;
-            set({ remainingSeconds: reported.value });
-            if (reported.value <= ValueConstants.zero) void teardown(AssistantStatus.Unavailable);
+            set({
+              remainingSeconds: reported.value.remainingSeconds,
+              isUnlimited: reported.value.isUnlimited,
+            });
+            // An unmetered account has no zero to reach: the number beside the
+            // flag is a floor the server sends so that builds predating the
+            // flag keep working, and counting it down would end an admin's
+            // session on a limit the server had already decided not to apply.
+            if (reported.value.isUnlimited) return;
+            if (reported.value.remainingSeconds <= ValueConstants.zero) {
+              void teardown(AssistantStatus.Unavailable);
+              return;
+            }
+            // Said by the MODEL rather than played as a tone, so it arrives in
+            // the user's language and in the voice they have been talking to —
+            // and so it waits for a gap in the conversation instead of cutting
+            // across the sentence it is warning about.
+            if (!warnedOfBudget && reported.value.remainingSeconds <= BUDGET_WARNING_SECONDS) {
+              warnedOfBudget = true;
+              session.sendText(BUDGET_WARNING_PROMPT);
+            }
           });
         }, HEARTBEAT_INTERVAL_MS);
         nudgeSilenceTimer();
@@ -785,6 +851,7 @@ export const configureAssistantSessionStore = (
         set({
           transcript: [],
           remainingSeconds: ValueConstants.zero,
+          isUnlimited: false,
           tokensUsed: ValueConstants.zero,
           deniedReason: null,
           error: null,

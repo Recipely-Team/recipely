@@ -23,6 +23,7 @@ import { t } from '@presentation/i18n';
 import { ImportPasteSteps } from '@presentation/app/import-recipe/body/import-paste-steps';
 import { usePasteImportLink } from '@presentation/app/import-recipe/hooks/use-paste-import-link';
 import { ValueConstants } from '@core/constants';
+import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
 export interface ImportPasteViewProps {
   /** Hands back a validated Instagram URL to queue. */
@@ -49,6 +50,7 @@ const GRADIENT_STOPS = [
  */
 export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const scrollable = useAssistantScrollable();
   const copy = t().importRecipe;
   const vm = usePasteImportLink();
   const inputLineHeight = useTextLineHeight(fontSizes.body);
@@ -59,7 +61,11 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      {...scrollable}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.header}>
         <Pressable
           onPress={onCancel}

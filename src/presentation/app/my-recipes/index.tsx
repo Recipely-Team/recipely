@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
@@ -61,6 +61,22 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // the user just made is the thing they are looking at.
   const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
+
+  // Re-read the param whenever it CHANGES, not only on mount. This screen is a
+  // tab, so it stays mounted: after the first visit a `useState` initialiser
+  // never ran again, and navigating here with `?tab=drafts` left the user on
+  // whichever tab they had last — while the assistant, whose navigate had
+  // genuinely succeeded, said "taslaklar listeniz burada".
+  //
+  // Keyed on the raw param rather than the parsed tab so a user's own tap is
+  // not undone: tapping Saved changes `tab` but not `params.tab`, so this does
+  // not fire and drag them back.
+  const lastTabParam = useRef(params.tab);
+  useEffect(() => {
+    if (params.tab === lastTabParam.current) return;
+    lastTabParam.current = params.tab;
+    if (params.tab !== undefined) setTab(parseTabParam(params.tab));
+  }, [params.tab]);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
   // Grid columns: 1 on a phone, auto-fill at RECIPE_CARD_MIN_WIDTH once the

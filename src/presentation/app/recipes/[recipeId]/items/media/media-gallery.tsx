@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { scrollThrottleMs } from '@presentation/base/constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Dimensions, FlatList, Pressable, StyleSheet, View, type LayoutChangeEvent, type NativeScrollEvent, type NativeSyntheticEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
@@ -84,7 +85,7 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onScroll={onScroll}
-        scrollEventThrottle={16}
+        scrollEventThrottle={scrollThrottleMs.perFrame}
       />
 
       {showArrows && active > ValueConstants.zero ? (

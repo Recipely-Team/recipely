@@ -41,6 +41,10 @@ const MONO = 1;
 const REFUSAL_NAMES: readonly string[] = ['NotAllowedError', 'SecurityError'];
 
 export class Microphone implements MicrophoneInterface {
+  /** `echoCancellation` is requested on the stream below, so the tab's own
+   *  output never reaches the model as if the user had said it. */
+  readonly cancelsEcho = true;
+
   private stream: MediaStream | null = null;
   private context: AudioContext | null = null;
   private processor: ScriptProcessorNode | null = null;

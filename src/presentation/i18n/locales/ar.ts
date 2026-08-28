@@ -963,6 +963,7 @@ export const ar = {
       resumeTimer: "استأنف المؤقت",
       stopTimer: "أوقف المؤقت",
       readStep: "قرأ الخطوة بصوت عالٍ",
+      readIngredients: 'Read the ingredients',
       scroll: "مرّر الشاشة",
       stop: "توقّف",
     },

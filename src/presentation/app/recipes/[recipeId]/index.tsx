@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from 'react';
+import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
 import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -19,6 +20,7 @@ import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/act
 import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-recipe-actions';
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
 import {
   SCROLL_EVENT_THROTTLE_MS,
   scrollTargetFor,
@@ -51,10 +53,11 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const [unsavePending, setUnsavePending] = useState(false);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
-    (direction: AssistantScrollDirectionType) => {
-      const y = scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height);
-      vm.scrollViewRef.current?.scrollTo({ y, animated: true });
-    },
+    (direction: AssistantScrollDirectionType): boolean =>
+      moveScrollTo(
+        vm.scrollViewRef.current,
+        scrollTargetFor(direction, scrollOffset.current, Dimensions.get('window').height),
+      ),
     [vm.scrollViewRef],
   );
 
@@ -77,6 +80,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     ingredients: vm.recipe?.ingredients ?? [],
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+    facts: recipeFacts(vm.recipe ?? null),
     isOwner: vm.isOwner,
     onPostComment: vm.onPostComment,
     onOpenDelete: vm.onOpenDelete,

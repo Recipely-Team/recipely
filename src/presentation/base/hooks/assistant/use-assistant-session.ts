@@ -16,6 +16,9 @@ interface AssistantSessionView {
   isMuted: boolean;
   transcript: AssistantTranscriptLine[];
   remainingSeconds: number;
+  /** True for an account the server does not meter — `remainingSeconds` is
+   *  then a floor, not a balance, and never runs out. */
+  isUnlimited: boolean;
   deniedReason: AssistantDenialReasonType | null;
   /** A failure the user has to be told about — a request that did not land. */
   error: Failure | null;
@@ -47,6 +50,7 @@ export const useAssistantSession = (): AssistantSessionView => {
   const isMuted = assistantSessionStore((s) => s.isMuted);
   const transcript = assistantSessionStore((s) => s.transcript);
   const remainingSeconds = assistantSessionStore((s) => s.remainingSeconds);
+  const isUnlimited = assistantSessionStore((s) => s.isUnlimited);
   const deniedReason = assistantSessionStore((s) => s.deniedReason);
   const error = assistantSessionStore((s) => s.error);
   const clearError = assistantSessionStore((s) => s.clearError);
@@ -75,6 +79,7 @@ export const useAssistantSession = (): AssistantSessionView => {
     isMuted,
     transcript,
     remainingSeconds,
+    isUnlimited,
     deniedReason,
     error,
     clearError,

@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, mediaSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, mediaSizes, borderWidths, decorSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export const SkeletonCard = (): React.JSX.Element => {
@@ -16,10 +16,10 @@ export const SkeletonCard = (): React.JSX.Element => {
     >
       <SkeletonLoader width="100%" height={mediaSizes.cardImageHeight} borderRadius={ValueConstants.zero} />
       <View style={styles.body}>
-        <SkeletonLoader width="60%" height={18} borderRadius={radii.sm} />
+        <SkeletonLoader width="60%" height={decorSizes.skeletonLineMd} borderRadius={radii.sm} />
         <View style={styles.row}>
-          <SkeletonLoader width={60} height={14} borderRadius={radii.sm} />
-          <SkeletonLoader width={60} height={14} borderRadius={radii.sm} />
+          <SkeletonLoader width={decorSizes.skeletonChipWidth} height={decorSizes.skeletonLineSm} borderRadius={radii.sm} />
+          <SkeletonLoader width={decorSizes.skeletonChipWidth} height={decorSizes.skeletonLineSm} borderRadius={radii.sm} />
         </View>
       </View>
     </View>

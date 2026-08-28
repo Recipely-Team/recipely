@@ -19,6 +19,13 @@ const OCCUPIED_CORNERS: readonly string[] = [RoutePaths.recipes];
  * The feed's filter button and the assistant both docked to the same corner at
  * the same height, so the chef landed squarely on top of it — covering the one
  * control that screen exists to offer.
+ *
+ * The first clearance cleared it and no more: `spacing.md` between two round
+ * controls that each carry a shadow reads as one joined blob rather than two
+ * buttons ("asistan ile filtre birleşik"). `spacing.lg` is the smallest gap
+ * that separates them visually. The filter's own box is a `minHeight`, so it
+ * can grow past `fabExtended` with a larger font setting — which is the other
+ * reason the gap wants slack rather than exactness.
  */
 export const useAssistantFloatingClearance = (): number => {
   const pathname = usePathname();
@@ -26,5 +33,5 @@ export const useAssistantFloatingClearance = (): number => {
   // button, and matching by prefix lifted the assistant off the bottom edge on
   // the app's second-busiest screen for a control that is not there.
   const occupied = OCCUPIED_CORNERS.includes(pathname);
-  return occupied ? controlSizes.fabExtended + spacing.md : ValueConstants.zero;
+  return occupied ? controlSizes.fabExtended + spacing.lg : ValueConstants.zero;
 };

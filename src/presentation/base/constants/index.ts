@@ -17,3 +17,4 @@ export { AnimationConstants } from './animation-constants';
 export { RoutePaths } from './route-paths';
 export { ListConstants } from './list-constants';
 export { KeyboardKey } from './platform-events';
+export { scrollThrottleMs } from './scroll-constants';

@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
+import { scrollThrottleMs , ListConstants } from '@presentation/base/constants';
 import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
-import { ListConstants } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -114,12 +114,13 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         recipes={recipes}
         isLoading={vm.isRefetching}
         onOpenRecipe={vm.onOpenRecipe}
+        assistantScroll={vm.assistantScroll}
       />
     );
   } else {
     body = (
       <Animated.FlatList
-        ref={vm.listRef}
+        ref={vm.attachList}
         // Emptied on purpose while the next set is fetched: the rows on screen
         // answer the PREVIOUS filter, and leaving them up read as a second
         // load. `ListEmptyComponent` carries the loading placeholder, so the
@@ -177,7 +178,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         }
         ItemSeparatorComponent={ItemSeparator}
         onScroll={vm.scrollHandler}
-        scrollEventThrottle={16}
+        scrollEventThrottle={scrollThrottleMs.perFrame}
         onEndReached={vm.onEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}

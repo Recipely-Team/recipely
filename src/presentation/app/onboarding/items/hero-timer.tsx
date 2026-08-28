@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
@@ -15,6 +15,8 @@ const RING_DELAY_MS = 40;
 const STEPS_DELAY_MS = 220;
 const RING_SIZE = 120;
 const RING_CENTER = RING_SIZE / 2;
+/** Rotates the arc so its zero point is at twelve o'clock; an SVG arc starts at three. */
+const RING_START_ROTATION = -90;
 const RING_RADIUS = 46;
 const RING_STROKE = 10;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -68,7 +70,7 @@ export const HeroTimer = ({ active = true }: HeroProps): React.JSX.Element => {
               strokeDashoffset={RING_CIRCUMFERENCE * (1 - RING_PROGRESS)}
               originX={RING_CENTER}
               originY={RING_CENTER}
-              rotation={-90}
+              rotation={RING_START_ROTATION}
             />
           </Svg>
           <View style={styles.ringLabel}>
@@ -96,7 +98,7 @@ export const HeroTimer = ({ active = true }: HeroProps): React.JSX.Element => {
                 styles.checkDot,
                 step.done
                   ? { backgroundColor: colors.primary }
-                  : { borderColor: colors.cardBorder, borderWidth: 2 },
+                  : { borderColor: colors.cardBorder, borderWidth: borderWidths.medium },
               ]}
             >
               {step.done ? (

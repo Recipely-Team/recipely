@@ -1,4 +1,5 @@
 import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
+import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
@@ -22,6 +23,15 @@ export interface RecipeSearchOverlayProps {
    */
   isLoading: boolean;
   onOpenRecipe: (id: string) => void;
+  /**
+   * Wires the results list to the feed's scroll handle AND its offset. These
+   * results REPLACE the browse list, so while they are up they are the page.
+   *
+   * Both halves, in one object, on purpose: attaching only the handle left
+   * "biraz daha aşağı" stepping from an offset that never moved, so it went to
+   * the same place every time while reporting a scroll each time.
+   */
+  assistantScroll: AssistantScrollableProps;
 }
 
 const ItemSeparator = (): React.JSX.Element => <View style={styles.separator} />;
@@ -38,6 +48,7 @@ export const RecipeSearchOverlay = ({
   recipes,
   isLoading,
   onOpenRecipe,
+  assistantScroll,
 }: RecipeSearchOverlayProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -72,6 +83,7 @@ export const RecipeSearchOverlay = ({
         </View>
       ) : (
         <FlatList
+          {...assistantScroll}
           data={recipes}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (

@@ -28,11 +28,17 @@ const openStores: { getState: () => { stopVoice: () => Promise<void> } }[] = [];
 function harness(
   overrides: {
     grantDenied?: boolean;
+    /** Grants and reports as an unmetered account — an admin. */
+    unlimited?: boolean;
+    /** Seconds the heartbeat answers with. Zero ends a metered session. */
+    reportedSeconds?: number;
     /** Denies every mint after the first — the reconnect, not the start. */
     denyReconnect?: boolean;
     connectFails?: boolean;
     micFails?: boolean;
     micRefused?: boolean;
+    /** Whether the capture path removes the app's own output — barge-in. */
+    cancelsEcho?: boolean;
     /** Refuses at CAPTURE, the way a browser does — its prompt is inside getUserMedia. */
     micStartRefused?: boolean;
     messengerFails?: boolean;
@@ -86,6 +92,9 @@ function harness(
   };
 
   const microphone: MicrophoneInterface = {
+    // Default false, so the existing cases keep exercising the half-duplex path
+    // that Android is still on; the barge-in cases opt in.
+    cancelsEcho: overrides.cancelsEcho === true,
     ensureAccess: async () => (await stall('ensureAccess'),
       overrides.micRefused === true
         ? { ok: false, failure: new ForbiddenFailure('refused') }
@@ -142,10 +151,17 @@ function harness(
               status: AssistantGrantStatus.Granted,
               credentials: CREDENTIALS,
               remainingSeconds: 480,
+              isUnlimited: overrides.unlimited === true,
             },
           };
     },
-    reportUsage: async () => ({ ok: true, value: 400 }),
+    reportUsage: async () => ({
+      ok: true,
+      value: {
+        remainingSeconds: overrides.reportedSeconds ?? 400,
+        isUnlimited: overrides.unlimited === true,
+      },
+    }),
   };
 
   const messenger: AssistantMessengerInterface = {
@@ -183,6 +199,9 @@ const settle = async (): Promise<void> => {
  *  hops is a count that quietly goes stale. */
 const settled = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
 
+/** Enough samples that the queued audio is still playing when the frame arrives. */
+const SPEECH_SAMPLES = 24_000;
+
 describe('assistant session store', () => {
   afterEach(async () => {
     for (const store of openStores.splice(0)) await store.getState().stopVoice();
@@ -208,6 +227,49 @@ describe('assistant session store', () => {
     expect(store.getState().status).toBe(AssistantStatus.Unavailable);
     expect(store.getState().deniedReason).toBe(AssistantDenialReason.GlobalDailyLimit);
     expect(store.getState().error).toBeNull();
+  });
+
+  describe('an unmetered account', () => {
+    // The whole point of the flag. An admin is granted without a budget check,
+    // so the server sends a floor rather than a balance — and a client that
+    // counted it down closed the session fifteen seconds later anyway, on a
+    // limit the server had already decided not to apply.
+    it('stays live when the heartbeat reports nothing left', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness({ unlimited: true, reportedSeconds: 0 });
+        await store.getState().startVoice('tr-TR');
+
+        await jest.advanceTimersByTimeAsync(15_000);
+        await settle();
+
+        expect(store.getState().isUnlimited).toBe(true);
+        expect(store.getState().remainingSeconds).toBe(0);
+        expect(store.getState().status).toBe(AssistantStatus.Listening);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
+    // The same zero on a metered account still ends it: the bypass is the
+    // flag, not the number, so nothing about the ordinary path moved.
+    it('does not lift the limit for everybody else', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store } = harness({ reportedSeconds: 0 });
+        await store.getState().startVoice('tr-TR');
+
+        // The teardown is fired, not awaited, and it stops two devices behind
+        // their own rejection guards — so the status it sets lands a turn later.
+        await jest.advanceTimersByTimeAsync(15_000);
+        await settle();
+
+        expect(store.getState().isUnlimited).toBe(false);
+        expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
   });
 
   // Voice is billed per second of an open microphone, so a half-started session
@@ -396,6 +458,31 @@ describe('assistant session store', () => {
 
       expect(calls.flush).toBe(1);
       expect(store.getState().status).toBe(AssistantStatus.Listening);
+    });
+
+    // "Konuşurken beni dinlemiyor." The microphone was shut while the assistant
+    // spoke, on every platform, because Android cannot cancel its own echo. iOS
+    // and the web can — so there the price of that cure buys nothing.
+    it('keeps sending audio while speaking when the capture cancels echo', async () => {
+      const { store, calls, emit } = harness({ cancelsEcho: true });
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
+
+      const before = calls.audioFrames;
+      calls.onFrame?.(new Float32Array([0.2]));
+
+      expect(calls.audioFrames).toBe(before + 1);
+    });
+
+    it('still holds the microphone shut while speaking when it cannot', async () => {
+      const { store, calls, emit } = harness({ cancelsEcho: false });
+      await store.getState().startVoice('tr-TR');
+      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
+
+      const before = calls.audioFrames;
+      calls.onFrame?.(new Float32Array([0.2]));
+
+      expect(calls.audioFrames).toBe(before);
     });
 
     it('records both sides of the transcript', async () => {

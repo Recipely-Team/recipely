@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 977 source files.
+[architecture.md](architecture.md). 986 source files.
 
 ## Layers
 
@@ -26,7 +26,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `ads/` _(1)_
-- `assistant/` — actions, audio, session _(18)_
+- `assistant/` — actions, audio, session _(19)_
 - `audio/` _(1)_
 - `auth/` _(7)_
 - `comments/` _(4)_
@@ -103,11 +103,11 @@ locale list `application/i18n/locale-constants.ts`.
 
 ## `src/presentation/base/` — shared UI
 
-- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(5)_
+- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(6)_
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(48)_
+- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(52)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
@@ -115,7 +115,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(7)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(82)_
+- `widgets/` (ads, assistant, brand, buttons, cards, dialogs, feedback, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(84)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -148,4 +148,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: d28ca32df7cb79ab -->
+<!-- fingerprint: 002f321aa4c59033 -->

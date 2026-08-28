@@ -963,6 +963,7 @@ export const fr = {
       resumeTimer: "A repris le minuteur",
       stopTimer: "A arrêté le minuteur",
       readStep: "A lu l'étape à voix haute",
+      readIngredients: 'Read the ingredients',
       scroll: "A fait défiler l'écran",
       stop: "S'est arrêté",
     },

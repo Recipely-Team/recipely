@@ -29,6 +29,16 @@ export interface LikesStoreState {
    * the optimistic rollback alone is easy to miss.
    */
   toggle: (recipeId: string) => Promise<Result<void, Failure>>;
+  /**
+   * Drive the heart to an ABSOLUTE state rather than flipping it.
+   *
+   * The assistant says "beğen", which is an outcome, not a flip — and `toggle`
+   * could only express a flip, so it answered `ok` while doing nothing
+   * whenever it had no state to flip from. That reported success to the user
+   * on the first try and only worked on the second, once a detail fetch had
+   * filled the entry in. This says what it did.
+   */
+  setLiked: (recipeId: string, wanted: boolean) => Promise<Result<void, Failure>>;
   /** Drops every per-recipe like overlay. Called when the session ends. */
   clear: () => void;
 }

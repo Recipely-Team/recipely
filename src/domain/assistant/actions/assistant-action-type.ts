@@ -71,6 +71,13 @@ export const AssistantAction = {
   ResumeTimer: 'resumeTimer',
   StopTimer: 'stopTimer',
   ReadStep: 'readStep',
+  /**
+   * Reads the ingredient list aloud. Distinct from `toggleIngredient`, and the
+   * reason is a real incident: asked to READ the ingredients, the model found
+   * only the toggle and ticked all eleven of them off, leaving the cook to
+   * undo a checklist by hand.
+   */
+  ReadIngredients: 'readIngredients',
   Scroll: 'scroll',
   Stop: 'stop',
 } as const;

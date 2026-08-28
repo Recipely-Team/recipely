@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
+import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/assistant-external-targets';
 import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
 import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -47,6 +48,14 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.Navigate,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       const name = arg ?? CharConstants.empty;
+      // Recognised, and refused. These are web pages: opening one ends the
+      // voice session and hands the user to a browser they must find their own
+      // way back from. The row is on the screen for them to tap. Saying so is
+      // the whole point of naming them — the alternative was "sayfa
+      // bulunamadı", which was untrue about a link the user was looking at.
+      if (isAssistantExternalName(name)) {
+        return { ok: false, error: 'leaves_the_app' };
+      }
       if (!isAssistantScreenName(name)) return { ok: false, error: 'unknown_screen' };
 
       // `navigate`, not `push`: asked to go somewhere the user is already

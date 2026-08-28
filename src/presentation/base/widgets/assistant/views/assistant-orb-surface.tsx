@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { AssistantOrb } from '@presentation/base/widgets/assistant/parts/assistant-orb';
 import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts/assistant-waiting-line';
@@ -17,6 +18,8 @@ export interface AssistantOrbSurfaceProps {
   isMuted: boolean;
   transcript: AssistantTranscriptLine[];
   notice: string | null;
+  /** How loudly to show it — see assistantNoticeTone. */
+  noticeTone: SeverityType;
   onToggleVoice: () => void;
   onToggleMute: () => void;
   onSend: (text: string) => void;
@@ -47,6 +50,7 @@ export const AssistantOrbSurface = ({
   isMuted,
   transcript,
   notice,
+  noticeTone,
   onToggleVoice,
   onToggleMute,
   onSend,
@@ -116,6 +120,7 @@ export const AssistantOrbSurface = ({
         <AssistantSheet
           height={sheetHeight}
           transcript={transcript}
+          noticeTone={noticeTone}
           notice={notice}
           onSend={onSend}
           onCollapse={() => setIsTyping(false)}

@@ -11,6 +11,7 @@ function harness() {
   const spies = {
     onSetLanguage: jest.fn(),
     onSetThemePreference: jest.fn(),
+    onSetThemeId: jest.fn(),
     onRequestSignOut: jest.fn(),
   };
 

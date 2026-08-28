@@ -7,6 +7,7 @@ import { useCallback, useRef } from 'react';
 import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
@@ -21,6 +22,16 @@ interface AssistantRecipeActionsDeps {
   ingredients: readonly string[];
   instructions: readonly string[];
   cookTimeMinutes: number;
+  /**
+   * The facts printed beside the recipe: times, servings, difficulty and the
+   * macros when the backend has them.
+   *
+   * On the screen line rather than behind an action, because "how long does
+   * this take" and "how many calories" are asked while both hands are busy and
+   * a round trip to find out is a round trip the cook waits through. They are
+   * short; the recipe TEXT is what has to stay out of the context.
+   */
+  facts: readonly string[];
   isOwner: boolean;
   onPostComment: (text: string) => void;
   onOpenDelete: () => void;
@@ -57,6 +68,9 @@ interface AssistantRecipeActionsDeps {
  *   and it re-saved things that were already saved because it had no way to
  *   know. `mine` is what lets it warn before asking to delete rather than after.
  */
+/** Joins ingredient lines into one spoken list. Only this hook reads it. */
+const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
+
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
     recipeId,
@@ -64,6 +78,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     ingredients,
     instructions,
     cookTimeMinutes,
+    facts,
     isOwner,
     onPostComment,
     onOpenDelete,
@@ -84,33 +99,44 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
   const addFavorite = favoritesStore((s) => s.addFavorite);
   const removeFavorite = favoritesStore((s) => s.removeFavorite);
-  const toggleLike = likesStore((s) => s.toggle);
+  const setLikedInStore = likesStore((s) => s.setLiked);
   const savedIds = savedRecipesStore((s) => s.savedIds);
+  const savedListState = savedRecipesStore((s) => s.listState);
   const likeState = likesStore((s) => s.byRecipe[recipeId]);
 
   const setSaved = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: 'signed_out' };
-      // Already in the wanted state is a success, not a no-op to report: the
-      // user asked for an outcome, and the outcome holds.
-      if (savedIds.has(recipeId) === wanted) return { ok: true, title: recipeName };
+      if (savedIds.has(recipeId) === wanted) {
+        // An unloaded set answers "not saved" about every recipe in the app, so
+        // this branch reported an unsave that never happened. It only misleads
+        // in that direction: reading "not saved" when asked to SAVE just means
+        // the save runs, which is what the user wanted anyway.
+        if (!wanted && savedListState.status !== StoreStatus.Loaded) {
+          return { ok: false, error: AssistantActionError.NotReady };
+        }
+        return { ok: true, title: recipeName };
+      }
 
       if (wanted) await addFavorite(userId, recipeId);
       else await removeFavorite(userId, recipeId);
       return { ok: true, title: recipeName };
     },
-    [userId, savedIds, recipeId, recipeName, addFavorite, removeFavorite],
+    [userId, savedIds, savedListState, recipeId, recipeName, addFavorite, removeFavorite],
   );
 
   const setLiked = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
       if (userId === null) return { ok: false, error: 'signed_out' };
-      if ((likeState?.likedByMe ?? false) === wanted) return { ok: true, title: recipeName };
+      // No early return on the render's `likeState`: an absent entry read as
+      // "not liked", so the FIRST spoken "beğen" flipped nothing and said it
+      // had. The store owns that question now and answers it truthfully.
+      if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
-      const result = await toggleLike(recipeId);
+      const result = await setLikedInStore(recipeId, wanted);
       return result.ok ? { ok: true, title: recipeName } : { ok: false, error: 'failed' };
     },
-    [userId, likeState, recipeId, recipeName, toggleLike],
+    [userId, likeState, recipeId, recipeName, setLikedInStore],
   );
 
   useAssistantScreenContent(() =>
@@ -120,6 +146,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       `liked=${likeState?.likedByMe === true ? Answer.yes : Answer.no}`,
       `mine=${isOwner ? Answer.yes : Answer.no}`,
       `steps=${instructions.length}`,
+      ...facts,
     ].join(SCREEN_PART_SEPARATOR),
   );
 
@@ -130,10 +157,16 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       // Un-saving drops a recipe out of a collection the user curated and may
       // not be able to find again, so it asks — unlike un-liking, which is a
       // number they can restore with one tap.
+      // The same hole `setSaved` had, in a handler that does not go through it:
+      // an unloaded id set answers "not saved" about every recipe in the app, so
+      // a spoken "kaydı kaldır" reported success and never raised the sheet.
+      if (savedListState.status !== StoreStatus.Loaded) {
+        return { ok: false, error: AssistantActionError.NotReady };
+      }
       if (!savedIds.has(recipeId)) return { ok: true, title: recipeName };
       onRequestUnsave();
       return { ok: true, awaiting: true, title: recipeName };
-    }, [savedIds, recipeId, recipeName, onRequestUnsave]),
+    }, [savedIds, savedListState, recipeId, recipeName, onRequestUnsave]),
   );
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
@@ -167,6 +200,21 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       },
       [instructions],
     ),
+  );
+
+  useAssistantAction(
+    AssistantAction.ReadIngredients,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      if (ingredients.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
+      // The list as text, for the same reason `readStep` carries its step: the
+      // model is about to say it out loud and has no other way to know what it
+      // says. Reading is not ticking — see the action's own note.
+      return {
+        ok: true,
+        title: ingredients.join(INGREDIENT_SEPARATOR),
+        n: { ingredients: ingredients.length },
+      };
+    }, [ingredients]),
   );
 
   useAssistantAction(

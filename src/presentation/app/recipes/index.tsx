@@ -1,4 +1,9 @@
 import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
+import { useMemo } from 'react';
+import { StoreStatus } from '@application/store/store-status';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
@@ -12,7 +17,11 @@ import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-
 import { countActiveFilters } from '@presentation/app/recipes/model/filtering/filter-mutations';
 import { ValueConstants } from '@core/constants';
 
+/** What the editorial hero renders: one featured recipe and two runners-up. */
+const HERO_RECIPE_COUNT = 3;
+
 export const RecipeListScreen = (): React.JSX.Element => {
+  const { trendingRecipesStore } = useStores();
   const vm = useRecipeList();
 
   // Filtering and sorting by voice, registered by the screen that owns the
@@ -31,11 +40,36 @@ export const RecipeListScreen = (): React.JSX.Element => {
     onChangeSort: vm.onChangeSort,
   });
   useAssistantScroll(vm.onAssistantScroll);
+
+  // The editorial hero reads its own store, so its three recipes were invisible
+  // to the assistant: asked for "öne çıkanlardan üçüncüsü" it counted into the
+  // grid instead and opened something else entirely. Published only while the
+  // hero is actually rendered — the phone layout has none, and offering rows
+  // the user cannot see is the same lie in the other direction.
+  const trendingState = trendingRecipesStore((state) => state.state);
+  const featured = useMemo<readonly RecipeSummaryEntity[]>(
+    () =>
+      vm.isExpanded && !vm.isSearching && trendingState.status === StoreStatus.Loaded
+        ? trendingState.recipes.slice(ValueConstants.zero, HERO_RECIPE_COUNT)
+        : [],
+    [vm.isExpanded, vm.isSearching, trendingState],
+  );
+
   // What is actually on the feed, so "the second one" and "is there anything
-  // here?" are questions the model can answer instead of guess at.
-  useAssistantScreenContent(() => recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name)));
+  // here?" are questions the model can answer instead of guess at. Two rosters,
+  // separately labelled and numbered, because they are two lists on one screen.
+  useAssistantScreenContent(() =>
+    [
+      ...(featured.length > ValueConstants.zero
+        ? [recipeRoster('featured', featured.map((recipe) => recipe.name))]
+        : []),
+      recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name)),
+    ].join(SCREEN_PART_SEPARATOR),
+  );
   // Saving, liking and deleting a row the user can see, by name or by position.
-  useAssistantListRecipeActions(vm.recipes);
+  // The grid comes FIRST so a bare "the second one" still counts into it, which
+  // is what it means nine times in ten; the hero's three resolve by name.
+  useAssistantListRecipeActions(useMemo(() => [...vm.recipes, ...featured], [vm.recipes, featured]));
 
   return (
     <>
