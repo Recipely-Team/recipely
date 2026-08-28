@@ -1,14 +1,17 @@
-Zamanlayıcı çalışırken pişirin.
+Elleriniz hamurdayken konuşarak pişirin.
 
-• Adım zamanlayıcıları. Tarifin istediğiniz adımından başlatın, süre dolunca alarm çalsın. Her tarif için tek zamanlayıcı; çalışan zamanlayıcı çubuğu da önünüze geldiğinde kenara alınabiliyor.
-• Arama artık ekrandakilerle yetinmiyor, tüm tarif kataloğunu tarıyor — üstelik Türkçe adları şapkasız yazdığınızda da buluyor: "sut" ile "Süt", "pogaca" ile "Poğaça" geliyor. Kelimeleri hangi sırayla yazdığınız da artık fark etmiyor.
-• Beğendiğiniz tarifler, uygulamayı kapatıp açtığınızda beğenili kalıyor.
-• Yorumlar ilk dokunuşta gönderiliyor; besin değerleri de veri yoksa bunu söylüyor, sessizce boş kalmıyor.
-• Taslaklar yerli yerinde. Bir taslağı açıp hiçbir şey değiştirmeden çıkınca yeniden kaydetmiyor, "kaydetmeden çık" dediğinizde gerçekten siliniyor.
-• Malzeme satırları artık bir kelimeyi miktar rozetiyle ad arasında bölmüyor.
-• Çıkış yapmadan önce soruyor; hesapsız devam ettiğinizde giriş ekranı bir geri hareketi uzağınızda kalmıyor.
-• Yeni uygulama simgesi ve baştan sona düzeltilmiş Türkçe metinler.
+Sesli asistan bu sürümde baştan aşağı elden geçti.
 
-Yayımlanmış tarifleri düzenleme özelliği, yeniden ele alınmak üzere şimdilik kaldırıldı. Tarif oluşturma, silme ve taslak akışları yerinde duruyor.
+• Sözünü kesebiliyorsunuz. Asistan konuşurken araya girdiğinizde susup sizi dinliyor; cevabın bitmesini beklemeniz gerekmiyor.
+• Tarifi sesli okuyor. "Malzemeleri oku", "sonraki adım", "besin değerleri ne kadar", "kaç dakika sürüyor" diyebilirsiniz. Okumak istediğinizde okuyor, işaretlemek istediğinizde işaretliyor — ikisi artık birbirine karışmıyor.
+• Aramayı, filtreleri ve sıralamayı sesle yönetiyor: "Türk mutfağını göster", "kolay olanları getir", "en yenileri sırala" gibi. Mutfak, zorluk ve sıralama seçimleri artık gerçekten uygulanıyor.
+• Tarifi kaydediyor ve beğeniyor; beğeniden vazgeçtiğinizde de gerçekten vazgeçiyor.
+• Sayfayı istediğiniz kadar kaydırıyor: "biraz aşağı", "en üste", "en alta". Kaydıramadığı bir yerde artık kaydırdım demiyor.
+• Yapmadığı işi yaptım demiyor. Bir işlem başarısız olduğunda bunu size söylüyor.
+• İlk dokunuşta başlıyor ve konuşma süreniz dolmak üzereyken önceden haber veriyor.
+• Uygulama dışına çıkan gizlilik politikası ve kullanım koşulları gibi bağlantıları kendisi açmıyor, açamayacağını açıkça söylüyor.
+• Ana sayfadaki öne çıkan tarifler de dahil, ulaşabildiği ekranların tamamını tanıyor.
+
+Ayrıca asistanın kullandığı dil ve ses sabitlendi: gereksiz şive yapmadan, sizin seçtiğiniz dilde konuşuyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!

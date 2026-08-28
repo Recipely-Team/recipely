@@ -1,14 +1,17 @@
-Cook with a timer running.
+Cook by talking, with your hands in the dough.
 
-• Step timers. Start one from any step of a recipe and get an alarm when the time is up. One timer per recipe, and the running-timer bar can be tucked away when it covers something you need.
-• Search now looks through the whole recipe catalogue rather than what was already on screen — and it finds Turkish names typed without their accents, so "sut" finds "Süt" and "pogaca" finds "Poğaça". The order you type the words in no longer matters either.
-• Your likes stay liked after you close and reopen the app.
-• Comments send on the first tap, and nutrition says when a recipe has no figures instead of quietly showing nothing.
-• Drafts behave. Opening one and leaving without changing anything no longer re-saves it, and "leave without saving" actually removes it.
-• Ingredient rows no longer split a word between the amount badge and the name.
-• Signing out asks first, and continuing without an account no longer leaves the sign-in screen a back gesture away.
-• A new app icon, and Turkish wording corrected throughout.
+The voice assistant has been reworked from end to end in this release.
 
-Editing a published recipe has been removed for now while we rework it. You can still create, delete and draft recipes.
+• You can interrupt it. Speak while it is talking and it stops to listen — no waiting for the answer to finish.
+• It reads the recipe to you. Ask for the ingredients, the next step, the nutrition figures or how long something takes. Asking it to read no longer ticks the step off; reading and checking off are separate again.
+• It drives search, filters and sorting by voice: show me Turkish food, only the easy ones, sort by newest. Cuisine, difficulty and sort choices are actually applied now.
+• It saves and likes a recipe — and unliking really unlikes.
+• It scrolls as much as you asked: a little further, back to the top, all the way down. Where it cannot scroll, it no longer claims it did.
+• It does not report work it has not done. When something fails, it tells you.
+• It starts on the first tap and warns you before your speaking time runs out.
+• It will not open links that leave the app, such as the privacy policy and terms — it says plainly that it cannot.
+• It knows every screen it can reach, including the featured recipes on the home page.
+
+The assistant's language and voice are pinned too: it speaks the language you chose, without putting on an accent.
 
 Thanks for cooking with Recipely!
