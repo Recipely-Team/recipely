@@ -207,7 +207,7 @@ for (const file of files) {
   if (file.startsWith('presentation/app/')) {
     const rel = file.slice('presentation/app/'.length);
     const base = path.basename(rel).replace(/\.(ts|tsx)$/, '');
-    const isRouteFile = /^(index|_layout|\+[\w-]+|\[[^/\]]+\])(\.(android|ios|native|web))?$/.test(base) && rel.endsWith('.tsx');
+    const isRouteFile = /^(index|_layout|_sitemap|\+[\w-]+|\[[^/\]]+\])(\.(android|ios|native|web))?$/.test(base) && rel.endsWith('.tsx');
     const inConventionFolder = /(^|\/)(body|items|sheets|hooks|model|shared|__tests__)\//.test(rel);
     // An index/_layout file INSIDE a convention folder would still match the
     // route-context regex and silently register as a route — never allow it.
@@ -659,6 +659,31 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       if (!/^\+[\w-]+\.[tj]sx?$/.test(name) || STOCK_EXCLUDES.test(name)) continue;
       if (admits.test(`./${name}`)) continue;
       errors.push(`${CTX}: excludes app/${name}, which expo-router reads from the context`);
+    }
+  }
+}
+
+// --- Z: the dev sitemap must stay out of the shipped app ---------------------
+// expo-router appends its own `_sitemap` route whenever the route context does
+// not supply one, and that screen reads `window.location.origin` — which does
+// not exist on native. Reaching `/_sitemap` on a device is therefore a fatal
+// TypeError, and nothing in the app links to it: a route crawler found it and
+// Crashlytics logged the crash. There is no config switch (qualified-entry
+// renders <ExpoRoot> with no `config` prop), so the override file IS the fix.
+// Delete it, or hide it from the context, and the crashing screen comes back.
+{
+  const OVERRIDE = 'presentation/app/_sitemap.tsx';
+  const CTX_FILE = 'presentation/navigation/route-context.js';
+  if (!fs.existsSync(path.join(SRC, OVERRIDE))) {
+    errors.push(
+      `src/${OVERRIDE}: missing — expo-router then ships its own _sitemap, which reads window.location.origin and crashes on native`,
+    );
+  } else {
+    const literal = /require\.context\([\s\S]*?,\s*(?:true|false),\s*(\/.*\/)[gimsuy]*\s*,/.exec(
+      fs.readFileSync(path.join(SRC, CTX_FILE), 'utf8'),
+    )?.[1];
+    if (literal !== undefined && !new RegExp(literal.slice(1, -1)).test('./_sitemap.tsx')) {
+      errors.push(`${CTX_FILE}: excludes app/_sitemap.tsx, so expo-router falls back to its crashing dev screen`);
     }
   }
 }
