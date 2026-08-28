@@ -351,8 +351,8 @@ blocking.
     file count), 15 (alias imports + the layer line), 15b (map freshness), 18 (`.tsx` over 300
     lines), 21 (entity naming AND `*Interface` port naming), 22 (unguarded `console.*`),
     23 (hand-rolled bottom sheets), 23b (`Modal` without `statusBarTranslucent`),
-    23c (background-audio capability), and the one-definition-per-vocabulary half of
-    rule 5 (rule P) mechanically and must be green before any commit/PR. Its
+    23c (background-audio capability), 25 (a routed screen with no analytics
+    name), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.
@@ -500,6 +500,24 @@ blocking.
     Proportionality applies: a typo or a copy tweak needs none of this. A wrong behaviour a
     user reported needs at least step 1. The goal is that the four gates — lint, `tsc`,
     `jest`, `check:structure` — find the next one of these BEFORE anyone takes a build.
+
+25. **Every routed screen reports its own name to analytics** — a new
+    `app/<segment>/index.tsx` adds a row to `SCREEN_BY_PATH` in
+    `presentation/bootstrap/use-screen-tracking.ts`, named after the route's exported
+    component (`RecipeListScreen`), with the name itself in
+    `infrastructure/constants/analytics/analytics-screen.ts`. Skip it and the screen does
+    not go unnamed — it goes under the name the PLATFORM invents, which is one
+    `MainActivity` for all of Android and one shared `<title>` for the whole web export, so
+    it silently merges with every other unmapped screen. A screen name is a join key like
+    an event name: rename one only on purpose. Routes that render nothing but a `Redirect`
+    are excluded — a view logged for them counts an impression nobody had. The
+    two halves of the wrapper (`analytics-service.ts` / `.web.ts`) bind to
+    `AnalyticsServiceInterface`, because nothing else type-checks a platform pair
+    against itself: dropping a method from the web half compiled, linted and
+    passed every suite while the web build silently stopped reporting.
+    **Enforced mechanically** by `check:structure` (rule AA), which also holds
+    `firebase.json`'s automatic-screen-reporting switch off — with it on, Android
+    reports its one Activity alongside the real names.
 
 ### Pre-commit quality gate
 

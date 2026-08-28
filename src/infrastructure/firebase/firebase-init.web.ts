@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
 import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
-import { getAnalytics, isSupported as isAnalyticsSupported } from 'firebase/analytics';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -69,18 +69,26 @@ export const getFirebaseApp = (): FirebaseApp | null => {
 };
 
 /**
- * Initializes Firebase for the web build. Boots the JS SDK with the public
- * web config (`@react-native-firebase/*` modules don't ship for web, so we
- * route through `firebase/app` here) and wires Analytics when the browser
- * supports it (some embedded webviews and SSR don't). No-op if config env
- * vars aren't injected at build time.
+ * Initializes Firebase for the web build. Boots the JS SDK with the public web
+ * config (`@react-native-firebase/*` modules don't ship for web, so we route
+ * through `firebase/app` here) and hands Analytics the same development switch
+ * the native side uses. No-op if config env vars aren't injected at build time.
+ *
+ * @remarks
+ * **Why the `__DEV__` gate is not optional here.** It used to call
+ * `getAnalytics` directly, which was harmless only because the analytics
+ * wrapper no-opped on web entirely. Now that the web half reports screen views,
+ * an unguarded init means every `npm run web` session — the env file is
+ * populated locally — writes real screens into the live property. The gate is
+ * inside `setEnabled`, which is also what keeps gtag from booting at all: gtag
+ * fires a `page_view` of its own the moment it loads, so switching collection
+ * off afterwards would already be too late.
  */
 export const initFirebase = async (): Promise<void> => {
   const app = getFirebaseApp();
   if (app === null) return;
   try {
-    const supported = await isAnalyticsSupported();
-    if (supported) getAnalytics(app);
+    await analyticsService.setEnabled(!__DEV__);
   } catch (err) {
     if (__DEV__) console.warn(`${LogTag.firebaseInitWeb} ${LogMessage.analyticsInitSkipped}`, err);
   }

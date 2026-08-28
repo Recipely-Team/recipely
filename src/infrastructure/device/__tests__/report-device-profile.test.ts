@@ -40,14 +40,14 @@ jest.mock('@infrastructure/firebase/crashlytics-service', () => ({
 }));
 
 jest.mock('@infrastructure/firebase/analytics-service', () => ({
-  logAnalyticsEvent: jest.fn(async () => undefined),
+  analyticsService: { logEvent: jest.fn(async () => undefined) },
 }));
 
 import { readDeviceProfile } from '@infrastructure/device/device-profile';
 import { reportDeviceProfile } from '@infrastructure/device/report-device-profile';
 import { setCrashAttributes } from '@infrastructure/firebase/crashlytics-service';
-import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
-import { AnalyticsEvent } from '@infrastructure/constants/analytics';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
+import { AnalyticsEvent } from '@infrastructure/constants/analytics/analytics-event';
 
 describe('the device profile', () => {
   beforeEach(() => {
@@ -73,7 +73,7 @@ describe('the device profile', () => {
     reportDeviceProfile();
 
     const attributes = jest.mocked(setCrashAttributes).mock.calls[0][0];
-    const event = jest.mocked(logAnalyticsEvent).mock.calls[0][1];
+    const event = jest.mocked(analyticsService.logEvent).mock.calls[0][1];
 
     for (const value of [...Object.values(attributes), ...Object.values(event ?? {})]) {
       expect(String(value)).not.toContain(DEVICE_NAME);
@@ -100,7 +100,7 @@ describe('the device profile', () => {
   it('records it as one event per launch', () => {
     reportDeviceProfile();
 
-    expect(logAnalyticsEvent).toHaveBeenCalledWith(
+    expect(analyticsService.logEvent).toHaveBeenCalledWith(
       AnalyticsEvent.deviceProfile,
       expect.objectContaining({ locale: 'tr-TR' }),
     );
