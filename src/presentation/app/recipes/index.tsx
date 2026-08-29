@@ -2,12 +2,14 @@ import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-ass
 import { useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
@@ -38,6 +40,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     onClearSearch: vm.onClearSearch,
     onClearAllFilters: vm.onClearAllFilters,
     onChangeSort: vm.onChangeSort,
+    onRefresh: vm.onRefresh,
   });
   useAssistantScroll(vm.onAssistantScroll);
 
@@ -64,6 +67,17 @@ export const RecipeListScreen = (): React.JSX.Element => {
         ? [recipeRoster('featured', featured.map((recipe) => recipe.name))]
         : []),
       recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name)),
+    ].join(SCREEN_PART_SEPARATOR),
+  );
+  // The whole list, for `readScreen`. The line above stops at eight rows
+  // because it is charged on every turn; this is charged only when someone
+  // asks to have the page read to them, and then eight is not the page.
+  useAssistantScreenReading(() =>
+    [
+      ...(featured.length > ValueConstants.zero
+        ? [listReading('featured', featured.map((recipe) => recipe.name))]
+        : []),
+      listReading('recipes', vm.recipes.map((recipe) => recipe.name)),
     ].join(SCREEN_PART_SEPARATOR),
   );
   // Saving, liking and deleting a row the user can see, by name or by position.

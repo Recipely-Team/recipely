@@ -38,6 +38,7 @@ function harness(filters: UiFilters = EMPTY, loaded = true) {
     onClearSearch: jest.fn(),
     onClearAllFilters: jest.fn(),
     onChangeSort: jest.fn(),
+    onRefresh: jest.fn(),
   };
 
   const Probe = (): null => {

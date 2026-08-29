@@ -62,6 +62,14 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     // The prompt phase offers exactly one draft to continue, and "taslağıma
     // devam et" is a thing people say to a screen that shows the card.
     isPromptVisible: vm.phase === PhaseType.Prompt,
+    // The exit sheet registers `save` too, meaning "keep the draft and leave".
+    // It registers first, so the editor's own `save` has to stand down while
+    // that question is on screen or it would publish in answer to it.
+    isExitPending,
+    // Whichever rejection dialog is up. The model is told what the user is
+    // reading, so it can say why the publish did not go through — and send it
+    // on with `reportProblem` if they ask.
+    saveProblem: vm.saveError ?? vm.saveIssue,
     resumableDraft: vm.latestDraft,
     onResumeDraft: vm.onResumeDraft,
     recipe: vm.recipe,

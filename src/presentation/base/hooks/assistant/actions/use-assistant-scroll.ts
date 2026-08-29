@@ -1,4 +1,4 @@
-import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
+import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -6,7 +6,7 @@ import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/u
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+} from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 
 /**
  * Lets the assistant scroll whichever screen registered it.

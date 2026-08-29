@@ -16,7 +16,7 @@ function harness() {
   };
 
   const Probe = (): null => {
-    useAssistantSettingsActions(spies);
+    useAssistantSettingsActions({ language: 'tr', preference: 'system', themeId: 'pearl-white', ...spies });
     return null;
   };
 
@@ -47,7 +47,7 @@ describe('useAssistantSettingsActions', () => {
     const { registry, spies } = harness();
 
     await act(async () => {
-      await expect(registry.run(AssistantAction.SetPreference, 'language=ar')).resolves.toEqual({
+      await expect(registry.run(AssistantAction.SetPreference, 'language=ar')).resolves.toMatchObject({
         ok: false,
         error: 'unknown_language',
       });
@@ -60,7 +60,7 @@ describe('useAssistantSettingsActions', () => {
     const { registry, spies } = harness();
 
     await act(async () => {
-      await expect(registry.run(AssistantAction.SetPreference, 'language=elvish')).resolves.toEqual({
+      await expect(registry.run(AssistantAction.SetPreference, 'language=elvish')).resolves.toMatchObject({
         ok: false,
         error: 'unknown_language',
       });
@@ -85,7 +85,7 @@ describe('useAssistantSettingsActions', () => {
     const { registry, spies } = harness();
 
     await act(async () => {
-      await expect(registry.run(AssistantAction.SetPreference, 'theme=neon')).resolves.toEqual({
+      await expect(registry.run(AssistantAction.SetPreference, 'theme=neon')).resolves.toMatchObject({
         ok: false,
         error: 'unknown_theme',
       });
@@ -98,11 +98,11 @@ describe('useAssistantSettingsActions', () => {
     const { registry } = harness();
 
     await act(async () => {
-      await expect(registry.run(AssistantAction.SetPreference, 'dark')).resolves.toEqual({
+      await expect(registry.run(AssistantAction.SetPreference, 'dark')).resolves.toMatchObject({
         ok: false,
         error: 'expected_key_equals_value',
       });
-      await expect(registry.run(AssistantAction.SetPreference, 'colour=dark')).resolves.toEqual({
+      await expect(registry.run(AssistantAction.SetPreference, 'colour=dark')).resolves.toMatchObject({
         ok: false,
         error: 'unknown_preference',
       });

@@ -14,6 +14,7 @@
 
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
@@ -125,6 +126,10 @@ const renderProfile = (bio: string | undefined): ReturnType<typeof renderCompone
     authStore: makeAuthStore(bio),
     userProfileStore: makeUserProfileStore(),
     savedRecipesStore: makeSavedRecipesStore(),
+    // The screen tells the assistant what it is showing, which is a real
+    // registry call on mount — a bare object here crashes the render before
+    // any of this file's assertions get to look at it.
+    assistantActionRegistry: new AssistantActionRegistry(),
   } as unknown as Stores;
 
   return renderComponent(

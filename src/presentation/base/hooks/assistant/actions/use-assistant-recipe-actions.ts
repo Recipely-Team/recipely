@@ -1,17 +1,19 @@
 import { router } from 'expo-router';
 import type { Href } from 'expo-router';
 import { RoutePaths } from '@presentation/base/constants';
-import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
-import { useCallback, useRef } from 'react';
-import { StepCursor } from '@presentation/base/hooks/assistant/args/step-cursor';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
+import { useCallback } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
+import { useAssistantReadActions } from '@presentation/base/hooks/assistant/actions/use-assistant-read-actions';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
-import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { recipeReading } from '@presentation/base/hooks/assistant/args/describing/recipe-reading';
+import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
+import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { StoreStatus } from '@application/store/store-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
@@ -32,6 +34,14 @@ interface AssistantRecipeActionsDeps {
    * short; the recipe TEXT is what has to stay out of the context.
    */
   facts: readonly string[];
+  /**
+   * The comments as they are printed, "who: what".
+   *
+   * Counted on the screen line and quoted only in the reading: a comment
+   * thread is the rest of the page, and "bu sayfada ne var" that stops above
+   * it is not an answer for someone who cannot see the page.
+   */
+  comments: readonly string[];
   isOwner: boolean;
   onPostComment: (text: string) => void;
   onOpenDelete: () => void;
@@ -68,8 +78,8 @@ interface AssistantRecipeActionsDeps {
  *   and it re-saved things that were already saved because it had no way to
  *   know. `mine` is what lets it warn before asking to delete rather than after.
  */
-/** Joins ingredient lines into one spoken list. Only this hook reads it. */
-const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
+/** What the reading calls the thread under the recipe. */
+const COMMENTS_LABEL = 'comments';
 
 export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): void => {
   const {
@@ -79,6 +89,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     instructions,
     cookTimeMinutes,
     facts,
+    comments,
     isOwner,
     onPostComment,
     onOpenDelete,
@@ -146,8 +157,19 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       `liked=${likeState?.likedByMe === true ? Answer.yes : Answer.no}`,
       `mine=${isOwner ? Answer.yes : Answer.no}`,
       `steps=${instructions.length}`,
+      `comments=${comments.length}`,
       ...facts,
     ].join(SCREEN_PART_SEPARATOR),
+  );
+
+  // What "bu tarifi oku" answers: the whole recipe, built only when it is
+  // asked for. The screen line above stays counts, because it is charged on
+  // every turn and this is not.
+  useAssistantScreenReading(() =>
+    recipeReading(recipeName, ingredients, instructions, [
+      ...facts,
+      listReading(COMMENTS_LABEL, comments),
+    ]),
   );
 
   useAssistantAction(AssistantAction.Save, useCallback(() => setSaved(true), [setSaved]));
@@ -171,51 +193,11 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
 
-  // Walking the recipe hands-free: "next" is what a cook says, far more often
-  // than a number. The cursor lives here rather than in the model, because the
-  // model's memory of where it was is exactly what a reconnect loses.
-  const stepCursor = useRef(ValueConstants.minusOne);
-  useAssistantAction(
-    AssistantAction.ReadStep,
-    useCallback(
-      async (arg?: string): Promise<AssistantActionResultType> => {
-        const asked = machineLower(arg ?? StepCursor.Next);
-        const index =
-          asked === StepCursor.Next
-            ? stepCursor.current + ValueConstants.one
-            : asked === StepCursor.Previous
-              ? stepCursor.current - ValueConstants.one
-              : asked === StepCursor.Current
-                ? Math.max(stepCursor.current, ValueConstants.zero)
-                : Number.parseInt(asked, 10) - ValueConstants.one;
-
-        const step = instructions[index];
-        if (step === undefined) return { ok: false, error: 'no_such_step' };
-
-        stepCursor.current = index;
-        // The step text is the ONE place a tool result carries content rather
-        // than a count, and it has to: the model is about to read it aloud and
-        // has no other way to know what it says.
-        return { ok: true, title: step, n: { step: index + ValueConstants.one, of: instructions.length } };
-      },
-      [instructions],
-    ),
-  );
-
-  useAssistantAction(
-    AssistantAction.ReadIngredients,
-    useCallback(async (): Promise<AssistantActionResultType> => {
-      if (ingredients.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
-      // The list as text, for the same reason `readStep` carries its step: the
-      // model is about to say it out loud and has no other way to know what it
-      // says. Reading is not ticking — see the action's own note.
-      return {
-        ok: true,
-        title: ingredients.join(INGREDIENT_SEPARATOR),
-        n: { ingredients: ingredients.length },
-      };
-    }, [ingredients]),
-  );
+  // Walking the recipe hands-free, and the same two actions the draft editor
+  // registers — shared rather than owned here, because a draft has steps and
+  // ingredients too and being told to publish it before it could be read was
+  // the bug that moved them.
+  useAssistantReadActions(ingredients, instructions);
 
   useAssistantAction(
     AssistantAction.StartTimer,

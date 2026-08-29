@@ -34,7 +34,11 @@ const RESUMABLE: RecipeDraft = {
   updatedAt: new Date(0),
 } as unknown as RecipeDraft;
 
-function harness(loaded = true, phase: { isDraftVisible: boolean; resumable: RecipeDraft | null } = { isDraftVisible: true, resumable: null }) {
+function harness(
+  loaded = true,
+  phase: { isDraftVisible: boolean; resumable: RecipeDraft | null } = { isDraftVisible: true, resumable: null },
+  isExitPending = false,
+) {
   const registry = new AssistantActionRegistry();
   const taxonomyStore = ((selector: (state: unknown) => unknown) =>
     selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as Stores['taxonomyStore'];
@@ -56,6 +60,8 @@ function harness(loaded = true, phase: { isDraftVisible: boolean; resumable: Rec
     useAssistantDraftActions({
       isDraftVisible: phase.isDraftVisible,
       isPromptVisible: !phase.isDraftVisible,
+      isExitPending,
+      saveProblem: null,
       resumableDraft: phase.resumable,
       recipe: emptyRecipe(),
       ...spies,
@@ -220,6 +226,67 @@ describe('useAssistantDraftActions', () => {
   // "Taslağıma devam et", said to the screen showing the resume card, reached
   // nothing: `openDraft` was registered by My Recipes and by no one else, so
   // the one screen that offers a draft to continue could not continue it.
+  /**
+   * Said in the editor with the draft on screen, "kaydet" answered
+   * `unavailable_here` — nothing here registered the word — and the model,
+   * left to explain that, told the user the save button was "probably further
+   * down the page". There is no such button: the screen publishes.
+   */
+  describe('saving the draft the user is looking at', () => {
+    it('asks to publish when the user says save', async () => {
+      const { registry, spies } = harness();
+
+      const result = await act(async () => registry.run(AssistantAction.Save));
+
+      expect(spies.onRequestPublish).toHaveBeenCalled();
+      expect(result).toMatchObject({ ok: true, awaiting: true });
+    });
+
+    // The exit sheet's own `save` means "keep this draft and leave", and it
+    // registers first — so without the gate the editor's would sit on top of it
+    // and publish a recipe in answer to a question about leaving.
+    it('stands down while the exit sheet is asking', async () => {
+      const { registry, spies } = harness(true, { isDraftVisible: true, resumable: null }, true);
+
+      await act(async () => registry.run(AssistantAction.Save));
+
+      expect(spies.onRequestPublish).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
+   * "Taslağı oku" was answered with "you are on the list screen" and then "I
+   * can read it once it is saved". The read actions were registered by the
+   * recipe detail and by nothing else, so a draft — which has its ingredients
+   * and its steps the moment it is generated — could not be read at all.
+   */
+  describe('reading the draft', () => {
+    it('reads the ingredients out without publishing anything first', async () => {
+      const { registry } = harness();
+
+      await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({
+        ok: true,
+        title: '2 yumurta',
+      });
+    });
+
+    it('reads a step out', async () => {
+      const { registry } = harness();
+
+      await expect(registry.run(AssistantAction.ReadStep)).resolves.toMatchObject({
+        ok: true,
+        title: 'Fırını ısıt',
+      });
+    });
+
+    it('offers the whole draft to readScreen', () => {
+      const { registry } = harness();
+
+      expect(registry.screenReading).toContain('1) 2 yumurta');
+      expect(registry.screenReading).toContain('1) Fırını ısıt');
+    });
+  });
+
   describe('the resume card', () => {
     it('continues the draft on offer', async () => {
       const { registry, spies } = harness(true, { isDraftVisible: false, resumable: RESUMABLE });

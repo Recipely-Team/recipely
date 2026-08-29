@@ -78,6 +78,26 @@ export const AssistantAction = {
    * undo a checklist by hand.
    */
   ReadIngredients: 'readIngredients',
+  /**
+   * Reads out what the screen the user is on is showing.
+   *
+   * The one action every screen answers, and the reason it exists is a report:
+   * asked to read a draft that was open in front of the user, the assistant
+   * had no word for "what is on this screen" — so it answered out of the
+   * recipe vocabulary, found nothing registered, and told the user to go and
+   * open the draft they were already looking at. A screen that shows something
+   * describes itself; this is how the model asks.
+   */
+  ReadScreen: 'readScreen',
+  /**
+   * Sends a problem report to the developers, with what went wrong attached.
+   *
+   * Told about a save that had just failed, the assistant explained where the
+   * feedback form was and left the user to fill it in. It has the failure, the
+   * screen and the user's own words already; asking them to retype all three
+   * into a form is the app declining to do the one thing it was asked.
+   */
+  ReportProblem: 'reportProblem',
   Scroll: 'scroll',
   Stop: 'stop',
 } as const;

@@ -6,9 +6,9 @@ import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/u
 import {
   SCROLL_EVENT_THROTTLE_MS,
   scrollTargetFor,
-} from '@presentation/base/hooks/assistant/args/scroll-tuning';
-import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
+} from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/scrolling/move-scroll-to';
 import { ValueConstants } from '@core/constants';
 
 /** The handle the props carry, named here so the ref that holds it has a type. */

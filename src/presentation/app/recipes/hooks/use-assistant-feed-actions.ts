@@ -1,11 +1,11 @@
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
-import { machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
-import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { sortKeyLabels } from '@presentation/app/recipes/model/sorting/recipe-sort';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -28,6 +28,14 @@ interface AssistantFeedActionsDeps {
   onClearSearch: () => void;
   onClearAllFilters: () => void;
   onChangeSort: (key: SortKey) => void;
+  /**
+   * The pull-to-refresh, by voice.
+   *
+   * My Recipes and notifications both answered `refresh` and the feed — the
+   * screen a user is on most of the time — did not, so "yenile" came back
+   * `unavailable_here` on the home screen of a list app.
+   */
+  onRefresh: () => void;
 }
 
 const CUISINE = 'cuisine';
@@ -65,6 +73,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 
   const {
     filters,
+    onRefresh,
     onToggleCuisineQuick,
     onToggleCategory,
     onDifficultyChange,
@@ -191,6 +200,14 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
       },
       [onChangeSort],
     ),
+  );
+
+  useAssistantAction(
+    AssistantAction.Refresh,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      onRefresh();
+      return { ok: true };
+    }, [onRefresh]),
   );
 };
 

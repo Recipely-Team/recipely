@@ -1,10 +1,10 @@
-import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
-import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
 import type { ThemeId } from '@presentation/base/theme/context/theme-id';
 import { getLocale } from '@presentation/i18n';
 import { LocaleConstants } from '@application/i18n/locale-constants';
-import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -12,9 +12,19 @@ import { SUPPORTED_LOCALE_LIST } from '@application/i18n/supported-locales';
 import { LANGUAGE_NAMES } from '@presentation/base/widgets/settings/language-names';
 import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
+import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 
 /** What settings lends the assistant, named where it is consumed. */
 interface AssistantSettingsActionsDeps {
+  /** The locale in force, so "hangi dildeyim" is answerable without guessing. */
+  language: string;
+  /** Light, dark or follow-the-system. */
+  preference: ThemePreference;
+  /** Which palette is selected, by id; the reading says the name on the swatch. */
+  themeId: ThemeId;
   onSetLanguage: (locale: string) => void;
   onSetThemePreference: (preference: ThemePreference) => void;
   onSetThemeId: (themeId: ThemeId) => void;
@@ -34,6 +44,25 @@ const THEME = 'theme';
 const PALETTE = 'palette';
 const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'];
 
+/** What the reading calls the list of rows below the pickers. */
+const ROWS_LABEL = 'rows';
+/**
+ * The rows this screen shows, in the order they are rendered.
+ *
+ * Named here rather than read off the render tree because the reading is built
+ * outside it. They are the words the assistant offers when someone asks what
+ * is on the settings screen — the two it cannot open are named as well, since
+ * refusing a row it never mentioned is worse than mentioning it.
+ */
+const SETTINGS_ROWS: readonly string[] = [
+  'appearance',
+  'language',
+  'signOut',
+  'deleteAccount',
+  'privacyPolicy',
+  'termsOfUse',
+];
+
 /**
  * Settings, by voice.
  *
@@ -50,7 +79,27 @@ const THEME_PREFERENCES: readonly ThemePreference[] = ['light', 'dark', 'system'
  *   everything behind it, and voice mishears — a one-syllable word most of all.
  */
 export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps): void => {
-  const { onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } = deps;
+  const { language, preference, themeId, onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } =
+    deps;
+
+  // What the screen currently says, which the assistant could not read at all:
+  // asked which language the app was in, or what the theme was set to, it had
+  // only the route to go on and answered from the conversation instead.
+  useAssistantScreenContent(() =>
+    [`language=${language}`, `theme=${preference}`, `palette=${themeId}`].join(SCREEN_PART_SEPARATOR),
+  );
+
+  // The same three by the names they are shown under, plus what else is on the
+  // screen. `readScreen` is the accessibility path: someone who cannot see the
+  // rows still gets told what they are.
+  useAssistantScreenReading(() =>
+    [
+      `language=${LANGUAGE_NAMES[language] ?? language}`,
+      `theme=${preference}`,
+      `palette=${paletteName(themeId)}`,
+      listReading(ROWS_LABEL, SETTINGS_ROWS),
+    ].join(SCREEN_PART_SEPARATOR),
+  );
 
   useAssistantAction(
     AssistantAction.SetPreference,

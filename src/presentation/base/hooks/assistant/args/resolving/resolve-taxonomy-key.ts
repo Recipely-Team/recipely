@@ -1,5 +1,5 @@
-import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
-import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/fold-for-match';
+import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { ValueConstants } from '@core/constants';
 
 /** The shape every taxonomy list shares: a machine key and the name a user reads. */

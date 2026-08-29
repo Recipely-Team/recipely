@@ -105,6 +105,20 @@ export const FailureReporter = {
   },
 
   /**
+   * The last failure a user actually saw, for the assistant's problem report.
+   *
+   * @remarks
+   * `reportProblem` is asked for AFTER the assistant has explained what went
+   * wrong, and by then the failure is several turns back in a context window
+   * that compresses — so the report carried the user's paraphrase and nothing
+   * else. Already redacted, because it is built the same way the crash line
+   * is. Null until something fails.
+   */
+  get lastFailure(): string | null {
+    return last;
+  },
+
+  /**
    * Called wherever a failure becomes something the user can see.
    *
    * Every failure is counted; only the unforeseen ones are also reported as
@@ -112,6 +126,10 @@ export const FailureReporter = {
    * surface one.
    */
   report(failure: Failure, context: string): void {
+    // Remembered whatever the code — the assistant is asked to report the
+    // failures the product HANDLES just as often as the ones it does not, and
+    // "the network was down" is a perfectly good thing for a report to say.
+    last = `${context}: ${failure.code}: ${redact(failure.message)}`;
     try {
       events?.(failure.code, context);
     } catch {
@@ -127,5 +145,6 @@ export const FailureReporter = {
 };
 
 let current: Sink | null = null;
+let last: string | null = null;
 let events: EventSink | null = null;
 let trailSink: TrailSink | null = null;

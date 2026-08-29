@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/fold-for-match';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';

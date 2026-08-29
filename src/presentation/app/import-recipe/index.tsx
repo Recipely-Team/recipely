@@ -36,7 +36,15 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
   const importUrl = isString(params.importUrl) ? params.importUrl : undefined;
   const vm = useImportRecipe(importUrl);
 
-  useAssistantImportActions({ sharedUrl: importUrl, onSubmitLink: vm.onSubmitLink, onOpenDraft: vm.onOpenDraft });
+  useAssistantImportActions({
+    sharedUrl: importUrl,
+    jobStatus: vm.jobStatus,
+    activeStage: vm.activeStage,
+    queuePosition: vm.queuePosition,
+    isDone: vm.isDone,
+    onSubmitLink: vm.onSubmitLink,
+    onOpenDraft: vm.onOpenDraft,
+  });
   const copy = t().importRecipe;
 
   useReportFailure(vm.failure, 'ImportRecipeScreen');

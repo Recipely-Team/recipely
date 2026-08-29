@@ -24,6 +24,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
   // a name or a bio — and press Save — here and nowhere else.
   useAssistantProfileActions({
     displayName: vm.displayName,
+    bio: vm.bio,
     onChangeName: vm.onChangeName,
     onChangeBio: vm.onChangeBio,
     onSave: vm.onSave,

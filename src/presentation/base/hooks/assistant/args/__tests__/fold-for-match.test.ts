@@ -1,4 +1,4 @@
-import { foldForMatch } from '@presentation/base/hooks/assistant/args/fold-for-match';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/fold-for-match';
 
 /**
  * "Asistan mutfak seçemiyor." `'İtalyan'.toLowerCase()` is an `i` followed by a

@@ -971,6 +971,8 @@ export const tr: Translations = {
       stopTimer: "Zamanlayıcıyı durdurdu",
       readStep: "Adımı okudu",
       readIngredients: "Malzemeleri okudu",
+      readScreen: "Ekranı okudu",
+      reportProblem: "Sorunu bildirdi",
       scroll: "Ekranı kaydırdı",
       stop: "Durdu",
     },

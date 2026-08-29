@@ -18,13 +18,13 @@ import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/re
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 import { useAssistantRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-recipe-actions';
-import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/use-assistant-scroll';
-import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/scrolling/move-scroll-to';
 import {
   SCROLL_EVENT_THROTTLE_MS,
   scrollTargetFor,
-} from '@presentation/base/hooks/assistant/args/scroll-tuning';
+} from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
@@ -81,6 +81,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
     facts: recipeFacts(vm.recipe ?? null),
+    // "Who said what", for the reading only — the screen line carries the count.
+    comments: (vm.commentState?.items ?? []).map(
+      (comment) => `${comment.authorDisplayName}: ${comment.body}`,
+    ),
     isOwner: vm.isOwner,
     onPostComment: vm.onPostComment,
     onOpenDelete: vm.onOpenDelete,

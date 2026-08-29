@@ -1,4 +1,4 @@
-import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { type SharedValue, type useAnimatedScrollHandler } from 'react-native-reanimated';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';

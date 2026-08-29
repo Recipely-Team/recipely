@@ -21,7 +21,14 @@ export const ProfileScreen = (): React.JSX.Element => {
   const { isWebShell } = useLayout();
   const vm = useProfile();
 
-  useAssistantProfileScreenActions({ onPickAvatar: vm.onPickAvatar, onEditProfile: vm.onEditProfile });
+  useAssistantProfileScreenActions({
+    displayName: vm.displayName,
+    handle: vm.handle,
+    bio: vm.bio,
+    stats: vm.stats,
+    onPickAvatar: vm.onPickAvatar,
+    onEditProfile: vm.onEditProfile,
+  });
   const scrollable = useAssistantScrollable();
 
   return (

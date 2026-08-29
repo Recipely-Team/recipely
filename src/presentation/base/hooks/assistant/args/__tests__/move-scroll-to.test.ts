@@ -1,4 +1,4 @@
-import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/scrolling/move-scroll-to';
 
 /**
  * "Ana sayfada aşağı kaydır dediğimde kaydırmıyor" — and the assistant said it
