@@ -23,6 +23,15 @@ import { t } from '@presentation/i18n';
 
 export interface AssistantSheetProps {
   height: number;
+  /**
+   * How far to stand off the bottom edge — the keyboard's height while it is
+   * up, zero otherwise.
+   *
+   * Pinned to zero, this sheet sat UNDER the keyboard: the conversation and the
+   * box being typed into were both covered by the thing typing into it. It is
+   * an overlay at the root of the app, so nothing above it can pad it up.
+   */
+  bottom: number;
   transcript: AssistantTranscriptLine[];
   notice: string | null;
   /**
@@ -47,6 +56,7 @@ export interface AssistantSheetProps {
  */
 export const AssistantSheet = ({
   height,
+  bottom,
   transcript,
   notice,
   noticeTone,
@@ -68,7 +78,7 @@ export const AssistantSheet = ({
       style={[
         styles.sheet,
         shadows.lg,
-        { height, backgroundColor: colors.cardBackground, borderTopColor: colors.cardBorder },
+        { height, bottom, backgroundColor: colors.cardBackground, borderTopColor: colors.cardBorder },
       ]}
     >
       <Pressable
@@ -138,7 +148,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: ValueConstants.zero,
     right: ValueConstants.zero,
-    bottom: ValueConstants.zero,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     borderTopWidth: borderWidths.hairline,
