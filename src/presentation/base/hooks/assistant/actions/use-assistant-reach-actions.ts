@@ -5,8 +5,8 @@ import { ValueConstants } from '@core/constants';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
-import { ASSISTANT_ACTION_HOMES } from '@presentation/base/hooks/assistant/args/assistant-action-homes';
-import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
+import { ASSISTANT_ACTION_HOMES } from '@presentation/base/hooks/assistant/args/targets/assistant-action-homes';
+import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 const QUERY_START = '?';

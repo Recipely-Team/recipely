@@ -15,6 +15,7 @@ import { useAssistantIsOffered } from '@presentation/base/hooks/assistant/use-as
 import { useAssistantTimerActions } from '@presentation/base/hooks/assistant/actions/use-assistant-timer-actions';
 import { useAssistantReachActions } from '@presentation/base/hooks/assistant/actions/use-assistant-reach-actions';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/actions/use-assistant-global-actions';
+import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -81,6 +82,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   // carries — are registered from here.
   useAssistantGlobalActions();
   useAssistantReachActions();
+  useAssistantReportActions();
   useAssistantTimerActions();
   useAssistantScreenContext();
 

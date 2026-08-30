@@ -1,5 +1,5 @@
-import { AssistantScrollDirection } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
-import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
+import { AssistantScrollDirection } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
+import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
 
 /**
  * One piece of arithmetic for every screen. The feed and the recipe detail

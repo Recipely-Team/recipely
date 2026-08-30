@@ -1082,6 +1082,35 @@ function openingTag(src, at) {
   }
 }
 
+// --- AB: a screen that describes itself must also read itself (CLAUDE.md §24)
+// A user sitting in the draft editor asked for the draft to be read out. The
+// screen registered a screen LINE — eight rows, then a count, because that line
+// rides inside every tool result — and nothing else, so `readScreen` had only
+// the route to fall back on. The model, given no content, explained the absence
+// instead: "you are on the list screen, open the draft", then "I can read it
+// once it is saved", then "the save button is probably further down".
+//
+// The two describers are a pair. A screen that knows enough about itself to put
+// a line in every tool result knows enough to be read aloud, and the reading is
+// the accessibility path — it is what someone who cannot see the screen gets.
+// Asked per file, because both registrations have always sat in the same one:
+// the page's assistant hook, or the route component.
+{
+  const CONTENT = /useAssistantScreenContent\(/;
+  const READING = /useAssistantScreenReading\(/;
+  // The hook definitions themselves, which name the call without making it.
+  const DEFINITIONS = /use-assistant-screen-(content|reading)\.ts$/;
+
+  for (const file of files) {
+    if (isTest(file) || DEFINITIONS.test(file)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!CONTENT.test(src) || READING.test(src)) continue;
+    errors.push(
+      `${file}: registers a screen line but no reading — add useAssistantScreenReading so \`readScreen\` can say what is on this screen instead of falling back to the route (CLAUDE.md §24)`,
+    );
+  }
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);

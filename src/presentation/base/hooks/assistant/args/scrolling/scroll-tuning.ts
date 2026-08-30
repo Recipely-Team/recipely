@@ -2,7 +2,7 @@ import { scrollThrottleMs } from '@presentation/base/constants';
 import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
-} from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+} from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 import { ValueConstants } from '@core/constants';
 
 /**

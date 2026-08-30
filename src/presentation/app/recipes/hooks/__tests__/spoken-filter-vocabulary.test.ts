@@ -1,4 +1,4 @@
-import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 

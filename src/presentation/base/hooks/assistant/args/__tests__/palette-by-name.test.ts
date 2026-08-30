@@ -1,4 +1,4 @@
-import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 
 /**
  * "Bak, tema paletlerinden İnci Beyazı istiyorum." — answered with "o da listede

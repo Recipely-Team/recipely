@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
-import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/assistant-external-targets';
-import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
+import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
+import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
@@ -41,8 +41,22 @@ const looksLikeId = (arg: string): boolean =>
   arg.length >= ID_MIN_LENGTH && !arg.includes(CharConstants.space);
 
 export const useAssistantGlobalActions = (): void => {
-  const { assistantSessionStore, recipeListStore } = useStores();
+  const { assistantActionRegistry: registry, assistantSessionStore, recipeListStore } = useStores();
   const stopVoice = assistantSessionStore((s) => s.stopVoice);
+
+  useAssistantAction(
+    AssistantAction.ReadScreen,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      // Registered HERE rather than per screen, because every screen already
+      // answers it: the reading comes from the describer stack, so this one
+      // handler reads whichever screen is innermost. A screen with nothing
+      // registered falls back to its screen line, which at least names the
+      // route — a truthful "there is nothing to read here" instead of the
+      // `unavailable_here` that had the assistant telling a user to go and open
+      // the draft they were looking at.
+      return { ok: true, title: registry.screenReading };
+    }, [registry]),
+  );
 
   useAssistantAction(
     AssistantAction.Navigate,

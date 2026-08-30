@@ -1,5 +1,5 @@
-import { machineLower } from '@presentation/base/hooks/assistant/args/machine-case';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
+import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';

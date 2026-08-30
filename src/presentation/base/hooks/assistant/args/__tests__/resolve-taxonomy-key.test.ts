@@ -1,4 +1,4 @@
-import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolve-taxonomy-key';
+import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 
 /** The live cuisine strip, as it renders on the feed. */
 const CUISINES = [
