@@ -8,6 +8,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 
@@ -62,5 +63,24 @@ export interface RecipeRepositoryInterface {
     instruction: string,
     history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>>;
+  /**
+   * Adds one photo to a recipe that is already published.
+   *
+   * The owner's only way back into their own gallery: editing a published
+   * recipe was removed, and a photo taken after the fact — the dish looking
+   * better than the picture that went out with it — had nowhere to go.
+   * The backend judges the photo before it stores it, so this can fail with a
+   * refusal about the picture rather than about the request.
+   */
+  addRecipePhoto(
+    recipeId: string,
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<Result<MediaItem, Failure>>;
+
+  /** Removes one photo from a recipe the caller owns. */
+  removeRecipePhoto(recipeId: string, mediaId: string): Promise<Result<void, Failure>>;
+
   deleteRecipe(id: string): Promise<Result<void, Failure>>;
 }

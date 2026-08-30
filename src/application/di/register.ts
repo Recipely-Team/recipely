@@ -41,6 +41,8 @@ import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-c
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
+import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
+import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
@@ -127,7 +129,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const likedRecipesStore = configureLikedRecipesStore({ loadLikedRecipesUseCase });
   const recipeListStore = configureRecipeListStore({ listRecipes });
   const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
-  const recipeDetailStore = configureRecipeDetailStore({ getRecipe });
+  const addRecipePhotoUseCase = new AddRecipePhotoUseCase(recipeRepo);
+  const removeRecipePhotoUseCase = new RemoveRecipePhotoUseCase(recipeRepo);
+  const recipeDetailStore = configureRecipeDetailStore({
+    getRecipe,
+    addRecipePhoto: addRecipePhotoUseCase,
+    removeRecipePhoto: removeRecipePhotoUseCase,
+  });
   const favoritesStore = configureFavoritesStore({
     addFavoriteUseCase,
     removeFavoriteUseCase,
