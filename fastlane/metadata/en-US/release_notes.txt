@@ -1,17 +1,13 @@
-Cook by talking, with your hands in the dough.
+The assistant can read the screen you are on.
 
-The voice assistant has been reworked from end to end in this release.
+• Ask it to read the page. A draft you are still writing, a recipe, your own list, your notifications, your settings — it reads out what is there. It no longer tells you to save or open something you are already looking at.
+• It reads a draft's ingredients and steps, not only a published recipe's. A recipe it has just written for you can be read back before you publish it.
+• "Save" in the recipe editor now means what the button means: it asks you to confirm, then publishes.
+• When something goes wrong, it sends the report itself. Say "tell the developers" and it goes — with the error and the screen you were on attached. You no longer have to find the feedback form.
+• It reads the comments under a recipe along with the rest of the page.
+• "Refresh" works on the home feed, as it already did on your recipes and your notifications.
+• When it cannot do something, it says so, instead of guessing where a button might be.
 
-• You can interrupt it. Speak while it is talking and it stops to listen — no waiting for the answer to finish.
-• It reads the recipe to you. Ask for the ingredients, the next step, the nutrition figures or how long something takes. Asking it to read no longer ticks the step off; reading and checking off are separate again.
-• It drives search, filters and sorting by voice: show me Turkish food, only the easy ones, sort by newest. Cuisine, difficulty and sort choices are actually applied now.
-• It saves and likes a recipe — and unliking really unlikes.
-• It scrolls as much as you asked: a little further, back to the top, all the way down. Where it cannot scroll, it no longer claims it did.
-• It does not report work it has not done. When something fails, it tells you.
-• It starts on the first tap and warns you before your speaking time runs out.
-• It will not open links that leave the app, such as the privacy policy and terms — it says plainly that it cannot.
-• It knows every screen it can reach, including the featured recipes on the home page.
-
-The assistant's language and voice are pinned too: it speaks the language you chose, without putting on an accent.
+Also fixed: a crash on a developer screen that could be reached from inside the app.
 
 Thanks for cooking with Recipely!

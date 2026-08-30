@@ -1,17 +1,13 @@
-Elleriniz hamurdayken konuşarak pişirin.
+Asistan artık baktığınız ekranı okuyabiliyor.
 
-Sesli asistan bu sürümde baştan aşağı elden geçti.
+• "Bu sayfayı oku" diyebilirsiniz. Henüz yazmakta olduğunuz taslağı, bir tarifi, kendi listenizi, bildirimlerinizi, ayarlarınızı okuyor. Zaten açık olan bir şey için "önce kaydet" ya da "önce aç" demiyor.
+• Yalnızca yayımlanmış tarifin değil, taslağın malzemelerini ve adımlarını da okuyor. Sizin için yeni yazdığı bir tarifi, yayımlamadan önce size geri okuyabiliyor.
+• Tarif düzenleyicide "kaydet" artık düğmenin yaptığı şeyi yapıyor: onayınızı isteyip yayımlıyor.
+• Bir şey ters gittiğinde raporu kendisi gönderiyor. "Geliştiriciye bildir" demeniz yeterli; hata ve o sırada bulunduğunuz ekran rapora ekleniyor. Geri bildirim formunu aramanıza gerek kalmıyor.
+• Tarifin altındaki yorumları da sayfanın geri kalanıyla birlikte okuyor.
+• Ana akışta "yenile" çalışıyor; tariflerinizde ve bildirimlerinizde zaten çalışıyordu.
+• Yapamadığı bir şey olduğunda, düğmenin nerede olabileceğini tahmin etmek yerine bunu açıkça söylüyor.
 
-• Sözünü kesebiliyorsunuz. Asistan konuşurken araya girdiğinizde susup sizi dinliyor; cevabın bitmesini beklemeniz gerekmiyor.
-• Tarifi sesli okuyor. "Malzemeleri oku", "sonraki adım", "besin değerleri ne kadar", "kaç dakika sürüyor" diyebilirsiniz. Okumak istediğinizde okuyor, işaretlemek istediğinizde işaretliyor — ikisi artık birbirine karışmıyor.
-• Aramayı, filtreleri ve sıralamayı sesle yönetiyor: "Türk mutfağını göster", "kolay olanları getir", "en yenileri sırala" gibi. Mutfak, zorluk ve sıralama seçimleri artık gerçekten uygulanıyor.
-• Tarifi kaydediyor ve beğeniyor; beğeniden vazgeçtiğinizde de gerçekten vazgeçiyor.
-• Sayfayı istediğiniz kadar kaydırıyor: "biraz aşağı", "en üste", "en alta". Kaydıramadığı bir yerde artık kaydırdım demiyor.
-• Yapmadığı işi yaptım demiyor. Bir işlem başarısız olduğunda bunu size söylüyor.
-• İlk dokunuşta başlıyor ve konuşma süreniz dolmak üzereyken önceden haber veriyor.
-• Uygulama dışına çıkan gizlilik politikası ve kullanım koşulları gibi bağlantıları kendisi açmıyor, açamayacağını açıkça söylüyor.
-• Ana sayfadaki öne çıkan tarifler de dahil, ulaşabildiği ekranların tamamını tanıyor.
-
-Ayrıca asistanın kullandığı dil ve ses sabitlendi: gereksiz şive yapmadan, sizin seçtiğiniz dilde konuşuyor.
+Ayrıca: uygulama içinden ulaşılabilen bir geliştirici ekranındaki çökme giderildi.
 
 Recipely ile pişirdiğiniz için teşekkürler!
