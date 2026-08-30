@@ -1,19 +1,22 @@
-import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import {
   EditProfileSaveOutcome,
   type EditProfileSaveOutcomeType,
 } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
-import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { CharConstants } from '@core/constants';
 
 /** The profile-editing capability this hook needs, named where it is consumed. */
 interface AssistantProfileActionsDeps {
   displayName: string;
+  /** The about text, read back only when the user asks for the page. */
+  bio: string;
   onChangeName: (value: string) => void;
   onChangeBio: (value: string) => void;
   /** The header button's own save; answers what it did rather than nothing. */
@@ -50,7 +53,7 @@ const UNNAMED = 'unnamed';
  *   just wrote.
  */
 export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): void => {
-  const { displayName, onChangeName, onChangeBio, onSave, isDirty } = deps;
+  const { displayName, bio, onChangeName, onChangeBio, onSave, isDirty } = deps;
 
   // `unsaved` is the fact the model acts on: it is what tells it there is
   // something to offer to save, on a screen where writing a field and saving
@@ -58,6 +61,16 @@ export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): v
   useAssistantScreenContent(() =>
     [
       `profile=${displayName === CharConstants.empty ? UNNAMED : displayName}`,
+      `unsaved=${isDirty ? Answer.yes : Answer.no}`,
+    ].join(SCREEN_PART_SEPARATOR),
+  );
+
+  // The form as it stands, for `readScreen`. The bio is off the screen line on
+  // purpose — it is a paragraph, and the line is charged on every turn.
+  useAssistantScreenReading(() =>
+    [
+      `name=${displayName === CharConstants.empty ? UNNAMED : displayName}`,
+      `bio=${bio}`,
       `unsaved=${isDirty ? Answer.yes : Answer.no}`,
     ].join(SCREEN_PART_SEPARATOR),
   );

@@ -3,7 +3,7 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import type { TimerEntry } from '@application/timers/timer-entry';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { pauseTimer, resumeTimer, stopTimer } from '@presentation/base/timers/timer-controls';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { timerStore } from '@application/timers/timer-store';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { ValueConstants } from '@core/constants';

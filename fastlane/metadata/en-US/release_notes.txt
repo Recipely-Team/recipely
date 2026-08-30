@@ -1,14 +1,13 @@
-Cook with a timer running.
+The assistant can read the screen you are on.
 
-• Step timers. Start one from any step of a recipe and get an alarm when the time is up. One timer per recipe, and the running-timer bar can be tucked away when it covers something you need.
-• Search now looks through the whole recipe catalogue rather than what was already on screen — and it finds Turkish names typed without their accents, so "sut" finds "Süt" and "pogaca" finds "Poğaça". The order you type the words in no longer matters either.
-• Your likes stay liked after you close and reopen the app.
-• Comments send on the first tap, and nutrition says when a recipe has no figures instead of quietly showing nothing.
-• Drafts behave. Opening one and leaving without changing anything no longer re-saves it, and "leave without saving" actually removes it.
-• Ingredient rows no longer split a word between the amount badge and the name.
-• Signing out asks first, and continuing without an account no longer leaves the sign-in screen a back gesture away.
-• A new app icon, and Turkish wording corrected throughout.
+• Ask it to read the page. A draft you are still writing, a recipe, your own list, your notifications, your settings — it reads out what is there. It no longer tells you to save or open something you are already looking at.
+• It reads a draft's ingredients and steps, not only a published recipe's. A recipe it has just written for you can be read back before you publish it.
+• "Save" in the recipe editor now means what the button means: it asks you to confirm, then publishes.
+• When something goes wrong, it sends the report itself. Say "tell the developers" and it goes — with the error and the screen you were on attached. You no longer have to find the feedback form.
+• It reads the comments under a recipe along with the rest of the page.
+• "Refresh" works on the home feed, as it already did on your recipes and your notifications.
+• When it cannot do something, it says so, instead of guessing where a button might be.
 
-Editing a published recipe has been removed for now while we rework it. You can still create, delete and draft recipes.
+Also fixed: a crash on a developer screen that could be reached from inside the app.
 
 Thanks for cooking with Recipely!

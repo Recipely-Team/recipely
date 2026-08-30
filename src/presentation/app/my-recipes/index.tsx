@@ -10,8 +10,10 @@ import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/act
 import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -171,6 +173,14 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     tab === TabType.Drafts
       ? recipeRoster(TabType.Drafts, drafts.map(draftName))
       : recipeRoster(tab, items.map((recipe) => recipe.name)),
+  );
+  // The whole tab, for `readScreen`. The line above is bounded at eight rows
+  // because it rides on every turn; a reading is asked for once and should not
+  // stop halfway down a list the user cannot see.
+  useAssistantScreenReading(() =>
+    tab === TabType.Drafts
+      ? listReading(TabType.Drafts, drafts.map(draftName))
+      : listReading(tab, items.map((recipe) => recipe.name)),
   );
   useAssistantConfirmation(
     draftPendingDelete !== null,

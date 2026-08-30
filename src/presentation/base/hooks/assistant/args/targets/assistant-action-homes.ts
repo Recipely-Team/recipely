@@ -1,5 +1,5 @@
 import { AssistantAction, type AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
-import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/assistant-navigation-targets';
+import { ASSISTANT_NAVIGATION_TARGETS } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
 
 /**
  * The screen that answers each action, for the actions it is honest to carry.

@@ -24,7 +24,7 @@ function harness(outcome: EditProfileSaveOutcomeType, isDirty = true) {
   };
 
   const Probe = (): null => {
-    useAssistantProfileActions({ displayName: 'Ali', isDirty, ...spies });
+    useAssistantProfileActions({ displayName: 'Ali', bio: '', isDirty, ...spies });
     return null;
   };
 

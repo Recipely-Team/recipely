@@ -53,6 +53,9 @@ export const SettingsScreen = (): React.JSX.Element => {
   };
 
   useAssistantSettingsActions({
+    language,
+    preference,
+    themeId,
     onSetLanguage: setLocale,
     onSetThemePreference: setPreference,
     onSetThemeId: setThemeId,

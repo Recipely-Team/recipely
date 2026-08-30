@@ -5,9 +5,11 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
-import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { ValueConstants } from '@core/constants';
 
 /** What the notifications screen lends the assistant. */
@@ -46,6 +48,15 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
 
   useAssistantScreenContent(() =>
     [recipeRoster(ROSTER_LABEL, items.map(rowName)), `unread=${unreadCount}`].join(
+      SCREEN_PART_SEPARATOR,
+    ),
+  );
+
+  // Every row, for `readScreen` — the one screen where "read them to me" is
+  // the whole point of the screen and the eight-row line was never going to be
+  // the answer.
+  useAssistantScreenReading(() =>
+    [listReading(ROSTER_LABEL, items.map(rowName)), `unread=${unreadCount}`].join(
       SCREEN_PART_SEPARATOR,
     ),
   );

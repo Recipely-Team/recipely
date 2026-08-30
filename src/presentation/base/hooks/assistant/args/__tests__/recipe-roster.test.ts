@@ -1,4 +1,4 @@
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 
 /**
  * The screen line used to be a route and nothing else. "Open the second one"

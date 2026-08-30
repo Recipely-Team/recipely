@@ -7,6 +7,9 @@ import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action
 /** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
 const SCREEN_LINE_SEPARATOR = '; ';
 
+/** What a remembered failure says when the handler did not name a reason. */
+const UNNAMED_ERROR = 'failed';
+
 /**
  * Routes a tool call from the model to the code that performs it.
  *
@@ -42,6 +45,15 @@ const SCREEN_LINE_SEPARATOR = '; ';
  *   showing something register a describer of their own; the innermost one
  *   wins, exactly as handlers do, so a recipe pushed over the feed describes
  *   itself and hands the feed back on the way out.
+ * - **Reading a screen is a second, longer describer.** The line is charged on
+ *   every turn, so it counts rather than quotes; a reading is charged only when
+ *   the user asks for one out loud, so it may be the whole page. Keeping them
+ *   apart is what lets "read me this draft" answer with the draft without
+ *   putting the draft into every tool result for the rest of the session.
+ * - **It remembers the last failure.** By the time a user says "report this",
+ *   the result that said what broke is turns behind them in a window that
+ *   compresses — so the report would have carried the user's paraphrase and
+ *   nothing else.
  */
 export class AssistantActionRegistry {
   private readonly handlers = new Map<AssistantActionType, AssistantActionHandlerType[]>();
@@ -67,6 +79,28 @@ export class AssistantActionRegistry {
    * detail screen leaving and the feed would go on describing nothing.
    */
   private readonly contentDescribers: (() => string)[] = [];
+  /**
+   * What each mounted screen would say if asked to read itself out, innermost
+   * last.
+   *
+   * A SECOND stack beside {@link contentDescribers}, not the same one, because
+   * the two are paid for differently: the screen line rides inside every tool
+   * result and is charged on every turn, so it stays a handful of counts, while
+   * a reading is the whole of what is on screen and is charged only when the
+   * user asks for it out loud. Folding them together would either put a recipe
+   * into every result or leave "read me this page" with nothing to read.
+   */
+  private readonly readingDescribers: (() => string)[] = [];
+  /**
+   * The last action that failed, kept for the problem report.
+   *
+   * The assistant is asked to report a failure AFTER it has explained it, by
+   * which time the result that carried the reason is several turns back in a
+   * context window that compresses. Remembering one line here is what lets
+   * `reportProblem` send what actually went wrong instead of the user's
+   * paraphrase of it.
+   */
+  private lastFailedAction: string | null = null;
 
   register(action: AssistantActionType, handler: AssistantActionHandlerType): () => void {
     const stack = this.handlers.get(action) ?? [];
@@ -156,6 +190,35 @@ export class AssistantActionRegistry {
     };
   }
 
+  /**
+   * Registers the long-form reading of the calling screen.
+   *
+   * Optional: a screen with nothing to read — a form, a wait screen — simply
+   * does not register, and `readScreen` falls back to the screen line, which
+   * at least names the route.
+   */
+  registerScreenReading(read: () => string): () => void {
+    this.readingDescribers.push(read);
+    return () => {
+      const at = this.readingDescribers.lastIndexOf(read);
+      if (at !== ValueConstants.minusOne) {
+        this.readingDescribers.splice(at, ValueConstants.one);
+      }
+    };
+  }
+
+  /** Everything the innermost screen is showing, for `readScreen` to say aloud. */
+  get screenReading(): string {
+    const last = this.readingDescribers[this.readingDescribers.length - ValueConstants.one];
+    const reading = last === undefined ? CharConstants.empty : this.describe(last);
+    return reading === CharConstants.empty ? this.screenContext : reading;
+  }
+
+  /** The last failure this session produced, or null if nothing has failed. */
+  get lastFailure(): string | null {
+    return this.lastFailedAction;
+  }
+
   /** The one-line screen state, for a caller that needs it outside a result. */
   get screenContext(): string {
     // Screen describers are written by screens and close over their own state,
@@ -218,6 +281,18 @@ export class AssistantActionRegistry {
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {
+    // Every answer passes through here, which is the only place that sees all
+    // of them — handlers return from a dozen files and the session never looks
+    // at what came back.
+    if (!result.ok) {
+      this.lastFailedAction = [
+        `error=${result.error ?? UNNAMED_ERROR}`,
+        this.screenContext,
+      ]
+        .filter((part) => part !== CharConstants.empty)
+        .join(SCREEN_LINE_SEPARATOR);
+    }
+
     // A handler that said something more specific keeps it. My Recipes reports
     // which tab it refreshed; overwriting that with the pathname threw away
     // the one thing that handler bothered to say.

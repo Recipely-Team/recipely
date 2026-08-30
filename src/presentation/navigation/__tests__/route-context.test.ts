@@ -65,6 +65,18 @@ describe('the custom expo-router route context', () => {
     }
   });
 
+  // The symptom: the app died on an emulator that walked its routes —
+  // "TypeError: Cannot read property 'origin' of undefined" at SystemInfo,
+  // fatal, reported by Crashlytics against 1.1.0 (863) and reachable since
+  // 1.0.45. SystemInfo belongs to expo-router's own development sitemap, which
+  // the router appends whenever this context supplies no `_sitemap` of its
+  // own; that screen reads `window.location.origin`, and native has no
+  // `window.location`. Hiding the file here does not hide a route, it hands
+  // the route back to the screen that crashes.
+  it('admits _sitemap, so our redirect replaces the crashing dev screen', () => {
+    expect(admittedFiles().test('./_sitemap.tsx')).toBe(true);
+  });
+
   // `+html` is the web export's document shell, and upstream excludes it from
   // every platform context. Unlike `+native-intent`, nothing reads it back.
   it('still hides +html', () => {

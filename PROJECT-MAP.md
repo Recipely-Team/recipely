@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 986 source files.
+[architecture.md](architecture.md). 997 source files.
 
 ## Layers
 
@@ -26,6 +26,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/domain/` — entities, value objects, port interfaces
 
 - `ads/` _(1)_
+- `analytics/` _(1)_
 - `assistant/` — actions, audio, session _(19)_
 - `audio/` _(1)_
 - `auth/` _(7)_
@@ -70,14 +71,14 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(23)_
 - `comments/` — dtos _(4)_
-- `constants/` — api _(18)_
+- `constants/` — analytics, api _(19)_
 - `crypto/` _(3)_
 - `device/` _(3)_
 - `di/` _(1)_
 - `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
-- `firebase/` _(6)_
+- `firebase/` _(7)_
 - `i18n/` _(1)_
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
@@ -107,7 +108,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(52)_
+- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(58)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
@@ -148,4 +149,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 002f321aa4c59033 -->
+<!-- fingerprint: d58daf1720b1fbb6 -->

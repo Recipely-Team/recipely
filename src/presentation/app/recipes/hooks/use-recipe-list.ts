@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { ListConstants, scrollThrottleMs, RoutePaths } from '@presentation/base/constants';
-import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/assistant-scroll-direction';
+import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 import { RecipeSheet } from '@presentation/app/recipes/model/recipe-sheet';
-import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scroll-tuning';
-import { moveScrollTo } from '@presentation/base/hooks/assistant/args/move-scroll-to';
+import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
+import { moveScrollTo } from '@presentation/base/hooks/assistant/args/scrolling/move-scroll-to';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { StoreStatus } from '@application/store/store-status';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';

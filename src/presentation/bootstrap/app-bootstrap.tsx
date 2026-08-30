@@ -10,8 +10,8 @@ import { initFirebase } from '@infrastructure/firebase/firebase-init';
 import { reportDeviceProfile } from '@infrastructure/device/report-device-profile';
 import { logCrashBreadcrumb, recordCrash } from '@infrastructure/firebase/crashlytics-service';
 import { AppErrorBoundary } from '@presentation/base/widgets/feedback/app-error-boundary';
-import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
-import { AnalyticsEvent } from '@infrastructure/constants/analytics';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
+import { AnalyticsEvent } from '@infrastructure/constants/analytics/analytics-event';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
@@ -70,7 +70,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     // crash-worthy: a rise in handled network failures is a real signal, and it
     // has nowhere to live in Crashlytics.
     FailureReporter.setEventSink((code, context) => {
-      void logAnalyticsEvent(AnalyticsEvent.failureShown, { code, context });
+      void analyticsService.logEvent(AnalyticsEvent.failureShown, { code, context });
     });
     void hydrateLocale();
     void initFirebase();

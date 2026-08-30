@@ -1,5 +1,5 @@
 import type { FirebaseApp } from 'firebase/app';
-import { setAnalyticsEnabled } from '@infrastructure/firebase/analytics-service';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import { setCrashReportingEnabled } from '@infrastructure/firebase/crashlytics-service';
 
 /**
@@ -20,7 +20,7 @@ export const getFirebaseApp = (): FirebaseApp | null => null;
 export const initFirebase = async (): Promise<void> => {
   const collect = !__DEV__;
   await Promise.allSettled([
-    setAnalyticsEnabled(collect),
+    analyticsService.setEnabled(collect),
     setCrashReportingEnabled(collect),
   ]);
 };

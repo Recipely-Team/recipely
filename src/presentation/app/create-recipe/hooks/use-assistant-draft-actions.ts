@@ -1,6 +1,6 @@
-import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/machine-case';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
-import { parseKeyValue } from '@presentation/base/hooks/assistant/args/parse-key-value';
+import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
+import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useCallback, useMemo } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -10,8 +10,11 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
-import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
+import { useAssistantReadActions } from '@presentation/base/hooks/assistant/actions/use-assistant-read-actions';
+import { recipeReading } from '@presentation/base/hooks/assistant/args/describing/recipe-reading';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /** The draft-editing capability this hook needs, named where it is consumed. */
@@ -31,6 +34,23 @@ interface AssistantDraftActionsDeps {
    * belongs to the screen before it.
    */
   isPromptVisible: boolean;
+  /**
+   * Whether the "keep this draft?" sheet is the question in front of the user.
+   *
+   * The exit sheet registers `save` too — meaning "keep it and leave" — and it
+   * registers FIRST, so without this gate the editor's own `save` would sit on
+   * top of it and publish a recipe in answer to a question about leaving.
+   */
+  isExitPending: boolean;
+  /**
+   * The rejection the user is looking at, when a publish came back refused.
+   *
+   * On the screen line because the assistant is asked about it: a publish that
+   * failed answered `awaiting` several turns ago and nothing since has told the
+   * model what happened, so "neden kaydedilmedi" had no answer and
+   * "geliştiriciye bildir" had nothing to send.
+   */
+  saveProblem: string | null;
   /** The draft the prompt phase offers to continue, or null when there is none. */
   resumableDraft: RecipeDraft | null;
   onResumeDraft: () => void;
@@ -48,6 +68,8 @@ interface AssistantDraftActionsDeps {
 
 /** What the screen line says while the editor has not been reached yet. */
 const NO_DRAFT = 'draft=none';
+/** How the screen line names a publish the backend refused. */
+const PROBLEM = 'problem';
 /** A generated draft can reach the editor before it has been given a name. */
 const NO_NAME = 'untitled';
 
@@ -91,6 +113,11 @@ const CATEGORY_FIELD = 'category';
  *   and the user watches it land. Everything else ("make it spicier", "halve
  *   it") has no field to write to, so it goes to the same AI refine the chat
  *   box drives, and comes back as a proposal the user accepts or rejects.
+ * - **`save` and `publishDraft` are the same act here.** The button says
+ *   Publish and a person says "kaydet"; with nothing registered under `save`,
+ *   the word fell through to a recipe handler that was not mounted and the
+ *   model, told only `unavailable_here`, started guessing out loud that the
+ *   button might be further down the screen.
  * - **`publishDraft` asks; it does not publish.** A misheard "yayınla" that
  *   published immediately is not a mistake anyone can take back, and voice
  *   mishears. It opens the screen's confirm sheet and answers `awaiting`, so
@@ -105,6 +132,8 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   const {
     isDraftVisible,
     isPromptVisible,
+    isExitPending,
+    saveProblem,
     resumableDraft,
     onResumeDraft,
     recipe,
@@ -129,11 +158,25 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     !isDraftVisible
       ? resumeLine(resumableDraft)
       : [
-          `draft=${recipe.name === CharConstants.empty ? NO_NAME : recipe.name}`,
+          `draft=${draftName(recipe)}`,
           recipeRoster('ingredients', recipe.ingredients),
           `steps=${recipe.instructions.length}`,
+          ...(saveProblem === null ? [] : [`${PROBLEM}=${saveProblem}`]),
         ].join(SCREEN_PART_SEPARATOR),
   );
+
+  // The draft, in full, for `readScreen`. Registered on the editor and nowhere
+  // else: the prompt phase has nothing to read.
+  useAssistantScreenReading(() =>
+    !isDraftVisible
+      ? resumeLine(resumableDraft)
+      : recipeReading(draftName(recipe), recipe.ingredients, recipe.instructions, draftFacts(recipe)),
+  );
+
+  // The same two the recipe screen registers. A generated draft has its
+  // ingredients and its steps the moment it lands, and the user asking to hear
+  // them back was told to publish it first and open it again.
+  useAssistantReadActions(recipe.ingredients, recipe.instructions, isDraftVisible);
 
   // The resume card's own press, by voice. Registered only where the card is:
   // in the editor `openDraft` would mean some OTHER draft, and there is no
@@ -313,6 +356,21 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     isDraftVisible,
   );
 
+  // "Kaydet" is what a person says about the thing they have just written, and
+  // this screen's button says Publish. With nothing registered under `save`
+  // here, the word fell through to a recipe handler that was not mounted, came
+  // back `unavailable_here`, and left the model guessing out loud that the
+  // button might be somewhere further down the page. It is the publish
+  // confirmation, same as `publishDraft` — never a silent publish.
+  useAssistantAction(
+    AssistantAction.Save,
+    useCallback(async (): Promise<AssistantActionResultType> => {
+      onRequestPublish();
+      return { ok: true, awaiting: true, title: recipe.name, n: counts };
+    }, [onRequestPublish, recipe.name, counts]),
+    isDraftVisible && !isExitPending,
+  );
+
   useAssistantAction(
     AssistantAction.PublishDraft,
     useCallback(async (): Promise<AssistantActionResultType> => {
@@ -328,6 +386,21 @@ function resumeLine(draft: RecipeDraft | null): string {
   return draft === null
     ? NO_DRAFT
     : [NO_DRAFT, `resumable=${draftTitle(draft)}`].join(SCREEN_PART_SEPARATOR);
+}
+
+/** The draft's name, or a stand-in: a generated draft reaches the editor unnamed. */
+function draftName(recipe: EditableRecipe): string {
+  return recipe.name === CharConstants.empty ? NO_NAME : recipe.name;
+}
+
+/** The numbers printed beside the draft, for the reading only. */
+function draftFacts(recipe: EditableRecipe): string[] {
+  return [
+    `servings=${recipe.servings}`,
+    `prep=${recipe.prepTimeMinutes}`,
+    `cook=${recipe.cookTimeMinutes}`,
+    `difficulty=${recipe.difficulty}`,
+  ];
 }
 
 function draftTitle(draft: RecipeDraft): string {

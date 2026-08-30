@@ -1,6 +1,6 @@
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/recipe-roster';
-import { rowAt } from '@presentation/base/hooks/assistant/args/row-at';
-import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/screen-line';
+import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
+import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
+import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 
 /**
  * "Bu hafta öne çıkanlardan üçüncüsüne gir" opened a recipe from the grid

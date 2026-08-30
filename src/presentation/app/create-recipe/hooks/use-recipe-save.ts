@@ -4,6 +4,7 @@ import { type Href, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ValidationFailure, type Failure } from '@core/failure';
 import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
@@ -13,6 +14,9 @@ import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+
+/** Where a refused publish is filed, on the crash list and in analytics. */
+const PUBLISH_CONTEXT = 'CreateRecipe.publish';
 
 interface UseRecipeSaveArgs {
   recipe: EditableRecipe;
@@ -46,6 +50,11 @@ export const useRecipeSave = ({
   // unlocalised English). Non-validation failures get the retry dialog instead.
   const surfaceSaveFailure = useCallback(
     (failure: Failure): void => {
+      // Reported as well as shown. A refused publish was the one user-visible
+      // failure in the app that reached neither analytics nor the crash list,
+      // so "kaydedemedim" was all anyone — the user, the assistant asked to
+      // report it, or us — ever had to go on.
+      FailureReporter.report(failure, PUBLISH_CONTEXT);
       if (!(failure instanceof ValidationFailure)) {
         setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
         setSaveError(failureToastMessage(failure));

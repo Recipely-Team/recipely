@@ -1,7 +1,7 @@
 import { readDeviceProfile } from '@infrastructure/device/device-profile';
 import { setCrashAttributes } from '@infrastructure/firebase/crashlytics-service';
-import { logAnalyticsEvent } from '@infrastructure/firebase/analytics-service';
-import { AnalyticsEvent } from '@infrastructure/constants/analytics';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
+import { AnalyticsEvent } from '@infrastructure/constants/analytics/analytics-event';
 
 /**
  * Records what this launch is running on, once, while the splash is still up.
@@ -27,7 +27,7 @@ export const reportDeviceProfile = (): void => {
     const profile = readDeviceProfile();
 
     setCrashAttributes({ ...profile });
-    void logAnalyticsEvent(AnalyticsEvent.deviceProfile, { ...profile });
+    void analyticsService.logEvent(AnalyticsEvent.deviceProfile, { ...profile });
 
     // Local visibility only — the production channels are the two above, and an
     // unguarded console line raises a LogBox over the app in a dev build (rule 22).

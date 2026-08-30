@@ -1,14 +1,13 @@
-Zamanlayıcı çalışırken pişirin.
+Asistan artık baktığınız ekranı okuyabiliyor.
 
-• Adım zamanlayıcıları. Tarifin istediğiniz adımından başlatın, süre dolunca alarm çalsın. Her tarif için tek zamanlayıcı; çalışan zamanlayıcı çubuğu da önünüze geldiğinde kenara alınabiliyor.
-• Arama artık ekrandakilerle yetinmiyor, tüm tarif kataloğunu tarıyor — üstelik Türkçe adları şapkasız yazdığınızda da buluyor: "sut" ile "Süt", "pogaca" ile "Poğaça" geliyor. Kelimeleri hangi sırayla yazdığınız da artık fark etmiyor.
-• Beğendiğiniz tarifler, uygulamayı kapatıp açtığınızda beğenili kalıyor.
-• Yorumlar ilk dokunuşta gönderiliyor; besin değerleri de veri yoksa bunu söylüyor, sessizce boş kalmıyor.
-• Taslaklar yerli yerinde. Bir taslağı açıp hiçbir şey değiştirmeden çıkınca yeniden kaydetmiyor, "kaydetmeden çık" dediğinizde gerçekten siliniyor.
-• Malzeme satırları artık bir kelimeyi miktar rozetiyle ad arasında bölmüyor.
-• Çıkış yapmadan önce soruyor; hesapsız devam ettiğinizde giriş ekranı bir geri hareketi uzağınızda kalmıyor.
-• Yeni uygulama simgesi ve baştan sona düzeltilmiş Türkçe metinler.
+• "Bu sayfayı oku" diyebilirsiniz. Henüz yazmakta olduğunuz taslağı, bir tarifi, kendi listenizi, bildirimlerinizi, ayarlarınızı okuyor. Zaten açık olan bir şey için "önce kaydet" ya da "önce aç" demiyor.
+• Yalnızca yayımlanmış tarifin değil, taslağın malzemelerini ve adımlarını da okuyor. Sizin için yeni yazdığı bir tarifi, yayımlamadan önce size geri okuyabiliyor.
+• Tarif düzenleyicide "kaydet" artık düğmenin yaptığı şeyi yapıyor: onayınızı isteyip yayımlıyor.
+• Bir şey ters gittiğinde raporu kendisi gönderiyor. "Geliştiriciye bildir" demeniz yeterli; hata ve o sırada bulunduğunuz ekran rapora ekleniyor. Geri bildirim formunu aramanıza gerek kalmıyor.
+• Tarifin altındaki yorumları da sayfanın geri kalanıyla birlikte okuyor.
+• Ana akışta "yenile" çalışıyor; tariflerinizde ve bildirimlerinizde zaten çalışıyordu.
+• Yapamadığı bir şey olduğunda, düğmenin nerede olabileceğini tahmin etmek yerine bunu açıkça söylüyor.
 
-Yayımlanmış tarifleri düzenleme özelliği, yeniden ele alınmak üzere şimdilik kaldırıldı. Tarif oluşturma, silme ve taslak akışları yerinde duruyor.
+Ayrıca: uygulama içinden ulaşılabilen bir geliştirici ekranındaki çökme giderildi.
 
 Recipely ile pişirdiğiniz için teşekkürler!

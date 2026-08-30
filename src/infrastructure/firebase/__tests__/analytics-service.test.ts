@@ -11,11 +11,7 @@ jest.mock('@react-native-firebase/analytics', () => ({
   setAnalyticsCollectionEnabled: jest.fn(async () => undefined),
 }));
 
-import {
-  setAnalyticsEnabled,
-  logAnalyticsEvent,
-  logScreen,
-} from '@infrastructure/firebase/analytics-service';
+import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import {
   logEvent,
   logScreenView,
@@ -29,38 +25,38 @@ describe('analytics-service', () => {
     jest.clearAllMocks();
   });
 
-  describe('setAnalyticsEnabled', () => {
+  describe('setEnabled', () => {
     it('forwards the flag to Firebase', async () => {
-      await setAnalyticsEnabled(true);
+      await analyticsService.setEnabled(true);
       expect(setAnalyticsCollectionEnabled).toHaveBeenCalledWith(ANALYTICS, true);
     });
 
     it('swallows errors from the native module', async () => {
       jest.mocked(setAnalyticsCollectionEnabled).mockRejectedValueOnce(new Error('no native module'));
-      await expect(setAnalyticsEnabled(false)).resolves.not.toThrow();
+      await expect(analyticsService.setEnabled(false)).resolves.not.toThrow();
     });
   });
 
-  describe('logAnalyticsEvent', () => {
+  describe('logEvent', () => {
     it('forwards the event name and params', async () => {
-      await logAnalyticsEvent('recipe_view', { recipeId: 'r1' });
+      await analyticsService.logEvent('recipe_view', { recipeId: 'r1' });
       expect(logEvent).toHaveBeenCalledWith(ANALYTICS, 'recipe_view', { recipeId: 'r1' });
     });
 
     it('works without params', async () => {
-      await logAnalyticsEvent('app_open');
+      await analyticsService.logEvent('app_open');
       expect(logEvent).toHaveBeenCalledWith(ANALYTICS, 'app_open', undefined);
     });
 
     it('swallows errors', async () => {
       jest.mocked(logEvent).mockRejectedValueOnce(new Error('fail'));
-      await expect(logAnalyticsEvent('x')).resolves.not.toThrow();
+      await expect(analyticsService.logEvent('x')).resolves.not.toThrow();
     });
   });
 
   describe('logScreen', () => {
     it('defaults screen_class to the screen name', async () => {
-      await logScreen('Recipes');
+      await analyticsService.logScreen('Recipes');
       expect(logScreenView).toHaveBeenCalledWith(ANALYTICS, {
         screen_name: 'Recipes',
         screen_class: 'Recipes',
@@ -68,7 +64,7 @@ describe('analytics-service', () => {
     });
 
     it('uses an explicit screen class when provided', async () => {
-      await logScreen('Detail', 'RecipeDetailScreen');
+      await analyticsService.logScreen('Detail', 'RecipeDetailScreen');
       expect(logScreenView).toHaveBeenCalledWith(ANALYTICS, {
         screen_name: 'Detail',
         screen_class: 'RecipeDetailScreen',
