@@ -74,6 +74,13 @@ export const assistantMetrics = {
   orbPoint: scale(4),
   menuPillHeight: scale(34),
   sheetHeightShare: 0.46,
+  /**
+   * The shortest the typing sheet may be: the grabber, the composer and a
+   * line or two of what was said. A landscape phone with the keyboard up has
+   * less room than the share asks for, and a sheet too short to type into is
+   * worse than one that overlaps the orb.
+   */
+  sheetMinHeight: scale(168),
   panelSheetHeightShare: 0.52,
   levelSettleMs: 90,
   blinkIntervalMs: 3600,

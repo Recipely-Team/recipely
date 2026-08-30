@@ -1111,6 +1111,36 @@ function openingTag(src, at) {
   }
 }
 
+// --- AC: a bottom-pinned input must read the keyboard (CLAUDE.md §24) -------
+// The assistant's typing sheet was `position: absolute` at `bottom: 0`, sized
+// from the whole screen, and nothing in the app read the keyboard at all — so
+// raising it buried the conversation AND the box being typed into. On a phone
+// the keyboard is about half the screen.
+//
+// Why this shape and no wider: a page-level `KeyboardAvoider` fixes a form,
+// because a form is INSIDE a layout box something can pad. An overlay pinned
+// to the bottom edge is not — the assistant is mounted at the root, over
+// whatever screen it is driving — so the only thing that moves it is the
+// keyboard's measured height. Asking about `position: absolute` alone was far
+// too broad (an eye icon in a password field matched); the pin to the bottom
+// edge is what names the defect.
+{
+  const PINNED_TO_BOTTOM = /bottom:\s*(?:ValueConstants\.zero|0)\b/;
+  const ABSOLUTE = /position:\s*'absolute'/;
+  const TAKES_TYPING = /\bTextInput\b|\bAutoGrowTextInput\b/;
+  const READS_KEYBOARD = /KeyboardAvoider|useKeyboardHeight|useKeyboardVisible/;
+
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!ABSOLUTE.test(src) || !PINNED_TO_BOTTOM.test(src)) continue;
+    if (!TAKES_TYPING.test(src) || READS_KEYBOARD.test(src)) continue;
+    errors.push(
+      `${file}: an overlay pinned to the bottom edge takes typing but never reads the keyboard — it will sit UNDER it; move it by useKeyboardHeight, or wrap the content in KeyboardAvoider if it has a layout box to pad (CLAUDE.md §24)`,
+    );
+  }
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);

@@ -353,7 +353,8 @@ blocking.
     23 (hand-rolled bottom sheets), 23b (`Modal` without `statusBarTranslucent`),
     23c (background-audio capability), 25 (a routed screen with no analytics
     name), 24 (rule AB: a screen that registers a screen line but no reading, so
-    `readScreen` has nothing to say about it), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
+    `readScreen` has nothing to say about it; rule AC: an overlay pinned to the bottom edge
+    that takes typing but never reads the keyboard), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.
