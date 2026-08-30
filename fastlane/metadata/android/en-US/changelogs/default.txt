@@ -1,8 +1,6 @@
-• Step timers: start one from any step and get an alarm when it is done.
-• Search covers the whole catalogue, and finds Turkish names typed without their accents.
-• Your likes stay liked after you close and reopen the app.
-• Drafts: leaving one no longer re-saves it, and discarding one actually removes it.
-• Ingredient amounts no longer cut a word in half.
-• Turkish wording tidied up throughout.
+• The keyboard no longer covers the assistant's conversation or the box you type into — on tablets too.
+• Typing to the assistant from the recipe list works; it used to fail every time.
+• Asking it to change a draft changes that draft, instead of starting a new recipe over it.
+• "Make it for eight" now rescales the ingredients, not just the serving count.
 
 Thanks for cooking with Recipely!
