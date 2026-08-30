@@ -146,6 +146,16 @@ export const de = {
       body: 'Du hast diesen Beitrag bereits importiert. Du findest ihn unter Meine Rezepte.',
       short: 'Du hast diesen Beitrag bereits importiert',
     },
+    nameMeaningless: {
+      title: 'Gib ihm einen Namen',
+      body: 'Benenne das Gericht, damit man es findet — mit „jwwgos“ sucht niemand.',
+      short: 'Braucht einen echten Namen',
+    },
+    promptMeaningless: {
+      title: 'Was kochen wir?',
+      body: 'Nenn uns ein Gericht, eine Zutat oder worauf du Lust hast.',
+      short: 'Sag uns, was',
+    },
     photoRejected: {
       title: 'Dieses Foto kann nicht hoch',
       body: 'Es entspricht nicht unseren Community-Richtlinien. Versuch ein anderes Bild des Gerichts.',

@@ -146,6 +146,16 @@ export const pt = {
       body: 'Você já importou este post. Encontre-o em Minhas receitas.',
       short: 'Você já importou esse post',
     },
+    nameMeaningless: {
+      title: 'Dá-lhe um nome',
+      body: 'Dá nome ao prato para que possa ser encontrado — «jwwgos» não ajuda ninguém.',
+      short: 'Precisa de um nome real',
+    },
+    promptMeaningless: {
+      title: 'O que cozinhamos?',
+      body: 'Diz-nos um prato, um ingrediente ou o que te apetece.',
+      short: 'Diz-nos o quê',
+    },
     photoRejected: {
       title: 'Esta foto não pode ser publicada',
       body: 'Não cumpre as nossas diretrizes da comunidade. Experimenta outra foto do prato.',

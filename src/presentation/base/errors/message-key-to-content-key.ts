@@ -38,6 +38,8 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.importNoRecipeFound]: 'importNoRecipeFound',
   [ErrorMessageKey.importBusy]: 'importBusy',
   [ErrorMessageKey.recipeExists]: 'recipeExists',
+  [ErrorMessageKey.nameMeaningless]: 'nameMeaningless',
+  [ErrorMessageKey.promptMeaningless]: 'promptMeaningless',
   [ErrorMessageKey.photoRejected]: 'photoRejected',
   [ErrorMessageKey.photoUnchecked]: 'photoUnchecked',
 

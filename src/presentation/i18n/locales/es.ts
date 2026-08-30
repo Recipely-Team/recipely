@@ -146,6 +146,16 @@ export const es = {
       body: 'Ya has importado esta publicación. La encontrarás en Mis recetas.',
       short: 'Ya has importado esa publicación',
     },
+    nameMeaningless: {
+      title: 'Ponle un nombre',
+      body: 'Nombra el plato para que se pueda encontrar: «jwwgos» no ayuda a nadie.',
+      short: 'Necesita un nombre real',
+    },
+    promptMeaningless: {
+      title: '¿Qué cocinamos?',
+      body: 'Dinos un plato, un ingrediente o simplemente qué te apetece.',
+      short: 'Dinos qué',
+    },
     photoRejected: {
       title: 'Esa foto no puede publicarse',
       body: 'No cumple nuestras normas de la comunidad. Prueba con otra foto del plato.',

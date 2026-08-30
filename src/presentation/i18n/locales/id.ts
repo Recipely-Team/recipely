@@ -146,6 +146,16 @@ export const id = {
       body: 'Kamu sudah mengimpor postingan ini. Temukan di Resep Saya.',
       short: 'Kamu sudah mengimpor postingan itu',
     },
+    nameMeaningless: {
+      title: 'Beri nama',
+      body: 'Beri nama masakannya agar bisa ditemukan — \'jwwgos\' tidak membantu siapa pun.',
+      short: 'Butuh nama yang benar',
+    },
+    promptMeaningless: {
+      title: 'Mau masak apa?',
+      body: 'Sebutkan masakan, bahan, atau apa pun yang sedang kamu inginkan.',
+      short: 'Beri tahu mau masak apa',
+    },
     photoRejected: {
       title: 'Foto ini tidak bisa ditayangkan',
       body: 'Foto tidak sesuai pedoman komunitas kami. Coba foto lain dari masakannya.',
