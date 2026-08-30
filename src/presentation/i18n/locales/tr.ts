@@ -149,6 +149,16 @@ export const tr: Translations = {
       body: 'Bu gönderiyi daha önce içe aktardın. Tariflerim bölümünde bulabilirsin.',
       short: 'Bu gönderiyi zaten içe aktardın',
     },
+    nameMeaningless: {
+      title: 'Bir ad ver',
+      body: 'Yemeğin adını yaz ki arayan bulabilsin — \'jwwgos\' kimsenin işine yaramaz.',
+      short: 'Gerçek bir ad gerekli',
+    },
+    promptMeaningless: {
+      title: 'Ne pişirelim?',
+      body: 'Bir yemek, bir malzeme ya da canının ne çektiğini yaz.',
+      short: 'Ne pişireceğini yaz',
+    },
     photoRejected: {
       title: 'Bu fotoğraf yayınlanamıyor',
       body: 'Topluluk kurallarımıza uymuyor. Yemeğin başka bir fotoğrafını deneyin.',

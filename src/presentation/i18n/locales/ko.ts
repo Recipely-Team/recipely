@@ -148,6 +148,16 @@ export const ko: Translations = {
       body: '이 게시물은 이미 가져왔어요. 내 레시피에서 확인할 수 있어요.',
       short: '이미 가져온 게시물이에요',
     },
+    nameMeaningless: {
+      title: '이름을 지어 주세요',
+      body: '요리 이름을 적어야 찾을 수 있어요. \'jwwgos\'로는 아무도 못 찾아요.',
+      short: '제대로 된 이름 필요',
+    },
+    promptMeaningless: {
+      title: '무엇을 만들까요?',
+      body: '요리, 재료, 아니면 지금 당기는 것을 알려 주세요.',
+      short: '무엇을 만들지 알려주세요',
+    },
     photoRejected: {
       title: '이 사진은 올릴 수 없어요',
       body: '커뮤니티 가이드라인에 어긋나요. 요리의 다른 사진을 사용해 보세요.',

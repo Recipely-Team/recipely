@@ -152,6 +152,16 @@ export const en = {
       body: "You've already imported this post. Find it in My Recipes.",
       short: "You've already imported that post",
     },
+    nameMeaningless: {
+      title: 'Give it a name',
+      body: 'Name the dish so people can find it — \'jwwgos\' won\'t help anyone searching.',
+      short: 'Needs a real name',
+    },
+    promptMeaningless: {
+      title: 'What shall we cook?',
+      body: 'Tell us a dish, an ingredient, or just what you\'re in the mood for.',
+      short: 'Tell us what to cook',
+    },
     photoRejected: {
       title: 'That photo can\'t go up',
       body: 'It doesn\'t follow our community guidelines. Try a different picture of the dish.',

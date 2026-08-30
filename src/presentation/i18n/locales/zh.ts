@@ -149,6 +149,16 @@ export const zh = {
       body: '你之前已经导入过这个帖子。可以在“我的食谱”里找到它。',
       short: '你已经导入过这个帖子',
     },
+    nameMeaningless: {
+      title: '起个名字吧',
+      body: '写上菜名，别人才搜得到——“jwwgos”帮不上任何人。',
+      short: '需要真实的名字',
+    },
+    promptMeaningless: {
+      title: '做点什么呢？',
+      body: '告诉我们一道菜、一种食材，或者你现在想吃什么。',
+      short: '告诉我们做什么',
+    },
     photoRejected: {
       title: '这张照片无法发布',
       body: '它不符合社区准则。换一张这道菜的照片试试。',
