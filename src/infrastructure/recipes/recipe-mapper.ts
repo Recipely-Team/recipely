@@ -19,7 +19,7 @@ import { MediaType } from '@domain/recipes/media/media-type';
 export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto) => {
   const media: MediaItem[] =
     dto.media && dto.media.length > ValueConstants.zero
-      ? dto.media.map((m) => ({ type: m.type, url: m.url }))
+      ? dto.media.map((m) => ({ id: m.id, type: m.type, url: m.url }))
       : dto.image.trim().length > ValueConstants.zero
         ? [{ type: MediaType.Image, url: dto.image }]
         : [];

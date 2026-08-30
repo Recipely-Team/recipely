@@ -1,19 +1,17 @@
 import { useCallback, useRef, useState } from 'react';
 import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
-import { Dimensions, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Dimensions, ScrollView, StyleSheet } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { DetailBackButton } from '@presentation/app/recipes/[recipeId]/items/detail-back-button';
+import { RecipeDetailSheets } from '@presentation/app/recipes/[recipeId]/sheets/recipe-detail-sheets';
+import { useRecipePhotoUpload } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-photo-upload';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
-import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
-import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
-import { t } from '@presentation/i18n';
 import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/recipe-share-sheet';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
@@ -33,7 +31,7 @@ import { recipeWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
@@ -51,6 +49,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // the window rather than a row height, and the offset is tracked here — a
   // ScrollView has no way to be asked where it currently is.
   const [unsavePending, setUnsavePending] = useState(false);
+  // Adding and removing photos on a recipe the user owns. Removing asks first:
+  // it is their own picture, but it may also be the only one the recipe has.
+  const photos = useRecipePhotoUpload(vm.recipeId);
+  const [photoPendingRemoval, setPhotoPendingRemoval] = useState<string | null>(null);
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
@@ -196,6 +198,15 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onLoadMoreComments={vm.onLoadMoreComments}
                   onToggleCommentLike={vm.onToggleCommentLike}
                   onDeleteComment={vm.onDeleteComment}
+                  photos={
+                    vm.isOwner
+                      ? {
+                          onAdd: () => void photos.pickAndAdd(),
+                          onRemove: setPhotoPendingRemoval,
+                          isBusy: photos.isBusy,
+                        }
+                      : undefined
+                  }
                   commentHighlight={commentHighlight}
                 />
               )
@@ -204,44 +215,32 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         </ScrollView>
       </ResponsiveContainer>
 
-      {!isExpanded ? (
-        <Pressable
-          accessibilityRole="button"
-          // Named after where back actually goes — the glyph alone announced
-          // nothing at all to a screen reader.
-          accessibilityLabel={backLabel}
-          onPress={() => router.back()}
-          style={[styles.backButton, { top: insets.top + spacing.sm, backgroundColor: colors.overlayLight }]}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xxl} color={colors.onOverlay} />
-        </Pressable>
-      ) : null}
+      {!isExpanded ? <DetailBackButton label={backLabel} top={insets.top + spacing.sm} /> : null}
 
-      <ConfirmSheet
-        visible={unsavePending}
-        title={t().assistant.unsaveTitle}
-        message={t().assistant.unsaveMessage}
-        confirmLabel={t().assistant.unsaveConfirm}
-        onConfirm={() => {
+      <RecipeDetailSheets
+        unsavePending={unsavePending}
+        onConfirmUnsave={() => {
           setUnsavePending(false);
           vm.onToggleSave();
         }}
-        onClose={() => setUnsavePending(false)}
-      />
-
-      <DeleteRecipeSheet
-        visible={vm.showDeleteSheet}
+        onCancelUnsave={() => setUnsavePending(false)}
+        photoPendingRemoval={photoPendingRemoval}
+        onConfirmRemovePhoto={(mediaId) => {
+          setPhotoPendingRemoval(null);
+          void photos.remove(mediaId);
+        }}
+        onCancelRemovePhoto={() => setPhotoPendingRemoval(null)}
+        photoError={photos.error}
+        onDismissPhotoError={photos.onDismissError}
+        showDeleteSheet={vm.showDeleteSheet}
         deleteError={vm.deleteError}
         isDeleting={vm.isDeleting}
-        onClose={vm.onCloseDelete}
-        onConfirm={vm.onConfirmDelete}
-      />
-
-      <SignInPromptSheet
-        visible={vm.promptVisible}
-        onClose={vm.onClosePrompt}
-        onSignIn={vm.onGoToSignIn}
-        message={vm.promptMessage}
+        onCloseDelete={vm.onCloseDelete}
+        onConfirmDelete={vm.onConfirmDelete}
+        promptVisible={vm.promptVisible}
+        promptMessage={vm.promptMessage}
+        onClosePrompt={vm.onClosePrompt}
+        onGoToSignIn={vm.onGoToSignIn}
       />
 
       {vm.recipe !== null ? (
@@ -277,15 +276,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     flexGrow: ValueConstants.one,
-  },
-  backButton: {
-    position: 'absolute',
-    left: spacing.lg,
-    width: controlSizes.floatingBtn,
-    height: controlSizes.floatingBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
 

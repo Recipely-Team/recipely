@@ -38,6 +38,10 @@ export const ErrorMessageKey = {
   importNoRecipeFound: 'errors.import.no_recipe_found',
   importBusy: 'errors.import.busy',
   recipeExists: 'errors.conflict.recipe_exists',
+  /** The moderator looked at the photo and refused it. */
+  photoRejected: 'errors.recipe.photo_rejected',
+  /** The moderator could not answer, so the upload was refused rather than published unchecked. */
+  photoUnchecked: 'errors.recipe.photo_unchecked',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

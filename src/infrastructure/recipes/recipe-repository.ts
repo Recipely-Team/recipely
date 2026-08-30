@@ -15,6 +15,9 @@ import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query'
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
 import { AI_REQUEST_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
+import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
@@ -36,6 +39,9 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
  * via HTTP. Image uploads are handled as multipart form-data with
  * platform-specific blob construction for web vs. native.
  */
+/** The field name `imageUpload.single('photo')` reads on the backend. */
+const RECIPE_PHOTO_FIELD = 'photo';
+
 export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
@@ -85,6 +91,43 @@ export class RecipeRepository implements RecipeRepositoryInterface {
       return result;
     }
     return this.mapRecipe(result.value);
+  }
+
+  /**
+   * Adds one photo to a recipe that is already published.
+   *
+   * Multipart under the field name the backend's Multer expects, through the
+   * same XHR path the avatar upload uses — axios's adapter mis-detects RN's
+   * FormData and sends `"{}"`, which surfaces as "Network error" and nothing
+   * more.
+   *
+   * The backend looks at the photo before it stores it, so a failure here can
+   * be about the PICTURE rather than about the request: the screen reads the
+   * message key and says which.
+   */
+  async addRecipePhoto(
+    recipeId: string,
+    fileUri: string,
+    fileName: string,
+    mimeType: string,
+  ): Promise<Result<MediaItem, Failure>> {
+    const formData = new FormData();
+    await appendFilePart(formData, RECIPE_PHOTO_FIELD, { uri: fileUri, fileName, mimeType });
+
+    const result = await this.http.uploadMultipart<MediaDto>(
+      ApiRoutes.recipes.media(recipeId),
+      formData,
+    );
+    if (!result.ok) return result;
+
+    return ok({ id: result.value.id, type: result.value.type, url: result.value.url });
+  }
+
+  async removeRecipePhoto(recipeId: string, mediaId: string): Promise<Result<void, Failure>> {
+    const result = await this.http.delete<unknown>(ApiRoutes.recipes.mediaItem(recipeId, mediaId));
+    if (!result.ok) return result;
+
+    return ok(undefined);
   }
 
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {

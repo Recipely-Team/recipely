@@ -193,6 +193,9 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     replace: jest.fn(),
     remove: jest.fn(),
     clear: jest.fn(),
+    addPhoto: jest.fn(),
+    removePhoto: jest.fn(),
+    isPhotoBusy: false,
   }));
 
   const authStore = create<AuthStoreState>(

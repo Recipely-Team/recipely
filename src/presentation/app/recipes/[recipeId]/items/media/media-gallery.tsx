@@ -11,10 +11,26 @@ import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
 
+/** The two controls only the recipe's owner is offered. Only this file names it. */
+interface GalleryOwnerControls {
+  onAdd: () => void;
+  /** Asked about the photo on screen; the screen confirms before anything goes. */
+  onRemove: (mediaId: string) => void;
+  isBusy: boolean;
+}
+
 export interface MediaGalleryProps {
   media: readonly MediaItem[];
   /** Pins the gallery height; by default it follows the measured width's ratio. */
   height?: number;
+  /**
+   * Present only for the owner.
+   *
+   * Absent rather than disabled: a control nobody may press is a question the
+   * screen answers by looking broken. The server refuses either way — this is
+   * about not offering something that cannot happen.
+   */
+  owner?: GalleryOwnerControls;
 }
 
 /**
@@ -25,7 +41,7 @@ export interface MediaGalleryProps {
  * being cropped by a window-wide slide. On web, where the FlatList cannot be swiped
  * with a mouse, prev/next arrows scroll to the adjacent slide.
  */
-export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.Element => {
+export const MediaGallery = ({ media, height, owner }: MediaGalleryProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [active, setActive] = useState(ValueConstants.zero);
   const [width, setWidth] = useState(() => Dimensions.get('window').width);
@@ -38,6 +54,9 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
   const aspect = isWeb() ? aspectRatios.heroWide : aspectRatios.hero;
   const cap = isWeb() ? mediaSizes.heroImageHeightWeb : mediaSizes.heroImageHeightMax;
   const resolvedHeight = height ?? Math.min(Math.round(width / aspect), cap);
+
+  /** The id of the slide in view, absent for a photo that is only on the device. */
+  const activeMediaId = media[active]?.id;
 
   const onLayout = (e: LayoutChangeEvent): void => {
     const next = Math.round(e.nativeEvent.layout.width);
@@ -87,6 +106,32 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
         onScroll={onScroll}
         scrollEventThrottle={scrollThrottleMs.perFrame}
       />
+
+      {owner !== undefined ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.addPhoto}
+          disabled={owner.isBusy}
+          onPress={owner.onAdd}
+          style={[styles.ownerButton, styles.addButton, { backgroundColor: colors.overlay }]}
+        >
+          <Ionicons name="camera" size={iconSizes.lg} color={colors.onOverlay} />
+        </Pressable>
+      ) : null}
+
+      {/* Only a photo that HAS a row can be removed — a picture still on the
+          device has nothing on the server to take down. */}
+      {owner !== undefined && activeMediaId !== undefined ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.removePhoto}
+          disabled={owner.isBusy}
+          onPress={() => owner.onRemove(activeMediaId)}
+          style={[styles.ownerButton, styles.removeButton, { backgroundColor: colors.overlay }]}
+        >
+          <Ionicons name="trash-outline" size={iconSizes.lg} color={colors.onOverlay} />
+        </Pressable>
+      ) : null}
 
       {showArrows && active > ValueConstants.zero ? (
         <Pressable
@@ -144,6 +189,17 @@ export const MediaGallery = ({ media, height }: MediaGalleryProps): React.JSX.El
 };
 
 const styles = StyleSheet.create({
+  // Pinned: circles, not text boxes.
+  ownerButton: {
+    position: 'absolute',
+    width: controlSizes.iconBtnSm,
+    height: controlSizes.iconBtnSm,
+    borderRadius: radii.round,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addButton: { right: spacing.md, bottom: spacing.md },
+  removeButton: { right: spacing.md, top: spacing.md },
   arrow: {
     position: 'absolute',
     top: '50%',

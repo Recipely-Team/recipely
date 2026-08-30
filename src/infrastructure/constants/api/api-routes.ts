@@ -43,6 +43,10 @@ export const ApiRoutes = {
     draft: (id: string): string => `/recipes/drafts/${encodeURIComponent(id)}`,
     like: (id: string): string => `/recipes/${encodeURIComponent(id)}/like`,
     favorite: (id: string): string => `/recipes/${encodeURIComponent(id)}/favorite`,
+    /** The owner's gallery: one photo added, or one taken back off. */
+    media: (id: string): string => `/recipes/${encodeURIComponent(id)}/media`,
+    mediaItem: (id: string, mediaId: string): string =>
+      `/recipes/${encodeURIComponent(id)}/media/${encodeURIComponent(mediaId)}`,
     comments: (recipeId: string): string =>
       `/recipes/${encodeURIComponent(recipeId)}/comments`,
     comment: (recipeId: string, commentId: string): string =>
