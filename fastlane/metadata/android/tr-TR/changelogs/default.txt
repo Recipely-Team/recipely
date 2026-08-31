@@ -1,8 +1,7 @@
-• Adım zamanlayıcıları: istediğiniz adımdan başlatın, süre bitince alarm çalsın.
-• Arama tüm tarifleri tarıyor; Türkçe adları "sut", "pogaca" gibi yazsanız da buluyor.
-• Beğendikleriniz, uygulamayı kapatıp açtığınızda beğenili kalıyor.
-• Taslaklar: çıkarken yeniden kaydetmiyor, vazgeçtiğinizde gerçekten siliniyor.
-• Malzeme miktarları artık kelimeyi ortadan bölmüyor.
-• Türkçe metinler baştan sona düzeltildi.
+• Klavye artık asistanın sohbetini ve yazı kutusunu kapatmıyor; tablette de düzeldi.
+• Tarif listesinden asistana yazmak artık çalışıyor.
+• Taslakta değişiklik istediğinizde yeni tarif oluşturmuyor, o taslağı düzenliyor.
+• "8 kişilik yap" artık malzeme miktarlarını da ölçekliyor.
+• Yayımladığınız bir tarife sonradan fotoğraf ekleyebilirsiniz.
 
 Recipely ile pişirdiğiniz için teşekkürler!

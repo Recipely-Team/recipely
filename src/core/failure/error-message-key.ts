@@ -38,6 +38,14 @@ export const ErrorMessageKey = {
   importNoRecipeFound: 'errors.import.no_recipe_found',
   importBusy: 'errors.import.busy',
   recipeExists: 'errors.conflict.recipe_exists',
+  /** The title names nothing you could eat — keyboard mash, a placeholder. */
+  nameMeaningless: 'errors.recipe.name_meaningless',
+  /** The generation prompt asked for nothing at all. */
+  promptMeaningless: 'errors.ai.prompt_meaningless',
+  /** The moderator looked at the photo and refused it. */
+  photoRejected: 'errors.recipe.photo_rejected',
+  /** The moderator could not answer, so the upload was refused rather than published unchecked. */
+  photoUnchecked: 'errors.recipe.photo_unchecked',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

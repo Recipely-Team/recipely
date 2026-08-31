@@ -227,6 +227,57 @@ describe('useAssistantDraftActions', () => {
   // nothing: `openDraft` was registered by My Recipes and by no one else, so
   // the one screen that offers a draft to continue could not continue it.
   /**
+   * "Porsiyonu 8 yap" set the number and left the ingredient list where it was:
+   * a draft reading "8 kişilik" over quantities for four, reported as done.
+   * Servings is not a label like the others — every quantity is a function of
+   * it — so the only correct answer is the AI refine that re-scales the list.
+   */
+  describe('changing the draft rather than contradicting it', () => {
+    it('sends a servings change to the refine instead of writing the number', async () => {
+      const { registry, spies } = harness();
+
+      const result = await act(async () =>
+        registry.run(AssistantAction.SetDraftField, 'servings=8'),
+      );
+
+      expect(spies.onUpdateField).not.toHaveBeenCalled();
+      expect(result).toMatchObject({ ok: false, error: 'servings_needs_refine' });
+    });
+
+    // The times really are labels: nothing in the recipe is computed from them,
+    // so writing one outright leaves the draft consistent.
+    it('still writes the times, which stand alone', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => registry.run(AssistantAction.SetDraftField, 'cookTimeMinutes=45'));
+
+      expect(spies.onUpdateField).toHaveBeenCalledWith('cookTimeMinutes', 45);
+    });
+
+    // Reported as "şöyle yap diyorum, gidip yeniden tarif oluşturuyor": the
+    // always-mounted handler pushes a second create screen and leaves the draft
+    // the user is looking at behind.
+    it('refuses to start a new recipe on top of an open draft', async () => {
+      const { registry } = harness();
+
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toMatchObject({
+        ok: false,
+        error: 'draft_open_would_be_lost',
+      });
+    });
+
+    it('leaves generating alone once the editor is not the screen', async () => {
+      const { registry } = harness(true, { isDraftVisible: false, resumable: null });
+
+      // Nothing here answers it, so it falls through to the handler that opens
+      // a new create screen — which is right from the prompt phase.
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toMatchObject({
+        error: 'unavailable_here',
+      });
+    });
+  });
+
+  /**
    * Said in the editor with the draft on screen, "kaydet" answered
    * `unavailable_here` — nothing here registered the word — and the model,
    * left to explain that, told the user the save button was "probably further

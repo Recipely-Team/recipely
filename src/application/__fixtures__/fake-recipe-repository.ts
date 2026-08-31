@@ -3,6 +3,8 @@ import type { GenerateRecipeCall } from "@application/__fixtures__/generate-reci
 import type { ImportInstagramRecipeCall } from "@application/__fixtures__/import-instagram-recipe-call";
 import type { RefineRecipeCall } from "@application/__fixtures__/refine-recipe-call";
 import { ValueConstants } from "@core/constants";
+import type { MediaItem } from "@domain/recipes/media/media-item";
+import { MediaType } from "@domain/recipes/media/media-type";
 import { type Failure, UnknownFailure } from "@core/failure";
 import type { Result } from "@core/result/result";
 import { fail, ok } from "@core/result/result-helpers";
@@ -134,5 +136,21 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     return Promise.resolve(
       this.config.deleteRecipeResult ?? ok(undefined as void),
     );
+  }
+
+  addRecipePhoto(
+    _recipeId: string,
+    _fileUri: string,
+    _fileName: string,
+    _mimeType: string,
+  ): Promise<Result<MediaItem, Failure>> {
+    return Promise.resolve(
+      this.config.addRecipePhotoResult ??
+        ok({ id: 'media-1', type: MediaType.Image, url: 'https://example.test/p.jpg' }),
+    );
+  }
+
+  removeRecipePhoto(_recipeId: string, _mediaId: string): Promise<Result<void, Failure>> {
+    return Promise.resolve(this.config.removeRecipePhotoResult ?? ok(undefined as void));
   }
 }

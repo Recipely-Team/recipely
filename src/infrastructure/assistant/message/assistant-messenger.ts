@@ -1,9 +1,10 @@
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { ApiLimits } from '@infrastructure/constants/api/api-limits';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { AssistantMessageResponseDto } from '@infrastructure/assistant/message/dtos/assistant-message-response-dto';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { AssistantTextReply } from '@domain/assistant/session/assistant-text-reply';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -30,7 +31,9 @@ export class AssistantMessenger implements AssistantMessengerInterface {
       {
         message,
         languageCode,
-        ...(screenContext === undefined ? {} : { screenContext }),
+        ...(screenContext === undefined
+          ? {}
+          : { screenContext: screenContext.slice(ValueConstants.zero, ApiLimits.assistantScreenContext) }),
       },
       // This is a model call, not a lookup. On the default ten seconds the
       // request was cancelled mid-answer and the screen said "that did not go

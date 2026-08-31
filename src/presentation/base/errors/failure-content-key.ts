@@ -38,6 +38,10 @@ export type FailureContentKey =
   | 'importNoRecipeFound'
   | 'importBusy'
   | 'recipeExists'
+  | 'nameMeaningless'
+  | 'promptMeaningless'
+  | 'photoRejected'
+  | 'photoUnchecked'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

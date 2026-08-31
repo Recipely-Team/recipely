@@ -18,6 +18,7 @@ import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/ac
 import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
+import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { controlSizes, spacing, zIndices } from '@presentation/base/theme';
@@ -99,6 +100,13 @@ export const AssistantPill = (): React.JSX.Element | null => {
     (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +
     floatingClearance +
     edge;
+  // The wide layout has the same hole the phone sheet had, and a tablet is
+  // where it shows: `isExpanded` is a width, so an iPad takes this branch WITH
+  // a software keyboard, and the panel's composer sat under it. The dock is
+  // lifted, and the panel is told where its floor now is so it shortens to
+  // match instead of running off the top.
+  const keyboardHeight = useKeyboardHeight();
+  const dockBottom = bottom + keyboardHeight;
 
   // Hiding the controls does not stop a session. Landing on the sign-in screen
   // mid-conversation — an expired token redirects there — would otherwise leave
@@ -175,9 +183,9 @@ export const AssistantPill = (): React.JSX.Element | null => {
   }
 
   return (
-    <View style={[styles.dock, styles.dockWide, { bottom }]} pointerEvents="box-none">
+    <View style={[styles.dock, styles.dockWide, { bottom: dockBottom }]} pointerEvents="box-none">
       {view === AssistantView.Open ? (
-        <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={bottom} />
+        <AssistantPanel onClose={end} onMinimize={minimize} bottomOffset={dockBottom} />
       ) : null}
 
       {view === AssistantView.Mini ? (

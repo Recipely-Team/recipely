@@ -73,7 +73,25 @@ const PROBLEM = 'problem';
 /** A generated draft can reach the editor before it has been given a name. */
 const NO_NAME = 'untitled';
 
-const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as const;
+/**
+ * The numbers that stand alone.
+ *
+ * Prep and cook time describe the recipe; nothing else in it is computed from
+ * them, so writing one outright leaves the draft consistent. {@link SERVINGS_FIELD}
+ * is the one that is NOT like this.
+ */
+const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes'] as const;
+/**
+ * Servings, which is a SCALE and not a label.
+ *
+ * Every quantity in the ingredient list is a function of it, so writing the
+ * number on its own produces a recipe that contradicts itself — "8 kişilik"
+ * over ingredients for four. That is exactly what shipped: asked to make a
+ * draft serve more people, the assistant set the field, reported success, and
+ * left the quantities alone. Re-scaling is an AI job, so this answers with the
+ * way through rather than doing half of it.
+ */
+const SERVINGS_FIELD = 'servings';
 /**
  * The only field that really is free text.
  *
@@ -86,6 +104,10 @@ const NUMERIC_FIELDS = ['prepTimeMinutes', 'cookTimeMinutes', 'servings'] as con
  */
 const TEXT_FIELDS = ['name'] as const;
 const DIFFICULTY_FIELD = 'difficulty';
+/** Named so the model can act on it: re-scaling goes to `refineDraft`. */
+const SERVINGS_NEEDS_REFINE = 'servings_needs_refine';
+/** Why a new recipe cannot be started from on top of an unsaved draft. */
+const DRAFT_ALREADY_OPEN = 'draft_open_would_be_lost';
 const CUISINE_FIELD = 'cuisine';
 const CATEGORY_FIELD = 'category';
 
@@ -108,6 +130,11 @@ const CATEGORY_FIELD = 'category';
  *   argument. Only the fields a person would name out loud are writable:
  *   `media` is not one of them, and a model that could write it could clear
  *   the user's photos with a typo.
+ * - **Servings is a scale, not a label.** It sat with the other numbers and was
+ *   written outright, so "make it for eight" set the number and left the
+ *   ingredient quantities where they were — a recipe that contradicts itself,
+ *   reported as success. It answers `servings_needs_refine` now, and the refine
+ *   re-scales the list.
  * - **`refineDraft` is the way through for anything not directly editable.**
  *   The fields with their own setters are set outright — that is faster, exact,
  *   and the user watches it land. Everything else ("make it spicier", "halve
@@ -214,6 +241,11 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         if (parsed === null) return { ok: false, error: 'expected_field_equals_value' };
 
         const { key: field, value } = parsed;
+
+        // Before the numeric branch it used to sit in: the answer is a
+        // redirect, not a write. The model reads the reason and asks the
+        // refine to do it properly, quantities and all.
+        if (field === SERVINGS_FIELD) return { ok: false, error: SERVINGS_NEEDS_REFINE };
 
         if ((NUMERIC_FIELDS as readonly string[]).includes(field)) {
           const parsed = Number.parseInt(value, 10);
@@ -353,6 +385,21 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       onRegenerate();
       return { ok: true };
     }, [onRegenerate]),
+    isDraftVisible,
+  );
+
+  // Generating from the editor would push a second create screen over this one
+  // and leave the draft the user is looking at behind — reported as "şöyle yap
+  // diyorum, gidip yeniden tarif oluşturuyor". The always-mounted handler is
+  // shadowed here, and the reason is named so the model can say what it is:
+  // changing this draft is `refineDraft`, and starting the same request again
+  // is `regenerate`.
+  useAssistantAction(
+    AssistantAction.GenerateRecipe,
+    useCallback(
+      async (): Promise<AssistantActionResultType> => ({ ok: false, error: DRAFT_ALREADY_OPEN }),
+      [],
+    ),
     isDraftVisible,
   );
 

@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { MediaGallery } from '@presentation/app/recipes/[recipeId]/items/media/media-gallery';
+import { MediaGallery, type MediaGalleryProps } from '@presentation/app/recipes/[recipeId]/items/media/media-gallery';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
@@ -38,6 +38,13 @@ export interface MobileRecipeDetailProps {
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
   commentHighlight: UseCommentHighlightResult;
+  /**
+   * The gallery's owner controls, or undefined for everyone else.
+   *
+   * Passed down rather than derived from `isOwner` here: the screen owns the
+   * picker, the confirmation and the busy flag, and this component composes.
+   */
+  photos: MediaGalleryProps['owner'];
 }
 
 /**
@@ -52,7 +59,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
 
   return (
     <View>
-      <MediaGallery media={media} />
+      <MediaGallery media={media} owner={props.photos} />
 
       <View style={[styles.content, { backgroundColor: colors.background }]}>
         <RecipeOverview

@@ -1,3 +1,4 @@
+import type { MediaItem } from "@domain/recipes/media/media-item";
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
@@ -18,4 +19,6 @@ export interface FakeRecipeRepositoryConfig {
   getImportJobResult?: Result<ImportJob, Failure>;
   refineRecipeResult?: Result<RefinedRecipe, Failure>;
   deleteRecipeResult?: Result<void, Failure>;
+  addRecipePhotoResult?: Result<MediaItem, Failure>;
+  removeRecipePhotoResult?: Result<void, Failure>;
 }

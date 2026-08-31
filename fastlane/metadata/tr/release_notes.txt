@@ -1,13 +1,9 @@
-Asistan artık baktığınız ekranı okuyabiliyor.
+Yayımladığınız bir tarife artık sonradan fotoğraf ekleyebilirsiniz — bir de kullananların bildirdiği asistan düzeltmeleri.
 
-• "Bu sayfayı oku" diyebilirsiniz. Henüz yazmakta olduğunuz taslağı, bir tarifi, kendi listenizi, bildirimlerinizi, ayarlarınızı okuyor. Zaten açık olan bir şey için "önce kaydet" ya da "önce aç" demiyor.
-• Yalnızca yayımlanmış tarifin değil, taslağın malzemelerini ve adımlarını da okuyor. Sizin için yeni yazdığı bir tarifi, yayımlamadan önce size geri okuyabiliyor.
-• Tarif düzenleyicide "kaydet" artık düğmenin yaptığı şeyi yapıyor: onayınızı isteyip yayımlıyor.
-• Bir şey ters gittiğinde raporu kendisi gönderiyor. "Geliştiriciye bildir" demeniz yeterli; hata ve o sırada bulunduğunuz ekran rapora ekleniyor. Geri bildirim formunu aramanıza gerek kalmıyor.
-• Tarifin altındaki yorumları da sayfanın geri kalanıyla birlikte okuyor.
-• Ana akışta "yenile" çalışıyor; tariflerinizde ve bildirimlerinizde zaten çalışıyordu.
-• Yapamadığı bir şey olduğunda, düğmenin nerede olabileceğini tahmin etmek yerine bunu açıkça söylüyor.
-
-Ayrıca: uygulama içinden ulaşılabilen bir geliştirici ekranındaki çökme giderildi.
+• Yayımladıktan sonra fotoğraf ekleyin. Tarifi açın, fotoğrafın üzerindeki kameraya dokunun ve yenisini seçin. Her fotoğraf yayına girmeden önce kontrol ediliyor.
+• Klavye artık asistanın sohbetini kapatmıyor. Asistana yazarken hem sohbet hem de yazdığınız kutu klavyenin altında kalıyordu; telefonda da tablette de düzeldi.
+• Tarif listesinden asistana yazmak çalışıyor. Önceden her seferinde başarısız oluyor, "istek ulaşmadı" diyordu.
+• Taslakta bir değişiklik istediğinizde o taslağı düzenliyor; yazmakta olduğunuzun üstüne yeni bir tarif oluşturmuyor.
+• "8 kişilik yap" dediğinizde porsiyon sayısıyla birlikte malzeme miktarlarını da ölçekliyor. Önceden yalnızca sayıyı değiştirip miktarlara dokunmuyordu, tarif kendi kendisiyle çelişiyordu.
 
 Recipely ile pişirdiğiniz için teşekkürler!

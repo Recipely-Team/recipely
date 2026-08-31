@@ -8,7 +8,8 @@ import { AssistantSheet } from '@presentation/base/widgets/assistant/views/assis
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
-import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
+import { assistantSheetGeometry } from '@presentation/base/widgets/assistant/assistant-sheet-geometry';
+import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
@@ -62,13 +63,18 @@ export const AssistantOrbSurface = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const live = assistantIsLive(status);
 
-  const sheetHeight = height * assistantMetrics.sheetHeightShare;
+  // The sheet is an overlay pinned to the bottom edge, so the keyboard covers
+  // it rather than pushing it: what was said, and the box it is said into,
+  // both ended up underneath. It is moved by the measured height instead.
+  const keyboardHeight = useKeyboardHeight();
+  const sheet = assistantSheetGeometry(height, keyboardHeight);
   // The design floats it about an eighth up the screen; the floor is whatever
   // the screen underneath has already claimed — its tab bar and its own
   // floating control — because the orb landing on the button a screen exists
-  // to offer is the same mistake the launcher made.
+  // to offer is the same mistake the launcher made. While typing it rides on
+  // top of the sheet, wherever the keyboard has left that.
   const orbBottom = isTyping
-    ? sheetHeight + spacing.lg
+    ? sheet.bottom + sheet.height + spacing.lg
     : Math.max(height * ORB_RESTING_SHARE, restingBottom);
 
   const items = [
@@ -118,7 +124,8 @@ export const AssistantOrbSurface = ({
 
       {isTyping ? (
         <AssistantSheet
-          height={sheetHeight}
+          height={sheet.height}
+          bottom={sheet.bottom}
           transcript={transcript}
           noticeTone={noticeTone}
           notice={notice}
