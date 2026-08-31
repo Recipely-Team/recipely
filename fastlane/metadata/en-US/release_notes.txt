@@ -1,7 +1,8 @@
-Fixes for the voice assistant, every one of them reported by people using it.
+You can add a photo to a recipe you have already published — and a run of assistant fixes, every one of them reported by people using it.
 
-• The keyboard no longer covers the conversation. Typing to the assistant pushed both the chat and the box you type into underneath the keyboard — on tablets as well as phones.
-• Typing to the assistant from the recipe list works. It used to fail every time, and tell you the request had not arrived.
+• Add a photo after publishing. Open your recipe, tap the camera on the picture and choose a new one. Every photo is checked before it goes up.
+• The keyboard no longer covers the assistant's conversation. Typing to it pushed both the chat and the box you type into underneath the keyboard — on tablets as well as phones.
+• Typing to the assistant from the recipe list works. It used to fail every time and tell you the request had not arrived.
 • Asking it to change a draft changes that draft, instead of starting a new recipe over the top of the one you were writing.
 • "Make it for eight people" now rescales the ingredients along with the serving count. It used to change the number and leave the quantities alone, which left the recipe disagreeing with itself.
 

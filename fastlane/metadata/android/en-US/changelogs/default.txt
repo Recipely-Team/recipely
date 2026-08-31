@@ -1,6 +1,7 @@
-• The keyboard no longer covers the assistant's conversation or the box you type into — on tablets too.
-• Typing to the assistant from the recipe list works; it used to fail every time.
-• Asking it to change a draft changes that draft, instead of starting a new recipe over it.
-• "Make it for eight" now rescales the ingredients, not just the serving count.
+• The keyboard no longer covers the assistant's conversation or text box — on tablets too.
+• Typing to the assistant from the recipe list now works.
+• Asking it to change a draft edits that draft instead of starting a new recipe.
+• "Make it for eight" now rescales the ingredients too.
+• You can add a photo to a recipe you already published.
 
 Thanks for cooking with Recipely!

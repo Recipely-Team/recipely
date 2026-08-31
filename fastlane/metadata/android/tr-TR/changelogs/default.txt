@@ -1,6 +1,7 @@
-• Klavye artık asistanın sohbetini ve yazdığınız kutuyu kapatmıyor; tablette de düzeldi.
-• Tarif listesinden asistana yazmak çalışıyor; önceden her seferinde başarısız oluyordu.
-• Taslakta değişiklik istediğinizde o taslağı değiştiriyor, üstüne yeni tarif oluşturmuyor.
-• "8 kişilik yap" artık porsiyon sayısıyla birlikte malzeme miktarlarını da ölçekliyor.
+• Klavye artık asistanın sohbetini ve yazı kutusunu kapatmıyor; tablette de düzeldi.
+• Tarif listesinden asistana yazmak artık çalışıyor.
+• Taslakta değişiklik istediğinizde yeni tarif oluşturmuyor, o taslağı düzenliyor.
+• "8 kişilik yap" artık malzeme miktarlarını da ölçekliyor.
+• Yayımladığınız bir tarife sonradan fotoğraf ekleyebilirsiniz.
 
 Recipely ile pişirdiğiniz için teşekkürler!

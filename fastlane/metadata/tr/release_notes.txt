@@ -1,8 +1,9 @@
-Sesli asistanda, kullananların bildirdiği hatalar giderildi.
+Yayımladığınız bir tarife artık sonradan fotoğraf ekleyebilirsiniz — bir de kullananların bildirdiği asistan düzeltmeleri.
 
-• Klavye artık konuşmayı kapatmıyor. Asistana yazarken hem sohbet hem de yazdığınız kutu klavyenin altında kalıyordu; telefonda da tablette de düzeldi.
+• Yayımladıktan sonra fotoğraf ekleyin. Tarifi açın, fotoğrafın üzerindeki kameraya dokunun ve yenisini seçin. Her fotoğraf yayına girmeden önce kontrol ediliyor.
+• Klavye artık asistanın sohbetini kapatmıyor. Asistana yazarken hem sohbet hem de yazdığınız kutu klavyenin altında kalıyordu; telefonda da tablette de düzeldi.
 • Tarif listesinden asistana yazmak çalışıyor. Önceden her seferinde başarısız oluyor, "istek ulaşmadı" diyordu.
-• Taslakta bir değişiklik istediğinizde o taslağı değiştiriyor; yazmakta olduğunuzun üstüne yeni bir tarif oluşturmuyor.
+• Taslakta bir değişiklik istediğinizde o taslağı düzenliyor; yazmakta olduğunuzun üstüne yeni bir tarif oluşturmuyor.
 • "8 kişilik yap" dediğinizde porsiyon sayısıyla birlikte malzeme miktarlarını da ölçekliyor. Önceden yalnızca sayıyı değiştirip miktarlara dokunmuyordu, tarif kendi kendisiyle çelişiyordu.
 
 Recipely ile pişirdiğiniz için teşekkürler!
