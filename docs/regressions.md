@@ -54,6 +54,21 @@ the list it had just been removed from.
 rather than a state change — the delete goes out on the next line, before any
 re-render. **A debounced writer needs a way to be called off**, not just to be unmounted.
 
+**The site rendered a blank browser tab.**
+`+html.tsx` writes a real `<title>` into the exported shell, and it survived exactly
+until the app mounted: React Navigation reassigns `document.title` on every navigation
+as `options.title ?? route.name`, and no screen set `title`. Measured live, the `<title>`
+element's own `textContent` was `""` on a page carrying 23 images and a full feed —
+a page with no name however much content is under it, which is what a "low value
+content" judgement is made of.
+*Guard:* a default `title` in the root navigator's `screenOptions`, and
+`usePageTitle` for a screen that can name itself (a recipe uses its own name).
+`use-page-title.test.tsx` covers the empty-subject fallback, which is the half that
+would otherwise ship `" · Recipely"`. **A third party that owns a DOM property will
+overwrite what your HTML put there** — the shell is a starting value, not a setting.
+Nothing caught it because every screen sets `headerShown: false`, so `title` is
+invisible on a phone, and the suite runs against the native renderer.
+
 ## Native / platform
 
 **A `Modal` without `statusBarTranslucent` shifted the screen underneath.**

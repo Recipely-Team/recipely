@@ -26,6 +26,7 @@ import {
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
+import { usePageTitle } from '@presentation/base/hooks/navigation/use-page-title';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { recipeWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -118,6 +119,10 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     },
     () => setUnsavePending(false),
   );
+  // The page names itself once the recipe arrives — every recipe is its own
+  // URL, and a crawler that finds them all called "Recipely" has found one
+  // page repeated, not a catalogue.
+  usePageTitle(vm.recipe?.name ?? CharConstants.empty);
   useAssistantScroll(scrollDetail);
 
   return (
