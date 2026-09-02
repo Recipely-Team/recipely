@@ -54,6 +54,23 @@ the list it had just been removed from.
 rather than a state change — the delete goes out on the next line, before any
 re-render. **A debounced writer needs a way to be called off**, not just to be unmounted.
 
+**The site rendered a blank browser tab, with the right title in the same `<head>`.**
+`+html.tsx` writes a correct `<title>`, and the shipped HTML carried TWO: Expo Router
+mounts react-helmet-async at the root and it emits its own, seeded EMPTY, before
+anything the shell writes. A browser reads the first, so `document.title` was `""` on a
+page with 23 images and a full feed under it — which is what a "low value content"
+judgement is made of.
+*Guard:* `scripts/assert-page-titles.mjs`, run from `build:web` — every exported page
+has exactly one `<title>` and it is non-empty. **Both halves were individually correct
+and only their ORDER in the output was wrong**, which is why no rule over the source
+could have seen it: config is not the artifact, the same lesson rule N learned about
+`Info.plist`. The first thing the guard did was find one more page.
+*Dead end worth recording:* setting `title` in the navigator's `screenOptions` or via
+`navigation.setOptions` does nothing here at all — Expo Router constructs its
+`NavigationContainer` with `documentTitle: { enabled: false }`, precisely because
+`expo-router/head` is the supported route. A fix that looks obviously right can be
+disconnected from the thing it claims to fix; the export is what settles it.
+
 ## Native / platform
 
 **A `Modal` without `statusBarTranslucent` shifted the screen underneath.**

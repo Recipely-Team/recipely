@@ -1,6 +1,7 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import type { PropsWithChildren } from 'react';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 const SITE_URL = PROD_WEB_APP_BASE_URL;
 
@@ -18,10 +19,6 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(function () {});
   });
 }`;
-
-const SITE_TITLE = 'Recipely — AI Recipe Generator & Cooking Community';
-const SITE_DESCRIPTION =
-  'Discover, create, and share recipes with an AI sous-chef. Generate a full recipe from a craving, browse by cuisine, track nutrition, and cook smarter with Recipely.';
 
 /**
  * Customizes the static HTML shell Expo Router emits for web export. Without
@@ -46,17 +43,21 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta charSet="utf-8" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no" />
-      <title>{SITE_TITLE}</title>
-      <meta name="description" content={SITE_DESCRIPTION} />
+      {/* No <title> here. Expo Router mounts react-helmet-async at the root
+          and it emits its OWN <title> ahead of anything this shell writes, so
+          a title here is a SECOND one — invalid, and never the one
+          `document.title` reads. `PageTitle` fills helmet's element instead.
+          The static tags below are helmet-free and stay. */}
+      <meta name="description" content={SiteMetadata.description} />
       <link rel="canonical" href={SITE_URL} />
       <meta property="og:type" content="website" />
       <meta property="og:url" content={SITE_URL} />
-      <meta property="og:title" content={SITE_TITLE} />
-      <meta property="og:description" content={SITE_DESCRIPTION} />
+      <meta property="og:title" content={SiteMetadata.title} />
+      <meta property="og:description" content={SiteMetadata.description} />
       <meta property="og:image" content={`${SITE_URL}/og-image.png`} />
       <meta name="twitter:card" content="summary_large_image" />
-      <meta name="twitter:title" content={SITE_TITLE} />
-      <meta name="twitter:description" content={SITE_DESCRIPTION} />
+      <meta name="twitter:title" content={SiteMetadata.title} />
+      <meta name="twitter:description" content={SiteMetadata.description} />
       <meta name="twitter:image" content={`${SITE_URL}/og-image.png`} />
       {/* `use-credentials` is not optional here. A manifest is fetched WITHOUT
           cookies by default, even same-origin — so on dev.recipely.net, which
