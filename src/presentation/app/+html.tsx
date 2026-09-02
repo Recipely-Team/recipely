@@ -44,7 +44,11 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       <meta charSet="utf-8" />
       <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
       <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no" />
-      <title>{SiteMetadata.title}</title>
+      {/* No <title> here. Expo Router mounts react-helmet-async at the root
+          and it emits its OWN <title> ahead of anything this shell writes, so
+          a title here is a SECOND one — invalid, and never the one
+          `document.title` reads. `PageTitle` fills helmet's element instead.
+          The static tags below are helmet-free and stay. */}
       <meta name="description" content={SiteMetadata.description} />
       <link rel="canonical" href={SITE_URL} />
       <meta property="og:type" content="website" />

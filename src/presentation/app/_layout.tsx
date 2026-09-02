@@ -8,7 +8,7 @@ import { useInstagramShareImport } from '@presentation/navigation/use-instagram-
 import { usePushNotificationTap } from '@presentation/base/hooks/notifications/use-push-notification-tap';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
-import { SiteMetadata } from '@presentation/base/constants/site-metadata';
+import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { zIndices } from '@presentation/base/theme';
 import { LayoutProvider } from '@presentation/base/responsive/layout-context';
@@ -126,12 +126,6 @@ const RootStack = (): React.JSX.Element => {
       <WebShellChrome />
       <Stack
         screenOptions={{
-          // React Navigation assigns `document.title` on every navigation as
-          // `options.title ?? route.name`, so whatever `+html.tsx` wrote into
-          // the shell is replaced the moment the app mounts. Without this the
-          // tab went blank and a rendering crawler was handed an empty
-          // `<title>`. Screens with something better to say override it.
-          title: SiteMetadata.title,
           headerStyle: { backgroundColor: headerBg },
           headerTintColor: headerTint,
           headerShadowVisible: false,
@@ -170,6 +164,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="profile/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
+      <PageTitle />
       <RootTabBar />
       <ActiveTimersBar />
       <AssistantPill />
