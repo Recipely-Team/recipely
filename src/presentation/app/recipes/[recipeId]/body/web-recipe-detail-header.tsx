@@ -24,6 +24,7 @@ export interface WebRecipeDetailHeaderProps {
   isSaved: boolean;
   saveDisabled: boolean;
   onToggleSave: () => void;
+  onCopyToDraft: () => void;
 }
 
 /**
@@ -46,6 +47,7 @@ export const WebRecipeDetailHeader = ({
   isSaved,
   saveDisabled,
   onToggleSave,
+  onCopyToDraft,
 }: WebRecipeDetailHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -140,6 +142,20 @@ export const WebRecipeDetailHeader = ({
             </ThemedText>
           </Pressable>
         ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t().recipes.copyToDrafts}
+          onPress={onCopyToDraft}
+          style={({ pressed }) => [
+            styles.pill,
+            { backgroundColor: colors.surface, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
+          ]}
+        >
+          <Ionicons name="copy-outline" size={iconSizes.md} color={colors.text} />
+          <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
+            {t().recipes.copyToDrafts}
+          </ThemedText>
+        </Pressable>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={isSaved ? t().recipes.saved : t().recipes.save}

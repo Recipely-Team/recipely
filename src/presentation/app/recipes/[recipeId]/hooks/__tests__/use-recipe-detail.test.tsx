@@ -59,8 +59,19 @@ const USER_ID = 'user-1';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
+/**
+ * One push spy for the whole file. The `mock` prefix is required: jest
+ * forbids a mock factory from closing over anything else.
+ *
+ * One spy for the whole file, not a fresh one per `useRouter()` call.
+ * A per-call mock is unobservable: the hook holds the router it got on its
+ * first render, so an assertion in the test would be looking at a different
+ * function than the one the hook called.
+ */
+const mockRouterPush = jest.fn();
+
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ push: jest.fn(), back: jest.fn(), replace: jest.fn() })),
+  useRouter: jest.fn(() => ({ push: mockRouterPush, back: jest.fn(), replace: jest.fn() })),
   usePathname: jest.fn(() => `/recipes/${'recipe-3'}`),
   useLocalSearchParams: jest.fn(() => ({ recipeId: 'recipe-3' })),
 }));
@@ -182,6 +193,8 @@ const buildRecipe = (likedByMe: boolean): RecipeEntity => {
 interface StoreOverrides {
   /** Replaces the default `loading` detail state with a loaded recipe. */
   detailState?: RecipeDetailStoreState['byId'][string];
+  /** Mounts signed-out, so the guest gate is the thing under test. */
+  signedOut?: boolean;
   /** Seeds the likes-store overlay; empty by default (nothing synced yet). */
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
@@ -201,7 +214,9 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
   const authStore = create<AuthStoreState>(
     () =>
       ({
-        state: { status: 'authenticated', session: buildSession(USER_ID) },
+        state: overrides.signedOut === true
+          ? { status: 'unauthenticated' }
+          : { status: 'authenticated', session: buildSession(USER_ID) },
       }) as unknown as AuthStoreState,
   );
 
@@ -413,5 +428,43 @@ describe('useRecipeDetail — liked is the single source of truth', () => {
     const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loaded(true));
 
     expect(latest().likeCount).toBe(7);
+  });
+});
+
+/**
+ * Copying a recipe opens the editor seeded from it — and only for someone who
+ * has somewhere to put the result.
+ *
+ * A copy becomes a DRAFT, which is server state. Without the gate a signed-out
+ * visitor reaches the create screen, fills it in, and loses the lot at save —
+ * the failure arrives after the work, which is the worst place to put it. The
+ * gate is the same one `onToggleSave` uses; what these lock in is that copy is
+ * behind it too, and that the route carries the recipe id rather than a prompt
+ * (the assistant used to hand the words to the generator, which invented
+ * something adjacent and called it the same recipe).
+ */
+describe('useRecipeDetail — copying a recipe to drafts', () => {
+  it('opens the create screen seeded from this recipe', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()));
+
+    act(() => {
+      latest().onCopyToDraft();
+    });
+
+    expect(mockRouterPush).toHaveBeenCalledWith(`/create-recipe?fromRecipeId=${RECIPE_ID}`);
+  });
+
+  it('asks a signed-out visitor to sign in instead of opening the editor', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), { signedOut: true });
+
+    act(() => {
+      latest().onCopyToDraft();
+    });
+
+    // The navigation is what must NOT happen: reaching the editor is what
+    // costs the guest their work.
+    expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(latest().promptVisible).toBe(true);
+    expect(latest().promptMessage).toBe(t().recipes.signInToCopy);
   });
 });

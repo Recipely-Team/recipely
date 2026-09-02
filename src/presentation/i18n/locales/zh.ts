@@ -353,6 +353,8 @@ export const zh = {
     backToRecipes: '返回食谱',
     signInToLike: '登录后即可喜欢这份食谱。',
     signInToSave: '登录后即可收藏这份食谱。',
+    copyToDrafts: '复制到我的草稿',
+    signInToCopy: '登录后即可复制这份食谱。',
   },
   settings: {
     title: '设置',

@@ -356,6 +356,8 @@ export const en = {
     backToRecipes: 'Back to recipes',
     signInToLike: 'Sign in to like this recipe.',
     signInToSave: 'Sign in to save this recipe.',
+    copyToDrafts: 'Copy to my drafts',
+    signInToCopy: 'Sign in to copy this recipe.',
   },
   settings: {
     title: 'Settings',
