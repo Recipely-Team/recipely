@@ -26,6 +26,7 @@ import {
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
+import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { recipeWebUrl } from '@infrastructure/constants/api/api-hosts';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
@@ -122,6 +123,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
 
   return (
     <KeyboardAvoider style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* Every recipe is its own URL; a crawler that finds them all called
+          "Recipely" has found one page repeated, not a catalogue. */}
+      <PageTitle subject={vm.recipe?.name} />
       <ResponsiveContainer route="recipeDetail" gutter={false} fill>
         <ScrollView
           ref={vm.scrollViewRef}

@@ -8,6 +8,7 @@ import { useInstagramShareImport } from '@presentation/navigation/use-instagram-
 import { usePushNotificationTap } from '@presentation/base/hooks/notifications/use-push-notification-tap';
 import { AppBootstrap } from '@presentation/bootstrap/app-bootstrap';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
+import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { zIndices } from '@presentation/base/theme';
 import { LayoutProvider } from '@presentation/base/responsive/layout-context';
@@ -122,6 +123,13 @@ const RootStack = (): React.JSX.Element => {
           whatever is behind the app for the length of that animation —
           black on Android. `useWindowBackground` is the floor under this. */}
       <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* BEFORE the Stack, and that is the whole of it. helmet resolves a
+          title by taking the LAST instance pushed, and instances are pushed
+          during render — so a screen inside the Stack renders first and the
+          root would overwrite its title with the site default. Rendered here,
+          the root is the fallback every page starts from and any screen that
+          names itself wins. */}
+      <PageTitle />
       <WebShellChrome />
       <Stack
         screenOptions={{
