@@ -33,33 +33,11 @@ const pages = (dir) =>
     return entry.name.endsWith('.html') ? [full] : [];
   });
 
-/**
- * Expo Router's built-in Unmatched page, which this host never serves.
- *
- * `firebase.json` rewrites `**` to `/index.html`, so an unknown URL gets the
- * app — `+not-found.html` sits in the export unreachable. It is skipped rather
- * than fixed, and the skip is tied to the reason: if that catch-all ever goes
- * away the page becomes reachable, the exemption lifts itself, and this starts
- * failing on it. An exemption that outlives its justification is how a guard
- * quietly stops guarding.
- */
-const UNREACHABLE = '+not-found.html';
-const hasCatchAll = (() => {
-  try {
-    const config = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'firebase.json'), 'utf8'));
-    const sites = Array.isArray(config.hosting) ? config.hosting : [config.hosting];
-    return sites.some((site) => (site?.rewrites ?? []).some((r) => r.source === '**'));
-  } catch {
-    return false;
-  }
-})();
-
 const TITLE = /<title[^>]*>([\s\S]*?)<\/title>/g;
 const failures = [];
 
 for (const page of pages(dist)) {
   const where = path.relative(dist, page);
-  if (where === UNREACHABLE && hasCatchAll) continue;
   const html = fs.readFileSync(page, 'utf8');
   const titles = [...html.matchAll(TITLE)].map((m) => m[1].trim());
 

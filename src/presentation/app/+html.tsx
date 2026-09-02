@@ -20,7 +20,6 @@ if ('serviceWorker' in navigator) {
   });
 }`;
 
-
 /**
  * Customizes the static HTML shell Expo Router emits for web export. Without
  * this, the exported `index.html` has an empty `<title>` and no meta

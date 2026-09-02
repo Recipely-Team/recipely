@@ -123,6 +123,13 @@ const RootStack = (): React.JSX.Element => {
           whatever is behind the app for the length of that animation —
           black on Android. `useWindowBackground` is the floor under this. */}
       <View style={[styles.root, { backgroundColor: colors.background }]}>
+      {/* BEFORE the Stack, and that is the whole of it. helmet resolves a
+          title by taking the LAST instance pushed, and instances are pushed
+          during render — so a screen inside the Stack renders first and the
+          root would overwrite its title with the site default. Rendered here,
+          the root is the fallback every page starts from and any screen that
+          names itself wins. */}
+      <PageTitle />
       <WebShellChrome />
       <Stack
         screenOptions={{
@@ -164,7 +171,6 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="profile/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
       </Stack>
-      <PageTitle />
       <RootTabBar />
       <ActiveTimersBar />
       <AssistantPill />
