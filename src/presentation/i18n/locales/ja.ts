@@ -351,7 +351,7 @@ export const ja = {
     signInToLike: 'このレシピにいいねするにはログインしてください。',
     signInToSave: 'このレシピを保存するにはログインしてください。',
     copyToDrafts: '下書きにコピー',
-    signInToCopy: 'このレシピをコピーするにはサインインしてください。',
+    signInToCopy: 'このレシピをコピーするにはログインしてください。',
   },
   settings: {
     title: '設定',

@@ -92,6 +92,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onOpenDelete: vm.onOpenDelete,
     onRequestUnsave: () => setUnsavePending(true),
     onOpenShare: vm.onOpenShare,
+    onCopyToDraft: vm.onCopyToDraft,
     onStartCookTimer: cookTimer.start,
     onPauseTimer: cookTimer.pause,
     onResumeTimer: () => cookTimer.resume(),

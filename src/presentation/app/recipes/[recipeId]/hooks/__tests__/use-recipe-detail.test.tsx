@@ -47,6 +47,7 @@ import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
+import { StoreStatus } from '@application/store/store-status';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -60,13 +61,18 @@ const USER_ID = 'user-1';
 // ─── module mocks ────────────────────────────────────────────────────────────
 
 /**
- * One push spy for the whole file. The `mock` prefix is required: jest
- * forbids a mock factory from closing over anything else.
+ * One push spy for the whole file, not a fresh one per `useRouter()` call.
  *
- * One spy for the whole file, not a fresh one per `useRouter()` call.
- * A per-call mock is unobservable: the hook holds the router it got on its
- * first render, so an assertion in the test would be looking at a different
- * function than the one the hook called.
+ * @remarks
+ * - **Why it has to be shared.** The old factory minted a new `jest.fn()` on
+ *   every `useRouter()` call, and `useRecipeDetail` calls it on every render.
+ *   Nothing outside the factory ever held one, so no test could assert a
+ *   navigation had happened — not because the wrong spy was inspected, but
+ *   because there was none to inspect.
+ * - **Why the `mock` prefix.** Jest forbids a `jest.mock` factory from closing
+ *   over anything else; a `mock`-prefixed name is the documented exemption.
+ * - **Isolation.** `afterEach` clears call records, and no other test in this
+ *   file touches `push` / `back` / `replace`.
  */
 const mockRouterPush = jest.fn();
 
@@ -214,9 +220,14 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
   const authStore = create<AuthStoreState>(
     () =>
       ({
+        // The vocabulary, not the words. The `as unknown` cast below erases
+        // the type check, so a misspelled literal would still yield
+        // `userId === null`, still trip the guest gate, and still turn the
+        // signed-out test green — passing for a reason that has nothing to do
+        // with what it claims to prove.
         state: overrides.signedOut === true
-          ? { status: 'unauthenticated' }
-          : { status: 'authenticated', session: buildSession(USER_ID) },
+          ? { status: StoreStatus.Unauthenticated }
+          : { status: StoreStatus.Authenticated, session: buildSession(USER_ID) },
       }) as unknown as AuthStoreState,
   );
 

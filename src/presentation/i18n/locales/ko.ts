@@ -353,7 +353,7 @@ export const ko: Translations = {
     signInToLike: '이 레시피에 좋아요를 누르려면 로그인해 주세요.',
     signInToSave: '이 레시피를 저장하려면 로그인해 주세요.',
     copyToDrafts: '내 초안으로 복사',
-    signInToCopy: '이 레시피를 복사하려면 로그인해 주세요',
+    signInToCopy: '이 레시피를 복사하려면 로그인해 주세요.',
   },
   settings: {
     title: '설정',
