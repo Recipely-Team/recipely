@@ -1,11 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { t } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
-import { spacing } from '@presentation/base/theme';
+import { spacing, fontSizes, letterSpacings } from '@presentation/base/theme';
 import { mountAdsenseUnit } from '@presentation/base/widgets/ads/mount-adsense-unit.web';
+import { isFilledAdUnit } from '@presentation/base/widgets/ads/is-filled-ad-unit.web';
 import type { WebBannerAdProps } from '@presentation/base/widgets/ads/web-banner-ad-props';
 
 /** Whether this session has already filed the one report it is allowed. */
@@ -30,9 +34,20 @@ let reported = false;
  *   is a content blocker, which is neither actionable nor rare; reporting every
  *   mount would drown the crash report in it while telling us nothing the first
  *   one did not.
+ * - **The label appears only once an ad did.** An ad has to be
+ *   distinguishable from the content around it, and "Advertisement" is one of
+ *   the two wordings AdSense permits — but a label over a collapsed unit
+ *   labels nothing, and on a page whose whole problem was ads in the wrong
+ *   place, an "Advertisement" heading with no ad under it is the worst
+ *   possible thing to print. AdSense marks the element `data-ad-status`, so
+ *   the label waits for `filled` and an unfilled unit stays invisible, exactly
+ *   as it does today.
  */
 export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): React.JSX.Element | null => {
   const hostRef = useRef<View | null>(null);
+
+  const [filled, setFilled] = useState(false);
+  const colors = useTheme().colors;
 
   useEffect(() => {
     const node = hostRef.current;
@@ -49,16 +64,43 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
       );
     });
 
-    return () => node.replaceChildren();
+    // AdSense writes the verdict onto the element it was given rather than
+    // calling anything back, so watching the attribute is the only way to
+    // learn whether an ad arrived.
+    const observer = new MutationObserver(() => setFilled(isFilledAdUnit(node)));
+    observer.observe(node, { subtree: true, attributes: true, attributeFilter: [AD_STATUS_ATTRIBUTE] });
+
+    return () => {
+      observer.disconnect();
+      node.replaceChildren();
+    };
   }, [slotId]);
 
   if (slotId === CharConstants.empty) return null;
 
-  return <View ref={hostRef} style={styles.slot} accessibilityLabel={accessibilityLabel} />;
+  return (
+    <View style={styles.slot} accessibilityLabel={accessibilityLabel}>
+      {filled ? (
+        <ThemedText style={[styles.label, { color: colors.textMuted }]}>
+          {t().createRecipe.adLabel}
+        </ThemedText>
+      ) : null}
+      <View ref={hostRef} />
+    </View>
+  );
 };
+
+/** The attribute AdSense writes its verdict into; the only one worth waking for. */
+const AD_STATUS_ATTRIBUTE = 'data-ad-status';
 
 const styles = StyleSheet.create({
   slot: {
     paddingVertical: spacing.sm,
+    gap: spacing.xs,
+  },
+  label: {
+    fontSize: fontSizes.micro,
+    letterSpacing: letterSpacings.wider,
+    textTransform: 'uppercase',
   },
 });
