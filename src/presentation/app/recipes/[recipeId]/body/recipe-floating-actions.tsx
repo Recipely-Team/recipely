@@ -11,6 +11,7 @@ export interface RecipeFloatingActionsProps {
   isSaved: boolean;
   saveDisabled: boolean;
   onShare: () => void;
+  onCopyToDraft: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
 }
@@ -25,6 +26,7 @@ export const RecipeFloatingActions = ({
   isSaved,
   saveDisabled,
   onShare,
+  onCopyToDraft,
   onToggleLike,
   onToggleSave,
 }: RecipeFloatingActionsProps): React.JSX.Element => {
@@ -39,6 +41,14 @@ export const RecipeFloatingActions = ({
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
         <Ionicons name="share-social-outline" size={iconSizes.xl} color={colors.onOverlay} />
+      </Pressable>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={t().recipes.copyToDrafts}
+        onPress={onCopyToDraft}
+        style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
+      >
+        <Ionicons name="copy-outline" size={iconSizes.xl} color={colors.onOverlay} />
       </Pressable>
       <Pressable
         onPress={onToggleLike}

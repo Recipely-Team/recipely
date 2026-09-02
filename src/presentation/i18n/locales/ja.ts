@@ -350,6 +350,8 @@ export const ja = {
     backToRecipes: 'レシピ一覧に戻る',
     signInToLike: 'このレシピにいいねするにはログインしてください。',
     signInToSave: 'このレシピを保存するにはログインしてください。',
+    copyToDrafts: '下書きにコピー',
+    signInToCopy: 'このレシピをコピーするにはログインしてください。',
   },
   settings: {
     title: '設定',

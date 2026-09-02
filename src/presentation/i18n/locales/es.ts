@@ -350,6 +350,8 @@ export const es = {
     backToRecipes: 'Volver a recetas',
     signInToLike: 'Inicia sesión para indicar que te gusta esta receta.',
     signInToSave: 'Inicia sesión para guardar esta receta.',
+    copyToDrafts: 'Copiar a mis borradores',
+    signInToCopy: 'Inicia sesión para copiar esta receta.',
   },
   settings: {
     title: 'Ajustes',

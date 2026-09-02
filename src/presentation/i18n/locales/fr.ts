@@ -350,6 +350,8 @@ export const fr = {
     backToRecipes: 'Retour aux recettes',
     signInToLike: 'Connectez-vous pour aimer cette recette.',
     signInToSave: 'Connectez-vous pour enregistrer cette recette.',
+    copyToDrafts: 'Copier dans mes brouillons',
+    signInToCopy: 'Connectez-vous pour copier cette recette.',
   },
   settings: {
     title: 'Paramètres',

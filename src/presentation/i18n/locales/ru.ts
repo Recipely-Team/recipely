@@ -350,6 +350,8 @@ export const ru = {
     backToRecipes: 'Назад к рецептам',
     signInToLike: 'Войдите, чтобы отметить этот рецепт.',
     signInToSave: 'Войдите, чтобы сохранить этот рецепт.',
+    copyToDrafts: 'Скопировать в черновики',
+    signInToCopy: 'Войдите, чтобы скопировать этот рецепт.',
   },
   settings: {
     title: 'Настройки',

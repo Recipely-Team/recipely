@@ -352,6 +352,8 @@ export const hi: Translations = {
     backToRecipes: 'रेसिपी पर वापस जाएँ',
     signInToLike: 'इस रेसिपी को पसंद करने के लिए साइन इन करें।',
     signInToSave: 'इस रेसिपी को सेव करने के लिए साइन इन करें।',
+    copyToDrafts: 'मेरे ड्राफ़्ट में कॉपी करें',
+    signInToCopy: 'इस रेसिपी को कॉपी करने के लिए साइन इन करें।',
   },
   settings: {
     title: 'सेटिंग्स',
