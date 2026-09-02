@@ -350,6 +350,8 @@ export const de = {
     backToRecipes: 'Zurück zu den Rezepten',
     signInToLike: 'Melde dich an, um dieses Rezept zu liken.',
     signInToSave: 'Melde dich an, um dieses Rezept zu speichern.',
+    copyToDrafts: 'In meine Entwürfe kopieren',
+    signInToCopy: 'Melde dich an, um dieses Rezept zu kopieren.',
   },
   settings: {
     title: 'Einstellungen',

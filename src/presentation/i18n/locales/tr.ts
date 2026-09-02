@@ -353,6 +353,8 @@ export const tr: Translations = {
     backToRecipes: 'Tariflere dön',
     signInToLike: 'Bu tarifi beğenmek için giriş yap.',
     signInToSave: 'Bu tarifi kaydetmek için giriş yap.',
+    copyToDrafts: 'Taslaklarıma kopyala',
+    signInToCopy: 'Bu tarifi kopyalamak için giriş yap.',
   },
   settings: {
     title: 'Ayarlar',

@@ -349,7 +349,9 @@ export const ar = {
     refreshing: "جارٍ التحديث…",
     backToRecipes: "العودة إلى الوصفات",
     signInToLike: "سجّل الدخول للإعجاب بهذه الوصفة.",
-    signInToSave: "سجّل الدخول لحفظ هذه الوصفة."
+    signInToSave: "سجّل الدخول لحفظ هذه الوصفة.",
+    copyToDrafts: 'نسخ إلى مسوداتي',
+    signInToCopy: 'سجّل الدخول لنسخ هذه الوصفة.',
   },
   settings: {
     title: "الإعدادات",

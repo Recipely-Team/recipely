@@ -350,6 +350,8 @@ export const id = {
     backToRecipes: 'Kembali ke resep',
     signInToLike: 'Masuk untuk menyukai resep ini.',
     signInToSave: 'Masuk untuk menyimpan resep ini.',
+    copyToDrafts: 'Salin ke draf saya',
+    signInToCopy: 'Masuk untuk menyalin resep ini.',
   },
   settings: {
     title: 'Pengaturan',

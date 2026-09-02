@@ -1,6 +1,3 @@
-import { router } from 'expo-router';
-import type { Href } from 'expo-router';
-import { RoutePaths } from '@presentation/base/constants';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -47,6 +44,8 @@ interface AssistantRecipeActionsDeps {
   onOpenDelete: () => void;
   onRequestUnsave: () => void;
   onOpenShare: () => void;
+  /** Opens the create screen seeded from this recipe; carries the guest gate. */
+  onCopyToDraft: () => void;
   onStartCookTimer: () => void;
   onPauseTimer: () => void;
   onResumeTimer: () => void;
@@ -95,6 +94,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     onOpenDelete,
     onRequestUnsave,
     onOpenShare,
+    onCopyToDraft,
     onStartCookTimer,
     onPauseTimer,
     onResumeTimer,
@@ -296,17 +296,22 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.DuplicateRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // The create screen is opened seeded FROM this recipe, rather than the
-      // words being handed to the generator — which invented something
-      // adjacent and called it the same recipe. What the user gets is a copy
-      // they can then change, in the editor, where they can see it.
-      router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href);
+      // The screen's own action, not a second copy of it — the same reason
+      // `onPostComment`, `onOpenShare` and `onOpenDelete` are handed over
+      // rather than rebuilt here. It carries the guest gate with it, so the
+      // spoken path and the tapped one cannot drift on who is allowed to copy.
+      //
+      // What it opens is the create screen seeded FROM this recipe, rather
+      // than the words being handed to the generator — which invented
+      // something adjacent and called it the same recipe. What the user gets
+      // is a copy they can then change, in the editor, where they can see it.
+      onCopyToDraft();
       // `awaiting`, because the copy is not made yet: the screen still has to
       // fetch the recipe and lay it in, and a chip saying it was copied before
       // that happened would be claiming something the user could look at and
       // find untrue.
       return { ok: true, awaiting: true, title: recipeName };
-    }, [recipeId, recipeName]),
+    }, [onCopyToDraft, recipeName]),
   );
 
   useAssistantAction(

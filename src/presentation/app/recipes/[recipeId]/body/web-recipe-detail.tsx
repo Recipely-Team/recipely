@@ -41,6 +41,7 @@ export interface WebRecipeDetailProps {
   onBack: () => void;
   onToggleLike: () => void;
   onToggleSave: () => void;
+  onCopyToDraft: () => void;
   onDelete: () => void;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
@@ -106,6 +107,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         isSaved={props.isSaved}
         saveDisabled={props.saveDisabled}
         onToggleSave={props.onToggleSave}
+        onCopyToDraft={props.onCopyToDraft}
       />
 
       <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>

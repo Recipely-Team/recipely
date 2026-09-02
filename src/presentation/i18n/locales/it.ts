@@ -350,6 +350,8 @@ export const it = {
     backToRecipes: 'Torna alle ricette',
     signInToLike: 'Accedi per mettere Mi piace a questa ricetta.',
     signInToSave: 'Accedi per salvare questa ricetta.',
+    copyToDrafts: 'Copia nelle mie bozze',
+    signInToCopy: 'Accedi per copiare questa ricetta.',
   },
   settings: {
     title: 'Impostazioni',

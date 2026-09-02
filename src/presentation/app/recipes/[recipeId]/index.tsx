@@ -92,6 +92,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onOpenDelete: vm.onOpenDelete,
     onRequestUnsave: () => setUnsavePending(true),
     onOpenShare: vm.onOpenShare,
+    onCopyToDraft: vm.onCopyToDraft,
     onStartCookTimer: cookTimer.start,
     onPauseTimer: cookTimer.pause,
     onResumeTimer: () => cookTimer.resume(),
@@ -157,6 +158,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onBack={() => router.back()}
                   onToggleLike={vm.onToggleLike}
                   onToggleSave={vm.onToggleSave}
+                  onCopyToDraft={vm.onCopyToDraft}
                   onDelete={vm.onOpenDelete}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}
@@ -252,6 +254,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}
               onShare={vm.onOpenShare}
+              onCopyToDraft={vm.onCopyToDraft}
               onToggleLike={vm.onToggleLike}
               onToggleSave={vm.onToggleSave}
             />

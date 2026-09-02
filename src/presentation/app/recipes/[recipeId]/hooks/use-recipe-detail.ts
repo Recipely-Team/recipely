@@ -292,6 +292,23 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     /** Posts text the caller already has — the assistant's path. */
     onPostComment: (text: string) =>
       requestGate(() => void handleAddComment(text), t().comments.signInToComment),
+    /**
+     * Opens the create screen seeded from this recipe.
+     *
+     * Behind the guest gate because a copy becomes a DRAFT, which is server
+     * state a signed-out visitor has nowhere to put — they would have reached
+     * the editor, filled it in and lost the lot on save. Same route the
+     * assistant's `duplicateRecipe` uses, so both paths land the user in the
+     * editor looking at the copy rather than being told one was made
+     * somewhere they cannot see.
+     */
+    onCopyToDraft: () =>
+      requestGate(
+        // Cast for the same reason as `onGoToSignIn`: a path built at runtime
+        // cannot be checked against expo-router's typed-routes union.
+        () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
+        t().recipes.signInToCopy,
+      ),
     onLoadMoreComments: () => void commentsStore.getState().loadMore(recipeId),
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
