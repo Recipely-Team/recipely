@@ -1,4 +1,32 @@
+# Every route is either publisher content (listed in the sitemap) or is hidden
+# from crawlers here. There is no third category — a screen Google can reach
+# but that has nothing on it is what "ads on screens without publisher
+# content" means, and it is judged per SITE, not per ad. Kept honest by
+# scripts/assert-crawlable-surface.mjs, which fails the build when a route is
+# in neither list.
 User-agent: *
-Allow: /
+
+# Sign-in, sign-up and account recovery: forms.
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /verify-code
+Disallow: /onboarding
+
+# Behind the account: nothing here renders for a signed-out crawler.
+Disallow: /settings
+Disallow: /profile
+Disallow: /edit-profile
+Disallow: /notifications
+Disallow: /my-recipes
+
+# Authoring flows: wait screens and wizards.
+Disallow: /create-recipe
+Disallow: /import-recipe
+Disallow: /ai-generate
+
+# The router's own debug index.
+Disallow: /_sitemap
 
 Sitemap: https://recipely.net/sitemap.xml
