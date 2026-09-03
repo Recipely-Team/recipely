@@ -481,6 +481,21 @@ blocking.
     `check:structure` (rule T), whose placement allowlist is a one-line diff
     someone has to justify.
 
+23f. **Every route is publisher content or is hidden from crawlers** — rule 23e
+    governs where an ad SITS; this governs what Google can reach, and the notice
+    is judged per site. The origin used to end its hosting config in a catch-all
+    rewrite, so every url on it — `/asdfqwer`, `/wp-admin`, `/login.php` —
+    answered **200** with the empty app shell: an unbounded supply of screens
+    with no content, which is the notice's own wording. So a route is in exactly
+    one of two states: listed in `public/sitemap.xml` (content), or `Disallow`ed
+    in `public/robots.txt` (a form, a wizard, an account page). Neither, or
+    both, fails the gate. A `[param]` route is content when its parent is listed
+    AND `firebase.json` rewrites it — a dynamic route with no rewrite answers
+    404 to a real visitor, the same mistake pointing the other way. Unknown
+    paths reach Firebase's `404.html`, which `emit-hosting-404.mjs` copies from
+    the app's own `+not-found` export. **Enforced mechanically** by
+    `assert-crawlable-surface.mjs`, in the `check:structure` chain.
+
 24. **A bug fix ships the test that would have caught it** — this is how the repo gets
     harder to break instead of merely getting patched. Three steps, in order:
 

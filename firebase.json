@@ -30,7 +30,7 @@
           "destination": "/about/index.html"
         },
         {
-          "source": "**",
+          "source": "/recipes/*",
           "destination": "/index.html"
         }
       ],
@@ -117,7 +117,7 @@
           "destination": "/about/index.html"
         },
         {
-          "source": "**",
+          "source": "/recipes/*",
           "destination": "/index.html"
         }
       ],
