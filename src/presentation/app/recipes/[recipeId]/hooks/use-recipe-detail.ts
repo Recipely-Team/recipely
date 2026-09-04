@@ -7,6 +7,8 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
+import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
+import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
@@ -260,6 +262,15 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
+  // A recipe with no figures may simply be newer than the backend's
+  // calculator; `useNutritionRecheck` asks once more before the screen calls
+  // them absent. Nothing to wait for until a recipe has actually arrived.
+  const isNutritionCalculating = useNutritionRecheck(
+    recipeId,
+    recipe === null || hasReportedNutrition(recipe.caloriesPerServing, recipe.nutrition),
+    load,
+  );
+
   return {
     recipeId,
     status,
@@ -269,6 +280,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     media,
     firstImageUrl,
     cuisineName,
+    isNutritionCalculating,
     liked,
     likeCount,
     isOwner,

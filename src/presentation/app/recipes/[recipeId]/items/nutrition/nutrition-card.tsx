@@ -7,11 +7,14 @@ import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { NutritionTile } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-tile';
 import type { NutritionTileProps } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-tile';
 import { ValueConstants } from '@core/constants';
+import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
 
 export interface NutritionCardProps {
   caloriesPerServing: number;
   servings: number;
   nutrition?: RecipeNutrition;
+  /** The backend is still computing; the empty state says so instead of "none". */
+  isCalculating: boolean;
 }
 
 /**
@@ -31,8 +34,20 @@ const reported = (value: number | undefined): number | undefined =>
  * Always renders: a recipe with no nutrition at all says so explicitly rather
  * than returning `null`, because a silently missing section is indistinguishable
  * from a broken screen — which is exactly how it was reported.
+ *
+ * @remarks
+ * - **"None" and "not yet" are different sentences.** The backend computes
+ *   these figures after the recipe is saved, so a recipe opened moments after
+ *   publishing has none through no fault of its own. Saying it has no
+ *   nutritional information is a claim about the recipe; the truth was a claim
+ *   about the clock.
  */
-export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: NutritionCardProps): React.JSX.Element => {
+export const NutritionCard = ({
+  caloriesPerServing,
+  servings,
+  nutrition,
+  isCalculating,
+}: NutritionCardProps): React.JSX.Element => {
   const { colors } = useTheme();
   const strings = t().nutrition;
 
@@ -42,7 +57,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
   const fat = reported(nutrition?.fat);
   const fiber = reported(nutrition?.fiber);
 
-  const hasAnyData = [calories, protein, carbs, fat, fiber].some((v) => v !== undefined);
+  const hasAnyData = hasReportedNutrition(caloriesPerServing, nutrition);
 
   const tiles: NutritionTileProps[] = [
     {
@@ -104,7 +119,7 @@ export const NutritionCard = ({ caloriesPerServing, servings, nutrition }: Nutri
         </>
       ) : (
         <ThemedText variant="caption" muted>
-          {strings.unavailable}
+          {isCalculating ? strings.calculating : strings.unavailable}
         </ThemedText>
       )}
     </View>

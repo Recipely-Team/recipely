@@ -24,6 +24,8 @@ export interface RecipeOverviewProps {
   commentTotal: number;
   authorState: RecipeAuthorState;
   onToggleLike: () => void;
+  /** The backend is still computing nutrition; the card's empty state says so. */
+  isNutritionCalculating: boolean;
 }
 
 /**
@@ -38,6 +40,7 @@ export const RecipeOverview = ({
   commentTotal,
   authorState,
   onToggleLike,
+  isNutritionCalculating,
 }: RecipeOverviewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -138,6 +141,7 @@ export const RecipeOverview = ({
         caloriesPerServing={recipe.caloriesPerServing}
         servings={recipe.servings}
         nutrition={recipe.nutrition}
+        isCalculating={isNutritionCalculating}
       />
 
       {recipe.tags.length > ValueConstants.zero ? (

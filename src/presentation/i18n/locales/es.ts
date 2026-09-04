@@ -684,6 +684,7 @@ export const es = {
     kcal: 'kcal',
     g: 'g',
     unavailable: 'Esta receta aún no tiene información nutricional.',
+    calculating: 'Calculando la información nutricional…',
   },
   comments: {
     title: 'Comentarios',

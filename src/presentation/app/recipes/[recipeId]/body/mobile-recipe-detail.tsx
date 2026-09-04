@@ -21,6 +21,8 @@ export interface MobileRecipeDetailProps {
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
+  /** The backend is still computing nutrition; the empty state says so. */
+  isNutritionCalculating: boolean;
   userId: string | null;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
@@ -70,6 +72,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           commentTotal={commentState?.total ?? ValueConstants.zero}
           authorState={props.authorState}
           onToggleLike={props.onToggleLike}
+          isNutritionCalculating={props.isNutritionCalculating}
         />
 
         <RecipeSteps
