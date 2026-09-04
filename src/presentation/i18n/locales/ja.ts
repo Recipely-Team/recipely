@@ -684,6 +684,7 @@ export const ja = {
     kcal: 'kcal',
     g: 'g',
     unavailable: 'このレシピにはまだ栄養情報がありません。',
+    calculating: '栄養情報を計算しています…',
   },
   comments: {
     title: 'コメント',

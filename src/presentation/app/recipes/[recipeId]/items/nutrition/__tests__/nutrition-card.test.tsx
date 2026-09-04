@@ -16,6 +16,7 @@ describe('NutritionCard — fiber row', () => {
       <NutritionCard
         caloriesPerServing={320}
         servings={2}
+        isCalculating={false}
         nutrition={{ protein: 10, carbs: 40, fat: 8, fiber: 11 }}
       />,
     );
@@ -33,6 +34,7 @@ describe('NutritionCard — fiber row', () => {
       <NutritionCard
         caloriesPerServing={320}
         servings={2}
+        isCalculating={false}
         nutrition={{ protein: 10, carbs: 40, fat: 8, fiber: 0 }}
       />,
     );
@@ -53,7 +55,7 @@ describe('NutritionCard — fiber row', () => {
 describe('NutritionCard — absent figures', () => {
   it('says so explicitly when the recipe carries no nutrition at all', () => {
     const { root } = renderComponent(
-      <NutritionCard caloriesPerServing={0} servings={4} nutrition={undefined} />,
+      <NutritionCard caloriesPerServing={0} servings={4} nutrition={undefined} isCalculating={false} />,
     );
 
     const texts = textContent(root);
@@ -67,6 +69,7 @@ describe('NutritionCard — absent figures', () => {
       <NutritionCard
         caloriesPerServing={0}
         servings={4}
+        isCalculating={false}
         nutrition={{ protein: 0, carbs: 0, fat: 0, fiber: 0 }}
       />,
     );
@@ -77,7 +80,7 @@ describe('NutritionCard — absent figures', () => {
   it('shows an em dash per missing macro when calories came through alone', () => {
     // The exact live shape of "Bol Kakaolu Kek": 350 kcal, every macro absent.
     const { root } = renderComponent(
-      <NutritionCard caloriesPerServing={350} servings={4} nutrition={undefined} />,
+      <NutritionCard caloriesPerServing={350} servings={4} nutrition={undefined} isCalculating={false} />,
     );
 
     const texts = textContent(root);
@@ -90,7 +93,7 @@ describe('NutritionCard — absent figures', () => {
 
   it('drops the unit alongside a dashed value', () => {
     const { root } = renderComponent(
-      <NutritionCard caloriesPerServing={350} servings={4} nutrition={{ protein: 12 }} />,
+      <NutritionCard caloriesPerServing={350} servings={4} nutrition={{ protein: 12 }} isCalculating={false} />,
     );
 
     const texts = textContent(root);

@@ -688,6 +688,7 @@ export const zh = {
     kcal: '千卡',
     g: 'g',
     unavailable: '这份食谱暂时还没有营养信息。',
+    calculating: '正在计算营养信息…',
   },
   comments: {
     title: '评论',

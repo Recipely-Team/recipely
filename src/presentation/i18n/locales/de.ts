@@ -684,6 +684,7 @@ export const de = {
     kcal: 'kcal',
     g: 'g',
     unavailable: 'Für dieses Rezept sind noch keine Nährwertangaben verfügbar.',
+    calculating: 'Nährwertangaben werden berechnet …',
   },
   comments: {
     title: 'Kommentare',
