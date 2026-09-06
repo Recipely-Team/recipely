@@ -55,6 +55,8 @@ const IV_BYTES = 12;
 const REQUEST_TIMEOUT_MS = 20_000;
 const ATTEMPTS = 3;
 const RETRY_DELAY_MS = 2_000;
+/** Far past any catalogue this site will have, and short of an infinite loop. */
+const MAX_PAGES = 200;
 /** A recipe below this is a stub, not something a reader came for. */
 const MIN_INGREDIENTS = 3;
 const MIN_INSTRUCTIONS = 3;
@@ -83,6 +85,10 @@ const openEnvelope = (envelope, key) => {
   const sealed = Buffer.from(envelope.payload, 'base64');
   const iv = Buffer.from(envelope.iv, 'base64');
   if (iv.length !== IV_BYTES) throw new Error('envelope iv is not 12 bytes');
+  // Guarded for the same reason `decryptEnvelope` guards it: without this, a
+  // short payload reaches `subarray` with a negative offset and comes back as
+  // Node's "Invalid authentication tag length", which names the wrong problem.
+  if (sealed.length <= AUTH_TAG_BYTES) throw new Error('envelope payload is shorter than its tag');
   const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
   decipher.setAuthTag(sealed.subarray(sealed.length - AUTH_TAG_BYTES));
   const plain = Buffer.concat([
@@ -110,19 +116,33 @@ const fetchJson = async (baseUrl, key, route) => {
         headers: { Accept: 'application/json' },
         signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-      if (!response.ok) throw new Error(`HTTP ${String(response.status)} for ${route}`);
+      if (!response.ok) {
+        // A 4xx is an answer, not a hiccup — a recipe deleted between the list
+        // and its detail will still be gone in two seconds' time.
+        const permanent = response.status >= 400 && response.status < 500;
+        throw Object.assign(new Error(`HTTP ${String(response.status)} for ${route}`), { permanent });
+      }
       const body = await response.json();
       // Public reads come back sealed; an error body may not be.
       return typeof body?.payload === 'string' ? openEnvelope(body, key) : body;
     } catch (error) {
       lastError = error;
+      if (error?.permanent === true) break;
       if (attempt < ATTEMPTS) await sleep(RETRY_DELAY_MS * attempt);
     }
   }
   throw lastError;
 };
 
-/** Every approved recipe the feed would show, across as many pages as it takes. */
+/**
+ * Every approved recipe the feed would show, across as many pages as it takes.
+ *
+ * The page count is capped. `summaries.length >= data.total` is the only thing
+ * that normally ends this loop, and a backend that stopped honouring `page`
+ * would satisfy neither that nor the empty-page check — it would hand back the
+ * first twenty rows for ever, and the build would hang against production with
+ * nothing to read in the log.
+ */
 const fetchAllRecipes = async (baseUrl, key) => {
   const summaries = [];
   let page = 1;
@@ -130,6 +150,12 @@ const fetchAllRecipes = async (baseUrl, key) => {
     const { data } = await fetchJson(baseUrl, key, `/recipes?page=${String(page)}`);
     summaries.push(...data.items);
     if (summaries.length >= data.total || data.items.length === 0) break;
+    if (page >= MAX_PAGES) {
+      throw new Error(
+        `prerender-recipes: still asking for page ${String(page)} of the recipe list — ` +
+          `${String(summaries.length)} row(s) fetched against a reported total of ${String(data.total)}`,
+      );
+    }
     page += 1;
   }
 
@@ -302,16 +328,29 @@ const noscriptArticle = (recipe) => {
 /**
  * Substitutes `text` for whatever `pattern`'s single capture group holds.
  *
- * A function replacement, not a template string: `$&` and `$1` are live
- * substitutions inside a replacement string, and a recipe is free to be called
- * anything at all — `$5 Pizza` would have replaced itself with a fragment of
- * the tag it was being written into.
+ * @remarks
+ * - **A missing pattern throws.** `String.replace` answers a miss by returning
+ *   the string unchanged, which here means a page that quietly keeps the
+ *   SITE's description, the site's canonical and the site's Open Graph card —
+ *   forty-two undifferentiated pages again, with every gate green, because
+ *   `assert-page-titles` guards the title and nothing guards these. The head
+ *   these patterns read belongs to `+html.tsx` and will be edited by someone
+ *   who has never heard of this script; the build is where they find out.
+ * - **A function replacement, not a template string.** `$&` and `$1` are live
+ *   substitutions inside a replacement string, and a recipe is free to be
+ *   called anything at all — `$5 Pizza` would have replaced itself with a
+ *   fragment of the tag it was being written into.
  */
-const substitute = (html, pattern, text) =>
-  html.replace(pattern, (_match, before, after) => `${before}${text}${after}`);
+const substitute = (html, pattern, text) => {
+  if (!pattern.test(html)) throw new Error(`the export's shell has no ${String(pattern)}`);
+  return html.replace(pattern, (_match, before, after) => `${before}${text}${after}`);
+};
 
-/** Puts `fragment` immediately before the first `tag`, for the same reason. */
-const insertBefore = (html, tag, fragment) => html.replace(tag, () => `${fragment}${tag}`);
+/** Puts `fragment` immediately before the first `tag`. Same contract. */
+const insertBefore = (html, tag, fragment) => {
+  if (!html.includes(tag)) throw new Error(`the export's shell has no ${tag}`);
+  return html.replace(tag, () => `${fragment}${tag}`);
+};
 
 /** Replaces the content of an existing meta tag, matched on its identifying attribute. */
 const setMeta = (html, attribute, name, content) =>
