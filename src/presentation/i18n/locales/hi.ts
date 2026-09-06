@@ -680,6 +680,7 @@ export const hi: Translations = {
     kcal: 'kcal',
     g: 'g',
     unavailable: 'इस रेसिपी के लिए अभी पोषण जानकारी उपलब्ध नहीं है।',
+    calculating: 'पोषण जानकारी की गणना की जा रही है…',
   },
   comments: {
     title: 'टिप्पणियाँ',

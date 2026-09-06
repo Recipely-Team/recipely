@@ -683,7 +683,8 @@ export const ar = {
     fiberValue: "الألياف: {value}غ",
     kcal: "سعرة",
     g: "غ",
-    unavailable: "لا توجد معلومات غذائية لهذه الوصفة بعد."
+    unavailable: "لا توجد معلومات غذائية لهذه الوصفة بعد.",
+    calculating: "يتم حساب المعلومات الغذائية…",
   },
   comments: {
     title: "التعليقات",

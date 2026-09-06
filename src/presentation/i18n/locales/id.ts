@@ -684,6 +684,7 @@ export const id = {
     kcal: 'kkal',
     g: 'g',
     unavailable: 'Belum ada informasi gizi untuk resep ini.',
+    calculating: 'Menghitung informasi gizi…',
   },
   comments: {
     title: 'Komentar',

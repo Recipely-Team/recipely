@@ -680,6 +680,7 @@ export const ko: Translations = {
     kcal: 'kcal',
     g: 'g',
     unavailable: '이 레시피에는 아직 영양 정보가 없어요.',
+    calculating: '영양 정보를 계산하고 있어요…',
   },
   comments: {
     title: '댓글',

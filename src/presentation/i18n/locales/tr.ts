@@ -688,6 +688,7 @@ export const tr: Translations = {
     kcal: 'kcal',
     g: 'g',
     unavailable: 'Bu tarif için besin değeri bilgisi henüz yok.',
+    calculating: 'Besin değerleri hesaplanıyor…',
   },
   comments: {
     title: 'Yorumlar',

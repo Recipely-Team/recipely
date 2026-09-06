@@ -10,11 +10,14 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
   checkedIngredients: boolean[];
   onToggleIngredient: (index: number) => void;
+  /** The backend is still computing nutrition; the empty state says so. */
+  isNutritionCalculating: boolean;
 }
 
 /** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and a nutrition tile grid. */
@@ -22,6 +25,7 @@ export const WebRecipeDetailSidebar = ({
   recipe,
   checkedIngredients,
   onToggleIngredient,
+  isNutritionCalculating,
 }: WebRecipeDetailSidebarProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const strings = t();
@@ -39,11 +43,7 @@ export const WebRecipeDetailSidebar = ({
     { label: strings.nutrition.carbs, value: gram(recipe.nutrition?.carbs) },
     { label: strings.nutrition.fat, value: gram(recipe.nutrition?.fat) },
   ];
-  const hasNutrition =
-    recipe.caloriesPerServing > ValueConstants.zero ||
-    (recipe.nutrition?.protein ?? ValueConstants.zero) > ValueConstants.zero ||
-    (recipe.nutrition?.carbs ?? ValueConstants.zero) > ValueConstants.zero ||
-    (recipe.nutrition?.fat ?? ValueConstants.zero) > ValueConstants.zero;
+  const hasNutrition = hasReportedNutrition(recipe.caloriesPerServing, recipe.nutrition);
 
   const metaRows = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
@@ -155,7 +155,7 @@ export const WebRecipeDetailSidebar = ({
           </View>
         ) : (
           <ThemedText variant="caption" muted>
-            {strings.nutrition.unavailable}
+            {isNutritionCalculating ? strings.nutrition.calculating : strings.nutrition.unavailable}
           </ThemedText>
         )}
       </View>

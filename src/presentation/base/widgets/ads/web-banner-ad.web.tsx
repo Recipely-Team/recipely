@@ -8,7 +8,8 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { spacing } from '@presentation/base/theme';
 import { mountAdsenseUnit } from '@presentation/base/widgets/ads/mount-adsense-unit.web';
-import { isFilledAdUnit } from '@presentation/base/widgets/ads/is-filled-ad-unit.web';
+import { readAdUnitStatus } from '@presentation/base/widgets/ads/read-ad-unit-status.web';
+import { AdUnitStatus } from '@presentation/base/widgets/ads/ad-unit-status';
 import type { WebBannerAdProps } from '@presentation/base/widgets/ads/web-banner-ad-props';
 
 /** Whether this session has already filed the one report it is allowed. */
@@ -25,10 +26,16 @@ let reported = false;
  *   container and AdSense owns its contents, so the two never reconcile the
  *   same node — the effect cleans the host out on unmount, which is what lets a
  *   route change re-request an ad instead of re-showing the last one.
- * - **The space is not reserved.** No `minHeight`: an unfilled or blocked unit
- *   should leave the page as it found it, and a reserved gap reads as something
- *   that failed to load. The vertical padding only separates a banner that DID
- *   arrive from the content around it, and collapses to nothing with it.
+ * - **An unfilled unit is collapsed, and it takes collapsing to do it.** This
+ *   component reserves nothing — no `minHeight`, and the padding belongs to a
+ *   banner that arrived — but the space was never ours to withhold: AdSense
+ *   writes `height: 280px` INLINE onto its own `<ins>` when the unit is
+ *   requested, and leaves it there after answering `unfilled`. So the feed
+ *   carried a 296px hole between the cuisine rail and the grid for every
+ *   viewer, on the one page whose emptiness is the thing under review. The
+ *   wrapper is hidden once AdSense itself has said `unfilled`; nothing is
+ *   hidden before the verdict, because the unit must be laid out at its real
+ *   width for AdSense to measure it, and a served ad is never touched.
  * - **One report per session, not one per failure.** On the web the usual cause
  *   is a content blocker, which is neither actionable nor rare; reporting every
  *   mount would drown the crash report in it while telling us nothing the first
@@ -38,14 +45,12 @@ let reported = false;
  *   the two wordings AdSense permits — but a label over a collapsed unit
  *   labels nothing, and on a page whose whole problem was ads in the wrong
  *   place, an "Advertisement" heading with no ad under it is the worst
- *   possible thing to print. AdSense marks the element `data-ad-status`, so
- *   the label waits for `filled` and an unfilled unit stays invisible, exactly
- *   as it does today.
+ *   possible thing to print.
  */
 export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): React.JSX.Element | null => {
   const hostRef = useRef<View | null>(null);
 
-  const [filled, setFilled] = useState(false);
+  const [status, setStatus] = useState<AdUnitStatus | null>(null);
 
   useEffect(() => {
     const node = hostRef.current;
@@ -66,9 +71,9 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
     // calling anything back, so watching the subtree is the only way to learn
     // whether an ad arrived. No `attributeFilter`: naming the attribute here
     // as well would spell the same vocabulary in two files that must agree,
-    // and `isFilledAdUnit` is the one that decides what counts. The host holds
-    // a single `<ins>`, so there is nothing to be noisy about.
-    const observer = new MutationObserver(() => setFilled(isFilledAdUnit(node)));
+    // and `readAdUnitStatus` is the one that decides what counts. The host
+    // holds a single `<ins>`, so there is nothing to be noisy about.
+    const observer = new MutationObserver(() => setStatus(readAdUnitStatus(node)));
     observer.observe(node, { subtree: true, attributes: true });
 
     return () => {
@@ -80,8 +85,11 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
   if (slotId === CharConstants.empty) return null;
 
   return (
-    <View style={styles.slot} accessibilityLabel={accessibilityLabel}>
-      {filled ? (
+    <View
+      style={status === AdUnitStatus.Unfilled ? styles.collapsed : styles.slot}
+      accessibilityLabel={accessibilityLabel}
+    >
+      {status === AdUnitStatus.Filled ? (
         <ThemedText variant="label" muted>
           {t().createRecipe.adLabel}
         </ThemedText>
@@ -96,5 +104,12 @@ const styles = StyleSheet.create({
   slot: {
     paddingVertical: spacing.sm,
     gap: spacing.xs,
+  },
+  // `display: none` rather than a zero height: the `<ins>` keeps the inline
+  // height AdSense gave it, so the box has to be taken out of layout entirely
+  // for the gap to close. The node stays mounted — removing it would re-request
+  // an ad AdSense has already declined for this page view.
+  collapsed: {
+    display: 'none',
   },
 });

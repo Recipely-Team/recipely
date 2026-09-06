@@ -35,6 +35,8 @@ export interface WebRecipeDetailProps {
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
+  /** The backend is still computing nutrition; the empty state says so. */
+  isNutritionCalculating: boolean;
   userId: string | null;
   isSaved: boolean;
   saveDisabled: boolean;
@@ -177,6 +179,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
             recipe={recipe}
             checkedIngredients={props.checkedIngredients}
             onToggleIngredient={props.onToggleIngredient}
+            isNutritionCalculating={props.isNutritionCalculating}
           />
         </View>
       </View>

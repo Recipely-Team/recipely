@@ -130,7 +130,14 @@ jobs:
             # they do — asked for both builds, and shipped an IPA nobody wanted.
             # A tag belongs where tags go; prose lives in the body and must stay
             # inert there.
-            subject="$(printf '%s' "$COMMIT_MESSAGE" | head -n 1)"
+            # Cut at the first newline in the shell itself. This used to be
+            # `printf '%s' "$COMMIT_MESSAGE" | head -n 1`, and `head` closes the
+            # pipe the moment it has its line: once a squash message grew past
+            # what the pipe buffer holds, `printf` was still writing, took
+            # EPIPE, and `set -o pipefail` failed the whole gate on a merge that
+            # was asking for no build at all. The length of a commit message is
+            # not a thing CI may have an opinion about.
+            subject="${COMMIT_MESSAGE%%$'\n'*}"
             case "$subject" in
               *'[dist]'*) android=true; ios=true ;;
             esac

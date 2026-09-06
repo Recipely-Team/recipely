@@ -156,6 +156,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   authorState={vm.authorState}
                   liked={vm.liked}
                   likeCount={vm.likeCount}
+                  isNutritionCalculating={vm.isNutritionCalculating}
                   userId={vm.userId}
                   isSaved={vm.isSaved}
                   saveDisabled={vm.saveDisabled}
@@ -188,6 +189,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   authorState={vm.authorState}
                   liked={vm.liked}
                   likeCount={vm.likeCount}
+                  isNutritionCalculating={vm.isNutritionCalculating}
                   userId={vm.userId}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}

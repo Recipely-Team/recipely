@@ -19,6 +19,12 @@ export interface UseRecipeDetailResult {
   firstImageUrl: string;
   cuisineName: string;
   /**
+   * Whether the screen is still waiting on the backend's nutrition
+   * calculator. Distinguishes "not computed yet" from "this recipe has none",
+   * which the copy used to state as the same thing.
+   */
+  isNutritionCalculating: boolean;
+  /**
    * Whether the viewer has liked this recipe. The single source of truth for
    * every heart on the screen — the optimistic likes-store overlay when it has
    * an entry, otherwise the value the detail endpoint returned.
