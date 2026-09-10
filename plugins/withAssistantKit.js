@@ -46,6 +46,9 @@ const {
 const APP_GROUP_INFO_KEY = 'RecipelyAssistantAppGroup';
 const APP_GROUP_ENTITLEMENT = 'com.apple.security.application-groups';
 const ANDROID_SCHEME_META_DATA = 'net.recipely.assistantkit.SCHEME';
+const ENVELOPE_KEY_INFO_KEY = 'RecipelyAssistantEnvelopeKey';
+const ANDROID_ENVELOPE_KEY_META_DATA = 'net.recipely.assistantkit.ENVELOPE_KEY';
+const ENVELOPE_KEY_HEX_LENGTH = 64;
 const XCODE_GROUP = 'RecipelyAssistant';
 const INTENTS_SOURCE_DIR = path.join(
   'modules',
@@ -85,6 +88,37 @@ const primarySchemeOf = (scheme) => {
   return value;
 };
 
+/**
+ * The envelope key, as the native half will read it back, or `null`.
+ *
+ * Three decisions worth knowing:
+ * - **Absent means absent, not zero.** `build-secrets.ts` falls back to a
+ *   64-zero key so the JS client always has *something* to construct a cipher
+ *   with. Mirroring that here would hand the native half a key the backend
+ *   cannot match and no way to tell that from a real one — a headless answer
+ *   that fails every request and blames the network. Without a key the native
+ *   side reports "not configured", and the intent opens the app instead, which
+ *   is a worse experience and a correct one.
+ * - **Malformed throws.** A 63-character key is a typo in a secret, and the only
+ *   symptom would be every headless request failing its auth tag in production.
+ * - **Exposure is the same class as the JS bundle.** `Info.plist` and
+ *   `AndroidManifest.xml` are both trivially readable from a shipped artifact —
+ *   so is the string this key already occupies in the JS bundle. TLS is the
+ *   transport protection; this envelope never was. `build-secrets.ts` says the
+ *   same thing, and the two halves must not disagree about it.
+ */
+const envelopeKeyHex = () => {
+  const raw = process.env.EXPO_PUBLIC_API_AES_KEY;
+  if (typeof raw !== 'string' || raw.length === 0) return null;
+  const key = raw.toLowerCase();
+  if (!/^[0-9a-f]+$/.test(key) || key.length !== ENVELOPE_KEY_HEX_LENGTH) {
+    throw new Error(
+      `[withAssistantKit] EXPO_PUBLIC_API_AES_KEY must be ${ENVELOPE_KEY_HEX_LENGTH} hex characters (openssl rand -hex 32), got ${key.length}`,
+    );
+  }
+  return key;
+};
+
 const swiftFilesIn = (dir) =>
   fs.existsSync(dir)
     ? fs.readdirSync(dir).filter((name) => name.endsWith('.swift')).sort()
@@ -93,6 +127,15 @@ const swiftFilesIn = (dir) =>
 const withAppGroupInfoPlist = (config) =>
   withInfoPlist(config, (mod) => {
     mod.modResults[APP_GROUP_INFO_KEY] = appGroupFor(mod.ios?.bundleIdentifier);
+    const key = envelopeKeyHex();
+    // Deleted rather than left behind when there is no key: a stale value from a
+    // previous prebuild is the one failure mode worse than none, because it
+    // looks configured.
+    if (key) {
+      mod.modResults[ENVELOPE_KEY_INFO_KEY] = key;
+    } else {
+      delete mod.modResults[ENVELOPE_KEY_INFO_KEY];
+    }
     return mod;
   });
 
@@ -188,6 +231,19 @@ const withSchemeMetaData = (config) =>
       ANDROID_SCHEME_META_DATA,
       primarySchemeOf(mod.scheme),
     );
+    const key = envelopeKeyHex();
+    if (key) {
+      AndroidConfig.Manifest.addMetaDataItemToMainApplication(
+        application,
+        ANDROID_ENVELOPE_KEY_META_DATA,
+        key,
+      );
+    } else {
+      AndroidConfig.Manifest.removeMetaDataItemFromMainApplication(
+        application,
+        ANDROID_ENVELOPE_KEY_META_DATA,
+      );
+    }
     return mod;
   });
 
@@ -205,4 +261,6 @@ module.exports.appGroupFor = appGroupFor;
 module.exports.APP_GROUP_INFO_KEY = APP_GROUP_INFO_KEY;
 module.exports.APP_GROUP_ENTITLEMENT = APP_GROUP_ENTITLEMENT;
 module.exports.ANDROID_SCHEME_META_DATA = ANDROID_SCHEME_META_DATA;
+module.exports.ENVELOPE_KEY_INFO_KEY = ENVELOPE_KEY_INFO_KEY;
+module.exports.ANDROID_ENVELOPE_KEY_META_DATA = ANDROID_ENVELOPE_KEY_META_DATA;
 module.exports.XCODE_GROUP = XCODE_GROUP;

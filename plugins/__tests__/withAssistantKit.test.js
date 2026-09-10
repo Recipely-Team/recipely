@@ -23,6 +23,11 @@ jest.mock('@expo/config-plugins', () => {
             $: { 'android:name': name, 'android:value': value },
           });
         },
+        removeMetaDataItemFromMainApplication: (application, name) => {
+          application['meta-data'] = (application['meta-data'] ?? []).filter(
+            (item) => item.$['android:name'] !== name,
+          );
+        },
       },
     },
   };
@@ -257,5 +262,87 @@ describe('withAssistantKit — intent sources reach the app target', () => {
 
     expect(xcode.added).toEqual([]);
     expect(xcode.createGroup).not.toHaveBeenCalled();
+  });
+});
+
+// The headless path (finding D2) has no JS bridge, so it cannot read
+// `build-secrets.ts`: the key has to arrive in the artifact. Info.plist and the
+// manifest are the same exposure class as the JS bundle string it already lives
+// in — that is stated in both places on purpose, so the two halves cannot come
+// to different conclusions about it.
+describe('withAssistantKit — the envelope key reaches the native half', () => {
+  const KEY = 'a'.repeat(64);
+  const metaDataNamed = (config, name) =>
+    (config.__mods.manifest.manifest.application[0]['meta-data'] ?? []).find(
+      (item) => item.$['android:name'] === name,
+    );
+
+  afterEach(() => {
+    delete process.env.EXPO_PUBLIC_API_AES_KEY;
+  });
+
+  it('writes the key into Info.plist and the Android manifest', () => {
+    process.env.EXPO_PUBLIC_API_AES_KEY = KEY;
+    const config = baseConfig();
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantEnvelopeKey).toBe(KEY);
+    expect(metaDataNamed(config, 'net.recipely.assistantkit.ENVELOPE_KEY').$['android:value']).toBe(KEY);
+  });
+
+  // `build-secrets.ts` lowercases the same value. If one half lowercased and the
+  // other did not, a key typed in capitals would produce two different 32-byte
+  // arrays and only the headless path would fail — on every request, with an
+  // auth-tag error that looks like tampering.
+  it('lowercases the key, because the JS half does', () => {
+    process.env.EXPO_PUBLIC_API_AES_KEY = 'ABCDEF'.repeat(10) + 'abcd';
+    const config = baseConfig();
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantEnvelopeKey).toBe(
+      ('ABCDEF'.repeat(10) + 'abcd').toLowerCase(),
+    );
+  });
+
+  // A zero key would be worse than none: the native half cannot tell a wrong key
+  // from a right one, so every request would fail its auth tag while the code
+  // reported a network problem. Absent means "open the app instead".
+  it('writes no key at all when the build was made without one', () => {
+    const config = baseConfig();
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantEnvelopeKey).toBeUndefined();
+    expect(metaDataNamed(config, 'net.recipely.assistantkit.ENVELOPE_KEY')).toBeUndefined();
+  });
+
+  // A value from an earlier prebuild is the one state worse than none, because
+  // it looks configured. Both artifacts are regenerated, but neither is
+  // guaranteed to be empty when this mod runs.
+  it('clears a key a previous prebuild left behind', () => {
+    const config = baseConfig();
+    config.__mods.infoPlist.RecipelyAssistantEnvelopeKey = 'b'.repeat(64);
+    config.__mods.manifest.manifest.application[0]['meta-data'] = [
+      { $: { 'android:name': 'net.recipely.assistantkit.ENVELOPE_KEY', 'android:value': 'b'.repeat(64) } },
+    ];
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantEnvelopeKey).toBeUndefined();
+    expect(metaDataNamed(config, 'net.recipely.assistantkit.ENVELOPE_KEY')).toBeUndefined();
+  });
+
+  // A 63-character key is a typo in a secret, and the only symptom would be
+  // every headless request failing in production. Better to fail the build.
+  it('refuses a key that is not 64 hex characters', () => {
+    process.env.EXPO_PUBLIC_API_AES_KEY = 'a'.repeat(63);
+
+    expect(() => withAssistantKit(baseConfig())).toThrow(/64 hex characters/);
+
+    process.env.EXPO_PUBLIC_API_AES_KEY = 'z'.repeat(64);
+
+    expect(() => withAssistantKit(baseConfig())).toThrow(/64 hex characters/);
   });
 });

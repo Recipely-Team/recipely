@@ -18,6 +18,7 @@ import Foundation
 ///   which, for an app launched by Siri and then swiped away, is common.
 public enum RecipelyAssistantStore {
   private static let appGroupInfoKey = "RecipelyAssistantAppGroup"
+  private static let envelopeKeyInfoKey = "RecipelyAssistantEnvelopeKey"
   private static let queueKey = "recipely.assistant.invocationQueue"
   private static let entityKeyPrefix = "recipely.assistant.entities."
   private static let tokenKey = "recipely.assistant.token"
@@ -29,6 +30,19 @@ public enum RecipelyAssistantStore {
 
   public static var appGroupIdentifier: String? {
     Bundle.main.object(forInfoDictionaryKey: appGroupInfoKey) as? String
+  }
+
+  /// The envelope key, or `nil` when this build was made without one.
+  ///
+  /// - Note: There is deliberately no fallback. A wrong key and a missing key
+  ///   look identical to a caller that defaults, and the symptom would be every
+  ///   headless request failing its auth tag while the code blames the network.
+  ///   `nil` means "answer by opening the app" — worse for the user, and honest.
+  public static var envelopeKeyHex: String? {
+    guard let hex = Bundle.main.object(forInfoDictionaryKey: envelopeKeyInfoKey) as? String,
+          hex.count == Envelope.keyBytes * 2
+    else { return nil }
+    return hex
   }
 
   public static var defaults: UserDefaults? {

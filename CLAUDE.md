@@ -536,6 +536,24 @@ blocking.
     `firebase.json`'s automatic-screen-reporting switch off — with it on, Android
     reports its one Activity alongside the real names.
 
+26. **Every file in the repo is written in English** — docs, plan boards, progress
+    notes, comments, doc blocks, test names, commit messages. The conversation
+    happens in Turkish and that is fine; the repository does not follow it. The
+    only Turkish in the tree is product DATA: user-facing copy under
+    `src/presentation/i18n/locales/` and store metadata under
+    `fastlane/metadata/tr/`.
+
+    This is not a style preference. `CLAUDE.md`, `architecture.md` and every
+    identifier in `src/` are English, so a Turkish document about them cannot be
+    grepped alongside the thing it describes — `docs/os-assistants-plan.md` spent
+    four phases describing `check:structure` rules that no search for "rule W"
+    would ever have turned up from it. A file that half the future readers of this
+    repo cannot read is a file that gets re-derived instead of read.
+
+    **When editing a file that is still Turkish, convert the part you touch
+    rather than matching its language.** Remaining debt: the Turkish rows in
+    [`docs/regressions.md`](docs/regressions.md).
+
 ### Pre-commit quality gate
 
 Husky runs on every `git commit`:

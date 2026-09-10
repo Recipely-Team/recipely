@@ -15,14 +15,25 @@ import android.content.pm.PackageManager
  */
 object RecipelyAssistantConfig {
   private const val SCHEME_META_DATA = "net.recipely.assistantkit.SCHEME"
+  private const val ENVELOPE_KEY_META_DATA = "net.recipely.assistantkit.ENVELOPE_KEY"
   private const val FALLBACK_SCHEME = "recipely"
 
-  fun scheme(context: Context): String {
-    val metaData = runCatching {
-      context.packageManager
-        .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
-        .metaData
-    }.getOrNull()
-    return metaData?.getString(SCHEME_META_DATA) ?: FALLBACK_SCHEME
-  }
+  fun scheme(context: Context): String = metaData(context)?.getString(SCHEME_META_DATA) ?: FALLBACK_SCHEME
+
+  /**
+   * The envelope key, or `null` when this build was made without one.
+   *
+   * There is deliberately no fallback. A wrong key and a missing key look
+   * identical to a caller that defaults, and the symptom would be every headless
+   * request failing its auth tag while the code reports a network problem. Null
+   * means "answer by opening the app", which is worse for the user and honest.
+   */
+  fun envelopeKeyHex(context: Context): String? =
+    metaData(context)?.getString(ENVELOPE_KEY_META_DATA)?.takeIf { it.length == Envelope.KEY_BYTES * 2 }
+
+  private fun metaData(context: Context) = runCatching {
+    context.packageManager
+      .getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+      .metaData
+  }.getOrNull()
 }
