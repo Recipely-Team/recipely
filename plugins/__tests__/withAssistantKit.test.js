@@ -34,13 +34,26 @@ jest.mock('@expo/config-plugins', () => {
 });
 
 const mockFiles = new Map();
-jest.mock('node:fs', () => ({
-  existsSync: (p) => mockFiles.has(p),
-  readdirSync: (p) => mockFiles.get(p) ?? [],
-  mkdirSync: jest.fn(),
-  rmSync: jest.fn(),
-  copyFileSync: jest.fn(),
-}));
+// `readdirSync` is called with `{ withFileTypes: true }` for the recursive walk
+// and bare for the stale sweep, so the mock answers both shapes: an entry that
+// exists as a key in `mockFiles` is a directory, anything else is a file.
+jest.mock('node:fs', () => {
+  const path = require('node:path');
+  return {
+    existsSync: (p) => mockFiles.has(p),
+    readdirSync: (p, options) => {
+      const names = mockFiles.get(p) ?? [];
+      if (options?.withFileTypes !== true) return names;
+      return names.map((name) => ({
+        name,
+        isDirectory: () => mockFiles.has(path.join(p, name)),
+      }));
+    },
+    mkdirSync: jest.fn(),
+    rmSync: jest.fn(),
+    copyFileSync: jest.fn(),
+  };
+});
 
 const fs = require('node:fs');
 const withAssistantKit = require('../withAssistantKit');
@@ -253,6 +266,36 @@ describe('withAssistantKit — intent sources reach the app target', () => {
 
     expect(xcode.createGroup).toHaveBeenCalledWith('RecipelyAssistant');
     expect(xcode.createGroup.mock.calls[0]).toHaveLength(1);
+  });
+
+  // The library groups its intents into subfolders so the folder stays
+  // readable; the app target is flat, and only a recursive walk finds them.
+  it('finds intents nested in subfolders and copies them flat', () => {
+    mockFiles.set(INTENTS_DIR, ['Entities', 'Intents']);
+    mockFiles.set(path.join(INTENTS_DIR, 'Entities'), ['RecipeAppEntity.swift']);
+    mockFiles.set(path.join(INTENTS_DIR, 'Intents'), ['RecipelyOpenRecipeIntent.swift']);
+    const xcode = xcodeProject();
+
+    withAssistantKit(baseConfig({ xcode }));
+
+    expect(xcode.added.map((entry) => entry.relative)).toEqual([
+      'Recipely/RecipelyAssistant/RecipeAppEntity.swift',
+      'Recipely/RecipelyAssistant/RecipelyOpenRecipeIntent.swift',
+    ]);
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      path.join(INTENTS_DIR, 'Entities', 'RecipeAppEntity.swift'),
+      `${TARGET_DIR}/RecipeAppEntity.swift`,
+    );
+  });
+
+  // A flat destination cannot hold two files of one name, and the loser would
+  // simply not be compiled — an intent Siri offers and nothing implements.
+  it('refuses two Swift files that share a name across subfolders', () => {
+    mockFiles.set(INTENTS_DIR, ['Entities', 'Intents']);
+    mockFiles.set(path.join(INTENTS_DIR, 'Entities'), ['Shared.swift']);
+    mockFiles.set(path.join(INTENTS_DIR, 'Intents'), ['Shared.swift']);
+
+    expect(() => withAssistantKit(baseConfig())).toThrow(/both named Shared\.swift/);
   });
 
   it('does nothing to the project when the library declares no intents', () => {

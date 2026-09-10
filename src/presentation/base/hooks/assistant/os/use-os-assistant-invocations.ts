@@ -1,8 +1,12 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
+import { AssistantView } from '@application/assistant/session/assistant-view';
+import { CharConstants } from '@core/constants';
+import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
 import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
+import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
@@ -29,22 +33,38 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   launch, so a single bad request would otherwise become permanent; and an
  *   acknowledge that rejects at the native bridge must not abort the loop over
  *   the entries behind it.
- * - **Headless entries never arrive here.** `askRecipely` is answered natively
- *   with no screen; if it reaches JavaScript at all, something went wrong on
- *   the native side and the registry will say so.
+ * - **`askRecipely` is the one request with no action, and it does not go to
+ *   the registry at all.** It carries a sentence rather than a word: the panel
+ *   opens and the sentence becomes the first turn, which is exactly what would
+ *   have happened had the user typed it. Once the app holds a scoped token the
+ *   native side answers it without opening anything, and this branch becomes
+ *   the fallback rather than the path.
  * - **The live subscription is groundwork.** Neither native module sends the
  *   event yet, so today every request arrives through the queue — on launch,
  *   or on the next foreground. The wiring is here so the running-app path costs
  *   nothing to switch on.
  */
 export const useOsAssistantInvocations = (): void => {
-  const { assistantActionRegistry: registry, osAssistant } = useStores();
+  const { assistantActionRegistry: registry, osAssistant, assistantSessionStore } = useStores();
+  const locale = useLocale();
   const isDraining = useRef(false);
+
+  const ask = useCallback(
+    (question: string): void => {
+      const { setView, sendText } = assistantSessionStore.getState();
+      setView(AssistantView.Open);
+      sendText(question, locale);
+    },
+    [assistantSessionStore, locale],
+  );
 
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
       try {
-        if (invocation.action !== null) {
+        if (invocation.id === OsIntentId.AskRecipely) {
+          const question = invocation.arg ?? CharConstants.empty;
+          if (question.length > 0) ask(question);
+        } else if (invocation.action !== null) {
           await registry.run(invocation.action, invocation.arg ?? undefined);
         }
       } finally {
@@ -54,7 +74,7 @@ export const useOsAssistantInvocations = (): void => {
         await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       }
     },
-    [registry, osAssistant],
+    [registry, osAssistant, ask],
   );
 
   const drain = useCallback(async (): Promise<void> => {

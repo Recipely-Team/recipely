@@ -119,10 +119,51 @@ const envelopeKeyHex = () => {
   return key;
 };
 
-const swiftFilesIn = (dir) =>
-  fs.existsSync(dir)
-    ? fs.readdirSync(dir).filter((name) => name.endsWith('.swift')).sort()
-    : [];
+/**
+ * Every `.swift` under `dir`, at any depth, returned as bare file names.
+ *
+ * The library groups its intents into `Entities/`, `Intents/` and `Shortcuts/`
+ * so the folder stays readable, but the app target is flat — Xcode groups are
+ * virtual and the copy lands everything side by side. Names are therefore
+ * required to be unique across the tree, and a collision throws rather than
+ * letting one intent silently overwrite another.
+ */
+const swiftFilesIn = (dir) => {
+  if (!fs.existsSync(dir)) return [];
+  const found = new Map();
+  const walk = (current) => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(full);
+      } else if (entry.name.endsWith('.swift')) {
+        const previous = found.get(entry.name);
+        if (previous !== undefined) {
+          throw new Error(
+            `[withAssistantKit] two Swift files are both named ${entry.name} (${previous}, ${full}) — the app target is flat`,
+          );
+        }
+        found.set(entry.name, full);
+      }
+    }
+  };
+  walk(dir);
+  return [...found.keys()].sort();
+};
+
+/** Where a given bare name actually lives, for the copy. */
+const swiftSourcePath = (dir, name) => {
+  const stack = [dir];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const full = path.join(current, entry.name);
+      if (entry.isDirectory()) stack.push(full);
+      else if (entry.name === name) return full;
+    }
+  }
+  return path.join(dir, name);
+};
 
 const withAppGroupInfoPlist = (config) =>
   withInfoPlist(config, (mod) => {
@@ -170,7 +211,7 @@ const withCopiedIntentSources = (config) =>
       // or a renamed intent ships twice under two names.
       for (const stale of swiftFilesIn(to)) fs.rmSync(path.join(to, stale));
       for (const name of swiftFilesIn(from)) {
-        fs.copyFileSync(path.join(from, name), path.join(to, name));
+        fs.copyFileSync(swiftSourcePath(from, name), path.join(to, name));
       }
       return mod;
     },

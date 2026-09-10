@@ -3,6 +3,8 @@ interface Recorded {
   acknowledged: string[];
   queue: unknown[];
   pendingLink: { action: string; arg: string | null } | null;
+  asked: { text: string; locale: string }[];
+  view: string | null;
   failAcknowledge: boolean;
   failPending: boolean;
   holdRun: (() => void) | null;
@@ -13,6 +15,8 @@ const mockState: Recorded = {
   acknowledged: [],
   queue: [],
   pendingLink: null,
+  asked: [],
+  view: null,
   failAcknowledge: false,
   failPending: false,
   holdRun: null,
@@ -39,8 +43,20 @@ jest.mock('@presentation/navigation/pending-os-intent', () => ({
   },
 }));
 
+jest.mock('@presentation/i18n/use-locale', () => ({ useLocale: () => 'tr' }));
+
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
+    assistantSessionStore: {
+      getState: () => ({
+        setView: (view: string) => {
+          mockState.view = view;
+        },
+        sendText: (text: string, locale: string) => {
+          mockState.asked.push({ text, locale });
+        },
+      }),
+    },
     assistantActionRegistry: {
       run: async (action: string, arg: string | undefined) => {
         mockState.ran.push({ action, arg });
@@ -103,6 +119,8 @@ beforeEach(() => {
   mockState.acknowledged = [];
   mockState.queue = [];
   mockState.pendingLink = null;
+  mockState.asked = [];
+  mockState.view = null;
   mockState.failAcknowledge = false;
   mockState.failPending = false;
   mockState.holdRun = null;
@@ -134,6 +152,42 @@ describe('useOsAssistantInvocations — draining what the OS left behind', () =>
 
     expect(mockState.ran).toEqual([]);
     expect(mockState.acknowledged).toEqual(['inv-1']);
+  });
+});
+
+describe('useOsAssistantInvocations — the open-ended request', () => {
+  // `askRecipely` carries a sentence rather than a word, so it never reaches
+  // the registry: the panel opens and the sentence becomes the first turn,
+  // which is what would have happened had the user typed it.
+  const asking = (arg: string | null) => ({
+    id: 'askRecipely',
+    invocationId: 'ask-1',
+    action: null,
+    arg,
+    at: 1,
+  });
+
+  it('opens the panel and asks, rather than dispatching an action', async () => {
+    mockState.queue = [asking('kaç kalori var')];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.view).toBe('open');
+    expect(mockState.asked).toEqual([{ text: 'kaç kalori var', locale: 'tr' }]);
+    expect(mockState.acknowledged).toEqual(['ask-1']);
+  });
+
+  // Siri asks for the value, so an empty one means the user cancelled. Opening
+  // a panel to send nothing would be the app talking to itself.
+  it('does nothing but forget the request when the question is empty', async () => {
+    mockState.queue = [asking(null)];
+
+    await mount();
+
+    expect(mockState.asked).toEqual([]);
+    expect(mockState.view).toBeNull();
+    expect(mockState.acknowledged).toEqual(['ask-1']);
   });
 });
 

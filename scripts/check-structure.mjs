@@ -535,15 +535,18 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       const src = fs.readFileSync(file, 'utf8');
       const shown = path.relative(ROOT, file);
 
-      // `"id": "searchRecipes"` (Swift) and `"id" to "searchRecipes"` (Kotlin).
-      for (const m of src.matchAll(/"id"\s*(?::|to)\s*"([\w]+)"/g)) {
+      // Three shapes, because three call sites spell it three ways:
+      // `"id": "x"` in a Swift dictionary, `"id" to "x"` in a Kotlin map, and
+      // `id: "x"` as a Swift named argument — which is what the intents use
+      // now that they share one enqueue helper.
+      for (const m of src.matchAll(/(?:"id"\s*(?::|to)|\bid:)\s*"([\w]+)"/g)) {
         if (!intentIds.has(m[1])) {
           errors.push(
             `${shown}: '${m[1]}' is not an OsIntentId — the native sources and OS_INTENT_CATALOGUE must name the same capabilities (CLAUDE.md §5)`,
           );
         }
       }
-      for (const m of src.matchAll(/"action"\s*(?::|to)\s*"([\w]+)"/g)) {
+      for (const m of src.matchAll(/(?:"action"\s*(?::|to)|\baction:)\s*"([\w]+)"/g)) {
         if (!actions.has(m[1])) {
           errors.push(
             `${shown}: '${m[1]}' is not an AssistantAction — a word the registry cannot answer (CLAUDE.md §5)`,

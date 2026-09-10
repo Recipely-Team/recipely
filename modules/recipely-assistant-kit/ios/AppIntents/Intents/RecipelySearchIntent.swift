@@ -1,6 +1,4 @@
 import AppIntents
-import Foundation
-internal import RecipelyAssistantKit
 
 /// Phase 0's proof intent: search, on the one protocol that carries free text.
 ///
@@ -26,13 +24,7 @@ struct RecipelySearchIntent: ShowInAppSearchResultsIntent {
 
   @MainActor
   func perform() async throws -> some IntentResult {
-    RecipelyAssistantStore.enqueue([
-      "id": "searchRecipes",
-      "invocationId": UUID().uuidString,
-      "action": "search",
-      "arg": criteria.term,
-      "at": Date().timeIntervalSince1970 * 1000,
-    ])
+    RecipelyRequest.enqueue(id: "searchRecipes", action: "search", arg: criteria.term)
     return .result()
   }
 }

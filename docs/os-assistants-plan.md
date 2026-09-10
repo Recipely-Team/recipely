@@ -12,7 +12,7 @@ progress board** — when a session ends, work resumes from here.
 | 0 | Measurement and decision gate | ✅ **done** (except the on-device Siri trial) | — |
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 2 | Headless path | 🟡 in progress — envelope parity done, backend route awaits approval | — |
-| 3 | iOS App Intents | ⬜ not started | — |
+| 3 | iOS App Intents | 🟡 intents + entity built and extracted; localization and Control Center left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 4 | Android shortcuts + AppFunctions | ⬜ not started | — |
 | 5 | Gates and docs | 🟡 rule W landed; the other two need free letters (D16) | — |
 
@@ -293,6 +293,37 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D18 — `expo-app-intents` shipped 0.2.0 on 2026-09-10, and it is half of this
+
+Published the day after Phase 0 measured all of this by hand. Its README states
+D3 as its opening premise — *"App Intent types must be compiled into the iOS app
+target. Apple's build-time metadata extraction does not see code in static
+pods"* — and its documented limits restate D1: phrases are compiled at build
+time and cannot be made from JavaScript, one non-array parameter per phrase,
+**at most 10 App Shortcuts per app**, and every phrase must contain
+`\(.applicationName)`. This app now declares exactly ten, all conforming.
+
+**What it would replace:** the runtime pod half — the invocation queue, the
+entity storage and the JS bridge, which is roughly `RecipelyAssistantStore` +
+`RecipelyAssistantKitModule` + the TS surface. Its placement mechanism is Expo
+Inline Modules (an `app-intents/` directory) rather than this repo's pbxproj
+surgery, which is the more official of the two.
+
+**What it would NOT replace:** every intent, entity and query. Those are yours
+in both designs, and they are the bulk of Phase 3.
+
+**Decision: not now, and the swap stays cheap.** Three reasons. It is iOS-only,
+so Android keeps this module regardless and adopting it means maintaining two
+stores instead of one — and the store here also carries the envelope key and
+credentials that the Android half shares. It is one day old on the `next` tag.
+And the TS surface here was deliberately named after theirs in Phase 1, so the
+iOS half remains a contained swap whenever `latest` moves.
+
+**Revisit when** `expo-app-intents` reaches the `latest` tag, or when this repo
+next takes an Expo SDK upgrade — whichever comes first. The thing worth stealing
+before then is Inline Modules as the placement mechanism, which would delete the
+plugin's pbxproj code.
+
 ## Debt from review, carried into Phase 3/4
 
 - [ ] Rule 5: `arg: 'next'` (repeats `StepCursor.Next`) and `arg: 'myRecipes'`
@@ -306,14 +337,20 @@ without that variable — D15's trap biting the test instead of the build.
 
 ## Phase 3 — iOS App Intents
 
-- [ ] `SearchRecipesIntent` — the `.system.searchInApp` schema (the only single-turn path for free text, D1)
-- [ ] `AskRecipelyIntent` — parameterless phrase + `requestValue` (two turns, D1) → `/assistant/message`
-- [ ] 9 singular intents (openRecipe, save, like, startTimer, readIngredients, readNextStep, generate, import, myRecipes)
-- [ ] `RecipeAppEntity: AppEntity & IndexedEntity` + query
-- [ ] `AppShortcutsProvider` + phrases for 14 languages generated from i18n
-- [ ] The five `CONFIRMED_ACTIONS` are never headless; Siri asks via `requestConfirmation`
-- [ ] Control Center control + Action Button
-- [ ] Onscreen entity annotation on recipe detail
+- [x] `RecipelySearchIntent` — `ShowInAppSearchResultsIntent`, the only single-turn path for free text (D1, D12)
+- [x] `RecipelyAskIntent` — parameterless phrase + `requestValueDialog` (two turns, D1). Opens the app and hands the sentence to the running assistant; the headless answer attaches when `publishCredentials` has a token
+- [x] 9 singular intents (openRecipe, save, like, startTimer, readIngredients, readNextStep, generate, import, myRecipes)
+- [x] `RecipeAppEntity` + `RecipeEntityQuery` (`EntityStringQuery`, diacritic- and case-folded with the current locale so "kofte" finds "Köfte")
+- [x] `RecipelyRequest` — one enqueue helper, so eleven intents do not each spell the four keys
+- [x] `AppShortcutsProvider` with 10 phrases (the maximum Apple allows, D18) — **English literals**
+- [x] The five `CONFIRMED_ACTIONS` are absent from the catalogue entirely, so no phrase can reach one (rule X)
+- [x] **Verified in a real build**: `BUILD SUCCEEDED`, 11 intents + 1 entity + 1 query extracted into `Metadata.appintents`, all `isDiscoverable: true`, 10 app shortcuts
+- [x] Rule W widened to read the Swift named-argument form (`id:` / `action:`), proved by breaking it
+- [ ] Phrases for 14 languages generated from i18n into `AppShortcuts.xcstrings`
+- [ ] `IndexedEntity` for Spotlight semantic search (needs the catalogue re-indexed on publish)
+- [ ] Control Center control — needs a widget extension target, which prebuild does not create today
+- [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side
+- [ ] Action Button — free once the intents exist; needs on-device confirmation only
 
 ## Phase 4 — Android
 
