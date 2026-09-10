@@ -32,8 +32,12 @@ object RecipelyShortcutPublisher {
     val limit = minOf(entries.length(), MAX_SHORTCUTS)
     for (index in 0 until limit) {
       val entry = entries.optJSONObject(index) ?: continue
-      val id = entry.optString("id").ifEmpty { continue }
-      val title = entry.optString("title").ifEmpty { continue }
+      val id = entry.optString("id")
+      val title = entry.optString("title")
+      // `continue` inside an inline lambda (`ifEmpty { continue }`) needs
+      // Kotlin language version 2.2, which this project is below; it compiles
+      // nowhere that matters and no JavaScript gate would have said so.
+      if (id.isEmpty() || title.isEmpty()) continue
 
       val shortcut = ShortcutInfoCompat.Builder(context, "recipe-$id")
         .setShortLabel(title)

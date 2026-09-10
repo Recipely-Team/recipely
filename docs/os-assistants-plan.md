@@ -8,8 +8,8 @@ bu dosya **ilerleme durumudur** — oturum kapanırsa buradan devam edilir.
 
 | Faz | İş | Durum | PR |
 |-----|----|-------|-----|
-| 0 | Ölçüm ve karar kapısı | 🟡 devam ediyor | — |
-| 1 | Modül iskeleti + paylaşılan depo | ⬜ başlanmadı | — |
+| 0 | Ölçüm ve karar kapısı | 🟢 ölçümler bitti, 1b cihaz bekliyor | — |
+| 1 | Modül iskeleti + paylaşılan depo | 🟡 devam ediyor | — |
 | 2 | Headless yol | ⬜ başlanmadı — **koşulsuz**, aşağıdaki D2'ye bak | — |
 | 3 | iOS App Intents | ⬜ başlanmadı | — |
 | 4 | Android kısayollar + AppFunctions | ⬜ başlanmadı | — |
@@ -35,8 +35,8 @@ Amaç: Faz 2'nin gerekip gerekmediğini ve Swift dosyalarının nereye konacağ�
 - [x] **Ölçüm 1a** — `prebuild --clean` iki platformda da geçiyor; Swift app target'a kopyalanıp pbxproj'a kaydediliyor, entitlement/Info.plist/manifest doğru (D7, D8)
 - [ ] **Ölçüm 1b** — `pod install` + gerçek iOS derlemesi; Siri/Shortcuts intent'i görüyor mu (cihaz)
 - [x] ~~**Ölçüm 2**~~ — araştırmayla cevaplandı, cihazda ölçmeye gerek yok (D2)
-- [ ] **Ölçüm 3** — plugin'le eklenen Kotlin, Kotlin 2.2.0 tavanı altında derleniyor mu; `shortcuts.xml` üretilen manifest'e giriyor mu?
-- [ ] Bulgular bu dosyaya yazıldı, kararlar sabitlendi
+- [x] **Ölçüm 3** — `:recipely-assistant-kit:compileDebugKotlin` ve **tam `:app:assembleDebug` yeşil** (3dk 7sn); autolinking modülü buluyor, manifest meta-data'sı doğru (D9)
+- [x] Bulgular bu dosyaya yazıldı, kararlar sabitlendi
 
 ### Faz 0 bulguları
 
@@ -86,6 +86,23 @@ ulaşıyor; stratejik bir sap olarak kalıyor, bugünkü yüzey değil. Dinamik 
 Google yüzeylerine (Assistant dahil) çıkması için `androidx.core:core-google-shortcuts`
 bağımlılığı gerekiyor — Faz 4'te doğrulanacak.
 
+#### D9 — Kotlin dil sürümü 2.2'nin ALTINDA
+`ifEmpty { continue }` derlenmedi: *"break continue in inline lambdas is only
+available since language version 2.2"*. Derleyici tavanı 2.2.0 ama kullanılan dil
+sürümü daha eski — inline lambda içinde `continue` yok. Dört JS gate'inin hiçbiri
+Kotlin derlemediği için bunu **yalnızca gerçek build** yakaladı; modül eklenen her
+oturum bir Android build'i istemeli (regressions.md:1040'ın kuralı).
+
+Sonuç: `:app:assembleDebug` **yeşil**, APK üretiliyor, `core-google-shortcuts`
+çözülüyor, R8 için ek keep kuralı gerekmedi (debug; release Faz 4'te doğrulanacak).
+
+#### D10 — `check:structure`'ın tip/çalışma-zamanı kuralında yanlış pozitif vardı
+`typeof <const>` türevi union'ları muaf tutan regex `m` bayrağıyla çalışıyordu, yani
+`$` satır sonu demekti: iki satıra sarılmış bir alias'ın gövdesi boş okunuyor ve
+muafiyet düşüyordu. Prettier 100 karakterde sardığı için uzun türev union'lar
+ORTALAMA durum, istisna değil. Regex `\n` ile sabitlendi, `m` kaldırıldı; gerçek
+ihlali hâlâ yakaladığı geçici bir dosyayla doğrulandı.
+
 #### D7 — Expo mod'ları TERS sırada koşuyor
 `withMod` önce kendi action'ını çalıştırıp sonra **kendinden ÖNCE kayıtlı** mod'u
 çağırıyor: `app.json`'daki **son** plugin **ilk** koşuyor. Local plugin'i listenin
@@ -114,12 +131,12 @@ ESLint kuralı repo genelinde. Kural 13'ün "ortak tipler tek dosyada"sı burada
 
 ## Faz 1 — Modül iskeleti + paylaşılan depo
 
-- [ ] Paylaşılan depo: iOS App Group `UserDefaults` + Keychain
-- [ ] Paylaşılan depo: Android `EncryptedSharedPreferences`
-- [ ] App Group kimliği varyanttan türetiliyor (`group.net.recipely.app` / `.dev`), sabit yazılmıyor
-- [ ] Port: `src/domain/assistant/os/os-assistant-interface.ts`
-- [ ] Katalog: `src/domain/assistant/os/os-intent-catalogue.ts`
-- [ ] Impl + web no-op: `src/infrastructure/assistant/os/os-assistant-bridge{,.web}.ts`
+- [x] Paylaşılan depo: iOS App Group `UserDefaults` (`RecipelyAssistantStore.swift`)
+- [x] Paylaşılan depo: Android `SharedPreferences` — App Group yok, aynı süreç; genişletilecek bir şey yok
+- [x] App Group kimliği varyanttan türetiliyor; `expo-share-intent` onu zaten provision etmiş (D8)
+- [x] Port: `src/domain/assistant/os/os-assistant-interface.ts`
+- [x] Katalog: `src/domain/assistant/os/os-intent-catalogue.ts` (11 giriş) + 6 değişmez testi
+- [x] Impl + web no-op: `src/infrastructure/assistant/os/os-assistant-bridge{,.web}.ts`
 - [ ] DI token `OsAssistant` + register
 - [ ] Deep link `recipely://assistant/run?action=&arg=` → `+native-intent.tsx`
 - [ ] `use-os-assistant-invocations.ts` (soğuk açılışta bekleyenleri registry'ye akıtır)

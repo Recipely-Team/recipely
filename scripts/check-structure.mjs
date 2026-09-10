@@ -136,7 +136,15 @@ for (const file of files) {
   // Exception: same-name const+type merge, and unions derived via `typeof <local const>`.
   typeLike = typeLike.filter((d) => {
     if (d.kind !== 'type') return true;
-    const body = new RegExp(`^export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(;|$)`, 'm').exec(src)?.[1] ?? '';
+    // No `m` flag, and the start anchored with `\n` instead: with multiline on,
+    // `$` matches the end of a LINE, so a lazy body match stopped at the first
+    // newline and a two-line alias — `export type X =` then the union on the
+    // next line — was read as having an empty body. It then failed the `typeof`
+    // test it plainly passes and was reported as sharing a file with runtime
+    // code. Prettier wraps at 100 characters, so a long derived union is
+    // ordinarily two lines: the false positive was the common case, not a rare
+    // one.
+    const body = new RegExp(`(?:^|\\n)export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(;|$)`).exec(src)?.[1] ?? '';
     const derived = [...body.matchAll(/typeof\s+([A-Za-z0-9_]+)/g)].some((t) => names.has(t[1]));
     const merged = decls.some((o) => o !== d && o.kind === 'const' && o.name === d.name);
     return !derived && !merged;
