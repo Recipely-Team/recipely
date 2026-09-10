@@ -15,6 +15,7 @@ import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-interface';
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
@@ -24,6 +25,8 @@ export interface ApplicationStores {
   assistantSessionStore: BoundStore<AssistantSessionStoreState>;
   /** Screens register the actions only they can perform (navigate, focus, pick). */
   assistantActionRegistry: AssistantActionRegistry;
+  /** Siri, Spotlight and the launcher — the assistant's entry points from outside. */
+  osAssistant: OsAssistantInterface;
   authStore: BoundStore<AuthStoreState>;
   recipeListStore: BoundStore<RecipeListStoreState>;
   trendingRecipesStore: BoundStore<TrendingRecipesStoreState>;

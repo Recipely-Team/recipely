@@ -33,7 +33,7 @@ Amaç: Faz 2'nin gerekip gerekmediğini ve Swift dosyalarının nereye konacağ�
 - [x] Android: Kotlin modül sınıfı + store + `RecipelyShortcutPublisher` + `RecipelyAssistantConfig`
 - [x] `plugins/withAssistantKit.js` + 10 test
 - [x] **Ölçüm 1a** — `prebuild --clean` iki platformda da geçiyor; Swift app target'a kopyalanıp pbxproj'a kaydediliyor, entitlement/Info.plist/manifest doğru (D7, D8)
-- [ ] **Ölçüm 1b** — `pod install` + gerçek iOS derlemesi; Siri/Shortcuts intent'i görüyor mu (cihaz)
+- [ ] **Ölçüm 1b** — `pod install` + gerçek iOS derlemesi (koşuyor); Siri/Shortcuts intent'i görüyor mu (cihaz — senin işin)
 - [x] ~~**Ölçüm 2**~~ — araştırmayla cevaplandı, cihazda ölçmeye gerek yok (D2)
 - [x] **Ölçüm 3** — `:recipely-assistant-kit:compileDebugKotlin` ve **tam `:app:assembleDebug` yeşil** (3dk 7sn); autolinking modülü buluyor, manifest meta-data'sı doğru (D9)
 - [x] Bulgular bu dosyaya yazıldı, kararlar sabitlendi
@@ -86,6 +86,13 @@ ulaşıyor; stratejik bir sap olarak kalıyor, bugünkü yüzey değil. Dinamik 
 Google yüzeylerine (Assistant dahil) çıkması için `androidx.core:core-google-shortcuts`
 bağımlılığı gerekiyor — Faz 4'te doğrulanacak.
 
+#### D11 — Xcode grubu **path'siz** olmalı, yoksa yol iki kere yazılıyor
+İlk gerçek derleme *"Build input file cannot be found:
+`ios/RecipelyDev/RecipelyAssistant/RecipelyDev/RecipelyAssistant/RecipelySearchIntent.swift`"*
+ile düştü. Grup kendi `path`'ini taşıyorsa çocukları ona göreli çözülüyor; bizim
+dosya referanslarımız zaten proje-göreli olduğu için Xcode ikisini birleştirdi.
+Grup artık **sanal** (`pbxCreateGroup(name)`, path yok). Teste bağlandı.
+
 #### D9 — Kotlin dil sürümü 2.2'nin ALTINDA
 `ifEmpty { continue }` derlenmedi: *"break continue in inline lambdas is only
 available since language version 2.2"*. Derleyici tavanı 2.2.0 ama kullanılan dil
@@ -137,10 +144,12 @@ ESLint kuralı repo genelinde. Kural 13'ün "ortak tipler tek dosyada"sı burada
 - [x] Port: `src/domain/assistant/os/os-assistant-interface.ts`
 - [x] Katalog: `src/domain/assistant/os/os-intent-catalogue.ts` (11 giriş) + 6 değişmez testi
 - [x] Impl + web no-op: `src/infrastructure/assistant/os/os-assistant-bridge{,.web}.ts`
-- [ ] DI token `OsAssistant` + register
-- [ ] Deep link `recipely://assistant/run?action=&arg=` → `+native-intent.tsx`
-- [ ] `use-os-assistant-invocations.ts` (soğuk açılışta bekleyenleri registry'ye akıtır)
-- [ ] Testler: deep-link yönlendirme, soğuk açılış, katalog↔`AssistantAction` parity
+- [x] DI token `OsAssistant` + infrastructure register + `ApplicationStores.osAssistant`
+- [x] Deep link `recipely://assistant/run?action=&arg=` → `os-intent-link.ts` + `pending-os-intent.ts` + `+native-intent.tsx`
+- [x] `use-os-assistant-invocations.ts`, pill'de en son mount (efekt sırası = tier sırası)
+- [x] Testler: katalog değişmezleri (6), deep-link ayrıştırma (11), bridge sınırı (7), plugin (11)
+- [ ] `use-os-entity-catalogue-sync.ts` — tarifleri native kataloğa yazar
+- [ ] Oturum kimlik bilgisi senkronu (`publishCredentials`) — Faz 2'ye bağlı
 
 ## Faz 2 — Headless yol *(D2 gereği koşulsuz)*
 

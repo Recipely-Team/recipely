@@ -121,7 +121,7 @@ const withIntentSourcesInTarget = (config) =>
     // handed `addSourceFile` no group at all — which silently falls through to
     // `addPluginFile` and dies inside the `xcode` library on a null path.
     const groupKey =
-      project.findPBXGroupKey({ name: XCODE_GROUP }) || createGroup(project, projectName);
+      project.findPBXGroupKey({ name: XCODE_GROUP }) || createGroup(project);
 
     const target = project.getFirstTarget().uuid;
     for (const name of names) {
@@ -134,8 +134,17 @@ const withIntentSourcesInTarget = (config) =>
     return mod;
   });
 
-const createGroup = (project, projectName) => {
-  const key = project.pbxCreateGroup(XCODE_GROUP, `${projectName}/${XCODE_GROUP}`);
+/**
+ * Creates a VIRTUAL group — one with no `path` of its own.
+ *
+ * A group that carries a path is the folder its children are relative to, and
+ * the file references added below are already project-relative. Giving the
+ * group `RecipelyDev/RecipelyAssistant` too made Xcode look for
+ * `RecipelyDev/RecipelyAssistant/RecipelyDev/RecipelyAssistant/…` and fail with
+ * "Build input file cannot be found" — a path that exists nowhere, named twice.
+ */
+const createGroup = (project) => {
+  const key = project.pbxCreateGroup(XCODE_GROUP);
   const mainGroup = project.getPBXGroupByKey(
     project.getFirstProject().firstProject.mainGroup,
   );

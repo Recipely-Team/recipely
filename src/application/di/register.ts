@@ -1,5 +1,6 @@
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
+import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-interface';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
@@ -237,6 +238,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   return {
     assistantSessionStore,
     assistantActionRegistry,
+    osAssistant: container.resolve<OsAssistantInterface>(TOKENS.OsAssistant),
     authStore,
     recipeListStore,
     trendingRecipesStore,

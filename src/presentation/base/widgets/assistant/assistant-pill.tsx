@@ -17,6 +17,7 @@ import { useAssistantReachActions } from '@presentation/base/hooks/assistant/act
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/actions/use-assistant-global-actions';
 import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
+import { useOsAssistantInvocations } from '@presentation/base/hooks/assistant/os/use-os-assistant-invocations';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -86,6 +87,10 @@ export const AssistantPill = (): React.JSX.Element | null => {
   useAssistantReportActions();
   useAssistantTimerActions();
   useAssistantScreenContext();
+  // Last on purpose. Effects run in declaration order, so registering the
+  // global and reach tiers above is what guarantees they exist before the first
+  // request Siri or a launcher shortcut left behind is dispatched.
+  useOsAssistantInvocations();
 
   const isOffered = useAssistantIsOffered();
   const live = assistantIsLive(status);

@@ -215,6 +215,20 @@ describe('withAssistantKit — intent sources reach the app target', () => {
     );
   });
 
+  // The first real build failed with "Build input file cannot be found" on a
+  // path that named the folder twice: the group carried
+  // `RecipelyDev/RecipelyAssistant` as its own path AND each file reference was
+  // already project-relative, so Xcode joined them. The group must be virtual.
+  it('creates the group with no path of its own, so file paths are not doubled', () => {
+    mockFiles.set(INTENTS_DIR, ['RecipelySearchIntent.swift']);
+    const xcode = xcodeProject({ groupKey: null });
+
+    withAssistantKit(baseConfig({ xcode }));
+
+    expect(xcode.createGroup).toHaveBeenCalledWith('RecipelyAssistant');
+    expect(xcode.createGroup.mock.calls[0]).toHaveLength(1);
+  });
+
   it('does nothing to the project when the library declares no intents', () => {
     const xcode = xcodeProject();
 
