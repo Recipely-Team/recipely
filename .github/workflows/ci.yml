@@ -408,6 +408,11 @@ jobs:
         run: |
           # Dev App Distribution only needs the APK (no Play AAB on dev).
           chmod +x gradlew
+          # The envelope parity suite, where the only Android toolchain in CI is.
+          # It pins Kotlin's AES-GCM against the same OpenSSL vectors the JS and
+          # Swift halves are checked with; a divergence here ships a headless
+          # assistant answer the backend cannot decrypt.
+          ./gradlew :recipely-assistant-kit:testDebugUnitTest --no-daemon
           ./gradlew assembleRelease --no-daemon
 
       - name: Upload to Firebase App Distribution (dev)
@@ -857,6 +862,11 @@ jobs:
           # Firebase App Distribution has moved to the dev branch, so main no
           # longer builds/ships an APK.
           chmod +x gradlew
+          # The envelope parity suite, where the only Android toolchain in CI is.
+          # It pins Kotlin's AES-GCM against the same OpenSSL vectors the JS and
+          # Swift halves are checked with; a divergence here ships a headless
+          # assistant answer the backend cannot decrypt.
+          ./gradlew :recipely-assistant-kit:testDebugUnitTest --no-daemon
           ./gradlew bundleRelease --no-daemon
 
       - name: Verify AAB is signed with the upload key

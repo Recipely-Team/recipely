@@ -2,7 +2,7 @@ import AppIntents
 import Foundation
 internal import RecipelyAssistantKit
 
-/// Faz 0's proof intent: search, on the one protocol that carries free text.
+/// Phase 0's proof intent: search, on the one protocol that carries free text.
 ///
 /// - Note: **`ShowInAppSearchResultsIntent` is how an arbitrary sentence reaches
 ///   the app at all.** Siri refuses a freeform `String` parameter inside an App

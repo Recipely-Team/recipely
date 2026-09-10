@@ -11,10 +11,19 @@ import javax.crypto.spec.SecretKeySpec
  * The AES-256-GCM envelope every `/api/v1` request travels inside, for the path
  * where JavaScript does not exist.
  *
- * The Android counterpart of `Envelope.swift`, deliberately the same shape and
- * the same refusals. A shortcut or an AppFunction can answer without the app
- * being launched, so there is no bridge to borrow `aes-envelope.ts` from; the
- * backend accepts no other format, so the format is spoken natively.
+ * The Android counterpart of `Envelope.swift`, deliberately the same shape. A
+ * shortcut or an AppFunction can answer without the app being launched, so there
+ * is no bridge to borrow `aes-envelope.ts` from; the backend accepts no other
+ * format, so the format is spoken natively.
+ *
+ * The refusals that are PINNED as identical are the ones the fixture names:
+ * `BadIvLength`, `PayloadShorterThanTag` and `AuthenticationFailed`. One
+ * difference is deliberate and unpinned: Swift reports `notUtf8` when decrypted
+ * bytes are not valid UTF-8, while `String(bytes, UTF_8)` here substitutes
+ * U+FFFD instead. It cannot arise from a payload the backend sealed — that is
+ * always UTF-8 JSON — and the next layer fails on the JSON rather than on the
+ * encoding. Claiming "the same refusals" without the fixture naming them was
+ * the stronger promise, and nothing was keeping it.
  *
  * Parity is pinned by `__fixtures__/aes-gcm-vectors.json` (bytes from OpenSSL),
  * not by reading the three implementations side by side — they agree until the
@@ -42,6 +51,7 @@ object Envelope {
   private const val TAG_BITS = AUTH_TAG_BYTES * 8
   private const val HEX_RADIX = 16
   private const val HEX_CHARS_PER_BYTE = 2
+  private const val HEX_ALPHABET = "0123456789abcdefABCDEF"
 
   sealed class Failure(message: String) : Exception(message) {
     object BadKeyLength : Failure("key must be 32 bytes of hex")
@@ -54,9 +64,18 @@ object Envelope {
   /** What a sealed envelope looks like on the wire. */
   data class Sealed(val payload: String, val iv: String)
 
-  /** Parses the 64-character hex form the app and CI both carry the key in. */
+  /**
+   * Parses the 64-character hex form the app and CI both carry the key in.
+   *
+   * The alphabet is checked, not only the length: `"-1".toIntOrNull(16)` is -1 and
+   * `.toByte()` stores it as `0xFF`, so a length check alone turned a key nobody
+   * typed into 32 plausible bytes. Swift had the same hole for `"+a"` and the JS
+   * half refused both — three parsers with three answers for a value that has to
+   * be one key everywhere.
+   */
   fun keyFromHex(hex: String): SecretKeySpec {
     if (hex.length != KEY_BYTES * HEX_CHARS_PER_BYTE) throw Failure.BadKeyLength
+    if (!hex.all { it in HEX_ALPHABET }) throw Failure.BadKeyLength
     val bytes = ByteArray(KEY_BYTES)
     for (i in 0 until KEY_BYTES) {
       val at = i * HEX_CHARS_PER_BYTE

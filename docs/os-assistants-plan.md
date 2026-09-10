@@ -192,7 +192,7 @@ The order was deliberately reversed: the backend PR needs **separate approval**
 (plan line 204) while the envelope parity work needs nothing from it, so the
 measurable half went first.
 
-- [ ] Backend PR: `POST /assistant/intent-token` (narrow scope, ~30 days) — **awaiting separate approval**
+- [x] Backend PR: `POST /assistant/intent-token` (narrow scope, 30 days) — [recipely-backend#314](https://github.com/Recipely-Team/recipely-backend/pull/314), open against `dev` (D17)
 - [x] Shared AES-GCM test-vector fixture (`__fixtures__/aes-gcm-vectors.json`, 5 vectors + 3 rejections)
 - [x] Swift `Envelope.swift` (CryptoKit) + parity harness (not XCTest — D14)
 - [x] Kotlin `Envelope.kt` (javax.crypto) + JUnit parity (4 tests green)
@@ -252,6 +252,46 @@ only one of the three that landed under the letter the plan gave it. The two
 remaining gates take the next free letters after AC, so Phase 5 below names them
 **AD** and **AE**. A rule letter is a join key like a screen name: reusing one
 makes two different failures print the same label.
+
+### D17 — A reject vector that only asks "did it throw" pins nothing
+Review measured what this phase's own lesson (D14) had missed one level down. The
+three implementations each refused the `iv-too-short` vector, and each for a
+**different reason**: CryptoKit refuses an 11-byte nonce itself, `javax.crypto`
+tolerates any GCM IV length and fails the tag instead, and the JS envelope wraps
+everything into one error type. So deleting the explicit length check from any of
+the three left every parity test green — measured in all three, independently.
+Swift's `payload-shorter-than-tag` case was worse: it was "caught" only by a
+SIGTRAP from `Data.prefix(-8)`.
+
+Each rejection now **names** the refusal (`"failure": "badIvLength"`) and all
+three assert that specific case, with an unknown name failing rather than being
+skipped. Re-measured afterwards: removing the guard now fails in all three, each
+naming what diverged.
+
+The general form, one level above D14: **a test that asserts "something went
+wrong" cannot see the difference between two implementations being wrong in
+different ways** — which is the only thing a parity suite exists to see.
+
+Two more from the same review, both measured: the hex key parsers disagreed
+(Swift accepted `"+a"` ×32 because `UInt8(_:radix:)` allows a leading sign,
+Kotlin accepted `"-1"` ×32 and stored `0xFF`, JS refused both), now all three
+validate the alphabet and both native bad-key lists carry the signed forms. And
+`withAssistantKit.test.js` cleared `EXPO_PUBLIC_API_AES_KEY` only in `afterEach`,
+so its "built without a key" case passed only because CI's test job is the one job
+without that variable — D15's trap biting the test instead of the build.
+
+### Carried debt from this phase
+- [ ] A `notBase64` reject vector. The three disagree today: Swift refuses an
+  embedded newline, Android's decoder skips CR/LF, and JS throws a raw
+  `InvalidCharacterError` from outside its `try`. Adding the vector fails until
+  they are unified — which is the point, and is why it is a separate change.
+- [ ] `Envelope.Failure` in Kotlin is a sealed class of singleton `object`s, so a
+  thrown failure carries no stack of its own. Fine for a value-like refusal,
+  worth revisiting if one ever needs context.
+- [ ] The Kotlin parity suite runs only in the two Android CI jobs (the only place
+  with that toolchain) and on demand via `npm run verify:envelope:android`. The
+  Swift harness runs in `check:structure`, so it executes on every commit on a
+  developer's machine and skips on Linux.
 
 ## Debt from review, carried into Phase 3/4
 

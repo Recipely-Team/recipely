@@ -59,15 +59,28 @@ class EnvelopeParityTest {
     }
   }
 
+  /**
+   * Asserts the NAMED refusal, not merely that something was thrown.
+   *
+   * Measured: deleting the IV-length guard from `Envelope.kt` left all four of
+   * these tests green, because `javax.crypto` tolerates an arbitrary GCM IV
+   * length and fails the tag instead — a different refusal that satisfied an
+   * assertion asking only for `Envelope.Failure`. The fixture now names the
+   * expected one, so the three implementations are pinned to refuse for the same
+   * REASON rather than merely to refuse.
+   */
   @Test
-  fun `refuses what every implementation must refuse`() {
+  fun `refuses what every implementation must refuse, for the named reason`() {
     for (reject in fixture["rejects"].asJsonArray.map { it.asJsonObject }) {
       val sealed = decode(reject["payloadBase64"].asString)
       val iv = decode(reject["ivBase64"].asString)
+      val name = reject["name"].asString
 
-      assertThrows(reject["name"].asString, Envelope.Failure::class.java) {
+      val thrown = assertThrows(name, Envelope.Failure::class.java) {
         Envelope.openBytes(sealed, iv, key)
       }
+
+      assertEquals(name, expectedFailure(reject["failure"].asString), thrown)
     }
   }
 
@@ -75,9 +88,29 @@ class EnvelopeParityTest {
   fun `refuses a key that is not 32 bytes of hex`() {
     assertThrows(Envelope.Failure::class.java) { Envelope.keyFromHex("abc") }
     assertThrows(Envelope.Failure::class.java) { Envelope.keyFromHex("z".repeat(64)) }
+    // Both are 64 characters and both used to parse: `"-1".toIntOrNull(16)` is -1
+    // and became the byte 0xFF, and Swift accepted the `"+a"` form for the same
+    // reason. A key nobody typed is worse than a refused one.
+    assertThrows(Envelope.Failure::class.java) { Envelope.keyFromHex("-1".repeat(32)) }
+    assertThrows(Envelope.Failure::class.java) { Envelope.keyFromHex("+a".repeat(32)) }
   }
 
   private fun decode(value: String): ByteArray = Base64.getDecoder().decode(value)
+
+  /**
+   * Maps the fixture's refusal name onto this implementation's failure.
+   *
+   * An unknown name throws rather than skipping: a fixture that grows a case this
+   * side cannot answer must fail loudly, not quietly verify two of three.
+   */
+  private fun expectedFailure(name: String): Envelope.Failure =
+    when (name) {
+      "authenticationFailed" -> Envelope.Failure.AuthenticationFailed
+      "badIvLength" -> Envelope.Failure.BadIvLength
+      "payloadShorterThanTag" -> Envelope.Failure.PayloadShorterThanTag
+      "notBase64" -> Envelope.Failure.NotBase64
+      else -> throw IllegalArgumentException("fixture names a refusal this test cannot map: \$name")
+    }
 
   /**
    * Walks up from the working directory rather than hard-coding a depth: Gradle

@@ -1,6 +1,7 @@
 import { createDecipheriv } from 'node:crypto';
 import { decryptEnvelope, encryptEnvelope, keyFromHex } from '@infrastructure/crypto/aes-envelope';
 import { EnvelopeDecryptError } from '@infrastructure/crypto/envelope-decrypt-error';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import vectors from '@/modules/recipely-assistant-kit/__fixtures__/aes-gcm-vectors.json';
 
 /**
@@ -32,12 +33,39 @@ describe('aes-envelope · cross-implementation parity', () => {
     }
   });
 
-  describe('refuses what every implementation must refuse', () => {
+  /**
+   * Maps the fixture's refusal name onto the diagnostic this implementation
+   * raises. An unknown name throws rather than being skipped: a fixture that
+   * grows a case this side cannot answer must fail loudly instead of quietly
+   * verifying two of three.
+   */
+  const expectedMessage = (failure: string): string => {
+    switch (failure) {
+      case 'badIvLength':
+        return DiagnosticMessage.crypto.badIvLength(vectors.ivBytes);
+      case 'payloadShorterThanTag':
+        return DiagnosticMessage.crypto.payloadShorterThanTag;
+      case 'authenticationFailed':
+        // The only refusal this implementation reports through the cipher rather
+        // than a length check, so it is the one whose text comes from the library.
+        return DiagnosticMessage.crypto.decryptFailed('');
+      default:
+        throw new Error(`fixture names a refusal this test cannot map: ${failure}`);
+    }
+  };
+
+  // Asserts the NAMED refusal, not merely that something was thrown. Measured:
+  // deleting the IV-length check left this suite green, because every failure
+  // path here produces the same `EnvelopeDecryptError` — three different
+  // behaviours satisfying one assertion. The message is what tells them apart.
+  describe('refuses what every implementation must refuse, for the named reason', () => {
     for (const reject of vectors.rejects) {
       it(`${reject.name} — ${reject.proves}`, () => {
-        expect(() => decryptEnvelope({ payload: reject.payloadBase64, iv: reject.ivBase64 }, key)).toThrow(
-          EnvelopeDecryptError,
-        );
+        const decrypt = (): unknown =>
+          decryptEnvelope({ payload: reject.payloadBase64, iv: reject.ivBase64 }, key);
+
+        expect(decrypt).toThrow(EnvelopeDecryptError);
+        expect(decrypt).toThrow(expectedMessage(reject.failure));
       });
     }
   });

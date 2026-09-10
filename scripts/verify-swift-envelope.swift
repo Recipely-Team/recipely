@@ -19,12 +19,43 @@ private struct Vector {
   let plaintext: String
   let ivBase64: String
   let payloadBase64: String
+  /// Present on rejection cases: the refusal this implementation must answer with.
+  let failure: String?
 
-  init(_ entry: [String: Any]) {
-    name = entry["name"] as? String ?? "unnamed"
-    plaintext = entry["plaintext"] as? String ?? ""
-    ivBase64 = entry["ivBase64"] as? String ?? ""
-    payloadBase64 = entry["payloadBase64"] as? String ?? ""
+  /// A missing field fails rather than defaulting. An empty `plaintext` would
+  /// have made a vector pass against an implementation that returned nothing —
+  /// a vacuous pass is worse than a red test, because it reads as coverage.
+  init(_ entry: [String: Any]) throws {
+    guard
+      let name = entry["name"] as? String,
+      let ivBase64 = entry["ivBase64"] as? String,
+      let payloadBase64 = entry["payloadBase64"] as? String
+    else {
+      throw HarnessError.malformedVector
+    }
+    self.name = name
+    self.ivBase64 = ivBase64
+    self.payloadBase64 = payloadBase64
+    self.plaintext = entry["plaintext"] as? String ?? ""
+    self.failure = entry["failure"] as? String
+  }
+}
+
+private enum HarnessError: Error {
+  case malformedVector
+}
+
+/// Maps the fixture's refusal name onto this implementation's failure.
+///
+/// Unknown names fail rather than being skipped: a fixture that grows a case this
+/// side cannot answer must say so, not quietly verify two of three.
+private func expectedFailure(_ name: String) -> Envelope.Failure? {
+  switch name {
+  case "authenticationFailed": return .authenticationFailed
+  case "badIvLength": return .badIvLength
+  case "payloadShorterThanTag": return .payloadShorterThanTag
+  case "notBase64": return .notBase64
+  default: return nil
   }
 }
 
@@ -47,8 +78,12 @@ struct EnvelopeParityHarness {
       fail("fixture key is not 32 bytes of hex")
     }
 
-    let vectors = rawVectors.map(Vector.init)
-    let rejects = rawRejects.map(Vector.init)
+    guard
+      let vectors = try? rawVectors.map(Vector.init),
+      let rejects = try? rawRejects.map(Vector.init)
+    else {
+      fail("a fixture vector is missing a field this harness requires")
+    }
 
     opens(vectors, key)
     seals(vectors, key)
@@ -92,20 +127,40 @@ struct EnvelopeParityHarness {
     print("  ✓ seals \(vectors.count) payloads byte-for-byte as OpenSSL did")
   }
 
+  /// Asserts the NAMED refusal, not merely that something was thrown.
+  ///
+  /// Measured: deleting the IV-length guard from `Envelope.swift` left this
+  /// harness fully green, because CryptoKit's `AES.GCM.Nonce(data:)` refuses an
+  /// 11-byte nonce on its own — a different refusal that satisfied a `catch` which
+  /// asked nothing. The fixture names the expected one so the three
+  /// implementations are pinned to refuse for the same REASON.
   private static func refuses(_ rejects: [Vector], _ key: SymmetricKey) {
     for reject in rejects {
+      guard let name = reject.failure else {
+        fail("reject vector \(reject.name) does not name the refusal it expects")
+      }
+      guard let expected = expectedFailure(name) else {
+        fail("fixture names a refusal this harness cannot map: \(name)")
+      }
       do {
         _ = try Envelope.open(payload: reject.payloadBase64, iv: reject.ivBase64, key: key)
         fail("open(\(reject.name)) returned bytes instead of throwing")
+      } catch let thrown as Envelope.Failure {
+        guard thrown == expected else {
+          fail("open(\(reject.name)) refused with \(thrown) where \(expected) was required")
+        }
       } catch {
-        continue
+        fail("open(\(reject.name)) threw \(error), which is not an Envelope.Failure")
       }
     }
-    print("  ✓ refuses \(rejects.count) malformed or tampered payloads")
+    print("  ✓ refuses \(rejects.count) payloads, each for the named reason")
   }
 
   private static func refusesBadKeys() {
-    for bad in ["abc", String(repeating: "z", count: 64)] {
+    // `"+a"` x 32 is 64 characters and was ACCEPTED before the alphabet check:
+    // Swift's `UInt8(_:radix:)` allows a leading sign. `"-1"` x 32 is the same
+    // hole pointing the other way, which is the one Kotlin had.
+    for bad in ["abc", String(repeating: "z", count: 64), String(repeating: "+a", count: 32), String(repeating: "-1", count: 32)] {
       do {
         _ = try Envelope.key(fromHex: bad)
         fail("key(fromHex: \"\(bad.prefix(8))…\") was accepted")

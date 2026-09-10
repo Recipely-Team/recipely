@@ -25,6 +25,10 @@ public enum Envelope {
   /// GCM tag length, appended to the ciphertext rather than carried beside it.
   public static let authTagBytes = 16
 
+  /// Lowercase and uppercase only — not `Character.isHexDigit`, which also admits
+  /// full-width and other Unicode digit forms.
+  private static let hexAlphabet = Set("0123456789abcdefABCDEF")
+
   public enum Failure: Error, Equatable {
     case badKeyLength
     case badIvLength
@@ -35,8 +39,17 @@ public enum Envelope {
   }
 
   /// Parses the 64-character hex form the app and CI both carry the key in.
+  ///
+  /// - Note: The alphabet is checked, not only the length. `UInt8("+a", radix: 16)`
+  ///   succeeds — Swift's integer initialisers accept a leading sign — so a length
+  ///   check alone accepted `"+a"` repeated 32 times as a key, silently producing
+  ///   bytes nobody typed. Kotlin's `toIntOrNull(16)` had the same hole pointing the
+  ///   other way (`"-1"` became `0xFF`) and the JS half refused both: three parsers
+  ///   with three answers, for a value that must be one key everywhere.
   public static func key(fromHex hex: String) throws -> SymmetricKey {
-    guard hex.count == keyBytes * 2 else { throw Failure.badKeyLength }
+    guard hex.count == keyBytes * 2, hex.allSatisfy({ hexAlphabet.contains($0) }) else {
+      throw Failure.badKeyLength
+    }
     var bytes = Data(capacity: keyBytes)
     var index = hex.startIndex
     while index < hex.endIndex {

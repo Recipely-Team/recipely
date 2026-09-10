@@ -277,6 +277,15 @@ describe('withAssistantKit — the envelope key reaches the native half', () => 
       (item) => item.$['android:name'] === name,
     );
 
+  // Deleted BEFORE each case, not only after. Cleared only afterwards, the
+  // "built without a key" case passed because the machine running it happened to
+  // have no `EXPO_PUBLIC_API_AES_KEY` — which is the D15 trap biting the test
+  // rather than the build: locally `.env.local` supplies one, and CI's test job is
+  // the one job that does not.
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_API_AES_KEY;
+  });
+
   afterEach(() => {
     delete process.env.EXPO_PUBLIC_API_AES_KEY;
   });
