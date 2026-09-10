@@ -1,0 +1,171 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const {
+  withAndroidManifest,
+  withDangerousMod,
+  withEntitlementsPlist,
+  withInfoPlist,
+  withXcodeProject,
+  AndroidConfig,
+} = require('@expo/config-plugins');
+
+/**
+ * Wires `modules/recipely-assistant-kit` into the generated native projects.
+ *
+ * WHY this exists rather than a plain Expo module: **App Intents cannot be
+ * compiled in a pod here.** Xcode's `AppIntentsMetadataProcessor` does not
+ * reliably extract intent metadata out of a static framework, and
+ * `useFrameworks: "static"` in app.json makes every pod exactly that. An intent
+ * declared in the pod builds green and is then invisible to Siri, Spotlight and
+ * the Shortcuts app, with no error anywhere to say so. Expo's own
+ * `expo-app-intents` reached the same conclusion — it keeps intent declarations
+ * in inline Swift so Apple's build-time extraction can find them.
+ *
+ * So the source lives with the library, where it belongs, and this plugin
+ * copies it into the app target and registers it in the pbxproj on every
+ * prebuild. `ios/` and `android/` are git-ignored and rebuilt from scratch in
+ * CI, so there is no hand-edited native project for any of this to live in.
+ *
+ * ORDER MATTERS, and backwards. Expo runs each mod and then calls the mod
+ * registered BEFORE it, so the last plugin in `app.json` runs first. This one
+ * has to run after `expo-share-intent`, which declares the very same App Group,
+ * so it is registered immediately *before* it in the list. Registered last —
+ * the obvious place for a local plugin — its de-duplication ran first and the
+ * duplicate was appended afterwards, which is how the entitlement shipped the
+ * group twice.
+ *
+ * Three variant-derived values are written into the artifact rather than
+ * compiled into Swift or Kotlin, because there are two bundle identifiers and
+ * two URL schemes and a constant would have pointed the dev build's intents at
+ * the production container:
+ *   - `RecipelyAssistantAppGroup` in Info.plist, read by `RecipelyAssistantStore`
+ *   - the matching App Group entitlement
+ *   - `net.recipely.assistantkit.SCHEME` manifest meta-data, read by
+ *     `RecipelyAssistantConfig`
+ */
+const APP_GROUP_INFO_KEY = 'RecipelyAssistantAppGroup';
+const APP_GROUP_ENTITLEMENT = 'com.apple.security.application-groups';
+const ANDROID_SCHEME_META_DATA = 'net.recipely.assistantkit.SCHEME';
+const XCODE_GROUP = 'RecipelyAssistant';
+const INTENTS_SOURCE_DIR = path.join(
+  'modules',
+  'recipely-assistant-kit',
+  'ios',
+  'AppIntents',
+);
+
+/** `group.<bundle id>` — the convention Apple's own templates use. */
+const appGroupFor = (bundleIdentifier) => `group.${bundleIdentifier}`;
+
+const swiftFilesIn = (dir) =>
+  fs.existsSync(dir)
+    ? fs.readdirSync(dir).filter((name) => name.endsWith('.swift')).sort()
+    : [];
+
+const withAppGroupInfoPlist = (config) =>
+  withInfoPlist(config, (mod) => {
+    mod.modResults[APP_GROUP_INFO_KEY] = appGroupFor(mod.ios?.bundleIdentifier ?? '');
+    return mod;
+  });
+
+const withAppGroupEntitlement = (config) =>
+  withEntitlementsPlist(config, (mod) => {
+    const group = appGroupFor(mod.ios?.bundleIdentifier ?? '');
+    const existing = mod.modResults[APP_GROUP_ENTITLEMENT];
+    const groups = Array.isArray(existing) ? existing : [];
+    // De-duplicates the WHOLE list, not just this plugin's own addition.
+    // `expo-share-intent` already declares `group.<bundle id>` — the very same
+    // group, because both want the container the app itself owns — and a first
+    // prebuild produced it twice. A repeated entitlement is not cosmetic: it
+    // fails validation at signing. Checking only for our own entry would have
+    // left the pair that two plugins created between them.
+    mod.modResults[APP_GROUP_ENTITLEMENT] = [...new Set([...groups, group])];
+    return mod;
+  });
+
+/** Copies the library's intent sources into the app target's folder on disk. */
+const withCopiedIntentSources = (config) =>
+  withDangerousMod(config, [
+    'ios',
+    (mod) => {
+      const from = path.join(mod.modRequest.projectRoot, INTENTS_SOURCE_DIR);
+      const to = path.join(
+        mod.modRequest.platformProjectRoot,
+        mod.modRequest.projectName ?? '',
+        XCODE_GROUP,
+      );
+      fs.mkdirSync(to, { recursive: true });
+      // Files deleted from the library must disappear from the app target too,
+      // or a renamed intent ships twice under two names.
+      for (const stale of swiftFilesIn(to)) fs.rmSync(path.join(to, stale));
+      for (const name of swiftFilesIn(from)) {
+        fs.copyFileSync(path.join(from, name), path.join(to, name));
+      }
+      return mod;
+    },
+  ]);
+
+/** Registers those copies with the app target so they are actually compiled. */
+const withIntentSourcesInTarget = (config) =>
+  withXcodeProject(config, (mod) => {
+    const project = mod.modResults;
+    const projectName = mod.modRequest.projectName ?? '';
+    const names = swiftFilesIn(
+      path.join(mod.modRequest.projectRoot, INTENTS_SOURCE_DIR),
+    );
+    if (names.length === 0) return mod;
+
+    // Truthiness, not `!== undefined`. `pbxGroupByName` answers `null` for a
+    // group that does not exist, so an `undefined` check reported the group as
+    // present on a clean prebuild, asked for a key that was never there, and
+    // handed `addSourceFile` no group at all — which silently falls through to
+    // `addPluginFile` and dies inside the `xcode` library on a null path.
+    const groupKey =
+      project.findPBXGroupKey({ name: XCODE_GROUP }) || createGroup(project, projectName);
+
+    const target = project.getFirstTarget().uuid;
+    for (const name of names) {
+      const relative = `${projectName}/${XCODE_GROUP}/${name}`;
+      // `addSourceFile` happily adds a second build-phase entry for a path it
+      // already has, and Xcode then fails with "duplicate output file".
+      if (project.hasFile(relative)) continue;
+      project.addSourceFile(relative, { target }, groupKey);
+    }
+    return mod;
+  });
+
+const createGroup = (project, projectName) => {
+  const key = project.pbxCreateGroup(XCODE_GROUP, `${projectName}/${XCODE_GROUP}`);
+  const mainGroup = project.getPBXGroupByKey(
+    project.getFirstProject().firstProject.mainGroup,
+  );
+  mainGroup.children.push({ value: key, comment: XCODE_GROUP });
+  return key;
+};
+
+const withSchemeMetaData = (config) =>
+  withAndroidManifest(config, (mod) => {
+    const application = AndroidConfig.Manifest.getMainApplicationOrThrow(mod.modResults);
+    AndroidConfig.Manifest.addMetaDataItemToMainApplication(
+      application,
+      ANDROID_SCHEME_META_DATA,
+      mod.scheme ?? 'recipely',
+    );
+    return mod;
+  });
+
+const withAssistantKit = (config) => {
+  let next = withAppGroupInfoPlist(config);
+  next = withAppGroupEntitlement(next);
+  next = withCopiedIntentSources(next);
+  next = withIntentSourcesInTarget(next);
+  next = withSchemeMetaData(next);
+  return next;
+};
+
+module.exports = withAssistantKit;
+module.exports.appGroupFor = appGroupFor;
+module.exports.APP_GROUP_INFO_KEY = APP_GROUP_INFO_KEY;
+module.exports.APP_GROUP_ENTITLEMENT = APP_GROUP_ENTITLEMENT;
+module.exports.ANDROID_SCHEME_META_DATA = ANDROID_SCHEME_META_DATA;
+module.exports.XCODE_GROUP = XCODE_GROUP;

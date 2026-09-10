@@ -28,11 +28,12 @@ Amaç: Faz 2'nin gerekip gerekmediğini ve Swift dosyalarının nereye konacağ�
 - [x] `modules/recipely-assistant-kit/` iskeleti (expo-module.config.json, package.json)
 - [x] TS ortak tipler (dört ayrı dosya) + web no-op yarısı
 - [x] **Araştırma turu** — üç kabul yanlış çıktı, aşağıya bak
-- [ ] TS native yarısı + `index.ts`
-- [ ] iOS: Swift modül sınıfı + tek kanıt App Intent
-- [ ] Android: Kotlin modül sınıfı + `shortcuts.xml`
-- [ ] `plugins/withAssistantKit.js` + testi
-- [ ] **Ölçüm 1** — plugin'in app target'a enjekte ettiği Swift App Intent `prebuild --clean`'i sağ atlatıyor ve Siri onu görüyor mu? (fork değil, **doğrulama** — D3'e bak)
+- [x] TS native yarısı + `index.ts`
+- [x] iOS: Swift modül sınıfı (`RecipelyAssistantStore`, `RecipelyAssistantKitModule`) + kanıt intent (`RecipelySearchIntent`)
+- [x] Android: Kotlin modül sınıfı + store + `RecipelyShortcutPublisher` + `RecipelyAssistantConfig`
+- [x] `plugins/withAssistantKit.js` + 10 test
+- [x] **Ölçüm 1a** — `prebuild --clean` iki platformda da geçiyor; Swift app target'a kopyalanıp pbxproj'a kaydediliyor, entitlement/Info.plist/manifest doğru (D7, D8)
+- [ ] **Ölçüm 1b** — `pod install` + gerçek iOS derlemesi; Siri/Shortcuts intent'i görüyor mu (cihaz)
 - [x] ~~**Ölçüm 2**~~ — araştırmayla cevaplandı, cihazda ölçmeye gerek yok (D2)
 - [ ] **Ölçüm 3** — plugin'le eklenen Kotlin, Kotlin 2.2.0 tavanı altında derleniyor mu; `shortcuts.xml` üretilen manifest'e giriyor mu?
 - [ ] Bulgular bu dosyaya yazıldı, kararlar sabitlendi
@@ -84,6 +85,25 @@ katmanını veriyor. Bizim modülümüz onun **API yüzeyini birebir taklit ediy
 ulaşıyor; stratejik bir sap olarak kalıyor, bugünkü yüzey değil. Dinamik kısayolların
 Google yüzeylerine (Assistant dahil) çıkması için `androidx.core:core-google-shortcuts`
 bağımlılığı gerekiyor — Faz 4'te doğrulanacak.
+
+#### D7 — Expo mod'ları TERS sırada koşuyor
+`withMod` önce kendi action'ını çalıştırıp sonra **kendinden ÖNCE kayıtlı** mod'u
+çağırıyor: `app.json`'daki **son** plugin **ilk** koşuyor. Local plugin'i listenin
+sonuna koymak (bariz yer) `withAssistantKit`'in tekilleştirmesini herkesten önce
+çalıştırdı ve duplikeyi ondan sonra eklendi. Plugin artık `expo-share-intent`'in
+hemen **öncesine** kayıtlı ki ondan **sonra** koşsun.
+
+#### D8 — App Group zaten var: `expo-share-intent` onu kuruyor
+`group.net.recipely.app.dev` share extension tarafından çoktan bildiriliyor —
+aynı konteyner, aynı sebeple. İlk prebuild entitlement'a grubu **iki kez** yazdı;
+tekrarlanan bir entitlement imzalamada doğrulamayı düşürüyor. Plugin artık kendi
+girdisini değil **tüm listeyi** tekilleştiriyor. İyi haber: grup Apple tarafında
+zaten provision edilmiş, yeni capability başvurusu gerekmiyor.
+
+Ayrıca prebuild iki gerçek hata yakaladı, ikisi de teste bağlandı:
+`pbxGroupByName` yok olan grup için `null` döndürüyor (`!== undefined` yanlış dalı
+seçip `addSourceFile`'ı gruptan yoksun bıraktı, `xcode` kütüphanesi null path'te
+patladı) ve yukarıdaki duplike entitlement.
 
 #### D6 — ESLint kural 1'i `modules/` içinde de uyguluyor
 `check:structure` yalnızca `src/<katman>`'ı geziyor ama `recipely/one-declaration-per-file`

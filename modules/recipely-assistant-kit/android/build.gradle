@@ -1,0 +1,23 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'net.recipely'
+version = '0.1.0'
+
+android {
+  namespace "net.recipely.assistantkit"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  implementation "androidx.core:core-ktx:1.17.0"
+  // Dynamic shortcuts only reach Google's surfaces — Assistant among them —
+  // when this is on the classpath; without it they stop at the launcher.
+  // See docs/os-assistants-plan.md finding D5.
+  implementation "androidx.core:core-google-shortcuts:1.1.0"
+}
