@@ -9,11 +9,11 @@ bu dosya **ilerleme durumudur** — oturum kapanırsa buradan devam edilir.
 | Faz | İş | Durum | PR |
 |-----|----|-------|-----|
 | 0 | Ölçüm ve karar kapısı | ✅ **bitti** (cihaz üstü Siri denemesi hariç) | — |
-| 1 | Modül iskeleti + paylaşılan depo | 🟡 devam ediyor | — |
+| 1 | Modül iskeleti + paylaşılan depo | ✅ **bitti** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 2 | Headless yol | ⬜ başlanmadı — **koşulsuz**, aşağıdaki D2'ye bak | — |
 | 3 | iOS App Intents | ⬜ başlanmadı | — |
 | 4 | Android kısayollar + AppFunctions | ⬜ başlanmadı | — |
-| 5 | Gate'ler ve belgeler | ⬜ başlanmadı | — |
+| 5 | Gate'ler ve belgeler | 🟡 rule W + X kondu, kalanı Faz 3/4 sonrası | — |
 
 Branch: `feat/os-assistants-spike`
 
@@ -182,6 +182,17 @@ ESLint kuralı repo genelinde. Kural 13'ün "ortak tipler tek dosyada"sı burada
 - [ ] Swift `Envelope.swift` (CryptoKit) + XCTest parity
 - [ ] Kotlin `Envelope.kt` (javax.crypto) + JUnit parity
 - [ ] `EXPO_PUBLIC_API_AES_KEY` prebuild'de native sabite yazılıyor
+
+## Review'dan çıkan, Faz 3/4'e taşınan borç
+
+- [ ] Rule 5: `arg: 'next'` (`StepCursor.Next`'i tekrarlıyor) ve `arg: 'myRecipes'`
+  (`AssistantNavigationTargets` anahtarı, üçüncü kez yazılıyor). Domain
+  presentation'ı import edemez → navigasyon hedefi vocabulary'sini `@domain`'e
+  ya da `@core/constants`'a taşımak gerekiyor.
+- [ ] `'recipe'` entity kind'ı üç dilde ayrı yazılı (TS/Swift/Kotlin) — rule W'nin
+  kapsamına alınabilir.
+- [ ] `subscribe` iki tarafta da tanımlı ama hiçbir modül `sendEvent` çağırmıyor;
+  çalışan-uygulama yolu Faz 3'te açılacak.
 
 ## Faz 3 — iOS App Intents
 
