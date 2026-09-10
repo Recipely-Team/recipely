@@ -18,6 +18,7 @@ import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/ac
 import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useOsAssistantInvocations } from '@presentation/base/hooks/assistant/os/use-os-assistant-invocations';
+import { useOsEntityCatalogueSync } from '@presentation/base/hooks/assistant/os/use-os-entity-catalogue-sync';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -91,6 +92,10 @@ export const AssistantPill = (): React.JSX.Element | null => {
   // global and reach tiers above is what guarantees they exist before the first
   // request Siri or a launcher shortcut left behind is dispatched.
   useOsAssistantInvocations();
+  // Mounted here rather than on a screen because it has to keep running after
+  // a sign-out: the catalogue outlives the session in the shared container, and
+  // something must publish the empty list that clears it.
+  useOsEntityCatalogueSync();
 
   const isOffered = useAssistantIsOffered();
   const live = assistantIsLive(status);

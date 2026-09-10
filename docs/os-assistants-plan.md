@@ -8,7 +8,7 @@ bu dosya **ilerleme durumudur** — oturum kapanırsa buradan devam edilir.
 
 | Faz | İş | Durum | PR |
 |-----|----|-------|-----|
-| 0 | Ölçüm ve karar kapısı | 🟢 ölçümler bitti, 1b cihaz bekliyor | — |
+| 0 | Ölçüm ve karar kapısı | ✅ **bitti** (cihaz üstü Siri denemesi hariç) | — |
 | 1 | Modül iskeleti + paylaşılan depo | 🟡 devam ediyor | — |
 | 2 | Headless yol | ⬜ başlanmadı — **koşulsuz**, aşağıdaki D2'ye bak | — |
 | 3 | iOS App Intents | ⬜ başlanmadı | — |
@@ -33,7 +33,8 @@ Amaç: Faz 2'nin gerekip gerekmediğini ve Swift dosyalarının nereye konacağ�
 - [x] Android: Kotlin modül sınıfı + store + `RecipelyShortcutPublisher` + `RecipelyAssistantConfig`
 - [x] `plugins/withAssistantKit.js` + 10 test
 - [x] **Ölçüm 1a** — `prebuild --clean` iki platformda da geçiyor; Swift app target'a kopyalanıp pbxproj'a kaydediliyor, entitlement/Info.plist/manifest doğru (D7, D8)
-- [ ] **Ölçüm 1b** — `pod install` + gerçek iOS derlemesi (koşuyor); Siri/Shortcuts intent'i görüyor mu (cihaz — senin işin)
+- [x] **Ölçüm 1b** — `pod install` + `xcodebuild` **BUILD SUCCEEDED**; intent app target'ta derleniyor ve **`Metadata.appintents` içine çıkarılıyor** (`isDiscoverable: true`) — D12, D13
+- [ ] Cihaz üstü: Siri gerçekten çağırıyor mu, TR ve EN'de (**senin işin**, fiziksel cihaz gerek)
 - [x] ~~**Ölçüm 2**~~ — araştırmayla cevaplandı, cihazda ölçmeye gerek yok (D2)
 - [x] **Ölçüm 3** — `:recipely-assistant-kit:compileDebugKotlin` ve **tam `:app:assembleDebug` yeşil** (3dk 7sn); autolinking modülü buluyor, manifest meta-data'sı doğru (D9)
 - [x] Bulgular bu dosyaya yazıldı, kararlar sabitlendi
@@ -85,6 +86,29 @@ katmanını veriyor. Bizim modülümüz onun **API yüzeyini birebir taklit ediy
 ulaşıyor; stratejik bir sap olarak kalıyor, bugünkü yüzey değil. Dinamik kısayolların
 Google yüzeylerine (Assistant dahil) çıkması için `androidx.core:core-google-shortcuts`
 bağımlılığı gerekiyor — Faz 4'te doğrulanacak.
+
+#### D13 — Metadata çıkarımı ÇALIŞIYOR, yaklaşım doğrulandı
+`RecipelyDev.app/Metadata.appintents/extract.actionsdata` içinde:
+`"RecipelySearchIntent"`, `isDiscoverable: true`, `openAppWhenRun: true`,
+`systemProtocolMetadata: ["com.apple.link.systemProtocol.ShowInAppStringSearchResults"]`.
+Yani plugin'in app target'a enjekte etme yaklaşımı **kanıtlandı** — Siri, Spotlight ve
+Shortcuts intent'i görecek. (Derleme sırasındaki *"Metadata extraction skipped. No
+AppIntents.framework dependency found"* uyarısı **ShareExtension** hedefine ait ve
+beklenen: onun hiç intent'i yok.)
+
+Geriye yalnızca cihaz üstü doğrulama kalıyor: Siri cümleyi gerçekten eşleştiriyor mu.
+
+#### D12 — Bu SDK'da şema `searchInApp` DEĞİL, `ShowInAppSearchResultsIntent`
+Xcode 26.6 / iOS 26.5 SDK'da `AssistantSchemas.SystemIntent`'in `searchInApp` üyesi
+**yok** — o isim Xcode 27 (iOS 27) ile geliyor, araştırma turu bu noktada ileri bir
+sürümü tarif etmiş. Bu SDK'daki karşılığı **`ShowInAppSearchResultsIntent`**
+(iOS 17.2+): `criteria: StringSearchCriteria` alıyor, Siri sorguyu **ham haliyle**
+`criteria.term`'e koyuyor, `openAppWhenRun` protokolün kendisinde `true`. D1'in
+sonucu değişmiyor, yalnızca adı: serbest metnin tek turluk yolu bu.
+
+Ayrıca: `@available` **17.2** olmalı (17.0 değil), ve pod'dan yapılan import
+`internal import RecipelyAssistantKit` yazılmalı — Swift 6, hedefte başka yerde
+internal olarak import edilen bir modülün örtük erişim seviyesini reddediyor.
 
 #### D11 — Xcode grubu **path'siz** olmalı, yoksa yol iki kere yazılıyor
 İlk gerçek derleme *"Build input file cannot be found:
@@ -148,7 +172,7 @@ ESLint kuralı repo genelinde. Kural 13'ün "ortak tipler tek dosyada"sı burada
 - [x] Deep link `recipely://assistant/run?action=&arg=` → `os-intent-link.ts` + `pending-os-intent.ts` + `+native-intent.tsx`
 - [x] `use-os-assistant-invocations.ts`, pill'de en son mount (efekt sırası = tier sırası)
 - [x] Testler: katalog değişmezleri (6), deep-link ayrıştırma (11), bridge sınırı (7), plugin (11)
-- [ ] `use-os-entity-catalogue-sync.ts` — tarifleri native kataloğa yazar
+- [x] `use-os-entity-catalogue-sync.ts` — tarifleri native kataloğa yazar + 6 test (oturum kapanınca boşaltıyor)
 - [ ] Oturum kimlik bilgisi senkronu (`publishCredentials`) — Faz 2'ye bağlı
 
 ## Faz 2 — Headless yol *(D2 gereği koşulsuz)*
