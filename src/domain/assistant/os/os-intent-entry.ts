@@ -14,8 +14,8 @@ import type { OsIntentParameterKindType } from '@domain/assistant/os/os-intent-p
  * - **`headless` is a safety switch, not a performance one.** A headless entry
  *   is answered by native code with no screen and no confirmation sheet, so
  *   nothing destructive may ever be marked headless — the five
- *   `CONFIRMED_ACTIONS` least of all. The structure gate enforces that rather
- *   than trusting the reader.
+ *   `CONFIRMED_ACTIONS` least of all. `check:structure` rule X blocks on that,
+ *   and `os-intent-catalogue.test.ts` asserts it again from the other side.
  * - **`arg` is for entries that are a word plus a constant**, like opening My
  *   Recipes: the action is `navigate` and the argument is always the same, so
  *   the OS is not asked to supply one.

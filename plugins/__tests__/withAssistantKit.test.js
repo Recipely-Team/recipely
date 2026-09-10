@@ -132,6 +132,27 @@ describe('withAssistantKit — variant-derived identifiers', () => {
     ]);
   });
 
+  // A missing bundle identifier used to yield the group `group.` — a
+  // plausible-looking string that signs, installs, and shares a container with
+  // nothing. Failing the prebuild is the only useful answer.
+  it('refuses to build an App Group out of a missing bundle identifier', () => {
+    const config = baseConfig();
+    config.ios = {};
+
+    expect(() => withAssistantKit(config)).toThrow(/bundleIdentifier/);
+  });
+
+  it('takes the first scheme when Expo was given a list of them', () => {
+    const config = baseConfig();
+    config.scheme = ['recipely-dev', 'recipely-legacy'];
+
+    withAssistantKit(config);
+
+    expect(
+      config.__mods.manifest.manifest.application[0]['meta-data'][0].$['android:value'],
+    ).toBe('recipely-dev');
+  });
+
   it('writes the variant URL scheme into the Android manifest', () => {
     const config = baseConfig();
 

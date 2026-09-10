@@ -5,6 +5,8 @@ import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
+const CATALOGUE_LIMIT = 24;
+
 /**
  * Keeps the names the OS can resolve in step with the user's own recipes.
  *
@@ -21,8 +23,6 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   in the shared container, so leaving it behind would let the next person to
  *   hold the phone read the previous one's recipe titles out of Spotlight.
  */
-const CATALOGUE_LIMIT = 24;
-
 export const useOsEntityCatalogueSync = (): void => {
   const { osAssistant, savedRecipesStore, createdRecipesStore, authStore } = useStores();
   const savedRecipes = savedRecipesStore((state) => state.savedRecipes);
@@ -36,7 +36,11 @@ export const useOsEntityCatalogueSync = (): void => {
   }, [osAssistant, savedRecipes, createdRecipes, isSignedIn]);
 };
 
-/** Saved before created, each id once, capped where the shortcut list is. */
+/**
+ * Saved before created, each id once, capped well above the launcher's own
+ * limit — Android trims again to the handful of shortcuts it will show, while
+ * Spotlight can resolve every name in the catalogue.
+ */
 const toHandles = (
   saved: readonly RecipeSummaryEntity[],
   created: readonly RecipeSummaryEntity[],

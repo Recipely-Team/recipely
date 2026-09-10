@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
@@ -18,18 +18,28 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   a component run in order, so registering this last is what guarantees the
  *   fallback tier exists before the first invocation is dispatched. Called from
  *   somewhere else it would race the very handlers it needs.
- * - **A request is acknowledged whatever the outcome.** A word that fails, or
- *   that this build no longer recognises, must still leave the queue — an
- *   unacknowledged entry is re-read and re-run on every launch, so a single
- *   bad request would become permanent.
- * - **Draining on foreground, not only on mount.** An intent can fire while the
- *   app is backgrounded and suspended, where no event of ours is delivered.
+ * - **Draining is single-flight, and that is a correctness rule.** Reading the
+ *   queue deliberately does not empty it, and an entry is only acknowledged
+ *   once its action has finished — so a second drain entering while the first
+ *   awaits a handler would find the same entry and run it twice. Returning to
+ *   the app from the Siri overlay, Control Centre or a permission sheet raises
+ *   `active` every time, so this is the ordinary case rather than the edge.
+ * - **A request is acknowledged whatever the outcome, and one failure does not
+ *   strand the rest.** An unacknowledged entry is re-read and re-run on every
+ *   launch, so a single bad request would otherwise become permanent; and an
+ *   acknowledge that rejects at the native bridge must not abort the loop over
+ *   the entries behind it.
  * - **Headless entries never arrive here.** `askRecipely` is answered natively
  *   with no screen; if it reaches JavaScript at all, something went wrong on
  *   the native side and the registry will say so.
+ * - **The live subscription is groundwork.** Neither native module sends the
+ *   event yet, so today every request arrives through the queue — on launch,
+ *   or on the next foreground. The wiring is here so the running-app path costs
+ *   nothing to switch on.
  */
 export const useOsAssistantInvocations = (): void => {
   const { assistantActionRegistry: registry, osAssistant } = useStores();
+  const isDraining = useRef(false);
 
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
@@ -38,28 +48,39 @@ export const useOsAssistantInvocations = (): void => {
           await registry.run(invocation.action, invocation.arg ?? undefined);
         }
       } finally {
-        await osAssistant.acknowledge(invocation.invocationId);
+        // Swallowed deliberately: the bridge failing to forget a request is not
+        // something a screen can act on, and letting it escape would strand
+        // every entry behind this one.
+        await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       }
     },
     [registry, osAssistant],
   );
 
   const drain = useCallback(async (): Promise<void> => {
-    const link = PendingOsIntent.take();
-    if (link !== null) {
-      await registry.run(link.action, link.arg ?? undefined);
-    }
+    if (isDraining.current) return;
+    isDraining.current = true;
+    try {
+      const link = PendingOsIntent.take();
+      if (link !== null) {
+        await registry.run(link.action, link.arg ?? undefined);
+      }
 
-    const queued = await osAssistant.pendingInvocations();
-    for (const invocation of queued) {
-      await dispatch(invocation);
+      for (const invocation of await osAssistant.pendingInvocations()) {
+        await dispatch(invocation);
+      }
+    } catch {
+      // The queue could not be read. The next foreground tries again, and the
+      // entries are still there because nothing acknowledged them.
+    } finally {
+      isDraining.current = false;
     }
   }, [registry, osAssistant, dispatch]);
 
   useEffect(() => {
     void drain();
 
-    const subscription = osAssistant.subscribe((invocation) => {
+    const unsubscribe = osAssistant.subscribe((invocation) => {
       void dispatch(invocation);
     });
 
@@ -69,7 +90,7 @@ export const useOsAssistantInvocations = (): void => {
     const appStateSubscription = AppState.addEventListener('change', onAppState);
 
     return () => {
-      subscription();
+      unsubscribe();
       appStateSubscription.remove();
     };
   }, [drain, dispatch, osAssistant]);

@@ -144,7 +144,7 @@ for (const file of files) {
     // code. Prettier wraps at 100 characters, so a long derived union is
     // ordinarily two lines: the false positive was the common case, not a rare
     // one.
-    const body = new RegExp(`(?:^|\\n)export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(;|$)`).exec(src)?.[1] ?? '';
+    const body = new RegExp(`(?:^|\\n)export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(?:;|\\n(?=\\S)|$)`).exec(src)?.[1] ?? '';
     const derived = [...body.matchAll(/typeof\s+([A-Za-z0-9_]+)/g)].some((t) => names.has(t[1]));
     const merged = decls.some((o) => o !== d && o.kind === 'const' && o.name === d.name);
     return !derived && !merged;
@@ -490,6 +490,104 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       errors.push(
         `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
       );
+    }
+  }
+}
+
+// --- W: the OS-facing catalogue must match the native sources ---------------
+// `OS_INTENT_CATALOGUE` claims to be the one list Siri, the Android launcher
+// and the app are all built from — but the Swift intents and the Kotlin
+// shortcut publisher spell their ids and action words as bare string literals,
+// because neither language can import a TypeScript const. Nothing joined the
+// two halves, so a renamed action would have kept compiling on both sides and
+// simply stopped working out loud.
+//
+// jest cannot read Swift, so this is the gate's job rather than a test's. Two
+// questions, both mechanical: does every literal the native sources put in an
+// `id:` or `action:` slot exist in the vocabulary it claims to come from, and
+// does every deep link they build name a real action?
+{
+  const idsPath = path.join(SRC, 'domain/assistant/os/os-intent-id.ts');
+  const actionsPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  const nativeRoot = path.join(ROOT, 'modules/recipely-assistant-kit');
+
+  if (fs.existsSync(idsPath) && fs.existsSync(actionsPath) && fs.existsSync(nativeRoot)) {
+    const valuesOf = (file) =>
+      new Set([...fs.readFileSync(file, 'utf8').matchAll(/^ {2}\w+: '([\w]+)',/gm)].map((m) => m[1]));
+    const intentIds = valuesOf(idsPath);
+    const actions = valuesOf(actionsPath);
+
+    const nativeFiles = [];
+    const walkNative = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        // `build/` is Gradle output, not source.
+        if (entry.isDirectory()) {
+          if (!['build', '.gradle', '.cxx'].includes(entry.name)) walkNative(full);
+        } else if (/\.(swift|kt)$/.test(entry.name)) {
+          nativeFiles.push(full);
+        }
+      }
+    };
+    walkNative(nativeRoot);
+
+    for (const file of nativeFiles) {
+      const src = fs.readFileSync(file, 'utf8');
+      const shown = path.relative(ROOT, file);
+
+      // `"id": "searchRecipes"` (Swift) and `"id" to "searchRecipes"` (Kotlin).
+      for (const m of src.matchAll(/"id"\s*(?::|to)\s*"([\w]+)"/g)) {
+        if (!intentIds.has(m[1])) {
+          errors.push(
+            `${shown}: '${m[1]}' is not an OsIntentId — the native sources and OS_INTENT_CATALOGUE must name the same capabilities (CLAUDE.md §5)`,
+          );
+        }
+      }
+      for (const m of src.matchAll(/"action"\s*(?::|to)\s*"([\w]+)"/g)) {
+        if (!actions.has(m[1])) {
+          errors.push(
+            `${shown}: '${m[1]}' is not an AssistantAction — a word the registry cannot answer (CLAUDE.md §5)`,
+          );
+        }
+      }
+      // Deep links the native side builds: `...assistant/run?action=openRecipe`.
+      for (const m of src.matchAll(/assistant\/run\?action=([\w]+)/g)) {
+        if (!actions.has(m[1])) {
+          errors.push(
+            `${shown}: deep link names '${m[1]}', which is not an AssistantAction (CLAUDE.md §5)`,
+          );
+        }
+      }
+    }
+  }
+}
+
+// --- X: nothing destructive may answer without a screen ---------------------
+// A `headless: true` entry is answered by native code with no UI, so the
+// confirmation sheet `CONFIRMED_ACTIONS` relies on cannot appear at all — not
+// "is hard to reach", cannot exist. The catalogue's own test asserts this too,
+// but the invariant is about what ships to a user's phone rather than about
+// one module, so it is held here as well.
+{
+  const cataloguePath = path.join(SRC, 'domain/assistant/os/os-intent-catalogue.ts');
+  const confirmedPath = path.join(SRC, 'domain/assistant/actions/confirmed-actions.ts');
+
+  if (fs.existsSync(cataloguePath) && fs.existsSync(confirmedPath)) {
+    const confirmed = new Set(
+      [...fs.readFileSync(confirmedPath, 'utf8').matchAll(/AssistantAction\.(\w+)/g)].map((m) => m[1]),
+    );
+    const src = fs.readFileSync(cataloguePath, 'utf8');
+    // Each `{ ... }` entry, matched whole so `action` and `headless` are read
+    // from the same one.
+    for (const entry of src.matchAll(/\{[^{}]*id:[\s\S]*?\}/g)) {
+      const body = entry[0];
+      if (!/headless:\s*true/.test(body)) continue;
+      const action = /action:\s*AssistantAction\.(\w+)/.exec(body)?.[1];
+      if (action !== undefined && confirmed.has(action)) {
+        errors.push(
+          `OS_INTENT_CATALOGUE: '${action}' is a confirmed action marked headless — a destructive action answered with no screen has no way to ask (CLAUDE.md §5, §23)`,
+        );
+      }
     }
   }
 }

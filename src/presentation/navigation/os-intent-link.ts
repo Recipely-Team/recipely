@@ -2,6 +2,10 @@ import { CharConstants } from '@core/constants';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape';
 
+const LINK_PATH = 'assistant/run';
+const ACTION_PARAM = 'action';
+const ARG_PARAM = 'arg';
+
 /**
  * Reads the deep link an Android shortcut opens the app with.
  *
@@ -18,10 +22,6 @@ import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape
  * - **The path is matched, not merely searched.** `includes('assistant/run')`
  *   would have accepted a recipe whose id contained the phrase.
  */
-const LINK_PATH = 'assistant/run';
-const ACTION_PARAM = 'action';
-const ARG_PARAM = 'arg';
-
 export function parseOsIntentLink(path: string): OsIntentLink | null {
   const query = queryOf(path);
   if (query === null) return null;

@@ -54,8 +54,36 @@ const INTENTS_SOURCE_DIR = path.join(
   'AppIntents',
 );
 
-/** `group.<bundle id>` — the convention Apple's own templates use. */
-const appGroupFor = (bundleIdentifier) => `group.${bundleIdentifier}`;
+/**
+ * `group.<bundle id>` — the convention Apple's own templates use.
+ *
+ * Throws rather than defaulting. A missing bundle identifier used to yield the
+ * group `group.`, which is a plausible-looking string that signs, installs, and
+ * then shares a container with nothing — the exact failure this plugin exists
+ * to prevent, arriving silently.
+ */
+const appGroupFor = (bundleIdentifier) => {
+  if (typeof bundleIdentifier !== 'string' || bundleIdentifier.length === 0) {
+    throw new Error(
+      '[withAssistantKit] ios.bundleIdentifier is not set — the App Group is derived from it',
+    );
+  }
+  return `group.${bundleIdentifier}`;
+};
+
+/**
+ * Expo's `scheme` may be a string or an array of them; the native side wants
+ * one. The first is the canonical one — `app.config.ts` sets exactly one per
+ * variant — and an array joined into the manifest would produce a scheme no
+ * launcher can open.
+ */
+const primarySchemeOf = (scheme) => {
+  const value = Array.isArray(scheme) ? scheme[0] : scheme;
+  if (typeof value !== 'string' || value.length === 0) {
+    throw new Error('[withAssistantKit] expo.scheme is not set — shortcuts have no URL to open');
+  }
+  return value;
+};
 
 const swiftFilesIn = (dir) =>
   fs.existsSync(dir)
@@ -64,13 +92,13 @@ const swiftFilesIn = (dir) =>
 
 const withAppGroupInfoPlist = (config) =>
   withInfoPlist(config, (mod) => {
-    mod.modResults[APP_GROUP_INFO_KEY] = appGroupFor(mod.ios?.bundleIdentifier ?? '');
+    mod.modResults[APP_GROUP_INFO_KEY] = appGroupFor(mod.ios?.bundleIdentifier);
     return mod;
   });
 
 const withAppGroupEntitlement = (config) =>
   withEntitlementsPlist(config, (mod) => {
-    const group = appGroupFor(mod.ios?.bundleIdentifier ?? '');
+    const group = appGroupFor(mod.ios?.bundleIdentifier);
     const existing = mod.modResults[APP_GROUP_ENTITLEMENT];
     const groups = Array.isArray(existing) ? existing : [];
     // De-duplicates the WHOLE list, not just this plugin's own addition.
@@ -158,7 +186,7 @@ const withSchemeMetaData = (config) =>
     AndroidConfig.Manifest.addMetaDataItemToMainApplication(
       application,
       ANDROID_SCHEME_META_DATA,
-      mod.scheme ?? 'recipely',
+      primarySchemeOf(mod.scheme),
     );
     return mod;
   });

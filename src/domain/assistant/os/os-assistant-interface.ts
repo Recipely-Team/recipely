@@ -10,9 +10,11 @@ import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
  *   been dispatched. A read that consumed the queue would lose the request
  *   whenever the app was killed in between — which, for an app Siri launched
  *   and the user then swiped away, is the ordinary case rather than the edge.
- * - **`subscribe` is only for an app that is already running.** The cold-launch
- *   path is the queue: by the time a listener could be attached, the intent has
- *   long since run.
+ * - **`subscribe` is only for an app that is already running** — and nothing
+ *   fires it yet. Both native modules declare the event and neither sends it,
+ *   so today every request arrives through the queue, on launch or on the next
+ *   foreground. The wiring exists so the running-app path costs nothing to
+ *   switch on; until it does, this is groundwork rather than a live channel.
  * - **This port performs nothing.** It carries requests up to
  *   `AssistantActionRegistry`, which is the one thing that knows how to run a
  *   word. A second dispatcher here would be a second implementation of the
@@ -37,6 +39,10 @@ export interface OsAssistantInterface {
 
   /**
    * Hands the native side what it needs to answer without opening the app.
+   *
+   * Not wired to anything yet: the only headless entry is `askRecipely`, which
+   * waits on a scoped token endpoint in the backend. The port carries it so the
+   * shape of the withdrawal is settled before there is a token to withdraw.
    *
    * A `null` token withdraws the ability: after a sign-out there is nothing
    * left for a headless intent to ask on the user's behalf.

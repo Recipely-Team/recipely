@@ -18,8 +18,10 @@ import type { OsIntentEntry } from '@domain/assistant/os/os-intent-entry';
  *   through a keyhole. It is also the only one that has no fixed action: the
  *   assistant reads the question and decides.
  * - **Nothing here invents a word.** Every non-null `action` is one the registry
- *   already answers, so `check:structure` rule U stays satisfied without a
- *   single new handler.
+ *   already answers, so rule U — which asks that every action have a handler —
+ *   stays satisfied without a single new handler being written. What holds THIS
+ *   list to the vocabulary is rule W, and rule X is what keeps a destructive
+ *   word from being marked headless.
  */
 export const OS_INTENT_CATALOGUE: readonly OsIntentEntry[] = [
   {

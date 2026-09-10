@@ -6,6 +6,12 @@ import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocati
 import type { OsIntentIdType } from '@domain/assistant/os/os-intent-id';
 import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
 
+const ENTITY_KIND_RECIPE = 'recipe';
+
+const OS_INTENT_IDS = new Set<string>(Object.values(OsIntentId));
+
+const isOsIntentId = (value: string): value is OsIntentIdType => OS_INTENT_IDS.has(value);
+
 /**
  * Adapts `recipely-assistant-kit` to the domain's port.
  *
@@ -19,12 +25,6 @@ import type { OsRecipeHandle } from '@domain/assistant/os/os-recipe-handle';
  * - **A dropped invocation is still acknowledged by the caller**, or it would
  *   sit in the queue being re-read and re-dropped on every launch.
  */
-const ENTITY_KIND_RECIPE = 'recipe';
-
-const OS_INTENT_IDS = new Set<string>(Object.values(OsIntentId));
-
-const isOsIntentId = (value: string): value is OsIntentIdType => OS_INTENT_IDS.has(value);
-
 export class OsAssistantBridge implements OsAssistantInterface {
   readonly isAvailable = Kit.isAvailable;
 

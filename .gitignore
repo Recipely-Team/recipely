@@ -47,6 +47,14 @@ app-example
 /ios
 /android
 
+# A local Expo module builds in place, and the two entries above are
+# root-anchored — they never reached `modules/*/android/`, so a single
+# `assembleDebug` committed 174 jars, class files and dex outputs.
+modules/*/android/build/
+modules/*/android/.gradle/
+modules/*/android/.cxx/
+modules/*/ios/build/
+
 # Claude Code
 .claude/
 
