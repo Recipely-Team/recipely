@@ -302,7 +302,7 @@ names, 10 tile labels, the entity's type name — now reads from the
 before committing to it: the metadata processor RECORDS a custom table
 (`{"key": "Ask Recipely", "table": "RecipelyIntents"}` in `extract.actionsdata`),
 so build-time strings resolve from it like run-time ones, and on a Turkish
-simulator the Shortcuts tile changed from "Ask Recipely" to "Recipely’e sor".
+simulator the Shortcuts tile changed from "Ask Recipely" to "Recipely’ye sor".
 The generator refuses, through `scripts/os-intent-string-guard.cjs`, any
 `LocalizedStringResource` that does not name the table (which also catches a
 missing table or a typo in its name) and the fourteen initialiser forms that
@@ -349,6 +349,10 @@ ad-hoc-signed simulator build with a real intent token in its App Group.
   **Fixed in recipely-backend#315:** one deadline per turn, set by who is waiting
   (app 80 s, phone 12 s), shared between Gemini and Groq; measured on the dev box
   with the phone's 6 s share, Groq answered in 0.65–0.9 s while Gemini timed out.
+  **Verified live after deploy** with the unmodified Swift client: five TR/EN
+  questions answered in 4.9–7.0 s (none timed out; before, 16–39 s). The same
+  check caught the fallback answering an English question in Turkish — the typed
+  turn never told the model its language — fixed in recipely-backend#316.
 
 ### D25 — Measured against the real backend, and what Siri says back
 **The headless path works end to end.** The unmodified `RecipelyAssistantStore`,
