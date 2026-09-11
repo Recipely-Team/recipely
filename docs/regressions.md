@@ -1909,3 +1909,20 @@ intent's withdrawal stays as best effort.
 silently when nobody tells you.** Cleanup belongs with the side that will
 certainly run — here the reader of the queue — not with the side that may be
 cancelled, suspended or killed first.
+
+## A model that was given the keys, and answered with the labels
+
+The assistant's `navigate` takes a screen KEY — `myRecipes` — and the model is
+given the list. Verified on production after the OS-assistant release: asked "open my
+recipes" through Siri, the Groq fallback answered `navigate` with `My Recipes`, the
+label a person reads, and the app came forward only to refuse it as `unknown_screen`.
+Gemini had always sent the key, so nothing had ever exercised the gap; the doc line
+above the predicate even said "the model is given the list, but it is not held to it",
+and the code held it to it anyway.
+
+*Now:* screen and outside-page names are matched with case and separators folded
+(`foldTargetName`), with a test that no two keys fold to the same name.
+
+*The class:* **a second model is a second dialect.** A vocabulary one provider always
+spelled exactly is a vocabulary the next provider will spell its own way; match the
+meaning at the boundary, not the spelling one model happened to use.

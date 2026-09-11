@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
-import { ASSISTANT_NAVIGATION_TARGETS, isAssistantScreenName } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
+import { ASSISTANT_NAVIGATION_TARGETS, resolveAssistantScreenName } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -70,11 +70,12 @@ export const useAssistantGlobalActions = (): void => {
       if (isAssistantExternalName(name)) {
         return { ok: false, error: 'leaves_the_app' };
       }
-      if (!isAssistantScreenName(name)) return { ok: false, error: 'unknown_screen' };
+      const screen = resolveAssistantScreenName(name);
+      if (screen === null) return { ok: false, error: 'unknown_screen' };
 
       // `navigate`, not `push`: asked to go somewhere the user is already
       // standing, `push` stacks a second copy of it and back stops leaving.
-      router.navigate(ASSISTANT_NAVIGATION_TARGETS[name] as Href);
+      router.navigate(ASSISTANT_NAVIGATION_TARGETS[screen] as Href);
       return { ok: true };
     }, []),
   );

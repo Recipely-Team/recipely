@@ -1,5 +1,7 @@
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import { act } from 'react-test-renderer';
+import type { ReactTestRenderer } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
@@ -19,6 +21,16 @@ jest.mock('expo-router', () => ({
   router: { navigate: jest.fn(), push: jest.fn(), back: jest.fn(), canGoBack: () => true },
 }));
 
+// The theme provider reads the stored preference asynchronously. Left mounted,
+// that read landed after the file's environment was torn down and failed the
+// pre-commit run ("import a file after the Jest environment has been torn down").
+const mounted: ReactTestRenderer[] = [];
+
+afterEach(async () => {
+  await act(async () => undefined);
+  for (const renderer of mounted.splice(0)) act(() => renderer.unmount());
+});
+
 function harness() {
   const registry = new AssistantActionRegistry();
   const stores = {
@@ -33,11 +45,12 @@ function harness() {
     return null;
   };
 
-  renderComponent(
+  const { renderer } = renderComponent(
     <StoresProvider value={stores}>
       <Probe />
     </StoresProvider>,
   );
+  mounted.push(renderer);
 
   return registry;
 }
