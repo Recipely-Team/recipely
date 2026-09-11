@@ -1026,4 +1026,8 @@ export const tr: Translations = {
     startTimer: "Zamanlayıcı",
     openMyRecipes: "Tariflerim",
   },
+  osIntentDialogs: {
+    askWhat: "Ne sormak istersin?",
+    openingApp: "Recipely açılıyor.",
+  },
 };

@@ -1019,4 +1019,8 @@ export const ar = {
     startTimer: "المؤقت",
     openMyRecipes: "وصفاتي",
   },
+  osIntentDialogs: {
+    askWhat: "ماذا تريد أن تسأل؟",
+    openingApp: "جارٍ فتح Recipely.",
+  },
 };

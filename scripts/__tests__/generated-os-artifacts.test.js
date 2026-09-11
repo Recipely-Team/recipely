@@ -135,3 +135,42 @@ describe('generated Siri phrases', () => {
     }
   });
 });
+
+// What Siri says back. Before this table the follow-up question was an English
+// literal in the Swift, so a Turkish phone asked "What would you like to ask?".
+// The table is looked up by the ENGLISH key at run time: a key the Swift reads
+// that the table lacks falls back to English silently, exactly like a phrase.
+describe('generated Siri dialogs', () => {
+  const INTENTS = path.join(ROOT, 'modules/recipely-assistant-kit/ios/AppIntents');
+  const swiftUnder = (dir) =>
+    fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) return swiftUnder(full);
+      return entry.name.endsWith('.swift') ? [full] : [];
+    });
+  const readKeys = swiftUnder(INTENTS).flatMap((file) =>
+    [...read(file).matchAll(/LocalizedStringResource\(\s*"([^"]+)",\s*table:\s*"RecipelyIntents"/g)].map((m) => m[1]),
+  );
+  const table = (code) =>
+    Object.fromEntries(
+      [...read(path.join(IOS_RESOURCES, `${code}.lproj`, 'RecipelyIntents.strings')).matchAll(/^"([^"]*)" = "([^"]*)";$/gm)]
+        .map((m) => [m[1], m[2]]),
+    );
+
+  it('reads at least the follow-up question from the table', () => {
+    expect(readKeys).toContain('What would you like to ask?');
+  });
+
+  it('translates every line the intents read, in every shipped language', () => {
+    for (const code of localeCodes) {
+      const rows = table(code);
+      for (const key of readKeys) {
+        expect({ code, key, value: rows[key]?.length > 0 }).toEqual({ code, key, value: true });
+      }
+    }
+  });
+
+  it('does not answer a Turkish phone in English', () => {
+    expect(table('tr')['What would you like to ask?']).not.toBe('What would you like to ask?');
+  });
+});

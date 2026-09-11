@@ -1019,4 +1019,8 @@ export const id = {
     startTimer: "Timer",
     openMyRecipes: "Resep saya",
   },
+  osIntentDialogs: {
+    askWhat: "Mau tanya apa?",
+    openingApp: "Membuka Recipely.",
+  },
 };

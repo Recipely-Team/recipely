@@ -9,7 +9,9 @@ internal import RecipelyAssistantKit
 ///   assistant rather than a slice of it.
 /// - Note: **Two turns, because Siri gives no other way.** A freeform `String`
 ///   inside an App Shortcut phrase is not recognised, so the phrase carries no
-///   parameter and `requestValueDialog` makes Siri ask. See D1.
+///   parameter and `requestValueDialog` makes Siri ask. See D1. What Siri says
+///   comes from the `RecipelyIntents` table, generated from `osIntentDialogs` —
+///   a bare literal here was spoken in English on every phone.
 /// - Note: **It answers without opening the app when it can.** The narrow intent
 ///   token and the AES envelope let this process talk to the backend directly,
 ///   so a question with a spoken answer — "how many calories is this" — is
@@ -44,7 +46,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
 
   @Parameter(
     title: "Question",
-    requestValueDialog: "What would you like to ask?"
+    requestValueDialog: IntentDialog(LocalizedStringResource("What would you like to ask?", table: "RecipelyIntents"))
   )
   var question: String
 
@@ -53,7 +55,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
   func perform() async throws -> some IntentResult & ProvidesDialog {
     guard let reply = await RecipelyAssistantClient.ask(question) else {
       try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: nil, arg: question))
-      return .result(dialog: IntentDialog(stringLiteral: ""))
+      return .result(dialog: Self.openingApp)
     }
 
     guard let action = reply.action else {
@@ -61,7 +63,13 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
     }
 
     try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: action, arg: reply.arg))
-    return .result(dialog: IntentDialog(stringLiteral: reply.text))
+    return .result(dialog: reply.text.isEmpty ? Self.openingApp : IntentDialog(stringLiteral: reply.text))
+  }
+
+  /// An answer that acts usually says nothing — measured against dev, a search
+  /// came back with empty text — so the line is ours rather than a blank one.
+  private static var openingApp: IntentDialog {
+    IntentDialog(LocalizedStringResource("Opening Recipely.", table: "RecipelyIntents"))
   }
 
   private func comeForward(running invocationId: String) async throws {

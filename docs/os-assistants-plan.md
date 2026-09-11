@@ -14,7 +14,7 @@ progress board** — when a session ends, work resumes from here.
 | 2 | Headless path | ✅ **done**: envelope parity, backend route, credential sync, and the native call that spends the token (D24). On-device timing still unmeasured | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages. Control Center + Spotlight blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 5 | Gates and docs | 🟢 rules W, X, AD, AE landed + regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
+| 5 | Gates and docs | ✅ **done**: rules W, X, AD, AE; CI asserts the kit in both generated projects and runs both parity suites; regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 
 Branch: `feat/os-assistants-spike`
 
@@ -186,7 +186,7 @@ four files.
 - [x] `use-os-entity-catalogue-sync.ts` — writes recipes into the native catalogue + 6 tests (clears on sign-out)
 - [x] Session credential sync (`publishCredentials`) — backend #314 is merged to dev, so this is wired: minted once per launch, withdrawn on sign-out, and a failed mint leaves the stored token alone
 - [x] The native HTTP call that SPENDS the token — `RecipelyAssistantClient` + `RecipelyAssistantWire`; "Ask Recipely" answers in Siri when the reply only speaks, and comes forward when it names an action (D24)
-- [ ] On device: how long Siri waits for `perform()` before giving up (the client allows 60 s; **yours** — needs hardware)
+- [x] The headless call measured end to end against dev-api with the UNMODIFIED Swift client (D25): 1.5–10.9 s, so the client budget is 15 s. Siri's own deadline still needs a device
 
 ## Phase 2 — Headless path *(unconditional per D2)*
 
@@ -294,6 +294,29 @@ without that variable — D15's trap biting the test instead of the build.
   with that toolchain) and on demand via `npm run verify:envelope:android`. The
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
+
+### D25 — Measured against the real backend, and what Siri says back
+**The headless path works end to end.** The unmodified `RecipelyAssistantStore`,
+`RecipelyAssistantClient`, `RecipelyAssistantWire` and `Envelope` were compiled
+into a macOS command-line driver (Info.plist embedded with `-sectcreate`, the App
+Group as a plain defaults suite) and pointed at dev-api with a real intent token
+from `POST /assistant/intent-token`. Turkish and English: a spoken answer comes
+back as text, "search for lentil soup" as `search` + `lentil soup`, "open my
+recipes" as `navigate` + `myRecipes`. Latency 1.5–10.9 s, the slowest being the
+first call — so the 15 s budget holds, with little to spare.
+
+**An answer that acts says nothing.** Every action reply arrived with EMPTY
+text, so the come-forward path would have shown Siri a blank dialog on the most
+common answer. It now says "Opening Recipely." in the device's language.
+
+**Siri asked its follow-up in English on every phone.** The phrases were
+localized in fourteen languages; `requestValueDialog: "What would you like to
+ask?"` was a bare literal. What Siri says back now lives in `osIntentDialogs`,
+the generator writes it into a `RecipelyIntents.strings` table (its own table,
+so it cannot collide with anything in the app target), the plugin registers it
+as a second variant group, and the same join applies: every
+`table: "RecipelyIntents"` literal must match an English value, every entry must
+be read. Artifact tests and the CI language check cover the new table.
 
 ### D24 — The headless answer: one protocol bug, one API that is iOS 26 only
 **The plaintext is `{ data: … }`.** The first draft of the native client sealed
@@ -566,20 +589,20 @@ plugin's pbxproj code.
 - [x] Widget — a button, not a data surface: `updatePeriodMillis` is 0 because there is nothing to refresh, and a widget that never refreshes cannot go stale
 - [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
 - [ ] AppFunctions service — **attempted and backed out, see D22.** The published alpha does not match its own documentation, and the gate to Gemini is an invitation we do not have.
-- [ ] `androidx.core:core-google-shortcuts` (so shortcuts reach Google's surfaces, D5)
-- [ ] Apply to the Google AppFunctions EAP form
+- [x] `androidx.core:core-google-shortcuts:1.1.0` (so shortcuts reach Google's surfaces, D5) — on the classpath since Phase 1; pulls `play-services-appindex` + `tink-android`, R8 clean
+- [x] ~~Apply to the Google AppFunctions EAP form~~ — checked 2026-09-11: the form is closed, *"The Early Access Program is currently at capacity."* There is nothing to apply to; Gemini stays out of reach until Google opens it
 - [x] R8 keep rules — **not needed**, measured rather than assumed: `:app:minifyReleaseWithR8` is green and not one of its warnings names `assistantkit`. The tile and the widget are reached from the manifest, from which AGP generates keeps of its own.
 
 ## Phase 5 — Gates and docs
 
 - [x] `check:structure` rule W — catalogue ↔ Swift/XML drift
-- [ ] `check:structure` rule **AD** — generated artifacts are fresh (X is taken, D16)
-- [ ] `check:structure` rule **AE** — `CONFIRMED_ACTIONS` is never headless (Y is taken, D16)
-- [ ] CI: the generated `Info.plist` has the App Group and no new background mode
-- [ ] CI: the generated `AndroidManifest.xml` references `shortcuts.xml`
-- [ ] CI: both envelope parity runners — `:recipely-assistant-kit:testDebugUnitTest` on the Android job and `scripts/verify-swift-envelope.sh` on the macOS one
-- [ ] `docs/regressions.md` class rows
-- [ ] `npm run map`
+- [x] `check:structure` rule **AD** — the Siri phrase catalogue is fresh (letters reassigned, D16)
+- [x] `check:structure` rule **AE** — the Android shortcuts are fresh; "nothing destructive is headless" is rule **X**
+- [x] CI: the generated `Info.plist` carries the App Group (matching the entitlement), the base URL and the envelope key; no background-audio mode (both iOS jobs, each proved red on a broken artifact)
+- [x] CI: the generated `AndroidManifest.xml` references `@xml/recipely_shortcuts`, the XML exists, and no scheme token is left (both Android jobs)
+- [x] CI: both envelope parity runners — `:recipely-assistant-kit:testDebugUnitTest` on the Android jobs and `scripts/verify-swift-envelope.sh` on the macOS ones
+- [x] `docs/regressions.md` class rows
+- [x] `npm run map`
 
 ---
 

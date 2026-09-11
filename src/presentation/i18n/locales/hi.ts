@@ -1015,4 +1015,8 @@ export const hi: Translations = {
     startTimer: "टाइमर",
     openMyRecipes: "मेरी रेसिपी",
   },
+  osIntentDialogs: {
+    askWhat: "तुम क्या पूछना चाहते हो?",
+    openingApp: "Recipely खोल रहे हैं।",
+  },
 };

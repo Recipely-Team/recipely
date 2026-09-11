@@ -215,8 +215,8 @@ describe('withAssistantKit — the Siri phrases reach the app target', () => {
   const withLocales = (xcode) => {
     mockFiles.set(INTENTS_DIR, []);
     mockFiles.set(RESOURCES_DIR, ['tr.lproj', 'ja.lproj']);
-    mockFiles.set(path.join(RESOURCES_DIR, 'tr.lproj'), ['AppShortcuts.strings']);
-    mockFiles.set(path.join(RESOURCES_DIR, 'ja.lproj'), ['AppShortcuts.strings']);
+    mockFiles.set(path.join(RESOURCES_DIR, 'tr.lproj'), ['AppShortcuts.strings', 'RecipelyIntents.strings']);
+    mockFiles.set(path.join(RESOURCES_DIR, 'ja.lproj'), ['AppShortcuts.strings', 'RecipelyIntents.strings']);
     mockFiles.set(LOCALES_DIR, ['en.ts', 'ja.ts', 'tr.ts']);
     return baseConfig({ xcode });
   };
@@ -230,10 +230,33 @@ describe('withAssistantKit — the Siri phrases reach the app target', () => {
     withAssistantKit(withLocales(xcode));
 
     expect(xcode.createVariantGroup).toHaveBeenCalledWith('AppShortcuts.strings');
-    expect(xcode.variantChildren.map((child) => child.path)).toEqual([
-      'Recipely/RecipelyAssistant/ja.lproj/AppShortcuts.strings',
-      'Recipely/RecipelyAssistant/tr.lproj/AppShortcuts.strings',
-    ]);
+    expect(xcode.variantChildren.map((child) => child.path)).toEqual(
+      expect.arrayContaining([
+        'Recipely/RecipelyAssistant/ja.lproj/AppShortcuts.strings',
+        'Recipely/RecipelyAssistant/tr.lproj/AppShortcuts.strings',
+      ]),
+    );
+  });
+
+  // What Siri says back is a second table. Before it existed the follow-up
+  // question was an English literal, so a Turkish phone asked it in English —
+  // copied but unregistered, the table would compile into nothing.
+  it('copies and registers the table Siri speaks from, per language', () => {
+    const xcode = xcodeProject();
+
+    withAssistantKit(withLocales(xcode));
+
+    expect(xcode.createVariantGroup).toHaveBeenCalledWith('RecipelyIntents.strings');
+    expect(xcode.variantChildren.map((child) => child.path)).toEqual(
+      expect.arrayContaining([
+        'Recipely/RecipelyAssistant/ja.lproj/RecipelyIntents.strings',
+        'Recipely/RecipelyAssistant/tr.lproj/RecipelyIntents.strings',
+      ]),
+    );
+    expect(fs.copyFileSync).toHaveBeenCalledWith(
+      path.join(RESOURCES_DIR, 'tr.lproj', 'RecipelyIntents.strings'),
+      `${TARGET_DIR}/tr.lproj/RecipelyIntents.strings`,
+    );
   });
 
   // `pbxFile` derives basename from the path and ignores `opt.basename`, so
@@ -243,7 +266,7 @@ describe('withAssistantKit — the Siri phrases reach the app target', () => {
 
     withAssistantKit(withLocales(xcode));
 
-    expect(Object.values(xcode.fileRefs).map((ref) => ref.name)).toEqual(['"ja"', '"tr"']);
+    expect(Object.values(xcode.fileRefs).map((ref) => ref.name)).toEqual(['"ja"', '"tr"', '"ja"', '"tr"']);
   });
 
   // A localized resource only compiles for languages the project lists, and

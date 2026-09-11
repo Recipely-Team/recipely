@@ -1019,4 +1019,8 @@ export const ru = {
     startTimer: "Таймер",
     openMyRecipes: "Мои рецепты",
   },
+  osIntentDialogs: {
+    askWhat: "Что ты хочешь спросить?",
+    openingApp: "Открываю Recipely.",
+  },
 };

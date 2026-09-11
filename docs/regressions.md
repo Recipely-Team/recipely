@@ -1867,3 +1867,21 @@ drops from the queue instead of leaving it to be re-read on every launch.
 different questions.** A vocabulary check guards against typos; it says nothing
 about who is speaking, and a word whose meaning depends on what the user can see
 must be refused wherever the speaker cannot see it.
+
+## Fourteen languages for what the user says, English for what Siri says back
+
+The Siri phrases were generated into fourteen languages and checked in the
+built artifact. The follow-up question the same intent asks —
+`requestValueDialog: "What would you like to ask?"` — was a bare literal beside
+them, so a Turkish user said the Turkish phrase and was answered in English.
+Nothing flagged it: the catalogue was complete, and the line simply was not in it.
+
+*Now:* what Siri says back lives in `osIntentDialogs`, generated into a
+`RecipelyIntents.strings` table; the generator refuses a `table:` literal with no
+English entry and an entry no intent reads, and the artifact test fails a Turkish
+table that still says the English.
+
+*The class:* **a complete catalogue says nothing about the lines that never
+entered it.** The check that matters for a localized surface is whether any
+user-facing string reaches it by another road — a literal, a default, an empty
+reply the system fills in.

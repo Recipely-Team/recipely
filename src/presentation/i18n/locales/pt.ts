@@ -1019,4 +1019,8 @@ export const pt = {
     startTimer: "Temporizador",
     openMyRecipes: "Minhas receitas",
   },
+  osIntentDialogs: {
+    askWhat: "O que você quer perguntar?",
+    openingApp: "Abrindo o Recipely.",
+  },
 };

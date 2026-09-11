@@ -1015,4 +1015,8 @@ export const ko: Translations = {
     startTimer: "타이머",
     openMyRecipes: "내 레시피",
   },
+  osIntentDialogs: {
+    askWhat: "무엇을 물어볼까?",
+    openingApp: "Recipely를 여는 중이야.",
+  },
 };

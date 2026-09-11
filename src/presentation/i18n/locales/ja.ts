@@ -1019,4 +1019,8 @@ export const ja = {
     startTimer: "タイマー",
     openMyRecipes: "マイレシピ",
   },
+  osIntentDialogs: {
+    askWhat: "何を聞きたい？",
+    openingApp: "Recipelyを開いています。",
+  },
 };

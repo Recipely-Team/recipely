@@ -74,7 +74,11 @@ const SHORTCUTS_TEMPLATE = path.join(
   'recipely_shortcuts.xml',
 );
 const SHORTCUTS_SCHEME_TOKEN = '__RECIPELY_SCHEME__';
-const STRINGS_FILE = 'AppShortcuts.strings';
+/**
+ * The generated string tables, each one localized resource: the phrases the
+ * user says, and the lines Siri says back (see `generate-app-shortcuts.mjs`).
+ */
+const STRINGS_FILES = ['AppShortcuts.strings', 'RecipelyIntents.strings'];
 
 /**
  * `group.<bundle id>` — the convention Apple's own templates use.
@@ -292,10 +296,9 @@ const withCopiedIntentSources = (config) =>
       for (const code of localizedResourceDirs(resourcesFrom)) {
         const lproj = `${code}.lproj`;
         fs.mkdirSync(path.join(to, lproj), { recursive: true });
-        fs.copyFileSync(
-          path.join(resourcesFrom, lproj, STRINGS_FILE),
-          path.join(to, lproj, STRINGS_FILE),
-        );
+        for (const name of STRINGS_FILES) {
+          fs.copyFileSync(path.join(resourcesFrom, lproj, name), path.join(to, lproj, name));
+        }
       }
       return mod;
     },
@@ -338,7 +341,7 @@ const withIntentSourcesInTarget = (config) =>
     // are ONE file to Xcode: a variant group, keyed by language. Added
     // individually they would each try to install at the same bundle path and
     // only the last would survive.
-    addLocalizedStrings(project, projectName, target, locales);
+    for (const name of STRINGS_FILES) addLocalizedStrings(project, projectName, target, locales, name);
 
     addKnownRegions(project, shippedLocales(mod.modRequest.projectRoot));
     return mod;
@@ -363,7 +366,7 @@ const createGroup = (project) => {
 };
 
 /**
- * Registers `<lang>.lproj/AppShortcuts.strings` as one localized resource.
+ * Registers `<lang>.lproj/<name>` as one localized resource.
  *
  * A variant group is how Xcode models "one file, many languages": the group
  * carries the base name and each child is a language. Registering the children
@@ -371,21 +374,21 @@ const createGroup = (project) => {
  * `AppShortcuts.strings` in the bundle root, where the last one copied wins and
  * the other thirteen vanish.
  */
-const addLocalizedStrings = (project, projectName, target, locales) => {
+const addLocalizedStrings = (project, projectName, target, locales, name) => {
   if (locales.length === 0) return;
-  const existing = project.findPBXVariantGroupKey({ name: STRINGS_FILE });
-  const groupKey = existing || project.pbxCreateVariantGroup(STRINGS_FILE);
+  const existing = project.findPBXVariantGroupKey({ name });
+  const groupKey = existing || project.pbxCreateVariantGroup(name);
 
   if (!existing) {
     const mainGroup = project.getPBXGroupByKey(
       project.getFirstProject().firstProject.mainGroup,
     );
-    mainGroup.children.push({ value: groupKey, comment: STRINGS_FILE });
-    addResourceToTarget(project, STRINGS_FILE, target, null, groupKey);
+    mainGroup.children.push({ value: groupKey, comment: name });
+    addResourceToTarget(project, name, target, null, groupKey);
   }
 
   for (const code of locales) {
-    const relative = `${projectName}/${XCODE_GROUP}/${code}.lproj/${STRINGS_FILE}`;
+    const relative = `${projectName}/${XCODE_GROUP}/${code}.lproj/${name}`;
     if (project.hasFile(relative)) continue;
     const file = project.addFile(relative, groupKey, { target });
     if (!file) continue;

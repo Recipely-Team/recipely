@@ -1019,4 +1019,8 @@ export const de = {
     startTimer: "Timer starten",
     openMyRecipes: "Meine Rezepte",
   },
+  osIntentDialogs: {
+    askWhat: "Was möchtest du fragen?",
+    openingApp: "Recipely wird geöffnet.",
+  },
 };

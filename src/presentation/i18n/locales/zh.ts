@@ -1026,4 +1026,8 @@ export const zh = {
     startTimer: "计时器",
     openMyRecipes: "我的食谱",
   },
+  osIntentDialogs: {
+    askWhat: "你想问什么？",
+    openingApp: "正在打开 Recipely。",
+  },
 };

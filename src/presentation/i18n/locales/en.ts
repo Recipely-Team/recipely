@@ -1051,4 +1051,16 @@ export const en = {
     startTimer: "Start timer",
     openMyRecipes: "My recipes",
   },
+  /**
+   * What Siri says for the app, rather than what the user says to Siri.
+   *
+   * Written by `scripts/generate-app-shortcuts.mjs` into a `RecipelyIntents`
+   * string table that the intents read by the ENGLISH value, the same join the
+   * phrases use. Before this block the follow-up question was an English
+   * literal, so a Turkish phone asked it in English.
+   */
+  osIntentDialogs: {
+    askWhat: "What would you like to ask?",
+    openingApp: "Opening Recipely.",
+  },
 };

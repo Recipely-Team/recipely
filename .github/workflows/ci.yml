@@ -371,6 +371,24 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
+      # `aapt2` proves a shortcut is PRESENT, not that it launches: a scheme-less
+      # `android:data` matches no filter and every shortcut did nothing (D23). So
+      # the generated project is checked for the wiring — the launcher meta-data,
+      # the resolved XML, and no unsubstituted scheme token.
+      - name: Assert the launcher shortcuts reached the generated manifest
+        run: |
+          set -euo pipefail
+          manifest=android/app/src/main/AndroidManifest.xml
+          xml=android/app/src/main/res/xml/recipely_shortcuts.xml
+          grep -q 'android:name="android.app.shortcuts" android:resource="@xml/recipely_shortcuts"' "$manifest" \
+            || { echo "::error file=plugins/withAssistantKit.js::$manifest does not reference @xml/recipely_shortcuts — the launcher shows no shortcuts."; exit 1; }
+          [ -f "$xml" ] || { echo "::error file=plugins/withAssistantKit.js::$xml was not written."; exit 1; }
+          if grep -q '__RECIPELY_SCHEME__' "$xml"; then
+            echo "::error file=plugins/withAssistantKit.js::$xml still carries the scheme token — every shortcut would match no intent filter."
+            exit 1
+          fi
+          echo "OK — shortcuts wired and resolved"
+
       - name: Restore upload keystore
         env:
           ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
@@ -518,6 +536,37 @@ jobs:
           fi
           echo "OK — no background-audio mode in $plist"
 
+      # The Siri intents run with no JavaScript, so everything they need has to
+      # be IN the artifact: the App Group both halves share (Info.plist key AND
+      # entitlement, which must name the same group), the backend the variant
+      # talks to, and the envelope key. Any one missing does not fail a build —
+      # the intents quietly fall back to opening the app on every request.
+      - name: Assert the assistant kit reached the generated Info.plist and entitlements
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          entitlements="$(ls ios/*/*.entitlements | head -n1)"
+          read_key() { /usr/libexec/PlistBuddy -c "Print :$1" "$plist" 2>/dev/null || true; }
+          group="$(read_key RecipelyAssistantAppGroup)"
+          base="$(read_key RecipelyAssistantApiBaseUrl)"
+          key="$(read_key RecipelyAssistantEnvelopeKey)"
+          fail=""
+          [ -n "$group" ] || fail="$fail no-app-group"
+          [ -n "$group" ] && { grep -q "<string>$group</string>" "$entitlements" || fail="$fail entitlement-mismatch"; }
+          case "$base" in https://*/api/v1) ;; *) fail="$fail bad-base-url($base)";; esac
+          [ "${#key}" -eq 64 ] || fail="$fail no-envelope-key"
+          if [ -n "$fail" ]; then
+            echo "::error file=plugins/withAssistantKit.js::The assistant kit did not reach the artifact:$fail. Siri would open the app for every request instead of answering."
+            exit 1
+          fi
+          echo "OK — $group, $base, envelope key present"
+
+      # The Swift third of the envelope parity suite, and the /assistant/message
+      # wire shape. Linux CI skips it (no swiftc); this is the runner that builds
+      # the Swift it checks.
+      - name: Swift envelope parity
+        run: bash scripts/verify-swift-envelope.sh
+
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
       # beating a static ios.infoPlist entry and react-native-audio-api's own
@@ -552,6 +601,7 @@ jobs:
           for locale in src/presentation/i18n/locales/*.ts; do
             code="$(basename "$locale" .ts)"
             grep -q "$code.lproj/AppShortcuts.strings" "$pbxproj" || missing="$missing $code"
+            grep -q "$code.lproj/RecipelyIntents.strings" "$pbxproj" || missing="$missing $code(dialogs)"
             grep -qE "^[[:space:]]+$code,$" "$pbxproj" || missing="$missing $code(region)"
           done
           if [ -n "$missing" ]; then
@@ -831,6 +881,24 @@ jobs:
       - name: Expo prebuild (Android)
         run: npx expo prebuild --platform android --no-install
 
+      # `aapt2` proves a shortcut is PRESENT, not that it launches: a scheme-less
+      # `android:data` matches no filter and every shortcut did nothing (D23). So
+      # the generated project is checked for the wiring — the launcher meta-data,
+      # the resolved XML, and no unsubstituted scheme token.
+      - name: Assert the launcher shortcuts reached the generated manifest
+        run: |
+          set -euo pipefail
+          manifest=android/app/src/main/AndroidManifest.xml
+          xml=android/app/src/main/res/xml/recipely_shortcuts.xml
+          grep -q 'android:name="android.app.shortcuts" android:resource="@xml/recipely_shortcuts"' "$manifest" \
+            || { echo "::error file=plugins/withAssistantKit.js::$manifest does not reference @xml/recipely_shortcuts — the launcher shows no shortcuts."; exit 1; }
+          [ -f "$xml" ] || { echo "::error file=plugins/withAssistantKit.js::$xml was not written."; exit 1; }
+          if grep -q '__RECIPELY_SCHEME__' "$xml"; then
+            echo "::error file=plugins/withAssistantKit.js::$xml still carries the scheme token — every shortcut would match no intent filter."
+            exit 1
+          fi
+          echo "OK — shortcuts wired and resolved"
+
       - name: Restore upload keystore
         env:
           ANDROID_UPLOAD_KEYSTORE_BASE64: ${{ secrets.ANDROID_UPLOAD_KEYSTORE_BASE64 }}
@@ -1031,6 +1099,37 @@ jobs:
           fi
           echo "OK — no background-audio mode in $plist"
 
+      # The Siri intents run with no JavaScript, so everything they need has to
+      # be IN the artifact: the App Group both halves share (Info.plist key AND
+      # entitlement, which must name the same group), the backend the variant
+      # talks to, and the envelope key. Any one missing does not fail a build —
+      # the intents quietly fall back to opening the app on every request.
+      - name: Assert the assistant kit reached the generated Info.plist and entitlements
+        run: |
+          set -euo pipefail
+          plist="$(ls ios/*/Info.plist | head -n1)"
+          entitlements="$(ls ios/*/*.entitlements | head -n1)"
+          read_key() { /usr/libexec/PlistBuddy -c "Print :$1" "$plist" 2>/dev/null || true; }
+          group="$(read_key RecipelyAssistantAppGroup)"
+          base="$(read_key RecipelyAssistantApiBaseUrl)"
+          key="$(read_key RecipelyAssistantEnvelopeKey)"
+          fail=""
+          [ -n "$group" ] || fail="$fail no-app-group"
+          [ -n "$group" ] && { grep -q "<string>$group</string>" "$entitlements" || fail="$fail entitlement-mismatch"; }
+          case "$base" in https://*/api/v1) ;; *) fail="$fail bad-base-url($base)";; esac
+          [ "${#key}" -eq 64 ] || fail="$fail no-envelope-key"
+          if [ -n "$fail" ]; then
+            echo "::error file=plugins/withAssistantKit.js::The assistant kit did not reach the artifact:$fail. Siri would open the app for every request instead of answering."
+            exit 1
+          fi
+          echo "OK — $group, $base, envelope key present"
+
+      # The Swift third of the envelope parity suite, and the /assistant/message
+      # wire shape. Linux CI skips it (no swiftc); this is the runner that builds
+      # the Swift it checks.
+      - name: Swift envelope parity
+        run: bash scripts/verify-swift-envelope.sh
+
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
       # beating a static ios.infoPlist entry and react-native-audio-api's own
@@ -1081,6 +1180,7 @@ jobs:
           for locale in src/presentation/i18n/locales/*.ts; do
             code="$(basename "$locale" .ts)"
             grep -q "$code.lproj/AppShortcuts.strings" "$pbxproj" || missing="$missing $code"
+            grep -q "$code.lproj/RecipelyIntents.strings" "$pbxproj" || missing="$missing $code(dialogs)"
             grep -qE "^[[:space:]]+$code,$" "$pbxproj" || missing="$missing $code(region)"
           done
           if [ -n "$missing" ]; then
