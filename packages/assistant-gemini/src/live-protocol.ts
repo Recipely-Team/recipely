@@ -14,6 +14,8 @@ export const LiveProtocol = {
     'wss://generativelanguage.googleapis.com/ws/' +
     'google.ai.generativelanguage.v1alpha.GenerativeService.BidiGenerateContentConstrained',
   inputAudioMime: 'audio/pcm;rate=16000',
+  /** The wire `role` of a typed turn. Gemini's word, kept apart from `Speaker` so renaming one cannot break the other. */
+  userRole: 'user',
   outputSampleRate: 24_000,
   inputSampleRate: 16_000,
 } as const;

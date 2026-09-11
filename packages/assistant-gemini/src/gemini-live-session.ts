@@ -1,4 +1,4 @@
-import { AssistantFailureCode, SessionEventKind, Speaker, fail, float32ToPcm16Base64, ok } from '@live-assistant/core';
+import { AssistantFailureCode, SessionEventKind, fail, float32ToPcm16Base64, ok } from '@live-assistant/core';
 import type { AssistantFailure, AssistantSession, AudioFormat, Result, SessionEvent, ToolCall } from '@live-assistant/core';
 import type { LiveServerMessageDto } from './dtos/live-server-message-dto';
 import type { GeminiLiveCredentials } from './gemini-live-credentials';
@@ -175,7 +175,7 @@ export class GeminiLiveSession implements AssistantSession<GeminiLiveCredentials
   sendText(text: string): void {
     if (text === '') return;
 
-    this.send({ clientContent: { turns: [{ role: Speaker.User, parts: [{ text }] }], turnComplete: true } });
+    this.send({ clientContent: { turns: [{ role: LiveProtocol.userRole, parts: [{ text }] }], turnComplete: true } });
   }
 
   respondToTool(call: Pick<ToolCall, 'id' | 'name'>, response: Readonly<Record<string, unknown>>): void {

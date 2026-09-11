@@ -1,5 +1,5 @@
 import { AssistantFailureCode, SessionEventKind, fail, ok } from '@live-assistant/core';
-import type { GeminiLiveSession as GeminiLiveTransport } from '@live-assistant/gemini';
+import type { AssistantFailure, Result, SessionEvent } from '@live-assistant/core';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import { ChatRole } from '@domain/drafts/chat-role';
@@ -13,25 +13,25 @@ import { GeminiLiveSession } from '@infrastructure/assistant/live/gemini-live-se
  */
 const credentials = { token: 't', model: 'm', wsUrl: 'wss://x', expiresAt: '2030-01-01T00:00:00Z' };
 
-function fakeTransport(connectResult: Awaited<ReturnType<GeminiLiveTransport['connect']>>) {
-  let listener: ((event: never) => void) | null = null;
+function fakeTransport(connectResult: Result<void, AssistantFailure>) {
+  let listener: ((event: SessionEvent) => void) | null = null;
   return {
     lastResumptionHandle: null,
+    audioFormat: { inputSampleRate: 16_000, outputSampleRate: 24_000 },
     connect: jest.fn(async () => connectResult),
     sendAudio: jest.fn(),
     sendText: jest.fn(),
     respondToTool: jest.fn(),
     close: jest.fn(),
-    subscribe: jest.fn((next: (event: never) => void) => {
+    subscribe: jest.fn((next: (event: SessionEvent) => void) => {
       listener = next;
       return () => undefined;
     }),
-    emit: (event: unknown) => listener?.(event as never),
+    emit: (event: SessionEvent) => listener?.(event),
   };
 }
 
-const over = (transport: ReturnType<typeof fakeTransport>) =>
-  new GeminiLiveSession(transport as unknown as GeminiLiveTransport);
+const over = (transport: ReturnType<typeof fakeTransport>) => new GeminiLiveSession(transport);
 
 describe('GeminiLiveSession — the app over the package', () => {
   it('connects when the package does', async () => {
@@ -57,11 +57,11 @@ describe('GeminiLiveSession — the app over the package', () => {
     const seen: AssistantSessionEventType[] = [];
     over(transport).subscribe((event) => seen.push(event));
 
-    transport.emit({ kind: SessionEventKind.Transcript, speaker: 'user', text: 'tavuk var' });
+    transport.emit({ kind: SessionEventKind.Transcript, speaker: 'user', text: 'is there chicken' });
     transport.emit({ kind: SessionEventKind.TurnComplete });
 
     expect(seen).toEqual([
-      { kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' },
+      { kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'is there chicken' },
       { kind: AssistantEventKind.TurnComplete },
     ]);
   });
@@ -75,13 +75,13 @@ describe('GeminiLiveSession — the app over the package', () => {
 
     transport.emit({
       kind: SessionEventKind.ToolCall,
-      call: { id: 'c1', name: 'runAction', args: { action: 'search', arg: 'mercimek' } },
+      call: { id: 'c1', name: 'runAction', args: { action: 'search', arg: 'lentils' } },
     });
     transport.emit({ kind: SessionEventKind.ToolCall, call: { id: 'c2', name: 'runAction', args: { arg: '' } } });
     transport.emit({ kind: SessionEventKind.ToolCallCancelled, callIds: ['c1'] });
 
     expect(seen).toEqual([
-      { kind: AssistantEventKind.ToolCall, callId: 'c1', action: 'search', arg: 'mercimek' },
+      { kind: AssistantEventKind.ToolCall, callId: 'c1', action: 'search', arg: 'lentils' },
       { kind: AssistantEventKind.ToolCall, callId: 'c2', action: '' },
     ]);
   });
@@ -92,12 +92,12 @@ describe('GeminiLiveSession — the app over the package', () => {
     const frame = new Float32Array(4);
 
     session.sendAudio(frame);
-    session.sendText('merhaba');
+    session.sendText('hello');
     session.respondToTool('c1', { ok: true });
     session.close();
 
     expect(transport.sendAudio).toHaveBeenCalledWith(frame);
-    expect(transport.sendText).toHaveBeenCalledWith('merhaba');
+    expect(transport.sendText).toHaveBeenCalledWith('hello');
     expect(transport.respondToTool).toHaveBeenCalledWith({ id: 'c1', name: 'runAction' }, { ok: true });
     expect(transport.close).toHaveBeenCalled();
   });

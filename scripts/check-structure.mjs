@@ -1343,10 +1343,13 @@ function openingTag(src, at) {
 // first example a reader of the library copies.
 {
   const PACKAGES = path.join(ROOT, 'packages');
-  const APP_IMPORT = /from\s+'(@(?:core|domain|application|infrastructure|presentation|assets)\/|@\/)/;
-  const RELATIVE_IMPORT = /from\s+'(\.{1,2}\/[^']*)'/g;
-  const APP_WORDS = [/recipely/i, /\brunAction\b/];
-  const TEXT = /\.(?:ts|tsx|js|mjs|cjs|json|md)$/;
+  // Every way a module names another: `from`, a side-effect `import`, `import()`,
+  // `require()` and `jest.mock()` — in either quote style.
+  const SPECIFIER = String.raw`(?:\bfrom\s+|^\s*import\s+|\bimport\s*\(\s*|\brequire\s*\(\s*|\bjest\.mock\s*\(\s*)['"]`;
+  const APP_IMPORT = new RegExp(`${SPECIFIER}(?:@(?:core|domain|application|infrastructure|presentation|assets)\/|@\/)`, 'm');
+  const RELATIVE_IMPORT = new RegExp(`${SPECIFIER}(\.{1,2}\/[^'"]*)['"]`, 'gm');
+  const APP_WORDS = [/recipely/i, /\brunAction\b/, /\brecipes?\b/i];
+  const TEXT = /\.(?:[cm]?[jt]sx?|json|md|swift|kt|java|m|mm|h|podspec|gradle|ya?ml)$|^(?:README|LICENSE)$/;
 
   const walkPackage = (dir, out) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

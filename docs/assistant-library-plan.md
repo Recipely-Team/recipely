@@ -27,7 +27,7 @@ first unchecked box.
 |---|---|---|
 | `assistant-core` | `Result`, failure codes, the session port and its events, `ToolCall` / `ToolDefinition`, PCM codec, (later) audio ports and the tool registry | nothing |
 | `assistant-gemini` | Gemini Live adapter: socket, setup handshake, frame mapping, generic tool calls and cancellations | core |
-| `assistant-audio` *(phase 2)* | Microphone and PCM player for native and web | core, `react-native-audio-api` (peer) |
+| `assistant-audio` | `Microphone` and `PcmPlayer`, native (`react-native-audio-api`) and web (Web Audio) by platform extension, each with `level()` | core; peers `react-native`, `react-native-audio-api` |
 | `assistant-react` *(phase 3)* | Headless bindings: `AssistantProvider`, `useAssistant()` (status, controls), `useAssistantLevels()` (input/output levels without re-renders), `useTranscript()`, `useAssistantAction()` | core |
 | `assistant-widget` *(phase 3)* | Orb, mini bar, panel built ONLY on `assistant-react`'s public hooks; theme, strings and message slots from props | react |
 | `assistant-token-server` *(phase 3)* | Mints Gemini ephemeral tokens with the integrator's system instruction, `ToolDefinition`s, voice and language baked in — where a Gemini session's configuration has to live (see phase 1 measurements) | core (types only) |
@@ -40,11 +40,19 @@ first unchecked box.
 - [x] Made app-agnostic: `runAction`, the `action`/`arg` fields and every recipe fixture left the packages; rule AD keeps them out (mutation-checked: an app import, a relative import out of the package, and the word `runAction` each fail the gate)
 - [x] Recipely adapter: `infrastructure/assistant/live/gemini-live-session.ts` maps codes → `Failure`, a generic call → the app's `{ action, arg }`, answers under `ApiLiveTool.name`, drops cancellations (as before); every other event passes through, checked structurally by tsc
 - [x] **Measured against real Gemini Live from Node, outside the app (dev token):** ready in ~950 ms with the DEFAULT `wsUrl` (identical to the backend's); a spoken-style request produced a generic `toolCall { name: 'runAction', args: { action: 'navigate', arg: 'myRecipes' } }`, `respondToTool(call, …)` was accepted and the turn completed with transcript and 1.8 s of audio
-- [ ] Phase review (diff-scoped), then on to phase 2 — no PR to dev (branch policy)
+- [x] Phase review (diff-scoped): APPROVED, no blocking findings. Follow-ups applied in phase 2's commit: rule AD also catches double quotes, `require`, `import()`, `jest.mock`, side-effect imports and the word "recipe", and scans native/README files (each bypass mutation-checked); Gemini's wire `role` is `LiveProtocol.userRole`, not `Speaker`; setup-frame docs scoped to tokens minted with a setup; the app adapter takes the port type, and its tests are type-checked against `SessionEvent`
 
 **Measured, and why there is no client-side setup:** with an ephemeral token the session's configuration (instruction, tools, voice) is fixed at mint time and a client's setup frame is discarded — tools the token did not declare simply do not exist, with no error. So an integrator's configuration lives in the token server (phase 3), not in `connect`. Open question for phase 3: whether a token minted WITHOUT a baked setup honours a client's setup frame — measure before offering one.
 
-## Phase 2 — Audio
+## Phase 2 — Audio and levels
+
+- [x] `assistant-core`: `AssistantMicrophone` / `AssistantPlayer` ports (both `LevelSource`), failure codes `microphone_denied`, `microphone_unavailable`, `player_unavailable`
+- [x] Levels for drawing, never re-rendering: `LevelSource.level()` is PULLED on an animation clock. `LevelTimeline` lays ~20 ms slices on the player's `currentTime` where the previous chunk ends, so the "assistant is speaking" level follows what is HEARD, not what arrived (a reply arrives seconds ahead of playback); `flush` silences it at once. `toDisplayLevel` maps RMS on a decibel scale (speech ≈ 0.7, whisper ≈ 0.3); `smoothLevel` gives frame-rate-independent attack/release for an orb
+- [x] `assistant-audio`: the app's native and web microphone and player moved in with their tests, speaking codes instead of app `Failure`s; level tests for native mic, native player and web player
+- [x] Recipely adapters: `microphone.ts` / `pcm-player.ts` wrap the package (which picks the platform), `toAppFailure` maps every code to the kind and diagnostic the app always reported — one table, typed as a full record. The app's `.web` pair is gone: the package's pair replaces it
+- [x] Gates green; the web export bundles the package's WEB files (`createScriptProcessor`, `getUserMedia` present, `createBufferQueueSource` absent)
+- [ ] On a device: voice on iOS and Android still sounds and interrupts as before (JS moved unchanged; checked in phase 4's dogfood build)
+
 ## Phase 3 — Headless React API, widget, action registry, token server, example app, docs → 0.1.0
 ## Phase 4 — Dogfood in a Recipely release → 1.0.0
 

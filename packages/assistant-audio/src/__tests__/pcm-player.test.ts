@@ -13,7 +13,7 @@
  *   device rather than dictate to it.
  */
 
-import { PcmPlayer } from '@infrastructure/assistant/live/audio/pcm-player';
+import { PcmPlayer } from '../pcm-player';
 
 const RealQueueSourceNode: { prototype: { start: (when?: number, offset?: number) => void } } =
   jest.requireActual('react-native-audio-api/lib/module/core/AudioBufferQueueSourceNode').default;
@@ -22,6 +22,8 @@ interface Probe {
   started: unknown[][];
   opened: unknown[];
   buffers: { channels: number; length: number; rate: number }[];
+  now: number;
+  cleared: number;
 }
 
 const probe = (): Probe => (globalThis as never as { __probe: Probe }).__probe;
@@ -38,6 +40,9 @@ jest.mock('react-native-audio-api', () => {
   class FakeContext {
     readonly sampleRate = 48_000;
     readonly destination = {};
+    get currentTime(): number {
+      return at().now;
+    }
 
     constructor(options?: unknown) {
       at().opened.push(options);
@@ -53,7 +58,9 @@ jest.mock('react-native-audio-api', () => {
         enqueueBuffer: () => undefined,
       };
       queue.connect = () => undefined;
-      queue.clearBuffers = () => undefined;
+      queue.clearBuffers = () => {
+        at().cleared += 1;
+      };
       return queue;
     }
 
@@ -69,7 +76,7 @@ jest.mock('react-native-audio-api', () => {
 });
 
 beforeEach(() => {
-  (globalThis as never as { __probe: Probe }).__probe = { started: [], opened: [], buffers: [] };
+  (globalThis as never as { __probe: Probe }).__probe = { started: [], opened: [], buffers: [], now: 0, cleared: 0 };
 });
 
 describe('PcmPlayer', () => {
@@ -112,5 +119,35 @@ describe('PcmPlayer', () => {
     queue.node = { start: () => undefined };
 
     expect(() => queue.start()).toThrow(/offset must be a finite non-negative number: -1/);
+  });
+});
+
+describe('PcmPlayer level', () => {
+  // The reply arrives far faster than it plays. The "speaking" animation must
+  // follow what is heard: two chunks enqueued at once play one after another.
+  it('follows the playhead, not the arrival of chunks', async () => {
+    const player = new PcmPlayer();
+    await player.prepare(MODEL_RATE);
+    player.enqueue(new Float32Array(2_400).fill(0.1));
+    player.enqueue(new Float32Array(2_400).fill(0.9));
+
+    probe().now = 0.05;
+    expect(player.level()).toBeCloseTo(0.7);
+    probe().now = 0.15;
+    expect(player.level()).toBe(1);
+    probe().now = 0.25;
+    expect(player.level()).toBe(0);
+  });
+
+  // The interruption: the audio is dropped, and the mouth must stop with it.
+  it('goes silent the moment it is flushed', async () => {
+    const player = new PcmPlayer();
+    await player.prepare(MODEL_RATE);
+    player.enqueue(new Float32Array(24_000).fill(0.9));
+
+    player.flush();
+
+    expect(probe().cleared).toBe(1);
+    expect(player.level()).toBe(0);
   });
 });

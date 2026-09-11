@@ -8,8 +8,8 @@
  * else, the user who just pressed Block was told to retry a network problem.
  */
 
-import { FailureCode } from '@core/failure/failure-code';
-import { Microphone } from '@infrastructure/assistant/live/audio/microphone.web';
+import { AssistantFailureCode } from '@live-assistant/core';
+import { Microphone } from '../microphone.web';
 
 const rejectWith = (name: string): void => {
   const error = new Error('denied');
@@ -27,7 +27,7 @@ describe('web Microphone.start', () => {
     const result = await new Microphone().start(16_000, () => undefined);
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.failure.code).toBe(FailureCode.Forbidden);
+    if (!result.ok) expect(result.failure.code).toBe(AssistantFailureCode.MicrophoneDenied);
   });
 
   it('reports a broken device as something other than a refusal', async () => {
@@ -36,6 +36,6 @@ describe('web Microphone.start', () => {
     const result = await new Microphone().start(16_000, () => undefined);
 
     expect(result.ok).toBe(false);
-    if (!result.ok) expect(result.failure.code).not.toBe(FailureCode.Forbidden);
+    if (!result.ok) expect(result.failure.code).toBe(AssistantFailureCode.MicrophoneUnavailable);
   });
 });

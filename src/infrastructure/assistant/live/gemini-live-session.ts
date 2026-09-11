@@ -1,25 +1,21 @@
-import { AssistantFailureCode, SessionEventKind } from '@live-assistant/core';
-import type { AssistantFailure, SessionEvent } from '@live-assistant/core';
+import { SessionEventKind } from '@live-assistant/core';
+import type { AssistantSession, SessionEvent } from '@live-assistant/core';
 import { GeminiLiveSession as GeminiLiveTransport } from '@live-assistant/gemini';
+import type { GeminiLiveCredentials } from '@live-assistant/gemini';
+import { toAppFailure } from '@infrastructure/assistant/live/to-app-failure';
 import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
 import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Failure } from '@core/failure/failure';
-import { NetworkFailure } from '@core/failure/kinds/network-failure';
 import { CharConstants } from '@core/constants';
 import { isNonEmptyString, isString } from '@core/guards/type-guards';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 
-/** The package's failure codes, in the words this app logs them with. */
-const DIAGNOSTIC_BY_CODE: Readonly<Record<AssistantFailure['code'], string>> = {
-  [AssistantFailureCode.ConnectTimedOut]: DiagnosticMessage.assistant.connectTimedOut,
-  [AssistantFailureCode.SocketFailed]: DiagnosticMessage.assistant.sessionSocketFailed,
-  [AssistantFailureCode.ClosedBeforeReady]: DiagnosticMessage.assistant.sessionClosedBeforeReady,
-};
+/** The library session plus the Gemini-only resumption handle this app reconnects with. */
+type LiveTransport = AssistantSession<GeminiLiveCredentials> & { readonly lastResumptionHandle: string | null };
 
 /**
  * A package event in the app's vocabulary, or null for one the app does not act on.
@@ -63,7 +59,7 @@ function toAppEvent(event: SessionEvent): AssistantSessionEventType | null {
  *   TypeScript checks structurally, so a renamed kind stops this file compiling.
  */
 export class GeminiLiveSession implements AssistantSessionInterface {
-  constructor(private readonly transport: GeminiLiveTransport = new GeminiLiveTransport()) {}
+  constructor(private readonly transport: LiveTransport = new GeminiLiveTransport()) {}
 
   /** The handle the application layer needs to continue after a `goAway`. */
   get lastResumptionHandle(): string | null {
@@ -72,7 +68,7 @@ export class GeminiLiveSession implements AssistantSessionInterface {
 
   async connect(credentials: LiveSessionCredentials): Promise<Result<void, Failure>> {
     const connected = await this.transport.connect(credentials);
-    return connected.ok ? ok(undefined) : fail(new NetworkFailure(DIAGNOSTIC_BY_CODE[connected.failure.code]));
+    return connected.ok ? ok(undefined) : fail(toAppFailure(connected.failure));
   }
 
   sendAudio(samples: Float32Array<ArrayBuffer>): void {

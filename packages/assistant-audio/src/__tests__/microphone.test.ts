@@ -7,7 +7,8 @@
  * A check in a browser says nothing about either.
  */
 
-import { Microphone } from '@infrastructure/assistant/live/audio/microphone';
+import { AssistantFailureCode } from '@live-assistant/core';
+import { Microphone } from '../microphone';
 
 interface Probe {
   answer: () => Promise<string>;
@@ -15,6 +16,7 @@ interface Probe {
   sessionActive: boolean[];
   recorderThrows: boolean;
   stopped: number;
+  deliver?: (event: unknown) => void;
 }
 
 const probe = (): Probe => (globalThis as never as { __probe: Probe }).__probe;
@@ -33,7 +35,9 @@ jest.mock('react-native-audio-api', () => {
       constructor() {
         if (at().recorderThrows) throw new Error('recorder busy');
       }
-      onAudioReady(): void {}
+      onAudioReady(_options: unknown, callback: (event: unknown) => void): void {
+        at().deliver = callback;
+      }
       clearOnAudioReady(): void {}
       async start(): Promise<void> {}
       async stop(): Promise<void> {
@@ -60,7 +64,10 @@ describe('Microphone.ensureAccess', () => {
   it('refuses when the user says no', async () => {
     probe().answer = () => Promise.resolve('Denied');
 
-    expect((await new Microphone().ensureAccess()).ok).toBe(false);
+    expect(await new Microphone().ensureAccess()).toEqual({
+      ok: false,
+      failure: { code: AssistantFailureCode.MicrophoneDenied },
+    });
   });
 
   // The Android module reaches for `currentActivity` and force-unwraps it, so
@@ -94,7 +101,10 @@ describe('Microphone capture', () => {
 
     const result = await new Microphone().start(16_000, () => undefined);
 
-    expect(result.ok).toBe(false);
+    expect(result).toEqual({
+      ok: false,
+      failure: { code: AssistantFailureCode.MicrophoneUnavailable, detail: 'recorder busy' },
+    });
     expect(probe().sessionActive).toEqual([true, false]);
   });
 
@@ -107,5 +117,35 @@ describe('Microphone capture', () => {
     await microphone.start(16_000, () => undefined);
 
     expect(probe().stopped).toBe(1);
+  });
+});
+
+describe('Microphone level', () => {
+  const frame = (amplitude: number, rate = 16_000) => ({
+    buffer: { sampleRate: rate, getChannelData: () => new Float32Array(1600).fill(amplitude) },
+  });
+
+  // What the user is saying, for the "listening" animation: a frame's slices
+  // are laid from the moment it arrives, and the level is gone once it ends.
+  it('reports what was just captured, then falls silent', async () => {
+    let now = 10;
+    const microphone = new Microphone(() => now);
+    await microphone.start(16_000, () => undefined);
+
+    probe().deliver?.(frame(0.1));
+
+    expect(microphone.level()).toBeCloseTo(0.7);
+    now = 10.2;
+    expect(microphone.level()).toBe(0);
+  });
+
+  it('forgets the level on stop, so a closed microphone never looks live', async () => {
+    const microphone = new Microphone(() => 10);
+    await microphone.start(16_000, () => undefined);
+    probe().deliver?.(frame(0.5));
+
+    await microphone.stop();
+
+    expect(microphone.level()).toBe(0);
   });
 });

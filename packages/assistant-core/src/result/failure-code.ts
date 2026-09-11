@@ -12,6 +12,12 @@ export const AssistantFailureCode = {
   SocketFailed: 'socket_failed',
   /** The transport closed before the provider accepted the session. */
   ClosedBeforeReady: 'closed_before_ready',
+  /** The user refused the microphone, or the platform cannot ask. */
+  MicrophoneDenied: 'microphone_denied',
+  /** Capture could not start: no input device, or the platform refused to open one. */
+  MicrophoneUnavailable: 'microphone_unavailable',
+  /** The output graph could not be opened. */
+  PlayerUnavailable: 'player_unavailable',
 } as const;
 
 export type AssistantFailureCodeType = (typeof AssistantFailureCode)[keyof typeof AssistantFailureCode];
