@@ -1944,3 +1944,7 @@ seventy had none.
 
 *The class:* **a helper that mounts must also unmount.** Leaving cleanup to each test
 means the one test that forgets it fails someone else's commit.
+| The assistant said "I could not find it" while the recipe was on screen | `search` opened the feed with the query and returned at once, so the registry read the screen before the rows arrived and reported `recipes=none` to the model | The handler waits for `Loaded.query` to be the query it asked for (`waitForRecipeListQuery`, 4 s bound); regression test in `use-assistant-global-actions.test.tsx` fails without the wait |
+| "Open the şakşuka recipe" opened an unrelated recipe | `openRecipe` matched only against the rows the feed happened to hold; with no match it answered `not_found`, and the model fell back on a recipe id it remembered from an earlier turn | The handler now searches for the name, waits for the rows and matches again before giving up; three regression tests cover found-on-screen, found-by-search and genuinely-missing |
+| "Read the recipe" right after the assistant opened it answered that it could not | The read actions saw the screen's lines as they were when the model called — empty, because the recipe was still loading — and answered `no_such_step` | Each read waits up to 3 s for content and answers from the latest lines, not the ones its closure was made with; three regression tests, one per outcome |
+
