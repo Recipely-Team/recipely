@@ -1,4 +1,5 @@
 import type { Failure } from '@core/failure/failure';
+import type { OsAssistantCredential } from '@domain/assistant/os/os-assistant-credential';
 import type { AssistantSessionGrantType } from '@domain/assistant/session/assistant-session-grant';
 import type { AssistantUsageReportType } from '@domain/assistant/session/assistant-usage-report';
 import type { Result } from '@core/result/result';
@@ -43,4 +44,13 @@ export interface AssistantTokenRepositoryInterface {
    * total across a reconnect would refund itself by forgetting.
    */
   reportUsage(seconds: number): Promise<Result<AssistantUsageReportType, Failure>>;
+
+  /**
+   * Issues the narrow, long-lived token the OS assistant carries.
+   *
+   * Takes no argument on purpose: the scope is fixed and the identity is the
+   * session that has already been proven, so a parameter here would be a way
+   * to ask for more than the caller is entitled to.
+   */
+  mintIntentToken(): Promise<Result<OsAssistantCredential, Failure>>;
 }

@@ -8,6 +8,11 @@ import type { Failure } from '@core/failure/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { Result } from '@core/result/result';
+import type { AssistantIntentTokenResponseDto } from '@infrastructure/assistant/token/dtos/assistant-intent-token-response-dto';
+import type { OsAssistantCredential } from '@domain/assistant/os/os-assistant-credential';
+import { toOsAssistantCredential } from '@infrastructure/assistant/token/assistant-intent-token-mapper';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { toAssistantSessionGrant } from '@infrastructure/assistant/token/assistant-session-mapper';
 import { ValueConstants } from '@core/constants';
 
@@ -47,5 +52,19 @@ export class AssistantTokenRepository implements AssistantTokenRepositoryInterfa
       remainingSeconds: result.value.budgetRemainingSec ?? ValueConstants.zero,
       isUnlimited: result.value.unlimited === true,
     });
+  }
+
+  async mintIntentToken(): Promise<Result<OsAssistantCredential, Failure>> {
+    const result = await this.http.post<AssistantIntentTokenResponseDto>(
+      ApiRoutes.assistant.intentToken,
+      {},
+    );
+    if (!result.ok) return fail(result.failure);
+
+    const credential = toOsAssistantCredential(result.value);
+    if (credential === null) {
+      return fail(new UnknownFailure(DiagnosticMessage.assistant.intentTokenUndated));
+    }
+    return ok(credential);
   }
 }

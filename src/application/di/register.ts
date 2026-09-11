@@ -239,6 +239,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
     assistantSessionStore,
     assistantActionRegistry,
     osAssistant: container.resolve<OsAssistantInterface>(TOKENS.OsAssistant),
+    assistantTokens: container.resolve<AssistantTokenRepositoryInterface>(
+      TOKENS.AssistantTokenRepository,
+    ),
     authStore,
     recipeListStore,
     trendingRecipesStore,

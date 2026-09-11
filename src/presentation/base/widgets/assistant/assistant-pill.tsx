@@ -18,6 +18,7 @@ import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/ac
 import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 import { useAssistantScreenContext } from '@presentation/base/hooks/assistant/use-assistant-screen-context';
 import { useOsAssistantInvocations } from '@presentation/base/hooks/assistant/os/use-os-assistant-invocations';
+import { useOsAssistantCredentials } from '@presentation/base/hooks/assistant/os/use-os-assistant-credentials';
 import { useOsEntityCatalogueSync } from '@presentation/base/hooks/assistant/os/use-os-entity-catalogue-sync';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
@@ -96,6 +97,10 @@ export const AssistantPill = (): React.JSX.Element | null => {
   // a sign-out: the catalogue outlives the session in the shared container, and
   // something must publish the empty list that clears it.
   useOsEntityCatalogueSync();
+  // Mounted here for the same reason as the catalogue sync: it has to keep
+  // running through a sign-out, because withdrawing the token is the half that
+  // matters.
+  useOsAssistantCredentials();
 
   const isOffered = useAssistantIsOffered();
   const live = assistantIsLive(status);

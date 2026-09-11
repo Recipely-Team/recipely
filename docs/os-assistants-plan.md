@@ -11,7 +11,7 @@ progress board** — when a session ends, work resumes from here.
 |-------|------|--------|-----|
 | 0 | Measurement and decision gate | ✅ **done** (except the on-device Siri trial) | — |
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 2 | Headless path | 🟡 in progress — envelope parity done, backend route awaits approval | — |
+| 2 | Headless path | 🟢 envelope parity + backend route merged + credential sync wired; only the native HTTP call is left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages. Control Center + Spotlight blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 5 | Gates and docs | 🟢 rules W, X, AD, AE landed + regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
@@ -184,7 +184,8 @@ four files.
 - [x] `use-os-assistant-invocations.ts`, mounted last in the pill (effect order = tier order)
 - [x] Tests: catalogue invariants (6), deep-link parsing (11), bridge boundary (7), plugin (11)
 - [x] `use-os-entity-catalogue-sync.ts` — writes recipes into the native catalogue + 6 tests (clears on sign-out)
-- [ ] Session credential sync (`publishCredentials`) — waits on the Phase 2 token
+- [x] Session credential sync (`publishCredentials`) — backend #314 is merged to dev, so this is wired: minted once per launch, withdrawn on sign-out, and a failed mint leaves the stored token alone
+- [ ] The native HTTP call that SPENDS the token — the last piece of the headless answer
 
 ## Phase 2 — Headless path *(unconditional per D2)*
 
