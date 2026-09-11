@@ -455,6 +455,22 @@ next takes an Expo SDK upgrade — whichever comes first. The thing worth steali
 before then is Inline Modules as the placement mechanism, which would delete the
 plugin's pbxproj code.
 
+## Open questions for the user
+
+- **A bare `zh` covers both Chinese scripts.** Apple's own resources are
+  `zh_CN` / `zh_HK` / `zh_TW`, and modern apps ship `zh-Hans` / `zh-Hant`. iOS
+  falls back from `zh-Hant` to `zh`, so the phrases DO resolve — a Traditional
+  Chinese device just gets the Simplified wording. That is exactly what the app
+  already does for its in-app copy, so the Siri phrases are consistent with it
+  rather than worse. Splitting the script is an app-wide locale decision, not an
+  assistant one.
+- **~190 strings of build-only weight in the JS bundle.** `osIntentPhrases` and
+  `osShortcutLabels` are read by the generators at build time and by no `t()`
+  call, yet they ship in every locale. Moving them to a Node-only catalogue
+  would take them out of the bundle and out of rule 11's scope; keeping them
+  where they are keeps every translated string in one place for a translator.
+  Worth a decision, not worth guessing at.
+
 ## Debt from review, carried into Phase 3/4
 
 - [ ] Rule 5: `arg: 'next'` (repeats `StepCursor.Next`) and `arg: 'myRecipes'`
@@ -489,6 +505,8 @@ plugin's pbxproj code.
 - [x] The launcher meta-data sits on the **launcher activity**, not `<application>` — on the latter Android ignores it silently
 - [x] Dynamic shortcuts (`pushDynamicShortcut`) — budget asked of `getMaxShortcutCountPerActivity` rather than guessed, minus the static four
 - [x] Rule AE — the generated shortcuts must describe the catalogue that exists
+- [x] 14 tests on the generated ARTIFACTS (`scripts/__tests__/generated-os-artifacts.test.js`), because a freshness rule compares a generator with itself — each of the three shipped bugs was re-introduced and caught
+- [x] CI asserts every shipped language reached the generated project (rule 23c's precedent applied to localization)
 - [x] Rule W widened to the link shape: `id=` mandatory, `action=` optional (proved by removing the id)
 - [x] Quick Settings tile — declared in the **library** manifest so Gradle merges it (a service that ships with the code implementing it cannot fall out of step); verified in the APK
 - [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy

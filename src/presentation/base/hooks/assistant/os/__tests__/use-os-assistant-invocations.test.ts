@@ -2,7 +2,7 @@ interface Recorded {
   ran: { action: string; arg: string | undefined }[];
   acknowledged: string[];
   queue: unknown[];
-  pendingLink: { action: string; arg: string | null } | null;
+  pendingLink: { id: string; action: string | null; arg: string | null } | null;
   asked: { text: string; locale: string }[];
   view: string | null;
   failAcknowledge: boolean;
@@ -138,11 +138,33 @@ describe('useOsAssistantInvocations — draining what the OS left behind', () =>
   });
 
   it('runs the link a launcher shortcut arrived with', async () => {
-    mockState.pendingLink = { action: 'refresh', arg: null };
+    mockState.pendingLink = { id: 'startTimer', action: 'startTimer', arg: null };
 
     await mount();
 
-    expect(mockState.ran).toEqual([{ action: 'refresh', arg: undefined }]);
+    expect(mockState.ran).toEqual([{ action: 'startTimer', arg: undefined }]);
+  });
+
+  // Both roads go through one `perform`, and only the queue road was covered.
+  // The Android launcher's "Ask Recipely" shortcut arrives this way — as a link
+  // with no action and no question — and opening the panel is the whole point
+  // of it.
+  it('opens the assistant for a launcher link with no action', async () => {
+    mockState.pendingLink = { id: 'askRecipely', action: null, arg: null };
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.view).toBe('open');
+    expect(mockState.asked).toEqual([]);
+  });
+
+  it('asks the question a link carried, when it carries one', async () => {
+    mockState.pendingLink = { id: 'askRecipely', action: null, arg: 'kaç kişilik' };
+
+    await mount();
+
+    expect(mockState.asked).toEqual([{ text: 'kaç kişilik', locale: 'tr' }]);
   });
 
   it('runs a request that deliberately carries no action not at all, but still forgets it', async () => {
