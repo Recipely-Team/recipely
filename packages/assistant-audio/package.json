@@ -1,0 +1,16 @@
+{
+  "name": "@live-assistant/audio",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Microphone capture and streaming PCM playback for @live-assistant/core, on iOS, Android and the web, with levels an animation can read every frame.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@live-assistant/core": "0.1.0"
+  },
+  "peerDependencies": {
+    "react-native": "*",
+    "react-native-audio-api": ">=0.13.3"
+  }
+}

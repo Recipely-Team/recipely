@@ -354,7 +354,8 @@ blocking.
     23c (background-audio capability), 25 (a routed screen with no analytics
     name), 24 (rule AB: a screen that registers a screen line but no reading, so
     `readScreen` has nothing to say about it; rule AC: an overlay pinned to the bottom edge
-    that takes typing but never reads the keyboard), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
+    that takes typing but never reads the keyboard), 27 (rule AD: a library package that
+    imports from the app or names it), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.
@@ -563,6 +564,20 @@ blocking.
     **When editing a file that is still Turkish, convert the part you touch
     rather than matching its language.** Remaining debt: the Turkish rows in
     [`docs/regressions.md`](docs/regressions.md).
+
+27. **Library packages know nothing of the app** — `packages/*` is the assistant
+    library ([`docs/assistant-library-plan.md`](docs/assistant-library-plan.md)),
+    written for ANY app to install. A package imports only other packages and npm
+    dependencies (never an `@layer/*` alias, never a relative path out of its own
+    folder), and no file in it — tests and fixtures included — names Recipely or
+    carries its wire contract. Recipely's specifics (the backend's single
+    `runAction` tool with an `action` word, its failure copy, its token route) live
+    in the app's ADAPTER, which is exactly the file every other integrator writes.
+    The first extraction shipped `runAction` inside the Gemini adapter as if every
+    consumer declared the same tool; a library that only fits its first user is
+    not a library. Library code also stays on its own branch until the library is
+    complete — no PR to `dev` or `main` before then. **Enforced mechanically** by
+    `check:structure` (rule AD).
 
 ### Pre-commit quality gate
 

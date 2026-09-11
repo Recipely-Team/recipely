@@ -1,0 +1,17 @@
+{
+  "name": "@live-assistant/widget",
+  "version": "0.1.0",
+  "private": true,
+  "description": "A ready-made voice assistant UI for React Native and the web: an orb that moves with the voices, a transcript and controls, themed and worded by the app. Built only on @live-assistant/react's public hooks.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false,
+  "dependencies": {
+    "@live-assistant/core": "0.1.0",
+    "@live-assistant/react": "0.1.0"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-native": ">=0.76"
+  }
+}

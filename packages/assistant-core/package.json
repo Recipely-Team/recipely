@@ -1,0 +1,9 @@
+{
+  "name": "@live-assistant/core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-neutral ports for an in-app voice assistant: the session, its events, audio, and the result type they share.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "sideEffects": false
+}

@@ -1334,6 +1334,57 @@ function openingTag(src, at) {
   }
 }
 
+// --- AD: a library package knows nothing of the app (CLAUDE.md §27) ---------
+// `packages/*` is the assistant library, written for any app to install. The
+// first extraction still carried this app's wire contract — a single tool named
+// `runAction` with an `action` word — as if every consumer declared the same
+// one. What is app-specific stays in the app's adapter; this keeps it there.
+// Asked of every file in a package, tests included, because a test is the
+// first example a reader of the library copies.
+{
+  const PACKAGES = path.join(ROOT, 'packages');
+  // Every way a module names another: `from`, a side-effect `import`, `import()`,
+  // `require()` and `jest.mock()` — in either quote style.
+  const SPECIFIER = String.raw`(?:\bfrom\s+|^\s*import\s+|\bimport\s*\(\s*|\brequire\s*\(\s*|\bjest\.mock\s*\(\s*)['"]`;
+  const APP_IMPORT = new RegExp(`${SPECIFIER}(?:@(?:core|domain|application|infrastructure|presentation|assets)\/|@\/)`, 'm');
+  const RELATIVE_IMPORT = new RegExp(`${SPECIFIER}(\.{1,2}\/[^'"]*)['"]`, 'gm');
+  const APP_WORDS = [/recipely/i, /\brunAction\b/, /\brecipes?\b/i];
+  const TEXT = /\.(?:[cm]?[jt]sx?|json|md|swift|kt|java|m|mm|h|podspec|gradle|ya?ml)$|^(?:README|LICENSE)$/;
+
+  const walkPackage = (dir, out) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walkPackage(full, out);
+      else if (TEXT.test(entry.name)) out.push(full);
+    }
+    return out;
+  };
+
+  const packageDirs = fs.existsSync(PACKAGES)
+    ? fs.readdirSync(PACKAGES, { withFileTypes: true }).filter((d) => d.isDirectory())
+    : [];
+  for (const pkg of packageDirs) {
+    const pkgRoot = path.join(PACKAGES, pkg.name);
+    for (const full of walkPackage(pkgRoot, [])) {
+      const rel = path.relative(ROOT, full);
+      const src = fs.readFileSync(full, 'utf8');
+      if (APP_IMPORT.test(src)) {
+        errors.push(`${rel}: a library package imports from the app — packages depend only on each other and on npm (CLAUDE.md §27)`);
+      }
+      for (const [, spec] of src.matchAll(RELATIVE_IMPORT)) {
+        if (!path.resolve(path.dirname(full), spec).startsWith(pkgRoot + path.sep)) {
+          errors.push(`${rel}: '${spec}' reaches outside its package — import another package by its name (CLAUDE.md §27)`);
+        }
+      }
+      const word = APP_WORDS.find((w) => w.test(src));
+      if (word) {
+        errors.push(`${rel}: names this app (${word}) — the library is for any app; app-specific mapping lives in the app's adapter (CLAUDE.md §27)`);
+      }
+    }
+  }
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);
