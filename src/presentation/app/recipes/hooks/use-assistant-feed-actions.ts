@@ -10,7 +10,7 @@ import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
-import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';

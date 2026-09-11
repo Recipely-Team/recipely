@@ -14,8 +14,9 @@ const TARGET_NAME_SEPARATORS = /[\s_-]+/g;
  * with `My Recipes` — the label, not the key — and the app came forward to a
  * screen it then refused as `unknown_screen`. Every argument that names an
  * ASCII camelCase key goes through here: screens, outside pages, draft fields,
- * preference keys, sort keys. Folding case and separators cannot make two such
- * keys collide (tests hold that for each set).
+ * preference keys, sort keys. Folding case and separators must not make two keys
+ * in one set collide — `find` would quietly pick the first; tests hold it for
+ * screens, outside pages against screens, and sort keys.
  */
 export const foldTargetName = (value: string): string =>
   machineLower(value).replace(TARGET_NAME_SEPARATORS, CharConstants.empty);

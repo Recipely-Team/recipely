@@ -3,7 +3,8 @@ import {
   resolveAssistantScreenName,
 } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
 import { ASSISTANT_EXTERNAL_NAMES, isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
-import { foldTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { foldTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
+import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 
 /**
  * Measured on production: asked "open my recipes" through Siri, the Groq
@@ -33,6 +34,11 @@ describe('assistant target names — the words a model actually sends', () => {
   // would open whichever of them the map happened to keep.
   it('folds every screen key to a name no other key shares', () => {
     const keys = Object.keys(ASSISTANT_NAVIGATION_TARGETS);
+    expect(new Set(keys.map(foldTargetName)).size).toBe(keys.length);
+  });
+
+  it('folds every sort key to a name no other sort key shares', () => {
+    const keys = Object.values(SortKey);
     expect(new Set(keys.map(foldTargetName)).size).toBe(keys.length);
   });
 

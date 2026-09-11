@@ -1,4 +1,4 @@
-import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 
 /**
  * Destinations the assistant RECOGNISES but will not open, because they are not

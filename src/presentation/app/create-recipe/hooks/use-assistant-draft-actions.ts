@@ -1,4 +1,4 @@
-import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
