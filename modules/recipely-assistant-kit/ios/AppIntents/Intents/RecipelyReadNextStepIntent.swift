@@ -7,8 +7,8 @@ import AppIntents
 ///   the screen knows that.
 @available(iOS 17.2, *)
 struct RecipelyReadNextStepIntent: AppIntent {
-  static let title: LocalizedStringResource = "Read Next Step"
-  static let description = IntentDescription("Reads the next step of the recipe you are cooking.")
+  static let title = LocalizedStringResource("Read Next Step", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Reads the next step of the recipe you are cooking.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
   init() {}

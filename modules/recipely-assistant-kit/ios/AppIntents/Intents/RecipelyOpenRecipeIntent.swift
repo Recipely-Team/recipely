@@ -8,11 +8,11 @@ import AppIntents
 ///   recipe takes one of these rather than a name.
 @available(iOS 17.2, *)
 struct RecipelyOpenRecipeIntent: AppIntent {
-  static let title: LocalizedStringResource = "Open Recipe"
-  static let description = IntentDescription("Opens one of your recipes in Recipely.")
+  static let title = LocalizedStringResource("Open Recipe", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Opens one of your recipes in Recipely.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
-  @Parameter(title: "Recipe")
+  @Parameter(title: LocalizedStringResource("Recipe", table: "RecipelyIntents"))
   var recipe: RecipeAppEntity
 
   init() {}

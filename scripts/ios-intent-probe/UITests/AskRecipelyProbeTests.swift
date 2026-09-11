@@ -34,6 +34,12 @@ final class AskRecipelyProbeTests: XCTestCase {
     shortcuts.launch()
     let tile = shortcuts.buttons["bubble.left.and.text.bubble.right"].firstMatch
     XCTAssertTrue(tile.waitForExistence(timeout: 10), "the Ask Recipely tile is not in Shortcuts")
+    // The tile labels are the app's own localized metadata; the prompt below is
+    // the system's run-time context. Recording both is what separated them (D27).
+    let tiles = XCTAttachment(string: shortcuts.staticTexts.allElementsBoundByIndex.map(\.label).joined(separator: " | "))
+    tiles.name = "0-tiles"
+    tiles.lifetime = .keepAlways
+    add(tiles)
     tile.tap()
 
     let field = springboard.textFields.firstMatch

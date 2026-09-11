@@ -8,11 +8,11 @@ import AppIntents
 ///   `readIngredients` as its own word ever since, and this is that word.
 @available(iOS 17.2, *)
 struct RecipelyReadIngredientsIntent: AppIntent {
-  static let title: LocalizedStringResource = "Read Ingredients"
-  static let description = IntentDescription("Reads a recipe's ingredients aloud.")
+  static let title = LocalizedStringResource("Read Ingredients", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Reads a recipe's ingredients aloud.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
-  @Parameter(title: "Recipe")
+  @Parameter(title: LocalizedStringResource("Recipe", table: "RecipelyIntents"))
   var recipe: RecipeAppEntity
 
   init() {}

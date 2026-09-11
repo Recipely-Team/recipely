@@ -10,12 +10,12 @@ import AppIntents
 ///   is reserved for search.
 @available(iOS 17.2, *)
 struct RecipelyGenerateRecipeIntent: AppIntent {
-  static let title: LocalizedStringResource = "Create a Recipe"
-  static let description = IntentDescription("Creates a new recipe from what you describe.")
+  static let title = LocalizedStringResource("Create a Recipe", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Creates a new recipe from what you describe.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
   @Parameter(
-    title: "Description",
+    title: LocalizedStringResource("Description", table: "RecipelyIntents"),
     requestValueDialog: IntentDialog(LocalizedStringResource("What would you like to cook?", table: "RecipelyIntents"))
   )
   var prompt: String

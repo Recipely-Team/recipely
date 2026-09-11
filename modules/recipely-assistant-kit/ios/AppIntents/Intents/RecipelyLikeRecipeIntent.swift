@@ -3,11 +3,11 @@ import AppIntents
 /// "Like the köfte recipe in Recipely."
 @available(iOS 17.2, *)
 struct RecipelyLikeRecipeIntent: AppIntent {
-  static let title: LocalizedStringResource = "Like Recipe"
-  static let description = IntentDescription("Likes a recipe.")
+  static let title = LocalizedStringResource("Like Recipe", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Likes a recipe.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
-  @Parameter(title: "Recipe")
+  @Parameter(title: LocalizedStringResource("Recipe", table: "RecipelyIntents"))
   var recipe: RecipeAppEntity
 
   init() {}
