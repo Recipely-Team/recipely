@@ -1,11 +1,11 @@
-import { toLiveSetupRequest } from '@infrastructure/assistant/live/live-setup-request-mapper';
+import { toLiveSetupRequest } from '../live-setup-request';
 
 /**
  * These assert a deliberate ABSENCE, which is unusual enough to explain.
  *
- * The plan had this mapper building the whole session: system instruction, the
- * single `runAction` tool and its action enum, the audio modality, both
- * transcriptions, sliding-window compression, the resumption handle. Measured
+ * A client could build the whole session here: system instruction, tools, the
+ * audio modality, both transcriptions, sliding-window compression, the
+ * resumption handle. Measured
  * against the live API, none of it had any effect. With an ephemeral token the
  * setup baked in at mint time is authoritative and this frame's contents are
  * discarded — sending the full setup and sending `{ model }` produced sessions

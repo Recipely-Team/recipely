@@ -122,5 +122,8 @@
       "jest --bail --findRelatedTests --passWithNoTests"
     ]
   },
-  "private": true
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
 }

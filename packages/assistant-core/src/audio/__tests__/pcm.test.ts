@@ -2,7 +2,7 @@ import {
   float32ToPcm16Base64,
   pcm16Base64ToFloat32,
   resample,
-} from '@infrastructure/assistant/live/pcm-codec';
+} from '../pcm';
 
 describe('pcm-codec', () => {
   const decodeToInt16 = (base64: string): Int16Array => {

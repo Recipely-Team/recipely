@@ -1,7 +1,6 @@
-import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
-import { ChatRole } from '@domain/drafts/chat-role';
-import type { LiveServerMessageDto } from '@infrastructure/assistant/live/dtos/live-server-message-dto';
-import { mapLiveServerMessage } from '@infrastructure/assistant/live/live-message-mapper';
+import { SessionEventKind, Speaker } from '@live-assistant/core';
+import type { LiveServerMessageDto } from '../dtos/live-server-message-dto';
+import { mapLiveServerMessage } from '../live-message-mapper';
 
 describe('live-message-mapper', () => {
   const kinds = (dto: LiveServerMessageDto): string[] => mapLiveServerMessage(dto).map((e) => e.kind);
@@ -13,23 +12,23 @@ describe('live-message-mapper', () => {
   const audioPart = { inlineData: { mimeType: 'audio/pcm;rate=24000', data: Buffer.from([0, 1, 2, 3]).toString('base64') } };
 
   it('reports setupComplete as ready', () => {
-    expect(kinds({ setupComplete: {} })).toEqual([AssistantEventKind.Ready]);
+    expect(kinds({ setupComplete: {} })).toEqual([SessionEventKind.Ready]);
   });
 
   it('splits one frame into every event it carries', () => {
     const events = mapLiveServerMessage({
       serverContent: {
-        outputTranscription: { text: 'Tarifi açıyorum' },
+        outputTranscription: { text: 'Opening the file' },
         modelTurn: { parts: [audioPart, audioPart] },
         turnComplete: true,
       },
     });
 
     expect(events.map((e) => e.kind)).toEqual([
-      AssistantEventKind.Transcript,
-      AssistantEventKind.Audio,
-      AssistantEventKind.Audio,
-      AssistantEventKind.TurnComplete,
+      SessionEventKind.Transcript,
+      SessionEventKind.Audio,
+      SessionEventKind.Audio,
+      SessionEventKind.TurnComplete,
     ]);
   });
 
@@ -39,19 +38,19 @@ describe('live-message-mapper', () => {
   // assistant and hears it finish the sentence anyway.
   it('puts interrupted ahead of audio that arrives in the same frame', () => {
     expect(kinds({ serverContent: { interrupted: true, modelTurn: { parts: [audioPart] } } })).toEqual([
-      AssistantEventKind.Interrupted,
-      AssistantEventKind.Audio,
+      SessionEventKind.Interrupted,
+      SessionEventKind.Audio,
     ]);
   });
 
   it('labels who was transcribed', () => {
     const events = mapLiveServerMessage({
-      serverContent: { inputTranscription: { text: 'tavuk var' }, outputTranscription: { text: 'tamam' } },
+      serverContent: { inputTranscription: { text: 'what time is it' }, outputTranscription: { text: 'let me check' } },
     });
 
     expect(events).toEqual([
-      { kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' },
-      { kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' },
+      { kind: SessionEventKind.Transcript, speaker: Speaker.User, text: 'what time is it' },
+      { kind: SessionEventKind.Transcript, speaker: Speaker.Assistant, text: 'let me check' },
     ]);
   });
 
@@ -70,33 +69,33 @@ describe('live-message-mapper', () => {
   });
 
   describe('tool calls', () => {
-    it('carries the id and the action argument through', () => {
+    it('carries the id, the name and the raw args through', () => {
       expect(
         mapLiveServerMessage({
-          toolCall: { functionCalls: [{ id: 'call-1', name: 'runAction', args: { action: 'generateRecipe', arg: 'tavuk' } }] },
+          toolCall: { functionCalls: [{ id: 'call-1', name: 'setAlarm', args: { time: '07:30', repeat: false } }] },
         }),
-      ).toEqual([{ kind: AssistantEventKind.ToolCall, callId: 'call-1', action: 'generateRecipe', arg: 'tavuk' }]);
+      ).toEqual([
+        { kind: SessionEventKind.ToolCall, call: { id: 'call-1', name: 'setAlarm', args: { time: '07:30', repeat: false } } },
+      ]);
     });
 
-    it('omits arg when the model sent none', () => {
-      const [event] = mapLiveServerMessage({
-        toolCall: { functionCalls: [{ id: 'call-2', name: 'runAction', args: { action: 'stop' } }] },
-      });
+    it('gives a call with no args an empty object, so a handler can read it without a guard', () => {
+      const [event] = mapLiveServerMessage({ toolCall: { functionCalls: [{ id: 'call-2', name: 'stop' }] } });
 
-      expect(event).toEqual({ kind: AssistantEventKind.ToolCall, callId: 'call-2', action: 'stop' });
+      expect(event).toEqual({ kind: SessionEventKind.ToolCall, call: { id: 'call-2', name: 'stop', args: {} } });
     });
 
-    // An action the app does not know still has to reach the registry: it is
-    // the only thing that can answer the call, and a Live session hangs waiting
-    // for a functionResponse it never gets.
-    it('still emits a call whose action is unrecognised', () => {
-      expect(
-        kinds({ toolCall: { functionCalls: [{ id: 'call-3', name: 'runAction', args: { action: 'launchRocket' } }] } }),
-      ).toEqual([AssistantEventKind.ToolCall]);
+    // The package does not know what a consumer declared, and a Live session
+    // hangs waiting for a functionResponse it never gets — so an unfamiliar
+    // name still has to reach the code that can answer it.
+    it('still emits a call to a tool the package has never heard of', () => {
+      expect(kinds({ toolCall: { functionCalls: [{ id: 'call-3', name: 'launchRocket' }] } })).toEqual([
+        SessionEventKind.ToolCall,
+      ]);
     });
 
-    it('drops a call with no id, because nothing could answer it', () => {
-      expect(kinds({ toolCall: { functionCalls: [{ name: 'runAction', args: { action: 'stop' } }] } })).toEqual([]);
+    it('drops a call with no id or no name, because nothing could answer it', () => {
+      expect(kinds({ toolCall: { functionCalls: [{ name: 'stop' }, { id: 'x' }] } })).toEqual([]);
     });
 
     it('reports every call in a frame', () => {
@@ -104,12 +103,18 @@ describe('live-message-mapper', () => {
         kinds({
           toolCall: {
             functionCalls: [
-              { id: 'a', name: 'runAction', args: { action: 'navigate' } },
-              { id: 'b', name: 'runAction', args: { action: 'search' } },
+              { id: 'a', name: 'navigate' },
+              { id: 'b', name: 'search' },
             ],
           },
         }),
-      ).toEqual([AssistantEventKind.ToolCall, AssistantEventKind.ToolCall]);
+      ).toEqual([SessionEventKind.ToolCall, SessionEventKind.ToolCall]);
+    });
+
+    it('reports withdrawn calls by id', () => {
+      expect(mapLiveServerMessage({ toolCallCancellation: { ids: ['a', 7, '', 'b'] } })).toEqual([
+        { kind: SessionEventKind.ToolCallCancelled, callIds: ['a', 'b'] },
+      ]);
     });
   });
 
@@ -118,21 +123,21 @@ describe('live-message-mapper', () => {
     // one yields NaN, and a resumption scheduled against NaN never happens.
     it('reads the duration string as milliseconds', () => {
       expect(mapLiveServerMessage({ goAway: { timeLeft: '9.5s' } })).toEqual([
-        { kind: AssistantEventKind.GoAway, timeLeftMs: 9500 },
+        { kind: SessionEventKind.GoAway, timeLeftMs: 9500 },
       ]);
     });
 
     it('treats a missing or unparseable duration as no time left', () => {
-      expect(mapLiveServerMessage({ goAway: {} })).toEqual([{ kind: AssistantEventKind.GoAway, timeLeftMs: 0 }]);
+      expect(mapLiveServerMessage({ goAway: {} })).toEqual([{ kind: SessionEventKind.GoAway, timeLeftMs: 0 }]);
       expect(mapLiveServerMessage({ goAway: { timeLeft: 'soon' } })).toEqual([
-        { kind: AssistantEventKind.GoAway, timeLeftMs: 0 },
+        { kind: SessionEventKind.GoAway, timeLeftMs: 0 },
       ]);
     });
   });
 
   it('reports a resumption handle', () => {
     expect(mapLiveServerMessage({ sessionResumptionUpdate: { newHandle: 'h-1', resumable: true } })).toEqual([
-      { kind: AssistantEventKind.Resumption, handle: 'h-1' },
+      { kind: SessionEventKind.Resumption, handle: 'h-1' },
     ]);
   });
 
@@ -142,7 +147,7 @@ describe('live-message-mapper', () => {
 
   it('reports usage, including a zero count', () => {
     expect(mapLiveServerMessage({ usageMetadata: { totalTokenCount: 0 } })).toEqual([
-      { kind: AssistantEventKind.Usage, totalTokens: 0 },
+      { kind: SessionEventKind.Usage, totalTokens: 0 },
     ]);
   });
 

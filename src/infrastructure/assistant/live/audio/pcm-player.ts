@@ -5,7 +5,7 @@ import type { Failure } from '@core/failure/failure';
 import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { ValueConstants } from '@core/constants';
-import { resample } from '@infrastructure/assistant/live/pcm-codec';
+import { resample } from '@live-assistant/core';
 
 /**
  * Streaming playback of the assistant's reply, over `react-native-audio-api`.

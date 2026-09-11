@@ -5,7 +5,7 @@ import type { Result } from '@core/result/result';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import { ForbiddenFailure } from '@core/failure/kinds/forbidden-failure';
 import { ValueConstants } from '@core/constants';
-import { resample } from '@infrastructure/assistant/live/pcm-codec';
+import { resample } from '@live-assistant/core';
 
 /**
  * Microphone capture on the web shell, over `getUserMedia`.

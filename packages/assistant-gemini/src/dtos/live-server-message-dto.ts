@@ -22,6 +22,7 @@ export interface LiveServerMessageDto {
     generationComplete?: boolean;
   };
   toolCall?: { functionCalls?: { id?: string; name?: string; args?: Record<string, unknown> }[] };
+  toolCallCancellation?: { ids?: unknown[] };
   sessionResumptionUpdate?: { newHandle?: string; resumable?: boolean };
   goAway?: { timeLeft?: string };
   usageMetadata?: { totalTokenCount?: number };
