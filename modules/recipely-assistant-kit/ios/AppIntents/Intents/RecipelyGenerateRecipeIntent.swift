@@ -16,7 +16,7 @@ struct RecipelyGenerateRecipeIntent: AppIntent {
 
   @Parameter(
     title: "Description",
-    requestValueDialog: "What would you like to cook?"
+    requestValueDialog: IntentDialog(LocalizedStringResource("What would you like to cook?", table: "RecipelyIntents"))
   )
   var prompt: String
 

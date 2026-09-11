@@ -1029,5 +1029,7 @@ export const tr: Translations = {
   osIntentDialogs: {
     askWhat: "Ne sormak istersin?",
     openingApp: "Recipely açılıyor.",
+    cookWhat: "Ne pişirmek istersin?",
+    importWhich: "Hangi bağlantıyı içe aktarayım?",
   },
 };

@@ -21,6 +21,10 @@ const FRESH_FOR_MS =
  *   resumes — so neither withdraws its request. Run on the next launch, hours
  *   later, a search or a navigation arrives that the user cannot connect with
  *   anything they did. Two minutes is long past a cold start and short of that.
+ * - **Time at Siri's prompt counts.** `at` is stamped when the request is queued,
+ *   just before "continue in the app" appears, so a prompt left open past two
+ *   minutes and then accepted opens the app with nothing to run. Accepted as the
+ *   price of never running a request the user walked away from.
  */
 export function isStaleInvocation(invocation: OsIntentInvocation, now: number): boolean {
   return now - invocation.at > FRESH_FOR_MS;

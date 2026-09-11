@@ -1022,5 +1022,7 @@ export const id = {
   osIntentDialogs: {
     askWhat: "Mau tanya apa?",
     openingApp: "Membuka Recipely.",
+    cookWhat: "Mau masak apa?",
+    importWhich: "Tautan mana yang harus kuimpor?",
   },
 };

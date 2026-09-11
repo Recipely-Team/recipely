@@ -230,12 +230,13 @@ describe('withAssistantKit — the Siri phrases reach the app target', () => {
     withAssistantKit(withLocales(xcode));
 
     expect(xcode.createVariantGroup).toHaveBeenCalledWith('AppShortcuts.strings');
-    expect(xcode.variantChildren.map((child) => child.path)).toEqual(
-      expect.arrayContaining([
-        'Recipely/RecipelyAssistant/ja.lproj/AppShortcuts.strings',
-        'Recipely/RecipelyAssistant/tr.lproj/AppShortcuts.strings',
-      ]),
-    );
+    // Exact and ordered: a looser match would pass a table registered twice.
+    expect(xcode.variantChildren.map((child) => child.path)).toEqual([
+      'Recipely/RecipelyAssistant/ja.lproj/AppShortcuts.strings',
+      'Recipely/RecipelyAssistant/tr.lproj/AppShortcuts.strings',
+      'Recipely/RecipelyAssistant/ja.lproj/RecipelyIntents.strings',
+      'Recipely/RecipelyAssistant/tr.lproj/RecipelyIntents.strings',
+    ]);
   });
 
   // What Siri says back is a second table. Before it existed the follow-up

@@ -1018,5 +1018,7 @@ export const hi: Translations = {
   osIntentDialogs: {
     askWhat: "तुम क्या पूछना चाहते हो?",
     openingApp: "Recipely खोल रहे हैं।",
+    cookWhat: "तुम क्या पकाना चाहते हो?",
+    importWhich: "कौन सा लिंक इम्पोर्ट करूँ?",
   },
 };

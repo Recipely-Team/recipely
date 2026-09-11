@@ -1022,5 +1022,7 @@ export const ja = {
   osIntentDialogs: {
     askWhat: "何を聞きたい？",
     openingApp: "Recipelyを開いています。",
+    cookWhat: "何を作りたい？",
+    importWhich: "どのリンクを取り込む？",
   },
 };

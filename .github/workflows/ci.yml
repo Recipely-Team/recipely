@@ -544,8 +544,12 @@ jobs:
       - name: Assert the assistant kit reached the generated Info.plist and entitlements
         run: |
           set -euo pipefail
-          plist="$(ls ios/*/Info.plist | head -n1)"
-          entitlements="$(ls ios/*/*.entitlements | head -n1)"
+          # Named from the project, not globbed: the share extension carries the
+          # same App Group, so a glob that sorted it first would compare against
+          # the wrong file and still pass.
+          name="$(basename "$(ls -d ios/*.xcodeproj | head -n1)" .xcodeproj)"
+          plist="ios/$name/Info.plist"
+          entitlements="ios/$name/$name.entitlements"
           read_key() { /usr/libexec/PlistBuddy -c "Print :$1" "$plist" 2>/dev/null || true; }
           group="$(read_key RecipelyAssistantAppGroup)"
           base="$(read_key RecipelyAssistantApiBaseUrl)"
@@ -565,7 +569,7 @@ jobs:
       # wire shape. Linux CI skips it (no swiftc); this is the runner that builds
       # the Swift it checks.
       - name: Swift envelope parity
-        run: bash scripts/verify-swift-envelope.sh
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
 
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
@@ -1107,8 +1111,12 @@ jobs:
       - name: Assert the assistant kit reached the generated Info.plist and entitlements
         run: |
           set -euo pipefail
-          plist="$(ls ios/*/Info.plist | head -n1)"
-          entitlements="$(ls ios/*/*.entitlements | head -n1)"
+          # Named from the project, not globbed: the share extension carries the
+          # same App Group, so a glob that sorted it first would compare against
+          # the wrong file and still pass.
+          name="$(basename "$(ls -d ios/*.xcodeproj | head -n1)" .xcodeproj)"
+          plist="ios/$name/Info.plist"
+          entitlements="ios/$name/$name.entitlements"
           read_key() { /usr/libexec/PlistBuddy -c "Print :$1" "$plist" 2>/dev/null || true; }
           group="$(read_key RecipelyAssistantAppGroup)"
           base="$(read_key RecipelyAssistantApiBaseUrl)"
@@ -1128,7 +1136,7 @@ jobs:
       # wire shape. Linux CI skips it (no swiftc); this is the runner that builds
       # the Swift it checks.
       - name: Swift envelope parity
-        run: bash scripts/verify-swift-envelope.sh
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
 
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,

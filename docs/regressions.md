@@ -1878,8 +1878,11 @@ Nothing flagged it: the catalogue was complete, and the line simply was not in i
 
 *Now:* what Siri says back lives in `osIntentDialogs`, generated into a
 `RecipelyIntents.strings` table; the generator refuses a `table:` literal with no
-English entry and an entry no intent reads, and the artifact test fails a Turkish
-table that still says the English.
+English entry, an entry no intent reads, and — after review found "Create
+Recipe" and "Import Recipe" still asking in English — ANY dialog written as a
+bare literal under `AppIntents/`, which is what closes the road rather than the
+three instances. The artifact test fails a Turkish table that still says the
+English.
 
 *The class:* **a complete catalogue says nothing about the lines that never
 entered it.** The check that matters for a localized surface is whether any

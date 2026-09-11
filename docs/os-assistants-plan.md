@@ -395,6 +395,11 @@ background mode for the one intent whose point is to run without a screen. The c
 fallback only works if the client gives up before Siri does. A reply with
 neither words nor an action is `nil`. The bridge now removes entries it drops.
 
+**Still English, by scope:** the intent titles, descriptions and parameter
+titles (`static let title`, `IntentDescription`, `@Parameter(title:)`). They are
+read in Shortcuts and Spotlight rather than spoken, and they belong to the same
+class — the next pass should route them through the same table.
+
 **Still to see on a device:** Siri's own deadline for `perform()`; whether the
 follow-up question is Turkish on a Turkish phone (D26 — English on the
 simulator for reasons outside our strings); spoken invocation, which the

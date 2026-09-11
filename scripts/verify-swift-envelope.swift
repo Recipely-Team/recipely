@@ -128,6 +128,7 @@ struct EnvelopeParityHarness {
       (#"{"data":{"reply":"","action":{"name":"search"}}}"#,
        .init(text: "", action: "search", arg: nil)),
       (#"{"data":{"reply":""}}"#, nil),
+      (#"{"data":{"reply":"  \n "}}"#, nil),
     ]
     for (body, expected) in cases {
       guard
@@ -139,6 +140,14 @@ struct EnvelopeParityHarness {
       guard RecipelyAssistantWire.reply(from: response, key: key) == expected else {
         fail("reply(\(body)) did not read as \(String(describing: expected))")
       }
+    }
+    // What Siri says when the app comes forward: the answer's words, or nothing
+    // for the intent to replace with its own line. Measured: every action reply
+    // from dev-api had empty text, and a blank dialog reads as a failure.
+    let silent = RecipelyAssistantWire.Reply(text: " \n", action: "search", arg: "x")
+    let spoken = RecipelyAssistantWire.Reply(text: "Bakıyorum.", action: "search", arg: "x")
+    guard silent.spokenText == nil, spoken.spokenText == "Bakıyorum." else {
+      fail("spokenText did not tell an answer with words from one without")
     }
     print("  ✓ speaks /assistant/message: { data: … } out, reply and action back")
   }

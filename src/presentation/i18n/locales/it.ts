@@ -1022,5 +1022,7 @@ export const it = {
   osIntentDialogs: {
     askWhat: "Cosa vuoi chiedere?",
     openingApp: "Apro Recipely.",
+    cookWhat: "Cosa vuoi cucinare?",
+    importWhich: "Quale link devo importare?",
   },
 };

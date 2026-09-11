@@ -9,7 +9,7 @@ struct RecipelyImportRecipeIntent: AppIntent {
 
   @Parameter(
     title: "Link",
-    requestValueDialog: "Which link should I import?"
+    requestValueDialog: IntentDialog(LocalizedStringResource("Which link should I import?", table: "RecipelyIntents"))
   )
   var link: String
 

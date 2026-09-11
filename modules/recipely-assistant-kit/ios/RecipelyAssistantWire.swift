@@ -23,6 +23,12 @@ public enum RecipelyAssistantWire {
     public let text: String
     public let action: String?
     public let arg: String?
+
+    /// The words worth saying, or `nil` when there are none. An answer that acts
+    /// arrives with empty text, and a blank Siri dialog reads as a failure.
+    public var spokenText: String? {
+      text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : text
+    }
   }
 
   public static func request(message: String, languageCode: String, key: SymmetricKey) throws -> Data {
@@ -43,9 +49,12 @@ public enum RecipelyAssistantWire {
 
     let action = body["action"] as? [String: Any]
     let name = nonEmpty(action?["name"])
-    let text = body["reply"] as? String ?? ""
-    if name == nil && text.isEmpty { return nil }
-    return Reply(text: text, action: name, arg: name == nil ? nil : nonEmpty(action?["arg"]))
+    let reply = Reply(
+      text: body["reply"] as? String ?? "",
+      action: name,
+      arg: name == nil ? nil : nonEmpty(action?["arg"])
+    )
+    return reply.action == nil && reply.spokenText == nil ? nil : reply
   }
 
   private static func nonEmpty(_ value: Any?) -> String? {

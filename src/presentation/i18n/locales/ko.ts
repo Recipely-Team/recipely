@@ -1018,5 +1018,7 @@ export const ko: Translations = {
   osIntentDialogs: {
     askWhat: "무엇을 물어볼까?",
     openingApp: "Recipely를 여는 중이야.",
+    cookWhat: "무엇을 요리하고 싶어?",
+    importWhich: "어떤 링크를 가져올까?",
   },
 };

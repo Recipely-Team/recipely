@@ -1022,5 +1022,7 @@ export const ru = {
   osIntentDialogs: {
     askWhat: "Что ты хочешь спросить?",
     openingApp: "Открываю Recipely.",
+    cookWhat: "Что ты хочешь приготовить?",
+    importWhich: "Какую ссылку импортировать?",
   },
 };

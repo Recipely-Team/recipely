@@ -68,7 +68,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
     }
 
     try await comeForward(running: RecipelyRequest.enqueue(id: "askRecipely", action: action, arg: reply.arg))
-    return .result(dialog: reply.text.isEmpty ? Self.openingApp : IntentDialog(stringLiteral: reply.text))
+    return .result(dialog: reply.spokenText.map { IntentDialog(stringLiteral: $0) } ?? Self.openingApp)
   }
 
   /// An answer that acts usually says nothing — measured against dev, a search

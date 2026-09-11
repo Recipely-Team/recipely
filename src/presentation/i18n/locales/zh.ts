@@ -1029,5 +1029,7 @@ export const zh = {
   osIntentDialogs: {
     askWhat: "你想问什么？",
     openingApp: "正在打开 Recipely。",
+    cookWhat: "你想做什么菜？",
+    importWhich: "要导入哪个链接？",
   },
 };

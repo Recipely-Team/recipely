@@ -29,7 +29,8 @@
  * the intent resolves at run time. It gets its own table rather than the app's
  * `Localizable` so it cannot collide with anything else in the target, and the
  * same rule joins it: every `table: "RecipelyIntents"` literal in the Swift must
- * match an `en.osIntentDialogs` value, and every entry must be used.
+ * match an `en.osIntentDialogs` value, every entry must be used, and a dialog
+ * written as a bare literal stops the build.
  *
  * Run by `npm run shortcuts`; freshness is enforced by `check:structure`.
  */
@@ -157,6 +158,20 @@ const dialogKeys = [
     ].map((m) => m[1])),
   ),
 ];
+// A dialog written as a bare literal never reaches the table, so it is spoken
+// in English on every phone — which is what "Ask Recipely", "Create Recipe" and
+// "Import Recipe" all did. Refused here rather than trusted to review.
+const BARE_DIALOG = /(requestValueDialog:\s*"|IntentDialog\(\s*"|IntentDialog\(stringLiteral:\s*"|dialog:\s*")/;
+for (const file of swiftSourcesUnder(INTENTS_DIR)) {
+  const hit = BARE_DIALOG.exec(fs.readFileSync(file, 'utf8'));
+  if (hit !== null) {
+    throw new Error(
+      `${path.relative(ROOT, file)} writes a Siri dialog as a bare literal (${hit[1]}…) — ` +
+        `use LocalizedStringResource("…", table: "${DIALOG_TABLE}") and add it to osIntentDialogs`,
+    );
+  }
+}
+
 const dialogsByLocale = new Map(localeCodes.map((code) => [code, readBlock(code, 'osIntentDialogs')]));
 const englishDialogs = dialogsByLocale.get(SOURCE_LANGUAGE);
 const dialogIdByEnglish = new Map(Object.entries(englishDialogs).map(([id, text]) => [text, id]));

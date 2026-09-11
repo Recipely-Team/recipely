@@ -13,6 +13,12 @@ HARNESS="$ROOT/scripts/verify-swift-envelope.swift"
 FIXTURE="$ROOT/modules/recipely-assistant-kit/__fixtures__/aes-gcm-vectors.json"
 
 if ! command -v swiftc >/dev/null 2>&1; then
+  # REQUIRE_SWIFT=1 is set by the macOS CI job, the one place the skip would be
+  # a silent pass rather than an honest "cannot run here".
+  if [ "${REQUIRE_SWIFT:-0}" = "1" ]; then
+    echo "envelope parity (Swift): FAILED — swiftc is required here and missing" >&2
+    exit 1
+  fi
   echo "envelope parity (Swift): skipped — swiftc not on this machine"
   exit 0
 fi
