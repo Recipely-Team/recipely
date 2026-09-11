@@ -461,8 +461,17 @@ and not something a reader could have trusted. The measurement above is the
 deliverable; the implementation is a short job once the invitation arrives and
 the shape settles.
 
-**Still needs the user:** the EAP registration form. Nothing in this repo can
-apply on its own behalf.
+**Update 2026-09-11 — the first blocker is gone, the second is absolute.**
+`androidx.appfunctions:appfunctions:1.0.0-alpha11` (2026-08-26) now ships what
+the guide shows — `AppFunctionService`, `@AppFunctionServiceEntryPoint`,
+`@AppFunction` — built against Kotlin 2.1.20, the project's own. But the EAP form
+is closed (*"currently at capacity"*), and without it nothing on a user's phone
+calls an AppFunction: only agents holding `EXECUTE_APP_FUNCTIONS`, which today
+means Gemini in private preview. Adding an alpha library and a KSP processor to
+every Android build for a surface with no caller is the trade D22 already
+declined. Implement when either the EAP reopens or Google ships the Gemini side
+publicly; `adb shell cmd app_function` makes it testable on the API 37 emulator
+the moment it is worth doing.
 
 ### D21 — Android calls Indonesian `in`, and a deep link needs the catalogue id
 Two things the generator had to learn, both silent failures otherwise.
@@ -621,7 +630,7 @@ plugin's pbxproj code.
 - [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy
 - [x] Widget — a button, not a data surface: `updatePeriodMillis` is 0 because there is nothing to refresh, and a widget that never refreshes cannot go stale
 - [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
-- [ ] AppFunctions service — **attempted and backed out, see D22.** The published alpha does not match its own documentation, and the gate to Gemini is an invitation we do not have.
+- [ ] AppFunctions service — **deferred on purpose, see D22.** alpha11 now matches the docs; what is missing is a caller — the EAP is at capacity and Gemini calls nothing without it.
 - [x] `androidx.core:core-google-shortcuts:1.1.0` (so shortcuts reach Google's surfaces, D5) — on the classpath since Phase 1; pulls `play-services-appindex` + `tink-android`, R8 clean
 - [x] ~~Apply to the Google AppFunctions EAP form~~ — checked 2026-09-11: the form is closed, *"The Early Access Program is currently at capacity."* There is nothing to apply to; Gemini stays out of reach until Google opens it
 - [x] R8 keep rules — **not needed**, measured rather than assumed: `:app:minifyReleaseWithR8` is green and not one of its warnings names `assistantkit`. The tile and the widget are reached from the manifest, from which AGP generates keeps of its own.
