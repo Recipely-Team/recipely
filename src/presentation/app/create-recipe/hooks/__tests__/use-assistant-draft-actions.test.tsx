@@ -119,6 +119,20 @@ describe('useAssistantDraftActions', () => {
       expect(spies.onUpdateField).toHaveBeenCalledWith('difficulty', Difficulty.Easy);
     });
 
+    // A second model is a second dialect: the Groq fallback wrote a screen's
+    // label where its key belonged, and a field name is the same kind of word.
+    it('accepts a field named with capitals and spaces', async () => {
+      const { registry, spies } = harness();
+
+      await act(async () => {
+        await registry.run(AssistantAction.SetDraftField, 'Difficulty=easy');
+        await registry.run(AssistantAction.SetDraftField, 'Prep Time Minutes=25');
+      });
+
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(1, 'difficulty', Difficulty.Easy);
+      expect(spies.onUpdateField).toHaveBeenNthCalledWith(2, 'prepTimeMinutes', 25);
+    });
+
     // On a Turkish device `'medium'.toLocaleUpperCase()` is `MEDİUM`, which
     // never equals `MEDIUM` — every difficulty the assistant set would have
     // failed on exactly the devices this app is built for.

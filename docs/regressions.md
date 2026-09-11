@@ -1909,3 +1909,38 @@ intent's withdrawal stays as best effort.
 silently when nobody tells you.** Cleanup belongs with the side that will
 certainly run — here the reader of the queue — not with the side that may be
 cancelled, suspended or killed first.
+
+## A model that was given the keys, and answered with the labels
+
+The assistant's `navigate` takes a screen KEY — `myRecipes` — and the model is
+given the list. Verified on production after the OS-assistant release: asked "open my
+recipes" through Siri, the Groq fallback answered `navigate` with `My Recipes`, the
+label a person reads, and the app came forward only to refuse it as `unknown_screen`.
+Gemini had always sent the key, so nothing had ever exercised the gap; the doc line
+above the predicate even said "the model is given the list, but it is not held to it",
+and the code held it to it anyway.
+
+*Now:* every argument that names an ASCII key — screens, outside pages, draft fields,
+preference keys, sort keys — goes through one resolver (`resolveTargetName`) that folds
+case and separators, with a test that no two keys (and no outside page and screen)
+fold to the same name, and a test per action through the hook that runs it.
+
+*The class:* **a second model is a second dialect.** A vocabulary one provider always
+spelled exactly is a vocabulary the next provider will spell its own way; match the
+meaning at the boundary, not the spelling one model happened to use.
+
+## A test that passed, and a tree it left behind
+
+`renderComponent` mounted a themed tree and nothing unmounted it. The theme provider
+reads the stored preference asynchronously, so in a file whose tests finished quickly
+that read landed after Jest had torn the environment down ("import a file after the
+Jest environment has been torn down") — and failed a pre-commit related-tests run for a
+change that touched nothing near it. Two test files had grown their own cleanup; about
+seventy had none.
+
+*Now:* the harness registers every tree it mounts and unmounts them after each test
+(from the harness module itself, the way `@testing-library` does, so no test's own
+`jest.mock` is loaded around).
+
+*The class:* **a helper that mounts must also unmount.** Leaving cleanup to each test
+means the one test that forgets it fails someone else's commit.
