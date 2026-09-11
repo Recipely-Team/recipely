@@ -10,6 +10,7 @@ import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { Difficulty, DIFFICULTY_VALUES } from '@domain/recipes/difficulty';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
 import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
@@ -238,7 +239,9 @@ function asDifficulty(value: string): Difficulty | null {
  * label is exactly the phrase the user had just said.
  */
 function asSortKey(value: string): SortKey | null {
-  if ((Object.values(SortKey) as string[]).includes(value)) return value as SortKey;
+  // The key first, however cased or spaced: "most_liked" and "Most Liked" are `mostLiked`.
+  const byKey = resolveTargetName(value, Object.values(SortKey));
+  if (byKey !== null) return byKey;
 
   const labels = sortKeyLabels();
   const matched = resolveTaxonomyKey(

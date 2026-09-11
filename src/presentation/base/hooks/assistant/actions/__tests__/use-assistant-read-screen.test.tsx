@@ -1,11 +1,11 @@
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import { act } from 'react-test-renderer';
-import type { ReactTestRenderer } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/actions/use-assistant-global-actions';
+import { router } from 'expo-router';
+import { RoutePaths } from '@presentation/base/constants/route-paths';
 
 /**
  * `readScreen` is registered once, beside the pill, and answers for whichever
@@ -21,16 +21,6 @@ jest.mock('expo-router', () => ({
   router: { navigate: jest.fn(), push: jest.fn(), back: jest.fn(), canGoBack: () => true },
 }));
 
-// The theme provider reads the stored preference asynchronously. Left mounted,
-// that read landed after the file's environment was torn down and failed the
-// pre-commit run ("import a file after the Jest environment has been torn down").
-const mounted: ReactTestRenderer[] = [];
-
-afterEach(async () => {
-  await act(async () => undefined);
-  for (const renderer of mounted.splice(0)) act(() => renderer.unmount());
-});
-
 function harness() {
   const registry = new AssistantActionRegistry();
   const stores = {
@@ -45,12 +35,11 @@ function harness() {
     return null;
   };
 
-  const { renderer } = renderComponent(
+  renderComponent(
     <StoresProvider value={stores}>
       <Probe />
     </StoresProvider>,
   );
-  mounted.push(renderer);
 
   return registry;
 }
@@ -83,5 +72,42 @@ describe('readScreen', () => {
     const registry = harness();
 
     await expect(registry.run(AssistantAction.ReadScreen)).resolves.toMatchObject({ ok: true });
+  });
+});
+
+/**
+ * Verified on production: asked "open my recipes" through Siri, the Groq
+ * fallback answered `navigate` with "My Recipes" — the label, not the key — and
+ * the app came forward only to refuse it as `unknown_screen`.
+ */
+describe('navigate — the words a model actually sends', () => {
+  beforeEach(() => {
+    (router.navigate as jest.Mock).mockClear();
+  });
+
+  it('opens My Recipes when the model names it by its label', async () => {
+    const registry = harness();
+
+    await expect(registry.run(AssistantAction.Navigate, 'My Recipes')).resolves.toEqual({ ok: true });
+    expect(router.navigate).toHaveBeenCalledWith(RoutePaths.myRecipes);
+  });
+
+  it('refuses an outside page by name, however it is spelled', async () => {
+    const registry = harness();
+
+    await expect(registry.run(AssistantAction.Navigate, 'Privacy Policy')).resolves.toMatchObject({
+      ok: false,
+      error: 'leaves_the_app',
+    });
+    expect(router.navigate).not.toHaveBeenCalled();
+  });
+
+  it('still refuses a word that names no screen', async () => {
+    const registry = harness();
+
+    await expect(registry.run(AssistantAction.Navigate, 'Tariflerim')).resolves.toMatchObject({
+      ok: false,
+      error: 'unknown_screen',
+    });
   });
 });

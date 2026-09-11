@@ -2,7 +2,7 @@ import {
   ASSISTANT_NAVIGATION_TARGETS,
   resolveAssistantScreenName,
 } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
-import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
+import { ASSISTANT_EXTERNAL_NAMES, isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
 import { foldTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
 
 /**
@@ -20,7 +20,7 @@ describe('assistant target names — the words a model actually sends', () => {
     ['Edit Profile', 'editProfile'],
     ['create-recipe', 'createRecipe'],
     ['settings', 'settings'],
-  ])('opens the screen for "%s"', (spoken, key) => {
+  ])('resolves "%s" to the %s key', (spoken, key) => {
     expect(resolveAssistantScreenName(spoken)).toBe(key);
   });
 
@@ -34,6 +34,13 @@ describe('assistant target names — the words a model actually sends', () => {
   it('folds every screen key to a name no other key shares', () => {
     const keys = Object.keys(ASSISTANT_NAVIGATION_TARGETS);
     expect(new Set(keys.map(foldTargetName)).size).toBe(keys.length);
+  });
+
+  // Outside pages are checked first, so one that folded onto a screen key would
+  // silently hide that screen.
+  it('keeps every outside page apart from every screen once folded', () => {
+    const screens = new Set(Object.keys(ASSISTANT_NAVIGATION_TARGETS).map(foldTargetName));
+    expect(ASSISTANT_EXTERNAL_NAMES.map(foldTargetName).filter((name) => screens.has(name))).toEqual([]);
   });
 
   it('recognises an outside page however the model spelled it', () => {

@@ -1,4 +1,4 @@
-import { foldTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
 
 /**
  * Destinations the assistant RECOGNISES but will not open, because they are not
@@ -24,7 +24,6 @@ export const ASSISTANT_EXTERNAL_NAMES: readonly string[] = [
   'termsOfUse',
 ];
 
-const EXTERNAL_FOLDED_NAMES: ReadonlySet<string> = new Set(ASSISTANT_EXTERNAL_NAMES.map(foldTargetName));
-
 /** Whether a spoken word names a page that lives outside the app, in whatever case the model wrote it. */
-export const isAssistantExternalName = (name: string): boolean => EXTERNAL_FOLDED_NAMES.has(foldTargetName(name));
+export const isAssistantExternalName = (name: string): boolean =>
+  resolveTargetName(name, ASSISTANT_EXTERNAL_NAMES) !== null;

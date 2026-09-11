@@ -1,3 +1,4 @@
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
@@ -110,6 +111,16 @@ const SERVINGS_NEEDS_REFINE = 'servings_needs_refine';
 const DRAFT_ALREADY_OPEN = 'draft_open_would_be_lost';
 const CUISINE_FIELD = 'cuisine';
 const CATEGORY_FIELD = 'category';
+
+/** Every field SetDraftField accepts, for matching the name a model sends however it spells it. */
+const DRAFT_FIELDS: readonly string[] = [
+  SERVINGS_FIELD,
+  ...NUMERIC_FIELDS,
+  DIFFICULTY_FIELD,
+  CUISINE_FIELD,
+  CATEGORY_FIELD,
+  ...TEXT_FIELDS,
+];
 
 /**
  * Lets the assistant fill in the draft the user is watching.
@@ -240,7 +251,9 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         const parsed = parseKeyValue(arg);
         if (parsed === null) return { ok: false, error: 'expected_field_equals_value' };
 
-        const { key: field, value } = parsed;
+        const { value } = parsed;
+        // "Prep Time Minutes=10" and "prep_time_minutes=10" name the same field.
+        const field = resolveTargetName(parsed.key, DRAFT_FIELDS) ?? parsed.key;
 
         // Before the numeric branch it used to sit in: the answer is a
         // redirect, not a write. The model reads the reason and asks the

@@ -1,6 +1,6 @@
 import { RoutePaths } from '@presentation/base/constants/route-paths';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { foldTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/targets/fold-target-name';
 
 /**
  * The screens the assistant may send the user to, by the word it says.
@@ -41,14 +41,13 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
 /** A screen the assistant can be asked for, by the name the model is given. */
 export type AssistantScreenName = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
 
-/** Whether a spoken word names a screen — the model is given the list, but it is not held to it. */
-export const isAssistantScreenName = (name: string): name is AssistantScreenName =>
-  Object.hasOwn(ASSISTANT_NAVIGATION_TARGETS, name);
 
-const SCREEN_BY_FOLDED_NAME: ReadonlyMap<string, AssistantScreenName> = new Map(
-  (Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenName[]).map((key) => [foldTargetName(key), key]),
-);
 
-/** The screen a word names, tolerating the case and spacing a model adds; `null` when it names none. */
+const SCREEN_NAMES = Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenName[];
+
+/**
+ * The screen a word names, tolerating the case and spacing a model adds; `null`
+ * when it names none. The model is given the list, but it is not held to it.
+ */
 export const resolveAssistantScreenName = (name: string): AssistantScreenName | null =>
-  isAssistantScreenName(name) ? name : (SCREEN_BY_FOLDED_NAME.get(foldTargetName(name)) ?? null);
+  resolveTargetName(name, SCREEN_NAMES);
