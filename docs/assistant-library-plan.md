@@ -89,7 +89,9 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
   - Local web against a remote backend needs: `APP_VARIANT=development`, `EXPO_PUBLIC_API_BASE_URL=http://localhost:3001` (a local proxy adding CORS for localhost:8081, since dev/prod run NODE_ENV=production and refuse localhost), the dev envelope key in `EXPO_PUBLIC_API_AES_KEY`, port 8081
 - [ ] On-device voice check on iOS and Android (owner)
 - [ ] Owner decisions pending: login token 7d → 30d (chosen: 30d; backend `JWT_EXPIRES_IN`, dev first, prod on approval); logged-out header shows initials instead of the default avatar (fix on its own `fix/` branch from dev, not this one)
-- [ ] Merge to `dev` — the owner allowed dev FOR TESTING once the equivalence audit confirms same-or-better behaviour; release → 1.0.0
+- [x] Merged to `dev` for testing: PR #430, CI green, dev web deployed (2026-09-12). The three assistant timing fixes went ahead of it as #429
+- [ ] Test it on dev: the owner on a device (iOS and Android voice), and dev.recipely.net on the web
+- [ ] Release → 1.0.0 (dev → main is the owner's call, as always)
 
 
 ## If the session ends
