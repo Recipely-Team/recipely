@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "${applicationName} से पूछो";
+"Open a recipe in ${applicationName}" = "${applicationName} में एक रेसिपी खोलो";
+"Save a recipe in ${applicationName}" = "${applicationName} में एक रेसिपी सेव करो";
+"Like a recipe in ${applicationName}" = "${applicationName} में एक रेसिपी लाइक करो";
+"Read the ingredients in ${applicationName}" = "${applicationName} में सामग्री पढ़ो";
+"What is the next step in ${applicationName}" = "${applicationName} में अगला चरण क्या है";
+"Start the timer in ${applicationName}" = "${applicationName} में टाइमर शुरू करो";
+"Create a recipe in ${applicationName}" = "${applicationName} में एक रेसिपी बनाओ";
+"Import a recipe into ${applicationName}" = "${applicationName} में एक रेसिपी इम्पोर्ट करो";
+"Open my recipes in ${applicationName}" = "${applicationName} में मेरी रेसिपी खोलो";

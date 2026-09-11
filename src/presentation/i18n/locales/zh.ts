@@ -1008,4 +1008,28 @@ export const zh = {
       stop: "停止了",
     },
   },
+  osIntentPhrases: {
+    ask: "问 {app}",
+    openRecipe: "在 {app} 中打开食谱",
+    saveRecipe: "在 {app} 中收藏食谱",
+    likeRecipe: "在 {app} 中点赞食谱",
+    readIngredients: "在 {app} 中读出食材",
+    readNextStep: "在 {app} 中下一步是什么",
+    startTimer: "在 {app} 中开始计时",
+    generateRecipe: "在 {app} 中创建食谱",
+    importRecipe: "把食谱导入 {app}",
+    openMyRecipes: "在 {app} 中打开我的食谱",
+  },
+  osShortcutLabels: {
+    askRecipely: "问 Recipely",
+    generateRecipe: "创建食谱",
+    startTimer: "计时器",
+    openMyRecipes: "我的食谱",
+  },
+  osIntentDialogs: {
+    askWhat: "你想问什么？",
+    openingApp: "正在打开 Recipely。",
+    cookWhat: "你想做什么菜？",
+    importWhich: "要导入哪个链接？",
+  },
 };

@@ -1001,4 +1001,28 @@ export const id = {
       stop: "Berhenti",
     },
   },
+  osIntentPhrases: {
+    ask: "Tanya {app}",
+    openRecipe: "Buka resep di {app}",
+    saveRecipe: "Simpan resep di {app}",
+    likeRecipe: "Suka resep di {app}",
+    readIngredients: "Bacakan bahan di {app}",
+    readNextStep: "Apa langkah berikutnya di {app}",
+    startTimer: "Mulai timer di {app}",
+    generateRecipe: "Buat resep di {app}",
+    importRecipe: "Impor resep ke {app}",
+    openMyRecipes: "Buka resep saya di {app}",
+  },
+  osShortcutLabels: {
+    askRecipely: "Tanya Recipely",
+    generateRecipe: "Buat resep",
+    startTimer: "Timer",
+    openMyRecipes: "Resep saya",
+  },
+  osIntentDialogs: {
+    askWhat: "Mau tanya apa?",
+    openingApp: "Membuka Recipely.",
+    cookWhat: "Mau masak apa?",
+    importWhich: "Tautan mana yang harus kuimpor?",
+  },
 };

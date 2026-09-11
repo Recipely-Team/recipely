@@ -1,0 +1,332 @@
+interface Recorded {
+  ran: { action: string; arg: string | undefined }[];
+  acknowledged: string[];
+  queue: unknown[];
+  pendingLink: { id: string; action: string | null; arg: string | null } | null;
+  asked: { text: string; locale: string }[];
+  view: string | null;
+  failAcknowledge: boolean;
+  failPending: boolean;
+  holdRun: (() => void) | null;
+}
+
+const mockState: Recorded = {
+  ran: [],
+  acknowledged: [],
+  queue: [],
+  pendingLink: null,
+  asked: [],
+  view: null,
+  failAcknowledge: false,
+  failPending: false,
+  holdRun: null,
+};
+
+const mockAppStateListeners: ((next: string) => void)[] = [];
+const mockAppState = { current: 'active' };
+
+jest.mock('react-native', () => ({
+  AppState: {
+    get currentState() {
+      return mockAppState.current;
+    },
+    addEventListener: (_event: string, listener: (next: string) => void) => {
+      mockAppStateListeners.push(listener);
+      return { remove: () => undefined };
+    },
+  },
+}));
+
+jest.mock('@presentation/navigation/pending-os-intent', () => ({
+  PendingOsIntent: {
+    take: () => {
+      const held = mockState.pendingLink;
+      mockState.pendingLink = null;
+      return held;
+    },
+  },
+}));
+
+jest.mock('@presentation/i18n/use-locale', () => ({ useLocale: () => 'tr' }));
+
+jest.mock('@presentation/bootstrap/use-stores', () => ({
+  useStores: () => ({
+    assistantSessionStore: {
+      getState: () => ({
+        setView: (view: string) => {
+          mockState.view = view;
+        },
+        sendText: (text: string, locale: string) => {
+          mockState.asked.push({ text, locale });
+        },
+      }),
+    },
+    assistantActionRegistry: {
+      run: async (action: string, arg: string | undefined) => {
+        mockState.ran.push({ action, arg });
+        if (mockState.holdRun !== null) {
+          await new Promise<void>((resolve) => {
+            mockState.holdRun = resolve;
+          });
+        }
+        return { ok: true };
+      },
+    },
+    osAssistant: {
+      pendingInvocations: async () => {
+        if (mockState.failPending) throw new Error('bridge unavailable');
+        return mockState.queue;
+      },
+      acknowledge: async (id: string) => {
+        if (mockState.failAcknowledge) throw new Error('bridge unavailable');
+        mockState.acknowledged.push(id);
+      },
+      subscribe: () => () => undefined,
+    },
+  }),
+}));
+
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { useOsAssistantInvocations } = require('@presentation/base/hooks/assistant/os/use-os-assistant-invocations') as typeof import('@presentation/base/hooks/assistant/os/use-os-assistant-invocations');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { createElement } = require('react') as typeof import('react');
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { act, create } = require('react-test-renderer') as typeof import('react-test-renderer');
+
+const invocation = (invocationId: string, action = 'search', arg: string | null = 'corba') => ({
+  id: 'searchRecipes',
+  invocationId,
+  action,
+  arg,
+  at: Date.now(),
+});
+
+const Probe = (): null => {
+  useOsAssistantInvocations();
+  return null;
+};
+
+const mount = async (): Promise<void> => {
+  await act(async () => {
+    create(createElement(Probe));
+  });
+};
+
+const foreground = async (): Promise<void> => {
+  await act(async () => {
+    for (const listener of mockAppStateListeners) listener('active');
+  });
+};
+
+beforeEach(() => {
+  mockState.ran = [];
+  mockState.acknowledged = [];
+  mockState.queue = [];
+  mockState.pendingLink = null;
+  mockState.asked = [];
+  mockState.view = null;
+  mockState.failAcknowledge = false;
+  mockState.failPending = false;
+  mockState.holdRun = null;
+  mockAppStateListeners.length = 0;
+  mockAppState.current = 'active';
+});
+
+describe('useOsAssistantInvocations — draining what the OS left behind', () => {
+  it('runs a queued request and then forgets it', async () => {
+    mockState.queue = [invocation('inv-1')];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'corba' }]);
+    expect(mockState.acknowledged).toEqual(['inv-1']);
+  });
+
+  it('runs the link a launcher shortcut arrived with', async () => {
+    mockState.pendingLink = { id: 'startTimer', action: 'startTimer', arg: null };
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'startTimer', arg: undefined }]);
+  });
+
+  // Both roads go through one `perform`, and only the queue road was covered.
+  // The Android launcher's "Ask Recipely" shortcut arrives this way — as a link
+  // with no action and no question — and opening the panel is the whole point
+  // of it.
+  it('opens the assistant for a launcher link with no action', async () => {
+    mockState.pendingLink = { id: 'askRecipely', action: null, arg: null };
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.view).toBe('open');
+    expect(mockState.asked).toEqual([]);
+  });
+
+  it('asks the question a link carried, when it carries one', async () => {
+    mockState.pendingLink = { id: 'askRecipely', action: null, arg: 'kaç kişilik' };
+
+    await mount();
+
+    expect(mockState.asked).toEqual([{ text: 'kaç kişilik', locale: 'tr' }]);
+  });
+
+  it('runs a request that deliberately carries no action not at all, but still forgets it', async () => {
+    mockState.queue = [invocation('inv-1', null as unknown as string)];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.acknowledged).toEqual(['inv-1']);
+  });
+});
+
+describe('useOsAssistantInvocations — the open-ended request', () => {
+  // `askRecipely` carries a sentence rather than a word, so it never reaches
+  // the registry: the panel opens and the sentence becomes the first turn,
+  // which is what would have happened had the user typed it.
+  const asking = (arg: string | null) => ({
+    id: 'askRecipely',
+    invocationId: 'ask-1',
+    action: null,
+    arg,
+    at: Date.now(),
+  });
+
+  it('opens the panel and asks, rather than dispatching an action', async () => {
+    mockState.queue = [asking('kaç kalori var')];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.view).toBe('open');
+    expect(mockState.asked).toEqual([{ text: 'kaç kalori var', locale: 'tr' }]);
+    expect(mockState.acknowledged).toEqual(['ask-1']);
+  });
+
+  // The Android launcher shortcut carries no question — nothing asked for one —
+  // and "open the assistant" is the fastest route a floury hand has. So an
+  // absent question opens the panel and sends nothing, rather than doing
+  // nothing at all.
+  it('opens the panel and says nothing when there is no question', async () => {
+    mockState.queue = [asking(null)];
+
+    await mount();
+
+    expect(mockState.view).toBe('open');
+    expect(mockState.asked).toEqual([]);
+    expect(mockState.acknowledged).toEqual(['ask-1']);
+  });
+});
+
+describe('useOsAssistantInvocations — a request nobody is waiting for any more', () => {
+  // Measured on the simulator: Cancel on Siri's "continue in the app" did not
+  // reach the intent's withdrawal, so the request stayed queued — and ran on the
+  // next launch, whenever that was, as a search the user had never connected
+  // with anything.
+  it('acknowledges a stale request without running it', async () => {
+    const now = Date.now();
+    mockState.queue = [
+      { ...invocation('old'), at: now - 10 * 60 * 1000 },
+      { ...invocation('fresh', 'search', 'mercimek'), at: now },
+    ];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'mercimek' }]);
+    expect(mockState.acknowledged).toEqual(['old', 'fresh']);
+  });
+});
+
+describe('useOsAssistantInvocations — a request Siri has not been told to run yet', () => {
+  // "Ask Recipely" answers without opening the app, so Siri launches it in the
+  // BACKGROUND and the app mounts. The intent queues first and then asks
+  // "continue in Recipely?" — draining on that mount ran the request before
+  // the user answered, so a "no" had nothing left to withdraw.
+  it('leaves the queue alone until the app is actually in front of the user', async () => {
+    mockAppState.current = 'background';
+    mockState.queue = [invocation('bg-1')];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.acknowledged).toEqual([]);
+
+    await foreground();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'corba' }]);
+  });
+});
+
+describe('useOsAssistantInvocations — the assistant answering with an instruction', () => {
+  // When the native side asks the backend and is told to drive the app, the
+  // open-ended entry comes back carrying a word. Reading the id first would
+  // have handed that word to the assistant as though the user had typed it.
+  it('runs the action an answered question came back with', async () => {
+    mockState.queue = [
+      { id: 'askRecipely', invocationId: 'ask-2', action: 'search', arg: 'mercimek', at: Date.now() },
+    ];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'mercimek' }]);
+    expect(mockState.asked).toEqual([]);
+    expect(mockState.view).toBeNull();
+  });
+});
+
+describe('useOsAssistantInvocations — a second drain must not repeat the first', () => {
+  // Reading the queue does not empty it and an entry is acknowledged only after
+  // its action finishes, so a drain entering while another awaits a handler
+  // would find the same entry and run it twice. Returning from the Siri
+  // overlay, Control Centre or a permission sheet raises `active` every time.
+  it('ignores a foreground that arrives while a drain is still running', async () => {
+    mockState.queue = [invocation('inv-1')];
+    mockState.holdRun = () => undefined;
+
+    await mount();
+    await foreground();
+
+    expect(mockState.ran).toHaveLength(1);
+  });
+
+  it('drains again once the first one has finished', async () => {
+    mockState.queue = [invocation('inv-1')];
+
+    await mount();
+    mockState.queue = [invocation('inv-2', 'refresh', null)];
+    await foreground();
+
+    expect(mockState.acknowledged).toEqual(['inv-1', 'inv-2']);
+  });
+});
+
+describe('useOsAssistantInvocations — a failing bridge must not strand the queue', () => {
+  // An acknowledge that rejects used to abort the loop, leaving every entry
+  // behind it both undispatched and unacknowledged — so one bad request became
+  // permanent for the rest of them too.
+  it('keeps dispatching the rest when an acknowledge rejects', async () => {
+    mockState.queue = [invocation('inv-1'), invocation('inv-2', 'refresh', null)];
+    mockState.failAcknowledge = true;
+
+    await mount();
+
+    expect(mockState.ran).toEqual([
+      { action: 'search', arg: 'corba' },
+      { action: 'refresh', arg: undefined },
+    ]);
+  });
+
+  it('survives a queue it cannot even read, and tries again next time', async () => {
+    mockState.failPending = true;
+
+    await mount();
+
+    mockState.failPending = false;
+    mockState.queue = [invocation('inv-1')];
+    await foreground();
+
+    expect(mockState.acknowledged).toEqual(['inv-1']);
+  });
+});

@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "Chiedi a ${applicationName}";
+"Open a recipe in ${applicationName}" = "Apri una ricetta in ${applicationName}";
+"Save a recipe in ${applicationName}" = "Salva una ricetta in ${applicationName}";
+"Like a recipe in ${applicationName}" = "Metti mi piace a una ricetta in ${applicationName}";
+"Read the ingredients in ${applicationName}" = "Leggi gli ingredienti in ${applicationName}";
+"What is the next step in ${applicationName}" = "Qual è il passaggio successivo in ${applicationName}";
+"Start the timer in ${applicationName}" = "Avvia il timer in ${applicationName}";
+"Create a recipe in ${applicationName}" = "Crea una ricetta in ${applicationName}";
+"Import a recipe into ${applicationName}" = "Importa una ricetta in ${applicationName}";
+"Open my recipes in ${applicationName}" = "Apri le mie ricette in ${applicationName}";

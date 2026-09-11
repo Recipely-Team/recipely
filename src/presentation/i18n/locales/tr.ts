@@ -1008,4 +1008,28 @@ export const tr: Translations = {
       stop: "Durdu",
     },
   },
+  osIntentPhrases: {
+    ask: "{app} uygulamasına sor",
+    openRecipe: "{app} uygulamasında tarif aç",
+    saveRecipe: "{app} uygulamasında tarif kaydet",
+    likeRecipe: "{app} uygulamasında tarif beğen",
+    readIngredients: "{app} uygulamasında malzemeleri oku",
+    readNextStep: "{app} uygulamasında sonraki adım ne",
+    startTimer: "{app} uygulamasında zamanlayıcıyı başlat",
+    generateRecipe: "{app} uygulamasında tarif oluştur",
+    importRecipe: "{app} uygulamasına tarif aktar",
+    openMyRecipes: "{app} uygulamasında tariflerimi aç",
+  },
+  osShortcutLabels: {
+    askRecipely: "Recipely’e sor",
+    generateRecipe: "Tarif oluştur",
+    startTimer: "Zamanlayıcı",
+    openMyRecipes: "Tariflerim",
+  },
+  osIntentDialogs: {
+    askWhat: "Ne sormak istersin?",
+    openingApp: "Recipely açılıyor.",
+    cookWhat: "Ne pişirmek istersin?",
+    importWhich: "Hangi bağlantıyı içe aktarayım?",
+  },
 };

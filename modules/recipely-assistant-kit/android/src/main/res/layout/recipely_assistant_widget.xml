@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  One tappable row. `RemoteViews` only renders a fixed set of widgets, so this
+  deliberately uses LinearLayout/ImageView/TextView rather than anything newer.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:id="@+id/recipely_widget_root"
+  android:layout_width="match_parent"
+  android:layout_height="match_parent"
+  android:orientation="horizontal"
+  android:gravity="center"
+  android:padding="12dp"
+  android:background="@drawable/recipely_widget_background">
+  <ImageView
+    android:layout_width="28dp"
+    android:layout_height="28dp"
+    android:src="@drawable/recipely_tile_assistant"
+    android:contentDescription="@string/recipely_shortcut_askRecipely" />
+  <!--
+    `textColor` is pinned rather than themed. The background is a fixed brand
+    orange, so a colour inherited from the launcher's theme inverts to
+    white-on-orange in one host and black-on-orange in another, and one of those
+    is unreadable. (A comment cannot sit between attributes — that is not valid
+    XML, and aapt says only "Failed to parse XML file".)
+  -->
+  <TextView
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="10dp"
+    android:maxLines="1"
+    android:ellipsize="end"
+    android:textSize="15sp"
+    android:textColor="#FFFFFF"
+    android:text="@string/recipely_shortcut_askRecipely" />
+</LinearLayout>

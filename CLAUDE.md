@@ -536,6 +536,34 @@ blocking.
     `firebase.json`'s automatic-screen-reporting switch off — with it on, Android
     reports its one Activity alongside the real names.
 
+26. **Every file in the repo is written in English** — docs, plan boards, progress
+    notes, comments, doc blocks, test names, commit messages. The conversation
+    happens in Turkish and that is fine; the repository does not follow it. The
+    only Turkish in the tree is DATA, never prose: user-facing copy under
+    `src/presentation/i18n/locales/`, store metadata under `fastlane/metadata/tr/`,
+    and test fixtures whose purpose IS the non-ASCII behaviour — the envelope
+    parity vector exists precisely to fail a UTF-16 implementation, so replacing
+    its Turkish with ASCII would delete the test. The line is what the text is FOR:
+    a sentence explaining something is prose; a sentence being encoded is data.
+
+    This is not a style preference. `CLAUDE.md`, `architecture.md` and every
+    identifier in `src/` are English, so a Turkish document about them cannot be
+    grepped alongside the thing it describes — `docs/os-assistants-plan.md` spent
+    four phases describing `check:structure` rules that no search for "rule W"
+    would ever have turned up from it. A file that half the future readers of this
+    repo cannot read is a file that gets re-derived instead of read.
+
+    **A quotation is a citation, not prose.** An English sentence that quotes what
+    the user said (`"konuşurken beni dinlemiyor"`), the word the assistant hears
+    (`"beğen"`), or the copy a screen shows is doing its job — the evidence IS the
+    string, and paraphrasing it as "the Turkish word for like" would make the
+    comment worse. Do not "translate" those; a grep for Turkish characters finds
+    them and they are not what this rule is about.
+
+    **When editing a file that is still Turkish, convert the part you touch
+    rather than matching its language.** Remaining debt: the Turkish rows in
+    [`docs/regressions.md`](docs/regressions.md).
+
 ### Pre-commit quality gate
 
 Husky runs on every `git commit`:

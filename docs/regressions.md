@@ -1654,6 +1654,84 @@ or a key; `toLocale*` stays only where the text is something a person wrote.
 machine constant has no locale; folding it with one turns a comparison into a
 coin toss decided by the device's language.
 
+## A freshness check that could not see a wrong generator
+
+Two gate rules guarded the generated Siri phrases and Android shortcuts. Each
+imported its generator, let it rewrite the files, and compared the output with
+itself — so any output was "fresh" by construction. They could detect a file out
+of step with the generator and never a generator that was wrong. The rule that
+did check meaning walked only `.swift` and `.kt`, so it never read the generated
+XML at all. A generator emitting `android:data` with no scheme therefore passed
+every gate, and four launcher shortcuts shipped that appeared in the menu and did
+nothing when tapped — `aapt2` had proved they were present, which is not the same
+as launchable.
+
+*Now:* the meaning rule reads the generated XML alongside the hand-written
+native sources and refuses a link with no scheme or an unknown word, verified by
+breaking each case.
+
+*The class:* **regenerating a file proves it matches the code that wrote it, and
+nothing else.** A freshness check and a correctness check are different
+questions, and only one of them has an opinion about whether the output works.
+
+## The gate that was promised in a comment and written nowhere
+
+Two doc blocks on the OS-assistant catalogue told the reader that
+`check:structure` enforced their invariants — that a destructive action could
+never be marked headless, and that the native sources could not drift from the
+vocabulary. Neither rule existed. One invariant was held by a jest assertion and
+the other by nothing at all, while the comments read as though both questions
+had been settled.
+
+*Now:* rule **W** reads the Swift and Kotlin sources and refuses any `id`,
+`action` or deep-link word that is not in the vocabulary it claims to come from;
+rule **X** blocks a `CONFIRMED_ACTIONS` word marked headless. Both were verified
+by breaking the tree and watching each one fail.
+
+*The class:* **a comment that names a guard is a claim about the build, not a
+note about intent.** It is read by the next person deciding whether they may
+change that line, and a false one is worse than silence — silence makes them
+check.
+
+## Fourteen translations that compile away without a word
+
+The Siri phrase catalogue was generated for every shipped language and the
+project's `knownRegions` was still Xcode's default, `(en, Base)`. A localized
+resource only compiles for languages the project lists, so thirteen of the
+fourteen were generated, copied into the target, discarded at build time, and
+Siri would have answered in English on every device. Nothing failed, nothing
+logged, and the files were all present on disk. The same shape twice more: a
+`values-id` folder is read by Android as the *region* Indonesia rather than the
+language, which still uses the 1988 code `in`; and fourteen `.strings` files
+registered individually all install to one bundle path, where the last one
+copied wins.
+
+*Now:* the plugin reads the shipped languages from `i18n/locales/` and widens
+`knownRegions` itself, the language-code table names `in`/`iw`/`ji` where they
+differ, the files go in as a variant group, and every claim was checked in the
+BUILT artifact — `aapt2 dump resources` for the APK, `plutil` for the `.app`.
+
+*The class:* **a localization that silently falls back is indistinguishable from
+one that works, in every place except the one that matters.** Generating the
+files proves nothing; only reading them back out of the built artifact does.
+
+## An absent value, rendered as the word "null"
+
+The Android launcher shortcuts are generated from the same catalogue that
+describes the Siri intents. One entry — the open-ended one — deliberately has no
+action: it carries a sentence for the assistant to interpret. The generator
+interpolated it anyway and produced `assistant/run?action=null`, a deep link
+asking the registry to run a word called "null".
+
+*Now:* the link carries the catalogue id first and the action only when there is
+one, which is also the shape an iOS App Intent writes into its queue — so both
+roads feed one `perform` instead of two. Rule W checks that shape and refuses a
+link with no id.
+
+*The class:* **a template that interpolates an optional value has already
+decided it is mandatory.** The absence has to be handled where the string is
+built, because by the time it is a string it looks exactly like a value.
+
 ## The fallback that answered with silence
 
 The text mode's failures were written to store state nothing rendered. Offline,
@@ -1750,3 +1828,81 @@ only following it to a rendered pixel proves the user learns anything.
 | Akışın ortasında, mutfak rayı ile ızgara arasında 296px'lik boş bir blok duruyordu | `WebBannerAd`'in doküman bloğu "the space is not reserved. No `minHeight`" diyordu ve doğruydu — bileşen kendi adına hiçbir yükseklik ayırmıyor. Ayıran AdSense'ti: ünite istendiği anda kendi `<ins>`'ine **inline `height: 280px`** yazıyor ve `unfilled` cevabını verdikten sonra da orada bırakıyor. Yani bileşenin niyeti ile sayfanın hâli, kimse yanlış bir şey yazmadan ayrışmıştı; kod yalnızca kendi ayırmadığı yeri hesaba katıyordu. Üstelik bu, boşluğu tam da incelemesi süren sayfada, "içeriği olmayan ekran" ihbarının konusu olan yerde bırakıyordu. | `readAdUnitStatus` artık iki değil **üç** durum ayırt ediyor — `filled`, `unfilled` ve *henüz karar yok* (`null`) — çünkü çökertme kararı ile etiketleme kararı ters yönlerde hata yapar: karardan önce çökertmek üniteyi AdSense genişliğini ölçemeden gizler ve hiç dolmaz. `unfilled` gelince sarmalayıcı `display: none` ile layout'tan çıkıyor (yükseklik `<ins>`'in üzerinde olduğu için sıfırlamak yetmez); `<ins>` mount'ta kalıyor, sökmek AdSense'in bu sayfa görüntülemesi için zaten reddettiği bir reklamı yeniden istemek olurdu. Test react-dom + jsdom ile gerçek yolu sürüyor ve **hesaplanmış** stili okuyor — react-native-web stilleri atomik CSS sınıfına derlediği için `style.display` her hâlde boştur, yani inline özelliğe bakan bir assertion çökme olsa da olmasa da geçerdi. **Kural: bir bileşenin "yer ayırmıyorum" demesi, yeri bir başkasının ayırmadığı anlamına gelmez — üçüncü taraf senin düğünde kendi ölçüsünü yazar.** |
 | Yeni yayınlanan tarif "Bu tarif için besin değeri bilgisi henüz yok." diyordu, değerler biraz sonra kendiliğinden geliyordu | İki ayrı kusur üst üste binmişti. (1) Yayınlama isteği besin değeri **göndermiyor** — `CreateRecipeInput`'ta böyle bir alan yok — çünkü hesabı backend, tarif kaydedildikten *sonra* yapıyor; detay uç noktası o iş bitmeden cevap veriyor. Yani ekran, tarif hakkında kesin bir cümle kuruyordu ("bilgi yok") oysa doğru olan saat hakkında bir cümleydi ("henüz hesaplanmadı"). (2) Ekran bir daha bakmıyordu: değerler sunucuya düşüyor, açık sayfa "yok" demeye devam ediyordu. Kullanıcı bunu "yenileyince geliyor" diye bildirdi, ki bu eksik verinin değil **bayat state'in** imzasıdır. | `useNutritionRecheck` bir kez daha soruyor: gecikme sonunda tek bir istek, yalnızca o süre boyunca ekranda kalmış bir okuyucu için (efektin cleanup'ı gidenler için iptal ediyor) ve tarif başına **yalnızca bir kez** — hiç gelmeyecek bir şey için yapılan poll, yanlış bir kopyadan kötüdür. Bekleme bayrağı timer'ı değil **isteği** kapsıyor: timer'da temizlense kopya önce "yok"a, bir an sonra gerçek sayılara dönerdi. Beraberinde üçüncü bir kusur da kapandı: "besin değeri var mı" sorusunun **iki** tanımı vardı ve anlaşmıyorlardı — mobil kart lifi sayıyordu, web kenar çubuğu saymıyordu, yani yalnızca lif taşıyan bir tarif telefonda dolu, tarayıcıda boş görünüyordu. Tek `hasReportedNutrition` kaldı. **Kural: "yok" ile "daha bilmiyorum" aynı cümle değildir; ve bir ekran bir yokluğu ilan ediyorsa, o yokluğun değişip değişmediğine bakmak zorundadır.** |
 | `dev`'e yapılan sıradan bir merge'de CI düştü — hiçbir build istemeyen bir commit'te, 2 saniyede | Dev dağıtım kapısı commit'in konu satırını `subject="$(printf '%s' "$COMMIT_MESSAGE" \| head -n 1)"` ile alıyordu. `head` ilk satırı alır almaz çıkar ve boruyu kapatır; squash mesajı boru tamponunun (Linux'ta 64 KB) taşıyacağından uzun olduğunda `printf` hâlâ yazıyor oluyor, `EPIPE` alıyor ve `set -o pipefail` adımı düşürüyor. Değişiklikte yanlış bir şey yoktu, **commit mesajı uzundu** — ki bu CI'ın hakkında fikri olabileceği bir şey değil. Boyuta bağlı olduğu için de aralıklı görünüyordu: bir önceki uzun mesajlı merge geçmişti, bu geçmedi. | Konu satırı kabuğun kendisinde kesiliyor: `subject="${COMMIT_MESSAGE%%$'\n'*}"` — boru yok, alt kabuk yok, dolayısıyla SIGPIPE de yok. Guard, kaynağı okuyarak bulunamayacak bir hata olduğu için **davranışsal**: `scripts/__tests__/dev-distribution-gate.test.js` adımın gerçek betiğini `ci.yml`'den (satır numarasıyla değil, `id: decide` ile) çıkarıp bash'te çalıştırıyor. Guard'ın **iki yarısı** var, çünkü boyut testi taşınabilir değil: iki sınır neredeyse çakışıyor — hata boru tamponundan (Linux'ta 64 KB) büyük bir mesaj ister, tavan ise `MAX_ARG_STRLEN`, yani **tek** bir ortam değişkeni için 128 KB (`ARG_MAX` ne derse desin). İlk yazdığım 400 KB'lık mesaj bu yüzden runner'da `execve`'yi E2BIG ile düşürdü ve suite'i, test ettiği şeyle hiç ilgisi olmayan bir sebeple kırmızıya çevirdi; macOS'ta ise per-string sınır olmadığı için yeşildi. macOS EPIPE'tan önce 128 KB'tan fazlasını tamponladığı için de bir ortam değişkenine sığan hiçbir boyut orada hatayı üretmiyor. O yüzden boyut testi yalnızca **Linux'ta** ısırıyor — kapının koştuğu ve hatanın tek gerçekleştiği yer — ve yanına, `$COMMIT_MESSAGE`'ın bir boruya girmediğini metinden doğrulayan platformdan bağımsız bir kontrol kondu (yorumlar ayıklanarak: adımın kendi yorumu yasaklanan ifadeyi *açıklamak için* alıntılıyor, ham eşleştirme düzeltmeyi hata sanıyordu). Aynı testte kapının anlamı da sabitlendi — konu satırındaki işaret sayılır, gövdedeki sayılmaz — ki düzeltme onu sessizce değiştirmesin. **Kural: `\| head` bir boruyu erken kapatır; `pipefail` altında bu, girdinin BOYUTUNA bağlı bir hatadır ve küçük girdiyle yazılıp büyük girdiyle patlar.** |
+
+## A cipher at parity, speaking the wrong protocol
+
+The Swift envelope was byte-for-byte identical to OpenSSL on every vector, and
+the first native caller of `/assistant/message` still sealed the wrong thing: the
+bare `{ message, languageCode }`, where the backend's `decrypt-body` requires
+`{ data: … }` — a wrapper the JS client adds in its request interceptor, far from
+the cipher. Every headless Siri answer would have been a 400, and because the
+intent treats any failure as "open the app instead", the user would have seen a
+working feature that simply never answered on its own. Caught before it
+shipped, by reading the middleware rather than the port.
+
+*Now:* the request and reply shapes live in `RecipelyAssistantWire.swift`, which
+needs nothing but `Envelope`, so the parity harness compiles it and checks the
+opened plaintext is exactly `{ data: { message, languageCode } }`. Verified by
+removing the wrapper and watching the harness fail.
+
+*The class:* **parity of the cipher is not parity of the protocol.** A second
+implementation of a client inherits every convention the first one keeps outside
+its crypto — wrappers, headers, envelope keys — and a fallback that hides failure
+makes each missing one look like a bad network.
+
+## "Confirm", from a place that cannot see what it confirms
+
+`confirm` and `cancel` answer a sheet on screen — a delete, a sign-out. Both OS
+boundaries admitted them because they asked only whether a word was in the
+vocabulary. On Android any app on the phone can fire
+`recipely://assistant/run?action=confirm`, and once "Ask Recipely" carried the
+word the BACKEND chose, a stateless Siri turn could answer a sheet left pending in
+a backgrounded app. Found in review, on dev; never in a release.
+
+*Now:* both boundaries ask `isOsReachableAction`, which refuses the two words;
+the catalogue invariant uses the same predicate, and the bridge removes what it
+drops from the queue instead of leaving it to be re-read on every launch.
+
+*The class:* **"is this a word we know" and "may this caller say it" are
+different questions.** A vocabulary check guards against typos; it says nothing
+about who is speaking, and a word whose meaning depends on what the user can see
+must be refused wherever the speaker cannot see it.
+
+## Fourteen languages for what the user says, English for what Siri says back
+
+The Siri phrases were generated into fourteen languages and checked in the
+built artifact. The follow-up question the same intent asks —
+`requestValueDialog: "What would you like to ask?"` — was a bare literal beside
+them, so a Turkish user said the Turkish phrase and was answered in English.
+Nothing flagged it: the catalogue was complete, and the line simply was not in it.
+
+*Now:* what Siri says back lives in `osIntentDialogs`, generated into a
+`RecipelyIntents.strings` table; the generator refuses a `table:` literal with no
+English entry, an entry no intent reads, and — after review found "Create
+Recipe" and "Import Recipe" still asking in English — ANY dialog written as a
+bare literal under `AppIntents/`, which is what closes the road rather than the
+three instances. The artifact test fails a Turkish table that still says the
+English.
+
+*The class:* **a complete catalogue says nothing about the lines that never
+entered it.** The check that matters for a localized surface is whether any
+user-facing string reaches it by another road — a literal, a default, an empty
+reply the system fills in.
+
+## A cleanup that waited for an error the system never sends
+
+"Ask Recipely" queued a request, asked Siri to continue in the app, and relied
+on a `catch` to take the request back if the user said no. Run on the simulator,
+Cancel never reached that `catch`, and a process killed while the prompt was up
+never resumed at all — so the request stayed, and would have run on the next
+launch as a search nobody remembered asking for. The domain type had documented
+that stale requests were discardable; no code discarded them.
+
+*Now:* the app drops any queued request older than two minutes before running
+it (`isStaleInvocation`), with a test that fails without the check. The
+intent's withdrawal stays as best effort.
+
+*The class:* **a guarantee that depends on being told about failure fails
+silently when nobody tells you.** Cleanup belongs with the side that will
+certainly run — here the reader of the queue — not with the side that may be
+cancelled, suspended or killed first.

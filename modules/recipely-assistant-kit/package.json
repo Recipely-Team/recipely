@@ -1,0 +1,7 @@
+{
+  "name": "recipely-assistant-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Bridges Recipely's assistant action vocabulary to the OS assistants: App Intents on iOS, shortcuts and AppFunctions on Android.",
+  "main": "index.ts"
+}

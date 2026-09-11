@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "${applicationName}에 물어봐";
+"Open a recipe in ${applicationName}" = "${applicationName}에서 레시피 열기";
+"Save a recipe in ${applicationName}" = "${applicationName}에서 레시피 저장";
+"Like a recipe in ${applicationName}" = "${applicationName}에서 레시피 좋아요";
+"Read the ingredients in ${applicationName}" = "${applicationName}에서 재료 읽어줘";
+"What is the next step in ${applicationName}" = "${applicationName}에서 다음 단계는";
+"Start the timer in ${applicationName}" = "${applicationName}에서 타이머 시작";
+"Create a recipe in ${applicationName}" = "${applicationName}에서 레시피 만들기";
+"Import a recipe into ${applicationName}" = "${applicationName}으로 레시피 가져오기";
+"Open my recipes in ${applicationName}" = "${applicationName}에서 내 레시피 열기";

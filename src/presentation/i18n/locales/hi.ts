@@ -997,4 +997,28 @@ export const hi: Translations = {
       stop: "रुक गया",
     },
   },
+  osIntentPhrases: {
+    ask: "{app} से पूछो",
+    openRecipe: "{app} में एक रेसिपी खोलो",
+    saveRecipe: "{app} में एक रेसिपी सेव करो",
+    likeRecipe: "{app} में एक रेसिपी लाइक करो",
+    readIngredients: "{app} में सामग्री पढ़ो",
+    readNextStep: "{app} में अगला चरण क्या है",
+    startTimer: "{app} में टाइमर शुरू करो",
+    generateRecipe: "{app} में एक रेसिपी बनाओ",
+    importRecipe: "{app} में एक रेसिपी इम्पोर्ट करो",
+    openMyRecipes: "{app} में मेरी रेसिपी खोलो",
+  },
+  osShortcutLabels: {
+    askRecipely: "Recipely से पूछें",
+    generateRecipe: "रेसिपी बनाएं",
+    startTimer: "टाइमर",
+    openMyRecipes: "मेरी रेसिपी",
+  },
+  osIntentDialogs: {
+    askWhat: "तुम क्या पूछना चाहते हो?",
+    openingApp: "Recipely खोल रहे हैं।",
+    cookWhat: "तुम क्या पकाना चाहते हो?",
+    importWhich: "कौन सा लिंक इम्पोर्ट करूँ?",
+  },
 };

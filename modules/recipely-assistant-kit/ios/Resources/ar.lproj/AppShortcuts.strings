@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "اسأل ${applicationName}";
+"Open a recipe in ${applicationName}" = "افتح وصفة في ${applicationName}";
+"Save a recipe in ${applicationName}" = "احفظ وصفة في ${applicationName}";
+"Like a recipe in ${applicationName}" = "سجّل إعجابك بوصفة في ${applicationName}";
+"Read the ingredients in ${applicationName}" = "اقرأ المكونات في ${applicationName}";
+"What is the next step in ${applicationName}" = "ما الخطوة التالية في ${applicationName}";
+"Start the timer in ${applicationName}" = "ابدأ المؤقت في ${applicationName}";
+"Create a recipe in ${applicationName}" = "أنشئ وصفة في ${applicationName}";
+"Import a recipe into ${applicationName}" = "استورد وصفة إلى ${applicationName}";
+"Open my recipes in ${applicationName}" = "افتح وصفاتي في ${applicationName}";

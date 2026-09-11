@@ -1001,4 +1001,28 @@ export const ru = {
       stop: "Остановился",
     },
   },
+  osIntentPhrases: {
+    ask: "Спроси {app}",
+    openRecipe: "Открыть рецепт в {app}",
+    saveRecipe: "Сохранить рецепт в {app}",
+    likeRecipe: "Лайкнуть рецепт в {app}",
+    readIngredients: "Прочитать ингредиенты в {app}",
+    readNextStep: "Какой следующий шаг в {app}",
+    startTimer: "Запустить таймер в {app}",
+    generateRecipe: "Создать рецепт в {app}",
+    importRecipe: "Импортировать рецепт в {app}",
+    openMyRecipes: "Открыть мои рецепты в {app}",
+  },
+  osShortcutLabels: {
+    askRecipely: "Спросить Recipely",
+    generateRecipe: "Создать рецепт",
+    startTimer: "Таймер",
+    openMyRecipes: "Мои рецепты",
+  },
+  osIntentDialogs: {
+    askWhat: "Что ты хочешь спросить?",
+    openingApp: "Открываю Recipely.",
+    cookWhat: "Что ты хочешь приготовить?",
+    importWhich: "Какую ссылку импортировать?",
+  },
 };

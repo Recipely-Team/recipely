@@ -50,4 +50,5 @@ export const TOKENS = {
   AssistantPlayer: Symbol.for('AssistantPlayer'),
   AssistantTokenRepository: Symbol.for('AssistantTokenRepository'),
   AssistantMessenger: Symbol.for('AssistantMessenger'),
+  OsAssistant: Symbol.for('OsAssistant'),
 } as const;

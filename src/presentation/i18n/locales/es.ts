@@ -1001,4 +1001,28 @@ export const es = {
       stop: "Se detuvo",
     },
   },
+  osIntentPhrases: {
+    ask: "Pregunta a {app}",
+    openRecipe: "Abrir una receta en {app}",
+    saveRecipe: "Guardar una receta en {app}",
+    likeRecipe: "Dar me gusta a una receta en {app}",
+    readIngredients: "Leer los ingredientes en {app}",
+    readNextStep: "Cuál es el siguiente paso en {app}",
+    startTimer: "Iniciar el temporizador en {app}",
+    generateRecipe: "Crear una receta en {app}",
+    importRecipe: "Importar una receta a {app}",
+    openMyRecipes: "Abrir mis recetas en {app}",
+  },
+  osShortcutLabels: {
+    askRecipely: "Preguntar a Recipely",
+    generateRecipe: "Crear receta",
+    startTimer: "Temporizador",
+    openMyRecipes: "Mis recetas",
+  },
+  osIntentDialogs: {
+    askWhat: "¿Qué quieres preguntar?",
+    openingApp: "Abriendo Recipely.",
+    cookWhat: "¿Qué quieres cocinar?",
+    importWhich: "¿Qué enlace importo?",
+  },
 };

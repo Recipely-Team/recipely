@@ -1,4 +1,6 @@
 import { getShareExtensionKey } from 'expo-share-intent';
+import { parseOsIntentLink } from '@presentation/navigation/os-intent-link';
+import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
 import { RoutePaths } from '@presentation/base/constants';
 
 interface NativeIntent {
@@ -22,8 +24,23 @@ interface NativeIntent {
  * `useInstagramShareImport` routes it on with the URL it finds.
  *
  * Android never reaches this: it delivers a real intent rather than a URL.
+ *
+ * It IS how an Android launcher shortcut reaches the assistant, though. A
+ * shortcut carries an `Intent` and nothing of ours runs before the launcher
+ * fires it, so `recipely://assistant/run?action=…` is the only channel — where
+ * iOS, whose App Intents run code, writes into the shared container instead.
+ * The action is parked in `PendingOsIntent` and the app lands on the feed;
+ * `useOsAssistantInvocations` picks it up once the registry is mounted. The
+ * router is deliberately not sent somewhere clever here — the assistant's own
+ * reach tier already knows which screen answers which word.
  */
 export function redirectSystemPath({ path, initial }: NativeIntent): string {
+  const link = parseOsIntentLink(path);
+  if (link !== null) {
+    PendingOsIntent.put(link);
+    return RoutePaths.recipes;
+  }
+
   try {
     if (path.includes(`dataUrl=${getShareExtensionKey()}`)) {
       return RoutePaths.importRecipe;
