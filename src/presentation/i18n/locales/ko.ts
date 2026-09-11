@@ -1009,4 +1009,10 @@ export const ko: Translations = {
     importRecipe: "{app}으로 레시피 가져오기",
     openMyRecipes: "{app}에서 내 레시피 열기",
   },
+  osShortcutLabels: {
+    askRecipely: "Recipely에 묻기",
+    generateRecipe: "레시피 만들기",
+    startTimer: "타이머",
+    openMyRecipes: "내 레시피",
+  },
 };

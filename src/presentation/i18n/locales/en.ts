@@ -1037,4 +1037,18 @@ export const en = {
     importRecipe: "Import a recipe into {app}",
     openMyRecipes: "Open my recipes in {app}",
   },
+  /**
+   * The labels under a long-press of the Android launcher icon.
+   *
+   * Short on purpose: a launcher shows roughly a dozen characters before it
+   * truncates, and a truncated label is worse than a terse one. These are NOT
+   * the Siri phrases — a phrase is something you say, a label is something you
+   * read — so they are kept apart rather than shared.
+   */
+  osShortcutLabels: {
+    askRecipely: "Ask Recipely",
+    generateRecipe: "Create a recipe",
+    startTimer: "Start timer",
+    openMyRecipes: "My recipes",
+  },
 };

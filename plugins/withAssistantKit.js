@@ -46,6 +46,8 @@ const {
 const APP_GROUP_INFO_KEY = 'RecipelyAssistantAppGroup';
 const APP_GROUP_ENTITLEMENT = 'com.apple.security.application-groups';
 const ANDROID_SCHEME_META_DATA = 'net.recipely.assistantkit.SCHEME';
+const ANDROID_SHORTCUTS_META_DATA = 'android.app.shortcuts';
+const ANDROID_SHORTCUTS_RESOURCE = '@xml/recipely_shortcuts';
 const ENVELOPE_KEY_INFO_KEY = 'RecipelyAssistantEnvelopeKey';
 const ANDROID_ENVELOPE_KEY_META_DATA = 'net.recipely.assistantkit.ENVELOPE_KEY';
 const ENVELOPE_KEY_HEX_LENGTH = 64;
@@ -403,8 +405,40 @@ const withSchemeMetaData = (config) =>
         ANDROID_ENVELOPE_KEY_META_DATA,
       );
     }
+    addShortcutsMetaData(application);
     return mod;
   });
+
+/**
+ * Points the launcher at the generated shortcuts.
+ *
+ * The meta-data has to sit on the launcher ACTIVITY, not on `<application>` —
+ * Android reads it from the activity answering `MAIN`/`LAUNCHER`, and on
+ * `<application>` it is ignored with no warning, which looks exactly like a
+ * `shortcuts.xml` that failed to merge.
+ */
+const addShortcutsMetaData = (application) => {
+  const launcher = (application.activity ?? []).find((activity) =>
+    (activity['intent-filter'] ?? []).some((filter) =>
+      (filter.action ?? []).some(
+        (action) => action.$?.['android:name'] === 'android.intent.action.MAIN',
+      ),
+    ),
+  );
+  if (launcher === undefined) return;
+
+  launcher['meta-data'] = launcher['meta-data'] ?? [];
+  const already = launcher['meta-data'].some(
+    (item) => item.$?.['android:name'] === ANDROID_SHORTCUTS_META_DATA,
+  );
+  if (already) return;
+  launcher['meta-data'].push({
+    $: {
+      'android:name': ANDROID_SHORTCUTS_META_DATA,
+      'android:resource': ANDROID_SHORTCUTS_RESOURCE,
+    },
+  });
+};
 
 const withAssistantKit = (config) => {
   let next = withAppGroupInfoPlist(config);

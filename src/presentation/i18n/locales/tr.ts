@@ -1020,4 +1020,10 @@ export const tr: Translations = {
     importRecipe: "{app} uygulamasına tarif aktar",
     openMyRecipes: "{app} uygulamasında tariflerimi aç",
   },
+  osShortcutLabels: {
+    askRecipely: "Recipely’e sor",
+    generateRecipe: "Tarif oluştur",
+    startTimer: "Zamanlayıcı",
+    openMyRecipes: "Tariflerim",
+  },
 };

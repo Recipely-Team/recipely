@@ -5,6 +5,7 @@ import { AssistantView } from '@application/assistant/session/assistant-view';
 import { CharConstants } from '@core/constants';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
+import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape';
 import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -36,37 +37,46 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  * - **`askRecipely` is the one request with no action, and it does not go to
  *   the registry at all.** It carries a sentence rather than a word: the panel
  *   opens and the sentence becomes the first turn, which is exactly what would
- *   have happened had the user typed it. Once the app holds a scoped token the
- *   native side answers it without opening anything, and this branch becomes
- *   the fallback rather than the path.
+ *   have happened had the user typed it. From a launcher shortcut there is no
+ *   sentence — nothing asked for one — so the panel simply opens, which is the
+ *   fastest way to the assistant a floury hand has. Once the app holds a scoped
+ *   token the native side answers the spoken form without opening anything, and
+ *   this branch becomes the fallback rather than the path.
+ * - **Both roads run the same three fields**, so there is one `perform` and not
+ *   two. A link and a queue entry differ only in how they travelled.
  * - **The live subscription is groundwork.** Neither native module sends the
  *   event yet, so today every request arrives through the queue — on launch,
  *   or on the next foreground. The wiring is here so the running-app path costs
  *   nothing to switch on.
  */
+/** What both roads carry, and all `perform` needs. */
+type OsIntentRequest = OsIntentLink | OsIntentInvocation;
+
 export const useOsAssistantInvocations = (): void => {
   const { assistantActionRegistry: registry, osAssistant, assistantSessionStore } = useStores();
   const locale = useLocale();
   const isDraining = useRef(false);
 
-  const ask = useCallback(
-    (question: string): void => {
-      const { setView, sendText } = assistantSessionStore.getState();
-      setView(AssistantView.Open);
-      sendText(question, locale);
+  const perform = useCallback(
+    async (request: OsIntentRequest): Promise<void> => {
+      if (request.id === OsIntentId.AskRecipely) {
+        const { setView, sendText } = assistantSessionStore.getState();
+        setView(AssistantView.Open);
+        const question = request.arg ?? CharConstants.empty;
+        if (question.length > 0) sendText(question, locale);
+        return;
+      }
+      if (request.action !== null) {
+        await registry.run(request.action, request.arg ?? undefined);
+      }
     },
-    [assistantSessionStore, locale],
+    [assistantSessionStore, locale, registry],
   );
 
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
       try {
-        if (invocation.id === OsIntentId.AskRecipely) {
-          const question = invocation.arg ?? CharConstants.empty;
-          if (question.length > 0) ask(question);
-        } else if (invocation.action !== null) {
-          await registry.run(invocation.action, invocation.arg ?? undefined);
-        }
+        await perform(invocation);
       } finally {
         // Swallowed deliberately: the bridge failing to forget a request is not
         // something a screen can act on, and letting it escape would strand
@@ -74,7 +84,7 @@ export const useOsAssistantInvocations = (): void => {
         await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       }
     },
-    [registry, osAssistant, ask],
+    [osAssistant, perform],
   );
 
   const drain = useCallback(async (): Promise<void> => {
@@ -83,7 +93,7 @@ export const useOsAssistantInvocations = (): void => {
     try {
       const link = PendingOsIntent.take();
       if (link !== null) {
-        await registry.run(link.action, link.arg ?? undefined);
+        await perform(link);
       }
 
       for (const invocation of await osAssistant.pendingInvocations()) {
@@ -95,7 +105,7 @@ export const useOsAssistantInvocations = (): void => {
     } finally {
       isDraining.current = false;
     }
-  }, [registry, osAssistant, dispatch]);
+  }, [osAssistant, dispatch, perform]);
 
   useEffect(() => {
     void drain();

@@ -1013,4 +1013,10 @@ export const ar = {
     importRecipe: "استورد وصفة إلى {app}",
     openMyRecipes: "افتح وصفاتي في {app}",
   },
+  osShortcutLabels: {
+    askRecipely: "اسأل Recipely",
+    generateRecipe: "أنشئ وصفة",
+    startTimer: "المؤقت",
+    openMyRecipes: "وصفاتي",
+  },
 };

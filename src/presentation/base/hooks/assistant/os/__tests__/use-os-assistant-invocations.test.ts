@@ -178,15 +178,17 @@ describe('useOsAssistantInvocations — the open-ended request', () => {
     expect(mockState.acknowledged).toEqual(['ask-1']);
   });
 
-  // Siri asks for the value, so an empty one means the user cancelled. Opening
-  // a panel to send nothing would be the app talking to itself.
-  it('does nothing but forget the request when the question is empty', async () => {
+  // The Android launcher shortcut carries no question — nothing asked for one —
+  // and "open the assistant" is the fastest route a floury hand has. So an
+  // absent question opens the panel and sends nothing, rather than doing
+  // nothing at all.
+  it('opens the panel and says nothing when there is no question', async () => {
     mockState.queue = [asking(null)];
 
     await mount();
 
+    expect(mockState.view).toBe('open');
     expect(mockState.asked).toEqual([]);
-    expect(mockState.view).toBeNull();
     expect(mockState.acknowledged).toEqual(['ask-1']);
   });
 });

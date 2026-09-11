@@ -553,11 +553,26 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
           );
         }
       }
-      // Deep links the native side builds: `...assistant/run?action=openRecipe`.
-      for (const m of src.matchAll(/assistant\/run\?action=([\w]+)/g)) {
-        if (!actions.has(m[1])) {
+      // Deep links the native side builds. The id is mandatory and the action
+      // is not, which is exactly the shape `parseOsIntentLink` enforces — a
+      // link written the other way round parses to nothing and the shortcut
+      // opens the app to no effect.
+      for (const m of src.matchAll(/assistant\/run\?([^"'\s]*)/g)) {
+        const query = m[1];
+        const linkId = /(?:^|&)id=([\w$]+)/.exec(query)?.[1];
+        if (linkId === undefined) {
           errors.push(
-            `${shown}: deep link names '${m[1]}', which is not an AssistantAction (CLAUDE.md §5)`,
+            `${shown}: deep link has no id= — parseOsIntentLink refuses a link without one (CLAUDE.md §5)`,
+          );
+        } else if (!linkId.startsWith('$') && !intentIds.has(linkId)) {
+          errors.push(
+            `${shown}: deep link names id '${linkId}', which is not an OsIntentId (CLAUDE.md §5)`,
+          );
+        }
+        const linkAction = /(?:^|&)action=([\w$]+)/.exec(query)?.[1];
+        if (linkAction !== undefined && !linkAction.startsWith('$') && !actions.has(linkAction)) {
+          errors.push(
+            `${shown}: deep link names '${linkAction}', which is not an AssistantAction (CLAUDE.md §5)`,
           );
         }
       }
@@ -592,6 +607,30 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       }
     } catch (error) {
       errors.push(`AppShortcuts.xcstrings could not be generated: ${error.message}`);
+    }
+  }
+}
+
+// --- AE: the Android shortcuts must describe the catalogue that exists --------
+// `recipely_shortcuts.xml` names an action word and a deep link for each
+// launcher entry. A stale one is not a crash: the shortcut opens the app, the
+// link carries a word the registry no longer answers, and the app looks to the
+// user like it ignored them. The generator refuses every disagreement it can
+// see — an entry with no label, a label no entry uses, a missing translation —
+// so running it IS the check.
+{
+  const generator = path.join(ROOT, 'scripts/generate-android-shortcuts.mjs');
+  const catalogue = path.join(SRC, 'domain/assistant/os/os-intent-catalogue.ts');
+  if (fs.existsSync(generator) && fs.existsSync(catalogue)) {
+    try {
+      const { isFresh } = await import('./generate-android-shortcuts.mjs');
+      if (!isFresh()) {
+        errors.push(
+          'recipely_shortcuts.xml was stale — it has been regenerated, commit it (`npm run shortcuts:android`)',
+        );
+      }
+    } catch (error) {
+      errors.push(`recipely_shortcuts.xml could not be generated: ${error.message}`);
     }
   }
 }

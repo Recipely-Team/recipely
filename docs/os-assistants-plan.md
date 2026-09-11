@@ -13,7 +13,7 @@ progress board** — when a session ends, work resumes from here.
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 2 | Headless path | 🟡 in progress — envelope parity done, backend route awaits approval | — |
 | 3 | iOS App Intents | 🟡 intents + entity built and extracted; localization and Control Center left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 4 | Android shortcuts + AppFunctions | ⬜ not started | — |
+| 4 | Android shortcuts + AppFunctions | 🟡 static + dynamic shortcuts in the APK; tile, widget and AppFunctions left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 5 | Gates and docs | 🟡 rule W landed; the other two need free letters (D16) | — |
 
 Branch: `feat/os-assistants-spike`
@@ -293,6 +293,48 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D21 — Android calls Indonesian `in`, and a deep link needs the catalogue id
+Two things the generator had to learn, both silent failures otherwise.
+
+**`values-id` is not Indonesian.** The platform still uses ISO 639-1's 1988
+code, so the folder must be `values-in`; a `values-id` folder is read as the
+*region* Indonesia and every Indonesian label falls back to English with nothing
+logged. Hebrew (`iw`) and Yiddish (`ji`) are the same story, and the mapping
+table names all three so the next person finds the answer in the code rather
+than in a bug report. Verified in the built APK: `(in) "Tanya Recipely"`.
+
+**The first generated `shortcuts.xml` said `action=null`.** The open-ended entry
+has no action, and rendering its absence as text produced a link asking the
+registry to run a word called "null". The link now carries the catalogue `id`
+first and the action only when there is one — which also makes it the same three
+fields an iOS App Intent writes into the queue, so both roads feed one `perform`
+instead of two code paths. Rule W checks that shape now, and refuses a link with
+no id at all.
+
+### D20 — Spotlight indexing has nowhere in an Expo app to be triggered from
+`IndexedEntity` (iOS 18+) would let Spotlight find a recipe by meaning rather
+than by prefix, and the conformance itself is four lines. What it needs is a
+call to `CSSearchableIndex.indexAppEntities` whenever the catalogue changes —
+and there is no place in an Expo app to make it from.
+
+The entity lives in the **app target**, because that is the only place Apple's
+metadata extraction looks. The code that knows the catalogue changed lives in
+the **pod**, which cannot see an app-target type. Swift has no `+load`, and
+Expo's app-delegate subscribers are discovered through the generated modules
+provider — pod-based, so an app-target class cannot register as one.
+
+The three ways out, none free:
+1. **Index lazily from `RecipeEntityQuery`**, which does run in the app's
+   process. Cheap, but Spotlight finds nothing until the user has already used
+   an intent once — which is the wrong way round for a discovery surface.
+2. **A closure the pod holds and the app target fills**, needing an entry point
+   that does not exist — the same problem, moved.
+3. **Adopt `expo-app-intents`** (D18), which solves exactly this with Inline
+   Modules: app-target Swift that Expo itself wires up.
+
+Deferred rather than bodged. It is a genuine reason to revisit D18, and the
+lazy version can land any time as a stopgap.
+
 ### D19 — `.xcstrings` needs a deployment target of 17; this app ships 15.1
 The obvious format for the phrase catalogue is a String Catalogue, and it is
 rejected outright: *"AppShortcuts.xcstrings is only supported for iOS 17.0 and
@@ -374,18 +416,21 @@ plugin's pbxproj code.
 - [x] **Verified in a real build**: `BUILD SUCCEEDED`, 11 intents + 1 entity + 1 query extracted into `Metadata.appintents`, all `isDiscoverable: true`, 10 app shortcuts
 - [x] Rule W widened to read the Swift named-argument form (`id:` / `action:`), proved by breaking it
 - [x] Phrases for 14 languages, generated from i18n into `<lang>.lproj/AppShortcuts.strings` (D19)
-- [ ] `IndexedEntity` for Spotlight semantic search (needs the catalogue re-indexed on publish)
+- [ ] `IndexedEntity` for Spotlight semantic search — **blocked on an entry point, see D20**
 - [ ] Control Center control — needs a widget extension target, which prebuild does not create today
 - [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side
 - [ ] Action Button — free once the intents exist; needs on-device confirmation only
 
 ## Phase 4 — Android
 
-- [ ] `shortcuts.xml` generated from the catalogue (static shortcuts)
-- [ ] Dynamic shortcuts (`pushDynamicShortcut`) — recent/saved recipes
+- [x] `recipely_shortcuts.xml` generated from the catalogue (4 static shortcuts) + labels in 14 languages, verified inside the APK with `aapt2` (D21)
+- [x] The launcher meta-data sits on the **launcher activity**, not `<application>` — on the latter Android ignores it silently
+- [x] Dynamic shortcuts (`pushDynamicShortcut`) — budget asked of `getMaxShortcutCountPerActivity` rather than guessed, minus the static four
+- [x] Rule AE — the generated shortcuts must describe the catalogue that exists
+- [x] Rule W widened to the link shape: `id=` mandatory, `action=` optional (proved by removing the id)
 - [ ] Quick Settings tile
 - [ ] Widget
-- [ ] `recipely://assistant/run` intent filter
+- [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
 - [ ] AppFunctions service `@RequiresApi(36)`, behind a flag
 - [ ] `androidx.core:core-google-shortcuts` (so shortcuts reach Google's surfaces, D5)
 - [ ] Apply to the Google AppFunctions EAP form

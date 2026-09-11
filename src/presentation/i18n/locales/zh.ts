@@ -1020,4 +1020,10 @@ export const zh = {
     importRecipe: "把食谱导入 {app}",
     openMyRecipes: "在 {app} 中打开我的食谱",
   },
+  osShortcutLabels: {
+    askRecipely: "问 Recipely",
+    generateRecipe: "创建食谱",
+    startTimer: "计时器",
+    openMyRecipes: "我的食谱",
+  },
 };

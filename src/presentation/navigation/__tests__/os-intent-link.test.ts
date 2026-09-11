@@ -1,11 +1,24 @@
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import { parseOsIntentLink } from '@presentation/navigation/os-intent-link';
 
 describe('parseOsIntentLink — what a launcher shortcut may ask for', () => {
-  it('reads the action and its argument', () => {
-    expect(parseOsIntentLink('/assistant/run?action=search&arg=mercimek')).toEqual({
+  it('reads the catalogue entry, its action and its argument', () => {
+    expect(parseOsIntentLink('/assistant/run?id=searchRecipes&action=search&arg=mercimek')).toEqual({
+      id: OsIntentId.SearchRecipes,
       action: AssistantAction.Search,
       arg: 'mercimek',
+    });
+  });
+
+  // The open-ended entry has no action at all, and a link that spelled its
+  // absence as the text `null` would ask the registry to run a word called
+  // "null" — which is what the first generated shortcuts.xml did.
+  it('accepts an entry that carries no action', () => {
+    expect(parseOsIntentLink('/assistant/run?id=askRecipely')).toEqual({
+      id: OsIntentId.AskRecipely,
+      action: null,
+      arg: null,
     });
   });
 
@@ -14,19 +27,22 @@ describe('parseOsIntentLink — what a launcher shortcut may ask for', () => {
   it.each(['assistant/run', '/assistant/run', '///assistant/run', '/assistant/run/'])(
     'accepts %s, however the launch collapsed the slashes',
     (route) => {
-      expect(parseOsIntentLink(`${route}?action=refresh`)).toEqual({
-        action: AssistantAction.Refresh,
+      expect(parseOsIntentLink(`${route}?id=startTimer&action=startTimer`)).toEqual({
+        id: OsIntentId.StartTimer,
+        action: AssistantAction.StartTimer,
         arg: null,
       });
     },
   );
 
   it('decodes an argument that was percent-encoded', () => {
-    expect(parseOsIntentLink('/assistant/run?action=search&arg=k%C3%B6fte')?.arg).toBe('köfte');
+    expect(
+      parseOsIntentLink('/assistant/run?id=searchRecipes&action=search&arg=k%C3%B6fte')?.arg,
+    ).toBe('köfte');
   });
 
   it('treats an empty argument as no argument', () => {
-    expect(parseOsIntentLink('/assistant/run?action=refresh&arg=')?.arg).toBeNull();
+    expect(parseOsIntentLink('/assistant/run?id=startTimer&action=startTimer&arg=')?.arg).toBeNull();
   });
 });
 
@@ -36,18 +52,22 @@ describe('parseOsIntentLink — what it must refuse', () => {
   // action, and that has to land the app on a screen rather than dispatch a
   // word nothing answers.
   it('refuses an action this build no longer knows', () => {
-    expect(parseOsIntentLink('/assistant/run?action=writeBio&arg=hello')).toBeNull();
+    expect(parseOsIntentLink('/assistant/run?id=searchRecipes&action=writeBio')).toBeNull();
   });
 
-  it('refuses a link with no action at all', () => {
-    expect(parseOsIntentLink('/assistant/run?arg=mercimek')).toBeNull();
+  it('refuses a catalogue entry this build no longer knows', () => {
+    expect(parseOsIntentLink('/assistant/run?id=orderGroceries&action=search')).toBeNull();
+  });
+
+  it('refuses a link with no entry at all', () => {
+    expect(parseOsIntentLink('/assistant/run?action=search&arg=mercimek')).toBeNull();
   });
 
   // `includes('assistant/run')` would have accepted this, and a recipe whose id
   // merely contained the phrase would have been read as a command.
   it('refuses a path that only contains the link, rather than being it', () => {
-    expect(parseOsIntentLink('/recipes/assistant/run?action=search&arg=x')).toBeNull();
-    expect(parseOsIntentLink('/recipes/abc-assistant/run-123?action=search')).toBeNull();
+    expect(parseOsIntentLink('/recipes/assistant/run?id=searchRecipes&action=search')).toBeNull();
+    expect(parseOsIntentLink('/recipes/abc-assistant/run-123?id=searchRecipes')).toBeNull();
   });
 
   it('refuses an ordinary route', () => {

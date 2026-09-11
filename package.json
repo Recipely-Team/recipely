@@ -23,6 +23,7 @@
     "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags",
     "map": "node scripts/generate-map.mjs",
     "shortcuts": "node scripts/generate-app-shortcuts.mjs",
+    "shortcuts:android": "node scripts/generate-android-shortcuts.mjs",
     "verify:envelope": "bash scripts/verify-swift-envelope.sh",
     "verify:envelope:android": "cd android && ./gradlew :recipely-assistant-kit:testDebugUnitTest",
     "check:secrets": "node scripts/check-release-secrets.mjs"

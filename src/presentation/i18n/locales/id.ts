@@ -1013,4 +1013,10 @@ export const id = {
     importRecipe: "Impor resep ke {app}",
     openMyRecipes: "Buka resep saya di {app}",
   },
+  osShortcutLabels: {
+    askRecipely: "Tanya Recipely",
+    generateRecipe: "Buat resep",
+    startTimer: "Timer",
+    openMyRecipes: "Resep saya",
+  },
 };

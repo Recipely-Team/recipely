@@ -1013,4 +1013,10 @@ export const ja = {
     importRecipe: "{app}にレシピをインポート",
     openMyRecipes: "{app}でマイレシピを開く",
   },
+  osShortcutLabels: {
+    askRecipely: "Recipelyに聞く",
+    generateRecipe: "レシピを作る",
+    startTimer: "タイマー",
+    openMyRecipes: "マイレシピ",
+  },
 };

@@ -1013,4 +1013,10 @@ export const de = {
     importRecipe: "Ein Rezept in {app} importieren",
     openMyRecipes: "Meine Rezepte in {app} öffnen",
   },
+  osShortcutLabels: {
+    askRecipely: "Recipely fragen",
+    generateRecipe: "Rezept erstellen",
+    startTimer: "Timer starten",
+    openMyRecipes: "Meine Rezepte",
+  },
 };

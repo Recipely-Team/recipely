@@ -1013,4 +1013,10 @@ export const ru = {
     importRecipe: "Импортировать рецепт в {app}",
     openMyRecipes: "Открыть мои рецепты в {app}",
   },
+  osShortcutLabels: {
+    askRecipely: "Спросить Recipely",
+    generateRecipe: "Создать рецепт",
+    startTimer: "Таймер",
+    openMyRecipes: "Мои рецепты",
+  },
 };

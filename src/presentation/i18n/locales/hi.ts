@@ -1009,4 +1009,10 @@ export const hi: Translations = {
     importRecipe: "{app} में एक रेसिपी इम्पोर्ट करो",
     openMyRecipes: "{app} में मेरी रेसिपी खोलो",
   },
+  osShortcutLabels: {
+    askRecipely: "Recipely से पूछें",
+    generateRecipe: "रेसिपी बनाएं",
+    startTimer: "टाइमर",
+    openMyRecipes: "मेरी रेसिपी",
+  },
 };

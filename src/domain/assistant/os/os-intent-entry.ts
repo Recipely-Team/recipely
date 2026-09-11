@@ -19,6 +19,10 @@ import type { OsIntentParameterKindType } from '@domain/assistant/os/os-intent-p
  * - **`arg` is for entries that are a word plus a constant**, like opening My
  *   Recipes: the action is `navigate` and the argument is always the same, so
  *   the OS is not asked to supply one.
+ * - **`launcherShortcut` is Android's half of the same list.** A static shortcut
+ *   sits under a long-press of the app icon and cannot ask the user anything, so
+ *   only entries that need no parameter can be one. An entry that takes a recipe
+ *   or a sentence is reachable by voice and by deep link, never from the icon.
  */
 export interface OsIntentEntry {
   readonly id: OsIntentIdType;
@@ -26,6 +30,8 @@ export interface OsIntentEntry {
   readonly arg: string | null;
   readonly parameter: OsIntentParameterKindType | null;
   readonly headless: boolean;
+  /** Whether this appears under a long-press of the Android launcher icon. */
+  readonly launcherShortcut: boolean;
   /** Key into the i18n catalogue; the OS phrases are generated from it. */
   readonly titleKey: string;
 }
