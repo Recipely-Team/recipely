@@ -12,9 +12,9 @@ progress board** — when a session ends, work resumes from here.
 | 0 | Measurement and decision gate | ✅ **done** (except the on-device Siri trial) | — |
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 2 | Headless path | 🟡 in progress — envelope parity done, backend route awaits approval | — |
-| 3 | iOS App Intents | 🟡 intents + entity built and extracted; localization and Control Center left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 4 | Android shortcuts + AppFunctions | 🟡 static + dynamic shortcuts in the APK; tile, widget and AppFunctions left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 5 | Gates and docs | 🟡 rule W landed; the other two need free letters (D16) | — |
+| 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages. Control Center + Spotlight blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
+| 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
+| 5 | Gates and docs | 🟢 rules W, X, AD, AE landed + regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 
 Branch: `feat/os-assistants-spike`
 
