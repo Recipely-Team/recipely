@@ -8,7 +8,10 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
+import {
+  TAB_SETTLE_MS,
+  useAssistantMyRecipesActions,
+} from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
 
 const recipe = (id: string, name: string): RecipeSummaryEntity => ({ id, name }) as RecipeSummaryEntity;
 const draft = (id: string, name: string | undefined, prompt: string): RecipeDraft =>
@@ -40,7 +43,7 @@ function harness(
       items,
       drafts,
       ...spies,
-      isTabLoaded,
+      isTabSettled: isTabLoaded,
       onSwitchTab: (next) => {
         spies.onSwitchTab(next);
         setLoaded(loadsInstantly);
@@ -221,9 +224,11 @@ describe('switching to a tab that is still loading', () => {
       const { registry } = harness(undefined, undefined, false);
 
       const switching = registry.run(AssistantAction.SwitchTab, TabType.Liked);
-      await jest.advanceTimersByTimeAsync(4_000);
+      await jest.advanceTimersByTimeAsync(TAB_SETTLE_MS);
 
-      await expect(switching).resolves.toMatchObject({ ok: true });
+      // And says the tab had not answered, so the model does not read the
+      // screen line as "this tab is empty".
+      await expect(switching).resolves.toMatchObject({ ok: true, ctx: 'liked=loading' });
     } finally {
       jest.useRealTimers();
     }

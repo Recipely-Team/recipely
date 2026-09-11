@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View } from 'react-native';
@@ -116,7 +117,15 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           : draftsListState;
   const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
   const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
-  const isTabLoaded = activeState.status === StoreStatus.Loaded || activeState.status === StoreStatus.Error;
+  // Two different questions: whether the rows can be believed, and whether the
+  // wait for them is over. A failed load ends the wait but is not an answer.
+  const tabListState =
+    activeState.status === StoreStatus.Loaded
+      ? ListState.Ready
+      : activeState.status === StoreStatus.Error
+        ? ListState.Failed
+        : ListState.Loading;
+  const isTabSettled = activeState.status === StoreStatus.Loaded || activeState.status === StoreStatus.Error;
   // A failed load must not read as "you have nothing" — that is the same lie
   // the empty-state-while-loading bug told, just with a different cause.
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
@@ -158,7 +167,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     onOpenDraft: openDraft,
     onRequestDeleteDraft: setDraftPendingDelete,
     onRefresh,
-    isTabLoaded,
+    isTabSettled,
   });
   // The tab is half the answer: "delete the lentil soup" means a different
   // collection on Saved than it does on Created, and the model cannot tell
@@ -175,16 +184,16 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // its way is a fact to a model, and it says it out loud to the user.
   useAssistantScreenContent(() =>
     tab === TabType.Drafts
-      ? recipeRoster(TabType.Drafts, drafts.map(draftName), isTabLoaded)
-      : recipeRoster(tab, items.map((recipe) => recipe.name), isTabLoaded),
+      ? recipeRoster(TabType.Drafts, drafts.map(draftName), tabListState)
+      : recipeRoster(tab, items.map((recipe) => recipe.name), tabListState),
   );
   // The whole tab, for `readScreen`. The line above is bounded at eight rows
   // because it rides on every turn; a reading is asked for once and should not
   // stop halfway down a list the user cannot see.
   useAssistantScreenReading(() =>
     tab === TabType.Drafts
-      ? listReading(TabType.Drafts, drafts.map(draftName), isTabLoaded)
-      : listReading(tab, items.map((recipe) => recipe.name), isTabLoaded),
+      ? listReading(TabType.Drafts, drafts.map(draftName), tabListState)
+      : listReading(tab, items.map((recipe) => recipe.name), tabListState),
   );
   useAssistantConfirmation(
     draftPendingDelete !== null,

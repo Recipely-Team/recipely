@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -30,7 +31,8 @@ function harness(items: NotifItem[] = ITEMS, unreadCount = 2) {
   };
 
   const Probe = (): null => {
-    useAssistantNotificationActions({ unreadCount, items, ...spies });
+    useAssistantNotificationActions({
+      listState: ListState.Ready, unreadCount, items, ...spies });
     return null;
   };
 

@@ -142,3 +142,29 @@ describe('a word the user reads off the screen', () => {
     ).toBeNull();
   });
 });
+
+/**
+ * The model calls `sort` with no argument, or `palette=` with nothing after
+ * it, and the value reaching the resolver is an empty string. Every name holds
+ * an empty word, and `indexOf` never advances past the end for one: the search
+ * below used to spin forever on the JS thread — a frozen app, with no bound and
+ * no answer.
+ */
+describe('an argument with nothing in it', () => {
+  const palettes = [
+    { key: 'pearl', name: 'İnci Beyazı' },
+    { key: 'crimson', name: 'Kırmızı Kor' },
+  ];
+
+  it('answers null instead of searching for nothing', () => {
+    expect(resolveTaxonomyKey(palettes, '')).toBeNull();
+    expect(resolveTaxonomyKey(palettes, '   ')).toBeNull();
+  });
+
+  // "j" is not "Japon": a letter or two must sit in a name whole.
+  it('does not let one letter pick an option', () => {
+    expect(resolveTaxonomyKey([{ key: 'japanese', name: 'Japon' }], 'j')).toBeNull();
+    expect(resolveTaxonomyKey([{ key: 'japanese', name: 'Japon' }], 'japon')).toBe('japanese');
+  });
+});
+

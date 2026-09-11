@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback } from 'react';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -168,7 +169,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantScreenReading(() =>
     recipeReading(recipeName, ingredients, instructions, [
       ...facts,
-      listReading(COMMENTS_LABEL, comments),
+      listReading(COMMENTS_LABEL, comments, ListState.Ready),
     ]),
   );
 

@@ -1976,10 +1976,13 @@ while the list filled in behind the panel. Then "tema paletinden kırmızı" was
 and the model read the palette names back in English: the resolver only matched a name
 that sat inside what the user said, and "Kırmızı Kor" does not sit inside "kırmızı".
 
-*Now:* a list that has not loaded says `loading` rather than `none`, in both the screen
-line and the reading, and `switchTab` waits (bounded) for the tab it moved to. The
-taxonomy resolver, after its other passes fail, accepts a word that sits inside exactly
-one option's NAME — one, never two, because two is a question rather than an answer.
+*Now:* every describer takes the list's state — `loading`, `ready` or `failed` — and
+there is no default, so the compiler asked all six screens which one they had; a list
+that has not arrived, or failed to, no longer says `none`. `switchTab` waits (bounded)
+for the tab it moved to and says `loading` when it never came. The taxonomy resolver,
+after its other passes fail, accepts a word that sits inside exactly one option's NAME —
+one, never two, because two is a question rather than an answer — and it answers `null`
+for an empty argument, which the search below it would otherwise have spun on forever.
 
 *The class:* **a count of nothing is not the same as nothing, and a name is not the
 only way someone says it.** The screen knows which of the two it has; the user says the

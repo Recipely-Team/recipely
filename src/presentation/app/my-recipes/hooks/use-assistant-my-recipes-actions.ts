@@ -2,6 +2,7 @@ import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback, useEffect, useRef } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { draftName } from '@presentation/app/my-recipes/model/draft-name';
@@ -20,12 +21,12 @@ interface AssistantMyRecipesActionsDeps {
   onOpenDraft: (id: string) => void;
   onRequestDeleteDraft: (id: string) => void;
   onRefresh: () => void;
-  /** Whether the tab on screen has its rows (or has failed trying). */
-  isTabLoaded: boolean;
+  /** Whether the tab on screen has finished trying to load — rows or failure. */
+  isTabSettled: boolean;
 }
 
 /** How long a switch waits for the tab it moved to, before answering anyway. */
-const TAB_SETTLE_MS = 4_000;
+export const TAB_SETTLE_MS = 4_000;
 const TAB_POLL_MS = 100;
 
 /**
@@ -54,9 +55,16 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
   // Read after the await, when the screen has moved on: the closure's own
   // `tab` and `isTabLoaded` are the ones from before the switch.
   const latest = useRef(deps);
+  const isMounted = useRef(true);
   useEffect(() => {
     latest.current = deps;
   });
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useAssistantAction(
     AssistantAction.SwitchTab,
@@ -67,13 +75,17 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         if (match === undefined) return { ok: false, error: 'unknown_tab' };
 
         onSwitchTab(match);
-        // Bounded: a tab that never loads still gets an answer, and the screen
-        // line says `loading` rather than claiming the tab is empty.
+        // Bounded, and abandoned the moment the screen goes: the tool queue is
+        // serialised, so a wait that outlives its screen holds up the
+        // conversation for nothing.
         const until = Date.now() + TAB_SETTLE_MS;
-        while ((latest.current.tab !== match || !latest.current.isTabLoaded) && Date.now() < until) {
+        const settled = (): boolean => latest.current.tab === match && latest.current.isTabSettled;
+        while (!settled() && isMounted.current && Date.now() < until) {
           await new Promise((resolve) => setTimeout(resolve, TAB_POLL_MS));
         }
-        return { ok: true };
+        // Said out loud when the rows never came: without it the model reads a
+        // `loading` screen line and asserts the tab is empty anyway.
+        return settled() ? { ok: true } : { ok: true, ctx: `${match}=${ListState.Loading}` };
       },
       [onSwitchTab],
     ),

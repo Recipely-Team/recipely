@@ -1,3 +1,5 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import type { ListStateType } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -9,16 +11,10 @@ import { CharConstants, ValueConstants } from '@core/constants';
  */
 const MAX_NAMED = 8;
 
-/** What the line says when the screen has a list and the list is empty. */
+/** What the line says when the list is there and has nothing in it. */
 const NOTHING = 'none';
-/**
- * What it says while the list is on its way.
- *
- * Reported: "oluşturduğum tarifleri aç dedim, yok dedi — ama o arada tarifler
- * yükleniyordu." A count of nothing, told to a model as fact, becomes "you have
- * none" in the user's ear; the screen knows the difference and must say it.
- */
-const LOADING = 'loading';
+
+
 
 /**
  * One screen's rows, as the model reads them.
@@ -37,9 +33,12 @@ const LOADING = 'loading';
  * - **An empty list says so.** "There are no recipes here" is an answer the
  *   assistant could not give while the line was a path.
  */
-export const recipeRoster = (label: string, names: readonly string[], isLoaded = true): string => {
-  if (!isLoaded && names.length === ValueConstants.zero) return `${label}=${LOADING}`;
-  if (names.length === ValueConstants.zero) return `${label}=${NOTHING}`;
+export const recipeRoster = (label: string, names: readonly string[], state: ListStateType): string => {
+  // Rows on hand are worth saying whatever the state: a refresh that failed
+  // over a list the user is looking at has not taken the list away.
+  if (names.length === ValueConstants.zero) {
+    return `${label}=${state === ListState.Ready ? NOTHING : state}`;
+  }
 
   const listed = names
     .slice(ValueConstants.zero, MAX_NAMED)
