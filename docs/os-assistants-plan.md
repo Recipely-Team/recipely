@@ -428,7 +428,8 @@ plugin's pbxproj code.
 - [x] Dynamic shortcuts (`pushDynamicShortcut`) — budget asked of `getMaxShortcutCountPerActivity` rather than guessed, minus the static four
 - [x] Rule AE — the generated shortcuts must describe the catalogue that exists
 - [x] Rule W widened to the link shape: `id=` mandatory, `action=` optional (proved by removing the id)
-- [ ] Quick Settings tile
+- [x] Quick Settings tile — declared in the **library** manifest so Gradle merges it (a service that ships with the code implementing it cannot fall out of step); verified in the APK
+- [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy
 - [ ] Widget
 - [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
 - [ ] AppFunctions service `@RequiresApi(36)`, behind a flag

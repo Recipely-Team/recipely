@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A Quick Settings tile icon must be a single-colour silhouette: the system
+  tints it for the on and off states, so anything with its own colours comes out
+  as a flat block. A chef's hat reads at 24dp where a wordmark does not.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+  android:width="24dp"
+  android:height="24dp"
+  android:viewportWidth="24"
+  android:viewportHeight="24"
+  android:tint="?android:attr/colorControlNormal">
+  <path
+    android:fillColor="@android:color/white"
+    android:pathData="M12,3c-1.9,0 -3.5,1.2 -4.2,2.8C6.2,5.9 5,7.2 5,8.8c0,1.2 0.7,2.3 1.7,2.9L6.7,17h10.6l0,-5.3c1,-0.6 1.7,-1.7 1.7,-2.9c0,-1.6 -1.2,-2.9 -2.8,-3C15.5,4.2 13.9,3 12,3z" />
+  <path
+    android:fillColor="@android:color/white"
+    android:pathData="M6.7,18.3h10.6v1.4c0,0.7 -0.6,1.3 -1.3,1.3H8c-0.7,0 -1.3,-0.6 -1.3,-1.3V18.3z" />
+</vector>
