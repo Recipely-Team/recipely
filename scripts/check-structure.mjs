@@ -524,7 +524,13 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
         // `build/` is Gradle output, not source.
         if (entry.isDirectory()) {
           if (!['build', '.gradle', '.cxx'].includes(entry.name)) walkNative(full);
-        } else if (/\.(swift|kt)$/.test(entry.name)) {
+        } else if (/\.(swift|kt|xml)$/.test(entry.name)) {
+          // `.xml` is here because the GENERATED shortcuts are native sources
+          // too, and leaving them out is how a generator that emitted a
+          // scheme-less link — every shortcut silently inert — passed all four
+          // gates. A rule that reads only hand-written code cannot see a
+          // generator's mistakes, and the freshness rules cannot either: they
+          // compare the generator's output with itself.
           nativeFiles.push(full);
         }
       }
@@ -557,8 +563,16 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       // is not, which is exactly the shape `parseOsIntentLink` enforces — a
       // link written the other way round parses to nothing and the shortcut
       // opens the app to no effect.
-      for (const m of src.matchAll(/assistant\/run\?([^"'\s]*)/g)) {
-        const query = m[1];
+      for (const m of src.matchAll(/(\S*?):\/\/assistant\/run\?([^"'\s]*)|assistant\/run\?([^"'\s]*)/g)) {
+        const scheme = m[1];
+        const query = (m[2] ?? m[3]).split('&amp;').join('&');
+        // A link with no scheme matches NO_MATCH_DATA against every filter on
+        // the launcher activity, so the shortcut appears and does nothing.
+        if (scheme === undefined) {
+          errors.push(
+            `${shown}: deep link has no scheme — Android matches NO_MATCH_DATA and the shortcut does nothing (CLAUDE.md §5)`,
+          );
+        }
         const linkId = /(?:^|&)id=([\w$]+)/.exec(query)?.[1];
         if (linkId === undefined) {
           errors.push(
@@ -581,7 +595,7 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
 }
 
 // --- AD: the Siri phrase catalogue must describe the phrases that exist -------
-// `AppShortcuts.xcstrings` is generated from the i18n catalogue and joined to
+// `<lang>.lproj/AppShortcuts.strings` is generated from the i18n catalogue and joined to
 // the Swift on the ENGLISH phrase text. A stale file is the worst shape this
 // can take: it compiles, it ships, and Siri answers in English on every device
 // because the key it looks up no longer matches the phrase in the binary.
@@ -602,11 +616,11 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       const { isFresh } = await import('./generate-app-shortcuts.mjs');
       if (!isFresh()) {
         errors.push(
-          'AppShortcuts.xcstrings was stale — it has been regenerated, commit it (`npm run shortcuts`)',
+          'AppShortcuts.strings was stale — it has been regenerated, commit it (`npm run shortcuts`)',
         );
       }
     } catch (error) {
-      errors.push(`AppShortcuts.xcstrings could not be generated: ${error.message}`);
+      errors.push(`AppShortcuts.strings could not be generated: ${error.message}`);
     }
   }
 }

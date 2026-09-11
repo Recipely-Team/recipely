@@ -22,8 +22,7 @@ class RecipelyAssistantWidget : AppWidgetProvider() {
     appWidgetManager: AppWidgetManager,
     appWidgetIds: IntArray,
   ) {
-    val scheme = RecipelyAssistantConfig.scheme(context)
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("$scheme://$ASSISTANT_LINK"))
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(RecipelyLinks.assistant(context)))
       .setPackage(context.packageName)
       .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -42,8 +41,6 @@ class RecipelyAssistantWidget : AppWidgetProvider() {
   }
 
   private companion object {
-    /** The same link the tile and the `askRecipely` shortcut open. */
-    const val ASSISTANT_LINK = "assistant/run?id=askRecipely"
     const val REQUEST_CODE = 1
   }
 }

@@ -536,6 +536,30 @@ jobs:
           fi
           echo "OK — microphone usage string present in $plist"
 
+      # The Siri phrases are LOOKED UP by their English text, so a localization
+      # that fails to reach the bundle is invisible: Siri matches the English
+      # key and answers in English on every device, with nothing failing and
+      # nothing logged. Xcode compiles a localized resource only for languages
+      # in the project's `knownRegions` — its template knows `en` and `Base`
+      # — so the failure mode is thirteen languages generated, copied, and
+      # discarded at build time. The same reason rule 23c checks the generated
+      # Info.plist rather than app.json: config is not the artifact.
+      - name: Assert every shipped language reached the generated project
+        run: |
+          set -euo pipefail
+          pbxproj="$(ls -d ios/*.xcodeproj/project.pbxproj | head -n1)"
+          missing=""
+          for locale in src/presentation/i18n/locales/*.ts; do
+            code="$(basename "$locale" .ts)"
+            grep -q "$code.lproj/AppShortcuts.strings" "$pbxproj" || missing="$missing $code"
+            grep -qE "^[[:space:]]+$code,$" "$pbxproj" || missing="$missing $code(region)"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error file=plugins/withAssistantKit.js::Siri phrases are missing for:$missing. A localized resource only compiles for languages listed in knownRegions, so a missing one is silently dropped and Siri answers in English. Run 'npm run shortcuts' and check withAssistantKit's knownRegions widening."
+            exit 1
+          fi
+          echo "OK — every shipped language is registered and in knownRegions"
+
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.
       - uses: actions/cache@v4
@@ -1040,6 +1064,30 @@ jobs:
             exit 1
           fi
           echo "OK — $count SKAdNetworkIdentifier entries in $plist"
+
+      # The Siri phrases are LOOKED UP by their English text, so a localization
+      # that fails to reach the bundle is invisible: Siri matches the English
+      # key and answers in English on every device, with nothing failing and
+      # nothing logged. Xcode compiles a localized resource only for languages
+      # in the project's `knownRegions` — its template knows `en` and `Base`
+      # — so the failure mode is thirteen languages generated, copied, and
+      # discarded at build time. The same reason rule 23c checks the generated
+      # Info.plist rather than app.json: config is not the artifact.
+      - name: Assert every shipped language reached the generated project
+        run: |
+          set -euo pipefail
+          pbxproj="$(ls -d ios/*.xcodeproj/project.pbxproj | head -n1)"
+          missing=""
+          for locale in src/presentation/i18n/locales/*.ts; do
+            code="$(basename "$locale" .ts)"
+            grep -q "$code.lproj/AppShortcuts.strings" "$pbxproj" || missing="$missing $code"
+            grep -qE "^[[:space:]]+$code,$" "$pbxproj" || missing="$missing $code(region)"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error file=plugins/withAssistantKit.js::Siri phrases are missing for:$missing. A localized resource only compiles for languages listed in knownRegions, so a missing one is silently dropped and Siri answers in English. Run 'npm run shortcuts' and check withAssistantKit's knownRegions widening."
+            exit 1
+          fi
+          echo "OK — every shipped language is registered and in knownRegions"
 
       # CocoaPods re-downloads every spec on a fresh runner; caching its
       # download cache is the biggest iOS CI speed-up short of caching Pods/.

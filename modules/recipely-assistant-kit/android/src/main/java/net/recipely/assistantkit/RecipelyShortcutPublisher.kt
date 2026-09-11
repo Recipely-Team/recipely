@@ -22,15 +22,7 @@ import androidx.core.graphics.drawable.IconCompat
 object RecipelyShortcutPublisher {
   private const val ENTITY_KIND = "recipe"
 
-  /**
-   * How many of the four launcher slots the static shortcuts already hold.
-   *
-   * `shortcuts.xml` is generated from the catalogue entries marked
-   * `launcherShortcut`, and static and dynamic shortcuts share one budget — so
-   * publishing up to the platform maximum would push the static ones out of the
-   * menu they were written for.
-   */
-  private const val STATIC_SHORTCUT_COUNT = 4
+
 
   fun publish(context: Context) {
     val entries = RecipelyAssistantStore.entities(context, ENTITY_KIND)
@@ -39,8 +31,11 @@ object RecipelyShortcutPublisher {
     // Asked of the platform rather than guessed: the cap differs by API level
     // and by launcher, and a hard-coded one is wrong on both sides — it either
     // wastes slots or silently drops the recipes past it.
+    // Both halves are asked rather than guessed. The platform cap differs by
+    // API level and launcher; the static count is emitted by the generator from
+    // the catalogue, so a fifth launcher entry cannot silently cost a recipe.
     val budget = ShortcutManagerCompat.getMaxShortcutCountPerActivity(context) -
-      STATIC_SHORTCUT_COUNT
+      context.resources.getInteger(R.integer.recipely_static_shortcut_count)
     val limit = minOf(entries.length(), maxOf(budget, 0))
     for (index in 0 until limit) {
       val entry = entries.optJSONObject(index) ?: continue
@@ -65,17 +60,6 @@ object RecipelyShortcutPublisher {
     }
   }
 
-  /**
-   * The link a recipe shortcut opens, spelled the way `parseOsIntentLink` reads.
-   *
-   * The catalogue id comes FIRST and is not optional: the parser refuses a link
-   * without one, because the open-ended entry has no action and a link that
-   * spelled its absence as text would ask the registry to run a word called
-   * "null". The scheme differs per variant, so it is read rather than compiled in.
-   */
-  private fun deepLink(context: Context, recipeId: String): String {
-    val scheme = RecipelyAssistantConfig.scheme(context)
-    val arg = URLEncoder.encode(recipeId, "UTF-8")
-    return "$scheme://assistant/run?id=openRecipe&action=openRecipe&arg=$arg"
-  }
+  private fun deepLink(context: Context, recipeId: String): String =
+    RecipelyLinks.recipe(context, URLEncoder.encode(recipeId, "UTF-8"))
 }

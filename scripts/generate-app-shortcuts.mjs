@@ -76,7 +76,11 @@ if (swiftPhrases.length === 0) {
   throw new Error('No App Shortcut phrases found — every phrase must interpolate .applicationName');
 }
 
-const english = readPhrases(SOURCE_LANGUAGE);
+// Read once per language rather than once per language per phrase: the loop
+// below is phrases x locales, and re-parsing each file ten times is 140 reads
+// of the same fourteen files.
+const phrasesByLocale = new Map(localeCodes.map((code) => [code, readPhrases(code)]));
+const english = phrasesByLocale.get(SOURCE_LANGUAGE) ?? readPhrases(SOURCE_LANGUAGE);
 const idByEnglish = new Map(Object.entries(english).map(([id, text]) => [text, id]));
 
 const byLocale = new Map(localeCodes.map((code) => [code, []]));
@@ -93,7 +97,7 @@ for (const phrase of swiftPhrases) {
   usedIds.add(id);
 
   for (const code of localeCodes) {
-    const text = readPhrases(code)[id];
+    const text = phrasesByLocale.get(code)?.[id];
     if (text === undefined || text.length === 0) {
       throw new Error(`${code}.ts is missing osIntentPhrases.${id}`);
     }

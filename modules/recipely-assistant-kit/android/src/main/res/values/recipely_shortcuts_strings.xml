@@ -5,4 +5,8 @@
   <string name="recipely_shortcut_startTimer">Start timer</string>
   <string name="recipely_shortcut_generateRecipe">Create a recipe</string>
   <string name="recipely_shortcut_openMyRecipes">My recipes</string>
+  <!-- How many launcher slots the static shortcuts hold. Static and dynamic
+       share one budget, so the publisher subtracts this rather than guessing;
+       a fifth launcher entry would otherwise silently cost a recipe. -->
+  <integer name="recipely_static_shortcut_count">4</integer>
 </resources>

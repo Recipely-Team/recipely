@@ -10,6 +10,9 @@ import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
+/** What both roads carry, and all `perform` needs. */
+type OsIntentRequest = OsIntentLink | OsIntentInvocation;
+
 /**
  * Runs what Siri or a launcher shortcut asked for, once the app can answer.
  *
@@ -49,9 +52,6 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   or on the next foreground. The wiring is here so the running-app path costs
  *   nothing to switch on.
  */
-/** What both roads carry, and all `perform` needs. */
-type OsIntentRequest = OsIntentLink | OsIntentInvocation;
-
 export const useOsAssistantInvocations = (): void => {
   const { assistantActionRegistry: registry, osAssistant, assistantSessionStore } = useStores();
   const locale = useLocale();

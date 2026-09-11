@@ -22,12 +22,18 @@ enum RecipelyRequest {
   ///     where the assistant itself decides what to do.
   ///   - arg: the single argument the registry's handlers take.
   static func enqueue(id: String, action: String?, arg: String?) {
-    RecipelyAssistantStore.enqueue([
+    // An absent value is an ABSENT KEY, never a null one. `UserDefaults` stores
+    // property lists only, and Swift bridges `Optional.none as Any` to
+    // `NSNull` — which is not a property-list type, so `set(_:forKey:)` raises
+    // `NSInvalidArgumentException` and the process dies. Two intents pass a nil:
+    // "Ask Recipely", the first of the ten phrases, and the timer.
+    var request: [String: Any] = [
       "id": id,
       "invocationId": UUID().uuidString,
-      "action": action as Any,
-      "arg": arg as Any,
       "at": Date().timeIntervalSince1970 * 1000,
-    ])
+    ]
+    if let action { request["action"] = action }
+    if let arg { request["arg"] = arg }
+    RecipelyAssistantStore.enqueue(request)
   }
 }

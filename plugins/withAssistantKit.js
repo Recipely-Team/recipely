@@ -65,6 +65,14 @@ const RESOURCES_SOURCE_DIR = path.join(
   'Resources',
 );
 const LOCALES_DIR = path.join('src', 'presentation', 'i18n', 'locales');
+const SHORTCUTS_TEMPLATE = path.join(
+  'modules',
+  'recipely-assistant-kit',
+  'android',
+  'shortcuts',
+  'recipely_shortcuts.xml',
+);
+const SHORTCUTS_SCHEME_TOKEN = '__RECIPELY_SCHEME__';
 const STRINGS_FILE = 'AppShortcuts.strings';
 
 /**
@@ -246,8 +254,12 @@ const withCopiedIntentSources = (config) =>
       );
       fs.mkdirSync(to, { recursive: true });
       // Files deleted from the library must disappear from the app target too,
-      // or a renamed intent ships twice under two names.
+      // or a renamed intent ships twice under two names — and a language
+      // dropped from `i18n/locales/` keeps shipping its phrases.
       for (const stale of swiftFilesIn(to)) fs.rmSync(path.join(to, stale));
+      for (const entry of fs.readdirSync(to)) {
+        if (entry.endsWith('.lproj')) fs.rmSync(path.join(to, entry), { recursive: true, force: true });
+      }
       for (const name of swiftFilesIn(from)) {
         fs.copyFileSync(swiftSourcePath(from, name), path.join(to, name));
       }
@@ -273,7 +285,13 @@ const withIntentSourcesInTarget = (config) =>
     const names = swiftFilesIn(
       path.join(mod.modRequest.projectRoot, INTENTS_SOURCE_DIR),
     );
-    if (names.length === 0) return mod;
+    const locales = localizedResourceDirs(
+      path.join(mod.modRequest.projectRoot, RESOURCES_SOURCE_DIR),
+    );
+    // Both halves, not just the Swift: a library with phrases and no intents
+    // still has resources to register, and skipping on the Swift count alone
+    // would silently drop them.
+    if (names.length === 0 && locales.length === 0) return mod;
 
     // Truthiness, not `!== undefined`. `pbxGroupByName` answers `null` for a
     // group that does not exist, so an `undefined` check reported the group as
@@ -296,12 +314,7 @@ const withIntentSourcesInTarget = (config) =>
     // are ONE file to Xcode: a variant group, keyed by language. Added
     // individually they would each try to install at the same bundle path and
     // only the last would survive.
-    addLocalizedStrings(
-      project,
-      projectName,
-      target,
-      localizedResourceDirs(path.join(mod.modRequest.projectRoot, RESOURCES_SOURCE_DIR)),
-    );
+    addLocalizedStrings(project, projectName, target, locales);
 
     addKnownRegions(project, shippedLocales(mod.modRequest.projectRoot));
     return mod;
@@ -350,8 +363,15 @@ const addLocalizedStrings = (project, projectName, target, locales) => {
   for (const code of locales) {
     const relative = `${projectName}/${XCODE_GROUP}/${code}.lproj/${STRINGS_FILE}`;
     if (project.hasFile(relative)) continue;
-    const file = project.addFile(relative, groupKey, { target, basename: code });
-    if (file) file.fileRef = file.fileRef ?? project.generateUuid();
+    const file = project.addFile(relative, groupKey, { target });
+    if (!file) continue;
+    // `pbxFile` derives `basename` from the path and ignores an `opt.basename`,
+    // so the name has to be set afterwards. Xcode's convention is that a
+    // variant child is named for its LANGUAGE — fourteen children all called
+    // `AppShortcuts.strings` build, because XCBuild reads the region off the
+    // path, but the project navigator then shows fourteen identical rows.
+    file.basename = code;
+    project.pbxFileReferenceSection()[file.fileRef].name = `"${code}"`;
   }
 };
 
@@ -440,12 +460,52 @@ const addShortcutsMetaData = (application) => {
   });
 };
 
+/**
+ * Writes the launcher shortcuts into the APP's resources, scheme resolved.
+ *
+ * The generator leaves the scheme as a token because it differs per variant and
+ * is not known until prebuild. It cannot ship the resolved file in the library's
+ * own `res/` either — two `recipely_shortcuts.xml` would collide at merge — so
+ * the template lives outside `res/` and lands here instead.
+ *
+ * A scheme-less `android:data` is not a smaller failure than a wrong one: it
+ * matches `NO_MATCH_DATA` against every filter on the launcher activity, so the
+ * shortcut shows in the menu and does nothing at all when tapped.
+ */
+const withResolvedShortcuts = (config) =>
+  withDangerousMod(config, [
+    'android',
+    (mod) => {
+      const template = path.join(mod.modRequest.projectRoot, SHORTCUTS_TEMPLATE);
+      if (!fs.existsSync(template)) return mod;
+
+      const scheme = primarySchemeOf(mod.scheme);
+      const resolved = fs
+        .readFileSync(template, 'utf8')
+        .split(SHORTCUTS_SCHEME_TOKEN)
+        .join(scheme);
+
+      const out = path.join(
+        mod.modRequest.platformProjectRoot,
+        'app',
+        'src',
+        'main',
+        'res',
+        'xml',
+      );
+      fs.mkdirSync(out, { recursive: true });
+      fs.writeFileSync(path.join(out, 'recipely_shortcuts.xml'), resolved);
+      return mod;
+    },
+  ]);
+
 const withAssistantKit = (config) => {
   let next = withAppGroupInfoPlist(config);
   next = withAppGroupEntitlement(next);
   next = withCopiedIntentSources(next);
   next = withIntentSourcesInTarget(next);
   next = withSchemeMetaData(next);
+  next = withResolvedShortcuts(next);
   return next;
 };
 

@@ -22,8 +22,7 @@ class RecipelyAssistantTileService : TileService() {
   override fun onClick() {
     super.onClick()
 
-    val scheme = RecipelyAssistantConfig.scheme(this)
-    val intent = Intent(Intent.ACTION_VIEW, Uri.parse("$scheme://$ASSISTANT_LINK"))
+    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(RecipelyLinks.assistant(this)))
       .setPackage(packageName)
       .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
@@ -46,8 +45,6 @@ class RecipelyAssistantTileService : TileService() {
   }
 
   private companion object {
-    /** The same link the `askRecipely` launcher shortcut opens. */
-    const val ASSISTANT_LINK = "assistant/run?id=askRecipely"
     const val REQUEST_CODE = 0
   }
 }

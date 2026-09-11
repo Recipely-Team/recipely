@@ -90,6 +90,23 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
     expect(invocation?.action).toBeNull();
   });
 
+  // The native side OMITS the key rather than storing a null: `UserDefaults`
+  // takes property lists and `NSNull` is not one, so writing a null there kills
+  // the process. An omitted key reads back as `undefined`, and compared against
+  // `null` the flagship "Ask Recipely" request was dropped at the boundary.
+  it('treats an omitted action the same as an explicit null', async () => {
+    const { action: _action, arg: _arg, ...withoutOptionals } = raw({
+      id: OsIntentId.AskRecipely,
+    });
+    mockKit.getPendingInvocationsAsync.mockResolvedValue([withoutOptionals]);
+
+    const [invocation] = await new OsAssistantBridge().pendingInvocations();
+
+    expect(invocation).toEqual(
+      expect.objectContaining({ id: OsIntentId.AskRecipely, action: null, arg: null }),
+    );
+  });
+
   it('applies the same filter to live invocations', () => {
     const listener = jest.fn();
     mockKit.addInvocationListener.mockImplementation(() => () => undefined);

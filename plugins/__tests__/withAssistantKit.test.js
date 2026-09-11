@@ -60,10 +60,13 @@ const withAssistantKit = require('../withAssistantKit');
 
 const INTENTS_DIR = path.join('/repo', 'modules', 'recipely-assistant-kit', 'ios', 'AppIntents');
 const TARGET_DIR = '/repo/ios/Recipely/RecipelyAssistant';
+const RESOURCES_DIR = path.join('/repo', 'modules', 'recipely-assistant-kit', 'ios', 'Resources');
+const LOCALES_DIR = path.join('/repo', 'src', 'presentation', 'i18n', 'locales');
 
-function xcodeProject({ hasFile = () => false, groupKey = null } = {}) {
+function xcodeProject({ hasFile = () => false, groupKey = null, variantKey = null } = {}) {
   const added = [];
   const createGroup = jest.fn(() => 'NEWGROUP');
+  const fileRefs = {};
   return {
     added,
     createGroup,
@@ -72,9 +75,30 @@ function xcodeProject({ hasFile = () => false, groupKey = null } = {}) {
     findPBXGroupKey: () => groupKey,
     pbxCreateGroup: createGroup,
     getPBXGroupByKey: () => ({ children: [] }),
-    getFirstProject: () => ({ firstProject: { mainGroup: 'MAIN' } }),
+    getFirstProject() {
+      this.firstProject = this.firstProject ?? { mainGroup: 'MAIN', knownRegions: ['en', 'Base'] };
+      return { firstProject: this.firstProject };
+    },
     getFirstTarget: () => ({ uuid: 'TARGET' }),
     hasFile,
+    fileRefs,
+    variantChildren: [],
+    createVariantGroup: jest.fn(() => 'VARIANTGROUP'),
+    findPBXVariantGroupKey: () => variantKey,
+    pbxCreateVariantGroup(...args) {
+      return this.createVariantGroup(...args);
+    },
+    pbxFileReferenceSection: () => fileRefs,
+    generateUuid: () => `UUID${Object.keys(fileRefs).length}`,
+    addFile(relative, group, options) {
+      const fileRef = `REF${Object.keys(fileRefs).length}`;
+      fileRefs[fileRef] = { path: relative };
+      const file = { path: relative, fileRef, group, options };
+      this.variantChildren.push(file);
+      return file;
+    },
+    addToPbxBuildFileSection: jest.fn(),
+    addToPbxResourcesBuildPhase: jest.fn(),
     addSourceFile: (relative, options, groupKey) => added.push({ relative, options, groupKey }),
   };
 }
@@ -184,6 +208,78 @@ describe('withAssistantKit — variant-derived identifiers', () => {
         },
       },
     ]);
+  });
+});
+
+describe('withAssistantKit — the Siri phrases reach the app target', () => {
+  const withLocales = (xcode) => {
+    mockFiles.set(INTENTS_DIR, []);
+    mockFiles.set(RESOURCES_DIR, ['tr.lproj', 'ja.lproj']);
+    mockFiles.set(path.join(RESOURCES_DIR, 'tr.lproj'), ['AppShortcuts.strings']);
+    mockFiles.set(path.join(RESOURCES_DIR, 'ja.lproj'), ['AppShortcuts.strings']);
+    mockFiles.set(LOCALES_DIR, ['en.ts', 'ja.ts', 'tr.ts']);
+    return baseConfig({ xcode });
+  };
+
+  // Fourteen copies are ONE file to Xcode. Registered individually they each
+  // install to `AppShortcuts.strings` in the bundle root, where the last one
+  // copied wins and the other thirteen vanish.
+  it('registers the languages as children of a single variant group', () => {
+    const xcode = xcodeProject();
+
+    withAssistantKit(withLocales(xcode));
+
+    expect(xcode.createVariantGroup).toHaveBeenCalledWith('AppShortcuts.strings');
+    expect(xcode.variantChildren.map((child) => child.path)).toEqual([
+      'Recipely/RecipelyAssistant/ja.lproj/AppShortcuts.strings',
+      'Recipely/RecipelyAssistant/tr.lproj/AppShortcuts.strings',
+    ]);
+  });
+
+  // `pbxFile` derives basename from the path and ignores `opt.basename`, so
+  // without setting it afterwards the navigator shows fourteen identical rows.
+  it('names each child for its language, not for the file', () => {
+    const xcode = xcodeProject();
+
+    withAssistantKit(withLocales(xcode));
+
+    expect(Object.values(xcode.fileRefs).map((ref) => ref.name)).toEqual(['"ja"', '"tr"']);
+  });
+
+  // A localized resource only compiles for languages the project lists, and
+  // Xcode's default is `(en, Base)` — so without this the other twelve are
+  // generated, copied, compiled away, and Siri answers in English everywhere.
+  it('widens knownRegions to every language the app ships', () => {
+    const xcode = xcodeProject();
+    const config = withLocales(xcode);
+
+    withAssistantKit(config);
+
+    expect(xcode.getFirstProject().firstProject.knownRegions).toEqual(
+      expect.arrayContaining(['en', 'Base', 'ja', 'tr']),
+    );
+  });
+
+  it('does not create a second variant group when one already exists', () => {
+    const xcode = xcodeProject({ variantKey: 'EXISTINGVARIANT' });
+
+    withAssistantKit(withLocales(xcode));
+
+    expect(xcode.createVariantGroup).not.toHaveBeenCalled();
+  });
+
+  // A language dropped from the catalogue keeps shipping its phrases otherwise,
+  // because prebuild is not guaranteed to start from a clean target directory.
+  it('sweeps a language folder the catalogue no longer ships', () => {
+    const xcode = xcodeProject();
+    mockFiles.set(TARGET_DIR, ['de.lproj']);
+
+    withAssistantKit(withLocales(xcode));
+
+    expect(fs.rmSync).toHaveBeenCalledWith(`${TARGET_DIR}/de.lproj`, {
+      recursive: true,
+      force: true,
+    });
   });
 });
 

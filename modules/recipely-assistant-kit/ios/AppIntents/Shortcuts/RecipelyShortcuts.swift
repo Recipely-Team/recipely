@@ -12,10 +12,13 @@ import AppIntents
 /// - Note: **Nothing destructive is here, and nothing here is destructive.** The
 ///   five confirmed actions are absent from the catalogue entirely, so no phrase
 ///   can reach one; `check:structure` rule X is what keeps that true.
-/// - Note: **English only, so far.** The strings are literals rather than a
-///   localized catalogue, so Siri matches them in English on any device. The
-///   fourteen-language catalogue generated from `i18n` is the next step, and it
-///   is a build-input change rather than a code one.
+/// - Note: **These literals are lookup KEYS, not the phrases users say.** Apple
+///   resolves each against `<lang>.lproj/AppShortcuts.strings`, which
+///   `scripts/generate-app-shortcuts.mjs` writes for all fourteen shipped
+///   languages from the i18n catalogue. The English here has to match
+///   `en.osIntentPhrases` character for character — the generator refuses to
+///   write anything when it does not — because a key that misses resolves to
+///   itself and Siri quietly matches English on every device.
 @available(iOS 17.2, *)
 struct RecipelyShortcuts: AppShortcutsProvider {
   static var appShortcuts: [AppShortcut] {

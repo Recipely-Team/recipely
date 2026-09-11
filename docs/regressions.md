@@ -1654,6 +1654,26 @@ or a key; `toLocale*` stays only where the text is something a person wrote.
 machine constant has no locale; folding it with one turns a comparison into a
 coin toss decided by the device's language.
 
+## A freshness check that could not see a wrong generator
+
+Two gate rules guarded the generated Siri phrases and Android shortcuts. Each
+imported its generator, let it rewrite the files, and compared the output with
+itself — so any output was "fresh" by construction. They could detect a file out
+of step with the generator and never a generator that was wrong. The rule that
+did check meaning walked only `.swift` and `.kt`, so it never read the generated
+XML at all. A generator emitting `android:data` with no scheme therefore passed
+every gate, and four launcher shortcuts shipped that appeared in the menu and did
+nothing when tapped — `aapt2` had proved they were present, which is not the same
+as launchable.
+
+*Now:* the meaning rule reads the generated XML alongside the hand-written
+native sources and refuses a link with no scheme or an unknown word, verified by
+breaking each case.
+
+*The class:* **regenerating a file proves it matches the code that wrote it, and
+nothing else.** A freshness check and a correctness check are different
+questions, and only one of them has an opinion about whether the output works.
+
 ## The gate that was promised in a comment and written nowhere
 
 Two doc blocks on the OS-assistant catalogue told the reader that

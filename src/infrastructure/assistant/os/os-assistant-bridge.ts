@@ -54,15 +54,25 @@ export class OsAssistantBridge implements OsAssistantInterface {
   }
 }
 
+/**
+ * An ABSENT key and a null one mean the same thing here, and only one of them
+ * can cross the bridge.
+ *
+ * The native side omits a key rather than storing a null, because `UserDefaults`
+ * takes property lists and `NSNull` is not one — so an open-ended request
+ * arrives with no `action` at all, and reads back as `undefined`. Compared
+ * against `null` it would have been treated as an unknown word and dropped,
+ * which is the flagship phrase silently doing nothing.
+ */
 const toInvocation = (raw: Kit.OsIntentInvocation): OsIntentInvocation | null => {
   if (!isOsIntentId(raw.id)) return null;
-  const action = raw.action;
+  const action = raw.action ?? null;
   if (action !== null && !isAssistantAction(action)) return null;
   return {
     id: raw.id,
     invocationId: raw.invocationId,
     action,
-    arg: raw.arg,
+    arg: raw.arg ?? null,
     at: raw.at,
   };
 };

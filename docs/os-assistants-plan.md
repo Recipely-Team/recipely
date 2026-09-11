@@ -293,6 +293,37 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D23 — The review found two dead features and a gate that could not see them
+Neither was visible to `xcodebuild`, `aapt2` presence checks, or any of the four
+gates. Both were found by EXECUTING rather than inspecting.
+
+**`nil as Any` kills the process.** `UserDefaults` stores property lists, and
+Swift bridges `Optional.none as Any` to `NSNull`, which is not one — so
+`set(_:forKey:)` raises `NSInvalidArgumentException`. Two of the eleven intents
+passed a nil, one of them "Ask Recipely", the first of the ten phrases.
+Confirmed by compiling the two shapes and asking
+`PropertyListSerialization.propertyList(_:isValidFor:)`: the old one answers
+`false`. An absent value is now an absent KEY — and the TypeScript boundary had
+to learn the same thing, because an omitted key reads back as `undefined`, not
+`null`, and was being dropped as an unknown word.
+
+**A scheme-less `android:data` matches nothing.** Every VIEW filter on the
+launcher activity requires a scheme, so all four shortcuts appeared in the menu
+and did nothing when tapped. `aapt2` proved they were present, which is not the
+same as launchable. The scheme is variant-dependent, so the generator now emits
+a token and the plugin substitutes it — and the template moved OUT of the
+library's `res/`, because the resolved copy the plugin writes into the app would
+otherwise collide with it at merge.
+
+**And the gate could not have caught either.** Rules AD and AE import the
+generator, let it rewrite its own files, and compare the result with itself —
+they detect a file out of step with the generator, never a generator that is
+wrong. Rule W, which does check meaning, only walked `.swift` and `.kt`. It now
+reads the generated XML too and requires a scheme, which is what makes the
+second failure impossible rather than merely fixed. *The class:* **a freshness
+check is not a correctness check** — regenerating proves the file matches the
+code that wrote it, and nothing more.
+
 ### D22 — AppFunctions: the published alpha is not the documented one
 Attempted, measured, backed out. What is actually true today:
 
