@@ -26,14 +26,13 @@ const SETTLE_TIMEOUT_MS = 4_000;
  * - **It never rejects and never waits forever.** An error state and a timeout
  *   both resolve: the caller's next step is the same either way.
  */
-export function waitForRecipeListQuery(
-  store: BoundStore<RecipeListStoreState>,
-  query: string,
-  timeoutMs: number = SETTLE_TIMEOUT_MS,
-): Promise<void> {
+export function waitForRecipeListQuery(store: BoundStore<RecipeListStoreState>, query: string): Promise<void> {
   const wanted = query.trim();
+  // A refresh that failed over an already-loaded feed keeps the old query and
+  // reports the failure beside it: nothing more is coming, so nothing waits.
   const answers = (state: RecipeListStoreState['state']): boolean =>
-    (state.status === StoreStatus.Loaded && state.query.trim() === wanted) || state.status === StoreStatus.Error;
+    state.status === StoreStatus.Error ||
+    (state.status === StoreStatus.Loaded && (state.query.trim() === wanted || state.refreshFailure !== undefined));
 
   if (answers(store.getState().state)) return Promise.resolve();
 
@@ -42,7 +41,7 @@ export function waitForRecipeListQuery(
     const timer = setTimeout(() => {
       unsubscribe?.();
       resolve();
-    }, timeoutMs);
+    }, SETTLE_TIMEOUT_MS);
 
     unsubscribe = store.subscribe(({ state }) => {
       if (!answers(state)) return;

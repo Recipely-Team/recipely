@@ -20,12 +20,31 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   model can say out loud; acting on the closest row would be the one failure
  *   a user cannot see coming.
  */
-export function rowAt(rows: readonly string[], arg: string | undefined): number | null {
+/**
+ * The row NUMBER an argument names, or null when it names something else.
+ *
+ * Exported because "the second one" is about the rows on screen and nothing
+ * else: a caller that would go looking elsewhere for a name has to be able to
+ * tell that this argument is not one. Searching the catalogue for "2" finds
+ * recipes whose names carry digits, and opening one of those is exactly the
+ * wrong-recipe failure this distinction exists to prevent.
+ */
+export function rowNumberOf(arg: string | undefined): number | null {
   if (arg === undefined || arg === CharConstants.empty) return null;
 
   const trimmed = arg.trim();
   const position = Number.parseInt(trimmed, 10);
-  if (Number.isFinite(position) && String(position) === trimmed) {
+  // The parsed value is compared back against the whole argument: `parseInt`
+  // reads "2 eggs" as 2, and acting on row two would be silently wrong.
+  return Number.isFinite(position) && String(position) === trimmed ? position : null;
+}
+
+export function rowAt(rows: readonly string[], arg: string | undefined): number | null {
+  if (arg === undefined || arg === CharConstants.empty) return null;
+
+  const trimmed = arg.trim();
+  const position = rowNumberOf(trimmed);
+  if (position !== null) {
     const index = position - ValueConstants.one;
     return index >= ValueConstants.zero && index < rows.length ? index : null;
   }

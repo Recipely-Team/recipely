@@ -1944,7 +1944,26 @@ seventy had none.
 
 *The class:* **a helper that mounts must also unmount.** Leaving cleanup to each test
 means the one test that forgets it fails someone else's commit.
-| The assistant said "I could not find it" while the recipe was on screen | `search` opened the feed with the query and returned at once, so the registry read the screen before the rows arrived and reported `recipes=none` to the model | The handler waits for `Loaded.query` to be the query it asked for (`waitForRecipeListQuery`, 4 s bound); regression test in `use-assistant-global-actions.test.tsx` fails without the wait |
-| "Open the şakşuka recipe" opened an unrelated recipe | `openRecipe` matched only against the rows the feed happened to hold; with no match it answered `not_found`, and the model fell back on a recipe id it remembered from an earlier turn | The handler now searches for the name, waits for the rows and matches again before giving up; three regression tests cover found-on-screen, found-by-search and genuinely-missing |
-| "Read the recipe" right after the assistant opened it answered that it could not | The read actions saw the screen's lines as they were when the model called — empty, because the recipe was still loading — and answered `no_such_step` | Each read waits up to 3 s for content and answers from the latest lines, not the ones its closure was made with; three regression tests, one per outcome |
+
+## Three answers about a screen that had not arrived yet
+
+Told "tavuk şavurma", the assistant searched, the feed filled in behind the panel, and
+it said it could not find the recipe the user was looking at. Told "şakşuka tarifini
+aç", it opened a baklava. Asked to read a recipe it had just opened, it said it could
+not read it at all. Three reports, one shape: `search` and `openRecipe` returned the
+moment they had asked the router to move, so the registry read the screen before the
+rows arrived and told the model `recipes=none`; the read actions answered from the
+empty lines their closure had been made with; and a model told there was nothing there
+did what it could — it made something up, or reached for a recipe id it remembered
+from an earlier turn.
+
+*Now:* `search` waits until the feed's rows are the answer to its own query (4 s bound),
+`openRecipe` searches for a name the screen does not show before it gives up — but never
+for a positional argument, which is only ever about the rows on screen — and each read
+waits up to 3 s for content and answers from the latest lines. Every wait is bounded and
+every path still answers, because a tool call that never returns stalls the conversation.
+
+*The class:* **an action that moves the screen has not finished when the router
+returns.** Whatever reads the screen next — the model, through the registry's screen
+line — will read the screen the user was on, not the one they were sent to.
 
