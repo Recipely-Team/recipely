@@ -1,0 +1,35 @@
+# Generated into an Xcode project by `xcodegen` inside run.sh; never committed as
+# a .xcodeproj. A UI-test target added to the app's own project would be erased
+# by the next `expo prebuild`, which is why this lives beside it instead.
+name: IntentProbe
+options:
+  bundleIdPrefix: net.recipely.probe
+  deploymentTarget:
+    iOS: "17.2"
+settings:
+  base:
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    GENERATE_INFOPLIST_FILE: YES
+targets:
+  IntentProbe:
+    type: application
+    platform: iOS
+    sources: [App]
+    settings:
+      base:
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+  IntentProbeUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [UITests]
+    dependencies:
+      - target: IntentProbe
+schemes:
+  IntentProbe:
+    build:
+      targets:
+        IntentProbe: all
+        IntentProbeUITests: [test]
+    test:
+      targets: [IntentProbeUITests]

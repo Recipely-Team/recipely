@@ -35,7 +35,7 @@ belong. **Not merged**; findings are written below.
 - [x] `plugins/withAssistantKit.js` + 10 tests
 - [x] **Measurement 1a** — `prebuild --clean` passes on both platforms; Swift is copied into the app target and registered in the pbxproj, entitlement/Info.plist/manifest correct (D7, D8)
 - [x] **Measurement 1b** — `pod install` + `xcodebuild` **BUILD SUCCEEDED**; the intent compiles in the app target and is **extracted into `Metadata.appintents`** (`isDiscoverable: true`) — D12, D13
-- [ ] On device: does Siri actually invoke it, in TR and EN (**yours** — needs physical hardware)
+- [ ] On device: does Siri actually invoke it by VOICE, in TR and EN — the simulator cannot recognise speech; the same intents were run through Shortcuts there (D26)
 - [x] ~~**Measurement 2**~~ — answered by research, no device needed (D2)
 - [x] **Measurement 3** — `:recipely-assistant-kit:compileDebugKotlin` and the **full `:app:assembleDebug` green** (3m 7s); autolinking finds the module, manifest meta-data correct (D9)
 - [x] Findings written into this file, decisions fixed
@@ -295,6 +295,38 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D26 — Run on the simulator: what works, what the system asks, and what it does not tell us
+`scripts/ios-intent-probe/run.sh` drives the Shortcuts app with XCUITest (the
+app's own project cannot keep a test target — prebuild erases it) against an
+ad-hoc-signed simulator build with a real intent token in its App Group.
+
+- **Siri itself cannot be exercised here.** `XCUIDevice.siriService` opens the
+  Siri window on the iOS 26 simulator and never recognises the injected text.
+  The Shortcuts tile runs the same intent through the same system prompt.
+- **All ten App Shortcuts are registered** and listed under "Recipely (Dev)".
+- **The headless answer works end to end**: tile → "What would you like to
+  ask?" → typed question → the backend's answer in a Siri snippet, 8 s, the app
+  never opening.
+- **Coming forward works — after a system prompt.** `continueInForeground`
+  shows *"You'll need to continue in the app." Cancel / Continue* even with
+  `alwaysConfirm: false`; Continue brings the app to the foreground and Siri
+  says our "Opening Recipely.". An intent with `openAppWhenRun` comes forward
+  without asking and queues `navigate/myRecipes` correctly.
+- **Cancel does not withdraw.** The request stayed queued after Cancel, and
+  one queued by a process killed at the prompt stayed forever. The app now
+  drops any request older than two minutes (`isStaleInvocation`); the domain
+  doc had promised that for months and nothing did it.
+- **Unresolved: the prompt stayed English on a Turkish simulator** — and so did
+  the system's own Cancel / Done. Our process resolves the table to
+  "Ne sormak istersin?" (logged), a fresh install under Turkish, a
+  `CFBundleLocalizations` list and a `Localizable.strings` copy all changed
+  nothing. The system, not our strings, picks English for this app here; whether
+  a device does the same needs a device.
+- **Backend latency is Gemini's.** dev-api took 1.5–39 s; its logs show Gemini
+  answering `503 high demand` or timing out at 60 s before the Groq fallback. A
+  Siri caller needs its own, shorter budget on the backend — the in-app typed
+  mode deliberately waits 90 s — so that is a backend decision, recorded here.
+
 ### D25 — Measured against the real backend, and what Siri says back
 **The headless path works end to end.** The unmodified `RecipelyAssistantStore`,
 `RecipelyAssistantClient`, `RecipelyAssistantWire` and `Envelope` were compiled
@@ -363,9 +395,10 @@ background mode for the one intent whose point is to run without a screen. The c
 fallback only works if the client gives up before Siri does. A reply with
 neither words nor an action is `nil`. The bridge now removes entries it drops.
 
-**Still to see on a device:** Siri's own deadline for `perform()`; what the
-empty dialog on the come-forward path looks like; that a background launch
-really reports `background` before `active`. The last build: `BUILD SUCCEEDED`,
+**Still to see on a device:** Siri's own deadline for `perform()`; whether the
+follow-up question is Turkish on a Turkish phone (D26 — English on the
+simulator for reasons outside our strings); spoken invocation, which the
+simulator cannot recognise. The last build: `BUILD SUCCEEDED`,
 `RecipelyAskIntent` extracted with `openAppWhenRun: false` and
 `systemProtocols: [ForegroundContinuable]`.
 

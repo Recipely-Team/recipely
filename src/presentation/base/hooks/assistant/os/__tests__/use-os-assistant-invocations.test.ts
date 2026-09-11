@@ -98,7 +98,7 @@ const invocation = (invocationId: string, action = 'search', arg: string | null 
   invocationId,
   action,
   arg,
-  at: 1,
+  at: Date.now(),
 });
 
 const Probe = (): null => {
@@ -191,7 +191,7 @@ describe('useOsAssistantInvocations — the open-ended request', () => {
     invocationId: 'ask-1',
     action: null,
     arg,
-    at: 1,
+    at: Date.now(),
   });
 
   it('opens the panel and asks, rather than dispatching an action', async () => {
@@ -217,6 +217,25 @@ describe('useOsAssistantInvocations — the open-ended request', () => {
     expect(mockState.view).toBe('open');
     expect(mockState.asked).toEqual([]);
     expect(mockState.acknowledged).toEqual(['ask-1']);
+  });
+});
+
+describe('useOsAssistantInvocations — a request nobody is waiting for any more', () => {
+  // Measured on the simulator: Cancel on Siri's "continue in the app" did not
+  // reach the intent's withdrawal, so the request stayed queued — and ran on the
+  // next launch, whenever that was, as a search the user had never connected
+  // with anything.
+  it('acknowledges a stale request without running it', async () => {
+    const now = Date.now();
+    mockState.queue = [
+      { ...invocation('old'), at: now - 10 * 60 * 1000 },
+      { ...invocation('fresh', 'search', 'mercimek'), at: now },
+    ];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'mercimek' }]);
+    expect(mockState.acknowledged).toEqual(['old', 'fresh']);
   });
 });
 
@@ -246,7 +265,7 @@ describe('useOsAssistantInvocations — the assistant answering with an instruct
   // have handed that word to the assistant as though the user had typed it.
   it('runs the action an answered question came back with', async () => {
     mockState.queue = [
-      { id: 'askRecipely', invocationId: 'ask-2', action: 'search', arg: 'mercimek', at: 1 },
+      { id: 'askRecipely', invocationId: 'ask-2', action: 'search', arg: 'mercimek', at: Date.now() },
     ];
 
     await mount();

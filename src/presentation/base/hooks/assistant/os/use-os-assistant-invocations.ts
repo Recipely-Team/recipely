@@ -4,6 +4,7 @@ import { AppStateStatusValue } from '@infrastructure/constants/app-state-status'
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import { CharConstants } from '@core/constants';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
+import { isStaleInvocation } from '@domain/assistant/os/is-stale-invocation';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
 import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape';
 import { PendingOsIntent } from '@presentation/navigation/pending-os-intent';
@@ -38,15 +39,19 @@ type OsIntentRequest = OsIntentLink | OsIntentInvocation;
  *   awaits a handler would find the same entry and run it twice. Returning to
  *   the app from the Siri overlay, Control Centre or a permission sheet raises
  *   `active` every time, so this is the ordinary case rather than the edge.
+ * - **A stale request is acknowledged and never run.** A declined "continue in
+ *   the app", or a process killed while that prompt was up, leaves its request
+ *   behind; run on a later launch it is an action nobody asked for any more.
+ *   `isStaleInvocation` draws the line.
  * - **A request is acknowledged whatever the outcome, and one failure does not
  *   strand the rest.** An unacknowledged entry is re-read and re-run on every
  *   launch, so a single bad request would otherwise become permanent; and an
  *   acknowledge that rejects at the native bridge must not abort the loop over
  *   the entries behind it.
  * - **`askRecipely` without an action does not go to the registry at all.** It
- *   carries a sentence rather than a word: the panel
- *   opens and the sentence becomes the first turn, which is exactly what would
- *   have happened had the user typed it. From a launcher shortcut there is no
+ *   carries a sentence rather than a word: the panel opens and the sentence
+ *   becomes the first turn, which is exactly what would have happened had the
+ *   user typed it. From a launcher shortcut there is no
  *   sentence — nothing asked for one — so the panel simply opens, which is the
  *   fastest way to the assistant a floury hand has. With a scoped token the
  *   native side answers the spoken form without opening anything, so this branch
@@ -88,7 +93,7 @@ export const useOsAssistantInvocations = (): void => {
   const dispatch = useCallback(
     async (invocation: OsIntentInvocation): Promise<void> => {
       try {
-        await perform(invocation);
+        if (!isStaleInvocation(invocation, Date.now())) await perform(invocation);
       } finally {
         // Swallowed deliberately: the bridge failing to forget a request is not
         // something a screen can act on, and letting it escape would strand

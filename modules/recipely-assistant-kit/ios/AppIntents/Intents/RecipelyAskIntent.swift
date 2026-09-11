@@ -22,11 +22,16 @@ internal import RecipelyAssistantKit
 ///   and no confirmation sheet in the process Siri launched. So the request is
 ///   queued and the app is brought up to run it. The same path serves a missing
 ///   token or a dead network, where opening the app is simply the thing that works.
-/// - Note: **Queued before the app comes up, withdrawn if the user declines.**
-///   The app drains the queue when it turns active, so a request written after
-///   that moment would wait for the next launch. Written first, a "no" to Siri's
-///   confirmation would leave it to run on a launch nobody connects with it —
-///   hence the withdrawal on the throwing path.
+/// - Note: **Queued before the app comes up; the app decides whether it is still
+///   wanted.** The app drains the queue when it turns active, so a request
+///   written after that moment would wait for the next launch. The catch below
+///   withdraws it when coming forward throws, but that is best effort and was
+///   measured to miss: Cancel on Siri's "continue in the app" never reached it,
+///   and a process killed at that prompt never resumes. The guarantee is the
+///   app's — `isStaleInvocation` drops a request nobody is waiting for.
+/// - Note: **The system asks first.** On the simulator `continueInForeground`
+///   showed "You'll need to continue in the app" even with `alwaysConfirm: false`
+///   — that flag only skips the prompt after recent activity. See D26.
 /// - Note: **Two APIs for one step.** `continueInForeground` exists from iOS 26
 ///   and can skip the confirmation; before it, `ForegroundContinuableIntent` is the
 ///   only way and always asks. The conformance is deprecated in 26, which warns

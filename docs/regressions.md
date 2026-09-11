@@ -1885,3 +1885,21 @@ table that still says the English.
 entered it.** The check that matters for a localized surface is whether any
 user-facing string reaches it by another road — a literal, a default, an empty
 reply the system fills in.
+
+## A cleanup that waited for an error the system never sends
+
+"Ask Recipely" queued a request, asked Siri to continue in the app, and relied
+on a `catch` to take the request back if the user said no. Run on the simulator,
+Cancel never reached that `catch`, and a process killed while the prompt was up
+never resumed at all — so the request stayed, and would have run on the next
+launch as a search nobody remembered asking for. The domain type had documented
+that stale requests were discardable; no code discarded them.
+
+*Now:* the app drops any queued request older than two minutes before running
+it (`isStaleInvocation`), with a test that fails without the check. The
+intent's withdrawal stays as best effort.
+
+*The class:* **a guarantee that depends on being told about failure fails
+silently when nobody tells you.** Cleanup belongs with the side that will
+certainly run — here the reader of the queue — not with the side that may be
+cancelled, suspended or killed first.

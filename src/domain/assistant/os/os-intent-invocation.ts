@@ -8,11 +8,11 @@ import type { OsIntentIdType } from '@domain/assistant/os/os-intent-id';
  * - **The native side speaks strings; this does not.** An intent may have been
  *   compiled into a build older or newer than the JavaScript reading it, so the
  *   bridge hands over a bare string and the adapter drops what
- *   `isAssistantAction` does not recognise. A word this build cannot run is
+ *   `isOsReachableAction` refuses. A word this build cannot run is
  *   dropped at the boundary rather than dispatched and failed.
- * - **`at` is what makes a stale request discardable.** An intent queued while
- *   the app was closed may only be read minutes later, and a search arriving
- *   after the user has opened something else is worse than nothing happening.
+ * - **`at` is what makes a stale request discardable** — `isStaleInvocation`.
+ *   A search arriving after the user has moved on is worse than nothing
+ *   happening.
  */
 export interface OsIntentInvocation {
   readonly id: OsIntentIdType;
