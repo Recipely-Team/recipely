@@ -166,6 +166,28 @@ describe('AssistantController — starting', () => {
     expect(calls.lastIndexOf('mic.stop')).toBeLessThan(calls.lastIndexOf('mic.start'));
   });
 
+  // Pressed again while the last session is still handing its devices back, a
+  // control that reads "idle" for that long looks like a press that did nothing.
+  it('says it is connecting while it waits for the last session to let go', async () => {
+    const { controller, calls } = await started();
+    let release!: () => void;
+    const slowStop = async (): Promise<void> => {
+      calls.push('player.stop');
+      await new Promise<void>((resolve) => (release = resolve));
+    };
+    (controller as unknown as { options: { player: { stop: () => Promise<void> } } }).options.player.stop = slowStop;
+
+    void controller.stop();
+    await settle();
+    const starting = controller.start();
+    await settle();
+
+    expect(controller.getState().status).toBe(AssistantStatus.Connecting);
+    release();
+    await starting;
+    expect(controller.getState().status).toBe(AssistantStatus.Listening);
+  });
+
   it('tears down and reports a connect that fails', async () => {
     const { controller, session, microphone } = build();
     session.connectResult = fail({ code: AssistantFailureCode.SocketFailed });
@@ -273,6 +295,20 @@ describe('AssistantController — a turn', () => {
     // …but at 12 s after the second.
     await jest.advanceTimersByTimeAsync(1_200);
     expect(controller.getState().error).toEqual({ code: AssistantFailureCode.NoAnswer });
+  });
+
+  // The notice is about an answer that did not come; the moment anything
+  // arrives — the user simply saying it again — it has outlived what it
+  // describes, and a panel still showing it reads as an app that is broken.
+  it('drops the no-answer notice as soon as the user speaks again', async () => {
+    const { controller, session } = await started();
+    session.emit({ kind: SessionEventKind.Transcript, speaker: Speaker.User, text: 'hello?' });
+    await jest.advanceTimersByTimeAsync(1_200 + 12_000);
+    expect(controller.getState().error).toEqual({ code: AssistantFailureCode.NoAnswer });
+
+    session.emit({ kind: SessionEventKind.Transcript, speaker: Speaker.User, text: 'are you there' });
+
+    expect(controller.getState().error).toBeNull();
   });
 
   // turnComplete arrives when the reply is SENT, seconds before it is heard.

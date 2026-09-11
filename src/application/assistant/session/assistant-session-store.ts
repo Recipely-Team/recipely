@@ -144,7 +144,10 @@ export const configureAssistantSessionStore = (
       connect: (credentials) => deps.session.connect(credentials),
       sendAudio: (samples) => {
         deps.session.sendAudio(samples);
-        if (controller.getState().status !== SessionStatus.Speaking) publishLevel(samples);
+        // A frame captured while the session was being torn down would
+        // otherwise leave the waveform standing at its last height.
+        const { status } = controller.getState();
+        if (status !== SessionStatus.Idle && status !== SessionStatus.Speaking) publishLevel(samples);
       },
       sendText: (text) => deps.session.sendText(text),
       respondToTool: (call, response) => deps.session.respondToTool(call, response),

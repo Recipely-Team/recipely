@@ -772,6 +772,31 @@ describe('assistant session store', () => {
         expect(store.getState().status).toBe(AssistantStatus.Idle);
       });
 
+    // The budget only exists because the server is told how long the socket
+    // has been open. The old guard used the session epoch, which a handover
+    // bumps, so after the first goAway every report was discarded: the number
+    // froze and a metered account could not be cut off at all.
+    it('goes on reporting the budget after a handover, and still ends at zero', async () => {
+      jest.useFakeTimers();
+      try {
+        const { store, emit } = harness({ reportedSeconds: 0 });
+        await store.getState().startVoice('tr-TR');
+
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
+        await settle();
+
+        await jest.advanceTimersByTimeAsync(15_000);
+        await settle();
+
+        expect(store.getState().remainingSeconds).toBe(0);
+        expect(store.getState().status).toBe(AssistantStatus.Unavailable);
+      } finally {
+        jest.useRealTimers();
+      }
+    });
+
     it('records what the session has cost so far', async () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');

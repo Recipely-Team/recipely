@@ -95,9 +95,10 @@ const isModelOutput = (event: SessionEvent): boolean =>
  * - **Interruption is a flush.** `interrupted` drops the queued audio; anything
  *   softer lets the assistant finish the sentence the user talked over.
  * - **Tool calls run one at a time, in order, and are always answered.** "Open
- *   it and share it" is nonsense if the share races the open. A response from a
- *   session that has since been replaced is dropped, and a withdrawn call is
- *   never answered.
+ *   it and share it" is nonsense if the share races the open. A call belongs to
+ *   the session that asked for it: one still queued when the provider hands the
+ *   session over is dropped unrun, and an answer produced for a socket that has
+ *   since been replaced is thrown away. A withdrawn call is never answered.
  * - **A `goAway` is survived.** The provider drops long sessions on a timer;
  *   the controller asks `getConnection` for a new credential with the
  *   resumption handle and continues on a new socket, microphone and player left
@@ -161,8 +162,14 @@ export class AssistantController<Connection> {
    * devices are shared, and the ending one must hand them back first.
    */
   async start(): Promise<Result<void, AssistantFailure>> {
-    if (this.ending !== null) await this.ending.settled;
     if (this.state.status !== AssistantStatus.Idle) return ok(undefined);
+    if (this.ending !== null) {
+      // Said before the wait: the devices of the session that is ending are
+      // still being handed back, and a control that reads "idle" for that
+      // long looks like a press that did nothing.
+      this.setState({ status: AssistantStatus.Connecting, error: null, endReason: null });
+      await this.ending.settled;
+    }
 
     const run = this.runStart();
     this.starting = run;
@@ -293,10 +300,12 @@ export class AssistantController<Connection> {
   }
 
   private handle(event: SessionEvent): void {
-    if (isModelOutput(event)) {
-      this.clearTimer('answerTimer');
-      if (this.state.error?.code === AssistantFailureCode.NoAnswer) this.setState({ error: null });
-    }
+    // Only the model answering ends the WAIT for an answer — but the notice
+    // that none came goes as soon as anything arrives, including the user
+    // simply saying it again. A notice that outlives what it describes reads
+    // as an app that is still broken.
+    if (isModelOutput(event)) this.clearTimer('answerTimer');
+    if (this.state.error?.code === AssistantFailureCode.NoAnswer) this.setState({ error: null });
 
     switch (event.kind) {
       case SessionEventKind.Transcript:
