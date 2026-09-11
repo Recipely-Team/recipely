@@ -62,8 +62,26 @@ first unchecked box.
 - [x] 3d — `@live-assistant/token-server` (Node ≥ 18, no dependencies beyond core's types): `mintGeminiLiveToken({ apiKey, model, systemInstruction, tools, voiceName, languageCode, resumptionHandle, … })` → `{ token, model, wsUrl, expiresAt }` or a coded `TokenFailure` (never throws). Same measured body as Recipely's backend minter (single use, 30 min session, 60 s start window, audio + both transcriptions, sliding window, resumption always on); `ToolDefinition` JSON Schema is normalised to the upper-case type names the Live API is measured to accept. 8 unit tests with an injected `fetch`
 - [ ] 3d live check — **needs the owner's Gemini key**: mint with the package, run the controller, see a generic `startTimer({ minutes: 5 })` arrive; and answer the open question (does a token minted WITHOUT a setup honour a client's setup frame?). The check is committed as `packages/assistant-token-server/scripts/live-check.ts` (`read -s GEMINI_API_KEY && export GEMINI_API_KEY; npx tsx packages/assistant-token-server/scripts/live-check.ts`); reading the dev box's key was refused by the auto-mode classifier as credential exploration, so the owner runs it with their own key
 - [x] 3e — `packages/README.md` (overview, architecture diagram, server + app quick start, widget customisation, headless usage, built-in behaviours, error codes, notes) and a README per package; every package at 0.1.0 (still `private: true` — publishing waits on the name, the npm scope and the licence, the owner's decisions)
-- [ ] Phase 3 review (diff-scoped)
-## Phase 4 — Dogfood in a Recipely release → 1.0.0
+- [x] Phase 3 review (diff-scoped): REQUEST CHANGES, five blocking findings, all fixed with regression tests that fail without the fix (mutation-checked):
+  - a socket refused before `setupComplete` emitted `Closed` during `connect` and `start()` reported success → `Closed` is ignored while a socket is connecting, `connect`'s own failure is returned
+  - stop-then-start let the abandoned start close the devices the new session owned → one ending at a time: `idle` is published at once, the abandoned start releases what it opened, and a new `start()` waits for the ending
+  - `LevelTimeline` grew for the whole session when nobody read levels (also in the app) → pruned on push; an hour of frames stays under 400 slices
+  - a standalone `AssistantOrb` did nothing on press, and composer/controls/theme hooks were not exported → the orb toggles the session by default; everything the widget composes is exported
+  - `useLevelFrames` requested a frame 60×/s for the app's lifetime → `enabled` flag; the orb pauses while idle or with Reduce Motion
+  - also fixed: the answer wait restarts from the user's LAST pause and only model output ends it; `speaking` settles after tools that outlived the turn; tool calls stay one at a time across a handover; the web microphone replaces `onFrame` on restart; composer/controls/transcript no longer re-render per fragment; screen readers hear final messages, not fragments; a `style` prop for safe-area insets; the token server never throws on an aborted body read and maps `type: [x, 'null']` to `nullable`; checked again in a browser
+## Phase 4 — Recipely runs on the library → 1.0.0
+
+The app's `assistant-session-store` keeps its public shape (so the UI and the
+behaviour its 77 tests pin stay as they are) and delegates the session to an
+`AssistantController`. Only Recipely's own concerns stay in the store.
+
+- [ ] Library additions the dogfood needs (each generic): `sendText(text, { hidden: true })` for a nudge the model should act on but the transcript should not show (Recipely's budget warning)
+- [ ] DI hands the store the LIBRARY objects (`GeminiLiveSession`, `Microphone`, `PcmPlayer`); the app's session/mic/player adapters and their domain ports go, `toAppFailure` stays
+- [ ] Store on the controller: `getConnection` = `tokens.mintSession(locale, handle)` (a Denied grant throws a typed refusal that comes back as `cause` → `Unavailable` + `deniedReason`); a `ToolRegistry` with the one `runAction` tool → `registry.run(action, arg)`; transcript synced by entry id (tool entries → action chips as today) plus the app's own lines (typed HTTP turns, the Stop chip on a silence end); status = controller status with the app's `Unavailable` overlay; heartbeat + budget warning while live; `level` published on an interval from `inputLevel`/`outputLevel` until the UI moves to `useLevelFrames`
+- [ ] The 77 store tests move to library-shaped fakes with their assertions unchanged wherever the behaviour is unchanged; any intended difference (speaking lasts until playback ends) is listed here
+- [ ] Gates ×3, live probe, web check in a browser; on-device voice check on iOS and Android (owner)
+- [ ] Merge to `dev` only when the owner says the library is complete; release → 1.0.0
+
 
 ## If the session ends
 1. `git checkout feat/assistant-kit-core` (or the phase branch named above).

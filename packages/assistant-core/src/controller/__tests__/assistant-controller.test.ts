@@ -107,14 +107,63 @@ describe('AssistantController — starting', () => {
 
     const starting = controller.start();
     await settle();
-    await controller.stop();
+    const stopping = controller.stop();
+    // End never waits on a connect: idle is said at once.
+    expect(controller.getState().status).toBe(AssistantStatus.Idle);
     open();
+    await stopping;
     await starting;
 
     expect(controller.getState().status).toBe(AssistantStatus.Idle);
     expect(microphone.running).toBe(false);
     expect(session.isSubscribed).toBe(false);
     expect(calls.filter((c) => c === 'player.stop').length).toBeGreaterThanOrEqual(1);
+  });
+
+  // A token the server refuses closes the socket before setupComplete: the
+  // session emits Closed AND connect resolves with the failure. The Closed
+  // must not win — start() reported success under an idle UI.
+  it('reports a socket refused before it was ready as start’s own failure', async () => {
+    const { controller, session } = build();
+    session.connectResult = fail({ code: AssistantFailureCode.ClosedBeforeReady });
+    const connect = session.connect.bind(session);
+    session.connect = async (connection: string) => {
+      session.emit({ kind: SessionEventKind.Closed, expected: false });
+      return connect(connection);
+    };
+
+    const result = await controller.start();
+
+    expect(result).toEqual({ ok: false, failure: { code: AssistantFailureCode.ClosedBeforeReady } });
+    expect(controller.getState().error).toEqual({ code: AssistantFailureCode.ClosedBeforeReady });
+  });
+
+  // Stop then start again while the first start still awaited its microphone:
+  // the first start's cleanup stopped the devices the second session owned.
+  it('never lets an abandoned start close the devices a new session owns', async () => {
+    const { controller, microphone, calls } = build();
+    let releaseMic!: () => void;
+    const slowStart = microphone.start.bind(microphone);
+    let first = true;
+    microphone.start = async (rate, onFrame) => {
+      if (first) {
+        first = false;
+        await new Promise<void>((resolve) => (releaseMic = resolve));
+      }
+      return slowStart(rate, onFrame);
+    };
+
+    const firstStart = controller.start();
+    await settle();
+    void controller.stop();
+    const secondStart = controller.start();
+    releaseMic();
+    await firstStart;
+    await secondStart;
+
+    expect(controller.getState().status).toBe(AssistantStatus.Listening);
+    expect(microphone.running).toBe(true);
+    expect(calls.lastIndexOf('mic.stop')).toBeLessThan(calls.lastIndexOf('mic.start'));
   });
 
   it('tears down and reports a connect that fails', async () => {
@@ -207,6 +256,25 @@ describe('AssistantController — a turn', () => {
     expect(controller.getState().error).toBeNull();
   });
 
+  // A user who paused past the gap and then kept talking left the status on
+  // thinking with no timer at all, so no_answer could never come.
+  it('restarts the wait for an answer when the user goes on talking after a pause', async () => {
+    const { controller, session } = await started();
+    session.emit({ kind: SessionEventKind.Transcript, speaker: Speaker.User, text: 'first part' });
+    await jest.advanceTimersByTimeAsync(1_200);
+    session.emit({ kind: SessionEventKind.Transcript, speaker: Speaker.User, text: 'and more' });
+    await jest.advanceTimersByTimeAsync(1_200);
+    // Neither the user's own words nor a usage report is the model answering.
+    session.emit({ kind: SessionEventKind.Usage, totalTokens: 5 });
+
+    // Counted from the LAST pause: not yet at 12 s after the first one…
+    await jest.advanceTimersByTimeAsync(12_000 - 1_200 + 100);
+    expect(controller.getState().error).toBeNull();
+    // …but at 12 s after the second.
+    await jest.advanceTimersByTimeAsync(1_200);
+    expect(controller.getState().error).toEqual({ code: AssistantFailureCode.NoAnswer });
+  });
+
   // turnComplete arrives when the reply is SENT, seconds before it is heard.
   it('stays speaking until the queued reply has played', async () => {
     const { controller, session, player } = await started();
@@ -295,6 +363,59 @@ describe('AssistantController — tools', () => {
     await settle();
 
     expect([...new Set(statuses)]).toEqual([AssistantStatus.Working, AssistantStatus.Thinking]);
+  });
+
+  // Audio during a tool and turnComplete before the tools finished left the
+  // status on speaking forever.
+  it('settles on listening when the turn completed while tools were still running', async () => {
+    let finish!: () => void;
+    const tools = new ToolRegistry([
+      { definition: { name: 'slow', description: 'slow' }, run: () => new Promise((resolve) => (finish = () => resolve({ ok: true }))) },
+    ]);
+    const { controller, session } = await started({ tools });
+    session.emit({ kind: SessionEventKind.ToolCall, call: { id: 'a', name: 'slow', args: {} } });
+    await settle();
+    session.emit({ kind: SessionEventKind.Audio, samples: new Float32Array(10) });
+    session.emit({ kind: SessionEventKind.TurnComplete });
+
+    finish();
+    await settle();
+
+    expect(controller.getState().status).toBe(AssistantStatus.Listening);
+  });
+
+  // "One at a time" held within a socket but not across a handover: the new
+  // socket's first call ran beside one still running for the old.
+  it('keeps tool calls one at a time across a handover', async () => {
+    const order: string[] = [];
+    let finishOld!: () => void;
+    const tools = new ToolRegistry([
+      {
+        definition: { name: 'step', description: 'a step' },
+        run: (args) =>
+          args.id === 'old'
+            ? new Promise((resolve) => {
+                order.push('old:start');
+                finishOld = () => (order.push('old:end'), resolve({ ok: true }));
+              })
+            : (order.push('new'), { ok: true }),
+      },
+    ]);
+    const { session } = await started({ tools });
+    session.emit({ kind: SessionEventKind.ToolCall, call: { id: 'o', name: 'step', args: { id: 'old' } } });
+    await settle();
+    session.emit({ kind: SessionEventKind.Resumption, handle: 'h' });
+    session.emit({ kind: SessionEventKind.GoAway, timeLeftMs: 0 });
+    session.emit({ kind: SessionEventKind.Closed, expected: false });
+    await settle();
+
+    session.emit({ kind: SessionEventKind.ToolCall, call: { id: 'n', name: 'step', args: { id: 'new' } } });
+    await settle();
+    expect(order).toEqual(['old:start']);
+
+    finishOld();
+    await settle();
+    expect(order).toEqual(['old:start', 'old:end', 'new']);
   });
 
   it('never runs or answers a call the model withdrew', async () => {

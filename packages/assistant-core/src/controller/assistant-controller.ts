@@ -67,6 +67,17 @@ const monotonicClock = (): number =>
 
 type Timer = ReturnType<typeof setTimeout>;
 
+/** Events that are the model answering — only these end the wait for an answer. */
+const MODEL_OUTPUT: ReadonlySet<string> = new Set([
+  SessionEventKind.Audio,
+  SessionEventKind.ToolCall,
+  SessionEventKind.TurnComplete,
+  SessionEventKind.Interrupted,
+]);
+
+const isModelOutput = (event: SessionEvent): boolean =>
+  MODEL_OUTPUT.has(event.kind) || (event.kind === SessionEventKind.Transcript && event.speaker === Speaker.Assistant);
+
 /**
  * Runs a live voice session, headless: the state a UI renders, the levels an
  * animation reads, and the controls — with or without the package's widget.
@@ -119,6 +130,10 @@ export class AssistantController<Connection> {
   private answerTimer: Timer | null = null;
   private silenceTimer: Timer | null = null;
   private speakingTimer: Timer | null = null;
+  private starting: Promise<Result<void, AssistantFailure>> | null = null;
+  private ending: Promise<void> | null = null;
+  private connectingSocket = false;
+  private listenAfterTools = false;
 
   constructor(private readonly options: AssistantControllerOptions<Connection>) {
     this.timing = { ...DEFAULT_TIMING, ...options.timing };
@@ -138,9 +153,31 @@ export class AssistantController<Connection> {
     };
   };
 
-  /** Opens a session. Resolves once listening, or with the failure also written to `state.error`. */
+  /**
+   * Opens a session. Resolves once listening, or with the failure also written to `state.error`.
+   *
+   * A start requested while a session is still ending waits for it: the
+   * devices are shared, and the ending one must hand them back first.
+   */
   async start(): Promise<Result<void, AssistantFailure>> {
+    if (this.ending !== null) await this.ending;
     if (this.state.status !== AssistantStatus.Idle) return ok(undefined);
+
+    const run = this.runStart();
+    this.starting = run;
+    try {
+      return await run;
+    } finally {
+      if (this.starting === run) this.starting = null;
+    }
+  }
+
+  async stop(): Promise<void> {
+    if (this.state.status === AssistantStatus.Idle && this.starting === null) return;
+    await this.end(EndReason.Stopped);
+  }
+
+  private async runStart(): Promise<Result<void, AssistantFailure>> {
     const { microphone, player, session } = this.options;
 
     this.epoch += 1;
@@ -174,7 +211,7 @@ export class AssistantController<Connection> {
     if (!output.ok) return this.failStart(output.failure);
 
     this.unsubscribe = session.subscribe((event) => this.handle(event));
-    const connected = await session.connect(connection.value);
+    const connected = await this.connectSocket(connection.value);
     if (abandoned()) {
       this.detach();
       await this.releaseDevices();
@@ -185,11 +222,6 @@ export class AssistantController<Connection> {
     this.nudgeSilence();
     this.setState({ status: AssistantStatus.Listening });
     return ok(undefined);
-  }
-
-  async stop(): Promise<void> {
-    if (this.state.status === AssistantStatus.Idle) return;
-    await this.teardown(EndReason.Stopped);
   }
 
   /** Withholds microphone frames — the model hears silence, not a flag. */
@@ -250,8 +282,10 @@ export class AssistantController<Connection> {
   }
 
   private handle(event: SessionEvent): void {
-    this.clearTimer('answerTimer');
-    if (this.state.error?.code === AssistantFailureCode.NoAnswer) this.setState({ error: null });
+    if (isModelOutput(event)) {
+      this.clearTimer('answerTimer');
+      if (this.state.error?.code === AssistantFailureCode.NoAnswer) this.setState({ error: null });
+    }
 
     switch (event.kind) {
       case SessionEventKind.Transcript:
@@ -300,13 +334,14 @@ export class AssistantController<Connection> {
         this.setState({ tokensUsed: event.totalTokens });
         break;
       case SessionEventKind.Closed:
-        if (event.expected) break;
+        // A socket refused before it was ready is `connect`'s failure to report, not a dropped session.
+        if (event.expected || this.connectingSocket) break;
         if (this.expectingGoAway && this.resumptionHandle !== undefined) {
           this.expectingGoAway = false;
           void this.reconnect();
           break;
         }
-        void this.teardown(EndReason.Failed, { code: AssistantFailureCode.ConnectionLost });
+        void this.end(EndReason.Failed, { code: AssistantFailureCode.ConnectionLost });
         break;
       case SessionEventKind.Ready:
         break;
@@ -337,8 +372,11 @@ export class AssistantController<Connection> {
         this.options.session.respondToTool(call, outcome.response);
         this.publishTranscript();
       }
+      if (this.pendingTools > NONE) return;
+      // The turn already completed while tools ran: settle on listening once its audio has played.
+      if (this.listenAfterTools) this.listenWhenPlaybackEnds();
       // Straight to thinking: passing through listening flashed "listening" between the tool and the reply.
-      if (this.pendingTools === NONE && this.state.status === AssistantStatus.Working) this.awaitAnswer();
+      else if (this.state.status === AssistantStatus.Working) this.awaitAnswer();
     });
   }
 
@@ -346,9 +384,13 @@ export class AssistantController<Connection> {
   private async reconnect(): Promise<void> {
     this.epoch += 1;
     this.handovers += 1;
-    this.resetTools();
+    // The queue is kept, not replaced: a call still running for the old socket
+    // must finish before the new socket's first one starts. Its answer is
+    // dropped by the epoch check.
+    this.pendingTools = NONE;
+    this.cancelledCalls.clear();
     if (this.handovers > this.timing.maxHandovers) {
-      await this.teardown(EndReason.Failed, { code: AssistantFailureCode.ConnectionLost });
+      await this.end(EndReason.Failed, { code: AssistantFailureCode.ConnectionLost });
       return;
     }
 
@@ -356,28 +398,70 @@ export class AssistantController<Connection> {
     const connection = await this.fetchConnection();
     if (this.epoch !== startedAt) return;
     if (!connection.ok) {
-      await this.teardown(EndReason.Failed, connection.failure);
+      await this.end(EndReason.Failed, connection.failure);
       return;
     }
 
-    const connected = await this.options.session.connect(connection.value);
+    const connected = await this.connectSocket(connection.value);
     if (this.epoch !== startedAt) {
       this.options.session.close();
       return;
     }
     if (!connected.ok) {
-      await this.teardown(EndReason.Failed, connected.failure);
+      await this.end(EndReason.Failed, connected.failure);
       return;
     }
     this.setState({ status: AssistantStatus.Listening });
   }
 
+  private async connectSocket(connection: Connection): Promise<Result<void, AssistantFailure>> {
+    this.connectingSocket = true;
+    try {
+      return await this.options.session.connect(connection);
+    } finally {
+      this.connectingSocket = false;
+    }
+  }
+
+  /** Inside `runStart` only: `end()` would wait for the very start that is failing. */
   private async failStart(failure: AssistantFailure): Promise<Result<void, AssistantFailure>> {
     await this.teardown(EndReason.Failed, failure);
     return fail(failure);
   }
 
-  /** Output before input: stopping the microphone hands the audio session back, and an open output under it may crash natively. */
+  /**
+   * Ends the session, one ending at a time.
+   *
+   * `idle` is published immediately, so End never waits on a connect. A start
+   * still in flight is abandoned (the epoch) and releases what it opened; the
+   * ending lasts until it has, and a new `start()` waits for the ending — so
+   * the abandoned start can never close devices a new session already owns.
+   * A second caller joins the ending under way instead of overwriting its reason.
+   */
+  private end(reason: EndReasonType, error: AssistantFailure | null = null): Promise<void> {
+    if (this.ending !== null) return this.ending;
+
+    const run = (async (): Promise<void> => {
+      const pending = this.starting;
+      // Idle is published at once and the socket closed (which also unblocks a pending connect).
+      if (this.state.status !== AssistantStatus.Idle || pending !== null) await this.teardown(reason, error);
+      if (pending === null) return;
+      // The abandoned start releases what it opened after this point; the devices are handed back once more after it.
+      await pending.catch(noop);
+      await this.releaseDevices();
+    })();
+    this.ending = run;
+    void run.finally(() => {
+      if (this.ending === run) this.ending = null;
+    });
+    return run;
+  }
+
+  /**
+   * Stops everything and says so at once. Output before input: stopping the
+   * microphone hands the audio session back, and an output still open under
+   * it can crash natively.
+   */
   private async teardown(reason: EndReasonType, error: AssistantFailure | null = null): Promise<void> {
     this.epoch += 1;
     this.clearTimer('gapTimer');
@@ -385,8 +469,8 @@ export class AssistantController<Connection> {
     this.clearTimer('silenceTimer');
     this.clearTimer('speakingTimer');
     this.resetTools();
+    this.listenAfterTools = false;
     this.detach();
-    await this.releaseDevices();
     this.echo.open();
     this.transcript.closeTurn();
     this.setState({
@@ -396,6 +480,7 @@ export class AssistantController<Connection> {
       error,
       transcript: this.transcript.entries,
     });
+    await this.releaseDevices();
   }
 
   private detach(): void {
@@ -421,8 +506,11 @@ export class AssistantController<Connection> {
     this.gapTimer = setTimeout(() => {
       this.transcript.closeTurn();
       this.publishTranscript();
-      // The pause that ends the user's utterance is the moment the turn becomes the model's.
-      if (speaker === Speaker.User) this.enterThinking();
+      // The pause that ends the user's utterance is the moment the turn becomes the model's —
+      // and a user who went on talking after a pause restarts the wait for the answer.
+      if (speaker === Speaker.User && (this.state.status === AssistantStatus.Listening || this.state.status === AssistantStatus.Thinking)) {
+        this.awaitAnswer();
+      }
     }, this.timing.utteranceGapMs);
   }
 
@@ -442,7 +530,11 @@ export class AssistantController<Connection> {
 
   /** `turnComplete` arrives when the reply is SENT; it is still playing, so `speaking` lasts until it is heard. */
   private listenWhenPlaybackEnds(): void {
-    if (this.pendingTools > NONE) return;
+    if (this.pendingTools > NONE) {
+      this.listenAfterTools = true;
+      return;
+    }
+    this.listenAfterTools = false;
     const remainingMs = this.options.player.remainingSeconds() * MS_PER_SECOND;
     const listen = (): void => {
       if (this.state.status === AssistantStatus.Speaking || this.state.status === AssistantStatus.Thinking) {
@@ -458,7 +550,7 @@ export class AssistantController<Connection> {
     this.clearTimer('silenceTimer');
     const timeout = this.timing.silenceTimeoutMs;
     if (timeout === null || this.state.isMuted) return;
-    this.silenceTimer = setTimeout(() => void this.teardown(EndReason.Silence), timeout);
+    this.silenceTimer = setTimeout(() => void this.end(EndReason.Silence), timeout);
   }
 
   private clearTimer(name: 'gapTimer' | 'answerTimer' | 'silenceTimer' | 'speakingTimer'): void {

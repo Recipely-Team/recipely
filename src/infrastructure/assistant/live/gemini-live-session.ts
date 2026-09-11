@@ -15,7 +15,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 
 /** The library session plus the Gemini-only resumption handle this app reconnects with. */
-type LiveTransport = AssistantSession<GeminiLiveCredentials> & { readonly lastResumptionHandle: string | null };
+type LiveTransportType = AssistantSession<GeminiLiveCredentials> & { readonly lastResumptionHandle: string | null };
 
 /**
  * A package event in the app's vocabulary, or null for one the app does not act on.
@@ -59,7 +59,7 @@ function toAppEvent(event: SessionEvent): AssistantSessionEventType | null {
  *   TypeScript checks structurally, so a renamed kind stops this file compiling.
  */
 export class GeminiLiveSession implements AssistantSessionInterface {
-  constructor(private readonly transport: LiveTransport = new GeminiLiveTransport()) {}
+  constructor(private readonly transport: LiveTransportType = new GeminiLiveTransport()) {}
 
   /** The handle the application layer needs to continue after a `goAway`. */
   get lastResumptionHandle(): string | null {

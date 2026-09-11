@@ -49,6 +49,7 @@ export async function mintGeminiLiveToken(
   };
 
   let response: Response;
+  let text: string;
   try {
     response = await (options.fetch ?? fetch)(`${GeminiEndpoints.mint}?key=${options.apiKey}`, {
       method: 'POST',
@@ -56,11 +57,12 @@ export async function mintGeminiLiveToken(
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS),
     });
+    // Inside the try: a body read the timeout aborts rejects too.
+    text = await response.text();
   } catch (error) {
     return fail({ code: TokenFailureCode.Unreachable, ...(error instanceof Error ? { detail: error.message } : {}) });
   }
 
-  const text = await response.text();
   if (!response.ok) {
     return fail({ code: TokenFailureCode.Rejected, status: response.status, detail: text.slice(0, DETAIL_CHARS) });
   }

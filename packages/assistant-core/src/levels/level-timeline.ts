@@ -37,6 +37,8 @@ export class LevelTimeline {
 
   /** Schedules `samples` to start where the audio already scheduled ends, or at `now`. */
   push(samples: Float32Array, sampleRate: number, now: number): void {
+    // Pruned here as well as on read: a session nobody draws still pushes ~50 slices a second.
+    this.dropBefore(now);
     if (samples.length === 0 || sampleRate <= 0) return;
 
     const windowSize = Math.max(1, Math.round(sampleRate * this.windowSeconds));
@@ -52,12 +54,7 @@ export class LevelTimeline {
 
   /** The level of the slice playing at `now`; 0 in a gap or after the end. */
   levelAt(now: number): number {
-    while (this.head < this.windows.length && (this.windows[this.head]?.end ?? 0) <= now) this.head++;
-    if (this.head > COMPACT_AFTER) {
-      this.windows = this.windows.slice(this.head);
-      this.head = 0;
-    }
-
+    this.dropBefore(now);
     const current = this.windows[this.head];
     return current !== undefined && current.start <= now ? current.level : 0;
   }
@@ -65,6 +62,14 @@ export class LevelTimeline {
   /** Seconds of scheduled audio not yet heard at `now`; 0 once it has all played. */
   remainingAt(now: number): number {
     return Math.max(0, this.cursor - now);
+  }
+
+  private dropBefore(now: number): void {
+    while (this.head < this.windows.length && (this.windows[this.head]?.end ?? 0) <= now) this.head++;
+    if (this.head > COMPACT_AFTER) {
+      this.windows = this.windows.slice(this.head);
+      this.head = 0;
+    }
   }
 
   /** Forgets everything scheduled — the interruption, or the end of a session. */

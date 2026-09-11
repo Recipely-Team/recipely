@@ -33,6 +33,7 @@ export class Microphone implements AssistantMicrophone {
   private stream: MediaStream | null = null;
   private context: AudioContext | null = null;
   private processor: ScriptProcessorNode | null = null;
+  private onFrame: ((samples: Float32Array<ArrayBuffer>) => void) | null = null;
   private readonly levels = new LevelTimeline();
 
   constructor(private readonly clock: () => number = () => Date.now() / MS_PER_SECOND) {}
@@ -51,6 +52,8 @@ export class Microphone implements AssistantMicrophone {
     sampleRate: number,
     onFrame: (samples: Float32Array<ArrayBuffer>) => void,
   ): Promise<Result<void, AssistantFailure>> {
+    // A restart keeps the open stream but replaces the callback, as the port promises.
+    this.onFrame = onFrame;
     if (this.stream !== null) return ok(undefined);
     if (navigator.mediaDevices === undefined) return fail({ code: AssistantFailureCode.MicrophoneDenied });
 
@@ -65,7 +68,7 @@ export class Microphone implements AssistantMicrophone {
       processor.onaudioprocess = (event) => {
         const samples = resample(event.inputBuffer.getChannelData(FIRST_CHANNEL), context.sampleRate, sampleRate);
         this.levels.push(samples, sampleRate, this.clock());
-        onFrame(samples);
+        this.onFrame?.(samples);
       };
       source.connect(processor);
       // A script processor only runs while connected to the destination, so
@@ -93,6 +96,7 @@ export class Microphone implements AssistantMicrophone {
 
   async stop(): Promise<void> {
     this.levels.clear();
+    this.onFrame = null;
     if (this.processor !== null) this.processor.onaudioprocess = null;
     this.processor?.disconnect();
     for (const track of this.stream?.getTracks() ?? []) track.stop();

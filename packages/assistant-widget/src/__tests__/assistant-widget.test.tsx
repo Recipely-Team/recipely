@@ -155,6 +155,31 @@ describe('AssistantWidget', () => {
 });
 
 describe('AssistantOrb', () => {
+  // A standalone orb was a button labelled "Start voice assistant" that did nothing.
+  it('starts and stops the session on its own when no onPress is given', async () => {
+    const { controller } = setup();
+    let renderer!: ReactTestRenderer;
+    act(() => {
+      renderer = create(
+        <AssistantProvider controller={controller}>
+          <AssistantOrb />
+        </AssistantProvider>,
+      );
+    });
+
+    await act(async () => {
+      press(byLabel(renderer, 'Start voice assistant'));
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    expect(controller.getState().status).toBe('listening');
+
+    await act(async () => {
+      press(byLabel(renderer, 'End'));
+      await jest.advanceTimersByTimeAsync(0);
+    });
+    expect(controller.getState().status).toBe('idle');
+  });
+
   // Levels change every frame; the orb must follow them without rendering.
   it('follows both voices without re-rendering', async () => {
     const { controller } = setup();

@@ -136,6 +136,28 @@ describe('useLevelFrames', () => {
     expect(renders).toBe(1);
   });
 
+  // A widget mounted at the root must not wake the JS thread every frame
+  // while nothing is moving.
+  it('requests no frames while disabled, after one final rest at zero', async () => {
+    const { controller } = setup();
+    await controller.start();
+    const frames: { input: number; output: number }[] = [];
+    const Probe = () => {
+      useLevelFrames((levels) => frames.push(levels), false);
+      return null;
+    };
+    const raf = jest.spyOn(globalThis, 'requestAnimationFrame');
+    mount(controller, <Probe />);
+
+    act(() => {
+      jest.advanceTimersByTime(100);
+    });
+
+    expect(frames).toEqual([{ input: 0, output: 0 }]);
+    expect(raf).not.toHaveBeenCalled();
+    raf.mockRestore();
+  });
+
   it('stops asking for frames once unmounted', async () => {
     const { controller } = setup();
     const frames: unknown[] = [];

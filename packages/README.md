@@ -117,7 +117,7 @@ export function App() {
 - **`theme`** overrides colours, orb size, radius, spacing, font size and panel height. Anything you leave out keeps the default.
 - **`strings`** overrides every word the widget shows or reads out, including statuses, errors, end reasons and tool chips. The defaults are in English.
 - **`renderMessage` / `renderTool`** receive each transcript entry together with the default rendering (`fallback`), so you can wrap it, replace it, or hide it.
-- `AssistantOrb`, `AssistantPanel`, `AssistantTranscript`, `StatusLine`, `MessageBubble` and `ToolChip` are also exported, so you can compose your own layout from them.
+- `AssistantOrb` (starts/stops on its own unless you pass `onPress`), `AssistantPanel`, `AssistantTranscript`, `StatusLine`, `AssistantControls`, `AssistantComposer`, `MessageBubble` and `ToolChip` are also exported, so you can compose your own layout from them. Inside your own parts, `useWidgetTheme()` and `useWidgetStrings()` read the merged theme and strings.
 
 ## Headless (your own UI)
 
@@ -169,5 +169,6 @@ Failures come back as codes, never as user-facing text. The widget maps them thr
 ## Notes
 
 - **Audio.** `@live-assistant/audio` needs `react-native-audio-api` (≥ 0.13.3) on native. On the web it uses Web Audio. On iOS the session runs in `voiceChat` mode, which gives echo cancellation. Android's recorder has none, which is why the controller's echo gate exists.
+- **Widget requirements.** The widget needs React Native 0.76 or later. The panel's shadow uses `boxShadow`, which renders on the New Architecture and on the web; on the old architecture the panel simply has no shadow. Pass safe-area insets through `style` (for example `style={{ bottom: insets.bottom + 16 }}`) so the orb clears the iOS home indicator.
 - **Model names.** Verify the model you configure. A model can appear in the model list and still not be callable.
 - **Configuration lives in the token.** Gemini fixes the session setup when the token is minted, and a setup sent by the client is discarded.

@@ -4,6 +4,10 @@
  *   read -s GEMINI_API_KEY && export GEMINI_API_KEY
  *   npx tsx packages/assistant-token-server/scripts/live-check.ts
  *
+ * or, with the key in a server's env file (GEMINI_API_KEYS pools are read too):
+ *
+ *   npx tsx --env-file=<path to .env> packages/assistant-token-server/scripts/live-check.ts
+ *
  * 1. Mints a token with this package (instruction + a generic `startTimer`
  *    tool), runs the headless controller over it with a silent microphone,
  *    and prints the tool call the model made and the transcript.
@@ -17,7 +21,11 @@ import type { AssistantMicrophone, AssistantPlayer, TranscriptEntry } from '@liv
 import { GeminiLiveSession } from '@live-assistant/gemini';
 import { GeminiEndpoints, mintGeminiLiveToken } from '@live-assistant/token-server';
 
-const apiKey = process.env.GEMINI_API_KEY ?? '';
+// A single key, or the first of a comma-separated pool (as a server's .env often holds them).
+const apiKey =
+  [process.env.GEMINI_API_KEY, process.env.GEMINI_API_KEYS_PAID, process.env.GEMINI_API_KEYS, process.env.GEMINI_API_KEYS_FREE]
+    .map((value) => (value ?? '').split(',')[0]?.trim() ?? '')
+    .find((value) => value.length > 0) ?? '';
 const model = process.env.GEMINI_LIVE_MODEL ?? 'models/gemini-3.1-flash-live-preview';
 const TIMEOUT_MS = 40_000;
 

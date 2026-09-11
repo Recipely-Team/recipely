@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Speaker } from '@live-assistant/core';
 import { useWidgetTheme } from '../theme/widget-theme-context';
@@ -11,13 +12,20 @@ const GROWING_OPACITY = 0.75;
 const FULL = 1;
 const BUBBLE_SHARE = '82%';
 
-/** The default look of a said line: the user's on the right, the assistant's on the left. */
-export function MessageBubble({ entry }: MessageBubbleProps) {
+/**
+ * The default look of a said line: the user's on the right, the assistant's on the left.
+ *
+ * Memoised on the entry (which keeps its identity until it changes), so a
+ * growing message re-renders only its own bubble; announced to screen readers
+ * once final, never fragment by fragment.
+ */
+export const MessageBubble = memo(function MessageBubble({ entry }: MessageBubbleProps) {
   const theme = useWidgetTheme();
   const isUser = entry.speaker === Speaker.User;
 
   return (
     <View
+      accessibilityLiveRegion={entry.isFinal ? 'polite' : 'none'}
       style={[
         styles.bubble,
         {
@@ -36,7 +44,7 @@ export function MessageBubble({ entry }: MessageBubbleProps) {
       </Text>
     </View>
   );
-}
+});
 
 const styles = StyleSheet.create({
   bubble: { maxWidth: BUBBLE_SHARE },

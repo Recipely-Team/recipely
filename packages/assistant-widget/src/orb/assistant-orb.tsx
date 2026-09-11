@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Animated, Easing, Pressable, StyleSheet, View } from 'react-native';
 import { AssistantStatus, smoothLevel } from '@live-assistant/core';
-import { useAssistantState, useLevelFrames } from '@live-assistant/react';
+import { useAssistantController, useAssistantState, useLevelFrames } from '@live-assistant/react';
 import type { AssistantState } from '@live-assistant/core';
 import { useWidgetTheme } from '../theme/widget-theme-context';
 import { useWidgetStrings } from '../strings/widget-strings-context';
@@ -35,6 +35,7 @@ const REST = 1;
 export function AssistantOrb({ onPress, size }: AssistantOrbProps) {
   const theme = useWidgetTheme();
   const strings = useWidgetStrings();
+  const controller = useAssistantController();
   const status = useAssistantState(selectStatus);
   const isMuted = useAssistantState(selectMuted);
   const diameter = size ?? theme.orbSize;
@@ -47,7 +48,8 @@ export function AssistantOrb({ onPress, size }: AssistantOrbProps) {
 
   useEffect(() => {
     let live = true;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => live && setReduceMotion(enabled));
+    // Only when on: the default is off, and setting it again would re-render for nothing.
+    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => live && enabled && setReduceMotion(true));
     const subscription = AccessibilityInfo.addEventListener('reduceMotionChanged', setReduceMotion);
     return () => {
       live = false;
@@ -55,15 +57,16 @@ export function AssistantOrb({ onPress, size }: AssistantOrbProps) {
     };
   }, []);
 
+  const isIdle = status === AssistantStatus.Idle;
+  // Paused while idle or with Reduce Motion on: nothing to draw, so no frame is requested.
   useLevelFrames((levels, elapsed) => {
-    if (reduceMotion) return;
     eased.current = {
       input: smoothLevel(eased.current.input, levels.input, elapsed),
       output: smoothLevel(eased.current.output, levels.output, elapsed),
     };
     glow.setValue(eased.current.output);
     ring.setValue(eased.current.input);
-  });
+  }, !isIdle && !reduceMotion);
 
   useEffect(() => {
     if (reduceMotion || !PULSING.includes(status)) {
@@ -80,7 +83,7 @@ export function AssistantOrb({ onPress, size }: AssistantOrbProps) {
     return () => loop.stop();
   }, [pulse, reduceMotion, status]);
 
-  const isIdle = status === AssistantStatus.Idle;
+  const toggle = (): void => void (isIdle ? controller.start() : controller.stop());
   const circle = { width: diameter, height: diameter, borderRadius: diameter / HALF };
   const glowScale = glow.interpolate({ inputRange: [0, 1], outputRange: [REST, REST + OrbMotion.assistantGlowGrowth] });
   const ringScale = ring.interpolate({ inputRange: [0, 1], outputRange: [REST, REST + OrbMotion.userRingGrowth] });
@@ -90,7 +93,7 @@ export function AssistantOrb({ onPress, size }: AssistantOrbProps) {
       accessibilityRole="button"
       accessibilityLabel={isIdle ? strings.start : strings.stop}
       accessibilityHint={strings.status[status]}
-      onPress={onPress}
+      onPress={onPress ?? toggle}
       style={[styles.hit, { width: diameter, height: diameter }]}
     >
       <Animated.View

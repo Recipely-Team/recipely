@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { StyleSheet, View, useWindowDimensions } from 'react-native';
+import type { StyleProp, ViewStyle } from 'react-native';
 import { AssistantStatus } from '@live-assistant/core';
 import type { AssistantState } from '@live-assistant/core';
 import { useAssistantController, useAssistantState } from '@live-assistant/react';
@@ -25,6 +26,8 @@ export interface AssistantWidgetProps extends AssistantPanelProps {
   readonly strings?: AssistantStringsOverride;
   /** Floating in a bottom corner (default right), or laid out where it is rendered. */
   readonly placement?: (typeof WidgetPlacement)[keyof typeof WidgetPlacement];
+  /** Merged last onto the floating stack — pass safe-area insets here (e.g. `{ bottom: insets.bottom + 16 }`). */
+  readonly style?: StyleProp<ViewStyle>;
 }
 
 const selectStatus = (state: AssistantState) => state.status;
@@ -45,7 +48,7 @@ const PANEL_SHARE = '100%';
  * - **Render it inside `AssistantProvider`, once, near the root**, so it
  *   floats over every screen and survives navigation.
  */
-export function AssistantWidget({ theme, strings, placement = WidgetPlacement.BottomRight, ...panel }: AssistantWidgetProps) {
+export function AssistantWidget({ theme, strings, placement = WidgetPlacement.BottomRight, style, ...panel }: AssistantWidgetProps) {
   const controller = useAssistantController();
   const status = useAssistantState(selectStatus);
   const mergedTheme = useMemo(() => mergeTheme(theme), [theme]);
@@ -70,6 +73,7 @@ export function AssistantWidget({ theme, strings, placement = WidgetPlacement.Bo
             floating,
             { gap: mergedTheme.spacing, width: placement === WidgetPlacement.Inline ? undefined : width },
             placement === WidgetPlacement.BottomLeft ? styles.alignStart : styles.alignEnd,
+            style,
           ]}
         >
           {isIdle ? (

@@ -55,4 +55,16 @@ describe('LevelTimeline', () => {
     expect(timeline.levelAt(9.95)).toBe(1);
     expect(timeline.levelAt(10.5)).toBe(0);
   });
+
+  // Nothing reads levels in a headless session or an app without an
+  // animation, and the microphone pushes ~50 slices a second: pruning only on
+  // read grew the timeline for the whole session.
+  it('stays bounded when pushed for an hour and never read', () => {
+    const timeline = new LevelTimeline();
+    const frame = tone(0.1, 0.5);
+    for (let second = 0; second < 3_600; second += 0.1) timeline.push(frame, RATE, second);
+
+    const kept = (timeline as unknown as { windows: unknown[] }).windows.length;
+    expect(kept).toBeLessThan(400);
+  });
 });

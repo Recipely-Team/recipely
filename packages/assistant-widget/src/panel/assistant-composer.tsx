@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
-import { useAssistant } from '@live-assistant/react';
+import { useAssistantController } from '@live-assistant/react';
 import { useWidgetStrings } from '../strings/widget-strings-context';
 import { useWidgetTheme } from '../theme/widget-theme-context';
 
@@ -10,13 +10,13 @@ const EMPTY = '';
 export function AssistantComposer() {
   const theme = useWidgetTheme();
   const strings = useWidgetStrings();
-  const { sendText } = useAssistant();
+  const controller = useAssistantController();
   const [text, setText] = useState(EMPTY);
 
   const send = (): void => {
     const trimmed = text.trim();
     if (trimmed === EMPTY) return;
-    if (sendText(trimmed)) setText(EMPTY);
+    if (controller.sendText(trimmed)) setText(EMPTY);
   };
 
   return (

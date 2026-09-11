@@ -21,4 +21,18 @@ describe('toGeminiSchema', () => {
       required: ['steps'],
     });
   });
+
+  it('turns a nullable type union into Gemini’s nullable flag', () => {
+    expect(toGeminiSchema({ type: ['string', 'null'], description: 'optional note' })).toEqual({
+      type: 'STRING',
+      nullable: true,
+      description: 'optional note',
+    });
+  });
+
+  it('leaves data alone, even when it contains a key named type', () => {
+    const schema = { type: 'object', default: { type: 'draft' }, examples: [{ type: 'final' }], enum: ['a'] };
+
+    expect(toGeminiSchema(schema)).toEqual({ ...schema, type: 'OBJECT' });
+  });
 });

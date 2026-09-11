@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import type { ReactNode } from 'react';
 import { FlatList, StyleSheet } from 'react-native';
 import { TranscriptEntryKind } from '@live-assistant/core';
@@ -31,14 +31,17 @@ export function AssistantTranscript({ renderMessage, renderTool }: AssistantTran
   const entries = useTranscript();
   const list = useRef<FlatList<TranscriptEntry>>(null);
 
-  const renderItem = ({ item }: { item: TranscriptEntry }): React.ReactElement | null => {
-    if (item.kind === TranscriptEntryKind.Message) {
-      const fallback = <MessageBubble entry={item} />;
-      return <>{renderMessage ? renderMessage(item, fallback) : fallback}</>;
-    }
-    const fallback = <ToolChip entry={item} />;
-    return <>{renderTool ? renderTool(item, fallback) : fallback}</>;
-  };
+  const renderItem = useCallback(
+    ({ item }: { item: TranscriptEntry }): React.ReactElement | null => {
+      if (item.kind === TranscriptEntryKind.Message) {
+        const fallback = <MessageBubble entry={item} />;
+        return <>{renderMessage ? renderMessage(item, fallback) : fallback}</>;
+      }
+      const fallback = <ToolChip entry={item} />;
+      return <>{renderTool ? renderTool(item, fallback) : fallback}</>;
+    },
+    [renderMessage, renderTool],
+  );
 
   return (
     <FlatList
@@ -48,7 +51,6 @@ export function AssistantTranscript({ renderMessage, renderTool }: AssistantTran
       renderItem={renderItem}
       contentContainerStyle={[styles.content, { padding: theme.spacing }]}
       onContentSizeChange={() => list.current?.scrollToEnd({ animated: true })}
-      accessibilityLiveRegion="polite"
     />
   );
 }
