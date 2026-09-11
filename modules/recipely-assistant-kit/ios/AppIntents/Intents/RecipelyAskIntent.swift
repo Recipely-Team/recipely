@@ -10,7 +10,7 @@ internal import RecipelyAssistantKit
 /// - Note: **Two turns, because Siri gives no other way.** A freeform `String`
 ///   inside an App Shortcut phrase is not recognised, so the phrase carries no
 ///   parameter and `requestValueDialog` makes Siri ask. See D1. What Siri says
-///   comes from the `RecipelyIntents` table, generated from `osIntentDialogs` —
+///   comes from the `RecipelyIntents` table, generated from `osIntentStrings` —
 ///   a bare literal here was spoken in English on every phone.
 /// - Note: **It answers without opening the app when it can.** The narrow intent
 ///   token and the AES envelope let this process talk to the backend directly,
@@ -40,8 +40,8 @@ internal import RecipelyAssistantKit
 ///   without `.foreground(.dynamic)` every call to come forward would throw.
 @available(iOS 17.2, *)
 struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
-  static let title: LocalizedStringResource = "Ask Recipely"
-  static let description = IntentDescription("Asks the Recipely cooking assistant anything.")
+  static let title = LocalizedStringResource("Ask Recipely", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Asks the Recipely cooking assistant anything.", table: "RecipelyIntents"))
 
   /// False on purpose: the point is to answer without a screen when possible.
   static let openAppWhenRun = false
@@ -50,7 +50,7 @@ struct RecipelyAskIntent: AppIntent, ForegroundContinuableIntent {
   static var supportedModes: IntentModes { [.background, .foreground(.dynamic)] }
 
   @Parameter(
-    title: "Question",
+    title: LocalizedStringResource("Question", table: "RecipelyIntents"),
     requestValueDialog: IntentDialog(LocalizedStringResource("What would you like to ask?", table: "RecipelyIntents"))
   )
   var question: String

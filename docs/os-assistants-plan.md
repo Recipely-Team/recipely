@@ -295,6 +295,28 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D27 — The titles Shortcuts shows are localized too, and the prompt still is not
+Every string the intents display — 11 titles, 10 descriptions, 5 parameter
+names, 10 tile labels, the entity's type name — now reads from the
+`RecipelyIntents` table (`osIntentStrings`, 35 rows x 14 languages). Measured
+before committing to it: the metadata processor RECORDS a custom table
+(`{"key": "Ask Recipely", "table": "RecipelyIntents"}` in `extract.actionsdata`),
+so build-time strings resolve from it like run-time ones, and on a Turkish
+simulator the Shortcuts tile changed from "Ask Recipely" to "Recipely’ye sor".
+The generator refuses, through `scripts/os-intent-string-guard.cjs`, any
+`LocalizedStringResource` that does not name the table (which also catches a
+missing table or a typo in its name) and the fourteen initialiser forms that
+take a plain string; a table-driven test holds 20 refusals and 8 allowances. A
+string that is exactly one interpolation — a recipe's own name — is data and
+passes; text around an interpolation does not.
+
+**The run-time prompt stayed English even so** — "What would you like to
+ask?", the system's "You'll need to continue in the app" and its Cancel/Done —
+on a simulator whose device language AND Siri language were Turkish, while the
+same app's tiles were Turkish. Localized metadata was the last hypothesis on our
+side; the English comes from the system's execution context, and only a device
+can say whether a phone does the same.
+
 ### D26 — Run on the simulator: what works, what the system asks, and what it does not tell us
 `scripts/ios-intent-probe/run.sh` drives the Shortcuts app with XCUITest (the
 app's own project cannot keep a test target — prebuild erases it) against an
@@ -323,9 +345,14 @@ ad-hoc-signed simulator build with a real intent token in its App Group.
   nothing. The system, not our strings, picks English for this app here; whether
   a device does the same needs a device.
 - **Backend latency is Gemini's.** dev-api took 1.5–39 s; its logs show Gemini
-  answering `503 high demand` or timing out at 60 s before the Groq fallback. A
-  Siri caller needs its own, shorter budget on the backend — the in-app typed
-  mode deliberately waits 90 s — so that is a backend decision, recorded here.
+  answering `503 high demand` or timing out at 60 s before the Groq fallback.
+  **Fixed in recipely-backend#315:** one deadline per turn, set by who is waiting
+  (app 80 s, phone 12 s), shared between Gemini and Groq; measured on the dev box
+  with the phone's 6 s share, Groq answered in 0.65–0.9 s while Gemini timed out.
+  **Verified live after deploy** with the unmodified Swift client: five TR/EN
+  questions answered in 4.9–7.0 s (none timed out; before, 16–39 s). The same
+  check caught the fallback answering an English question in Turkish — the typed
+  turn never told the model its language — fixed in recipely-backend#316.
 
 ### D25 — Measured against the real backend, and what Siri says back
 **The headless path works end to end.** The unmodified `RecipelyAssistantStore`,
@@ -343,7 +370,7 @@ common answer. It now says "Opening Recipely." in the device's language.
 
 **Siri asked its follow-up in English on every phone.** The phrases were
 localized in fourteen languages; `requestValueDialog: "What would you like to
-ask?"` was a bare literal. What Siri says back now lives in `osIntentDialogs`,
+ask?"` was a bare literal. What Siri says back now lives in `osIntentStrings`,
 the generator writes it into a `RecipelyIntents.strings` table (its own table,
 so it cannot collide with anything in the app target), the plugin registers it
 as a second variant group, and the same join applies: every
@@ -394,11 +421,6 @@ extracted metadata said `8` before and `9` after, where `background` is `1` and
 background mode for the one intent whose point is to run without a screen. The client budget is 15 s — the
 fallback only works if the client gives up before Siri does. A reply with
 neither words nor an action is `nil`. The bridge now removes entries it drops.
-
-**Still English, by scope:** the intent titles, descriptions and parameter
-titles (`static let title`, `IntentDescription`, `@Parameter(title:)`). They are
-read in Shortcuts and Spotlight rather than spoken, and they belong to the same
-class — the next pass should route them through the same table.
 
 **Still to see on a device:** Siri's own deadline for `perform()`; whether the
 follow-up question is Turkish on a Turkish phone (D26 — English on the

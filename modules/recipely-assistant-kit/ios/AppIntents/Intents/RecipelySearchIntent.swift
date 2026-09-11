@@ -16,10 +16,10 @@ import AppIntents
 ///   target, and Expo's generated modules provider imports this one.
 @available(iOS 17.2, *)
 struct RecipelySearchIntent: ShowInAppSearchResultsIntent {
-  static let title: LocalizedStringResource = "Search Recipely"
+  static let title = LocalizedStringResource("Search Recipely", table: "RecipelyIntents")
   static let searchScopes: [StringSearchScope] = [.general]
 
-  @Parameter(title: "Query")
+  @Parameter(title: LocalizedStringResource("Query", table: "RecipelyIntents"))
   var criteria: StringSearchCriteria
 
   @MainActor

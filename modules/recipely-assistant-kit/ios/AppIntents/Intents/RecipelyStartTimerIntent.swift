@@ -7,8 +7,8 @@ import AppIntents
 ///   system Clock is for, and offering one here would be a worse version of it.
 @available(iOS 17.2, *)
 struct RecipelyStartTimerIntent: AppIntent {
-  static let title: LocalizedStringResource = "Start Cooking Timer"
-  static let description = IntentDescription("Starts the cook timer for the recipe you are on.")
+  static let title = LocalizedStringResource("Start Cooking Timer", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Starts the cook timer for the recipe you are on.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
   init() {}

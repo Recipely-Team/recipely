@@ -1052,17 +1052,50 @@ export const en = {
     openMyRecipes: "My recipes",
   },
   /**
-   * What Siri says for the app, rather than what the user says to Siri.
+   * Everything the intents show or say, other than the phrases the user speaks:
+   * Siri's follow-up questions, and the titles, descriptions, parameter names
+   * and tile labels that Shortcuts and Spotlight display.
    *
    * Written by `scripts/generate-app-shortcuts.mjs` into a `RecipelyIntents`
    * string table that the intents read by the ENGLISH value, the same join the
-   * phrases use. Before this block the follow-up question was an English
-   * literal, so a Turkish phone asked it in English.
+   * phrases use. Before this block every one of them was an English literal,
+   * so a Turkish phone asked its questions and labelled its tiles in English.
    */
-  osIntentDialogs: {
+  osIntentStrings: {
     askWhat: "What would you like to ask?",
     openingApp: "Opening Recipely.",
     cookWhat: "What would you like to cook?",
     importWhich: "Which link should I import?",
+    askRecipely: "Ask Recipely",
+    openRecipe: "Open Recipe",
+    saveRecipe: "Save Recipe",
+    likeRecipe: "Like Recipe",
+    readIngredients: "Read Ingredients",
+    nextStep: "Next Step",
+    readNextStep: "Read Next Step",
+    startTimer: "Start Timer",
+    startCookingTimer: "Start Cooking Timer",
+    createRecipe: "Create Recipe",
+    createARecipe: "Create a Recipe",
+    importRecipe: "Import Recipe",
+    importARecipe: "Import a Recipe",
+    myRecipes: "My Recipes",
+    openMyRecipes: "Open My Recipes",
+    searchRecipely: "Search Recipely",
+    paramDescription: "Description",
+    paramRecipe: "Recipe",
+    paramQuestion: "Question",
+    paramQuery: "Query",
+    paramLink: "Link",
+    describeGenerate: "Creates a new recipe from what you describe.",
+    describeReadIngredients: "Reads a recipe's ingredients aloud.",
+    describeLike: "Likes a recipe.",
+    describeOpenRecipe: "Opens one of your recipes in Recipely.",
+    describeReadNextStep: "Reads the next step of the recipe you are cooking.",
+    describeOpenMyRecipes: "Opens your saved, liked and created recipes.",
+    describeAsk: "Asks the Recipely cooking assistant anything.",
+    describeImport: "Imports a recipe from a link you share.",
+    describeStartTimer: "Starts the cook timer for the recipe you are on.",
+    describeSave: "Adds a recipe to your saved list.",
   },
 };

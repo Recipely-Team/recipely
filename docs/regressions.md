@@ -1876,13 +1876,16 @@ built artifact. The follow-up question the same intent asks —
 them, so a Turkish user said the Turkish phrase and was answered in English.
 Nothing flagged it: the catalogue was complete, and the line simply was not in it.
 
-*Now:* what Siri says back lives in `osIntentDialogs`, generated into a
+*Now:* what Siri says back lives in `osIntentStrings`, generated into a
 `RecipelyIntents.strings` table; the generator refuses a `table:` literal with no
 English entry, an entry no intent reads, and — after review found "Create
 Recipe" and "Import Recipe" still asking in English — ANY dialog written as a
 bare literal under `AppIntents/`, which is what closes the road rather than the
 three instances. The artifact test fails a Turkish table that still says the
-English.
+English. The same table now carries every title, description, parameter name
+and tile label the intents display; the guard (`os-intent-string-guard.cjs`, with
+its own table-driven test) now also requires every `LocalizedStringResource` to
+name the table — a positive rule, after review found forms the list had missed.
 
 *The class:* **a complete catalogue says nothing about the lines that never
 entered it.** The check that matters for a localized surface is whether any

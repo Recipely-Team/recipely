@@ -25,61 +25,61 @@ struct RecipelyShortcuts: AppShortcutsProvider {
     AppShortcut(
       intent: RecipelyAskIntent(),
       phrases: ["Ask \(.applicationName)"],
-      shortTitle: "Ask Recipely",
+      shortTitle: LocalizedStringResource("Ask Recipely", table: "RecipelyIntents"),
       systemImageName: "bubble.left.and.text.bubble.right"
     )
     AppShortcut(
       intent: RecipelyOpenRecipeIntent(),
       phrases: ["Open a recipe in \(.applicationName)"],
-      shortTitle: "Open Recipe",
+      shortTitle: LocalizedStringResource("Open Recipe", table: "RecipelyIntents"),
       systemImageName: "book"
     )
     AppShortcut(
       intent: RecipelySaveRecipeIntent(),
       phrases: ["Save a recipe in \(.applicationName)"],
-      shortTitle: "Save Recipe",
+      shortTitle: LocalizedStringResource("Save Recipe", table: "RecipelyIntents"),
       systemImageName: "bookmark"
     )
     AppShortcut(
       intent: RecipelyLikeRecipeIntent(),
       phrases: ["Like a recipe in \(.applicationName)"],
-      shortTitle: "Like Recipe",
+      shortTitle: LocalizedStringResource("Like Recipe", table: "RecipelyIntents"),
       systemImageName: "heart"
     )
     AppShortcut(
       intent: RecipelyReadIngredientsIntent(),
       phrases: ["Read the ingredients in \(.applicationName)"],
-      shortTitle: "Read Ingredients",
+      shortTitle: LocalizedStringResource("Read Ingredients", table: "RecipelyIntents"),
       systemImageName: "list.bullet"
     )
     AppShortcut(
       intent: RecipelyReadNextStepIntent(),
       phrases: ["What is the next step in \(.applicationName)"],
-      shortTitle: "Next Step",
+      shortTitle: LocalizedStringResource("Next Step", table: "RecipelyIntents"),
       systemImageName: "arrow.right.circle"
     )
     AppShortcut(
       intent: RecipelyStartTimerIntent(),
       phrases: ["Start the timer in \(.applicationName)"],
-      shortTitle: "Start Timer",
+      shortTitle: LocalizedStringResource("Start Timer", table: "RecipelyIntents"),
       systemImageName: "timer"
     )
     AppShortcut(
       intent: RecipelyGenerateRecipeIntent(),
       phrases: ["Create a recipe in \(.applicationName)"],
-      shortTitle: "Create Recipe",
+      shortTitle: LocalizedStringResource("Create Recipe", table: "RecipelyIntents"),
       systemImageName: "wand.and.stars"
     )
     AppShortcut(
       intent: RecipelyImportRecipeIntent(),
       phrases: ["Import a recipe into \(.applicationName)"],
-      shortTitle: "Import Recipe",
+      shortTitle: LocalizedStringResource("Import Recipe", table: "RecipelyIntents"),
       systemImageName: "square.and.arrow.down"
     )
     AppShortcut(
       intent: RecipelyOpenMyRecipesIntent(),
       phrases: ["Open my recipes in \(.applicationName)"],
-      shortTitle: "My Recipes",
+      shortTitle: LocalizedStringResource("My Recipes", table: "RecipelyIntents"),
       systemImageName: "square.grid.2x2"
     )
   }

@@ -19,8 +19,11 @@ import Foundation
 /// - Note: **Fifteen seconds, not the app's ninety.** Running out of time opens
 ///   the app only if THIS gives up before Siri does; if Siri's own deadline came
 ///   first it would kill `perform` and say something went wrong instead. That
-///   deadline is unmeasured, so the budget errs short: a slow answer costs a
-///   trip into the app, never an error.
+///   deadline is still unmeasured, so the budget errs short. The backend knows
+///   this caller by its token and answers it within 12 seconds, shared between
+///   Gemini and Groq (recipely-backend#315, `ASSISTANT_ANSWER_BUDGET_MS`, whose
+///   test pins it under this number) — so a slow Gemini costs a Groq answer, not
+///   a trip into the app.
 public enum RecipelyAssistantClient {
   private static let messagePath = "assistant/message"
   private static let timeout: TimeInterval = 15

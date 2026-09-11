@@ -35,10 +35,13 @@ xcrun simctl install "$SIM" "$APP"
 CONTAINER="$(xcrun simctl get_app_container "$SIM" "$BUNDLE_ID" "$GROUP")"
 PREFS="$CONTAINER/Library/Preferences/$GROUP.plist"
 mkdir -p "$(dirname "$PREFS")"
-[ -f "$PREFS" ] || plutil -create xml1 "$PREFS"
-/usr/libexec/PlistBuddy -c "Delete :recipely.assistant.token" -c "Delete :recipely.assistant.language" -c "Delete :recipely.assistant.invocationQueue" "$PREFS" 2>/dev/null || true
-/usr/libexec/PlistBuddy -c "Add :recipely.assistant.token string $(tr -d '\n' < "$TOKEN_FILE")" \
-  -c "Add :recipely.assistant.language string ${LANGUAGE:-en}" "$PREFS"
+# Through cfprefsd, never the file: the simulator's cfprefsd caches the domain,
+# so a file edit can be overwritten by its cache and a file read can miss a
+# write it has not flushed yet — both happened while this script was written.
+prefs() { xcrun simctl spawn "$SIM" defaults "$1" "$PREFS" "${@:2}"; }
+prefs delete recipely.assistant.invocationQueue 2>/dev/null || true
+prefs write recipely.assistant.token -string "$(tr -d '\n' < "$TOKEN_FILE")"
+prefs write recipely.assistant.language -string "${LANGUAGE:-en}"
 
 cp -R "$HERE/." "$OUT/"
 (cd "$OUT" && xcodegen generate >/dev/null)
@@ -55,13 +58,13 @@ for test in json.load(open(f"{root}/manifest.json")):
     for a in sorted(test["attachments"], key=lambda a: a["suggestedHumanReadableName"]):
         name = a["suggestedHumanReadableName"].split("_")[0]
         body = open(f"{root}/{a['exportedFileName']}", errors="ignore").read() if not a["exportedFileName"].endswith(".png") else None
-        if name == "summary":
-            print(f"summary: {body}")
+        if name in ("summary", "0-tiles"):
+            print(f"{name}: {body}")
         elif name.endswith("-tree"):
             texts = re.findall(r"StaticText, [^\n]*?label: '([^']+)'", body)
             print(f"{name[:-5]}: {' | '.join(t for t in texts if not re.match(r'^\d{1,2}:\d{2}$', t))}")
         else:
             print(f"{name}: {root}/{a['exportedFileName']}")
 PY
-echo "queue afterwards: $(plutil -p "$PREFS" | grep -c invocationId || true) request(s)"
+echo "queue afterwards: $(prefs read recipely.assistant.invocationQueue 2>/dev/null | grep -c invocationId || true) request(s)"
 echo "full output: $OUT"

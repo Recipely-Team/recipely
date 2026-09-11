@@ -7,11 +7,11 @@ import AppIntents
 ///   made earlier, which is why `unsave` is not offered to the OS at all.
 @available(iOS 17.2, *)
 struct RecipelySaveRecipeIntent: AppIntent {
-  static let title: LocalizedStringResource = "Save Recipe"
-  static let description = IntentDescription("Adds a recipe to your saved list.")
+  static let title = LocalizedStringResource("Save Recipe", table: "RecipelyIntents")
+  static let description = IntentDescription(LocalizedStringResource("Adds a recipe to your saved list.", table: "RecipelyIntents"))
   static let openAppWhenRun = true
 
-  @Parameter(title: "Recipe")
+  @Parameter(title: LocalizedStringResource("Recipe", table: "RecipelyIntents"))
   var recipe: RecipeAppEntity
 
   init() {}

@@ -14,7 +14,7 @@ internal import RecipelyAssistantKit
 ///   only reason it is carried at all.
 @available(iOS 17.2, *)
 struct RecipeAppEntity: AppEntity, Identifiable {
-  static let typeDisplayRepresentation = TypeDisplayRepresentation(name: "Recipe")
+  static let typeDisplayRepresentation = TypeDisplayRepresentation(name: LocalizedStringResource("Recipe", table: "RecipelyIntents"))
   static let defaultQuery = RecipeEntityQuery()
 
   let id: String
