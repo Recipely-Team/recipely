@@ -1011,4 +1011,30 @@ export const en = {
       stop: "Stopped",
     },
   },
+  /**
+   * The phrases Siri accepts for this app, one per App Shortcut.
+   *
+   * `{app}` is the application name, and Apple requires every phrase to carry
+   * it — a phrase without it is dropped at build time with no error. The
+   * generator turns it into `${applicationName}`, which is the form the
+   * metadata processor extracts.
+   *
+   * The ENGLISH value is the lookup key for the whole catalogue: it has to
+   * match the phrase literal in `RecipelyShortcuts.swift` character for
+   * character, or Siri matches the English and every translation is ignored.
+   * `scripts/generate-app-shortcuts.mjs` joins the two on that string and
+   * refuses to write a catalogue when they disagree.
+   */
+  osIntentPhrases: {
+    ask: "Ask {app}",
+    openRecipe: "Open a recipe in {app}",
+    saveRecipe: "Save a recipe in {app}",
+    likeRecipe: "Like a recipe in {app}",
+    readIngredients: "Read the ingredients in {app}",
+    readNextStep: "What is the next step in {app}",
+    startTimer: "Start the timer in {app}",
+    generateRecipe: "Create a recipe in {app}",
+    importRecipe: "Import a recipe into {app}",
+    openMyRecipes: "Open my recipes in {app}",
+  },
 };

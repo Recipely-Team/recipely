@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "Tanya ${applicationName}";
+"Open a recipe in ${applicationName}" = "Buka resep di ${applicationName}";
+"Save a recipe in ${applicationName}" = "Simpan resep di ${applicationName}";
+"Like a recipe in ${applicationName}" = "Suka resep di ${applicationName}";
+"Read the ingredients in ${applicationName}" = "Bacakan bahan di ${applicationName}";
+"What is the next step in ${applicationName}" = "Apa langkah berikutnya di ${applicationName}";
+"Start the timer in ${applicationName}" = "Mulai timer di ${applicationName}";
+"Create a recipe in ${applicationName}" = "Buat resep di ${applicationName}";
+"Import a recipe into ${applicationName}" = "Impor resep ke ${applicationName}";
+"Open my recipes in ${applicationName}" = "Buka resep saya di ${applicationName}";

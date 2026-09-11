@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "Frag ${applicationName}";
+"Open a recipe in ${applicationName}" = "Ein Rezept in ${applicationName} öffnen";
+"Save a recipe in ${applicationName}" = "Ein Rezept in ${applicationName} sichern";
+"Like a recipe in ${applicationName}" = "Ein Rezept in ${applicationName} liken";
+"Read the ingredients in ${applicationName}" = "Die Zutaten in ${applicationName} vorlesen";
+"What is the next step in ${applicationName}" = "Was ist der nächste Schritt in ${applicationName}";
+"Start the timer in ${applicationName}" = "Timer in ${applicationName} starten";
+"Create a recipe in ${applicationName}" = "Ein Rezept in ${applicationName} erstellen";
+"Import a recipe into ${applicationName}" = "Ein Rezept in ${applicationName} importieren";
+"Open my recipes in ${applicationName}" = "Meine Rezepte in ${applicationName} öffnen";

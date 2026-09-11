@@ -293,6 +293,33 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D19 — `.xcstrings` needs a deployment target of 17; this app ships 15.1
+The obvious format for the phrase catalogue is a String Catalogue, and it is
+rejected outright: *"AppShortcuts.xcstrings is only supported for iOS 17.0 and
+above. Use AppShortcuts.strings for previous versions."* The App Shortcuts
+themselves are `@available(iOS 17.2, *)` and simply do not appear on anything
+older — but the deployment target is a property of the whole TARGET, so the
+catalogue format follows the oldest OS the **app** supports, not the oldest one
+the **feature** does. Legacy `<lang>.lproj/AppShortcuts.strings` it is.
+
+Three more things this cost, each found by building rather than by reading:
+
+- **`knownRegions` was `(en, Base)`.** A localized resource only compiles for
+  languages the project lists, so without widening it the other thirteen were
+  generated, copied, compiled away, and Siri would have answered in English on
+  every device with nothing failing. The plugin now reads the shipped languages
+  from `i18n/locales/` rather than carrying a list of its own.
+- **Fourteen files are ONE file to Xcode.** Registered individually they each
+  install to `AppShortcuts.strings` in the bundle root and the last one copied
+  wins; they belong in a `PBXVariantGroup` keyed by language.
+- **`xcode`'s `addResourceFile` cannot be used at all.** It dereferences
+  `pbxGroupByName('Resources').path`, and an Expo project has no such group —
+  the same null-for-absent trap the group lookup sprang in Phase 0, one function
+  along.
+
+Verified in the built app: 14 `.lproj` folders, each carrying the ten phrases
+under the exact keys the metadata processor extracted.
+
 ### D18 — `expo-app-intents` shipped 0.2.0 on 2026-09-10, and it is half of this
 
 Published the day after Phase 0 measured all of this by hand. Its README states
@@ -346,7 +373,7 @@ plugin's pbxproj code.
 - [x] The five `CONFIRMED_ACTIONS` are absent from the catalogue entirely, so no phrase can reach one (rule X)
 - [x] **Verified in a real build**: `BUILD SUCCEEDED`, 11 intents + 1 entity + 1 query extracted into `Metadata.appintents`, all `isDiscoverable: true`, 10 app shortcuts
 - [x] Rule W widened to read the Swift named-argument form (`id:` / `action:`), proved by breaking it
-- [ ] Phrases for 14 languages generated from i18n into `AppShortcuts.xcstrings`
+- [x] Phrases for 14 languages, generated from i18n into `<lang>.lproj/AppShortcuts.strings` (D19)
 - [ ] `IndexedEntity` for Spotlight semantic search (needs the catalogue re-indexed on publish)
 - [ ] Control Center control — needs a widget extension target, which prebuild does not create today
 - [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side

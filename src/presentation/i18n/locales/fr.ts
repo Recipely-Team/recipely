@@ -1001,4 +1001,16 @@ export const fr = {
       stop: "S'est arrêté",
     },
   },
+  osIntentPhrases: {
+    ask: "Demande à {app}",
+    openRecipe: "Ouvrir une recette dans {app}",
+    saveRecipe: "Enregistrer une recette dans {app}",
+    likeRecipe: "Aimer une recette dans {app}",
+    readIngredients: "Lire les ingrédients dans {app}",
+    readNextStep: "Quelle est la prochaine étape dans {app}",
+    startTimer: "Démarrer le minuteur dans {app}",
+    generateRecipe: "Créer une recette dans {app}",
+    importRecipe: "Importer une recette dans {app}",
+    openMyRecipes: "Ouvrir mes recettes dans {app}",
+  },
 };

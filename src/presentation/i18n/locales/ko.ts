@@ -997,4 +997,16 @@ export const ko: Translations = {
       stop: "멈췄어요",
     },
   },
+  osIntentPhrases: {
+    ask: "{app}에 물어봐",
+    openRecipe: "{app}에서 레시피 열기",
+    saveRecipe: "{app}에서 레시피 저장",
+    likeRecipe: "{app}에서 레시피 좋아요",
+    readIngredients: "{app}에서 재료 읽어줘",
+    readNextStep: "{app}에서 다음 단계는",
+    startTimer: "{app}에서 타이머 시작",
+    generateRecipe: "{app}에서 레시피 만들기",
+    importRecipe: "{app}으로 레시피 가져오기",
+    openMyRecipes: "{app}에서 내 레시피 열기",
+  },
 };

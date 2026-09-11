@@ -1001,4 +1001,16 @@ export const ja = {
       stop: "停止しました",
     },
   },
+  osIntentPhrases: {
+    ask: "{app}に聞いて",
+    openRecipe: "{app}でレシピを開く",
+    saveRecipe: "{app}でレシピを保存",
+    likeRecipe: "{app}でレシピにいいね",
+    readIngredients: "{app}で材料を読んで",
+    readNextStep: "{app}で次の手順は",
+    startTimer: "{app}でタイマーを開始",
+    generateRecipe: "{app}でレシピを作る",
+    importRecipe: "{app}にレシピをインポート",
+    openMyRecipes: "{app}でマイレシピを開く",
+  },
 };

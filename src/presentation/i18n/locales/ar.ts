@@ -1001,4 +1001,16 @@ export const ar = {
       stop: "توقّف",
     },
   },
+  osIntentPhrases: {
+    ask: "اسأل {app}",
+    openRecipe: "افتح وصفة في {app}",
+    saveRecipe: "احفظ وصفة في {app}",
+    likeRecipe: "سجّل إعجابك بوصفة في {app}",
+    readIngredients: "اقرأ المكونات في {app}",
+    readNextStep: "ما الخطوة التالية في {app}",
+    startTimer: "ابدأ المؤقت في {app}",
+    generateRecipe: "أنشئ وصفة في {app}",
+    importRecipe: "استورد وصفة إلى {app}",
+    openMyRecipes: "افتح وصفاتي في {app}",
+  },
 };

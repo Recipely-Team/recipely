@@ -565,6 +565,37 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- AD: the Siri phrase catalogue must describe the phrases that exist -------
+// `AppShortcuts.xcstrings` is generated from the i18n catalogue and joined to
+// the Swift on the ENGLISH phrase text. A stale file is the worst shape this
+// can take: it compiles, it ships, and Siri answers in English on every device
+// because the key it looks up no longer matches the phrase in the binary.
+// Nothing fails and nothing logs.
+//
+// The generator throws on every disagreement it can see — a phrase with no
+// catalogue entry, an entry no phrase uses, a translation that dropped
+// `{app}` — so running it IS the check. It only rewrites the file when the
+// content differs, and reports whether it had to.
+{
+  const generator = path.join(ROOT, 'scripts/generate-app-shortcuts.mjs');
+  const swift = path.join(
+    ROOT,
+    'modules/recipely-assistant-kit/ios/AppIntents/Shortcuts/RecipelyShortcuts.swift',
+  );
+  if (fs.existsSync(generator) && fs.existsSync(swift)) {
+    try {
+      const { isFresh } = await import('./generate-app-shortcuts.mjs');
+      if (!isFresh()) {
+        errors.push(
+          'AppShortcuts.xcstrings was stale — it has been regenerated, commit it (`npm run shortcuts`)',
+        );
+      }
+    } catch (error) {
+      errors.push(`AppShortcuts.xcstrings could not be generated: ${error.message}`);
+    }
+  }
+}
+
 // --- X: nothing destructive may answer without a screen ---------------------
 // A `headless: true` entry is answered by native code with no UI, so the
 // confirmation sheet `CONFIRMED_ACTIONS` relies on cannot appear at all — not

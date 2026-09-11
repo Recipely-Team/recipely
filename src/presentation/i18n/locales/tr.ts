@@ -1008,4 +1008,16 @@ export const tr: Translations = {
       stop: "Durdu",
     },
   },
+  osIntentPhrases: {
+    ask: "{app} uygulamasına sor",
+    openRecipe: "{app} uygulamasında tarif aç",
+    saveRecipe: "{app} uygulamasında tarif kaydet",
+    likeRecipe: "{app} uygulamasında tarif beğen",
+    readIngredients: "{app} uygulamasında malzemeleri oku",
+    readNextStep: "{app} uygulamasında sonraki adım ne",
+    startTimer: "{app} uygulamasında zamanlayıcıyı başlat",
+    generateRecipe: "{app} uygulamasında tarif oluştur",
+    importRecipe: "{app} uygulamasına tarif aktar",
+    openMyRecipes: "{app} uygulamasında tariflerimi aç",
+  },
 };

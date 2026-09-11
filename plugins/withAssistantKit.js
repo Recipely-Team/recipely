@@ -56,6 +56,14 @@ const INTENTS_SOURCE_DIR = path.join(
   'ios',
   'AppIntents',
 );
+const RESOURCES_SOURCE_DIR = path.join(
+  'modules',
+  'recipely-assistant-kit',
+  'ios',
+  'Resources',
+);
+const LOCALES_DIR = path.join('src', 'presentation', 'i18n', 'locales');
+const STRINGS_FILE = 'AppShortcuts.strings';
 
 /**
  * `group.<bundle id>` — the convention Apple's own templates use.
@@ -151,6 +159,34 @@ const swiftFilesIn = (dir) => {
   return [...found.keys()].sort();
 };
 
+/**
+ * The languages the app ships, read from the i18n catalogue rather than listed.
+ *
+ * A String Catalogue only compiles the languages named in the project's
+ * `knownRegions`. Xcode's template knows `en` and `Base`, so without this the
+ * fourteen translations are generated, copied, compiled away, and Siri answers
+ * in English on every device — with nothing failing anywhere.
+ */
+const shippedLocales = (projectRoot) => {
+  const dir = path.join(projectRoot, LOCALES_DIR);
+  if (!fs.existsSync(dir)) return [];
+  return fs
+    .readdirSync(dir)
+    .filter((name) => name.endsWith('.ts'))
+    .map((name) => name.replace(/\.ts$/, ''))
+    .sort();
+};
+
+/** The `<lang>.lproj` folders the generator wrote, as bare language codes. */
+const localizedResourceDirs = (dir) =>
+  fs.existsSync(dir)
+    ? fs
+        .readdirSync(dir)
+        .filter((name) => name.endsWith('.lproj'))
+        .map((name) => name.replace(/\.lproj$/, ''))
+        .sort()
+    : [];
+
 /** Where a given bare name actually lives, for the copy. */
 const swiftSourcePath = (dir, name) => {
   const stack = [dir];
@@ -213,6 +249,16 @@ const withCopiedIntentSources = (config) =>
       for (const name of swiftFilesIn(from)) {
         fs.copyFileSync(swiftSourcePath(from, name), path.join(to, name));
       }
+
+      const resourcesFrom = path.join(mod.modRequest.projectRoot, RESOURCES_SOURCE_DIR);
+      for (const code of localizedResourceDirs(resourcesFrom)) {
+        const lproj = `${code}.lproj`;
+        fs.mkdirSync(path.join(to, lproj), { recursive: true });
+        fs.copyFileSync(
+          path.join(resourcesFrom, lproj, STRINGS_FILE),
+          path.join(to, lproj, STRINGS_FILE),
+        );
+      }
       return mod;
     },
   ]);
@@ -243,6 +289,19 @@ const withIntentSourcesInTarget = (config) =>
       if (project.hasFile(relative)) continue;
       project.addSourceFile(relative, { target }, groupKey);
     }
+
+    // Localized strings are a RESOURCE, not a source, and the fourteen copies
+    // are ONE file to Xcode: a variant group, keyed by language. Added
+    // individually they would each try to install at the same bundle path and
+    // only the last would survive.
+    addLocalizedStrings(
+      project,
+      projectName,
+      target,
+      localizedResourceDirs(path.join(mod.modRequest.projectRoot, RESOURCES_SOURCE_DIR)),
+    );
+
+    addKnownRegions(project, shippedLocales(mod.modRequest.projectRoot));
     return mod;
   });
 
@@ -262,6 +321,65 @@ const createGroup = (project) => {
   );
   mainGroup.children.push({ value: key, comment: XCODE_GROUP });
   return key;
+};
+
+/**
+ * Registers `<lang>.lproj/AppShortcuts.strings` as one localized resource.
+ *
+ * A variant group is how Xcode models "one file, many languages": the group
+ * carries the base name and each child is a language. Registering the children
+ * as ordinary resources instead would have them all install to
+ * `AppShortcuts.strings` in the bundle root, where the last one copied wins and
+ * the other thirteen vanish.
+ */
+const addLocalizedStrings = (project, projectName, target, locales) => {
+  if (locales.length === 0) return;
+  const existing = project.findPBXVariantGroupKey({ name: STRINGS_FILE });
+  const groupKey = existing || project.pbxCreateVariantGroup(STRINGS_FILE);
+
+  if (!existing) {
+    const mainGroup = project.getPBXGroupByKey(
+      project.getFirstProject().firstProject.mainGroup,
+    );
+    mainGroup.children.push({ value: groupKey, comment: STRINGS_FILE });
+    addResourceToTarget(project, STRINGS_FILE, target, null, groupKey);
+  }
+
+  for (const code of locales) {
+    const relative = `${projectName}/${XCODE_GROUP}/${code}.lproj/${STRINGS_FILE}`;
+    if (project.hasFile(relative)) continue;
+    const file = project.addFile(relative, groupKey, { target, basename: code });
+    if (file) file.fileRef = file.fileRef ?? project.generateUuid();
+  }
+};
+
+/**
+ * Puts one file in the target's resources phase, the long way round.
+ *
+ * `xcode`'s own `addResourceFile` cannot be used: it calls
+ * `pbxGroupByName('Resources').path`, and an Expo-generated project has no
+ * group by that name, so the lookup answers `null` and the library dereferences
+ * it. That is the same null-for-absent trap the group lookup sprang earlier in
+ * this plugin, one function along. Everything below is public API and never
+ * reaches the path-correcting branch.
+ */
+const addResourceToTarget = (project, relative, target, groupKey, fileRef) => {
+  const file = fileRef === undefined ? project.addFile(relative, groupKey, { target }) : { path: relative, fileRef, basename: relative, group: 'Resources' };
+  if (!file) return;
+  file.uuid = project.generateUuid();
+  file.target = target;
+  project.addToPbxBuildFileSection(file);
+  project.addToPbxResourcesBuildPhase(file);
+};
+
+/** Teaches the project which languages its catalogues are allowed to compile. */
+const addKnownRegions = (project, locales) => {
+  if (locales.length === 0) return;
+  const root = project.getFirstProject().firstProject;
+  const existing = Array.isArray(root.knownRegions) ? root.knownRegions : [];
+  const merged = new Set(existing);
+  for (const locale of locales) merged.add(locale);
+  root.knownRegions = [...merged];
 };
 
 const withSchemeMetaData = (config) =>

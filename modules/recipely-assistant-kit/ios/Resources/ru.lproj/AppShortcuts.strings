@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "Спроси ${applicationName}";
+"Open a recipe in ${applicationName}" = "Открыть рецепт в ${applicationName}";
+"Save a recipe in ${applicationName}" = "Сохранить рецепт в ${applicationName}";
+"Like a recipe in ${applicationName}" = "Лайкнуть рецепт в ${applicationName}";
+"Read the ingredients in ${applicationName}" = "Прочитать ингредиенты в ${applicationName}";
+"What is the next step in ${applicationName}" = "Какой следующий шаг в ${applicationName}";
+"Start the timer in ${applicationName}" = "Запустить таймер в ${applicationName}";
+"Create a recipe in ${applicationName}" = "Создать рецепт в ${applicationName}";
+"Import a recipe into ${applicationName}" = "Импортировать рецепт в ${applicationName}";
+"Open my recipes in ${applicationName}" = "Открыть мои рецепты в ${applicationName}";
