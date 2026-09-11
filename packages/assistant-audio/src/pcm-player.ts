@@ -39,6 +39,10 @@ export class PcmPlayer implements AssistantPlayer {
     return this.context === null ? 0 : this.levels.levelAt(this.context.currentTime);
   }
 
+  remainingSeconds(): number {
+    return this.context === null ? 0 : this.levels.remainingAt(this.context.currentTime);
+  }
+
   async prepare(sampleRate: number): Promise<Result<void, AssistantFailure>> {
     // Set before the early return: a second prepare at another rate must not
     // leave buffers labelled with a rate they are not.

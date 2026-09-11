@@ -53,7 +53,14 @@ first unchecked box.
 - [x] Gates green; the web export bundles the package's WEB files (`createScriptProcessor`, `getUserMedia` present, `createBufferQueueSource` absent)
 - [ ] On a device: voice on iOS and Android still sounds and interrupts as before (JS moved unchanged; checked in phase 4's dogfood build)
 
-## Phase 3 — Headless React API, widget, action registry, token server, example app, docs → 0.1.0
+## Phase 3 — Headless controller, React API, widget, token server, docs → 0.1.0
+
+- [x] **3a — `AssistantController` (core, framework-agnostic).** The generic half of the app's 900-line session store: start order (access → `getConnection` → microphone → player → subscribe → connect), abandonment checks after every await, mute that withholds frames, the echo gate (only where `cancelsEcho` is false, following `player.remainingSeconds()` plus a tail), interruption flush, transcript assembly with an utterance gap, `thinking` and `no_answer`, serialised tool calls answered by a `ToolRegistry` (unknown names and throws answered too, withdrawn calls never run, answers for a replaced socket dropped), `goAway` resumption through `getConnection({ resumptionHandle })` with a handover limit, a silence timeout (opt-out with `null`), and `speaking` that lasts until the queued reply has PLAYED. State is an immutable snapshot with `subscribe`/`getState` (ready for `useSyncExternalStore`); levels are `inputLevel` / `outputLevel`, never state. Recipely-only concerns (budget heartbeat and warning, HTTP typed fallback, action chips' wording) stay in the app
+- [x] 3a tests: 25 controller + registry + transcript tests with fakes; four behaviours mutation-checked (mute/echo gate, abandonment after connect, withdrawn calls, answers to a replaced socket). **Against real Gemini Live, three runs:** `connecting > listening > thinking > working > thinking > speaking > listening`, transcript = the user's line, a succeeded `runAction` entry, the assistant's reply; ~1.3 s audio; stop → `idle/stopped`. The first live run caught a real defect — a `listening` flash between the tool and the reply — fixed and pinned by a test
+- [ ] 3b — `@live-assistant/react`: `AssistantProvider`, `useAssistant()`, `useTranscript()`, `useAssistantLevels()` / `useLevelFrames()`, `useAssistantTool()`
+- [ ] 3c — `@live-assistant/widget`: orb + panel on the public hooks only; theme, strings, `renderMessage` / per-speaker slots
+- [ ] 3d — `@live-assistant/token-server`: mint a Gemini token with the integrator's instruction and `ToolDefinition`s; measure whether an unlocked token honours a client setup
+- [ ] 3e — READMEs with a copy-paste quick start, headless and widget; version 0.1.0
 ## Phase 4 — Dogfood in a Recipely release → 1.0.0
 
 ## If the session ends

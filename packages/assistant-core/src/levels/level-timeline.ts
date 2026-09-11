@@ -62,6 +62,11 @@ export class LevelTimeline {
     return current !== undefined && current.start <= now ? current.level : 0;
   }
 
+  /** Seconds of scheduled audio not yet heard at `now`; 0 once it has all played. */
+  remainingAt(now: number): number {
+    return Math.max(0, this.cursor - now);
+  }
+
   /** Forgets everything scheduled — the interruption, or the end of a session. */
   clear(): void {
     this.windows = [];

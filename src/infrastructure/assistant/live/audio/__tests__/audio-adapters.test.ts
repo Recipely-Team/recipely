@@ -23,6 +23,7 @@ const capture = (overrides: Partial<AssistantMicrophone> = {}): AssistantMicroph
 
 const output = (overrides: Partial<AssistantPlayer> = {}): AssistantPlayer => ({
   level: () => 0,
+  remainingSeconds: () => 0,
   prepare: jest.fn(async () => ok(undefined)),
   enqueue: jest.fn(),
   flush: jest.fn(),

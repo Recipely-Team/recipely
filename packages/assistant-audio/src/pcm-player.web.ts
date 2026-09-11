@@ -32,6 +32,10 @@ export class PcmPlayer implements AssistantPlayer {
     return this.context === null ? 0 : this.levels.levelAt(this.context.currentTime);
   }
 
+  remainingSeconds(): number {
+    return this.context === null ? 0 : this.levels.remainingAt(this.context.currentTime);
+  }
+
   async prepare(sampleRate: number): Promise<Result<void, AssistantFailure>> {
     this.streamRate = sampleRate;
     if (this.context !== null) return ok(undefined);

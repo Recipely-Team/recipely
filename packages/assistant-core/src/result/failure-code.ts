@@ -18,6 +18,12 @@ export const AssistantFailureCode = {
   MicrophoneUnavailable: 'microphone_unavailable',
   /** The output graph could not be opened. */
   PlayerUnavailable: 'player_unavailable',
+  /** The app's `getConnection` threw: no token, a refusal, a network error. `cause` carries what it threw. */
+  ConnectionRefused: 'connection_refused',
+  /** An open session dropped and could not be continued. */
+  ConnectionLost: 'connection_lost',
+  /** The user finished speaking and nothing came back in time. The session stays open. */
+  NoAnswer: 'no_answer',
 } as const;
 
 export type AssistantFailureCodeType = (typeof AssistantFailureCode)[keyof typeof AssistantFailureCode];

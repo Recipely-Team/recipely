@@ -24,6 +24,9 @@ export interface AssistantPlayer extends LevelSource {
   /** Appends samples to the tail of the queue and returns immediately. */
   enqueue(samples: Float32Array<ArrayBuffer>): void;
 
+  /** Seconds of queued audio the user has not heard yet — 0 when nothing is playing. */
+  remainingSeconds(): number;
+
   /** Drops everything queued but not yet heard. */
   flush(): void;
 

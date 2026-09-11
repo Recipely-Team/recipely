@@ -21,6 +21,10 @@ const FAILURE_BY_CODE: Readonly<Record<AssistantFailureCodeType, (reason: string
     new UnknownFailure(DiagnosticMessage.assistant.microphoneUnavailable(reason)),
   [AssistantFailureCode.PlayerUnavailable]: (reason) =>
     new UnknownFailure(DiagnosticMessage.assistant.playerUnavailable(reason)),
+  [AssistantFailureCode.ConnectionRefused]: (reason) =>
+    new NetworkFailure(DiagnosticMessage.assistant.connectionRefused(reason)),
+  [AssistantFailureCode.ConnectionLost]: () => new NetworkFailure(DiagnosticMessage.assistant.connectionLost),
+  [AssistantFailureCode.NoAnswer]: () => new UnknownFailure(DiagnosticMessage.assistant.noAnswer),
 };
 
 /**

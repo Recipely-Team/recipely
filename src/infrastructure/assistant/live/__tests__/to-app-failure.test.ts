@@ -14,6 +14,8 @@ describe('toAppFailure', () => {
     [AssistantFailureCode.SocketFailed, FailureCode.Network, DiagnosticMessage.assistant.sessionSocketFailed],
     [AssistantFailureCode.ClosedBeforeReady, FailureCode.Network, DiagnosticMessage.assistant.sessionClosedBeforeReady],
     [AssistantFailureCode.MicrophoneDenied, FailureCode.Forbidden, DiagnosticMessage.assistant.microphoneDenied],
+    [AssistantFailureCode.ConnectionLost, FailureCode.Network, DiagnosticMessage.assistant.connectionLost],
+    [AssistantFailureCode.NoAnswer, FailureCode.Unknown, DiagnosticMessage.assistant.noAnswer],
   ])('maps %s to the kind and diagnostic the app always reported', (code, kind, message) => {
     const failure = toAppFailure({ code });
 

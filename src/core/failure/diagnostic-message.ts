@@ -132,6 +132,8 @@ export const DiagnosticMessage = {
     sessionClosedBeforeReady: 'Live session closed before setup completed',
     actionFailed: (reason: string): string => `Assistant action failed: ${reason}`,
     noAnswer: 'The model did not answer the turn',
+    connectionRefused: (reason: string): string => `No live session credential: ${reason}`,
+    connectionLost: 'Live session dropped and could not be continued',
     intentTokenUndated: 'The intent token arrived without a usable expiry',
     likeStateNotLoaded: 'Like state for this recipe has not arrived yet',
     likeAlreadyInFlight: 'A like for this recipe is already in flight',
