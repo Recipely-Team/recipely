@@ -71,6 +71,32 @@ describe('OsAssistantBridge — the boundary refuses what it cannot run', () => 
     await expect(new OsAssistantBridge().pendingInvocations()).resolves.toEqual([]);
   });
 
+  // "Ask Recipely" now carries whatever word the backend chose. A `confirm`
+  // would answer a sheet left pending in the app — one nobody can see from Siri.
+  it.each([AssistantAction.Confirm, AssistantAction.Cancel])(
+    'drops %s, which only answers a sheet the user is looking at',
+    async (action) => {
+      mockKit.getPendingInvocationsAsync.mockResolvedValue([
+        raw({ id: OsIntentId.AskRecipely, action, arg: undefined }),
+      ]);
+
+      await expect(new OsAssistantBridge().pendingInvocations()).resolves.toEqual([]);
+    },
+  );
+
+  // The caller never sees a dropped entry, so it can never acknowledge one. Left
+  // in the queue it was re-read and re-dropped on every launch.
+  it('removes what it drops from the queue, and keeps what it passes', async () => {
+    mockKit.getPendingInvocationsAsync.mockResolvedValue([
+      raw({ invocationId: 'unknown', action: 'writeBio' }),
+      raw({ invocationId: 'kept' }),
+    ]);
+
+    await new OsAssistantBridge().pendingInvocations();
+
+    expect(mockKit.removePendingInvocationAsync.mock.calls).toEqual([['unknown']]);
+  });
+
   it('drops a request whose catalogue id it has never heard of', async () => {
     mockKit.getPendingInvocationsAsync.mockResolvedValue([raw({ id: 'orderGroceries' })]);
 

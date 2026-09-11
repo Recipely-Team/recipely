@@ -18,6 +18,7 @@ import Foundation
 ///   which, for an app launched by Siri and then swiped away, is common.
 public enum RecipelyAssistantStore {
   private static let appGroupInfoKey = "RecipelyAssistantAppGroup"
+  private static let apiBaseUrlInfoKey = "RecipelyAssistantApiBaseUrl"
   private static let envelopeKeyInfoKey = "RecipelyAssistantEnvelopeKey"
   private static let queueKey = "recipely.assistant.invocationQueue"
   private static let entityKeyPrefix = "recipely.assistant.entities."
@@ -43,6 +44,15 @@ public enum RecipelyAssistantStore {
           hex.count == Envelope.keyBytes * 2
     else { return nil }
     return hex
+  }
+
+  /// Which backend the intents talk to. Written per variant at prebuild, because
+  /// an intent runs with no JavaScript and cannot be told at runtime.
+  public static var apiBaseUrl: URL? {
+    guard let raw = Bundle.main.object(forInfoDictionaryKey: apiBaseUrlInfoKey) as? String else {
+      return nil
+    }
+    return URL(string: raw)
   }
 
   public static var defaults: UserDefaults? {

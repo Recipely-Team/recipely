@@ -11,7 +11,7 @@ progress board** — when a session ends, work resumes from here.
 |-------|------|--------|-----|
 | 0 | Measurement and decision gate | ✅ **done** (except the on-device Siri trial) | — |
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 2 | Headless path | 🟢 envelope parity + backend route merged + credential sync wired; only the native HTTP call is left | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
+| 2 | Headless path | ✅ **done**: envelope parity, backend route, credential sync, and the native call that spends the token (D24). On-device timing still unmeasured | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages. Control Center + Spotlight blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 5 | Gates and docs | 🟢 rules W, X, AD, AE landed + regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
@@ -185,7 +185,8 @@ four files.
 - [x] Tests: catalogue invariants (6), deep-link parsing (11), bridge boundary (7), plugin (11)
 - [x] `use-os-entity-catalogue-sync.ts` — writes recipes into the native catalogue + 6 tests (clears on sign-out)
 - [x] Session credential sync (`publishCredentials`) — backend #314 is merged to dev, so this is wired: minted once per launch, withdrawn on sign-out, and a failed mint leaves the stored token alone
-- [ ] The native HTTP call that SPENDS the token — the last piece of the headless answer
+- [x] The native HTTP call that SPENDS the token — `RecipelyAssistantClient` + `RecipelyAssistantWire`; "Ask Recipely" answers in Siri when the reply only speaks, and comes forward when it names an action (D24)
+- [ ] On device: how long Siri waits for `perform()` before giving up (the client allows 60 s; **yours** — needs hardware)
 
 ## Phase 2 — Headless path *(unconditional per D2)*
 
@@ -293,6 +294,57 @@ without that variable — D15's trap biting the test instead of the build.
   with that toolchain) and on demand via `npm run verify:envelope:android`. The
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
+
+### D24 — The headless answer: one protocol bug, one API that is iOS 26 only
+**The plaintext is `{ data: … }`.** The first draft of the native client sealed
+the bare body. The backend's `decrypt-body` rejects any plaintext without a
+`data` key, and the JS client adds that wrapper in its request interceptor, far
+from `aes-envelope.ts` — so envelope parity said nothing about it. The shapes now
+live in `RecipelyAssistantWire.swift`, which the Swift parity harness compiles
+and checks; removing the wrapper turns it red. Recorded as a class in
+`docs/regressions.md`.
+
+**`continueInForeground` is iOS 26.** The intent targets 17.2. Below 26 the only
+way to come forward from a background `perform()` is `ForegroundContinuableIntent`
++ `requestToContinueInForeground`, which always asks the user; 26 can skip that
+(`alwaysConfirm: false`). The conformance is deprecated in 26, which warns only
+once the deployment target reaches 26.
+
+**Queue first, withdraw on "no".** The app drains the queue when it turns
+active, so a request written after coming forward would wait for the next
+launch. It is written first and withdrawn if the user declines Siri's
+confirmation — otherwise it would run on a launch nobody connected with it.
+
+**An answer that names an action always comes forward.** Actions drive screens,
+and the five `CONFIRMED_ACTIONS` answer with a sheet, so rule X's invariant
+holds on this path too: nothing destructive runs headless. `confirm` and
+`cancel` are refused at both OS boundaries (`isOsReachableAction`): they answer a
+sheet the user can see, and neither a stateless Siri turn nor a deep link any app
+can fire can see one. The JS side reads the
+action before the id, because an answered `askRecipely` entry now carries one.
+
+**The base URL is written per variant.** An intent has no JavaScript, so the
+plugin applies `api-hosts.ts`'s three rules (override, `extra.variant`,
+production) and writes `RecipelyAssistantApiBaseUrl`; the dev prebuild was
+checked to carry `https://dev-api.recipely.net/api/v1`. A test holds the host
+literals and the Info.plist key names to `api-hosts.ts` and the Swift store.
+
+**Review round (same day).** A cold "Ask Recipely" launches the app in the
+BACKGROUND and React Native mounts; the queue was drained on mount, so a request
+ran before the user answered Siri's prompt and "no" had nothing to withdraw. The
+mount drain now waits for `active`. On 26 `supportedModes` is declared rather
+than derived from the deprecated conformance — and measured, not assumed: the
+extracted metadata said `8` before and `9` after, where `background` is `1` and
+`.foreground(.dynamic)` is `8`. Left to derive, iOS 26 would have listed no
+background mode for the one intent whose point is to run without a screen. The client budget is 15 s — the
+fallback only works if the client gives up before Siri does. A reply with
+neither words nor an action is `nil`. The bridge now removes entries it drops.
+
+**Still to see on a device:** Siri's own deadline for `perform()`; what the
+empty dialog on the come-forward path looks like; that a background launch
+really reports `background` before `active`. The last build: `BUILD SUCCEEDED`,
+`RecipelyAskIntent` extracted with `openAppWhenRun: false` and
+`systemProtocols: [ForegroundContinuable]`.
 
 ### D23 — The review found two dead features and a gate that could not see them
 Neither was visible to `xcodebuild`, `aapt2` presence checks, or any of the four
@@ -486,7 +538,7 @@ plugin's pbxproj code.
 ## Phase 3 — iOS App Intents
 
 - [x] `RecipelySearchIntent` — `ShowInAppSearchResultsIntent`, the only single-turn path for free text (D1, D12)
-- [x] `RecipelyAskIntent` — parameterless phrase + `requestValueDialog` (two turns, D1). Opens the app and hands the sentence to the running assistant; the headless answer attaches when `publishCredentials` has a token
+- [x] `RecipelyAskIntent` — parameterless phrase + `requestValueDialog` (two turns, D1). Answers headless when it can, comes forward when the answer drives the app or there is no token (D24)
 - [x] 9 singular intents (openRecipe, save, like, startTimer, readIngredients, readNextStep, generate, import, myRecipes)
 - [x] `RecipeAppEntity` + `RecipeEntityQuery` (`EntityStringQuery`, diacritic- and case-folded with the current locale so "kofte" finds "Köfte")
 - [x] `RecipelyRequest` — one enqueue helper, so eleven intents do not each spell the four keys

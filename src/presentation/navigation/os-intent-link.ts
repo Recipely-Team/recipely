@@ -1,5 +1,5 @@
 import { CharConstants } from '@core/constants';
-import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
+import { isOsReachableAction } from '@domain/assistant/os/is-os-reachable-action';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import type { OsIntentIdType } from '@domain/assistant/os/os-intent-id';
 import type { OsIntentLink } from '@presentation/navigation/os-intent-link-shape';
@@ -45,7 +45,9 @@ const queryOf = (path: string): string | null => {
  * - **A word this build does not know is refused here.** A shortcut pinned to
  *   the launcher outlives the version that created it: a user who pinned one
  *   last year can tap it after an update that renamed the action. That has to
- *   land the app on a screen, not dispatch a word nothing answers.
+ *   land the app on a screen, not dispatch a word nothing answers. So is a word
+ *   the OS may not send at all — `confirm`, `cancel` — because any app on the
+ *   phone can fire this link (see `isOsReachableAction`).
  */
 export function parseOsIntentLink(path: string): OsIntentLink | null {
   const query = queryOf(path);
@@ -56,7 +58,7 @@ export function parseOsIntentLink(path: string): OsIntentLink | null {
   if (id === null || !isOsIntentId(id)) return null;
 
   const action = params.get(ACTION_PARAM);
-  if (action !== null && !isAssistantAction(action)) return null;
+  if (action !== null && !isOsReachableAction(action)) return null;
 
   const arg = params.get(ARG_PARAM);
   return {

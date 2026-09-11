@@ -21,19 +21,28 @@ enum RecipelyRequest {
   ///   - action: the assistant action word, or `nil` for the open-ended entry
   ///     where the assistant itself decides what to do.
   ///   - arg: the single argument the registry's handlers take.
-  static func enqueue(id: String, action: String?, arg: String?) {
+  /// - Returns: the invocation id, so a caller can withdraw a request the user declined.
+  @discardableResult
+  static func enqueue(id: String, action: String?, arg: String?) -> String {
     // An absent value is an ABSENT KEY, never a null one. `UserDefaults` stores
     // property lists only, and Swift bridges `Optional.none as Any` to
     // `NSNull` — which is not a property-list type, so `set(_:forKey:)` raises
     // `NSInvalidArgumentException` and the process dies. Two intents pass a nil:
     // "Ask Recipely", the first of the ten phrases, and the timer.
+    let invocationId = UUID().uuidString
     var request: [String: Any] = [
       "id": id,
-      "invocationId": UUID().uuidString,
+      "invocationId": invocationId,
       "at": Date().timeIntervalSince1970 * 1000,
     ]
     if let action { request["action"] = action }
     if let arg { request["arg"] = arg }
     RecipelyAssistantStore.enqueue(request)
+    return invocationId
+  }
+
+  /// Takes back a request the app has not run yet.
+  static func withdraw(_ invocationId: String) {
+    RecipelyAssistantStore.removeInvocation(invocationId: invocationId)
   }
 }

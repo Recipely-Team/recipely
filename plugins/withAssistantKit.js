@@ -44,6 +44,7 @@ const {
  *     `RecipelyAssistantConfig`
  */
 const APP_GROUP_INFO_KEY = 'RecipelyAssistantAppGroup';
+const API_BASE_URL_INFO_KEY = 'RecipelyAssistantApiBaseUrl';
 const APP_GROUP_ENTITLEMENT = 'com.apple.security.application-groups';
 const ANDROID_SCHEME_META_DATA = 'net.recipely.assistantkit.SCHEME';
 const ANDROID_SHORTCUTS_META_DATA = 'android.app.shortcuts';
@@ -211,9 +212,32 @@ const swiftSourcePath = (dir, name) => {
   return path.join(dir, name);
 };
 
+/**
+ * Which backend the intents talk to — the rules `api-hosts.ts` applies.
+ *
+ * An App Intent runs with no JavaScript, so it cannot read `expoConfig.extra`
+ * and cannot be told at runtime. The rules are applied here instead: the
+ * `EXPO_PUBLIC_API_BASE_URL` override first, then `extra.variant` (which
+ * `app.config.ts` sets and `api-hosts.ts` reads), then production — because a
+ * dev build whose intents answered from the production backend would be wrong
+ * in the one way nobody checks. One deliberate difference: an EMPTY override is
+ * ignored here, where `??` there would yield a relative `/api/v1` that no
+ * native caller can resolve. A test holds the two host literals together.
+ */
+const apiBaseUrl = (config) => {
+  const override = process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, '');
+  if (override !== undefined && override.length > 0) return `${override}/api/v1`;
+  const host =
+    config.extra?.variant === 'development'
+      ? 'https://dev-api.recipely.net'
+      : 'https://api.recipely.net';
+  return `${host}/api/v1`;
+};
+
 const withAppGroupInfoPlist = (config) =>
   withInfoPlist(config, (mod) => {
     mod.modResults[APP_GROUP_INFO_KEY] = appGroupFor(mod.ios?.bundleIdentifier);
+    mod.modResults[API_BASE_URL_INFO_KEY] = apiBaseUrl(mod);
     const key = envelopeKeyHex();
     // Deleted rather than left behind when there is no key: a stale value from a
     // previous prebuild is the one failure mode worse than none, because it
@@ -512,6 +536,7 @@ const withAssistantKit = (config) => {
 module.exports = withAssistantKit;
 module.exports.appGroupFor = appGroupFor;
 module.exports.APP_GROUP_INFO_KEY = APP_GROUP_INFO_KEY;
+module.exports.API_BASE_URL_INFO_KEY = API_BASE_URL_INFO_KEY;
 module.exports.APP_GROUP_ENTITLEMENT = APP_GROUP_ENTITLEMENT;
 module.exports.ANDROID_SCHEME_META_DATA = ANDROID_SCHEME_META_DATA;
 module.exports.ENVELOPE_KEY_INFO_KEY = ENVELOPE_KEY_INFO_KEY;

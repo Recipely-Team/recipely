@@ -494,3 +494,76 @@ describe('withAssistantKit — the envelope key reaches the native half', () => 
     expect(() => withAssistantKit(baseConfig())).toThrow(/64 hex characters/);
   });
 });
+
+// An intent answers with no JavaScript running, so it cannot ask `api-hosts.ts`
+// which backend to use. A dev build whose Siri answers came from production
+// would pass every check anyone runs by hand — the answer would simply be right.
+describe('withAssistantKit — the intents reach the same backend the app does', () => {
+  beforeEach(() => {
+    delete process.env.EXPO_PUBLIC_API_BASE_URL;
+  });
+
+  afterEach(() => {
+    delete process.env.EXPO_PUBLIC_API_BASE_URL;
+  });
+
+  it('points a production build at production', () => {
+    const config = baseConfig();
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantApiBaseUrl).toBe('https://api.recipely.net/api/v1');
+  });
+
+  it('points the dev variant at the dev backend', () => {
+    const config = { ...baseConfig(), extra: { variant: 'development' } };
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantApiBaseUrl).toBe('https://dev-api.recipely.net/api/v1');
+  });
+
+  it('lets the override win over the variant, as api-hosts.ts does', () => {
+    process.env.EXPO_PUBLIC_API_BASE_URL = 'http://192.168.1.20:3000/';
+    const config = { ...baseConfig(), extra: { variant: 'development' } };
+
+    withAssistantKit(config);
+
+    expect(config.__mods.infoPlist.RecipelyAssistantApiBaseUrl).toBe('http://192.168.1.20:3000/api/v1');
+  });
+});
+
+// Both hosts are spelled twice — here for the intents, in `api-hosts.ts` for the
+// app — and the Info.plist keys twice — here and in `RecipelyAssistantStore`.
+// Either pair drifting fails silently: a wrong host answers from the wrong
+// backend, a wrong key reads `nil` and every Siri answer quietly opens the app.
+describe('withAssistantKit — the literals it shares with other files agree', () => {
+  const realFs = jest.requireActual('node:fs');
+  const read = (relative) => realFs.readFileSync(path.join(__dirname, '..', '..', relative), 'utf8');
+
+  it('names the same two hosts api-hosts.ts does', () => {
+    const hosts = read('src/infrastructure/constants/api/api-hosts.ts');
+    const prod = hosts.match(/PROD_SERVER_URL = "([^"]+)"/)?.[1];
+    const dev = hosts.match(/DEV_SERVER_URL = "([^"]+)"/)?.[1];
+
+    const production = baseConfig();
+    withAssistantKit(production);
+    const development = { ...baseConfig(), extra: { variant: 'development' } };
+    withAssistantKit(development);
+
+    expect(production.__mods.infoPlist.RecipelyAssistantApiBaseUrl).toBe(`${prod}/api/v1`);
+    expect(development.__mods.infoPlist.RecipelyAssistantApiBaseUrl).toBe(`${dev}/api/v1`);
+  });
+
+  it('writes the Info.plist keys the Swift store reads', () => {
+    const store = read('modules/recipely-assistant-kit/ios/RecipelyAssistantStore.swift');
+
+    for (const key of [
+      withAssistantKit.APP_GROUP_INFO_KEY,
+      withAssistantKit.API_BASE_URL_INFO_KEY,
+      withAssistantKit.ENVELOPE_KEY_INFO_KEY,
+    ]) {
+      expect(store).toContain(`"${key}"`);
+    }
+  });
+});

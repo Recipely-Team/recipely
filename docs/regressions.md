@@ -1828,3 +1828,42 @@ only following it to a rendered pixel proves the user learns anything.
 | Akışın ortasında, mutfak rayı ile ızgara arasında 296px'lik boş bir blok duruyordu | `WebBannerAd`'in doküman bloğu "the space is not reserved. No `minHeight`" diyordu ve doğruydu — bileşen kendi adına hiçbir yükseklik ayırmıyor. Ayıran AdSense'ti: ünite istendiği anda kendi `<ins>`'ine **inline `height: 280px`** yazıyor ve `unfilled` cevabını verdikten sonra da orada bırakıyor. Yani bileşenin niyeti ile sayfanın hâli, kimse yanlış bir şey yazmadan ayrışmıştı; kod yalnızca kendi ayırmadığı yeri hesaba katıyordu. Üstelik bu, boşluğu tam da incelemesi süren sayfada, "içeriği olmayan ekran" ihbarının konusu olan yerde bırakıyordu. | `readAdUnitStatus` artık iki değil **üç** durum ayırt ediyor — `filled`, `unfilled` ve *henüz karar yok* (`null`) — çünkü çökertme kararı ile etiketleme kararı ters yönlerde hata yapar: karardan önce çökertmek üniteyi AdSense genişliğini ölçemeden gizler ve hiç dolmaz. `unfilled` gelince sarmalayıcı `display: none` ile layout'tan çıkıyor (yükseklik `<ins>`'in üzerinde olduğu için sıfırlamak yetmez); `<ins>` mount'ta kalıyor, sökmek AdSense'in bu sayfa görüntülemesi için zaten reddettiği bir reklamı yeniden istemek olurdu. Test react-dom + jsdom ile gerçek yolu sürüyor ve **hesaplanmış** stili okuyor — react-native-web stilleri atomik CSS sınıfına derlediği için `style.display` her hâlde boştur, yani inline özelliğe bakan bir assertion çökme olsa da olmasa da geçerdi. **Kural: bir bileşenin "yer ayırmıyorum" demesi, yeri bir başkasının ayırmadığı anlamına gelmez — üçüncü taraf senin düğünde kendi ölçüsünü yazar.** |
 | Yeni yayınlanan tarif "Bu tarif için besin değeri bilgisi henüz yok." diyordu, değerler biraz sonra kendiliğinden geliyordu | İki ayrı kusur üst üste binmişti. (1) Yayınlama isteği besin değeri **göndermiyor** — `CreateRecipeInput`'ta böyle bir alan yok — çünkü hesabı backend, tarif kaydedildikten *sonra* yapıyor; detay uç noktası o iş bitmeden cevap veriyor. Yani ekran, tarif hakkında kesin bir cümle kuruyordu ("bilgi yok") oysa doğru olan saat hakkında bir cümleydi ("henüz hesaplanmadı"). (2) Ekran bir daha bakmıyordu: değerler sunucuya düşüyor, açık sayfa "yok" demeye devam ediyordu. Kullanıcı bunu "yenileyince geliyor" diye bildirdi, ki bu eksik verinin değil **bayat state'in** imzasıdır. | `useNutritionRecheck` bir kez daha soruyor: gecikme sonunda tek bir istek, yalnızca o süre boyunca ekranda kalmış bir okuyucu için (efektin cleanup'ı gidenler için iptal ediyor) ve tarif başına **yalnızca bir kez** — hiç gelmeyecek bir şey için yapılan poll, yanlış bir kopyadan kötüdür. Bekleme bayrağı timer'ı değil **isteği** kapsıyor: timer'da temizlense kopya önce "yok"a, bir an sonra gerçek sayılara dönerdi. Beraberinde üçüncü bir kusur da kapandı: "besin değeri var mı" sorusunun **iki** tanımı vardı ve anlaşmıyorlardı — mobil kart lifi sayıyordu, web kenar çubuğu saymıyordu, yani yalnızca lif taşıyan bir tarif telefonda dolu, tarayıcıda boş görünüyordu. Tek `hasReportedNutrition` kaldı. **Kural: "yok" ile "daha bilmiyorum" aynı cümle değildir; ve bir ekran bir yokluğu ilan ediyorsa, o yokluğun değişip değişmediğine bakmak zorundadır.** |
 | `dev`'e yapılan sıradan bir merge'de CI düştü — hiçbir build istemeyen bir commit'te, 2 saniyede | Dev dağıtım kapısı commit'in konu satırını `subject="$(printf '%s' "$COMMIT_MESSAGE" \| head -n 1)"` ile alıyordu. `head` ilk satırı alır almaz çıkar ve boruyu kapatır; squash mesajı boru tamponunun (Linux'ta 64 KB) taşıyacağından uzun olduğunda `printf` hâlâ yazıyor oluyor, `EPIPE` alıyor ve `set -o pipefail` adımı düşürüyor. Değişiklikte yanlış bir şey yoktu, **commit mesajı uzundu** — ki bu CI'ın hakkında fikri olabileceği bir şey değil. Boyuta bağlı olduğu için de aralıklı görünüyordu: bir önceki uzun mesajlı merge geçmişti, bu geçmedi. | Konu satırı kabuğun kendisinde kesiliyor: `subject="${COMMIT_MESSAGE%%$'\n'*}"` — boru yok, alt kabuk yok, dolayısıyla SIGPIPE de yok. Guard, kaynağı okuyarak bulunamayacak bir hata olduğu için **davranışsal**: `scripts/__tests__/dev-distribution-gate.test.js` adımın gerçek betiğini `ci.yml`'den (satır numarasıyla değil, `id: decide` ile) çıkarıp bash'te çalıştırıyor. Guard'ın **iki yarısı** var, çünkü boyut testi taşınabilir değil: iki sınır neredeyse çakışıyor — hata boru tamponundan (Linux'ta 64 KB) büyük bir mesaj ister, tavan ise `MAX_ARG_STRLEN`, yani **tek** bir ortam değişkeni için 128 KB (`ARG_MAX` ne derse desin). İlk yazdığım 400 KB'lık mesaj bu yüzden runner'da `execve`'yi E2BIG ile düşürdü ve suite'i, test ettiği şeyle hiç ilgisi olmayan bir sebeple kırmızıya çevirdi; macOS'ta ise per-string sınır olmadığı için yeşildi. macOS EPIPE'tan önce 128 KB'tan fazlasını tamponladığı için de bir ortam değişkenine sığan hiçbir boyut orada hatayı üretmiyor. O yüzden boyut testi yalnızca **Linux'ta** ısırıyor — kapının koştuğu ve hatanın tek gerçekleştiği yer — ve yanına, `$COMMIT_MESSAGE`'ın bir boruya girmediğini metinden doğrulayan platformdan bağımsız bir kontrol kondu (yorumlar ayıklanarak: adımın kendi yorumu yasaklanan ifadeyi *açıklamak için* alıntılıyor, ham eşleştirme düzeltmeyi hata sanıyordu). Aynı testte kapının anlamı da sabitlendi — konu satırındaki işaret sayılır, gövdedeki sayılmaz — ki düzeltme onu sessizce değiştirmesin. **Kural: `\| head` bir boruyu erken kapatır; `pipefail` altında bu, girdinin BOYUTUNA bağlı bir hatadır ve küçük girdiyle yazılıp büyük girdiyle patlar.** |
+
+## A cipher at parity, speaking the wrong protocol
+
+The Swift envelope was byte-for-byte identical to OpenSSL on every vector, and
+the first native caller of `/assistant/message` still sealed the wrong thing: the
+bare `{ message, languageCode }`, where the backend's `decrypt-body` requires
+`{ data: … }` — a wrapper the JS client adds in its request interceptor, far from
+the cipher. Every headless Siri answer would have been a 400, and because the
+intent treats any failure as "open the app instead", the user would have seen a
+working feature that simply never answered on its own. Caught before it
+shipped, by reading the middleware rather than the port.
+
+*Now:* the request and reply shapes live in `RecipelyAssistantWire.swift`, which
+needs nothing but `Envelope`, so the parity harness compiles it and checks the
+opened plaintext is exactly `{ data: { message, languageCode } }`. Verified by
+removing the wrapper and watching the harness fail.
+
+*The class:* **parity of the cipher is not parity of the protocol.** A second
+implementation of a client inherits every convention the first one keeps outside
+its crypto — wrappers, headers, envelope keys — and a fallback that hides failure
+makes each missing one look like a bad network.
+
+## "Confirm", from a place that cannot see what it confirms
+
+`confirm` and `cancel` answer a sheet on screen — a delete, a sign-out. Both OS
+boundaries admitted them because they asked only whether a word was in the
+vocabulary. On Android any app on the phone can fire
+`recipely://assistant/run?action=confirm`, and once "Ask Recipely" carried the
+word the BACKEND chose, a stateless Siri turn could answer a sheet left pending in
+a backgrounded app. Found in review, on dev; never in a release.
+
+*Now:* both boundaries ask `isOsReachableAction`, which refuses the two words;
+the catalogue invariant uses the same predicate, and the bridge removes what it
+drops from the queue instead of leaving it to be re-read on every launch.
+
+*The class:* **"is this a word we know" and "may this caller say it" are
+different questions.** A vocabulary check guards against typos; it says nothing
+about who is speaking, and a word whose meaning depends on what the user can see
+must be refused wherever the speaker cannot see it.

@@ -35,6 +35,12 @@ describe('parseOsIntentLink — what a launcher shortcut may ask for', () => {
     },
   );
 
+  // Any app on the phone can fire this link. `confirm` would answer whatever
+  // sheet happened to be open — a delete, a sign-out — without the user seeing it.
+  it.each(['confirm', 'cancel'])('refuses %s, which only a visible sheet may receive', (action) => {
+    expect(parseOsIntentLink(`/assistant/run?id=askRecipely&action=${action}`)).toBeNull();
+  });
+
   it('decodes an argument that was percent-encoded', () => {
     expect(
       parseOsIntentLink('/assistant/run?id=searchRecipes&action=search&arg=k%C3%B6fte')?.arg,

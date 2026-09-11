@@ -1,7 +1,7 @@
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { CONFIRMED_ACTIONS } from '@domain/assistant/actions/confirmed-actions';
-import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 import { OS_INTENT_CATALOGUE } from '@domain/assistant/os/os-intent-catalogue';
+import { isOsReachableAction } from '@domain/assistant/os/is-os-reachable-action';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 
 describe('OS intent catalogue — it may only offer words the app answers', () => {
@@ -9,11 +9,12 @@ describe('OS intent catalogue — it may only offer words the app answers', () =
   // actions were offered to the model and none had a handler. An OS intent is
   // worse, because Siri offers the phrase to the user before the app is even
   // running — the failure arrives as the app denying something the system just
-  // promised.
-  it('names only actions the assistant vocabulary defines', () => {
+  // promised. The boundaries refuse `confirm` and `cancel` from the OS, so an
+  // entry offering one would be a phrase that is dropped every time it is said.
+  it('names only actions the assistant vocabulary defines and the OS may send', () => {
     for (const entry of OS_INTENT_CATALOGUE) {
       if (entry.action === null) continue;
-      expect(isAssistantAction(entry.action)).toBe(true);
+      expect(isOsReachableAction(entry.action)).toBe(true);
     }
   });
 

@@ -23,9 +23,13 @@ const mockState: Recorded = {
 };
 
 const mockAppStateListeners: ((next: string) => void)[] = [];
+const mockAppState = { current: 'active' };
 
 jest.mock('react-native', () => ({
   AppState: {
+    get currentState() {
+      return mockAppState.current;
+    },
     addEventListener: (_event: string, listener: (next: string) => void) => {
       mockAppStateListeners.push(listener);
       return { remove: () => undefined };
@@ -125,6 +129,7 @@ beforeEach(() => {
   mockState.failPending = false;
   mockState.holdRun = null;
   mockAppStateListeners.length = 0;
+  mockAppState.current = 'active';
 });
 
 describe('useOsAssistantInvocations — draining what the OS left behind', () => {
@@ -212,6 +217,43 @@ describe('useOsAssistantInvocations — the open-ended request', () => {
     expect(mockState.view).toBe('open');
     expect(mockState.asked).toEqual([]);
     expect(mockState.acknowledged).toEqual(['ask-1']);
+  });
+});
+
+describe('useOsAssistantInvocations — a request Siri has not been told to run yet', () => {
+  // "Ask Recipely" answers without opening the app, so Siri launches it in the
+  // BACKGROUND and the app mounts. The intent queues first and then asks
+  // "continue in Recipely?" — draining on that mount ran the request before
+  // the user answered, so a "no" had nothing left to withdraw.
+  it('leaves the queue alone until the app is actually in front of the user', async () => {
+    mockAppState.current = 'background';
+    mockState.queue = [invocation('bg-1')];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([]);
+    expect(mockState.acknowledged).toEqual([]);
+
+    await foreground();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'corba' }]);
+  });
+});
+
+describe('useOsAssistantInvocations — the assistant answering with an instruction', () => {
+  // When the native side asks the backend and is told to drive the app, the
+  // open-ended entry comes back carrying a word. Reading the id first would
+  // have handed that word to the assistant as though the user had typed it.
+  it('runs the action an answered question came back with', async () => {
+    mockState.queue = [
+      { id: 'askRecipely', invocationId: 'ask-2', action: 'search', arg: 'mercimek', at: 1 },
+    ];
+
+    await mount();
+
+    expect(mockState.ran).toEqual([{ action: 'search', arg: 'mercimek' }]);
+    expect(mockState.asked).toEqual([]);
+    expect(mockState.view).toBeNull();
   });
 });
 

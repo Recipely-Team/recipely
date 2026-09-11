@@ -89,6 +89,58 @@ struct EnvelopeParityHarness {
     seals(vectors, key)
     refuses(rejects, key)
     refusesBadKeys()
+    speaksTheMessageRoute(key)
+  }
+
+  /// The intent's request and reply, checked against what the backend reads.
+  ///
+  /// The first draft sealed `{ message, languageCode }` where `decrypt-body`
+  /// requires `{ data: { message, languageCode } }`: every headless answer would
+  /// have been a 400, and the intent would have opened the app each time as if
+  /// the network were down. Nothing else runs this Swift before a device does.
+  private static func speaksTheMessageRoute(_ key: SymmetricKey) {
+    guard
+      let wire = try? RecipelyAssistantWire.request(message: "kaç kalori?", languageCode: "tr", key: key),
+      let envelope = try? JSONSerialization.jsonObject(with: wire) as? [String: Any],
+      let payload = envelope["payload"] as? String,
+      let iv = envelope["iv"] as? String,
+      let plain = try? Envelope.open(payload: payload, iv: iv, key: key),
+      let root = try? JSONSerialization.jsonObject(with: Data(plain.utf8)) as? [String: Any]
+    else {
+      fail("the message request is not an envelope this key opens")
+    }
+    guard
+      root.keys.sorted() == ["data"],
+      let body = root["data"] as? [String: String],
+      body == ["message": "kaç kalori?", "languageCode": "tr"]
+    else {
+      fail("the message request is not { data: { message, languageCode } }, which decrypt-body requires")
+    }
+
+    // Shaped as `encrypt-response` seals them: `{ data: <body> }`, nothing else.
+    let cases: [(String, RecipelyAssistantWire.Reply?)] = [
+      (#"{"data":{"reply":"Bakıyorum.","action":{"name":"search","arg":"mercimek"}}}"#,
+       .init(text: "Bakıyorum.", action: "search", arg: "mercimek")),
+      (#"{"data":{"reply":"250 kalori."}}"#,
+       .init(text: "250 kalori.", action: nil, arg: nil)),
+      (#"{"data":{"reply":"Tamam.","action":{"name":"","arg":"x"}}}"#,
+       .init(text: "Tamam.", action: nil, arg: nil)),
+      (#"{"data":{"reply":"","action":{"name":"search"}}}"#,
+       .init(text: "", action: "search", arg: nil)),
+      (#"{"data":{"reply":""}}"#, nil),
+    ]
+    for (body, expected) in cases {
+      guard
+        let sealed = try? Envelope.seal(json: body, key: key),
+        let response = try? JSONSerialization.data(withJSONObject: ["payload": sealed.payload, "iv": sealed.iv])
+      else {
+        fail("could not seal a reply fixture")
+      }
+      guard RecipelyAssistantWire.reply(from: response, key: key) == expected else {
+        fail("reply(\(body)) did not read as \(String(describing: expected))")
+      }
+    }
+    print("  ✓ speaks /assistant/message: { data: … } out, reply and action back")
   }
 
   private static func opens(_ vectors: [Vector], _ key: SymmetricKey) {

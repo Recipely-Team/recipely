@@ -1,5 +1,5 @@
 import * as Kit from '@/modules/recipely-assistant-kit';
-import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
+import { isOsReachableAction } from '@domain/assistant/os/is-os-reachable-action';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-interface';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
@@ -17,20 +17,28 @@ const isOsIntentId = (value: string): value is OsIntentIdType => OS_INTENT_IDS.h
  *
  * @remarks
  * - **Everything unrecognised is dropped here, at the boundary.** An intent was
- *   compiled into a build that may be older or newer than this JavaScript, so
- *   the native side hands over bare strings. A word `isAssistantAction` does not
- *   know, or an id this catalogue has never heard of, is discarded rather than
- *   dispatched — the registry would only answer `unknown_action`, and the user
- *   would hear the app deny something Siri had just offered them.
- * - **A dropped invocation is still acknowledged by the caller**, or it would
- *   sit in the queue being re-read and re-dropped on every launch.
+ *   compiled into a build that may be older or newer than this JavaScript, and
+ *   "Ask Recipely" now carries whatever word the BACKEND chose, so the native
+ *   side hands over bare strings. A word `isOsReachableAction` refuses, or an id
+ *   this catalogue has never heard of, is discarded rather than dispatched — the
+ *   registry would only answer `unknown_action`, and the user would hear the app
+ *   deny something Siri had just offered them.
+ * - **A dropped invocation is removed from the queue here, too.** The caller
+ *   never sees it and so can never acknowledge it; left behind it would be
+ *   re-read and re-dropped on every launch until sixteen newer requests pushed
+ *   it out.
  */
 export class OsAssistantBridge implements OsAssistantInterface {
   readonly isAvailable = Kit.isAvailable;
 
   async pendingInvocations(): Promise<OsIntentInvocation[]> {
-    const raw = await Kit.getPendingInvocationsAsync();
-    return raw.map(toInvocation).filter((entry): entry is OsIntentInvocation => entry !== null);
+    const accepted: OsIntentInvocation[] = [];
+    for (const raw of await Kit.getPendingInvocationsAsync()) {
+      const invocation = toInvocation(raw);
+      if (invocation !== null) accepted.push(invocation);
+      else await Kit.removePendingInvocationAsync(raw.invocationId).catch(() => undefined);
+    }
+    return accepted;
   }
 
   async acknowledge(invocationId: string): Promise<void> {
@@ -67,7 +75,7 @@ export class OsAssistantBridge implements OsAssistantInterface {
 const toInvocation = (raw: Kit.OsIntentInvocation): OsIntentInvocation | null => {
   if (!isOsIntentId(raw.id)) return null;
   const action = raw.action ?? null;
-  if (action !== null && !isAssistantAction(action)) return null;
+  if (action !== null && !isOsReachableAction(action)) return null;
   return {
     id: raw.id,
     invocationId: raw.invocationId,
