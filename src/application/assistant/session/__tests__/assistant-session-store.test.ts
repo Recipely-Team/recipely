@@ -1,6 +1,7 @@
-import { ForbiddenFailure } from '@core/failure/kinds/forbidden-failure';
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
-import { AssistantEventKind } from '@domain/assistant/session/assistant-event-kind';
+import { AssistantFailureCode, SessionEventKind } from '@live-assistant/core';
+import type { AssistantFailure, AssistantMicrophone, AssistantPlayer, AssistantSession, Result, SessionEvent } from '@live-assistant/core';
+import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -9,15 +10,12 @@ import { AssistantTranscriptLineKind } from '@application/assistant/session/assi
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
-import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
-import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
-import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { ChatRole } from '@domain/drafts/chat-role';
-import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import { NetworkFailure } from '@core/failure';
 
 const CREDENTIALS = { token: 't', model: 'm', wsUrl: 'wss://x', expiresAt: 'later' };
@@ -49,7 +47,7 @@ function harness(
     stall?: 'ensureAccess' | 'mint' | 'micStart' | 'prepare' | 'connect';
   } = {},
 ) {
-  let emit: (event: AssistantSessionEventType) => void = () => {};
+  let emit: (event: SessionEvent) => void = () => {};
   /** Resolves the stalled step, once a test has done whatever it stalled it for. */
   let release: () => void = () => {};
   const stall = async (step: NonNullable<typeof overrides.stall>): Promise<void> => {
@@ -73,19 +71,20 @@ function harness(
     onFrame: null as ((samples: Float32Array<ArrayBuffer>) => void) | null,
   };
 
-  const session: AssistantSessionInterface = {
-    connect: async () => {
+  const session: AssistantSession<LiveSessionCredentials> = {
+    audioFormat: { inputSampleRate: 16_000, outputSampleRate: 24_000 },
+    connect: async (): Promise<Result<void, AssistantFailure>> => {
       await stall('connect');
       calls.connects += 1;
       return overrides.connectFails === true
-        ? { ok: false, failure: new NetworkFailure('nope') }
+        ? { ok: false, failure: { code: AssistantFailureCode.SocketFailed } }
         : { ok: true, value: undefined };
     },
     sendAudio: () => {
       calls.audioFrames += 1;
     },
     sendText: (text) => calls.texts.push(text),
-    respondToTool: (_id, response) => calls.toolResponses.push(response),
+    respondToTool: (_call, response) => calls.toolResponses.push(response),
     subscribe: (listener) => {
       emit = listener;
       return () => {};
@@ -93,22 +92,23 @@ function harness(
     close: () => {},
   };
 
-  const microphone: MicrophoneInterface = {
+  const microphone: AssistantMicrophone = {
     // Default false, so the existing cases keep exercising the half-duplex path
     // that Android is still on; the barge-in cases opt in.
     cancelsEcho: overrides.cancelsEcho === true,
-    ensureAccess: async () => (await stall('ensureAccess'),
+    level: () => 0,
+    ensureAccess: async (): Promise<Result<void, AssistantFailure>> => (await stall('ensureAccess'),
       overrides.micRefused === true
-        ? { ok: false, failure: new ForbiddenFailure('refused') }
+        ? { ok: false, failure: { code: AssistantFailureCode.MicrophoneDenied } }
         : { ok: true, value: undefined }),
-    start: async (_rate, onFrame) => {
+    start: async (_rate, onFrame): Promise<Result<void, AssistantFailure>> => {
       await stall('micStart');
       if (overrides.micStartRefused === true) {
-        return { ok: false, failure: new ForbiddenFailure('blocked') };
+        return { ok: false, failure: { code: AssistantFailureCode.MicrophoneDenied } };
       }
       calls.onFrame = onFrame;
       return overrides.micFails === true
-        ? { ok: false, failure: new NetworkFailure('denied') }
+        ? { ok: false, failure: { code: AssistantFailureCode.MicrophoneUnavailable, detail: 'recorder busy' } }
         : { ok: true, value: undefined };
     },
     stop: async () => {
@@ -118,13 +118,21 @@ function harness(
     },
   };
 
-  const player: AudioPlayerInterface = {
-    prepare: async () => (await stall('prepare'), { ok: true, value: undefined }),
-    enqueue: () => {
+  // Plays in real (or faked) time: what is queued ends `samples / 24 kHz` after
+  // whatever was already playing, which is what the echo gate reads.
+  let playingUntil = 0;
+  const now = (): number => performance.now();
+  const player: AssistantPlayer = {
+    level: () => 0,
+    remainingSeconds: () => Math.max(0, playingUntil - now()) / 1000,
+    prepare: async (): Promise<Result<void, AssistantFailure>> => (await stall('prepare'), { ok: true, value: undefined }),
+    enqueue: (samples) => {
       calls.enqueued += 1;
+      playingUntil = Math.max(playingUntil, now()) + (samples.length / 24_000) * 1000;
     },
     flush: () => {
       calls.flush += 1;
+      playingUntil = 0;
     },
     stop: async () => {
       calls.released.push('player');
@@ -185,7 +193,7 @@ function harness(
   const registry = new AssistantActionRegistry();
   const store = configureAssistantSessionStore({ session, microphone, player, tokens, messenger, registry });
   openStores.push(store);
-  return { store, registry, calls, emit: (event: AssistantSessionEventType) => emit(event), release: () => release() };
+  return { store, registry, calls, emit: (event: SessionEvent) => emit(event), release: () => release() };
 }
 
 type SpeechLine = Extract<AssistantTranscriptLine, { kind: typeof AssistantTranscriptLineKind.Speech }>;
@@ -198,15 +206,29 @@ const spoken = (transcript: AssistantTranscriptLine[]): SpeechLine[] =>
 const frame = (amplitude: number): Float32Array<ArrayBuffer> =>
   new Float32Array([amplitude, amplitude, amplitude, amplitude]);
 
-/** Lets every queued microtask — the tool queue, a reconnect — run to a stop. */
+/**
+ * Lets every queued microtask — the tool queue, a reconnect — run to a stop.
+ * Generous on purpose: a tool call now crosses the library's registry and
+ * queue as well as the app's, and a count that only just fits goes stale.
+ */
 const settle = async (): Promise<void> => {
-  for (let tick = 0; tick < 12; tick += 1) await Promise.resolve();
+  for (let tick = 0; tick < 50; tick += 1) await Promise.resolve();
 };
 
 /** Lets every queued microtask run — teardown awaits two device stops, each
  *  behind its own rejection guard, so a fixed number of `Promise.resolve()`
  *  hops is a count that quietly goes stale. */
 const settled = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+/** The backend's single tool, as the library reports a call to it. */
+const toolCall = (callId: string, action: string, arg?: string): SessionEvent => ({
+  kind: SessionEventKind.ToolCall,
+  call: {
+    id: callId,
+    name: ApiLiveTool.name,
+    args: { [ApiLiveTool.actionField]: action, ...(arg !== undefined ? { [ApiLiveTool.argField]: arg } : {}) },
+  },
+});
 
 /** Enough samples that the queued audio is still playing when the frame arrives. */
 const SPEECH_SAMPLES = 24_000;
@@ -395,7 +417,7 @@ describe('assistant session store', () => {
     const { store, calls, emit } = harness();
 
     await store.getState().startVoice('tr-TR');
-    emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.2]) });
+    emit({ kind: SessionEventKind.Audio, samples: new Float32Array([0.2]) });
 
     expect(calls.enqueued).toBeGreaterThan(0);
   });
@@ -450,7 +472,7 @@ describe('assistant session store', () => {
       const { store, calls, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.1]) });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array([0.1]) });
 
       expect(calls.enqueued).toBe(1);
       expect(store.getState().status).toBe(AssistantStatus.Speaking);
@@ -461,9 +483,9 @@ describe('assistant session store', () => {
     it('flushes the queue the moment an interruption arrives', async () => {
       const { store, calls, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.1]) });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array([0.1]) });
 
-      emit({ kind: AssistantEventKind.Interrupted });
+      emit({ kind: SessionEventKind.Interrupted });
 
       expect(calls.flush).toBe(1);
       expect(store.getState().status).toBe(AssistantStatus.Listening);
@@ -475,7 +497,7 @@ describe('assistant session store', () => {
     it('keeps sending audio while speaking when the capture cancels echo', async () => {
       const { store, calls, emit } = harness({ cancelsEcho: true });
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
 
       const before = calls.audioFrames;
       calls.onFrame?.(new Float32Array([0.2]));
@@ -486,7 +508,7 @@ describe('assistant session store', () => {
     it('still holds the microphone shut while speaking when it cannot', async () => {
       const { store, calls, emit } = harness({ cancelsEcho: false });
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array(SPEECH_SAMPLES) });
 
       const before = calls.audioFrames;
       calls.onFrame?.(new Float32Array([0.2]));
@@ -498,8 +520,8 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'tavuk var' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
 
       expect(spoken(store.getState().transcript).map((l) => [l.speaker, l.text])).toEqual([
         [ChatRole.User, 'tavuk var'],
@@ -513,7 +535,7 @@ describe('assistant session store', () => {
       const { store, calls, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.AttachPhoto });
+      emit(toolCall('c1', AssistantAction.AttachPhoto));
       // The queue that serialises tool calls costs a tick beyond the handler's.
       for (let tick = 0; tick < 8; tick += 1) await Promise.resolve();
 
@@ -525,7 +547,7 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.GenerateRecipe, async (arg) => ({ ok: true, title: arg }));
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.GenerateRecipe, arg: 'tavuk' });
+      emit(toolCall('c1', AssistantAction.GenerateRecipe, 'tavuk'));
       for (let tick = 0; tick < 8; tick += 1) await Promise.resolve();
 
       expect(calls.toolResponses).toEqual([{ ok: true, title: 'tavuk' }]);
@@ -553,8 +575,8 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.Save, slow('save'));
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
+      emit(toolCall('c1', AssistantAction.OpenRecipe));
+      emit(toolCall('c2', AssistantAction.Save));
       await settle();
 
       expect(order).toEqual(['open:start', 'open:end', 'save:start', 'save:end']);
@@ -571,8 +593,8 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.Save, async () => ({ ok: true, title: 'after' }));
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.OpenRecipe });
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c2', action: AssistantAction.Save });
+      emit(toolCall('c1', AssistantAction.OpenRecipe));
+      emit(toolCall('c2', AssistantAction.Save));
       await settle();
 
       expect(calls.toolResponses).toEqual([
@@ -590,9 +612,9 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.connects = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(calls.connects).toBe(1);
@@ -606,9 +628,9 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.mints.length = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-7' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-7' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(calls.mints).toEqual([{ languageCode: 'tr-TR', resumptionHandle: 'h-7' }]);
@@ -621,9 +643,9 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.micStopped = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(calls.micStopped).toBe(0);
@@ -636,8 +658,8 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.connects = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(calls.connects).toBe(0);
@@ -651,9 +673,9 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.micStopped = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(store.getState().status).toBe(AssistantStatus.Idle);
@@ -669,9 +691,9 @@ describe('assistant session store', () => {
         const { store, calls, emit } = harness();
         await store.getState().startVoice('tr-TR');
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
         calls.audioFrames = 0;
         calls.onFrame?.(new Float32Array([0.2]));
@@ -689,9 +711,9 @@ describe('assistant session store', () => {
         calls.connects = 0;
 
         for (let round = 0; round < 5; round += 1) {
-          emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-          emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-          emit({ kind: AssistantEventKind.Closed, expected: false });
+          emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+          emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+          emit({ kind: SessionEventKind.Closed, expected: false });
           await settle();
         }
 
@@ -705,12 +727,12 @@ describe('assistant session store', () => {
         calls.connects = 0;
 
         for (let round = 0; round < 5; round += 1) {
-          emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-          emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-          emit({ kind: AssistantEventKind.Closed, expected: false });
+          emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+          emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+          emit({ kind: SessionEventKind.Closed, expected: false });
           await settle();
           // A completed turn is a conversation that is happening.
-          emit({ kind: AssistantEventKind.TurnComplete });
+          emit({ kind: SessionEventKind.TurnComplete });
         }
 
         expect(calls.connects).toBe(5);
@@ -722,11 +744,11 @@ describe('assistant session store', () => {
       it('goes back to listening after the handover', async () => {
         const { store, emit } = harness();
         await store.getState().startVoice('tr-TR');
-        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array([0.1]) });
+        emit({ kind: SessionEventKind.Audio, samples: new Float32Array([0.1]) });
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await settle();
 
         expect(store.getState().status).toBe(AssistantStatus.Listening);
@@ -740,9 +762,9 @@ describe('assistant session store', () => {
         await store.getState().startVoice('tr-TR');
         calls.connects = 0;
 
-        emit({ kind: AssistantEventKind.Resumption, handle: 'h-1' });
-        emit({ kind: AssistantEventKind.GoAway, timeLeftMs: 9500 });
-        emit({ kind: AssistantEventKind.Closed, expected: false });
+        emit({ kind: SessionEventKind.Resumption, handle: 'h-1' });
+        emit({ kind: SessionEventKind.GoAway, timeLeftMs: 9500 });
+        emit({ kind: SessionEventKind.Closed, expected: false });
         await store.getState().stopVoice();
         await settle();
 
@@ -754,7 +776,7 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Usage, totalTokens: 957 });
+      emit({ kind: SessionEventKind.Usage, totalTokens: 957 });
 
       expect(store.getState().tokensUsed).toBe(957);
     });
@@ -763,7 +785,7 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Closed, expected: false });
+      emit({ kind: SessionEventKind.Closed, expected: false });
       await settled();
 
       expect(store.getState().status).toBe(AssistantStatus.Idle);
@@ -797,7 +819,7 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Audio, samples: frame(0.25) });
+      emit({ kind: SessionEventKind.Audio, samples: frame(0.25) });
 
       expect(store.getState().level).toBeGreaterThan(0);
     });
@@ -939,9 +961,9 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'Baklava' });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: ' yapay zeka' });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: ' hazırlıyor.' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: 'Baklava' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: ' yapay zeka' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: ' hazırlıyor.' });
 
       expect(store.getState().transcript).toEqual([
         expect.objectContaining({ speaker: ChatRole.Assistant, text: 'Baklava yapay zeka hazırlıyor.' }),
@@ -957,9 +979,9 @@ describe('assistant session store', () => {
         const { store, emit } = harness();
         await store.getState().startVoice('tr-TR');
 
-        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki' });
+        emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki' });
         await jest.advanceTimersByTimeAsync(3_000);
-        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ilk tarif' });
+        emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'ilk tarif' });
 
         expect(store.getState().transcript).toHaveLength(2);
       } finally {
@@ -973,9 +995,9 @@ describe('assistant session store', () => {
         const { store, emit } = harness();
         await store.getState().startVoice('tr-TR');
 
-        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
+        emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
         await jest.advanceTimersByTimeAsync(200);
-        emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: ' tarifi' });
+        emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: ' tarifi' });
 
         expect(store.getState().transcript).toHaveLength(1);
       } finally {
@@ -987,8 +1009,8 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'baklava' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
 
       expect(store.getState().transcript).toHaveLength(2);
     });
@@ -997,9 +1019,9 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
-      emit({ kind: AssistantEventKind.TurnComplete });
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.Assistant, text: 'peki' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: 'tamam' });
+      emit({ kind: SessionEventKind.TurnComplete });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.Assistant, text: 'peki' });
 
       expect(store.getState().transcript).toHaveLength(2);
     });
@@ -1017,7 +1039,7 @@ describe('assistant session store', () => {
         const { store, calls, emit } = harness();
         await store.getState().startVoice('tr-TR');
         // One second of playback at 24 kHz.
-        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+        emit({ kind: SessionEventKind.Audio, samples: new Float32Array(24_000) });
         calls.audioFrames = 0;
 
         calls.onFrame?.(frame(0.3));
@@ -1033,7 +1055,7 @@ describe('assistant session store', () => {
       try {
         const { store, calls, emit } = harness();
         await store.getState().startVoice('tr-TR');
-        emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+        emit({ kind: SessionEventKind.Audio, samples: new Float32Array(24_000) });
         calls.audioFrames = 0;
 
         // A second of audio, plus the tail the room takes to go quiet.
@@ -1050,8 +1072,8 @@ describe('assistant session store', () => {
     it('reopens the microphone the moment it is interrupted', async () => {
       const { store, calls, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
-      emit({ kind: AssistantEventKind.Interrupted });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array(24_000) });
+      emit({ kind: SessionEventKind.Interrupted });
       calls.audioFrames = 0;
 
       calls.onFrame?.(frame(0.3));
@@ -1101,7 +1123,7 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.Search, async () => ({ ok: true }));
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.Search, arg: 'mercimek' });
+      emit(toolCall('c1', AssistantAction.Search, 'mercimek'));
       await settle();
 
       expect(store.getState().transcript.at(-1)).toEqual({
@@ -1118,7 +1140,7 @@ describe('assistant session store', () => {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
 
-      emit({ kind: AssistantEventKind.ToolCall, callId: 'c1', action: AssistantAction.AttachPhoto });
+      emit(toolCall('c1', AssistantAction.AttachPhoto));
       await settle();
 
       expect(store.getState().transcript).toEqual([]);
@@ -1131,12 +1153,7 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.GenerateRecipe, async () => ({ ok: true, title: 'Mercimek çorbası' }));
       await store.getState().startVoice('tr-TR');
 
-      emit({
-        kind: AssistantEventKind.ToolCall,
-        callId: 'c1',
-        action: AssistantAction.GenerateRecipe,
-        arg: 'buzdolabındakilerle bir şeyler',
-      });
+      emit(toolCall('c1', AssistantAction.GenerateRecipe, 'buzdolabındakilerle bir şeyler'));
       await settle();
 
       expect(store.getState().transcript.at(-1)).toMatchObject({ detail: 'Mercimek çorbası' });
@@ -1149,12 +1166,7 @@ describe('assistant session store', () => {
       registry.register(AssistantAction.SetDraftField, async () => ({ ok: true }));
       await store.getState().startVoice('tr-TR');
 
-      emit({
-        kind: AssistantEventKind.ToolCall,
-        callId: 'c1',
-        action: AssistantAction.SetDraftField,
-        arg: '{"field":"title","value":"x"}',
-      });
+      emit(toolCall('c1', AssistantAction.SetDraftField, '{"field":"title","value":"x"}'));
       await settle();
 
       expect(store.getState().transcript.at(-1)).toEqual({
@@ -1287,7 +1299,7 @@ describe('assistant session store — the wait after the user speaks', () => {
     try {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki tarifi oku' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'ekrandaki tarifi oku' });
 
       expect(store.getState().status).toBe(AssistantStatus.Listening);
 
@@ -1306,8 +1318,8 @@ describe('assistant session store — the wait after the user speaks', () => {
     try {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'merhaba' });
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(24_000) });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'merhaba' });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array(24_000) });
 
       await jest.advanceTimersByTimeAsync(1_500);
 
@@ -1324,7 +1336,7 @@ describe('assistant session store — the wait after the user speaks', () => {
     try {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
       await jest.advanceTimersByTimeAsync(1_500);
 
       await jest.advanceTimersByTimeAsync(13_000);
@@ -1344,11 +1356,11 @@ describe('assistant session store — the wait after the user speaks', () => {
     try {
       const { store, emit } = harness();
       await store.getState().startVoice('tr-TR');
-      emit({ kind: AssistantEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
+      emit({ kind: SessionEventKind.Transcript, speaker: ChatRole.User, text: 'duyabiliyor musun' });
       await jest.advanceTimersByTimeAsync(14_500);
       expect(store.getState().error).not.toBeNull();
 
-      emit({ kind: AssistantEventKind.Audio, samples: new Float32Array(240) });
+      emit({ kind: SessionEventKind.Audio, samples: new Float32Array(240) });
 
       // A notice that outlives the failure it describes reads as the app still
       // being broken.

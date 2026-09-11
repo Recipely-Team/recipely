@@ -131,7 +131,8 @@ export class AssistantController<Connection> {
   private silenceTimer: Timer | null = null;
   private speakingTimer: Timer | null = null;
   private starting: Promise<Result<void, AssistantFailure>> | null = null;
-  private ending: Promise<void> | null = null;
+  /** The ending under way: `teardown` is what `stop()` awaits, `settled` what a new start waits for. */
+  private ending: { readonly teardown: Promise<void>; readonly settled: Promise<void> } | null = null;
   private connectingSocket = false;
   private listenAfterTools = false;
 
@@ -160,7 +161,7 @@ export class AssistantController<Connection> {
    * devices are shared, and the ending one must hand them back first.
    */
   async start(): Promise<Result<void, AssistantFailure>> {
-    if (this.ending !== null) await this.ending;
+    if (this.ending !== null) await this.ending.settled;
     if (this.state.status !== AssistantStatus.Idle) return ok(undefined);
 
     const run = this.runStart();
@@ -237,9 +238,19 @@ export class AssistantController<Connection> {
     this.setMuted(!this.state.isMuted);
   }
 
-  /** Sends a typed turn over the live session. Returns false when no session is listening. */
-  sendText(text: string): boolean {
+  /**
+   * Sends a typed turn over the live session. Returns false when no session is listening.
+   *
+   * `hidden` sends it without a transcript line or a status change — a nudge
+   * the model should act on but the user did not type ("tell them their time
+   * is nearly up", "the screen changed to …").
+   */
+  sendText(text: string, options: { readonly hidden?: boolean } = {}): boolean {
     if (text.length === NONE || !LIVE.has(this.state.status)) return false;
+    if (options.hidden === true) {
+      this.options.session.sendText(text);
+      return true;
+    }
 
     this.transcript.addMessage(Speaker.User, text);
     this.options.session.sendText(text);
@@ -432,29 +443,33 @@ export class AssistantController<Connection> {
   /**
    * Ends the session, one ending at a time.
    *
-   * `idle` is published immediately, so End never waits on a connect. A start
-   * still in flight is abandoned (the epoch) and releases what it opened; the
-   * ending lasts until it has, and a new `start()` waits for the ending — so
-   * the abandoned start can never close devices a new session already owns.
-   * A second caller joins the ending under way instead of overwriting its reason.
+   * `idle` is published immediately and `stop()` resolves once the teardown
+   * has run, so End never waits on a connect. A start still in flight is
+   * abandoned (the epoch) and releases what it opened; a new `start()` waits
+   * until it has — so the abandoned start can never close devices a new
+   * session already owns. A second caller joins the ending under way instead
+   * of overwriting its reason.
    */
   private end(reason: EndReasonType, error: AssistantFailure | null = null): Promise<void> {
-    if (this.ending !== null) return this.ending;
+    if (this.ending !== null) return this.ending.teardown;
 
-    const run = (async (): Promise<void> => {
-      const pending = this.starting;
-      // Idle is published at once and the socket closed (which also unblocks a pending connect).
-      if (this.state.status !== AssistantStatus.Idle || pending !== null) await this.teardown(reason, error);
+    const pending = this.starting;
+    // Idle is published at once and the socket closed (which also unblocks a pending connect).
+    const teardown =
+      this.state.status !== AssistantStatus.Idle || pending !== null ? this.teardown(reason, error) : Promise.resolve();
+    const settled = (async (): Promise<void> => {
+      await teardown;
       if (pending === null) return;
-      // The abandoned start releases what it opened after this point; the devices are handed back once more after it.
+      // The abandoned start releases what it opened after the teardown; hand the devices back once more after it.
       await pending.catch(noop);
       await this.releaseDevices();
     })();
-    this.ending = run;
-    void run.finally(() => {
-      if (this.ending === run) this.ending = null;
+    const entry = { teardown, settled };
+    this.ending = entry;
+    void settled.finally(() => {
+      if (this.ending === entry) this.ending = null;
     });
-    return run;
+    return teardown;
   }
 
   /**

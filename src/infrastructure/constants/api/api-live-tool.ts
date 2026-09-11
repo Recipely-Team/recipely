@@ -12,6 +12,8 @@
  */
 export const ApiLiveTool = {
   name: 'runAction',
+  /** Informational only on this side: the declaration the model reads is the backend's. */
+  description: 'Perform one action in the app.',
   actionField: 'action',
   argField: 'arg',
 } as const;

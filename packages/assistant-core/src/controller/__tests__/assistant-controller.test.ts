@@ -301,6 +301,16 @@ describe('AssistantController — a turn', () => {
     expect(controller.getState().status).toBe(AssistantStatus.Listening);
   });
 
+  it('sends a hidden nudge without a transcript line or a status change', async () => {
+    const { controller, session } = await started();
+
+    expect(controller.sendText('SYSTEM: one minute left', { hidden: true })).toBe(true);
+
+    expect(session.texts).toEqual(['SYSTEM: one minute left']);
+    expect(controller.getState().transcript).toEqual([]);
+    expect(controller.getState().status).toBe(AssistantStatus.Listening);
+  });
+
   it('sends a typed turn only over a live session', async () => {
     const idle = build();
     expect(idle.controller.sendText('hi')).toBe(false);

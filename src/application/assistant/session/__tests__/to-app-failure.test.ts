@@ -1,7 +1,7 @@
 import { AssistantFailureCode } from '@live-assistant/core';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureCode } from '@core/failure/failure-code';
-import { toAppFailure } from '@infrastructure/assistant/live/to-app-failure';
+import { toAppFailure } from '@application/assistant/session/to-app-failure';
 
 /**
  * The library answers with codes; the session store, the notices and the
