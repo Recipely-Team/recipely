@@ -1,13 +1,13 @@
 {
   "name": "@live-assistant/token-server",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Server-side helper that mints short-lived Gemini Live tokens with your system instruction, tools and voice baked in, so the API key never reaches a device.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "sideEffects": false,
   "dependencies": {
-    "@live-assistant/core": "0.0.0"
+    "@live-assistant/core": "0.1.0"
   },
   "engines": {
     "node": ">=18"

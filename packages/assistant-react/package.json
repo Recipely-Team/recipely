@@ -1,13 +1,13 @@
 {
   "name": "@live-assistant/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Headless React bindings for @live-assistant/core: session state, transcript, per-frame levels and tool registration — build any UI, or use @live-assistant/widget.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "sideEffects": false,
   "dependencies": {
-    "@live-assistant/core": "0.0.0"
+    "@live-assistant/core": "0.1.0"
   },
   "peerDependencies": {
     "react": ">=18"

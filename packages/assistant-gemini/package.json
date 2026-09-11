@@ -1,12 +1,12 @@
 {
   "name": "@live-assistant/gemini",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "private": true,
   "description": "Gemini Live adapter for @live-assistant/core: the socket, its setup handshake and the frames in both directions.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "sideEffects": false,
   "dependencies": {
-    "@live-assistant/core": "0.0.0"
+    "@live-assistant/core": "0.1.0"
   }
 }
