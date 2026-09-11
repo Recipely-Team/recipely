@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "${applicationName} uygulamasına sor";
+"Open a recipe in ${applicationName}" = "${applicationName} uygulamasında tarif aç";
+"Save a recipe in ${applicationName}" = "${applicationName} uygulamasında tarif kaydet";
+"Like a recipe in ${applicationName}" = "${applicationName} uygulamasında tarif beğen";
+"Read the ingredients in ${applicationName}" = "${applicationName} uygulamasında malzemeleri oku";
+"What is the next step in ${applicationName}" = "${applicationName} uygulamasında sonraki adım ne";
+"Start the timer in ${applicationName}" = "${applicationName} uygulamasında zamanlayıcıyı başlat";
+"Create a recipe in ${applicationName}" = "${applicationName} uygulamasında tarif oluştur";
+"Import a recipe into ${applicationName}" = "${applicationName} uygulamasına tarif aktar";
+"Open my recipes in ${applicationName}" = "${applicationName} uygulamasında tariflerimi aç";

@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "${applicationName}に聞いて";
+"Open a recipe in ${applicationName}" = "${applicationName}でレシピを開く";
+"Save a recipe in ${applicationName}" = "${applicationName}でレシピを保存";
+"Like a recipe in ${applicationName}" = "${applicationName}でレシピにいいね";
+"Read the ingredients in ${applicationName}" = "${applicationName}で材料を読んで";
+"What is the next step in ${applicationName}" = "${applicationName}で次の手順は";
+"Start the timer in ${applicationName}" = "${applicationName}でタイマーを開始";
+"Create a recipe in ${applicationName}" = "${applicationName}でレシピを作る";
+"Import a recipe into ${applicationName}" = "${applicationName}にレシピをインポート";
+"Open my recipes in ${applicationName}" = "${applicationName}でマイレシピを開く";

@@ -62,5 +62,6 @@ export const ApiRoutes = {
     session: '/assistant/session',
     heartbeat: '/assistant/heartbeat',
     message: '/assistant/message',
+    intentToken: '/assistant/intent-token',
   },
 } as const;

@@ -12,6 +12,8 @@ import { configureAssistantSessionStore } from '@application/assistant/session/a
 import type { AssistantSessionEventType } from '@domain/assistant/session/assistant-session-event';
 import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { ChatRole } from '@domain/drafts/chat-role';
@@ -130,6 +132,13 @@ function harness(
   };
 
   const tokens: AssistantTokenRepositoryInterface = {
+    // The live session never mints one of these; it is here because the port
+    // declares it, and a double that lies about the port is a double that stops
+    // catching the thing the port exists for.
+    mintIntentToken: async () => ({
+      ok: false as const,
+      failure: new UnknownFailure(DiagnosticMessage.assistant.intentTokenUndated),
+    }),
     mintSession: async (languageCode, resumptionHandle) => {
       await stall('mint');
       calls.mints.push({ languageCode, resumptionHandle });

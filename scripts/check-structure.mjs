@@ -136,7 +136,15 @@ for (const file of files) {
   // Exception: same-name const+type merge, and unions derived via `typeof <local const>`.
   typeLike = typeLike.filter((d) => {
     if (d.kind !== 'type') return true;
-    const body = new RegExp(`^export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(;|$)`, 'm').exec(src)?.[1] ?? '';
+    // No `m` flag, and the start anchored with `\n` instead: with multiline on,
+    // `$` matches the end of a LINE, so a lazy body match stopped at the first
+    // newline and a two-line alias — `export type X =` then the union on the
+    // next line — was read as having an empty body. It then failed the `typeof`
+    // test it plainly passes and was reported as sharing a file with runtime
+    // code. Prettier wraps at 100 characters, so a long derived union is
+    // ordinarily two lines: the false positive was the common case, not a rare
+    // one.
+    const body = new RegExp(`(?:^|\\n)export\\s+type\\s+${d.name}\\b[^=]*=([\\s\\S]*?)(?:;|\\n(?=\\S)|$)`).exec(src)?.[1] ?? '';
     const derived = [...body.matchAll(/typeof\s+([A-Za-z0-9_]+)/g)].some((t) => names.has(t[1]));
     const merged = decls.some((o) => o !== d && o.kind === 'const' && o.name === d.name);
     return !derived && !merged;
@@ -482,6 +490,191 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       errors.push(
         `assistant actions with no handler: ${unhandled.join(', ')} — every action offered to the model must be registered by some screen via useAssistantAction, or the assistant is advertised a capability it does not have (CLAUDE.md §5)`,
       );
+    }
+  }
+}
+
+// --- W: the OS-facing catalogue must match the native sources ---------------
+// `OS_INTENT_CATALOGUE` claims to be the one list Siri, the Android launcher
+// and the app are all built from — but the Swift intents and the Kotlin
+// shortcut publisher spell their ids and action words as bare string literals,
+// because neither language can import a TypeScript const. Nothing joined the
+// two halves, so a renamed action would have kept compiling on both sides and
+// simply stopped working out loud.
+//
+// jest cannot read Swift, so this is the gate's job rather than a test's. Two
+// questions, both mechanical: does every literal the native sources put in an
+// `id:` or `action:` slot exist in the vocabulary it claims to come from, and
+// does every deep link they build name a real action?
+{
+  const idsPath = path.join(SRC, 'domain/assistant/os/os-intent-id.ts');
+  const actionsPath = path.join(SRC, 'domain/assistant/actions/assistant-action-type.ts');
+  const nativeRoot = path.join(ROOT, 'modules/recipely-assistant-kit');
+
+  if (fs.existsSync(idsPath) && fs.existsSync(actionsPath) && fs.existsSync(nativeRoot)) {
+    const valuesOf = (file) =>
+      new Set([...fs.readFileSync(file, 'utf8').matchAll(/^ {2}\w+: '([\w]+)',/gm)].map((m) => m[1]));
+    const intentIds = valuesOf(idsPath);
+    const actions = valuesOf(actionsPath);
+
+    const nativeFiles = [];
+    const walkNative = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        // `build/` is Gradle output, not source.
+        if (entry.isDirectory()) {
+          if (!['build', '.gradle', '.cxx'].includes(entry.name)) walkNative(full);
+        } else if (/\.(swift|kt|xml)$/.test(entry.name)) {
+          // `.xml` is here because the GENERATED shortcuts are native sources
+          // too, and leaving them out is how a generator that emitted a
+          // scheme-less link — every shortcut silently inert — passed all four
+          // gates. A rule that reads only hand-written code cannot see a
+          // generator's mistakes, and the freshness rules cannot either: they
+          // compare the generator's output with itself.
+          nativeFiles.push(full);
+        }
+      }
+    };
+    walkNative(nativeRoot);
+
+    for (const file of nativeFiles) {
+      const src = fs.readFileSync(file, 'utf8');
+      const shown = path.relative(ROOT, file);
+
+      // Three shapes, because three call sites spell it three ways:
+      // `"id": "x"` in a Swift dictionary, `"id" to "x"` in a Kotlin map, and
+      // `id: "x"` as a Swift named argument — which is what the intents use
+      // now that they share one enqueue helper.
+      for (const m of src.matchAll(/(?:"id"\s*(?::|to)|\bid:)\s*"([\w]+)"/g)) {
+        if (!intentIds.has(m[1])) {
+          errors.push(
+            `${shown}: '${m[1]}' is not an OsIntentId — the native sources and OS_INTENT_CATALOGUE must name the same capabilities (CLAUDE.md §5)`,
+          );
+        }
+      }
+      for (const m of src.matchAll(/(?:"action"\s*(?::|to)|\baction:)\s*"([\w]+)"/g)) {
+        if (!actions.has(m[1])) {
+          errors.push(
+            `${shown}: '${m[1]}' is not an AssistantAction — a word the registry cannot answer (CLAUDE.md §5)`,
+          );
+        }
+      }
+      // Deep links the native side builds. The id is mandatory and the action
+      // is not, which is exactly the shape `parseOsIntentLink` enforces — a
+      // link written the other way round parses to nothing and the shortcut
+      // opens the app to no effect.
+      for (const m of src.matchAll(/(\S*?):\/\/assistant\/run\?([^"'\s]*)|assistant\/run\?([^"'\s]*)/g)) {
+        const scheme = m[1];
+        const query = (m[2] ?? m[3]).split('&amp;').join('&');
+        // A link with no scheme matches NO_MATCH_DATA against every filter on
+        // the launcher activity, so the shortcut appears and does nothing.
+        if (scheme === undefined) {
+          errors.push(
+            `${shown}: deep link has no scheme — Android matches NO_MATCH_DATA and the shortcut does nothing (CLAUDE.md §5)`,
+          );
+        }
+        const linkId = /(?:^|&)id=([\w$]+)/.exec(query)?.[1];
+        if (linkId === undefined) {
+          errors.push(
+            `${shown}: deep link has no id= — parseOsIntentLink refuses a link without one (CLAUDE.md §5)`,
+          );
+        } else if (!linkId.startsWith('$') && !intentIds.has(linkId)) {
+          errors.push(
+            `${shown}: deep link names id '${linkId}', which is not an OsIntentId (CLAUDE.md §5)`,
+          );
+        }
+        const linkAction = /(?:^|&)action=([\w$]+)/.exec(query)?.[1];
+        if (linkAction !== undefined && !linkAction.startsWith('$') && !actions.has(linkAction)) {
+          errors.push(
+            `${shown}: deep link names '${linkAction}', which is not an AssistantAction (CLAUDE.md §5)`,
+          );
+        }
+      }
+    }
+  }
+}
+
+// --- AD: the Siri phrase catalogue must describe the phrases that exist -------
+// `<lang>.lproj/AppShortcuts.strings` is generated from the i18n catalogue and joined to
+// the Swift on the ENGLISH phrase text. A stale file is the worst shape this
+// can take: it compiles, it ships, and Siri answers in English on every device
+// because the key it looks up no longer matches the phrase in the binary.
+// Nothing fails and nothing logs.
+//
+// The generator throws on every disagreement it can see — a phrase with no
+// catalogue entry, an entry no phrase uses, a translation that dropped
+// `{app}` — so running it IS the check. It only rewrites the file when the
+// content differs, and reports whether it had to.
+{
+  const generator = path.join(ROOT, 'scripts/generate-app-shortcuts.mjs');
+  const swift = path.join(
+    ROOT,
+    'modules/recipely-assistant-kit/ios/AppIntents/Shortcuts/RecipelyShortcuts.swift',
+  );
+  if (fs.existsSync(generator) && fs.existsSync(swift)) {
+    try {
+      const { isFresh } = await import('./generate-app-shortcuts.mjs');
+      if (!isFresh()) {
+        errors.push(
+          'AppShortcuts.strings was stale — it has been regenerated, commit it (`npm run shortcuts`)',
+        );
+      }
+    } catch (error) {
+      errors.push(`AppShortcuts.strings could not be generated: ${error.message}`);
+    }
+  }
+}
+
+// --- AE: the Android shortcuts must describe the catalogue that exists --------
+// `recipely_shortcuts.xml` names an action word and a deep link for each
+// launcher entry. A stale one is not a crash: the shortcut opens the app, the
+// link carries a word the registry no longer answers, and the app looks to the
+// user like it ignored them. The generator refuses every disagreement it can
+// see — an entry with no label, a label no entry uses, a missing translation —
+// so running it IS the check.
+{
+  const generator = path.join(ROOT, 'scripts/generate-android-shortcuts.mjs');
+  const catalogue = path.join(SRC, 'domain/assistant/os/os-intent-catalogue.ts');
+  if (fs.existsSync(generator) && fs.existsSync(catalogue)) {
+    try {
+      const { isFresh } = await import('./generate-android-shortcuts.mjs');
+      if (!isFresh()) {
+        errors.push(
+          'recipely_shortcuts.xml was stale — it has been regenerated, commit it (`npm run shortcuts:android`)',
+        );
+      }
+    } catch (error) {
+      errors.push(`recipely_shortcuts.xml could not be generated: ${error.message}`);
+    }
+  }
+}
+
+// --- X: nothing destructive may answer without a screen ---------------------
+// A `headless: true` entry is answered by native code with no UI, so the
+// confirmation sheet `CONFIRMED_ACTIONS` relies on cannot appear at all — not
+// "is hard to reach", cannot exist. The catalogue's own test asserts this too,
+// but the invariant is about what ships to a user's phone rather than about
+// one module, so it is held here as well.
+{
+  const cataloguePath = path.join(SRC, 'domain/assistant/os/os-intent-catalogue.ts');
+  const confirmedPath = path.join(SRC, 'domain/assistant/actions/confirmed-actions.ts');
+
+  if (fs.existsSync(cataloguePath) && fs.existsSync(confirmedPath)) {
+    const confirmed = new Set(
+      [...fs.readFileSync(confirmedPath, 'utf8').matchAll(/AssistantAction\.(\w+)/g)].map((m) => m[1]),
+    );
+    const src = fs.readFileSync(cataloguePath, 'utf8');
+    // Each `{ ... }` entry, matched whole so `action` and `headless` are read
+    // from the same one.
+    for (const entry of src.matchAll(/\{[^{}]*id:[\s\S]*?\}/g)) {
+      const body = entry[0];
+      if (!/headless:\s*true/.test(body)) continue;
+      const action = /action:\s*AssistantAction\.(\w+)/.exec(body)?.[1];
+      if (action !== undefined && confirmed.has(action)) {
+        errors.push(
+          `OS_INTENT_CATALOGUE: '${action}' is a confirmed action marked headless — a destructive action answered with no screen has no way to ask (CLAUDE.md §5, §23)`,
+        );
+      }
     }
   }
 }

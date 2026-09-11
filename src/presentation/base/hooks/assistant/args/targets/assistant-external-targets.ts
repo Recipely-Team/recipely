@@ -1,3 +1,5 @@
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
+
 /**
  * Destinations the assistant RECOGNISES but will not open, because they are not
  * in the app.
@@ -22,6 +24,6 @@ export const ASSISTANT_EXTERNAL_NAMES: readonly string[] = [
   'termsOfUse',
 ];
 
-/** Whether a spoken word names a page that lives outside the app. */
+/** Whether a spoken word names a page that lives outside the app, in whatever case the model wrote it. */
 export const isAssistantExternalName = (name: string): boolean =>
-  ASSISTANT_EXTERNAL_NAMES.includes(name);
+  resolveTargetName(name, ASSISTANT_EXTERNAL_NAMES) !== null;

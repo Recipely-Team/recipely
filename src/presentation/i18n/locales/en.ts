@@ -1011,4 +1011,91 @@ export const en = {
       stop: "Stopped",
     },
   },
+  /**
+   * The phrases Siri accepts for this app, one per App Shortcut.
+   *
+   * `{app}` is the application name, and Apple requires every phrase to carry
+   * it — a phrase without it is dropped at build time with no error. The
+   * generator turns it into `${applicationName}`, which is the form the
+   * metadata processor extracts.
+   *
+   * The ENGLISH value is the lookup key for the whole catalogue: it has to
+   * match the phrase literal in `RecipelyShortcuts.swift` character for
+   * character, or Siri matches the English and every translation is ignored.
+   * `scripts/generate-app-shortcuts.mjs` joins the two on that string and
+   * refuses to write a catalogue when they disagree.
+   */
+  osIntentPhrases: {
+    ask: "Ask {app}",
+    openRecipe: "Open a recipe in {app}",
+    saveRecipe: "Save a recipe in {app}",
+    likeRecipe: "Like a recipe in {app}",
+    readIngredients: "Read the ingredients in {app}",
+    readNextStep: "What is the next step in {app}",
+    startTimer: "Start the timer in {app}",
+    generateRecipe: "Create a recipe in {app}",
+    importRecipe: "Import a recipe into {app}",
+    openMyRecipes: "Open my recipes in {app}",
+  },
+  /**
+   * The labels under a long-press of the Android launcher icon.
+   *
+   * Short on purpose: a launcher shows roughly a dozen characters before it
+   * truncates, and a truncated label is worse than a terse one. These are NOT
+   * the Siri phrases — a phrase is something you say, a label is something you
+   * read — so they are kept apart rather than shared.
+   */
+  osShortcutLabels: {
+    askRecipely: "Ask Recipely",
+    generateRecipe: "Create a recipe",
+    startTimer: "Start timer",
+    openMyRecipes: "My recipes",
+  },
+  /**
+   * Everything the intents show or say, other than the phrases the user speaks:
+   * Siri's follow-up questions, and the titles, descriptions, parameter names
+   * and tile labels that Shortcuts and Spotlight display.
+   *
+   * Written by `scripts/generate-app-shortcuts.mjs` into a `RecipelyIntents`
+   * string table that the intents read by the ENGLISH value, the same join the
+   * phrases use. Before this block every one of them was an English literal,
+   * so a Turkish phone asked its questions and labelled its tiles in English.
+   */
+  osIntentStrings: {
+    askWhat: "What would you like to ask?",
+    openingApp: "Opening Recipely.",
+    cookWhat: "What would you like to cook?",
+    importWhich: "Which link should I import?",
+    askRecipely: "Ask Recipely",
+    openRecipe: "Open Recipe",
+    saveRecipe: "Save Recipe",
+    likeRecipe: "Like Recipe",
+    readIngredients: "Read Ingredients",
+    nextStep: "Next Step",
+    readNextStep: "Read Next Step",
+    startTimer: "Start Timer",
+    startCookingTimer: "Start Cooking Timer",
+    createRecipe: "Create Recipe",
+    createARecipe: "Create a Recipe",
+    importRecipe: "Import Recipe",
+    importARecipe: "Import a Recipe",
+    myRecipes: "My Recipes",
+    openMyRecipes: "Open My Recipes",
+    searchRecipely: "Search Recipely",
+    paramDescription: "Description",
+    paramRecipe: "Recipe",
+    paramQuestion: "Question",
+    paramQuery: "Query",
+    paramLink: "Link",
+    describeGenerate: "Creates a new recipe from what you describe.",
+    describeReadIngredients: "Reads a recipe's ingredients aloud.",
+    describeLike: "Likes a recipe.",
+    describeOpenRecipe: "Opens one of your recipes in Recipely.",
+    describeReadNextStep: "Reads the next step of the recipe you are cooking.",
+    describeOpenMyRecipes: "Opens your saved, liked and created recipes.",
+    describeAsk: "Asks the Recipely cooking assistant anything.",
+    describeImport: "Imports a recipe from a link you share.",
+    describeStartTimer: "Starts the cook timer for the recipe you are on.",
+    describeSave: "Adds a recipe to your saved list.",
+  },
 };

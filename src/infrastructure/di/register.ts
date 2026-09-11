@@ -31,6 +31,7 @@ import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
+import { OsAssistantBridge } from '@infrastructure/assistant/os/os-assistant-bridge';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
 import { AssistantTokenRepository } from '@infrastructure/assistant/token/assistant-token-repository';
 import { GeminiLiveSession } from '@infrastructure/assistant/live/gemini-live-session';
@@ -74,6 +75,10 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     TOKENS.AssistantMessenger,
     () => new AssistantMessenger(container.resolve(TOKENS.HttpClient)),
   );
+  // Siri, Spotlight and the launcher, behind the same kind of port as every
+  // other platform capability. The web half answers `isAvailable: false`, so
+  // no caller asks which platform it is on.
+  container.register(TOKENS.OsAssistant, () => new OsAssistantBridge());
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 
   // The app-wide single source of truth for the active language. Everything

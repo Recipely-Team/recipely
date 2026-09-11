@@ -40,6 +40,17 @@ describe('useAssistantSettingsActions', () => {
     expect(spies.onSetLanguage).toHaveBeenCalledWith('tr');
   });
 
+  // A preference key is a machine word a model may capitalise or space out.
+  it('accepts the preference named with a capital', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.SetPreference, 'Language=tr');
+    });
+
+    expect(spies.onSetLanguage).toHaveBeenCalledWith('tr');
+  });
+
   // Arabic has a complete catalogue but is deliberately not offered — the app
   // has no RTL layout, so selecting it leaves the interface harder to read
   // than before. Only the offered list knows that.

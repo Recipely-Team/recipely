@@ -127,6 +127,7 @@
       "@react-native-firebase/crashlytics",
       "@react-native-firebase/auth",
       "expo-apple-authentication",
+      "./plugins/withAssistantKit",
       [
         "expo-share-intent",
         {

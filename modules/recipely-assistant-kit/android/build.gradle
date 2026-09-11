@@ -1,0 +1,29 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'net.recipely'
+version = '0.1.0'
+
+android {
+  namespace "net.recipely.assistantkit"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  implementation "androidx.core:core-ktx:1.17.0"
+  // The envelope parity suite runs on the JVM, not on a device: a cipher that
+  // can only be tested on hardware is a cipher that gets tested after it ships.
+  // Gson rather than `org.json`, which is an android.jar stub in unit tests and
+  // throws "not mocked" on the first call. See docs/os-assistants-plan.md D14.
+  testImplementation "junit:junit:4.13.2"
+  testImplementation "com.google.code.gson:gson:2.11.0"
+  // Dynamic shortcuts only reach Google's surfaces — Assistant among them —
+  // when this is on the classpath; without it they stop at the launcher.
+  // See docs/os-assistants-plan.md finding D5.
+  implementation "androidx.core:core-google-shortcuts:1.1.0"
+}

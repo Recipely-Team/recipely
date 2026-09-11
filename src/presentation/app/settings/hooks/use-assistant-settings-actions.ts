@@ -1,3 +1,4 @@
+import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
@@ -108,7 +109,8 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         const parsed = parseKeyValue(arg);
         if (parsed === null) return { ok: false, error: 'expected_key_equals_value' };
 
-        const { key } = parsed;
+        // "Language=tr" names the same preference as "language=tr".
+        const key = resolveTargetName(parsed.key, [LANGUAGE, THEME, PALETTE]) ?? parsed.key;
         const value = machineLower(parsed.value);
 
         if (key === LANGUAGE) {

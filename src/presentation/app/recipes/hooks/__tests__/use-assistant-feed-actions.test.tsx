@@ -284,4 +284,18 @@ describe('useAssistantFeedActions', () => {
     expect(spies.onChangeSort).toHaveBeenCalledTimes(1);
     expect(spies.onChangeSort).toHaveBeenCalledWith('newest');
   });
+
+  // The key, spelled the way a model other than the one it was written for
+  // spells it — "most_liked" is `mostLiked`, not an unknown sort.
+  it('sorts by a key written with separators or capitals', async () => {
+    const { registry, spies } = harness();
+
+    await act(async () => {
+      await registry.run(AssistantAction.Sort, 'most_liked');
+      await registry.run(AssistantAction.Sort, 'Most Liked');
+    });
+
+    expect(spies.onChangeSort).toHaveBeenNthCalledWith(1, 'mostLiked');
+    expect(spies.onChangeSort).toHaveBeenNthCalledWith(2, 'mostLiked');
+  });
 });

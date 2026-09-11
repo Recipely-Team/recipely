@@ -1,0 +1,10 @@
+"Ask ${applicationName}" = "问 ${applicationName}";
+"Open a recipe in ${applicationName}" = "在 ${applicationName} 中打开食谱";
+"Save a recipe in ${applicationName}" = "在 ${applicationName} 中收藏食谱";
+"Like a recipe in ${applicationName}" = "在 ${applicationName} 中点赞食谱";
+"Read the ingredients in ${applicationName}" = "在 ${applicationName} 中读出食材";
+"What is the next step in ${applicationName}" = "在 ${applicationName} 中下一步是什么";
+"Start the timer in ${applicationName}" = "在 ${applicationName} 中开始计时";
+"Create a recipe in ${applicationName}" = "在 ${applicationName} 中创建食谱";
+"Import a recipe into ${applicationName}" = "把食谱导入 ${applicationName}";
+"Open my recipes in ${applicationName}" = "在 ${applicationName} 中打开我的食谱";

@@ -9,6 +9,26 @@ import type { Stores } from '@presentation/bootstrap/stores';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 
+/**
+ * Every tree this harness mounted, unmounted after each test — the way
+ * `@testing-library` cleans up.
+ *
+ * The theme provider reads the stored preference asynchronously. A test that
+ * left its tree mounted had that read land after the file's environment was
+ * torn down ("import a file after the Jest environment has been torn down"),
+ * which failed a pre-commit related-tests run on a change it had nothing to do
+ * with. Registered from here rather than jest.setup.js, so only files that use
+ * the harness pay for it and no test's own `jest.mock` is loaded around.
+ */
+const mounted: ReactTestRenderer[] = [];
+
+if (typeof afterEach === 'function') {
+  afterEach(async () => {
+    await act(async () => undefined);
+    for (const renderer of mounted.splice(0)) act(() => renderer.unmount());
+  });
+}
+
 /** Fixed safe-area metrics so layout-dependent components render deterministically. */
 /** Viewport the harness pretends to render into — a 320×640 phone, the
  * narrowest layout the app supports, so a test that passes here passes wider. */
@@ -61,6 +81,7 @@ export const renderComponent = (element: ReactElement, stores?: Partial<Stores>)
     );
   });
 
+  mounted.push(renderer);
   return { root: renderer.root, renderer };
 };
 
