@@ -342,9 +342,10 @@ ad-hoc-signed simulator build with a real intent token in its App Group.
   nothing. The system, not our strings, picks English for this app here; whether
   a device does the same needs a device.
 - **Backend latency is Gemini's.** dev-api took 1.5–39 s; its logs show Gemini
-  answering `503 high demand` or timing out at 60 s before the Groq fallback. A
-  Siri caller needs its own, shorter budget on the backend — the in-app typed
-  mode deliberately waits 90 s — so that is a backend decision, recorded here.
+  answering `503 high demand` or timing out at 60 s before the Groq fallback.
+  **Fixed in recipely-backend#315:** one deadline per turn, set by who is waiting
+  (app 80 s, phone 12 s), shared between Gemini and Groq; measured on the dev box
+  with the phone's 6 s share, Groq answered in 0.65–0.9 s while Gemini timed out.
 
 ### D25 — Measured against the real backend, and what Siri says back
 **The headless path works end to end.** The unmodified `RecipelyAssistantStore`,
