@@ -106,3 +106,39 @@ describe('a cuisine the app has never heard of', () => {
     expect(resolveTaxonomyKey([], 'Türk')).toBeNull();
   });
 });
+
+/**
+ * Reported from the settings screen: "tema paletinden kırmızı dediğimde yok
+ * diyo, İngilizce adları sayıyor sonra bana." The swatch says "Kırmızı Kor",
+ * and the user says the word that tells it from the others.
+ */
+describe('a word the user reads off the screen', () => {
+  const palettes = [
+    { key: 'pearl', name: 'İnci Beyazı' },
+    { key: 'crimson', name: 'Kırmızı Kor' },
+    { key: 'emerald', name: 'Zümrüt Bahçe' },
+    { key: 'royal', name: 'Kraliyet Moru' },
+  ];
+
+  it('finds the palette whose name holds that word', () => {
+    expect(resolveTaxonomyKey(palettes, 'kırmızı')).toBe('crimson');
+    expect(resolveTaxonomyKey(palettes, 'zümrüt')).toBe('emerald');
+  });
+
+  it('still prefers the whole name when it is given', () => {
+    expect(resolveTaxonomyKey(palettes, 'Kraliyet Moru yap')).toBe('royal');
+  });
+
+  // Two palettes with the same word in them is a question, not an answer.
+  it('refuses a word two options share', () => {
+    expect(
+      resolveTaxonomyKey(
+        [
+          { key: 'crimson', name: 'Kırmızı Kor' },
+          { key: 'rose', name: 'Kırmızı Gül' },
+        ],
+        'kırmızı',
+      ),
+    ).toBeNull();
+  });
+});

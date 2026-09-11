@@ -69,7 +69,15 @@ export function resolveTaxonomyKey(
       ),
   );
 
-  return distinct.length === ValueConstants.one ? (distinct[ValueConstants.zero]?.key ?? null) : null;
+  if (distinct.length === ValueConstants.one) return distinct[ValueConstants.zero]?.key ?? null;
+
+  // Nothing sat inside what the user said. Try it the other way round: a user
+  // reading a swatch says the word that tells the palettes apart, not the
+  // whole name on it — "kırmızı" for "Kırmızı Kor" — and answering "there is
+  // no such palette" to a colour that is on screen is a refusal of the obvious.
+  // Only when exactly one option holds that word: two would be a guess.
+  const named = options.filter((item) => matchIn(foldForMatch(item.name), wantedName) !== MatchKind.None);
+  return named.length === ValueConstants.one ? (named[ValueConstants.zero]?.key ?? null) : null;
 }
 
 /** How well a name sits inside a phrase. */

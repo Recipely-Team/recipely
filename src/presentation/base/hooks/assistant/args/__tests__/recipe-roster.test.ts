@@ -35,3 +35,22 @@ describe('recipeRoster', () => {
     expect(recipeRoster('recipes', names)).not.toContain('more');
   });
 });
+
+/**
+ * Reported: "oluşturduğum tarifleri aç dedim, yok dedi — ama o arada tarifler
+ * yükleniyordu." A count of nothing is a fact to a model, and it says it out
+ * loud as "you have none". A screen that does not know yet must say so.
+ */
+describe('a list that has not arrived', () => {
+  it('says it is loading rather than that there is nothing', () => {
+    expect(recipeRoster('created', [], false)).toBe('created=loading');
+  });
+
+  it('says nothing is there once the list has arrived empty', () => {
+    expect(recipeRoster('created', [], true)).toBe('created=none');
+  });
+
+  it('reads the rows it has, loaded or not', () => {
+    expect(recipeRoster('created', ['Mercimek'], false)).toBe('created=1) Mercimek');
+  });
+});

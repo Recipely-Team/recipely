@@ -8,5 +8,5 @@ import { numberedLines } from '@presentation/base/hooks/assistant/args/describin
  * so "bu sayfada ne var" is answered the same way on the feed, on My Recipes
  * and on notifications rather than three ways.
  */
-export const listReading = (label: string, rows: readonly string[]): string =>
-  `${label}: ${numberedLines(rows)}`;
+export const listReading = (label: string, rows: readonly string[], isLoaded = true): string =>
+  !isLoaded && rows.length === 0 ? `${label}: loading` : `${label}: ${numberedLines(rows)}`;

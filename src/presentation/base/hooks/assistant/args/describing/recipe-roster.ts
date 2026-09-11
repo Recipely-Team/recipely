@@ -11,6 +11,14 @@ const MAX_NAMED = 8;
 
 /** What the line says when the screen has a list and the list is empty. */
 const NOTHING = 'none';
+/**
+ * What it says while the list is on its way.
+ *
+ * Reported: "oluşturduğum tarifleri aç dedim, yok dedi — ama o arada tarifler
+ * yükleniyordu." A count of nothing, told to a model as fact, becomes "you have
+ * none" in the user's ear; the screen knows the difference and must say it.
+ */
+const LOADING = 'loading';
 
 /**
  * One screen's rows, as the model reads them.
@@ -29,7 +37,8 @@ const NOTHING = 'none';
  * - **An empty list says so.** "There are no recipes here" is an answer the
  *   assistant could not give while the line was a path.
  */
-export const recipeRoster = (label: string, names: readonly string[]): string => {
+export const recipeRoster = (label: string, names: readonly string[], isLoaded = true): string => {
+  if (!isLoaded && names.length === ValueConstants.zero) return `${label}=${LOADING}`;
   if (names.length === ValueConstants.zero) return `${label}=${NOTHING}`;
 
   const listed = names

@@ -1967,3 +1967,21 @@ every path still answers, because a tool call that never returns stalls the conv
 returns.** Whatever reads the screen next — the model, through the registry's screen
 line — will read the screen the user was on, not the one they were sent to.
 
+## A screen that had not counted yet, and a colour that was on it
+
+Two more from the same afternoon. "Oluşturduğum tarifleri aç" switched to the tab and
+answered at once, so the screen line was written before the rows arrived — and a line
+that says `created=none` is a fact to a model, which passed it on as "you have none"
+while the list filled in behind the panel. Then "tema paletinden kırmızı" was refused
+and the model read the palette names back in English: the resolver only matched a name
+that sat inside what the user said, and "Kırmızı Kor" does not sit inside "kırmızı".
+
+*Now:* a list that has not loaded says `loading` rather than `none`, in both the screen
+line and the reading, and `switchTab` waits (bounded) for the tab it moved to. The
+taxonomy resolver, after its other passes fail, accepts a word that sits inside exactly
+one option's NAME — one, never two, because two is a question rather than an answer.
+
+*The class:* **a count of nothing is not the same as nothing, and a name is not the
+only way someone says it.** The screen knows which of the two it has; the user says the
+word that tells the options apart.
+
