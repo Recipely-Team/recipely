@@ -303,9 +303,12 @@ before committing to it: the metadata processor RECORDS a custom table
 (`{"key": "Ask Recipely", "table": "RecipelyIntents"}` in `extract.actionsdata`),
 so build-time strings resolve from it like run-time ones, and on a Turkish
 simulator the Shortcuts tile changed from "Ask Recipely" to "Recipely’e sor".
-The generator now refuses every bare user-visible literal under `AppIntents/`
-(nine forms, each proved by planting one); a recipe's own name interpolated
-into `DisplayRepresentation` is data and passes.
+The generator refuses, through `scripts/os-intent-string-guard.cjs`, any
+`LocalizedStringResource` that does not name the table (which also catches a
+missing table or a typo in its name) and the fourteen initialiser forms that
+take a plain string; a table-driven test holds 20 refusals and 8 allowances. A
+string that is exactly one interpolation — a recipe's own name — is data and
+passes; text around an interpolation does not.
 
 **The run-time prompt stayed English even so** — "What would you like to
 ask?", the system's "You'll need to continue in the app" and its Cancel/Done —

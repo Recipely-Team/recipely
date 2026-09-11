@@ -177,7 +177,7 @@ describe('generated Siri dialogs', () => {
 
   // Verified on a Turkish simulator: with the table in place the Shortcuts tile
   // reads "Recipely’e sor". Every Turkish row must differ from its English key,
-  // or that label silently falls back — the same failure, one string at a time.
+  // or that label shows English — the same failure, one string at a time.
   it('translates every Turkish row rather than copying the English', () => {
     const untranslated = Object.entries(table('tr')).filter(([key, value]) => key === value);
     expect(untranslated).toEqual([]);

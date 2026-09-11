@@ -1051,7 +1051,7 @@ export const id = {
     describeOpenRecipe: "Membuka salah satu resepmu di Recipely.",
     describeReadNextStep: "Membacakan langkah berikutnya dari resep yang sedang kamu masak.",
     describeOpenMyRecipes: "Membuka resep yang kamu simpan, sukai, dan buat.",
-    describeAsk: "Tanyakan apa saja ke asisten memasak Recipely.",
+    describeAsk: "Menanyakan apa saja ke asisten memasak Recipely.",
     describeImport: "Mengimpor resep dari tautan yang kamu bagikan.",
     describeStartTimer: "Memulai timer memasak untuk resep yang sedang dibuka.",
     describeSave: "Menambahkan resep ke daftar simpananmu.",

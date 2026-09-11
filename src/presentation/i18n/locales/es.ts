@@ -1050,7 +1050,7 @@ export const es = {
     describeLike: "Da me gusta a una receta.",
     describeOpenRecipe: "Abre una de tus recetas en Recipely.",
     describeReadNextStep: "Lee el siguiente paso de la receta que estás cocinando.",
-    describeOpenMyRecipes: "Abre tus recetas guardadas, favoritas y creadas.",
+    describeOpenMyRecipes: "Abre tus recetas guardadas, las que te gustan y las que creaste.",
     describeAsk: "Pregunta cualquier cosa al asistente de cocina de Recipely.",
     describeImport: "Importa una receta desde un enlace que compartes.",
     describeStartTimer: "Inicia el temporizador de cocción de la receta actual.",

@@ -1,6 +1,6 @@
 "Recipe" = "Rezept";
 "Ask Recipely" = "Recipely fragen";
-"Asks the Recipely cooking assistant anything." = "Fragt den Recipely-Kochassistenten alles.";
+"Asks the Recipely cooking assistant anything." = "Stellt dem Recipely-Kochassistenten jede Frage.";
 "Question" = "Frage";
 "What would you like to ask?" = "Was möchtest du fragen?";
 "Opening Recipely." = "Recipely wird geöffnet.";
@@ -13,7 +13,7 @@
 "Link" = "Link";
 "Which link should I import?" = "Welchen Link soll ich importieren?";
 "Like Recipe" = "Rezept liken";
-"Likes a recipe." = "Liked ein Rezept.";
+"Likes a recipe." = "Likt ein Rezept.";
 "Open My Recipes" = "Meine Rezepte öffnen";
 "Opens your saved, liked and created recipes." = "Öffnet deine gespeicherten, gelikten und erstellten Rezepte.";
 "Open Recipe" = "Rezept öffnen";
@@ -23,7 +23,7 @@
 "Read Next Step" = "Nächsten Schritt vorlesen";
 "Reads the next step of the recipe you are cooking." = "Liest den nächsten Schritt des Rezepts vor, das du kochst.";
 "Save Recipe" = "Rezept speichern";
-"Adds a recipe to your saved list." = "Fügt ein Rezept zu deinen gespeicherten hinzu.";
+"Adds a recipe to your saved list." = "Fügt ein Rezept zu deinen gespeicherten Rezepten hinzu.";
 "Search Recipely" = "In Recipely suchen";
 "Query" = "Suchbegriff";
 "Start Cooking Timer" = "Koch-Timer starten";

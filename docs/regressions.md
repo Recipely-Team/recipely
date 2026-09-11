@@ -1883,7 +1883,9 @@ Recipe" and "Import Recipe" still asking in English — ANY dialog written as a
 bare literal under `AppIntents/`, which is what closes the road rather than the
 three instances. The artifact test fails a Turkish table that still says the
 English. The same table now carries every title, description, parameter name
-and tile label the intents display, and the guard covers those forms too.
+and tile label the intents display; the guard (`os-intent-string-guard.cjs`, with
+its own table-driven test) now also requires every `LocalizedStringResource` to
+name the table — a positive rule, after review found forms the list had missed.
 
 *The class:* **a complete catalogue says nothing about the lines that never
 entered it.** The check that matters for a localized surface is whether any

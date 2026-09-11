@@ -32,12 +32,15 @@
  * build-time strings resolve from it too), and the same rule joins it: every
  * `table: "RecipelyIntents"` literal in the Swift must match an
  * `en.osIntentStrings` value, every entry must be used, and a user-visible
- * string written as a bare literal stops the build.
+ * string that does not name the table stops the build (os-intent-string-guard).
  *
  * Run by `npm run shortcuts`; freshness is enforced by `check:structure`.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { createRequire } from 'node:module';
+
+const { findBareString } = createRequire(import.meta.url)('./os-intent-string-guard.cjs');
 
 const ROOT = process.cwd();
 const LOCALES_DIR = path.join(ROOT, 'src/presentation/i18n/locales');
@@ -160,34 +163,14 @@ const dialogKeys = [
     ].map((m) => m[1])),
   ),
 ];
-// A user-visible string written as a bare literal never reaches the table, so
-// it is shown and spoken in English on every phone — which is what all eleven
-// intents did. Refused here rather than trusted to review. Comment lines are
-// skipped so a doc block may quote the shape it forbids; `title: "\(` is data
-// (a recipe's own name), not copy.
-const BARE_STRING = new RegExp(
-  [
-    'requestValueDialog:\\s*"',
-    'IntentDialog\\(\\s*"',
-    'IntentDialog\\(stringLiteral:\\s*"',
-    'dialog:\\s*"',
-    'LocalizedStringResource\\s*=\\s*"',
-    'IntentDescription\\(\\s*"',
-    'shortTitle:\\s*"',
-    'TypeDisplayRepresentation\\(\\s*name:\\s*"',
-    'title:\\s*"(?!\\\\\\()',
-  ].join('|'),
-);
+// A user-visible string that does not come from the table is shown and spoken
+// in English on every phone — which is what all eleven intents did. The rule
+// itself lives in os-intent-string-guard.cjs, which has a test of its own.
 for (const file of swiftSourcesUnder(INTENTS_DIR)) {
-  const code = fs
-    .readFileSync(file, 'utf8')
-    .split('\n')
-    .filter((line) => !line.trimStart().startsWith('//'))
-    .join('\n');
-  const hit = BARE_STRING.exec(code);
-  if (hit !== null) {
+  const offence = findBareString(fs.readFileSync(file, 'utf8'));
+  if (offence !== null) {
     throw new Error(
-      `${path.relative(ROOT, file)} writes a user-visible string as a bare literal (${hit[0]}…) — ` +
+      `${path.relative(ROOT, file)}: ${offence.form} (${offence.snippet}) — ` +
         `use LocalizedStringResource("…", table: "${DIALOG_TABLE}") and add it to osIntentStrings`,
     );
   }
