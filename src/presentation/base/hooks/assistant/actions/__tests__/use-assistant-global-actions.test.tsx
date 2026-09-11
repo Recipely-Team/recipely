@@ -21,13 +21,30 @@ jest.mock('expo-router', () => ({
   router: { navigate: jest.fn(), push: jest.fn(), back: jest.fn(), canGoBack: () => true },
 }));
 
-function harness() {
+/** A feed that answers a query only when the test says so. */
+function fakeRecipeList(initial: unknown = { status: 'idle' }) {
+  let state = initial;
+  const listeners = new Set<(next: { state: unknown }) => void>();
+  return {
+    getState: () => ({ state }),
+    subscribe: (listener: (next: { state: unknown }) => void) => {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    answer: (query: string, recipes: { id: string; name: string }[]) => {
+      state = { status: 'loaded', query, recipes };
+      for (const listener of listeners) listener({ state });
+    },
+  };
+}
+
+function harness(recipeListStore: unknown = fakeRecipeList()) {
   const registry = new AssistantActionRegistry();
   const stores = {
     assistantActionRegistry: registry,
     assistantSessionStore: (select: (state: unknown) => unknown) =>
       select({ stopVoice: jest.fn() }),
-    recipeListStore: { getState: () => ({ state: { status: 'idle' } }) },
+    recipeListStore,
   } as unknown as Stores;
 
   const Probe = (): null => {
@@ -109,5 +126,130 @@ describe('navigate — the words a model actually sends', () => {
       ok: false,
       error: 'unknown_screen',
     });
+  });
+});
+
+/**
+ * Reported with the list on screen: "tavuk şavurma dedim, bulamadım dedi,
+ * ekranda listede vardı." `search` opened the feed with the query and returned
+ * at once, so the registry read the screen before the rows arrived and told
+ * the model `recipes=none`. The model believed the screen line over the user.
+ */
+describe('search', () => {
+  it('does not answer until the feed has the rows the query asked for', async () => {
+    const feed = fakeRecipeList();
+    const registry = harness(feed);
+    registry.setScreenDescriber(() => {
+      const state = feed.getState().state as { status: string; recipes?: { name: string }[] };
+      return state.status === 'loaded' && state.recipes !== undefined
+        ? `screen=/recipes; recipes=${state.recipes.map((r) => r.name).join(', ')}`
+        : 'screen=/recipes; recipes=none';
+    });
+
+    const running = registry.run(AssistantAction.Search, 'tavuk şavurma');
+    let answered = false;
+    void running.then(() => (answered = true));
+    await Promise.resolve();
+    expect(answered).toBe(false);
+
+    feed.answer('tavuk şavurma', [{ id: 'r1', name: 'Tavuk Şavurma' }]);
+
+    await expect(running).resolves.toMatchObject({
+      ok: true,
+      ctx: 'screen=/recipes; recipes=Tavuk Şavurma',
+    });
+    expect(router.navigate).toHaveBeenCalledWith(RoutePaths.recipesWithSearch('tavuk şavurma'));
+  });
+
+  it('gives up waiting rather than leaving the assistant silent', async () => {
+    jest.useFakeTimers();
+    try {
+      const registry = harness(fakeRecipeList());
+
+      const running = registry.run(AssistantAction.Search, 'mercimek');
+      await jest.advanceTimersByTimeAsync(4_000);
+
+      await expect(running).resolves.toMatchObject({ ok: true });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+/**
+ * Reported: "tavuk şavurma dedim klasik çikolatalı kurabiye tarifini açtı,
+ * şakşuka tarifi dedim fıstıklı baklava tarifini açtı." The name was not in the
+ * rows the feed happened to be holding, so the handler said `not_found` — and
+ * the model answered with a recipe id it remembered from an earlier turn.
+ */
+describe('openRecipe', () => {
+  it('looks for a name the feed is not showing, and opens what it finds', async () => {
+    const feed = fakeRecipeList({ status: 'loaded', query: '', recipes: [{ id: 'b1', name: 'Fıstıklı Baklava' }] });
+    const registry = harness(feed);
+
+    const running = registry.run(AssistantAction.OpenRecipe, 'şakşuka');
+    await Promise.resolve();
+    feed.answer('şakşuka', [{ id: 's1', name: 'Şakşuka (Yumurtalı)' }]);
+
+    await expect(running).resolves.toMatchObject({ ok: true, title: 'Şakşuka (Yumurtalı)' });
+    expect(router.navigate).toHaveBeenCalledWith(RoutePaths.recipesWithSearch('şakşuka'));
+    expect(router.push).toHaveBeenCalledWith(RoutePaths.recipeDetail('s1'));
+  });
+
+  it('opens a row the feed already has without searching for it', async () => {
+    const feed = fakeRecipeList({ status: 'loaded', query: '', recipes: [{ id: 't1', name: 'Tavuk Şavurma' }] });
+    const registry = harness(feed);
+
+    await expect(registry.run(AssistantAction.OpenRecipe, 'tavuk şavurma')).resolves.toMatchObject({
+      ok: true,
+      title: 'Tavuk Şavurma',
+    });
+    expect(router.push).toHaveBeenCalledWith(RoutePaths.recipeDetail('t1'));
+  });
+
+  it('says it could not find one rather than opening something else', async () => {
+    jest.useFakeTimers();
+    try {
+      const registry = harness(fakeRecipeList({ status: 'loaded', query: '', recipes: [] }));
+
+      const running = registry.run(AssistantAction.OpenRecipe, 'ayran aşı çorbası');
+      await jest.advanceTimersByTimeAsync(4_000);
+
+      await expect(running).resolves.toMatchObject({ ok: false, error: 'not_found' });
+    } finally {
+      jest.useRealTimers();
+    }
+  });
+});
+
+/**
+ * "The second one" is about the rows on screen. Sent looking for a name when
+ * the feed had none, a position would be searched for as if it were one — and
+ * the catalogue answers "2" with recipes that have digits in their names, so
+ * the app would open one of those. That is the wrong-recipe failure the search
+ * fallback exists to end, coming back through the fallback itself.
+ */
+describe('openRecipe by position', () => {
+  it('opens the row the user counted to', async () => {
+    const feed = fakeRecipeList({
+      status: 'loaded',
+      query: '',
+      recipes: [
+        { id: 'a', name: 'Şinitzel' },
+        { id: 'b', name: 'Tavuk Şavurma' },
+      ],
+    });
+    const registry = harness(feed);
+
+    await expect(registry.run(AssistantAction.OpenRecipe, '2')).resolves.toMatchObject({ ok: true, title: 'Tavuk Şavurma' });
+    expect(router.push).toHaveBeenCalledWith(RoutePaths.recipeDetail('b'));
+  });
+
+  it('never searches for a number, and says so when there is no such row', async () => {
+    const registry = harness(fakeRecipeList({ status: 'loaded', query: '', recipes: [] }));
+    const navigationsBefore = (router.navigate as jest.Mock).mock.calls.length;
+
+    await expect(registry.run(AssistantAction.OpenRecipe, '2')).resolves.toMatchObject({ ok: false, error: 'not_found' });
+    expect((router.navigate as jest.Mock).mock.calls).toHaveLength(navigationsBefore);
   });
 });
