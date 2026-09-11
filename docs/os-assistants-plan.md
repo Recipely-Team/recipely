@@ -430,12 +430,12 @@ plugin's pbxproj code.
 - [x] Rule W widened to the link shape: `id=` mandatory, `action=` optional (proved by removing the id)
 - [x] Quick Settings tile — declared in the **library** manifest so Gradle merges it (a service that ships with the code implementing it cannot fall out of step); verified in the APK
 - [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy
-- [ ] Widget
+- [x] Widget — a button, not a data surface: `updatePeriodMillis` is 0 because there is nothing to refresh, and a widget that never refreshes cannot go stale
 - [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
 - [ ] AppFunctions service `@RequiresApi(36)`, behind a flag
 - [ ] `androidx.core:core-google-shortcuts` (so shortcuts reach Google's surfaces, D5)
 - [ ] Apply to the Google AppFunctions EAP form
-- [ ] R8 keep rules (if needed)
+- [x] R8 keep rules — **not needed**, measured rather than assumed: `:app:minifyReleaseWithR8` is green and not one of its warnings names `assistantkit`. The tile and the widget are reached from the manifest, from which AGP generates keeps of its own.
 
 ## Phase 5 — Gates and docs
 
