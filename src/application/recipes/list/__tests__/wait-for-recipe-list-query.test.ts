@@ -43,13 +43,34 @@ describe('waitForRecipeListQuery', () => {
     expect(feed.listenerCount).toBe(0);
   });
 
-  it('does not wait for rows that are never coming', async () => {
-    const failed = fakeStore({ status: 'error', failure: {} });
-    // A refresh that failed keeps the old query beside the failure.
-    const refreshFailed = fakeStore({ status: 'loaded', query: 'önceki', recipes: [], refreshFailure: {} });
+  it('stops waiting when the load it is waiting for fails', async () => {
+    const feed = fakeStore({ status: 'loading' });
+    const waiting = waitForRecipeListQuery(feed.store, 'baklava');
 
-    await expect(waitForRecipeListQuery(failed.store, 'baklava')).resolves.toBeUndefined();
-    await expect(waitForRecipeListQuery(refreshFailed.store, 'baklava')).resolves.toBeUndefined();
+    feed.move({ status: 'loaded', query: 'önceki', recipes: [], refreshFailure: {} });
+
+    await expect(waiting).resolves.toBeUndefined();
+  });
+
+  // A failure left over from an earlier load says nothing about the query the
+  // caller has just asked for; ending the wait on it would answer from the old
+  // screen again, which is the whole failure this helper exists to end.
+  it('still waits when the failure on hand belongs to an earlier load', async () => {
+    jest.useFakeTimers();
+    try {
+      const feed = fakeStore({ status: 'loaded', query: 'önceki', recipes: [], refreshFailure: {} });
+      let settled = false;
+      const waiting = waitForRecipeListQuery(feed.store, 'baklava').then(() => (settled = true));
+
+      await jest.advanceTimersByTimeAsync(100);
+      expect(settled).toBe(false);
+
+      feed.move({ status: 'loaded', query: 'baklava', recipes: [] });
+      await waiting;
+      expect(settled).toBe(true);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('gives up rather than waiting forever', async () => {

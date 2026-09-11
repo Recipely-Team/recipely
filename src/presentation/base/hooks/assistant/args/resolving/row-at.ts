@@ -2,25 +2,6 @@ import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
- * Finds the row the user meant, by what they called it or by where it sits.
- *
- * @remarks
- * - **Both, because both are natural.** "Remove the yoghurt" and "remove the
- *   second one" are one request phrased two ways, and which one arrives depends
- *   entirely on whether the speaker could see the list. Supporting only names
- *   loses every unnamed row; only positions makes the user count.
- * - **A position must be the WHOLE argument.** `parseInt('2 eggs')` is `2`, so
- *   matching on a leading number alone would read "2 eggs" as "row two" and
- *   quietly act on the wrong line. The parsed value is compared back against
- *   the trimmed input, which only holds when the argument was nothing else.
- * - **Names match on a substring**, because a person says "the yoghurt" for a
- *   row that reads "200 g full-fat yoghurt". The first match wins: a list with
- *   two yoghurts is one the speaker would disambiguate themselves.
- * - **`null`, never a guess.** Every caller turns this into a `not_found` the
- *   model can say out loud; acting on the closest row would be the one failure
- *   a user cannot see coming.
- */
-/**
  * The row NUMBER an argument names, or null when it names something else.
  *
  * Exported because "the second one" is about the rows on screen and nothing
@@ -39,6 +20,25 @@ export function rowNumberOf(arg: string | undefined): number | null {
   return Number.isFinite(position) && String(position) === trimmed ? position : null;
 }
 
+/**
+ * Finds the row the user meant, by what they called it or by where it sits.
+ *
+ * @remarks
+ * - **Both, because both are natural.** "Remove the yoghurt" and "remove the
+ *   second one" are one request phrased two ways, and which one arrives depends
+ *   entirely on whether the speaker could see the list. Supporting only names
+ *   loses every unnamed row; only positions makes the user count.
+ * - **A position must be the WHOLE argument.** `parseInt('2 eggs')` is `2`, so
+ *   matching on a leading number alone would read "2 eggs" as "row two" and
+ *   quietly act on the wrong line. The parsed value is compared back against
+ *   the trimmed input, which only holds when the argument was nothing else.
+ * - **Names match on a substring**, because a person says "the yoghurt" for a
+ *   row that reads "200 g full-fat yoghurt". The first match wins: a list with
+ *   two yoghurts is one the speaker would disambiguate themselves.
+ * - **`null`, never a guess.** Every caller turns this into a `not_found` the
+ *   model can say out loud; acting on the closest row would be the one failure
+ *   a user cannot see coming.
+ */
 export function rowAt(rows: readonly string[], arg: string | undefined): number | null {
   if (arg === undefined || arg === CharConstants.empty) return null;
 
