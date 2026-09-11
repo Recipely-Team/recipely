@@ -2,7 +2,7 @@ import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
 import { ASSISTANT_NAVIGATION_TARGETS, resolveAssistantScreenName } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
-import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
+import { rowAt, rowNumberOf } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { waitForRecipeListQuery } from '@application/recipes/list/wait-for-recipe-list-query';
@@ -151,7 +151,10 @@ export const useAssistantGlobalActions = (): void => {
         // to fall back on an id it remembered from an earlier turn — and the
         // user watched the wrong recipe open ("şakşuka tarifi dedim, fıstıklı
         // baklava tarifini açtı"). Looking for it is what a person would do.
-        if (match === undefined && !looksLikeId(arg)) {
+        // Never for "the second one": a position is about the rows on screen,
+        // and searching the catalogue for "2" finds recipes with digits in
+        // their names — the wrong-recipe failure this branch exists to end.
+        if (match === undefined && !looksLikeId(arg) && rowNumberOf(arg) === null) {
           router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
           await waitForRecipeListQuery(recipeListStore, arg);
           match = pick(rowsNow());

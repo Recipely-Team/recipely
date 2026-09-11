@@ -26,26 +26,28 @@ const SETTLE_TIMEOUT_MS = 4_000;
  * - **It never rejects and never waits forever.** An error state and a timeout
  *   both resolve: the caller's next step is the same either way.
  */
-export function waitForRecipeListQuery(
-  store: BoundStore<RecipeListStoreState>,
-  query: string,
-  timeoutMs: number = SETTLE_TIMEOUT_MS,
-): Promise<void> {
+export function waitForRecipeListQuery(store: BoundStore<RecipeListStoreState>, query: string): Promise<void> {
   const wanted = query.trim();
-  const answers = (state: RecipeListStoreState['state']): boolean =>
-    (state.status === StoreStatus.Loaded && state.query.trim() === wanted) || state.status === StoreStatus.Error;
+  const hasRows = (state: RecipeListStoreState['state']): boolean =>
+    state.status === StoreStatus.Loaded && state.query.trim() === wanted;
+  // Only for a load that happens WHILE we wait: a failure left over from an
+  // earlier one says nothing about the query we just asked for, and reading it
+  // in the first check would end the wait before the screen had even started.
+  const gaveUp = (state: RecipeListStoreState['state']): boolean =>
+    state.status === StoreStatus.Error ||
+    (state.status === StoreStatus.Loaded && state.refreshFailure !== undefined);
 
-  if (answers(store.getState().state)) return Promise.resolve();
+  if (hasRows(store.getState().state)) return Promise.resolve();
 
   return new Promise<void>((resolve) => {
     let unsubscribe: (() => void) | null = null;
     const timer = setTimeout(() => {
       unsubscribe?.();
       resolve();
-    }, timeoutMs);
+    }, SETTLE_TIMEOUT_MS);
 
     unsubscribe = store.subscribe(({ state }) => {
-      if (!answers(state)) return;
+      if (!hasRows(state) && !gaveUp(state)) return;
       clearTimeout(timer);
       unsubscribe?.();
       resolve();
@@ -53,7 +55,7 @@ export function waitForRecipeListQuery(
 
     // A load that finished between the check above and the subscription would
     // otherwise wait out the whole timeout.
-    if (answers(store.getState().state)) {
+    if (hasRows(store.getState().state)) {
       clearTimeout(timer);
       unsubscribe();
       resolve();

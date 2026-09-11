@@ -221,3 +221,35 @@ describe('openRecipe', () => {
     }
   });
 });
+
+/**
+ * "The second one" is about the rows on screen. Sent looking for a name when
+ * the feed had none, a position would be searched for as if it were one — and
+ * the catalogue answers "2" with recipes that have digits in their names, so
+ * the app would open one of those. That is the wrong-recipe failure the search
+ * fallback exists to end, coming back through the fallback itself.
+ */
+describe('openRecipe by position', () => {
+  it('opens the row the user counted to', async () => {
+    const feed = fakeRecipeList({
+      status: 'loaded',
+      query: '',
+      recipes: [
+        { id: 'a', name: 'Şinitzel' },
+        { id: 'b', name: 'Tavuk Şavurma' },
+      ],
+    });
+    const registry = harness(feed);
+
+    await expect(registry.run(AssistantAction.OpenRecipe, '2')).resolves.toMatchObject({ ok: true, title: 'Tavuk Şavurma' });
+    expect(router.push).toHaveBeenCalledWith(RoutePaths.recipeDetail('b'));
+  });
+
+  it('never searches for a number, and says so when there is no such row', async () => {
+    const registry = harness(fakeRecipeList({ status: 'loaded', query: '', recipes: [] }));
+    const navigationsBefore = (router.navigate as jest.Mock).mock.calls.length;
+
+    await expect(registry.run(AssistantAction.OpenRecipe, '2')).resolves.toMatchObject({ ok: false, error: 'not_found' });
+    expect((router.navigate as jest.Mock).mock.calls).toHaveLength(navigationsBefore);
+  });
+});
