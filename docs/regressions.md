@@ -1654,6 +1654,64 @@ or a key; `toLocale*` stays only where the text is something a person wrote.
 machine constant has no locale; folding it with one turns a comparison into a
 coin toss decided by the device's language.
 
+## The gate that was promised in a comment and written nowhere
+
+Two doc blocks on the OS-assistant catalogue told the reader that
+`check:structure` enforced their invariants — that a destructive action could
+never be marked headless, and that the native sources could not drift from the
+vocabulary. Neither rule existed. One invariant was held by a jest assertion and
+the other by nothing at all, while the comments read as though both questions
+had been settled.
+
+*Now:* rule **W** reads the Swift and Kotlin sources and refuses any `id`,
+`action` or deep-link word that is not in the vocabulary it claims to come from;
+rule **X** blocks a `CONFIRMED_ACTIONS` word marked headless. Both were verified
+by breaking the tree and watching each one fail.
+
+*The class:* **a comment that names a guard is a claim about the build, not a
+note about intent.** It is read by the next person deciding whether they may
+change that line, and a false one is worse than silence — silence makes them
+check.
+
+## Fourteen translations that compile away without a word
+
+The Siri phrase catalogue was generated for every shipped language and the
+project's `knownRegions` was still Xcode's default, `(en, Base)`. A localized
+resource only compiles for languages the project lists, so thirteen of the
+fourteen were generated, copied into the target, discarded at build time, and
+Siri would have answered in English on every device. Nothing failed, nothing
+logged, and the files were all present on disk. The same shape twice more: a
+`values-id` folder is read by Android as the *region* Indonesia rather than the
+language, which still uses the 1988 code `in`; and fourteen `.strings` files
+registered individually all install to one bundle path, where the last one
+copied wins.
+
+*Now:* the plugin reads the shipped languages from `i18n/locales/` and widens
+`knownRegions` itself, the language-code table names `in`/`iw`/`ji` where they
+differ, the files go in as a variant group, and every claim was checked in the
+BUILT artifact — `aapt2 dump resources` for the APK, `plutil` for the `.app`.
+
+*The class:* **a localization that silently falls back is indistinguishable from
+one that works, in every place except the one that matters.** Generating the
+files proves nothing; only reading them back out of the built artifact does.
+
+## An absent value, rendered as the word "null"
+
+The Android launcher shortcuts are generated from the same catalogue that
+describes the Siri intents. One entry — the open-ended one — deliberately has no
+action: it carries a sentence for the assistant to interpret. The generator
+interpolated it anyway and produced `assistant/run?action=null`, a deep link
+asking the registry to run a word called "null".
+
+*Now:* the link carries the catalogue id first and the action only when there is
+one, which is also the shape an iOS App Intent writes into its queue — so both
+roads feed one `perform` instead of two. Rule W checks that shape and refuses a
+link with no id.
+
+*The class:* **a template that interpolates an optional value has already
+decided it is mandatory.** The absence has to be handled where the string is
+built, because by the time it is a string it looks exactly like a value.
+
 ## The fallback that answered with silence
 
 The text mode's failures were written to store state nothing rendered. Offline,

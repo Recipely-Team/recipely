@@ -293,6 +293,37 @@ without that variable — D15's trap biting the test instead of the build.
   Swift harness runs in `check:structure`, so it executes on every commit on a
   developer's machine and skips on Linux.
 
+### D22 — AppFunctions: the published alpha is not the documented one
+Attempted, measured, backed out. What is actually true today:
+
+- The artifacts exist: `androidx.appfunctions:appfunctions-service:1.0.0-alpha09`
+  and `appfunctions-compiler:1.0.0-alpha11`, on Google's Maven.
+- The compiler is a **KSP** processor. KSP is pinned to the compiler it was
+  built against, and this project is Kotlin **2.1.20**, so the matching plugin is
+  `com.google.devtools.ksp:symbol-processing-gradle-plugin:2.1.20-2.0.1`.
+- **The mechanism works.** A conditional `buildscript {}` — one of the few blocks
+  Gradle permits before `plugins {}` — puts KSP on the classpath only when
+  `-PrecipelyAppFunctions=true`, so a disabled feature costs no resolution on an
+  ordinary build. Proven: the flag-off APK builds unchanged, and with the flag on
+  KSP applies and the extra source set compiles.
+- **The API does not match the documentation.** Google's guide shows a class
+  extending `AppFunctionService` with `@AppFunction` from `androidx.appfunctions`.
+  The alpha09 AAR publishes no `AppFunctionService` at all; the annotation is
+  `androidx.appfunctions.service.AppFunction`, and the service side is
+  `AppFunctionEntryPoint` / `AppFunctionConfiguration` /
+  `PlatformAppFunctionService`. This is D18's warning arriving in person: *"the
+  API surface is still being refined."*
+
+**Backed out rather than guessed.** Writing against an API that contradicts its
+own documentation, which cannot be tested end to end because Gemini will not call
+it without an early-access invitation, is not something a test could have caught
+and not something a reader could have trusted. The measurement above is the
+deliverable; the implementation is a short job once the invitation arrives and
+the shape settles.
+
+**Still needs the user:** the EAP registration form. Nothing in this repo can
+apply on its own behalf.
+
 ### D21 — Android calls Indonesian `in`, and a deep link needs the catalogue id
 Two things the generator had to learn, both silent failures otherwise.
 
@@ -432,7 +463,7 @@ plugin's pbxproj code.
 - [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy
 - [x] Widget — a button, not a data surface: `updatePeriodMillis` is 0 because there is nothing to refresh, and a widget that never refreshes cannot go stale
 - [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
-- [ ] AppFunctions service `@RequiresApi(36)`, behind a flag
+- [ ] AppFunctions service — **attempted and backed out, see D22.** The published alpha does not match its own documentation, and the gate to Gemini is an invitation we do not have.
 - [ ] `androidx.core:core-google-shortcuts` (so shortcuts reach Google's surfaces, D5)
 - [ ] Apply to the Google AppFunctions EAP form
 - [x] R8 keep rules — **not needed**, measured rather than assumed: `:app:minifyReleaseWithR8` is green and not one of its warnings names `assistantkit`. The tile and the widget are reached from the manifest, from which AGP generates keeps of its own.
