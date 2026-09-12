@@ -104,7 +104,8 @@
     ],
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/.expo/"
+      "/.expo/",
+      "/dist/"
     ],
     "moduleNameMapper": {
       "^@assets/(.*)$": "<rootDir>/assets/$1",
