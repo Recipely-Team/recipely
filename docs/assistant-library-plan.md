@@ -122,6 +122,9 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
 
 
 ## If the session ends
+0. **Publishing is packaged but not published, on an unpushed branch.** See
+   [`docs/handoff-board.md`](handoff-board.md) — a DNS outage on 2026-09-12
+   stopped that session before it could push, merge or publish anything.
 1. `git checkout feat/assistant-kit-core` (or the phase branch named above).
 2. Find the first unchecked box.
 3. The measured Gemini Live facts (token endpoint shape, binary frames, setup
