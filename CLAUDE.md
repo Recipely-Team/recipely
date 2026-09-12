@@ -565,19 +565,32 @@ blocking.
     rather than matching its language.** Remaining debt: the Turkish rows in
     [`docs/regressions.md`](docs/regressions.md).
 
-27. **Library packages know nothing of the app** — `packages/*` is the assistant
-    library ([`docs/assistant-library-plan.md`](docs/assistant-library-plan.md)),
-    written for ANY app to install. A package imports only other packages and npm
-    dependencies (never an `@layer/*` alias, never a relative path out of its own
-    folder), and no file in it — tests and fixtures included — names Recipely or
-    carries its wire contract. Recipely's specifics (the backend's single
-    `runAction` tool with an `action` word, its failure copy, its token route) live
-    in the app's ADAPTER, which is exactly the file every other integrator writes.
-    The first extraction shipped `runAction` inside the Gemini adapter as if every
-    consumer declared the same tool; a library that only fits its first user is
-    not a library. Library code also stays on its own branch until the library is
-    complete — no PR to `dev` or `main` before then. **Enforced mechanically** by
-    `check:structure` (rule AD).
+27. **The assistant library is a separate repository** —
+    [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant),
+    published to npm as `@live-assistant/*`. This app is one of its consumers and
+    installs it like any other dependency: `core`, `gemini` and `audio`, because
+    it draws its own assistant UI and takes neither the widget nor the React
+    bindings.
+
+    **A change the library needs is a PR to that repository and a release**, the
+    same as the backend — the two repos ship independently, so never assume a
+    library export exists because the app wants it. Its own gates (lint,
+    typecheck, build, the suite, and a gate that packs every package and requires
+    what it packed) run there.
+
+    What belongs on each side is the line that made the split worth doing: the
+    library knows nothing of any app that installs it, and Recipely's specifics —
+    the backend's single `runAction` tool with an `action` word, its failure copy,
+    its token route — live in the app's ADAPTER under
+    `src/application/assistant/`, which is exactly the file every other
+    integrator writes. The first extraction shipped `runAction` inside the Gemini
+    adapter as if every consumer declared the same tool; a library that only fits
+    its first user is not a library.
+
+    `check:structure` rule AD stays, holding the same contract for any
+    `packages/` directory that reappears here: no `@layer/*` import, no relative
+    path out of its own folder, no file naming Recipely. It is inert while there
+    is none, which is the intended state.
 
 ### Pre-commit quality gate
 

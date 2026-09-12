@@ -5,6 +5,15 @@ another app can drop in: a widget, a theme, a token and the actions it may run.
 **This file is the progress board** — when a session ends, work resumes from the
 first unchecked box.
 
+> **The library has left this repository.** It lives at
+> [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant)
+> and is published to npm as `@live-assistant/*` at 0.1.0. This app installs
+> `core`, `gemini` and `audio` like any other dependency (CLAUDE.md §27). The
+> board stays here because it records how the app got onto the library and which
+> app-side items are still open; anything about the library's own packaging,
+> gates or releases now belongs in that repository, whose `CONTRIBUTING.md` and
+> `docs/regressions.md` carry it.
+
 ## Decisions
 
 | | |
@@ -94,8 +103,42 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
 - [ ] Release → 1.0.0 (dev → main is the owner's call, as always)
 
 
+## Phase 5 — The library in a repository of its own, published
+
+- [x] Extracted with its history to
+      [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant)
+      (public, MIT), `git subtree split` so the three commits that built it
+      travelled with it
+- [x] Its own harness there: React Native's jest preset rather than `jest-expo`
+      (the packages import `react`, `react-native`, `react-test-renderer` and
+      `react-native-audio-api` and nothing else), its own ESLint 9 flat config
+      carrying the one-declaration-per-file rule, its own CI — 20 suites / 163
+      tests, unchanged
+- [x] `repository`, `homepage` and `bugs` on every package. These were the one
+      thing packaging could not have while the packages lived here: the field
+      would have had to name this app, which rule AD forbids
+- [x] A gate for the artifact (`scripts/assert-tarballs.mjs`, its own CI job):
+      packs every package, then requires the three Node can load. Lint, typecheck,
+      build and the suite all read the working tree; nobody installs the working
+      tree, and every packaging bug so far was invisible to all four
+- [x] Published 0.1.0, all seven, and verified by installing the **published**
+      tarballs from the registry into a clean project: 20 core exports, the token
+      server's five, a real tool call through the packed build, type declarations
+      present, and zero test or fixture files
+- [x] This app installs `core`, `gemini` and `audio` from the registry;
+      `packages/` and the npm workspace are gone. Verified against the published
+      packages: tsc, 282 suites / 2447 tests, `expo lint`, `check:structure`, and
+      a full production web export whose bundle still takes the audio package's
+      `.web` halves from inside `dist/`
+- [ ] **Releases are still bootstrapped by hand.** npm will not let a package
+      that does not yet exist be configured for Trusted Publishing (OIDC) or
+      staged publishing — an anti-name-hijacking rule — so 0.1.0 went out with a
+      short-lived granular token. Set up Trusted Publishing per package now that
+      they exist, so a release is `npm version` plus a push and no credential
+- [ ] Owner: revoke the bootstrap token once Trusted Publishing is in place
+
 ## If the session ends
-1. `git checkout feat/assistant-kit-core` (or the phase branch named above).
+1. `git checkout dev` — the library's own work happens in its own repository now.
 2. Find the first unchecked box.
 3. The measured Gemini Live facts (token endpoint shape, binary frames, setup
    baked into the token) are in `docs/voice-assistant-plan.md` — they apply here
