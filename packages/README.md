@@ -10,6 +10,7 @@ port, so other realtime providers can be added without changing your UI.
 
 | Package | What it is | Where it runs |
 |---|---|---|
+| `@live-assistant/react-native` | **One install for an app**: everything below except the token server, re-exported | client (React Native / Expo) |
 | `@live-assistant/core` | The controller, the session port, tools, transcript, levels | anywhere |
 | `@live-assistant/gemini` | The Gemini Live session (socket, handshake, frames) | client |
 | `@live-assistant/audio` | Microphone and speaker for iOS, Android and the web | client (React Native) |
@@ -29,6 +30,27 @@ flowchart LR
   S -- ephemeral token --> C
   G <-- audio + events --> L[(Gemini Live)]
 ```
+
+## Which package
+
+An app installs one thing:
+
+```sh
+npm install @live-assistant/react-native
+```
+
+and a server installs the other:
+
+```sh
+npm install @live-assistant/token-server
+```
+
+Reach past the umbrella when you want less than all of it — a custom UI needs
+`core` and `react` without the widget, and a headless integration needs
+neither. The pieces are split because each split costs somebody something: the
+token server must not drag React Native onto a server, the audio package
+carries a native dependency that means a rebuild, and the widget is a UI
+anyone drawing their own should be able to leave out.
 
 ## Quick start (with the widget)
 

@@ -108,6 +108,12 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
       a package is still visible on the next refresh and no build has to be remembered.
       `npm run build:packages` builds in dependency order, and the root `prepare` runs
       it after every install so `dist/` always exists
+- [x] `@live-assistant/react-native`: one umbrella package re-exporting core, gemini,
+      audio, react and widget, so the ordinary case is a single install and a single
+      version. The token server stays out of it deliberately — it mints credentials
+      with an API key and belongs on a server. A test asserts one name per member
+      still arrives through the re-export, because `export *` is silent about what it
+      stopped exporting
 - [ ] `npm login` as the owner, confirm the `@live-assistant` scope is free/owned,
       then `npm publish -w <each package>` in dependency order
 - [ ] No `repository` field: it would have to name this repo, and rule AD forbids a
