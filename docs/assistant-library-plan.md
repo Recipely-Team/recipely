@@ -125,6 +125,25 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
       tarballs from the registry into a clean project: 20 core exports, the token
       server's five, a real tool call through the packed build, type declarations
       present, and zero test or fixture files
+- [x] **Run from the registry in a fresh Expo app** — a scratch `create-expo-app`
+      on **Expo SDK 57 / React Native 0.86 / TypeScript 6**, which is AHEAD of
+      this app (SDK 55 / RN 0.83 / TS 5.9), so the library was exercised on
+      versions it was not developed against. One install and one import
+      (`@live-assistant/react-native`); the three ports were implemented in the
+      app from the published types alone, which is what an integrator does since
+      the test doubles are deliberately unpublished. It typechecked, Metro bundled
+      it, and in a browser the orb, the panel, the transcript, a tool run, the
+      composer and a `theme`/`strings`/`renderTool` override all worked, with a
+      silent console. The bundle takes the audio package's `.web` halves from
+      inside `dist/` (`getUserMedia` present, `react-native-audio-api` absent)
+    - Measured while doing it, so nobody reads it as a library defect: a scripted
+      fake that echoes a typed turn back as a user transcript duplicates the line,
+      because `AssistantController.sendText` already adds it itself — a provider is
+      not expected to send typed input back. The fake was wrong, not the library
+    - Also confirmed deliberate, not missing: the widget's default tool chip
+      renders nothing for a run that SUCCEEDED ("the assistant says what it did,
+      and a chip saying the same thing again is noise"). `renderTool` is how an
+      app shows every run, the way this one shows action chips
 - [x] This app installs `core`, `gemini` and `audio` from the registry;
       `packages/` and the npm workspace are gone. Verified against the published
       packages: tsc, 282 suites / 2447 tests, `expo lint`, `check:structure`, and
