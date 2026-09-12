@@ -1,3 +1,4 @@
+import type { ListStateType } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
@@ -20,6 +21,8 @@ interface AssistantNotificationActionsDeps {
   onMarkAllRead: () => void;
   onMarkOneRead: (id: string) => void;
   onReload: () => void;
+  /** Where the list is: loading, ready, or failed to load. */
+  listState: ListStateType;
 }
 
 /** What the screen line calls the list. */
@@ -44,10 +47,10 @@ const ROW_SEPARATOR = ' - ';
  *   trip would blank the list while it reloaded.
  */
 export const useAssistantNotificationActions = (deps: AssistantNotificationActionsDeps): void => {
-  const { unreadCount, items, onMarkAllRead, onMarkOneRead, onReload } = deps;
+  const { unreadCount, items, onMarkAllRead, onMarkOneRead, onReload, listState } = deps;
 
   useAssistantScreenContent(() =>
-    [recipeRoster(ROSTER_LABEL, items.map(rowName)), `unread=${unreadCount}`].join(
+    [recipeRoster(ROSTER_LABEL, items.map(rowName), listState), `unread=${unreadCount}`].join(
       SCREEN_PART_SEPARATOR,
     ),
   );
@@ -56,7 +59,7 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
   // the whole point of the screen and the eight-row line was never going to be
   // the answer.
   useAssistantScreenReading(() =>
-    [listReading(ROSTER_LABEL, items.map(rowName)), `unread=${unreadCount}`].join(
+    [listReading(ROSTER_LABEL, items.map(rowName), listState), `unread=${unreadCount}`].join(
       SCREEN_PART_SEPARATOR,
     ),
   );

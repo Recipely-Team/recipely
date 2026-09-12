@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
@@ -197,7 +198,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       ? resumeLine(resumableDraft)
       : [
           `draft=${draftName(recipe)}`,
-          recipeRoster('ingredients', recipe.ingredients),
+          recipeRoster('ingredients', recipe.ingredients, ListState.Ready),
           `steps=${recipe.instructions.length}`,
           ...(saveProblem === null ? [] : [`${PROBLEM}=${saveProblem}`]),
         ].join(SCREEN_PART_SEPARATOR),

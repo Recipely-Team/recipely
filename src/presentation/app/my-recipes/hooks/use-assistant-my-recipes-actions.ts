@@ -1,6 +1,6 @@
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
@@ -20,7 +20,13 @@ interface AssistantMyRecipesActionsDeps {
   onOpenDraft: (id: string) => void;
   onRequestDeleteDraft: (id: string) => void;
   onRefresh: () => void;
+  /** Whether the tab on screen has finished trying to load — rows or failure. */
+  isTabSettled: boolean;
 }
+
+/** How long a switch waits for the tab it moved to, before answering anyway. */
+export const TAB_SETTLE_MS = 4_000;
+const TAB_POLL_MS = 100;
 
 /**
  * My Recipes, by voice.
@@ -35,10 +41,29 @@ interface AssistantMyRecipesActionsDeps {
  *   "open the first one".
  * - **Deleting a draft asks.** It is the only thing on this screen that
  *   destroys something, and a draft is unrecoverable work.
+ * - **A switch is not done when the tab changes.** The rows arrive after it,
+ *   and whatever reads the screen next — the model, through the registry's
+ *   screen line — would be told the tab is empty. Reported: "oluşturduğum
+ *   tarifleri aç dedim, yok dedi, ama o arada tarifler yükleniyordu." So the
+ *   switch waits for its own tab, bounded, and the screen line says `loading`
+ *   until then either way.
  */
 export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps): void => {
   const { tab, items, drafts, onSwitchTab, onOpenRecipe, onOpenDraft, onRequestDeleteDraft, onRefresh } =
     deps;
+  // Read after the await, when the screen has moved on: the closure's own
+  // `tab` and `isTabSettled` are the ones from before the switch.
+  const latest = useRef(deps);
+  const isMounted = useRef(true);
+  useEffect(() => {
+    latest.current = deps;
+  });
+  useEffect(() => {
+    isMounted.current = true;
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
 
   useAssistantAction(
     AssistantAction.SwitchTab,
@@ -49,6 +74,18 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         if (match === undefined) return { ok: false, error: 'unknown_tab' };
 
         onSwitchTab(match);
+        // Bounded, and abandoned the moment the screen goes: the tool queue is
+        // serialised, so a wait that outlives its screen holds up the
+        // conversation for nothing.
+        const until = Date.now() + TAB_SETTLE_MS;
+        const settled = (): boolean => latest.current.tab === match && latest.current.isTabSettled;
+        while (!settled() && isMounted.current && Date.now() < until) {
+          await new Promise((resolve) => setTimeout(resolve, TAB_POLL_MS));
+        }
+        // No `ctx` of its own even when the rows never came: the registry's
+        // screen line already says `loading` for a tab that has not answered,
+        // and a ctx here would replace that line — costing the model the route
+        // on the very turn it is least sure about.
         return { ok: true };
       },
       [onSwitchTab],
