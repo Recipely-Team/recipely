@@ -2,7 +2,6 @@ import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { useCallback, useEffect, useRef } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
-import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { draftName } from '@presentation/app/my-recipes/model/draft-name';
@@ -53,7 +52,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
   const { tab, items, drafts, onSwitchTab, onOpenRecipe, onOpenDraft, onRequestDeleteDraft, onRefresh } =
     deps;
   // Read after the await, when the screen has moved on: the closure's own
-  // `tab` and `isTabLoaded` are the ones from before the switch.
+  // `tab` and `isTabSettled` are the ones from before the switch.
   const latest = useRef(deps);
   const isMounted = useRef(true);
   useEffect(() => {
@@ -83,9 +82,11 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
         while (!settled() && isMounted.current && Date.now() < until) {
           await new Promise((resolve) => setTimeout(resolve, TAB_POLL_MS));
         }
-        // Said out loud when the rows never came: without it the model reads a
-        // `loading` screen line and asserts the tab is empty anyway.
-        return settled() ? { ok: true } : { ok: true, ctx: `${match}=${ListState.Loading}` };
+        // No `ctx` of its own even when the rows never came: the registry's
+        // screen line already says `loading` for a tab that has not answered,
+        // and a ctx here would replace that line — costing the model the route
+        // on the very turn it is least sure about.
+        return { ok: true };
       },
       [onSwitchTab],
     ),

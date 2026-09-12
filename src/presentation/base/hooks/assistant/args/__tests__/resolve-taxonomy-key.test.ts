@@ -167,4 +167,3 @@ describe('an argument with nothing in it', () => {
     expect(resolveTaxonomyKey([{ key: 'japanese', name: 'Japon' }], 'japon')).toBe('japanese');
   });
 });
-

@@ -14,8 +14,6 @@ const MAX_NAMED = 8;
 /** What the line says when the list is there and has nothing in it. */
 const NOTHING = 'none';
 
-
-
 /**
  * One screen's rows, as the model reads them.
  *

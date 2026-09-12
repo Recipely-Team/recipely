@@ -226,9 +226,9 @@ describe('switching to a tab that is still loading', () => {
       const switching = registry.run(AssistantAction.SwitchTab, TabType.Liked);
       await jest.advanceTimersByTimeAsync(TAB_SETTLE_MS);
 
-      // And says the tab had not answered, so the model does not read the
-      // screen line as "this tab is empty".
-      await expect(switching).resolves.toMatchObject({ ok: true, ctx: 'liked=loading' });
+      // Answered, and with no ctx of its own: the screen line is what says the
+      // tab is still loading, and it also carries the route.
+      await expect(switching).resolves.toEqual({ ok: true });
     } finally {
       jest.useRealTimers();
     }
