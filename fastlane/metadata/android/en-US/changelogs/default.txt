@@ -1,7 +1,6 @@
-• The keyboard no longer covers the assistant's conversation or text box — on tablets too.
-• Typing to the assistant from the recipe list now works.
-• Asking it to change a draft edits that draft instead of starting a new recipe.
-• "Make it for eight" now rescales the ingredients too.
-• You can add a photo to a recipe you already published.
+• Ask the assistant for a recipe you can see and it opens that one — it used to say it could not find it, or open something else.
+• It can read a recipe's steps aloud right after opening it.
+• "Open my recipes" no longer answers "you have none" while the list is still loading.
+• Theme colours can be named in your own language, not only in English.
 
 Thanks for cooking with Recipely!

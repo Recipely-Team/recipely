@@ -1,7 +1,6 @@
-• Klavye artık asistanın sohbetini ve yazı kutusunu kapatmıyor; tablette de düzeldi.
-• Tarif listesinden asistana yazmak artık çalışıyor.
-• Taslakta değişiklik istediğinizde yeni tarif oluşturmuyor, o taslağı düzenliyor.
-• "8 kişilik yap" artık malzeme miktarlarını da ölçekliyor.
-• Yayımladığınız bir tarife sonradan fotoğraf ekleyebilirsiniz.
+• Ekranda gördüğünüz tarifi asistandan isteyince onu açıyor — eskiden bulamadım diyor ya da başka bir tarifi açıyordu.
+• Bir tarifi açtıktan hemen sonra adımlarını sesli okuyabiliyor.
+• "Tariflerimi aç" dediğinizde liste hâlâ yüklenirken "hiç yok" demiyor.
+• Tema renklerini yalnızca İngilizce değil, kendi dilinizde söyleyebilirsiniz.
 
 Recipely ile pişirdiğiniz için teşekkürler!
