@@ -1,9 +1,32 @@
 {
   "name": "@live-assistant/core",
   "version": "0.1.0",
-  "private": true,
   "description": "Provider-neutral ports for an in-app voice assistant: the session, its events, audio, and the result type they share.",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
-  "sideEffects": false
+  "license": "MIT",
+  "author": "Recep Tayyip Ekşi",
+  "keywords": [
+    "voice-assistant",
+    "realtime",
+    "voice",
+    "speech",
+    "ai",
+    "headless"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "!src/**/__tests__"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
 }

@@ -21,10 +21,31 @@ const isRouterCtxRequest = (context, moduleName) =>
   (moduleName === '../../_ctx' &&
     context.originModulePath.includes(`expo-router${path.sep}build${path.sep}`));
 
+// The library packages resolve to their SOURCE while the app is developed, so
+// editing one is visible on the next refresh. Their package.json points `main`
+// at `dist/`, which is what an installer downloads from npm — without this, the
+// app would bundle a build artifact and a change to a package would look like
+// it did nothing until someone remembered to rebuild.
+//
+// Exact matches only: the deep specifiers into a package's own `src/` (the
+// controller fixtures) already resolve through the workspace symlink, and
+// rewriting those would point them at the index instead.
+const PACKAGE_ENTRY = /^@live-assistant\/([a-z-]+)$/;
+const packageSource = (moduleName) => {
+  const match = PACKAGE_ENTRY.exec(moduleName);
+  return match === null
+    ? null
+    : path.resolve(__dirname, 'packages', `assistant-${match[1]}`, 'src/index.ts');
+};
+
 const defaultResolveRequest = config.resolver.resolveRequest;
 config.resolver.resolveRequest = (context, moduleName, platform) => {
   if (isRouterCtxRequest(context, moduleName)) {
     return context.resolveRequest(context, routeContext, platform);
+  }
+  const source = packageSource(moduleName);
+  if (source !== null) {
+    return context.resolveRequest(context, source, platform);
   }
   return defaultResolveRequest
     ? defaultResolveRequest(context, moduleName, platform)

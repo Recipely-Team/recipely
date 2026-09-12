@@ -3,13 +3,30 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": ["./*"],
-      "@assets/*": ["./assets/*"],
-      "@core/*": ["./src/core/*"],
-      "@domain/*": ["./src/domain/*"],
-      "@infrastructure/*": ["./src/infrastructure/*"],
-      "@application/*": ["./src/application/*"],
-      "@presentation/*": ["./src/presentation/*"]
+      "@/*": [
+        "./*"
+      ],
+      "@assets/*": [
+        "./assets/*"
+      ],
+      "@core/*": [
+        "./src/core/*"
+      ],
+      "@domain/*": [
+        "./src/domain/*"
+      ],
+      "@infrastructure/*": [
+        "./src/infrastructure/*"
+      ],
+      "@application/*": [
+        "./src/application/*"
+      ],
+      "@presentation/*": [
+        "./src/presentation/*"
+      ],
+      "@live-assistant/*": [
+        "./packages/assistant-*/src/index.ts"
+      ]
     }
   },
   "include": [

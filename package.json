@@ -17,7 +17,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "check:structure": "node scripts/check-structure.mjs && node scripts/assert-crawlable-surface.mjs && npm run --silent verify:envelope",
-    "prepare": "husky",
+    "prepare": "husky && npm run build:packages",
     "release:patch": "npm version patch -m 'chore(release): v%s' && git push --follow-tags",
     "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",
     "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags",
@@ -26,7 +26,8 @@
     "shortcuts:android": "node scripts/generate-android-shortcuts.mjs",
     "verify:envelope": "bash scripts/verify-swift-envelope.sh",
     "verify:envelope:android": "cd android && ./gradlew :recipely-assistant-kit:testDebugUnitTest",
-    "check:secrets": "node scripts/check-release-secrets.mjs"
+    "check:secrets": "node scripts/check-release-secrets.mjs",
+    "build:packages": "npm run build -w @live-assistant/core && npm run build -w @live-assistant/gemini && npm run build -w @live-assistant/audio && npm run build -w @live-assistant/react && npm run build -w @live-assistant/token-server && npm run build -w @live-assistant/widget"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
@@ -110,7 +111,9 @@
       "^@domain/(.*)$": "<rootDir>/src/domain/$1",
       "^@infrastructure/(.*)$": "<rootDir>/src/infrastructure/$1",
       "^@application/(.*)$": "<rootDir>/src/application/$1",
-      "^@presentation/(.*)$": "<rootDir>/src/presentation/$1"
+      "^@presentation/(.*)$": "<rootDir>/src/presentation/$1",
+      "^@live-assistant/([a-z-]+)/(.*)$": "<rootDir>/packages/assistant-$1/$2",
+      "^@live-assistant/([a-z-]+)$": "<rootDir>/packages/assistant-$1/src/index.ts"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!((jest-)?react-native|@react-native(-community)?|expo(nent)?|@expo(nent)?/.*|react-navigation|@react-navigation/.*|@unimodules/.*|unimodules|sentry-expo|native-base|react-native-svg|@noble/.*))"

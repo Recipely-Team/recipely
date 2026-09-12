@@ -93,6 +93,27 @@ behaviour its 77 tests pin stay as they are) and delegates the session to an
 - [ ] Test it on dev: the owner on a device (iOS and Android voice), and dev.recipely.net on the web
 - [ ] Release → 1.0.0 (dev → main is the owner's call, as always)
 
+### Publishing (decided 2026-09-12: MIT, scope stays `@live-assistant/*`)
+
+- [x] Every package is publishable: `private` gone, `license: MIT` with a LICENSE file
+      in each, `publishConfig.access: public` (a scoped package is private by default),
+      `files` allowlist, keywords and an author
+- [x] A build that produces what an installer can actually run: `tsconfig.build.json`
+      per package emits CommonJS + `.d.ts` + maps into `dist/`, and `main`/`types`
+      point there. **This was not cosmetic** — `main` pointed at `src/index.ts`, so
+      `require('@live-assistant/token-server')` on a Node server could not load the
+      package at all. It can now
+- [x] The app is unaffected: Metro, tsc and jest resolve the packages to their SOURCE
+      (a resolver branch, a `paths` entry and two `moduleNameMapper` rules), so editing
+      a package is still visible on the next refresh and no build has to be remembered.
+      `npm run build:packages` builds in dependency order, and the root `prepare` runs
+      it after every install so `dist/` always exists
+- [ ] `npm login` as the owner, confirm the `@live-assistant` scope is free/owned,
+      then `npm publish -w <each package>` in dependency order
+- [ ] No `repository` field: it would have to name this repo, and rule AD forbids a
+      package naming the app. The library wants its own repository before 1.0.0
+
+
 
 ## If the session ends
 1. `git checkout feat/assistant-kit-core` (or the phase branch named above).

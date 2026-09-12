@@ -1,0 +1,17 @@
+{
+  "//": "Shared build settings for every package. It lives inside packages/ so the library stays self-contained if it ever moves to a repository of its own; the app's own tsconfig.json is separate and never reaches in here.",
+  "compilerOptions": {
+    "target": "ES2021",
+    "lib": ["ES2021", "DOM"],
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "jsx": "react-jsx",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

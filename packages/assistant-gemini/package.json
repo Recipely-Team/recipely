@@ -1,11 +1,34 @@
 {
   "name": "@live-assistant/gemini",
   "version": "0.1.0",
-  "private": true,
   "description": "Gemini Live adapter for @live-assistant/core: the socket, its setup handshake and the frames in both directions.",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "license": "MIT",
+  "author": "Recep Tayyip Ekşi",
+  "keywords": [
+    "gemini",
+    "gemini-live",
+    "voice-assistant",
+    "realtime",
+    "websocket",
+    "ai"
+  ],
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "README.md",
+    "LICENSE",
+    "!src/**/__tests__"
+  ],
   "sideEffects": false,
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "prepublishOnly": "npm run build"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@live-assistant/core": "0.1.0"
   }
