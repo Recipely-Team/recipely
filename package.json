@@ -30,6 +30,9 @@
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
+    "@live-assistant/audio": "0.1.0",
+    "@live-assistant/core": "0.1.0",
+    "@live-assistant/gemini": "0.1.0",
     "@noble/ciphers": "^2.2.0",
     "@react-native-firebase/analytics": "^24.0.0",
     "@react-native-firebase/app": "^24.0.0",
@@ -122,8 +125,5 @@
       "jest --bail --findRelatedTests --passWithNoTests"
     ]
   },
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ]
+  "private": true
 }
