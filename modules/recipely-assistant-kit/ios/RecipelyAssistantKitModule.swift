@@ -12,6 +12,8 @@ import ExpoModulesCore
 ///   intent has long since run.
 public final class RecipelyAssistantKitModule: Module {
   static let invocationEvent = "onInvocation"
+  /// The catalogue kind the app publishes recipes under; `OsAssistantBridge` spells the same word.
+  static let recipeEntityKind = "recipe"
 
   public func definition() -> ModuleDefinition {
     Name("RecipelyAssistantKit")
@@ -36,6 +38,13 @@ public final class RecipelyAssistantKitModule: Module {
 
     AsyncFunction("setEntityCatalogAsync") { (kind: String, entries: [[String: Any]]) in
       RecipelyAssistantStore.setEntities(kind: kind, entries: entries)
+      // The same list, in the one place iOS looks when someone searches their
+      // phone rather than naming the app. Apple requires the app's name in
+      // every Siri phrase, so Spotlight is the only surface where "baklava"
+      // alone can reach us.
+      if kind == RecipelyAssistantKitModule.recipeEntityKind, #available(iOS 15.1, *) {
+        RecipelySpotlightIndex.publish(entries)
+      }
     }
 
     // iOS publishes its entity catalogue through the shared container, which

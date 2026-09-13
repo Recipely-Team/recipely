@@ -578,6 +578,11 @@ jobs:
       - name: Swift envelope parity
         run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
 
+      # The two pure pieces either side of a Spotlight tap: the identifier iOS
+      # hands back, and the URL the app is re-opened with.
+      - name: Verify the Spotlight identifiers (Swift)
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-spotlight.sh
+
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
       # beating a static ios.infoPlist entry and react-native-audio-api's own
@@ -1144,6 +1149,11 @@ jobs:
       # the Swift it checks.
       - name: Swift envelope parity
         run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
+
+      # The two pure pieces either side of a Spotlight tap: the identifier iOS
+      # hands back, and the URL the app is re-opened with.
+      - name: Verify the Spotlight identifiers (Swift)
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-spotlight.sh
 
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
