@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import type { AssistantActionHandlerType } from '@domain/assistant/actions/assistant-action-handler';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
+import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
@@ -16,9 +17,15 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  *   function itself would re-register on every render, and a re-register that
  *   races an unmount is how the action ends up dead on a screen that
  *   implements it.
- * - **Registration is scoped to mount.** An action the current screen cannot
- *   perform is answered `unavailable_here`, which the model can work with —
- *   better than a handler outliving its screen and acting on a stale one.
+ * - **Registration is scoped to FOCUS, not to mount.** An action the current
+ *   screen cannot perform is answered `unavailable_here`, which the model can
+ *   work with — better than a handler outliving its screen and acting on a
+ *   stale one. Mount is not enough on its own: expo-router leaves the screen
+ *   under a push mounted and every visited tab stays mounted, so a handler
+ *   scoped to mount goes on answering for a screen nobody is looking at. The
+ *   create screen shadowed `generateRecipe` that way — from underneath the
+ *   feed, it answered "there is an open draft" to every attempt, and the user
+ *   could see no draft to save or discard.
  */
 export const useAssistantAction = (
   action: AssistantActionType,
@@ -36,13 +43,14 @@ export const useAssistantAction = (
   isEnabled = true,
 ): void => {
   const { assistantActionRegistry } = useStores();
+  const isFocused = useIsScreenFocused();
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
 
   useEffect(() => {
-    if (!isEnabled) return;
+    if (!isEnabled || !isFocused) return;
     // The stable wrapper is what gets registered; it forwards to whatever the
     // latest render passed, so the registry is written once per mount.
     return assistantActionRegistry.register(action, (arg) => handlerRef.current(arg));
-  }, [action, assistantActionRegistry, isEnabled]);
+  }, [action, assistantActionRegistry, isEnabled, isFocused]);
 };

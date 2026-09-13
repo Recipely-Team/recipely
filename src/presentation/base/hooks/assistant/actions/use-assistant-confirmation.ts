@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
@@ -32,6 +33,7 @@ export const useAssistantConfirmation = (
   onCancel: () => void,
 ): void => {
   const { assistantActionRegistry } = useStores();
+  const isFocused = useIsScreenFocused();
   const handlers = useRef({ onConfirm, onCancel });
   handlers.current = { onConfirm, onCancel };
 
@@ -45,7 +47,9 @@ export const useAssistantConfirmation = (
   }, []);
 
   useEffect(() => {
-    if (!visible) return;
+    // Focus as well as `visible`: a sheet left open on a screen the user has
+    // navigated away from would otherwise still take the spoken "yes".
+    if (!visible || !isFocused) return;
 
     const unregisterConfirm = assistantActionRegistry.register(AssistantAction.Confirm, confirm);
     const unregisterCancel = assistantActionRegistry.register(AssistantAction.Cancel, cancel);
@@ -53,5 +57,5 @@ export const useAssistantConfirmation = (
       unregisterConfirm();
       unregisterCancel();
     };
-  }, [visible, assistantActionRegistry, confirm, cancel]);
+  }, [visible, isFocused, assistantActionRegistry, confirm, cancel]);
 };

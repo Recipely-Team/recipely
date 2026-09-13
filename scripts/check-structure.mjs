@@ -1334,6 +1334,33 @@ function openingTag(src, at) {
   }
 }
 
+// --- AE: the assistant registers by FOCUS, never by mount (CLAUDE.md §24) ---
+// Reported from production: the assistant refused to create a recipe, insisting
+// an open draft would be lost. There was no draft on screen, `readScreen`
+// answered with the feed, and asked to delete the draft it could not find one.
+// The create screen was still MOUNTED under the feed — expo-router keeps the
+// screen below a push, and every visited tab — and it deliberately shadows
+// `generateRecipe` while its editor is open. Scoped to mount, that shadow spoke
+// for the whole app from a screen nobody was looking at.
+//
+// The three hooks in `base/hooks/assistant/` now scope every registration to
+// `useIsScreenFocused`. This keeps that the only way in: a screen that reaches
+// for the registry directly gets mount scoping back, and the next report reads
+// exactly like this one.
+{
+  const REGISTERS = /assistantActionRegistry\s*\.\s*register\w*\s*\(/;
+  const HOME = path.join('presentation', 'base', 'hooks', 'assistant');
+
+  for (const file of files) {
+    if (isTest(file) || file.startsWith(HOME)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!REGISTERS.test(src)) continue;
+    errors.push(
+      `${file}: registers with the assistant directly — use useAssistantAction / useAssistantScreenContent / useAssistantScreenReading, which register only while the screen is focused; mounted is not visible (CLAUDE.md §24)`,
+    );
+  }
+}
+
 // --- AD: a library package knows nothing of the app (CLAUDE.md §27) ---------
 // `packages/*` is the assistant library, written for any app to install. The
 // first extraction still carried this app's wire contract — a single tool named

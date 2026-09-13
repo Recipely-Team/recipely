@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { useIsScreenFocused } from '@presentation/base/hooks/assistant/use-is-screen-focused';
 import { useStores } from '@presentation/bootstrap/use-stores';
 
 /**
@@ -16,11 +17,16 @@ import { useStores } from '@presentation/bootstrap/use-stores';
  */
 export const useAssistantScreenContent = (describe: () => string): void => {
   const { assistantActionRegistry } = useStores();
+  const isFocused = useIsScreenFocused();
   const latest = useRef(describe);
   latest.current = describe;
 
-  useEffect(
-    () => assistantActionRegistry.registerScreenContent(() => latest.current()),
-    [assistantActionRegistry],
-  );
+  // Focus, not mount: a screen the user has navigated away from is still
+  // mounted under the stack, and the last one to have registered wins. Left on
+  // mount, the description of a screen nobody is looking at can be the one the
+  // assistant reads out.
+  useEffect(() => {
+    if (!isFocused) return;
+    return assistantActionRegistry.registerScreenContent(() => latest.current());
+  }, [assistantActionRegistry, isFocused]);
 };
