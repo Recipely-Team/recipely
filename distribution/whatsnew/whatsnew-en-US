@@ -1,6 +1,7 @@
-• Ask the assistant for a recipe you can see and it opens that one — it used to say it could not find it, or open something else.
-• It can read a recipe's steps aloud right after opening it.
-• "Open my recipes" no longer answers "you have none" while the list is still loading.
-• Theme colours can be named in your own language, not only in English.
+• The assistant no longer refuses to make a recipe because of a draft you cannot see.
+• Asked for a new recipe with a draft open, it asks what to do with the draft first — and makes the recipe either way.
+• iOS: a developer message that could appear over the app on launch is gone.
+• Siri recognises the app's name more reliably.
+• Recipes you saved can now be found from your phone's own search.
 
 Thanks for cooking with Recipely!

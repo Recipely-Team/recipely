@@ -1,9 +1,9 @@
-A run of assistant fixes, every one of them reported by people talking to it.
+Fixes for things people reported while using the assistant, and one new way to find your recipes.
 
-• Ask for a recipe that is on the screen and it opens that one. It used to answer that it could not find it, or open a recipe you had mentioned earlier.
-• It can read a recipe's steps aloud right after opening it, instead of saying there is no such step.
-• "Open my recipes" no longer answers "you have none" while the list is still loading.
-• Theme colours can be named in your own language, not only in English.
-• Under the hood, the voice assistant has been rebuilt on a new foundation. The same assistant — steadier through long conversations and reconnections.
+• The assistant no longer refuses to make a recipe because of a draft you cannot see. It kept asking what to do with a draft that was not on the screen, and there was no way out of the conversation.
+• Ask for a new recipe while you are editing one, and it now asks what to do with the draft first — keep it or discard it — and makes the recipe you asked for either way.
+• iOS: a developer message that could appear over the app on launch, more than once, is gone.
+• Siri recognises the app's name more reliably, however you pronounce it.
+• Recipes you have saved or created can now be found from your phone's own search, and open straight to the recipe.
 
 Thanks for cooking with Recipely!
