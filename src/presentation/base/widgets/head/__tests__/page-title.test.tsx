@@ -22,7 +22,7 @@
 import { act, create } from 'react-test-renderer';
 import { HelmetProvider, type HelmetServerState } from 'expo-router/vendor/react-helmet-async/lib/index';
 
-import { PageTitle } from '@presentation/base/widgets/head/page-title';
+import { PageTitle } from '@presentation/base/widgets/head/page-title.web';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 /**

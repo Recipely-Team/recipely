@@ -11,7 +11,11 @@
 // Everything else stays where it was; `expo-router/entry` is still what starts
 // the app on the next line.
 const { installCrashHandlers } = require('./src/infrastructure/firebase/install-crash-handlers');
+// Before the router, for the same reason as the line below it: the dialog this
+// silences was raised by a dependency during the first screen's render.
+const { silenceDeveloperAlerts } = require('./src/infrastructure/diagnostics/silence-developer-alerts');
 
+silenceDeveloperAlerts();
 installCrashHandlers();
 
 require('expo-router/entry');
