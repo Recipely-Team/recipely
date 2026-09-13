@@ -28,6 +28,11 @@ export interface UseCreateRecipeResult {
    * a pending question rather than announcing it left.
    */
   onClose: () => boolean;
+  /**
+   * Starts the recipe the user asked for while this draft was open, after the
+   * exit question has an answer. Returns whether it ASKED rather than started.
+   */
+  onGenerateAnother: (prompt: string) => boolean;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;
 

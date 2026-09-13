@@ -711,6 +711,73 @@ describe('useRecipeGeneration.onClose — a draft that was only opened', () => {
   });
 
   /**
+   * THE REGRESSION, from production: asked for a recipe with an unsaved draft
+   * open, the assistant said the draft would be lost and stopped — over and
+   * over, with no way to answer and no recipe ever made. The question has to
+   * come WITH the request, and whichever way it is answered the errand the user
+   * was on still has to happen.
+   */
+  it('asks about the draft when a new recipe is wanted, then makes it once the draft is kept', async () => {
+    const { latest, setRecipe } = await driveResumed();
+    act(() => {
+      setRecipe((prev) => ({ ...prev, name: 'Garlic Pasta with chilli' }));
+    });
+
+    let asked: boolean | undefined;
+    act(() => {
+      asked = latest().onGenerateAnother('sütlü çilekli tatlı');
+    });
+
+    expect(asked).toBe(true);
+    expect(latest().exitOpen).toBe(true);
+    expect(mockRouter.replace).not.toHaveBeenCalledWith(RoutePaths.createRecipeWithPrompt('sütlü çilekli tatlı'));
+
+    await act(async () => {
+      latest().onSaveDraftAndExit();
+    });
+
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.createRecipeWithPrompt('sütlü çilekli tatlı'));
+  });
+
+  it('makes it after the draft is thrown away, which is the answer that used to go nowhere', async () => {
+    const { latest, setRecipe } = await driveResumed();
+    act(() => {
+      setRecipe((prev) => ({ ...prev, name: 'Garlic Pasta with chilli' }));
+    });
+    act(() => {
+      latest().onGenerateAnother('sütlü çilekli tatlı');
+    });
+
+    await act(async () => {
+      latest().onDiscardAndExit();
+    });
+
+    expect(mockRouter.replace).toHaveBeenCalledWith(RoutePaths.createRecipeWithPrompt('sütlü çilekli tatlı'));
+  });
+
+  // "Keep editing" answers the question with neither, so the errand is dropped:
+  // carrying it out anyway would take the user off the draft they just said
+  // they wanted to stay on.
+  it('drops the errand when the user decides to keep editing after all', async () => {
+    const { latest, setRecipe } = await driveResumed();
+    act(() => {
+      setRecipe((prev) => ({ ...prev, name: 'Garlic Pasta with chilli' }));
+    });
+    act(() => {
+      latest().onGenerateAnother('sütlü çilekli tatlı');
+    });
+
+    act(() => {
+      latest().onKeepEditing();
+    });
+    await act(async () => {
+      latest().onSaveDraftAndExit();
+    });
+
+    expect(mockRouter.replace).not.toHaveBeenCalledWith(RoutePaths.createRecipeWithPrompt('sütlü çilekli tatlı'));
+  });
+
+  /**
    * THE REGRESSION: "app kapandı" — closing the screen quit the app.
    *
    * `router.back()` on the only screen in the stack closes the app on Android,

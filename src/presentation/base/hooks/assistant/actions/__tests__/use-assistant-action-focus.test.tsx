@@ -1,4 +1,4 @@
-import { act, type ReactTestRenderer } from 'react-test-renderer';
+import { act } from 'react-test-renderer';
 import { NavigationContext } from '@react-navigation/native';
 import type { NavigationProp, ParamListBase } from '@react-navigation/native';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';

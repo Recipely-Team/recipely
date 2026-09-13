@@ -54,6 +54,7 @@ function harness(
     onRegenerate: jest.fn(),
     onRequestPublish: jest.fn(),
     onResumeDraft: jest.fn(),
+    onGenerateAnother: jest.fn(() => true),
   };
 
   const Probe = (): null => {
@@ -270,13 +271,32 @@ describe('useAssistantDraftActions', () => {
 
     // Reported as "şöyle yap diyorum, gidip yeniden tarif oluşturuyor": the
     // always-mounted handler pushes a second create screen and leaves the draft
-    // the user is looking at behind.
-    it('refuses to start a new recipe on top of an open draft', async () => {
-      const { registry } = harness();
+    // the user is looking at behind. So the screen asks first — and `awaiting`
+    // is what makes the model say the question out loud instead of announcing
+    // a recipe that is waiting on an answer.
+    it('asks about the open draft, at the moment the new recipe is asked for', async () => {
+      const { registry, spies } = harness();
 
       await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toMatchObject({
-        ok: false,
-        error: 'draft_open_would_be_lost',
+        ok: true,
+        awaiting: true,
+      });
+      expect(spies.onGenerateAnother).toHaveBeenCalledWith('mercimek çorbası');
+    });
+
+    // It used to answer `draft_open_would_be_lost` and stop there: a refusal
+    // dressed as a question, with nothing registered to hear the answer. In
+    // production that became a dozen turns of being told a draft would be lost
+    // while the screen showed none, and no recipe was ever made.
+    it('starts it without asking when there is nothing to keep', async () => {
+      const { registry, spies } = harness();
+      spies.onGenerateAnother.mockReturnValue(false);
+
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.toEqual(
+        expect.objectContaining({ ok: true }),
+      );
+      await expect(registry.run(AssistantAction.GenerateRecipe, 'mercimek çorbası')).resolves.not.toMatchObject({
+        awaiting: true,
       });
     });
 
