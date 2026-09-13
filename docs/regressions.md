@@ -2033,3 +2033,28 @@ and generates, and "keep editing" drops the errand, because that answer is neith
 *The class:* **a refusal is not a question.** If the model is going to ask something, the
 app has to be showing it, and the thing the user wanted has to still happen once they have
 answered — otherwise the answer goes nowhere and the conversation has no exit.
+
+## An English dialog, stacked, in front of someone who had just installed the app
+
+From the App Store build: **"Expo Head: Add the handoff origin to the Expo Config
+(requires rebuild)…"** — over onboarding, then again over login, then again on every
+screen. Instructions written for us, in English, on a Turkish app, that the person reading
+them could do nothing about.
+
+*What it was:* `PageTitle` renders `expo-router/head`, which on the web fills the
+document's title — and on iOS does something else entirely: it registers an
+`NSUserActivity` for Handoff, and with no `origin` in the Expo config its own
+`throwOrAlert` calls `alert()`, deliberately preferring a dialog to a crash in a RELEASE
+build. The root layout mounts the title on every screen, so every screen raised one.
+
+*Now, in three layers:* the component is a platform pair — the web half keeps `Head`, the
+native half renders nothing, because a title is a browser concern and the alternative
+(setting `origin`) would have switched Handoff ON, advertising a recipely.net URL for the
+draft editor and settings. `check:structure` rule **AF** keeps `expo-router/head` on the
+web side. And rule **AG** plus `silenceDeveloperAlerts()` — installed in `index.js` before
+the router — neutralise the global `alert` in release builds and send whatever called it to
+Crashlytics, so the NEXT dependency to try this reaches a report instead of a customer.
+
+*The class:* **a message the user cannot act on is not a message to the user.** It is a bug
+report, and it goes where bug reports go. A web-shaped API on a phone is the usual way one
+arrives.

@@ -1,47 +1,21 @@
-import Head from 'expo-router/head';
-import { CharConstants } from '@core/constants';
-import { SiteMetadata } from '@presentation/base/constants/site-metadata';
-
-export interface PageTitleProps {
-  /** The page's own name, or empty while it is still loading. */
-  subject?: string;
-}
+import type { PageTitleProps } from '@presentation/base/widgets/head/page-title-props';
 
 /**
- * Names the page, for the browser tab and for a crawler.
+ * Nothing, on a phone. A page's title is a browser concern.
  *
  * @remarks
- * - **Through `Head`, because helmet owns the element.** Expo Router mounts
- *   react-helmet-async at the root and seeds it with `title: ""`, so the static
- *   export ships TWO `<title>` elements — helmet's empty one first, then the
- *   one `+html.tsx` writes. `document.title` is the text of the FIRST, which is
- *   why the site rendered a blank tab while its HTML plainly contained a title.
- *   Writing through `Head` fills helmet's own element instead of adding a
- *   third.
- * - **Not through the navigator.** The obvious-looking fix — a `title` in
- *   `screenOptions`, or `navigation.setOptions` — does nothing at all here:
- *   Expo Router constructs its `NavigationContainer` with
- *   `documentTitle: { enabled: false }` (`ExpoRoot.js`), so React Navigation's
- *   title updater never runs. It is switched off precisely because this `Head`
- *   is the supported route.
- * - **Deepest wins.** Helmet takes the last mounted value, so the root layout
- *   renders this with no subject and a page with a real name renders it again
- *   with one. A screen that says nothing keeps the site's title rather than
- *   inheriting a stale one.
- * - **An empty subject is not a title.** Before its data arrives a screen has
- *   nothing to call itself, and `" · Recipely"` is worse than the site's own
- *   name — so a blank falls back rather than being decorated.
+ * - **Why this half exists at all.** The web half renders `expo-router/head`,
+ *   whose iOS implementation does something else entirely: it registers an
+ *   `NSUserActivity` for Handoff and Spotlight, and for that it needs an
+ *   `origin` in the Expo config. Without one it calls `alert()` — in a RELEASE
+ *   build, where `throwOrAlert` deliberately prefers a dialog to a crash. So
+ *   the App Store build opened "Expo Head: Add the handoff origin…" over the
+ *   onboarding screen, again over login, and again on every screen after that,
+ *   because the root layout mounts this on all of them.
+ * - **Not fixed by configuring the origin.** That would switch Handoff on:
+ *   every screen would advertise a `recipely.net` URL to iOS, including the
+ *   draft editor and settings. Turning a feature on to silence a warning is
+ *   how a privacy surface arrives by accident — and the title itself was only
+ *   ever wanted for the browser tab and for crawlers.
  */
-export const PageTitle = ({ subject = CharConstants.empty }: PageTitleProps): React.JSX.Element => {
-  const trimmed = subject.trim();
-  const title =
-    trimmed === CharConstants.empty
-      ? SiteMetadata.title
-      : `${trimmed}${SiteMetadata.titleSuffix}`;
-
-  return (
-    <Head>
-      <title>{title}</title>
-    </Head>
-  );
-};
+export const PageTitle = (_props: PageTitleProps): React.JSX.Element | null => null;

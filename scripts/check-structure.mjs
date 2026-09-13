@@ -1334,6 +1334,59 @@ function openingTag(src, at) {
   }
 }
 
+// --- AF: `expo-router/head` is a web-only import (CLAUDE.md §24) ------------
+// It looks like a title tag and is not one. On iOS `expo-router/head`
+// registers an `NSUserActivity` for Handoff, and with no `origin` in the Expo
+// config its `throwOrAlert` calls `alert()` — in a RELEASE build, where it
+// prefers a dialog to a crash. The App Store build opened "Expo Head: Add the
+// handoff origin…" over onboarding, again over login, and again on every
+// screen, because the root layout mounts the title on all of them.
+//
+// Configuring `origin` would silence it by switching Handoff ON: every screen,
+// the draft editor and settings included, would advertise a recipely.net URL
+// to iOS. So the import stays on the web side of a platform pair, where a
+// title is the thing it actually does.
+{
+  const HEAD_IMPORT = /from\s+'expo-router\/head'|require\(\s*'expo-router\/head'\s*\)/;
+
+  for (const file of files) {
+    if (isTest(file)) continue;
+    if (file.endsWith('.web.tsx') || file.endsWith('.web.ts')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!HEAD_IMPORT.test(src)) continue;
+    errors.push(
+      `${file}: imports expo-router/head outside a .web file — on iOS it registers a Handoff activity and alerts in release builds when no origin is set (CLAUDE.md §24)`,
+    );
+  }
+}
+
+// --- AG: nothing speaks to the user through the global `alert` (§24) -------
+// The user's rule, after an App Store build stacked "Expo Head: Add the handoff
+// origin to the Expo Config" over onboarding and login: a person using the app
+// must never be shown a message written for us. A dependency reached them
+// through the global `alert`, which is now neutralised in release builds
+// (`silenceDeveloperAlerts`) and reported to Crashlytics instead.
+//
+// This keeps OUR side of it: everything a user is meant to read goes through
+// `Alert.alert` with copy from `t()`, or through the shared sheets and dialogs.
+// A bare `alert(` is a developer talking to themselves in front of a customer.
+{
+  // `alert(` but not `Alert.alert(`, `.alert(` or `window.alert(` — the dotted
+  // forms are the app's own dialog, or the very thing being replaced.
+  const BARE_ALERT = /(?<![.\w])alert\s*\(/;
+  const SILENCER = path.join('infrastructure', 'diagnostics', 'silence-developer-alerts.ts');
+
+  for (const file of files) {
+    if (isTest(file) || file === SILENCER) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    if (!BARE_ALERT.test(code)) continue;
+    errors.push(
+      `${file}: calls the global alert() — user-facing words go through Alert.alert with t() copy or a shared sheet; a bare alert is a developer's dialog (CLAUDE.md §24)`,
+    );
+  }
+}
+
 // --- AE: the assistant registers by FOCUS, never by mount (CLAUDE.md §24) ---
 // Reported from production: the assistant refused to create a recipe, insisting
 // an open draft would be lost. There was no draft on screen, `readScreen`
