@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
@@ -12,7 +13,7 @@ const GRID = ['Fırın Lazanya', 'Cevizli Pekan Turtası', 'Ballı Teriyaki Somo
 
 describe('a feed carrying two lists', () => {
   it('names them separately, so the model can tell which was meant', () => {
-    const line = [recipeRoster('featured', HERO), recipeRoster('recipes', GRID)].join(
+    const line = [recipeRoster('featured', HERO, ListState.Ready), recipeRoster('recipes', GRID, ListState.Ready)].join(
       SCREEN_PART_SEPARATOR,
     );
 
@@ -39,6 +40,6 @@ describe('a feed carrying two lists', () => {
   });
 
   it('says so plainly when the hero is not on screen', () => {
-    expect(recipeRoster('recipes', [])).toContain('recipes=');
+    expect(recipeRoster('recipes', [], ListState.Ready)).toContain('recipes=');
   });
 });

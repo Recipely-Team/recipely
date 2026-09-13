@@ -1,7 +1,7 @@
-• Klavye artık asistanın sohbetini ve yazı kutusunu kapatmıyor; tablette de düzeldi.
-• Tarif listesinden asistana yazmak artık çalışıyor.
-• Taslakta değişiklik istediğinizde yeni tarif oluşturmuyor, o taslağı düzenliyor.
-• "8 kişilik yap" artık malzeme miktarlarını da ölçekliyor.
-• Yayımladığınız bir tarife sonradan fotoğraf ekleyebilirsiniz.
+• Asistan artık göremediğiniz bir taslak yüzünden tarif oluşturmayı reddetmiyor.
+• Taslak açıkken yeni tarif istediğinizde önce taslağı soruyor; hangi cevabı verirseniz verin tarifi oluşturuyor.
+• iOS: açılışta uygulamanın üzerine çıkabilen geliştirici mesajı kaldırıldı.
+• Siri uygulamanın adını daha güvenilir tanıyor.
+• Kaydettiğiniz tarifler telefonunuzun aramasından bulunabiliyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -339,17 +339,61 @@ const GEN_STEP_INTERVAL_MS = 620;
   // assistant's `goBack` answer `awaiting` and say the question out loud. It
   // used to report a clean exit while a sheet the user had to answer was
   // opening in front of them.
-  const onClose = useCallback((): boolean => {
+  /** Work that is not in the drafts list yet — the only thing worth asking about. */
+  const hasUnkeptWork = useCallback((): boolean => {
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
-    if (phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged) {
+    return phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged;
+  }, [phase, recipe]);
+
+  const onClose = useCallback((): boolean => {
+    if (hasUnkeptWork()) {
       setExitOpen(true);
       return true;
     }
     goBackOrHome();
     return false;
-  }, [phase, recipe, goBackOrHome]);
+  }, [hasUnkeptWork, goBackOrHome]);
+
+  /**
+   * What to do once the exit question has an answer, when the user was on their
+   * way somewhere rather than simply leaving.
+   *
+   * Asked for a new recipe with a draft open, the assistant used to answer that
+   * the draft would be lost and stop there — a refusal, with the question left
+   * hanging in a conversation that had no way to answer it. The question now
+   * comes with the request, on screen, and whichever answer it gets the thing
+   * the user actually asked for still happens.
+   */
+  const afterExit = useRef<(() => void) | null>(null);
+
+  const leaveFor = useCallback(
+    (next: () => void): boolean => {
+      if (!hasUnkeptWork()) {
+        next();
+        return false;
+      }
+      afterExit.current = next;
+      setExitOpen(true);
+      return true;
+    },
+    [hasUnkeptWork],
+  );
+
+  /** Either the errand the user was on, or the plain way out. */
+  const leave = useCallback((): void => {
+    const next = afterExit.current;
+    afterExit.current = null;
+    if (next === null) goBackOrHome();
+    else next();
+  }, [goBackOrHome]);
+
+  const onGenerateAnother = useCallback(
+    (wanted: string): boolean =>
+      leaveFor(() => router.replace(RoutePaths.createRecipeWithPrompt(wanted) as Href)),
+    [leaveFor, router],
+  );
 
   const onSaveDraftAndExit = useCallback(async (): Promise<void> => {
     await upsertDraft({
@@ -359,8 +403,8 @@ const GEN_STEP_INTERVAL_MS = 620;
       chatHistory,
     });
     setExitOpen(false);
-    goBackOrHome();
-  }, [upsertDraft, activeDraftId, recipe, chatHistory, goBackOrHome]);
+    leave();
+  }, [upsertDraft, activeDraftId, recipe, chatHistory, leave]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
     // Stop autosaving BEFORE the delete, not after: the timer armed by the
@@ -372,8 +416,8 @@ const GEN_STEP_INTERVAL_MS = 620;
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
     await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
-    goBackOrHome();
-  }, [cancelAutosave, draftsStore, activeDraftId, goBackOrHome]);
+    leave();
+  }, [cancelAutosave, draftsStore, activeDraftId, leave]);
 
   return {
     phase,
@@ -402,8 +446,14 @@ const GEN_STEP_INTERVAL_MS = 620;
     onAcceptProposal,
     onRejectProposal,
     exitOpen,
+    onGenerateAnother,
     onSaveDraftAndExit: () => void onSaveDraftAndExit(),
     onDiscardAndExit: () => void onDiscardAndExit(),
-    onKeepEditing: () => setExitOpen(false),
+    // Dropped on purpose: "keep editing" answers the question with neither, so
+    // the errand the user was on is not carried out behind their back.
+    onKeepEditing: () => {
+      afterExit.current = null;
+      setExitOpen(false);
+    },
   };
 };

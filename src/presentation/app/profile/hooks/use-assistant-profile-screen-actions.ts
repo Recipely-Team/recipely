@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -64,7 +65,7 @@ export const useAssistantProfileScreenActions = (deps: AssistantProfileScreenAct
       `handle=${handle}`,
       `bio=${bio}`,
       ...statLines(stats),
-      listReading(ROWS_LABEL, PROFILE_ROWS),
+      listReading(ROWS_LABEL, PROFILE_ROWS, ListState.Ready),
     ].join(SCREEN_PART_SEPARATOR),
   );
 

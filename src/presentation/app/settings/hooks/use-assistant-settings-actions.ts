@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
@@ -98,7 +99,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
       `language=${LANGUAGE_NAMES[language] ?? language}`,
       `theme=${preference}`,
       `palette=${paletteName(themeId)}`,
-      listReading(ROWS_LABEL, SETTINGS_ROWS),
+      listReading(ROWS_LABEL, SETTINGS_ROWS, ListState.Ready),
     ].join(SCREEN_PART_SEPARATOR),
   );
 

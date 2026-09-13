@@ -1,4 +1,7 @@
 import { numberedLines } from '@presentation/base/hooks/assistant/args/describing/numbered-lines';
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import type { ListStateType } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import { ValueConstants } from '@core/constants';
 
 /**
  * A list screen as the assistant reads it out loud.
@@ -8,5 +11,7 @@ import { numberedLines } from '@presentation/base/hooks/assistant/args/describin
  * so "bu sayfada ne var" is answered the same way on the feed, on My Recipes
  * and on notifications rather than three ways.
  */
-export const listReading = (label: string, rows: readonly string[]): string =>
-  `${label}: ${numberedLines(rows)}`;
+export const listReading = (label: string, rows: readonly string[], state: ListStateType): string =>
+  rows.length === ValueConstants.zero && state !== ListState.Ready
+    ? `${label}: ${state}`
+    : `${label}: ${numberedLines(rows)}`;

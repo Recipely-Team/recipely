@@ -1,4 +1,4 @@
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
@@ -8,6 +8,23 @@ import { CharConstants, ValueConstants } from '@core/constants';
 
 /** Joins ingredient lines into one spoken list. */
 const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
+
+/**
+ * How long a read waits for a screen that is still loading, and how often it
+ * looks. The assistant opens a recipe and is asked to read it in the same
+ * breath — "tarifi aç ve yapılışını oku" — and the screen has not finished
+ * loading when the second half arrives.
+ */
+const CONTENT_WAIT_MS = 3_000;
+const CONTENT_POLL_MS = 100;
+
+/** Resolves once there is something to read, or when the wait runs out. */
+async function waitForContent(has: () => boolean): Promise<void> {
+  const until = Date.now() + CONTENT_WAIT_MS;
+  while (!has() && Date.now() < until) {
+    await new Promise((resolve) => setTimeout(resolve, CONTENT_POLL_MS));
+  }
+}
 
 /**
  * Reads a recipe's steps and ingredients out loud, wherever one is on screen.
@@ -25,6 +42,11 @@ const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
  * - **Reading is not ticking.** `readIngredients` exists because a model with
  *   only `toggleIngredient` to hand ticked all eleven of them off when asked to
  *   read the list.
+ * - **A screen that is still loading is not a screen with nothing on it.**
+ *   Opened by the assistant and asked to read in the same turn, these answered
+ *   `no_such_step` before the recipe had arrived, and the model told the user
+ *   it could not read the recipe at all. Each read waits briefly for content
+ *   and reads the LATEST lines rather than the ones its closure was made with.
  */
 export const useAssistantReadActions = (
   ingredients: readonly string[],
@@ -32,6 +54,12 @@ export const useAssistantReadActions = (
   isEnabled = true,
 ): void => {
   const stepCursor = useRef(ValueConstants.minusOne);
+  // The lines as they are NOW: a read that waited must not answer from the
+  // empty arrays its callback closed over while the screen was loading.
+  const latest = useRef({ ingredients, instructions });
+  useEffect(() => {
+    latest.current = { ingredients, instructions };
+  }, [ingredients, instructions]);
 
   useAssistantAction(
     AssistantAction.ReadStep,
@@ -47,7 +75,9 @@ export const useAssistantReadActions = (
                 ? Math.max(stepCursor.current, ValueConstants.zero)
                 : Number.parseInt(asked, 10) - ValueConstants.one;
 
-        const step = instructions[index];
+        await waitForContent(() => latest.current.instructions.length > ValueConstants.zero);
+        const lines = latest.current.instructions;
+        const step = lines[index];
         if (step === undefined) return { ok: false, error: 'no_such_step' };
 
         stepCursor.current = index;
@@ -57,10 +87,10 @@ export const useAssistantReadActions = (
         return {
           ok: true,
           title: step,
-          n: { step: index + ValueConstants.one, of: instructions.length },
+          n: { step: index + ValueConstants.one, of: lines.length },
         };
       },
-      [instructions],
+      [],
     ),
     isEnabled,
   );
@@ -68,13 +98,15 @@ export const useAssistantReadActions = (
   useAssistantAction(
     AssistantAction.ReadIngredients,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      if (ingredients.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
+      await waitForContent(() => latest.current.ingredients.length > ValueConstants.zero);
+      const lines = latest.current.ingredients;
+      if (lines.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
       return {
         ok: true,
-        title: ingredients.join(INGREDIENT_SEPARATOR),
-        n: { ingredients: ingredients.length },
+        title: lines.join(INGREDIENT_SEPARATOR),
+        n: { ingredients: lines.length },
       };
-    }, [ingredients]),
+    }, []),
     isEnabled,
   );
 };

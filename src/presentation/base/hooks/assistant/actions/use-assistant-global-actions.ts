@@ -2,9 +2,10 @@ import { useCallback } from 'react';
 import { router, type Href } from 'expo-router';
 import { isAssistantExternalName } from '@presentation/base/hooks/assistant/args/targets/assistant-external-targets';
 import { ASSISTANT_NAVIGATION_TARGETS, resolveAssistantScreenName } from '@presentation/base/hooks/assistant/args/targets/assistant-navigation-targets';
-import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
+import { rowAt, rowNumberOf } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
+import { waitForRecipeListQuery } from '@application/recipes/list/wait-for-recipe-list-query';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
 import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
@@ -94,8 +95,12 @@ export const useAssistantGlobalActions = (): void => {
       // already on, and pushing it again stacks a second copy whose only
       // difference is the query.
       router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
+      // And then WAIT for the rows. The registry reads the screen the moment
+      // this returns, so returning early told the model `recipes=none` and it
+      // answered "I could not find it" over a list that had just filled in.
+      await waitForRecipeListQuery(recipeListStore, arg);
       return { ok: true };
-    }, []),
+    }, [recipeListStore]),
   );
 
   useAssistantAction(
@@ -124,17 +129,36 @@ export const useAssistantGlobalActions = (): void => {
         // pill, which is mounted for the app's whole life, and subscribing
         // re-rendered it on every feed state change for a list only this one
         // handler ever looks at.
-        const listState = recipeListStore.getState().state;
-        const loaded = listState.status === StoreStatus.Loaded ? listState.recipes : [];
+        const rowsNow = (): { id: string; name: string }[] => {
+          const listState = recipeListStore.getState().state;
+          return listState.status === StoreStatus.Loaded ? [...listState.recipes] : [];
+        };
 
         // `rowAt` rather than a name search, because "the second one" is a
         // thing people say and it used to fall through to the id branch —
         // pushing `/recipes/2` and landing the user on an error screen.
-        const at = rowAt(
-          loaded.map((recipe) => recipe.name),
-          arg,
-        );
-        const match = at === null ? undefined : loaded[at];
+        const pick = (rows: { id: string; name: string }[]): { id: string; name: string } | undefined => {
+          const at = rowAt(
+            rows.map((recipe) => recipe.name),
+            arg,
+          );
+          return at === null ? undefined : rows[at];
+        };
+
+        let match = pick(rowsNow());
+        // A name the screen does not have is not a name the app does not have.
+        // Asked for one while the feed showed something else, the model used
+        // to fall back on an id it remembered from an earlier turn — and the
+        // user watched the wrong recipe open ("şakşuka tarifi dedim, fıstıklı
+        // baklava tarifini açtı"). Looking for it is what a person would do.
+        // Never for "the second one": a position is about the rows on screen,
+        // and searching the catalogue for "2" finds recipes with digits in
+        // their names — the wrong-recipe failure this branch exists to end.
+        if (match === undefined && !looksLikeId(arg) && rowNumberOf(arg) === null) {
+          router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
+          await waitForRecipeListQuery(recipeListStore, arg);
+          match = pick(rowsNow());
+        }
 
         // Only an argument that could BE an id is tried as one, so a reference
         // from a previous turn or a deep link still opens while a phrase that

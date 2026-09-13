@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
 import { useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
@@ -58,15 +59,24 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [vm.isExpanded, vm.isSearching, trendingState],
   );
 
+  // Rows that are still on their way are not rows the user has none of: a
+  // reload that changes WHAT the list should hold empties it first.
+  const feedListState =
+    vm.state.status === StoreStatus.Error
+      ? ListState.Failed
+      : vm.state.status !== StoreStatus.Loaded || vm.isReloadingResults
+        ? ListState.Loading
+        : ListState.Ready;
+
   // What is actually on the feed, so "the second one" and "is there anything
   // here?" are questions the model can answer instead of guess at. Two rosters,
   // separately labelled and numbered, because they are two lists on one screen.
   useAssistantScreenContent(() =>
     [
       ...(featured.length > ValueConstants.zero
-        ? [recipeRoster('featured', featured.map((recipe) => recipe.name))]
+        ? [recipeRoster('featured', featured.map((recipe) => recipe.name), feedListState)]
         : []),
-      recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name)),
+      recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name), feedListState),
     ].join(SCREEN_PART_SEPARATOR),
   );
   // The whole list, for `readScreen`. The line above stops at eight rows
@@ -75,9 +85,9 @@ export const RecipeListScreen = (): React.JSX.Element => {
   useAssistantScreenReading(() =>
     [
       ...(featured.length > ValueConstants.zero
-        ? [listReading('featured', featured.map((recipe) => recipe.name))]
+        ? [listReading('featured', featured.map((recipe) => recipe.name), feedListState)]
         : []),
-      listReading('recipes', vm.recipes.map((recipe) => recipe.name)),
+      listReading('recipes', vm.recipes.map((recipe) => recipe.name), feedListState),
     ].join(SCREEN_PART_SEPARATOR),
   );
   // Saving, liking and deleting a row the user can see, by name or by position.

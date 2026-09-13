@@ -1,9 +1,9 @@
-Yayımladığınız bir tarife artık sonradan fotoğraf ekleyebilirsiniz — bir de kullananların bildirdiği asistan düzeltmeleri.
+Asistanı kullanırken bildirilen hatalar ve tariflerinize ulaşmanın yeni bir yolu.
 
-• Yayımladıktan sonra fotoğraf ekleyin. Tarifi açın, fotoğrafın üzerindeki kameraya dokunun ve yenisini seçin. Her fotoğraf yayına girmeden önce kontrol ediliyor.
-• Klavye artık asistanın sohbetini kapatmıyor. Asistana yazarken hem sohbet hem de yazdığınız kutu klavyenin altında kalıyordu; telefonda da tablette de düzeldi.
-• Tarif listesinden asistana yazmak çalışıyor. Önceden her seferinde başarısız oluyor, "istek ulaşmadı" diyordu.
-• Taslakta bir değişiklik istediğinizde o taslağı düzenliyor; yazmakta olduğunuzun üstüne yeni bir tarif oluşturmuyor.
-• "8 kişilik yap" dediğinizde porsiyon sayısıyla birlikte malzeme miktarlarını da ölçekliyor. Önceden yalnızca sayıyı değiştirip miktarlara dokunmuyordu, tarif kendi kendisiyle çelişiyordu.
+• Asistan artık göremediğiniz bir taslak yüzünden tarif oluşturmayı reddetmiyor. Ekranda olmayan bir taslağı ne yapacağını sorup duruyordu ve konuşmadan çıkış yoktu.
+• Bir taslağı düzenlerken yeni tarif istediğinizde önce taslağı ne yapacağını soruyor — saklamak mı, silmek mi — ve hangi cevabı verirseniz verin istediğiniz tarifi oluşturuyor.
+• iOS: açılışta uygulamanın üzerine üst üste çıkabilen geliştirici mesajı kaldırıldı.
+• Siri uygulamanın adını, nasıl telaffuz ederseniz edin, daha güvenilir tanıyor.
+• Kaydettiğiniz ve oluşturduğunuz tarifler artık telefonunuzun kendi aramasından bulunabiliyor ve doğrudan tarife açılıyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!

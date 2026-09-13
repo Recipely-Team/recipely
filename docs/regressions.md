@@ -1944,3 +1944,117 @@ seventy had none.
 
 *The class:* **a helper that mounts must also unmount.** Leaving cleanup to each test
 means the one test that forgets it fails someone else's commit.
+
+## Three answers about a screen that had not arrived yet
+
+Told "tavuk şavurma", the assistant searched, the feed filled in behind the panel, and
+it said it could not find the recipe the user was looking at. Told "şakşuka tarifini
+aç", it opened a baklava. Asked to read a recipe it had just opened, it said it could
+not read it at all. Three reports, one shape: `search` and `openRecipe` returned the
+moment they had asked the router to move, so the registry read the screen before the
+rows arrived and told the model `recipes=none`; the read actions answered from the
+empty lines their closure had been made with; and a model told there was nothing there
+did what it could — it made something up, or reached for a recipe id it remembered
+from an earlier turn.
+
+*Now:* `search` waits until the feed's rows are the answer to its own query (4 s bound),
+`openRecipe` searches for a name the screen does not show before it gives up — but never
+for a positional argument, which is only ever about the rows on screen — and each read
+waits up to 3 s for content and answers from the latest lines. Every wait is bounded and
+every path still answers, because a tool call that never returns stalls the conversation.
+
+*The class:* **an action that moves the screen has not finished when the router
+returns.** Whatever reads the screen next — the model, through the registry's screen
+line — will read the screen the user was on, not the one they were sent to.
+
+## A screen that had not counted yet, and a colour that was on it
+
+Two more from the same afternoon. "Oluşturduğum tarifleri aç" switched to the tab and
+answered at once, so the screen line was written before the rows arrived — and a line
+that says `created=none` is a fact to a model, which passed it on as "you have none"
+while the list filled in behind the panel. Then "tema paletinden kırmızı" was refused
+and the model read the palette names back in English: the resolver only matched a name
+that sat inside what the user said, and "Kırmızı Kor" does not sit inside "kırmızı".
+
+*Now:* every describer takes the list's state — `loading`, `ready` or `failed` — and
+there is no default, so the compiler asked all six screens which one they had; a list
+that has not arrived, or failed to, no longer says `none`. `switchTab` waits (bounded)
+for the tab it moved to and says `loading` when it never came. The taxonomy resolver,
+after its other passes fail, accepts a word that sits inside exactly one option's NAME —
+one, never two, because two is a question rather than an answer — and it answers `null`
+for an empty argument, which the search below it would otherwise have spun on forever.
+
+*The class:* **a count of nothing is not the same as nothing, and a name is not the
+only way someone says it.** The screen knows which of the two it has; the user says the
+word that tells the options apart.
+
+
+## A draft the user could not see, save, or delete
+
+Reported from production. Asked for a recipe with milk and gelatine, the assistant
+answered that an open draft would be lost and asked what to do with it — over and over,
+for a dozen turns. There was no draft on screen; `readScreen` answered with the feed;
+asked to delete the draft it answered that it could not find one. There was no way out
+of the loop and no recipe was ever created.
+
+*What it was:* the create screen deliberately shadows `generateRecipe` while its editor
+is open, so that "make me a recipe" cannot push a second create screen over the draft
+the user is looking at. That registration was scoped to **mount** — and expo-router
+leaves the screen below a push mounted, as every visited tab stays mounted. So the
+shadow went on answering from underneath the feed, for a screen nobody was looking at,
+while the screen line and the delete action came from the screens that really were on
+top. Three sources, two of them right, and the user in the middle of the disagreement.
+
+*Now:* `useAssistantAction`, `useAssistantScreenContent`, `useAssistantScreenReading`
+and `useAssistantConfirmation` register only while their screen is focused
+(`useIsScreenFocused`, which answers yes where there is no route — the pill and the
+timers bar sit beside the navigator, and their handlers are global on purpose).
+`check:structure` rule AE keeps that the only way in: a screen that reaches for the
+registry directly is mount-scoped again, and the next report reads exactly like this one.
+
+*The class:* **mounted is not visible.** A screen that scopes anything to its own mount
+is claiming the user is looking at it, and on a stack — or a tab bar — that claim is
+false for most of the screens making it.
+
+## A question asked too late to answer
+
+The same report, and the half the focus fix did not cover. With the draft screen in front
+of them, "süt ve jelatinle bir tarif oluştur" was answered `draft_open_would_be_lost`: a
+refusal the model relayed as a question — *shall I save it or delete it?* — while nothing
+on screen could take the answer, because no sheet had been opened. "Sil" reached a delete
+handler on another screen, which found nothing. A dozen turns, and no recipe.
+
+*Now:* the request opens the screen's own exit sheet — the one with Keep and Discard on
+it — and answers `awaiting`, so the model says the question out loud and the spoken answer
+lands on the sheet the user is reading. **Whichever way it is answered, the recipe that was
+asked for is then generated**: saving keeps the draft and generates, discarding deletes it
+and generates, and "keep editing" drops the errand, because that answer is neither.
+
+*The class:* **a refusal is not a question.** If the model is going to ask something, the
+app has to be showing it, and the thing the user wanted has to still happen once they have
+answered — otherwise the answer goes nowhere and the conversation has no exit.
+
+## An English dialog, stacked, in front of someone who had just installed the app
+
+From the App Store build: **"Expo Head: Add the handoff origin to the Expo Config
+(requires rebuild)…"** — over onboarding, then again over login, then again on every
+screen. Instructions written for us, in English, on a Turkish app, that the person reading
+them could do nothing about.
+
+*What it was:* `PageTitle` renders `expo-router/head`, which on the web fills the
+document's title — and on iOS does something else entirely: it registers an
+`NSUserActivity` for Handoff, and with no `origin` in the Expo config its own
+`throwOrAlert` calls `alert()`, deliberately preferring a dialog to a crash in a RELEASE
+build. The root layout mounts the title on every screen, so every screen raised one.
+
+*Now, in three layers:* the component is a platform pair — the web half keeps `Head`, the
+native half renders nothing, because a title is a browser concern and the alternative
+(setting `origin`) would have switched Handoff ON, advertising a recipely.net URL for the
+draft editor and settings. `check:structure` rule **AF** keeps `expo-router/head` on the
+web side. And rule **AG** plus `silenceDeveloperAlerts()` — installed in `index.js` before
+the router — neutralise the global `alert` in release builds and send whatever called it to
+Crashlytics, so the NEXT dependency to try this reaches a report instead of a customer.
+
+*The class:* **a message the user cannot act on is not a message to the user.** It is a bug
+report, and it goes where bug reports go. A web-shaped API on a phone is the usual way one
+arrives.

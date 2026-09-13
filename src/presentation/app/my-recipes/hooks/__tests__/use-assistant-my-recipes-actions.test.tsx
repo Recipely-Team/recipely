@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
@@ -7,7 +8,10 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
+import {
+  TAB_SETTLE_MS,
+  useAssistantMyRecipesActions,
+} from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
 
 const recipe = (id: string, name: string): RecipeSummaryEntity => ({ id, name }) as RecipeSummaryEntity;
 const draft = (id: string, name: string | undefined, prompt: string): RecipeDraft =>
@@ -16,6 +20,7 @@ const draft = (id: string, name: string | undefined, prompt: string): RecipeDraf
 function harness(
   items: RecipeSummaryEntity[] = [recipe('r1', 'Mercimek Çorbası'), recipe('r2', 'Fırın Tavuk')],
   drafts: RecipeDraft[] = [draft('d1', 'Yoğurtlu Tavuk', 'tavuk ve yoğurt'), draft('d2', undefined, 'mantı')],
+  loadsInstantly = true,
 ) {
   const registry = new AssistantActionRegistry();
   const spies = {
@@ -26,8 +31,25 @@ function harness(
     onRefresh: jest.fn(),
   };
 
+  // The screen, as far as this hook can tell: switching moves the tab, and the
+  // rows for it arrive when the test says they do.
+  let arrive: () => void = () => undefined;
   const Probe = (): null => {
-    useAssistantMyRecipesActions({ tab: TabType.Created, items, drafts, ...spies });
+    const [tab, setTab] = useState<TabType>(TabType.Created);
+    const [isTabLoaded, setLoaded] = useState(true);
+    arrive = () => setLoaded(true);
+    useAssistantMyRecipesActions({
+      tab,
+      items,
+      drafts,
+      ...spies,
+      isTabSettled: isTabLoaded,
+      onSwitchTab: (next) => {
+        spies.onSwitchTab(next);
+        setLoaded(loadsInstantly);
+        setTab(next);
+      },
+    });
     return null;
   };
 
@@ -37,7 +59,7 @@ function harness(
     </StoresProvider>,
   );
 
-  return { registry, spies };
+  return { registry, spies, arrive };
 }
 
 describe('useAssistantMyRecipesActions', () => {
@@ -173,5 +195,42 @@ describe('useAssistantMyRecipesActions', () => {
     });
 
     expect(spies.onRefresh).toHaveBeenCalled();
+  });
+});
+
+/**
+ * Reported: "oluşturduğum tarifleri aç dedim, yok dedi — ama o arada tarifler
+ * yükleniyordu." The switch answered the moment the tab changed, so the screen
+ * line the model reads next was written before the rows arrived.
+ */
+describe('switching to a tab that is still loading', () => {
+  it('does not answer until the tab it moved to has its rows', async () => {
+    const { registry, arrive } = harness(undefined, undefined, false);
+
+    const switching = registry.run(AssistantAction.SwitchTab, TabType.Liked);
+    let answered = false;
+    void switching.then(() => (answered = true));
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(answered).toBe(false);
+
+    arrive();
+
+    await expect(switching).resolves.toMatchObject({ ok: true });
+  });
+
+  it('answers anyway rather than waiting for a tab that never loads', async () => {
+    jest.useFakeTimers();
+    try {
+      const { registry } = harness(undefined, undefined, false);
+
+      const switching = registry.run(AssistantAction.SwitchTab, TabType.Liked);
+      await jest.advanceTimersByTimeAsync(TAB_SETTLE_MS);
+
+      // Answered, and with no ctx of its own: the screen line is what says the
+      // tab is still loading, and it also carries the route.
+      await expect(switching).resolves.toEqual({ ok: true });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 });

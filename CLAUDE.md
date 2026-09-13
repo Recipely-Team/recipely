@@ -354,7 +354,8 @@ blocking.
     23c (background-audio capability), 25 (a routed screen with no analytics
     name), 24 (rule AB: a screen that registers a screen line but no reading, so
     `readScreen` has nothing to say about it; rule AC: an overlay pinned to the bottom edge
-    that takes typing but never reads the keyboard), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
+    that takes typing but never reads the keyboard), 27 (rule AD: a library package that
+    imports from the app or names it), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
     `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
     here from rule 24** — a bug that a mechanical check could have caught should leave one
     behind.
@@ -563,6 +564,33 @@ blocking.
     **When editing a file that is still Turkish, convert the part you touch
     rather than matching its language.** Remaining debt: the Turkish rows in
     [`docs/regressions.md`](docs/regressions.md).
+
+27. **The assistant library is a separate repository** —
+    [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant),
+    published to npm as `@live-assistant/*`. This app is one of its consumers and
+    installs it like any other dependency: `core`, `gemini` and `audio`, because
+    it draws its own assistant UI and takes neither the widget nor the React
+    bindings.
+
+    **A change the library needs is a PR to that repository and a release**, the
+    same as the backend — the two repos ship independently, so never assume a
+    library export exists because the app wants it. Its own gates (lint,
+    typecheck, build, the suite, and a gate that packs every package and requires
+    what it packed) run there.
+
+    What belongs on each side is the line that made the split worth doing: the
+    library knows nothing of any app that installs it, and Recipely's specifics —
+    the backend's single `runAction` tool with an `action` word, its failure copy,
+    its token route — live in the app's ADAPTER under
+    `src/application/assistant/`, which is exactly the file every other
+    integrator writes. The first extraction shipped `runAction` inside the Gemini
+    adapter as if every consumer declared the same tool; a library that only fits
+    its first user is not a library.
+
+    `check:structure` rule AD stays, holding the same contract for any
+    `packages/` directory that reappears here: no `@layer/*` import, no relative
+    path out of its own folder, no file naming Recipely. It is inert while there
+    is none, which is the intended state.
 
 ### Pre-commit quality gate
 

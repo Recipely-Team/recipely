@@ -1,8 +1,7 @@
-• Recipe steps now grow to fit the whole instruction — no more scrollbar hiding half the text.
-• Comments, steps, your bio and the AI prompt all expand as you type.
-• The app follows your device's text size setting — turn it up, nothing gets clipped.
-• Show/hide password on sign-in and sign-up.
-• New welcome screen for browsing without an account.
-• Smaller, faster app and a smoother feel throughout.
+• The assistant no longer refuses to make a recipe because of a draft you cannot see.
+• Asked for a new recipe with a draft open, it asks what to do with the draft first — and makes the recipe either way.
+• iOS: a developer message that could appear over the app on launch is gone.
+• Siri recognises the app's name more reliably.
+• Recipes you saved can now be found from your phone's own search.
 
 Thanks for cooking with Recipely!

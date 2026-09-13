@@ -1,11 +1,10 @@
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-interface';
-import type { AssistantSessionInterface } from '@domain/assistant/session/assistant-session-interface';
+import type { AssistantMicrophone, AssistantPlayer, AssistantSession } from '@live-assistant/core';
+import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
-import type { AudioPlayerInterface } from '@domain/assistant/audio/audio-player-interface';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
-import type { MicrophoneInterface } from '@domain/assistant/audio/microphone-interface';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
@@ -208,9 +207,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
   // picker — only a screen can perform. Screens register those on mount.
   const assistantActionRegistry = new AssistantActionRegistry();
   const assistantSessionStore = configureAssistantSessionStore({
-    session: container.resolve<AssistantSessionInterface>(TOKENS.AssistantSession),
-    microphone: container.resolve<MicrophoneInterface>(TOKENS.AssistantMicrophone),
-    player: container.resolve<AudioPlayerInterface>(TOKENS.AssistantPlayer),
+    session: container.resolve<AssistantSession<LiveSessionCredentials>>(TOKENS.AssistantSession),
+    microphone: container.resolve<AssistantMicrophone>(TOKENS.AssistantMicrophone),
+    player: container.resolve<AssistantPlayer>(TOKENS.AssistantPlayer),
     tokens: container.resolve<AssistantTokenRepositoryInterface>(TOKENS.AssistantTokenRepository),
     messenger: container.resolve<AssistantMessengerInterface>(TOKENS.AssistantMessenger),
     registry: assistantActionRegistry,

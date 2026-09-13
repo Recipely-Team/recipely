@@ -12,7 +12,7 @@ import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-
 import { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 
 const HEADER_HEIGHT = 68;
@@ -64,7 +64,9 @@ export const WebHeader = (): React.JSX.Element => {
   ];
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
-  const displayName = user?.displayName ?? 'Recipely User';
+  // Empty when nobody is signed in: the avatar then draws the person mark rather
+  // than initials of a placeholder name, which read as a signed-in account.
+  const displayName = user?.displayName ?? CharConstants.empty;
   const avatarUri = user?.photoUrl ?? undefined;
 
   const goRecipes = (): void => router.replace(RoutePaths.recipes);

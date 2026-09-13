@@ -1334,6 +1334,137 @@ function openingTag(src, at) {
   }
 }
 
+// --- AF: `expo-router/head` is a web-only import (CLAUDE.md §24) ------------
+// It looks like a title tag and is not one. On iOS `expo-router/head`
+// registers an `NSUserActivity` for Handoff, and with no `origin` in the Expo
+// config its `throwOrAlert` calls `alert()` — in a RELEASE build, where it
+// prefers a dialog to a crash. The App Store build opened "Expo Head: Add the
+// handoff origin…" over onboarding, again over login, and again on every
+// screen, because the root layout mounts the title on all of them.
+//
+// Configuring `origin` would silence it by switching Handoff ON: every screen,
+// the draft editor and settings included, would advertise a recipely.net URL
+// to iOS. So the import stays on the web side of a platform pair, where a
+// title is the thing it actually does.
+{
+  const HEAD_IMPORT = /from\s+'expo-router\/head'|require\(\s*'expo-router\/head'\s*\)/;
+
+  for (const file of files) {
+    if (isTest(file)) continue;
+    if (file.endsWith('.web.tsx') || file.endsWith('.web.ts')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!HEAD_IMPORT.test(src)) continue;
+    errors.push(
+      `${file}: imports expo-router/head outside a .web file — on iOS it registers a Handoff activity and alerts in release builds when no origin is set (CLAUDE.md §24)`,
+    );
+  }
+}
+
+// --- AG: nothing speaks to the user through the global `alert` (§24) -------
+// The user's rule, after an App Store build stacked "Expo Head: Add the handoff
+// origin to the Expo Config" over onboarding and login: a person using the app
+// must never be shown a message written for us. A dependency reached them
+// through the global `alert`, which is now neutralised in release builds
+// (`silenceDeveloperAlerts`) and reported to Crashlytics instead.
+//
+// This keeps OUR side of it: everything a user is meant to read goes through
+// `Alert.alert` with copy from `t()`, or through the shared sheets and dialogs.
+// A bare `alert(` is a developer talking to themselves in front of a customer.
+{
+  // `alert(` but not `Alert.alert(`, `.alert(` or `window.alert(` — the dotted
+  // forms are the app's own dialog, or the very thing being replaced.
+  const BARE_ALERT = /(?<![.\w])alert\s*\(/;
+  const SILENCER = path.join('infrastructure', 'diagnostics', 'silence-developer-alerts.ts');
+
+  for (const file of files) {
+    if (isTest(file) || file === SILENCER) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\/.*$/gm, '');
+    if (!BARE_ALERT.test(code)) continue;
+    errors.push(
+      `${file}: calls the global alert() — user-facing words go through Alert.alert with t() copy or a shared sheet; a bare alert is a developer's dialog (CLAUDE.md §24)`,
+    );
+  }
+}
+
+// --- AE: the assistant registers by FOCUS, never by mount (CLAUDE.md §24) ---
+// Reported from production: the assistant refused to create a recipe, insisting
+// an open draft would be lost. There was no draft on screen, `readScreen`
+// answered with the feed, and asked to delete the draft it could not find one.
+// The create screen was still MOUNTED under the feed — expo-router keeps the
+// screen below a push, and every visited tab — and it deliberately shadows
+// `generateRecipe` while its editor is open. Scoped to mount, that shadow spoke
+// for the whole app from a screen nobody was looking at.
+//
+// The three hooks in `base/hooks/assistant/` now scope every registration to
+// `useIsScreenFocused`. This keeps that the only way in: a screen that reaches
+// for the registry directly gets mount scoping back, and the next report reads
+// exactly like this one.
+{
+  const REGISTERS = /assistantActionRegistry\s*\.\s*register\w*\s*\(/;
+  const HOME = path.join('presentation', 'base', 'hooks', 'assistant');
+
+  for (const file of files) {
+    if (isTest(file) || file.startsWith(HOME)) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    if (!REGISTERS.test(src)) continue;
+    errors.push(
+      `${file}: registers with the assistant directly — use useAssistantAction / useAssistantScreenContent / useAssistantScreenReading, which register only while the screen is focused; mounted is not visible (CLAUDE.md §24)`,
+    );
+  }
+}
+
+// --- AD: a library package knows nothing of the app (CLAUDE.md §27) ---------
+// `packages/*` is the assistant library, written for any app to install. The
+// first extraction still carried this app's wire contract — a single tool named
+// `runAction` with an `action` word — as if every consumer declared the same
+// one. What is app-specific stays in the app's adapter; this keeps it there.
+// Asked of every file in a package, tests included, because a test is the
+// first example a reader of the library copies.
+{
+  const PACKAGES = path.join(ROOT, 'packages');
+  // Every way a module names another: `from`, a side-effect `import`, `import()`,
+  // `require()` and `jest.mock()` — in either quote style.
+  const SPECIFIER = String.raw`(?:\bfrom\s+|^\s*import\s+|\bimport\s*\(\s*|\brequire\s*\(\s*|\bjest\.mock\s*\(\s*)['"]`;
+  const APP_IMPORT = new RegExp(`${SPECIFIER}(?:@(?:core|domain|application|infrastructure|presentation|assets)\/|@\/)`, 'm');
+  const RELATIVE_IMPORT = new RegExp(`${SPECIFIER}(\.{1,2}\/[^'"]*)['"]`, 'gm');
+  const APP_WORDS = [/recipely/i, /\brunAction\b/, /\brecipes?\b/i];
+  const TEXT = /\.(?:[cm]?[jt]sx?|json|md|swift|kt|java|m|mm|h|podspec|gradle|ya?ml)$|^(?:README|LICENSE)$/;
+
+  const walkPackage = (dir, out) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walkPackage(full, out);
+      else if (TEXT.test(entry.name)) out.push(full);
+    }
+    return out;
+  };
+
+  const packageDirs = fs.existsSync(PACKAGES)
+    ? fs.readdirSync(PACKAGES, { withFileTypes: true }).filter((d) => d.isDirectory())
+    : [];
+  for (const pkg of packageDirs) {
+    const pkgRoot = path.join(PACKAGES, pkg.name);
+    for (const full of walkPackage(pkgRoot, [])) {
+      const rel = path.relative(ROOT, full);
+      const src = fs.readFileSync(full, 'utf8');
+      if (APP_IMPORT.test(src)) {
+        errors.push(`${rel}: a library package imports from the app — packages depend only on each other and on npm (CLAUDE.md §27)`);
+      }
+      for (const [, spec] of src.matchAll(RELATIVE_IMPORT)) {
+        if (!path.resolve(path.dirname(full), spec).startsWith(pkgRoot + path.sep)) {
+          errors.push(`${rel}: '${spec}' reaches outside its package — import another package by its name (CLAUDE.md §27)`);
+        }
+      }
+      const word = APP_WORDS.find((w) => w.test(src));
+      if (word) {
+        errors.push(`${rel}: names this app (${word}) — the library is for any app; app-specific mapping lives in the app's adapter (CLAUDE.md §27)`);
+      }
+    }
+  }
+}
+
 if (errors.length) {
   console.error(`check:structure — ${errors.length} violation(s):\n`);
   for (const e of [...new Set(errors)].sort()) console.error('  ' + e);

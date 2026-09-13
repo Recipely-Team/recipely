@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
@@ -90,6 +91,12 @@ export const NotificationsScreen = (): React.JSX.Element => {
   // which the date grouping and the unread filter both reorder.
   const visibleItems = useMemo(() => sections.flatMap((section) => section.data), [sections]);
   useAssistantNotificationActions({
+    listState:
+      state.status === StoreStatus.Loaded
+        ? ListState.Ready
+        : state.status === StoreStatus.Error
+          ? ListState.Failed
+          : ListState.Loading,
     unreadCount,
     items: visibleItems,
     onMarkAllRead: () => void markAllRead(),

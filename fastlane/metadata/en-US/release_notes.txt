@@ -1,9 +1,9 @@
-You can add a photo to a recipe you have already published — and a run of assistant fixes, every one of them reported by people using it.
+Fixes for things people reported while using the assistant, and one new way to find your recipes.
 
-• Add a photo after publishing. Open your recipe, tap the camera on the picture and choose a new one. Every photo is checked before it goes up.
-• The keyboard no longer covers the assistant's conversation. Typing to it pushed both the chat and the box you type into underneath the keyboard — on tablets as well as phones.
-• Typing to the assistant from the recipe list works. It used to fail every time and tell you the request had not arrived.
-• Asking it to change a draft changes that draft, instead of starting a new recipe over the top of the one you were writing.
-• "Make it for eight people" now rescales the ingredients along with the serving count. It used to change the number and leave the quantities alone, which left the recipe disagreeing with itself.
+• The assistant no longer refuses to make a recipe because of a draft you cannot see. It kept asking what to do with a draft that was not on the screen, and there was no way out of the conversation.
+• Ask for a new recipe while you are editing one, and it now asks what to do with the draft first — keep it or discard it — and makes the recipe you asked for either way.
+• iOS: a developer message that could appear over the app on launch, more than once, is gone.
+• Siri recognises the app's name more reliably, however you pronounce it.
+• Recipes you have saved or created can now be found from your phone's own search, and open straight to the recipe.
 
 Thanks for cooking with Recipely!

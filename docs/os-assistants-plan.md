@@ -12,7 +12,7 @@ progress board** — when a session ends, work resumes from here.
 | 0 | Measurement and decision gate | ✅ **done** (except the on-device Siri trial) | — |
 | 1 | Module skeleton + shared store | ✅ **done** | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 2 | Headless path | ✅ **done**: envelope parity, backend route, credential sync, and the native call that spends the token (D24). On-device timing still unmeasured | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
-| 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages. Control Center + Spotlight blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
+| 3 | iOS App Intents | 🟢 shipped: 11 intents, entity, 10 phrases x 14 languages, Core Spotlight indexing (#445). Control Center + semantic search still blocked (D20) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 5 | Gates and docs | ✅ **done**: rules W, X, AD, AE; CI asserts the kit in both generated projects and runs both parity suites; regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 
@@ -36,6 +36,17 @@ belong. **Not merged**; findings are written below.
 - [x] **Measurement 1a** — `prebuild --clean` passes on both platforms; Swift is copied into the app target and registered in the pbxproj, entitlement/Info.plist/manifest correct (D7, D8)
 - [x] **Measurement 1b** — `pod install` + `xcodebuild` **BUILD SUCCEEDED**; the intent compiles in the app target and is **extracted into `Metadata.appintents`** (`isDiscoverable: true`) — D12, D13
 - [ ] On device: does Siri actually invoke it by VOICE, in TR and EN — the simulator cannot recognise speech; the same intents were run through Shortcuts there (D26)
+- [x] **D27 — Siri has to HEAR the name.** Reported as "Siri uygulamayı bulamıyor". The
+  intents, the phrases and the fourteen `.lproj/AppShortcuts.strings` were all verified in
+  a generated project, and all of it has been on `main` since #423 — so the first answer is
+  that the public App Store build predates the feature. The second is real: `\(.applicationName)`
+  is matched against the display name and `INAlternativeAppNames`, and there were none.
+  A Turkish speaker saying "Recipely" is heard as *resipli* / *resiplay*, which matched
+  nothing. Four alternatives with pronunciation hints now ship in `ios.infoPlist`, asserted
+  on the GENERATED plist in CI rather than on the config.
+- [ ] Follow-up, not quick: one phrase per intent is all the provider declares. Apple
+  recommends several per shortcut; adding them means the catalogue, the generator and all
+  fourteen languages, so it is a change of its own rather than part of a fix.
 - [x] ~~**Measurement 2**~~ — answered by research, no device needed (D2)
 - [x] **Measurement 3** — `:recipely-assistant-kit:compileDebugKotlin` and the **full `:app:assembleDebug` green** (3m 7s); autolinking finds the module, manifest meta-data correct (D9)
 - [x] Findings written into this file, decisions fixed
@@ -639,7 +650,17 @@ plugin's pbxproj code.
 - [x] **Verified in a real build**: `BUILD SUCCEEDED`, 11 intents + 1 entity + 1 query extracted into `Metadata.appintents`, all `isDiscoverable: true`, 10 app shortcuts
 - [x] Rule W widened to read the Swift named-argument form (`id:` / `action:`), proved by breaking it
 - [x] Phrases for 14 languages, generated from i18n into `<lang>.lproj/AppShortcuts.strings` (D19)
-- [ ] `IndexedEntity` for Spotlight semantic search — **blocked on an entry point, see D20**
+- [x] **Core Spotlight, the stopgap D20 named** — the catalogue the app already publishes
+  (24 saved + created recipes) is now written to `CSSearchableIndex` from the pod, where
+  nothing blocks it: `IndexedEntity` is what needed an app-target entry point, and plain
+  `CSSearchableItem` does not. Signing out publishes an empty list, which deletes the
+  domain — the privacy note on `useOsEntityCatalogueSync` finally means something.
+  A tap arrives as `CSSearchableItemActionType` and `RecipelySpotlightSubscriber` re-opens
+  it as `<scheme>://assistant/run?id=openRecipe&action=openRecipe&arg=<id>` — the same road
+  Android's shortcuts take, rather than a second way in. Six checks in
+  `scripts/verify-swift-spotlight.sh`, in the gate chain and on both macOS CI jobs.
+- [ ] `IndexedEntity` for Spotlight semantic search — **still blocked on an entry point, see D20.**
+  The stopgap above finds a recipe by its NAME; the entity would find it by meaning.
 - [ ] Control Center control — needs a widget extension target, which prebuild does not create today
 - [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side
 - [ ] Action Button — free once the intents exist; needs on-device confirmation only

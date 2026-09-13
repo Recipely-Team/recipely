@@ -1,3 +1,4 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower, machineUpper } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
@@ -43,6 +44,13 @@ interface AssistantDraftActionsDeps {
    * top of it and publish a recipe in answer to a question about leaving.
    */
   isExitPending: boolean;
+  /**
+   * Starts the recipe the user just asked for, once this draft has been dealt
+   * with. Returns whether it ASKED rather than started, which is what lets the
+   * model say the question out loud instead of announcing a recipe that is
+   * waiting on an answer.
+   */
+  onGenerateAnother: (prompt: string) => boolean;
   /**
    * The rejection the user is looking at, when a publish came back refused.
    *
@@ -107,8 +115,8 @@ const TEXT_FIELDS = ['name'] as const;
 const DIFFICULTY_FIELD = 'difficulty';
 /** Named so the model can act on it: re-scaling goes to `refineDraft`. */
 const SERVINGS_NEEDS_REFINE = 'servings_needs_refine';
-/** Why a new recipe cannot be started from on top of an unsaved draft. */
-const DRAFT_ALREADY_OPEN = 'draft_open_would_be_lost';
+/** A generate call with nothing to generate from; the same word the global handler uses. */
+const EMPTY_PROMPT = 'empty_prompt';
 const CUISINE_FIELD = 'cuisine';
 const CATEGORY_FIELD = 'category';
 
@@ -170,6 +178,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   const {
     isDraftVisible,
     isPromptVisible,
+    onGenerateAnother,
     isExitPending,
     saveProblem,
     resumableDraft,
@@ -197,7 +206,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       ? resumeLine(resumableDraft)
       : [
           `draft=${draftName(recipe)}`,
-          recipeRoster('ingredients', recipe.ingredients),
+          recipeRoster('ingredients', recipe.ingredients, ListState.Ready),
           `steps=${recipe.instructions.length}`,
           ...(saveProblem === null ? [] : [`${PROBLEM}=${saveProblem}`]),
         ].join(SCREEN_PART_SEPARATOR),
@@ -403,15 +412,25 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
 
   // Generating from the editor would push a second create screen over this one
   // and leave the draft the user is looking at behind — reported as "şöyle yap
-  // diyorum, gidip yeniden tarif oluşturuyor". The always-mounted handler is
-  // shadowed here, and the reason is named so the model can say what it is:
-  // changing this draft is `refineDraft`, and starting the same request again
-  // is `regenerate`.
+  // diyorum, gidip yeniden tarif oluşturuyor". So the screen asks first, with
+  // the question it already has: keep this draft or throw it away.
+  //
+  // It used to answer `draft_open_would_be_lost` and stop. That is a refusal
+  // dressed as a question — the model relayed it, the user said "sil", and
+  // there was nothing registered to hear the answer, because the exit sheet was
+  // never opened. Reported from production as a dozen turns of being told a
+  // draft would be lost while the screen showed no draft at all. Now the sheet
+  // opens with the request, `awaiting` makes the model say so out loud, and
+  // whichever answer it gets — kept or discarded — the recipe the user asked
+  // for is generated afterwards.
   useAssistantAction(
     AssistantAction.GenerateRecipe,
     useCallback(
-      async (): Promise<AssistantActionResultType> => ({ ok: false, error: DRAFT_ALREADY_OPEN }),
-      [],
+      async (arg?: string): Promise<AssistantActionResultType> => {
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: EMPTY_PROMPT };
+        return onGenerateAnother(arg) ? { ok: true, awaiting: true } : { ok: true };
+      },
+      [onGenerateAnother],
     ),
     isDraftVisible,
   );

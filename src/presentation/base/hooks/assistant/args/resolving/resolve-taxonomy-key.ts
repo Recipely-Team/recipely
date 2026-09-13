@@ -42,6 +42,9 @@ export function resolveTaxonomyKey(
 ): string | null {
   const wantedKey = machineLower(value);
   const wantedName = foldForMatch(value);
+  // "sort" with no value, "palette=" with nothing after it: there is nothing
+  // to match, and the passes below would each match everything.
+  if (wantedName.length === ValueConstants.zero) return null;
 
   const exact = options.find(
     (item) => machineLower(item.key) === wantedKey || foldForMatch(item.name) === wantedName,
@@ -69,8 +72,21 @@ export function resolveTaxonomyKey(
       ),
   );
 
-  return distinct.length === ValueConstants.one ? (distinct[ValueConstants.zero]?.key ?? null) : null;
+  if (distinct.length === ValueConstants.one) return distinct[ValueConstants.zero]?.key ?? null;
+
+  // Nothing certain sat inside what the user said. Try it the other way round:
+  // a user reading a swatch says the word that tells the palettes apart, not
+  // the whole name on it — "kırmızı" for "Kırmızı Kor" — and answering "there
+  // is no such palette" to a colour that is on screen is a refusal of the
+  // obvious. Only when exactly one option holds that word: two would be a
+  // guess. A short word must sit there WHOLE, or "j" would pick Japanese.
+  const wanted = wantedName.length < SHORTEST_PARTIAL ? MatchKind.Whole : MatchKind.Suffixed;
+  const named = options.filter((item) => matchIn(foldForMatch(item.name), wantedName) >= wanted);
+  return named.length === ValueConstants.one ? (named[ValueConstants.zero]?.key ?? null) : null;
 }
+
+/** Below this length, a word must sit in a name whole: "j" is not "Japon". */
+const SHORTEST_PARTIAL = 3;
 
 /** How well a name sits inside a phrase. */
 const MatchKind = { None: 0, Suffixed: 1, Whole: 2 } as const;
@@ -78,6 +94,10 @@ type MatchKindType = (typeof MatchKind)[keyof typeof MatchKind];
 
 /** The best way `needle` occurs in `haystack`, always starting a word. */
 function matchIn(haystack: string, needle: string): MatchKindType {
+  // Every position holds an empty needle, and `indexOf` never advances past
+  // the end for one: the loop below would not terminate.
+  if (needle.length === ValueConstants.zero) return MatchKind.None;
+
   let best: MatchKindType = MatchKind.None;
   let from = ValueConstants.zero;
   for (;;) {

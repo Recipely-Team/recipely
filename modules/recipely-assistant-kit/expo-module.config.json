@@ -1,9 +1,19 @@
 {
-  "platforms": ["apple", "android"],
+  "platforms": [
+    "apple",
+    "android"
+  ],
   "apple": {
-    "modules": ["RecipelyAssistantKitModule"]
+    "modules": [
+      "RecipelyAssistantKitModule"
+    ],
+    "appDelegateSubscribers": [
+      "RecipelySpotlightSubscriber"
+    ]
   },
   "android": {
-    "modules": ["net.recipely.assistantkit.RecipelyAssistantKitModule"]
+    "modules": [
+      "net.recipely.assistantkit.RecipelyAssistantKitModule"
+    ]
   }
 }

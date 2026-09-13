@@ -563,13 +563,25 @@ jobs:
             echo "::error file=plugins/withAssistantKit.js::The assistant kit did not reach the artifact:$fail. Siri would open the app for every request instead of answering."
             exit 1
           fi
-          echo "OK — $group, $base, envelope key present"
+          # Siri matches `\(.applicationName)` against the display name and the
+          # alternative names below it. Without them a Turkish speaker saying
+          # "Recipely" is heard as something the phrase table has no entry for,
+          # and every shortcut silently fails to match — the intents are there,
+          # Shortcuts lists them, and only the spoken route is missing.
+          names="$(/usr/libexec/PlistBuddy -c "Print :INAlternativeAppNames" "$plist" 2>/dev/null | grep -c INAlternativeAppName || true)"
+          [ "${names:-0}" -ge 2 ] || { echo "::error file=app.json::No INAlternativeAppNames in the generated Info.plist — Siri cannot hear the app's name"; exit 1; }
+          echo "OK — $group, $base, envelope key present, $names alternative app name line(s)"
 
       # The Swift third of the envelope parity suite, and the /assistant/message
       # wire shape. Linux CI skips it (no swiftc); this is the runner that builds
       # the Swift it checks.
       - name: Swift envelope parity
         run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
+
+      # The two pure pieces either side of a Spotlight tap: the identifier iOS
+      # hands back, and the URL the app is re-opened with.
+      - name: Verify the Spotlight identifiers (Swift)
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-spotlight.sh
 
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,
@@ -1137,6 +1149,11 @@ jobs:
       # the Swift it checks.
       - name: Swift envelope parity
         run: REQUIRE_SWIFT=1 bash scripts/verify-swift-envelope.sh
+
+      # The two pure pieces either side of a Spotlight tap: the identifier iOS
+      # hands back, and the URL the app is re-opened with.
+      - name: Verify the Spotlight identifiers (Swift)
+        run: REQUIRE_SWIFT=1 bash scripts/verify-swift-spotlight.sh
 
       # The microphone has one owner and it is expo-audio: its plugin DELETES
       # NSMicrophoneUsageDescription when `microphonePermission` is false,

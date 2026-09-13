@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -8,9 +9,13 @@ import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface AvatarImageProps {
   uri?: string;
+  /** Empty for nobody in particular — a signed-out visitor — which draws the person mark. */
   name: string;
   size: number;
 }
+
+/** The icon's share of the circle, so the mark keeps its proportions at every size. */
+const PERSON_ICON_RATIO = 0.55;
 
 const initialsFor = (name: string): string => {
   const trimmed = name.trim();
@@ -21,7 +26,15 @@ const initialsFor = (name: string): string => {
   return (first + second).toUpperCase();
 };
 
-/** Circular avatar that shows a remote image or falls back to initials on a primary-gradient background. */
+/**
+ * Circular avatar: a photo, else the person's initials, else the person mark.
+ *
+ * @remarks
+ * - **No name, no initials.** Signed out, the header used to build initials
+ *   from a placeholder display name and show "RU" — which reads as an account
+ *   that is signed in. Nobody's avatar is a generic mark, not somebody's
+ *   letters.
+ */
 export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const borderRadius = size / ValueConstants.two;
@@ -51,14 +64,18 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
-        <Text
-          style={[
-            styles.initials,
-            { fontSize: size * AVATAR_INITIALS_FONT_RATIO, color: colors.primaryText },
-          ]}
-        >
-          {initialsFor(name)}
-        </Text>
+        {name.trim().length === ValueConstants.zero ? (
+          <Ionicons name="person" size={size * PERSON_ICON_RATIO} color={colors.primaryText} />
+        ) : (
+          <Text
+            style={[
+              styles.initials,
+              { fontSize: size * AVATAR_INITIALS_FONT_RATIO, color: colors.primaryText },
+            ]}
+          >
+            {initialsFor(name)}
+          </Text>
+        )}
       </View>
     </LinearGradient>
   );

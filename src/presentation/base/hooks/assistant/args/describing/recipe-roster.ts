@@ -1,3 +1,5 @@
+import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
+import type { ListStateType } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -9,7 +11,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
  */
 const MAX_NAMED = 8;
 
-/** What the line says when the screen has a list and the list is empty. */
+/** What the line says when the list is there and has nothing in it. */
 const NOTHING = 'none';
 
 /**
@@ -29,8 +31,12 @@ const NOTHING = 'none';
  * - **An empty list says so.** "There are no recipes here" is an answer the
  *   assistant could not give while the line was a path.
  */
-export const recipeRoster = (label: string, names: readonly string[]): string => {
-  if (names.length === ValueConstants.zero) return `${label}=${NOTHING}`;
+export const recipeRoster = (label: string, names: readonly string[], state: ListStateType): string => {
+  // Rows on hand are worth saying whatever the state: a refresh that failed
+  // over a list the user is looking at has not taken the list away.
+  if (names.length === ValueConstants.zero) {
+    return `${label}=${state === ListState.Ready ? NOTHING : state}`;
+  }
 
   const listed = names
     .slice(ValueConstants.zero, MAX_NAMED)

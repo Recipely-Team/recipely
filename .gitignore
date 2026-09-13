@@ -2,6 +2,9 @@
 
 # dependencies
 node_modules/
+# A worktree left a node_modules SYMLINK in a commit once: the pattern above
+# ends in a slash, which matches a directory but not a link of the same name.
+node_modules
 
 # Expo
 .expo/
