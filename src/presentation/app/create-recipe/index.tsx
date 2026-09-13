@@ -55,6 +55,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     onDiscardAndExit: vm.onDiscardAndExit,
   });
   useAssistantDraftActions({
+    onGenerateAnother: vm.onGenerateAnother,
     // Only while the editor is on screen. In the prompt phase there is nothing
     // to edit and no confirmation sheet — the same condition the two
     // confirmations below already carry.

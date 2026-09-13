@@ -2015,3 +2015,21 @@ registry directly is mount-scoped again, and the next report reads exactly like 
 *The class:* **mounted is not visible.** A screen that scopes anything to its own mount
 is claiming the user is looking at it, and on a stack — or a tab bar — that claim is
 false for most of the screens making it.
+
+## A question asked too late to answer
+
+The same report, and the half the focus fix did not cover. With the draft screen in front
+of them, "süt ve jelatinle bir tarif oluştur" was answered `draft_open_would_be_lost`: a
+refusal the model relayed as a question — *shall I save it or delete it?* — while nothing
+on screen could take the answer, because no sheet had been opened. "Sil" reached a delete
+handler on another screen, which found nothing. A dozen turns, and no recipe.
+
+*Now:* the request opens the screen's own exit sheet — the one with Keep and Discard on
+it — and answers `awaiting`, so the model says the question out loud and the spoken answer
+lands on the sheet the user is reading. **Whichever way it is answered, the recipe that was
+asked for is then generated**: saving keeps the draft and generates, discarding deletes it
+and generates, and "keep editing" drops the errand, because that answer is neither.
+
+*The class:* **a refusal is not a question.** If the model is going to ask something, the
+app has to be showing it, and the thing the user wanted has to still happen once they have
+answered — otherwise the answer goes nowhere and the conversation has no exit.
