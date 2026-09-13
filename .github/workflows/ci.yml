@@ -568,9 +568,14 @@ jobs:
           # "Recipely" is heard as something the phrase table has no entry for,
           # and every shortcut silently fails to match — the intents are there,
           # Shortcuts lists them, and only the spoken route is missing.
-          names="$(/usr/libexec/PlistBuddy -c "Print :INAlternativeAppNames" "$plist" 2>/dev/null | grep -c INAlternativeAppName || true)"
-          [ "${names:-0}" -ge 2 ] || { echo "::error file=app.json::No INAlternativeAppNames in the generated Info.plist — Siri cannot hear the app's name"; exit 1; }
-          echo "OK — $group, $base, envelope key present, $names alternative app name line(s)"
+          # Counted as ENTRIES, not lines: each carries a pronunciation hint, so
+          # a line count sees eight where Apple sees four. Between one and three
+          # — none and Siri cannot hear the name, more and App Store Connect
+          # rejects the build after it has uploaded, with error 90626.
+          names="$(/usr/libexec/PlistBuddy -c "Print :INAlternativeAppNames" "$plist" 2>/dev/null | grep -c "INAlternativeAppName " || true)"
+          [ "${names:-0}" -ge 1 ] || { echo "::error file=app.json::No INAlternativeAppNames in the generated Info.plist — Siri cannot hear the app's name"; exit 1; }
+          [ "${names:-0}" -le 3 ] || { echo "::error file=app.json::$names INAlternativeAppNames — Apple allows at most 3 per language and rejects the build with error 90626"; exit 1; }
+          echo "OK — $group, $base, envelope key present, $names alternative app name(s)"
 
       # The Swift third of the envelope parity suite, and the /assistant/message
       # wire shape. Linux CI skips it (no swiftc); this is the runner that builds

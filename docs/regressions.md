@@ -2058,3 +2058,20 @@ Crashlytics, so the NEXT dependency to try this reaches a report instead of a cu
 *The class:* **a message the user cannot act on is not a message to the user.** It is a bug
 report, and it goes where bug reports go. A web-shaped API on a phone is the usual way one
 arrives.
+
+## A build that uploaded, then failed at Apple
+
+`INAlternativeAppNames` was added so Siri could hear the app's name however it is
+pronounced — with **four** entries. Apple allows three per language. The upload succeeded,
+CI went green, and the rejection arrived afterwards, by email, from App Store Connect
+processing: *"90626: Invalid Siri Support. There are too many name synonyms in the 'en'
+language. There should be no more than 3."*
+
+*Now:* three. The CI assertion that already required the names to exist counts **entries**
+rather than lines — each carries a pronunciation hint, so a line count sees eight where
+Apple sees four — and fails the build when there are more than three, naming 90626.
+
+*The class:* **a green pipeline is not an accepted build.** Everything between `xcodebuild`
+and the App Store — processing, validation, review — runs after CI has reported success,
+so a rule Apple enforces there has to be enforced here, on the artifact, before the upload.
+
