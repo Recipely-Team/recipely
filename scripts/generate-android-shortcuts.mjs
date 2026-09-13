@@ -218,8 +218,6 @@ for (const code of localeCodes) {
 
 export const isFresh = () => !wasStale;
 
-/** The number of launcher slots the static shortcuts hold, for the Kotlin side. */
-export const staticShortcutCount = () => entries.length;
 
 if (import.meta.url === `file://${process.argv[1]}`) {
   console.log(
