@@ -1988,3 +1988,30 @@ for an empty argument, which the search below it would otherwise have spun on fo
 only way someone says it.** The screen knows which of the two it has; the user says the
 word that tells the options apart.
 
+
+## A draft the user could not see, save, or delete
+
+Reported from production. Asked for a recipe with milk and gelatine, the assistant
+answered that an open draft would be lost and asked what to do with it — over and over,
+for a dozen turns. There was no draft on screen; `readScreen` answered with the feed;
+asked to delete the draft it answered that it could not find one. There was no way out
+of the loop and no recipe was ever created.
+
+*What it was:* the create screen deliberately shadows `generateRecipe` while its editor
+is open, so that "make me a recipe" cannot push a second create screen over the draft
+the user is looking at. That registration was scoped to **mount** — and expo-router
+leaves the screen below a push mounted, as every visited tab stays mounted. So the
+shadow went on answering from underneath the feed, for a screen nobody was looking at,
+while the screen line and the delete action came from the screens that really were on
+top. Three sources, two of them right, and the user in the middle of the disagreement.
+
+*Now:* `useAssistantAction`, `useAssistantScreenContent`, `useAssistantScreenReading`
+and `useAssistantConfirmation` register only while their screen is focused
+(`useIsScreenFocused`, which answers yes where there is no route — the pill and the
+timers bar sit beside the navigator, and their handlers are global on purpose).
+`check:structure` rule AE keeps that the only way in: a screen that reaches for the
+registry directly is mount-scoped again, and the next report reads exactly like this one.
+
+*The class:* **mounted is not visible.** A screen that scopes anything to its own mount
+is claiming the user is looking at it, and on a stack — or a tab bar — that claim is
+false for most of the screens making it.
