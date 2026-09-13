@@ -14,7 +14,7 @@ import { ValueConstants } from '@core/constants';
  * visible to anchor them, and it matters most where the reader is following
  * instructions in order.
  */
-export const SCROLL_STEP_SHARE = 0.85;
+const SCROLL_STEP_SHARE = 0.85;
 
 /**
  * How often a screen samples its scroll offset for the assistant.
