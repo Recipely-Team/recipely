@@ -1,9 +1,9 @@
-Kullananların bildirdiği bir dizi asistan düzeltmesi.
+Asistanı kullanırken bildirilen hatalar ve tariflerinize ulaşmanın yeni bir yolu.
 
-• Ekranda duran bir tarifi istediğinizde onu açıyor. Eskiden bulamadığını söylüyor ya da daha önce konuştuğunuz başka bir tarifi açıyordu.
-• Bir tarifi açtıktan hemen sonra adımlarını sesli okuyabiliyor; önceden "böyle bir adım yok" diyordu.
-• "Tariflerimi aç" dediğinizde liste hâlâ yüklenirken "hiç yok" demiyor.
-• Tema renklerini yalnızca İngilizce değil, kendi dilinizde söyleyebilirsiniz.
-• Arka planda sesli asistan yeni bir temel üzerine yeniden yazıldı. Aynı asistan — uzun konuşmalarda ve bağlantı yenilendiğinde daha kararlı.
+• Asistan artık göremediğiniz bir taslak yüzünden tarif oluşturmayı reddetmiyor. Ekranda olmayan bir taslağı ne yapacağını sorup duruyordu ve konuşmadan çıkış yoktu.
+• Bir taslağı düzenlerken yeni tarif istediğinizde önce taslağı ne yapacağını soruyor — saklamak mı, silmek mi — ve hangi cevabı verirseniz verin istediğiniz tarifi oluşturuyor.
+• iOS: açılışta uygulamanın üzerine üst üste çıkabilen geliştirici mesajı kaldırıldı.
+• Siri uygulamanın adını, nasıl telaffuz ederseniz edin, daha güvenilir tanıyor.
+• Kaydettiğiniz ve oluşturduğunuz tarifler artık telefonunuzun kendi aramasından bulunabiliyor ve doğrudan tarife açılıyor.
 
 Recipely ile pişirdiğiniz için teşekkürler!
