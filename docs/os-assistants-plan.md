@@ -36,6 +36,17 @@ belong. **Not merged**; findings are written below.
 - [x] **Measurement 1a** — `prebuild --clean` passes on both platforms; Swift is copied into the app target and registered in the pbxproj, entitlement/Info.plist/manifest correct (D7, D8)
 - [x] **Measurement 1b** — `pod install` + `xcodebuild` **BUILD SUCCEEDED**; the intent compiles in the app target and is **extracted into `Metadata.appintents`** (`isDiscoverable: true`) — D12, D13
 - [ ] On device: does Siri actually invoke it by VOICE, in TR and EN — the simulator cannot recognise speech; the same intents were run through Shortcuts there (D26)
+- [x] **D27 — Siri has to HEAR the name.** Reported as "Siri uygulamayı bulamıyor". The
+  intents, the phrases and the fourteen `.lproj/AppShortcuts.strings` were all verified in
+  a generated project, and all of it has been on `main` since #423 — so the first answer is
+  that the public App Store build predates the feature. The second is real: `\(.applicationName)`
+  is matched against the display name and `INAlternativeAppNames`, and there were none.
+  A Turkish speaker saying "Recipely" is heard as *resipli* / *resiplay*, which matched
+  nothing. Four alternatives with pronunciation hints now ship in `ios.infoPlist`, asserted
+  on the GENERATED plist in CI rather than on the config.
+- [ ] Follow-up, not quick: one phrase per intent is all the provider declares. Apple
+  recommends several per shortcut; adding them means the catalogue, the generator and all
+  fourteen languages, so it is a change of its own rather than part of a fix.
 - [x] ~~**Measurement 2**~~ — answered by research, no device needed (D2)
 - [x] **Measurement 3** — `:recipely-assistant-kit:compileDebugKotlin` and the **full `:app:assembleDebug` green** (3m 7s); autolinking finds the module, manifest meta-data correct (D9)
 - [x] Findings written into this file, decisions fixed
