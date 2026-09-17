@@ -369,15 +369,71 @@ describe('an imported draft opened in the editor', () => {
     expect(snapshot.media).toEqual([chosen]);
   });
 
-  it('leaves a draft that never had these fields exactly as narrow as before', () => {
+  it('leaves a draft that never had the import fields exactly as narrow as before', () => {
     // A draft started in the editor carries no import fields, and must not grow
     // empty ones — an `image: undefined` key would round-trip as a change and
     // make the exit dialog ask about work nobody did.
+    //
+    // `category` used to be asserted here too, back when the editor's own was
+    // always the default and writing it would have destroyed an imported
+    // draft's. It is now read back on resume, so it is a field the editor
+    // genuinely holds and always writes — see the tests below.
     const editable = snapshotToEditable({ name: 'Plain', ingredients: ['x'], instructions: ['y'] });
 
     const snapshot = editableToSnapshot(editable, undefined);
 
     expect(Object.keys(snapshot)).not.toContain('image');
-    expect(Object.keys(snapshot)).not.toContain('category');
+  });
+});
+
+/**
+ * The symptom: a sütlaç saved as a dessert, resumed from the drafts list and
+ * published, arrived as a main course.
+ *
+ * Two halves of one round trip, each harmless alone and lossy together.
+ * `snapshotToEditable` did not read `category` — "it only matters at publish
+ * time" — but publish reads it from the EDITOR, so a resumed draft always
+ * published the default. And `editableToSnapshot` only ever re-wrote the
+ * CARRIED category, so a generated draft, which carries nothing, never stored
+ * one at all.
+ */
+describe('a draft keeps the category it was saved with', () => {
+  it('reads the stored category back into the editor', () => {
+    const editable = snapshotToEditable({ name: 'Sütlaç', category: 'DESSERT' });
+
+    expect(editable.category).toBe('DESSERT');
+  });
+
+  // The backend's catalogue has 32 categories and this app's enum mirrors 11.
+  // Validating against the local list would throw away a legitimate key, and
+  // nothing but the backend ever writes this field.
+  it('keeps a category this app does not have a name for', () => {
+    const editable = snapshotToEditable({ name: 'Güveç', category: 'CASSEROLE' });
+
+    expect(editable.category).toBe('CASSEROLE');
+  });
+
+  it('falls back to the default when the draft carried no category', () => {
+    const editable = snapshotToEditable({ name: 'Plain' });
+
+    expect(editable.category).toBe(emptyEditable().category);
+  });
+
+  it('falls back to the default when the stored category is blank', () => {
+    const editable = snapshotToEditable({ name: 'Plain', category: '   ' });
+
+    expect(editable.category).toBe(emptyEditable().category);
+  });
+
+  it('writes the editor\'s own category, so a generated draft stores one too', () => {
+    const editable = { ...emptyEditable(), name: 'Sütlaç', category: 'DESSERT' };
+
+    expect(editableToSnapshot(editable, undefined).category).toBe('DESSERT');
+  });
+
+  it('survives a full save-and-resume round trip', () => {
+    const saved = editableToSnapshot({ ...emptyEditable(), name: 'Sütlaç', category: 'DESSERT' }, undefined);
+
+    expect(snapshotToEditable(saved).category).toBe('DESSERT');
   });
 });
