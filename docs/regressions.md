@@ -2075,3 +2075,24 @@ Apple sees four — and fails the build when there are more than three, naming 9
 and the App Store — processing, validation, review — runs after CI has reported success,
 so a rule Apple enforces there has to be enforced here, on the artifact, before the upload.
 
+
+## A round trip where each half was reasonable and the pair lost the answer
+
+A sütlaç saved as a dessert, resumed from the drafts list and published, arrived as a
+main course.
+
+`snapshotToEditable` did not read `category`, on the stated grounds that "it only matters
+at publish time" — but publish reads it from the EDITOR, so a resumed draft always
+published `MAIN_COURSE`. Facing it, `editableToSnapshot` only ever re-wrote the CARRIED
+category, correctly, because the editor's own was always the default and writing it would
+have destroyed an imported draft's real one. So a generated draft, which carries nothing,
+stored no category at all, and an imported one stored a value nothing would ever read
+back. Neither half was wrong on its own; together they made the field write-only.
+
+*Guard:* the two halves ship together — the editor reads the stored category back
+(verbatim: the backend's catalogue has 32 and this app's enum mirrors 11) and writes its
+own — and a test follows one category through a save and a resume rather than through
+either mapper alone.
+
+*The class:* **when a value is written by one mapper and read by another, test the round
+trip.** A pair of unit tests can both pass over a field that never survives the journey.
