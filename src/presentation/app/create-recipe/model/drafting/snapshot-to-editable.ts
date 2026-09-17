@@ -38,8 +38,11 @@ const draftCategory = (text: string | undefined): string | undefined => {
  *   in the row the whole time: `editableToSnapshot` has always carried it
  *   through. Kept verbatim for the reason `cuisine` is — the backend's catalogue
  *   has 32 categories and this app's enum mirrors 11, so validating against the
- *   local list would throw away a legitimate key. Nothing but the backend ever
- *   writes this field, so what is in it is a key the backend issued.
+ *   local list would throw away a legitimate key. That is safe because every
+ *   value that can land here is one the backend's catalogue recognises: a
+ *   generated recipe's own category, this editor's default, or a pick from the
+ *   taxonomy sheet, which offers the local subset. There is no writer that can
+ *   invent one.
  * - **`image` is a cover the editor never saw.** An Instagram import stores its
  *   chosen frame there and leaves `media` empty, and this mapper only ever read
  *   `media` — so an imported draft opened in the editor said "no photo yet"
