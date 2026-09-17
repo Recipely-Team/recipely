@@ -29,11 +29,19 @@ interface PickedPhoto {
  * - **Never throws.** A manipulation that fails must not lose the user's photo;
  *   the original URI is returned and the upload proceeds exactly as it did
  *   before. The server's own limit is still the backstop.
+ * - **The bound is a parameter because the budgets differ.** A recipe photo is
+ *   looked at full-width; an avatar is rendered at 256 square, so sending it at
+ *   the recipe's edge is bytes nobody sees. It lives in `base/` for the same
+ *   reason: two screens upload photos, and only one of them used to shrink
+ *   them.
  */
-export const shrinkForUpload = async (photo: PickedPhoto): Promise<string> => {
+export const shrinkForUpload = async (
+  photo: PickedPhoto,
+  maxEdge: number = MEDIA_UPLOAD_MAX_EDGE,
+): Promise<string> => {
   const longestEdge = Math.max(photo.width, photo.height);
   const isWide = photo.width >= photo.height;
-  const scale = longestEdge > MEDIA_UPLOAD_MAX_EDGE ? MEDIA_UPLOAD_MAX_EDGE / longestEdge : 1;
+  const scale = longestEdge > maxEdge ? maxEdge / longestEdge : 1;
 
   try {
     const result = await manipulateAsync(
@@ -41,9 +49,7 @@ export const shrinkForUpload = async (photo: PickedPhoto): Promise<string> => {
       scale < 1
         ? [
             {
-              resize: isWide
-                ? { width: MEDIA_UPLOAD_MAX_EDGE }
-                : { height: MEDIA_UPLOAD_MAX_EDGE },
+              resize: isWide ? { width: maxEdge } : { height: maxEdge },
             },
           ]
         : [],
