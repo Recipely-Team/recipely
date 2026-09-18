@@ -57,7 +57,7 @@ beforeEach(() => {
 
 // react-test-renderer has no `renderHook`, so the hook is driven through a
 // probe component — the pattern the rest of this repo's hook tests use.
-const pick = async (): Promise<void> => {
+const drive = (): { latest: () => AvatarUpload } => {
   let latest!: AvatarUpload;
   const Probe = (): null => {
     latest = useAvatarUpload();
@@ -65,8 +65,13 @@ const pick = async (): Promise<void> => {
   };
 
   renderComponent(<Probe />);
+  return { latest: () => latest };
+};
+
+const pick = async (): Promise<void> => {
+  const { latest } = drive();
   await act(async () => {
-    await latest.pickAndUpload();
+    await latest().pickAndUpload();
   });
 };
 
@@ -104,5 +109,76 @@ describe('useAvatarUpload', () => {
 
     expect(mockShrink).not.toHaveBeenCalled();
     expect(mockUploadAvatar).not.toHaveBeenCalled();
+  });
+});
+
+/**
+ * Shrinking a 4000px capture is a real pass over the image, and it landed
+ * outside `isUploading` when this hook first learned to do it: the screen
+ * showed no spinner, the button stayed enabled, and the hook's own
+ * `if (isUploading) return` could not fire — so a second tap during the
+ * re-encode started a whole second flight, and whichever upload finished last
+ * won the avatar.
+ */
+describe('while the photo is being prepared', () => {
+  /** A shrink that will not finish until the test says so. */
+  const suspendShrink = (): { release: () => void } => {
+    let release!: () => void;
+    mockShrink.mockReturnValue(new Promise<string>((resolve) => {
+      release = () => resolve(SHRUNK);
+    }));
+    return { release };
+  };
+
+  it('is already busy, so the screen can show it', async () => {
+    const { release } = suspendShrink();
+    const { latest } = drive();
+
+    let inFlight!: Promise<void>;
+    await act(async () => {
+      inFlight = latest().pickAndUpload();
+    });
+
+    expect(latest().isUploading).toBe(true);
+
+    await act(async () => {
+      release();
+      await inFlight;
+    });
+    expect(latest().isUploading).toBe(false);
+  });
+
+  it('refuses a second pick until the first one is done', async () => {
+    const { release } = suspendShrink();
+    const { latest } = drive();
+
+    let inFlight!: Promise<void>;
+    await act(async () => {
+      inFlight = latest().pickAndUpload();
+    });
+    await act(async () => {
+      await latest().pickAndUpload();
+    });
+
+    // One picker launch, one upload — not two racing flights.
+    expect(mockLaunchLibrary).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      release();
+      await inFlight;
+    });
+    expect(mockUploadAvatar).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops being busy even when the upload fails', async () => {
+    mockUploadAvatar.mockResolvedValue({ messageKey: 'errors.validation.file_too_large' });
+    const { latest } = drive();
+
+    await act(async () => {
+      await latest().pickAndUpload();
+    });
+
+    expect(latest().isUploading).toBe(false);
+    expect(latest().uploadError).not.toBeNull();
   });
 });
