@@ -2819,3 +2819,365 @@ All imports of the new files should use the `@presentation/screens/recipes/` pat
 
 **Contrast tests:** `heroButtonText` is a new constant token — add one assertion per item 19 above.
 No per-theme re-run is needed for spacing/i18n changes.
+
+---
+
+## Provenance Badge (recipe origin marker)
+
+Marks where a recipe's text came from — `AI` (a model wrote it), `IMPORT` (lifted from an
+Instagram post), or `USER` (a person wrote it, and the badge draws nothing). Appears as a bare
+icon on feed cards and as an icon + short label on the recipe detail screen, where an `IMPORT`
+recipe's account handle is a tappable link to that Instagram account.
+
+The domain side of this already exists and is untouched by this spec: `RecipeOrigin` /
+`RecipeOriginType` (`src/domain/recipes/recipe-origin.ts`), `toRecipeOrigin`
+(`src/domain/recipes/to-recipe-origin.ts`), and `origin` / `sourceUrl` / `sourceHandle` on
+`RecipeEntityProps`. What is missing is everything downstream of that — no `RecipeEntity` getter
+reads `origin` yet, `RecipeSummaryEntityProps` doesn't carry it at all, and no widget renders it.
+That gap is listed exactly in **Hand-off** below.
+
+### General rule adopted here — every meaningful visual carries a description
+
+This badge is the first of a class, not a one-off: **any icon or mark that changes what the user
+understands about the content it sits on** — a status glyph, a provenance mark, a verified badge,
+a moderation flag — ships with three things, together, or it does not ship:
+
+1. An **`accessibilityLabel`** (and `accessible` on the wrapping view) stating in plain language
+   what the mark means — never just what it looks like. This is the mobile answer; there is no
+   touch-triggered tooltip on mobile (a hover-only affordance retargeted to `onPress` would fire
+   on the same tap that already does something else, and a long-press convention doesn't exist
+   anywhere else in this app — inventing one for a single badge would be a gesture nobody
+   discovers).
+2. A **hover explanation on web**, via the shared `HoverTooltip` primitive below, gated on
+   `isWeb()` — the same capability gate `RecipeCard`'s existing hover-lift already uses, because
+   "can this surface receive a mouse hover" is a pointer capability, not a layout width, so it is
+   neither `isWebShell` nor `isExpanded` (CLAUDE.md rule 6b2) — it is closest to `isWebShell`'s
+   family (chrome/input capability) but the codebase has no `isWeb()`-adjacent alias for it beyond
+   the one `isWeb()` helper already in use for hover, so that is what this reuses.
+3. **i18n copy for both**, en + tr, added alongside the feature — never a hard-coded string,
+   even for a two-word label.
+
+A purely decorative icon (a chevron, a bullet) is exempt — the test is whether removing the icon
+would remove information, not whether it is an `<Ionicons>` tag.
+
+**Reference:** [ShapeofAI — Disclosure patterns](https://www.shapeof.ai/patterns/disclosure) and
+the EU AI Act's 2026 requirement that an AI-content label be a plain-language statement, not a
+symbol alone (an icon by itself "does not establish compliance") — confirms the detail-screen
+badge must carry a text label, not just the `sparkles` glyph; the compact card badge is the one
+place a bare icon is acceptable, because its accessible name still carries the full sentence even
+though nothing is drawn. **Reference:** [WCAG 1.4.13 — Content on Hover or Focus](https://www.wcag.com/authors/1-4-13-content-on-hover-or-focus/)
+— a hover tooltip must be dismissible, hoverable (the pointer can move from the trigger onto the
+tooltip without it closing) and persistent (no surprise timeout). `HoverTooltip` below satisfies
+"hoverable" and "persistent" by treating trigger+bubble as one hover region with no auto-dismiss
+timer; it does **not** add an Escape-key dismiss handler — flagged as a known, non-blocking gap in
+Hand-off, acceptable because the same information is never hover-exclusive here (it is always
+also in the accessible name or, on the detail screen, in visible text).
+
+### Shared primitive: `HoverTooltip`
+
+New file: `src/presentation/base/widgets/tooltip/hover-tooltip.tsx`.
+
+```ts
+export interface HoverTooltipProps {
+  /** Shown in the floating bubble on web hover. */
+  label: string;
+  /** Screen-reader name for the trigger, on every platform. May equal `label` or say more. */
+  accessibilityLabel: string;
+  children: React.ReactNode;
+}
+```
+
+- Wraps `children` in a `View`. On web (`isWeb()`), adds `onMouseEnter` / `onMouseLeave` toggling
+  local `useState<boolean>`; both handlers live on the SAME outer `View` that also contains the
+  bubble, so moving the pointer from the trigger onto the bubble never fires `onMouseLeave`
+  (satisfies "hoverable" without extra bookkeeping).
+- The outer `View` always carries `accessible` + `accessibilityLabel={accessibilityLabel}` — this
+  is what makes point 1 of the general rule unconditional, not web-only.
+- Bubble: `position: 'absolute'`, `top: '100%'`, `marginTop: spacing.xs`, `maxWidth:
+  layoutSizes.tooltipMaxWidth` (new token, see Hand-off), `backgroundColor: colors.overlay`,
+  text `color: colors.onOverlay`, `borderRadius: radii.md`, `paddingHorizontal: spacing.sm2`,
+  `paddingVertical: spacing.xs`, `zIndex: zIndices.raised`. Reusing `overlay`/`onOverlay` here is
+  deliberate: that pairing is already verified safe against the brightest possible backdrop (a
+  white image pixel, 5.74:1 — see the Apr 2026 palette section above), which is a superset of
+  "floating over an arbitrary page background," so no new contrast case needs auditing.
+- On native, `children` render with no bubble logic at all — `isWeb()` false short-circuits before
+  the hover state is even read, so there is no dead pressable underneath a screen reader's finger.
+- Not animated. A plain conditional render matches the zero-affordance-cost bar of a native
+  browser tooltip; adding a fade is a future nice-to-have, not required by this spec.
+
+### A. Compact badge — recipe cards (feed)
+
+Applies to `RecipeCard` (`src/presentation/base/widgets/cards/recipe-card.tsx`, mobile list) and
+`WebRecipeCard` (`src/presentation/base/widgets/cards/web-recipe-card.tsx`, web grid). Icon only,
+no label, no pill background — it sits inside the existing meta row rather than adding a fifth
+absolutely-positioned chip to an image that already carries a cuisine badge (top-right) and a
+difficulty chip (top-left, `RecipeCard`) or a cuisine tag (top-left) and save bookmark (top-right,
+`WebRecipeCard`). A new floating corner badge was considered and rejected for exactly the
+crowding reason the brief calls out.
+
+**References:** [Mobbin — status/verification glyph placement](https://mobbin.com/explore/mobile/screens)
+patterns put a secondary status mark inline with existing metadata (star rating, a count) rather
+than as its own chip, once a card's corners are already spoken for — that is the precedent this
+follows, applied to our own `metaRow`/`footer` rows rather than a new one.
+
+#### Layout
+
+- `RecipeCard`: insert as the **first child of `styles.metaRow`**, before `ratingRow` — same row
+  that already holds the star rating and the like button.
+- `WebRecipeCard`: insert as the **last item of `styles.metaRow`**, after the difficulty
+  icon+label pair — same row that already holds the time and difficulty meta.
+- No new spacing constants — both rows already use `gap: spacing.xs` (mobile) /
+  `gap: spacing.xs` (web); the icon is just another row child.
+- `origin === RecipeOrigin.User` → the badge renders nothing (`null`), exactly like `CountBadge`
+  at zero. Callers pass `origin` unconditionally.
+
+#### Tokens used
+
+| Element | Token | Notes |
+|---|---|---|
+| AI icon glyph | `Ionicons name="sparkles"` | Already the app's AI glyph — `create-recipe`, the AI banners, the assistant widgets all use it. Reused, not reinvented. |
+| AI icon color | `colors.chipText` | = `palette.primary` today, but the semantically-correct token (contract: "text/icon on `chipBackground`" family) rather than raw `colors.primary`. Verified ≥4.52:1 against `chipBackground` in every current theme (see Contrast verification). |
+| Import icon glyph | `Ionicons name="logo-instagram"` | Already the app's Instagram glyph — `import-paste-view.tsx`, `instagram-entry-card.tsx`. |
+| Import icon color | `colors.text` | NOT `colors.textMuted` — see the audit finding below. `colors.text` is verified ≥9.68:1 against `colors.surface`/`cardBackground` in every current theme, comfortably above the 3:1 WCAG 1.4.11 floor for a graphical object. |
+| Icon size (`RecipeCard`) | `iconSizes.sm` (14) | Matches the star icons already in that row. |
+| Icon size (`WebRecipeCard`) | `iconSizes.md` (16) | Matches the `time-outline` / `speedometer-outline` icons already in that row. |
+
+Both icons are graphical objects with no adjacent text in the compact variant, so the applicable
+WCAG floor is **1.4.11 Non-text Contrast (3:1)**, not the 4.5:1 body-text floor — noted because the
+audit finding below is about a DIFFERENT existing pairing that fails even that lower bar.
+
+#### Interaction & state
+
+- **Not pressable. Neither origin.** The whole card is already one `Pressable` (`onPress` opens
+  the recipe); a nested link inside it works technically (`WebRecipeCard`'s save button already
+  proves nested pressables are fine on this codebase), but:
+  - A 14–16pt bare glyph in a dense, fast-scrolling feed is not legible as "this one is a button"
+    the way the labelled, underlined handle on the detail screen is — there is no room here for a
+    visual cue that says "tap me, specifically, not the card."
+  - Making only the `IMPORT` icon tappable while the `AI` icon (same size, same row, same visual
+    weight) is inert creates an inconsistent interaction model inside one badge family — a user
+    who taps the sparkle expecting the same behavior as the Instagram glyph learns nothing from
+    the glyph shape alone at this scale.
+  - Leaving the app mid-scroll, from an accidental tap on a tiny meta icon, interrupts the one
+    loop a feed card exists for (browse → open a recipe). The detail screen is a deliberate stop;
+    the feed is not.
+  - **Conclusion: no.** The account link is a detail-screen-only affordance (Section B), where it
+    has its own distinct visual treatment and isn't competing with a full-card tap target.
+- Hover (web): wrapped in `HoverTooltip`, `label` = `t().recipes.originAiTooltip` /
+  `t().recipes.originImportTooltip`.
+- No pressed/loading/error/empty states — this is a static, derived-from-data marker with exactly
+  the two states `RecipeOrigin.Ai` / `RecipeOrigin.Import` render, and `User` renders nothing.
+
+#### Accessibility
+
+- `accessibilityLabel`: `t().recipes.originAiA11y` ("AI-written recipe") for `AI`;
+  `t().recipes.originImportA11y` ("Imported from Instagram") for `IMPORT`. The compact badge
+  cannot name the account — the list endpoint's `RecipeListItemDto` carries `origin` but not
+  `sourceHandle` (confirmed in code; only the single-recipe detail endpoint sends it), so the
+  accessible name is honest about what the card actually knows.
+- No minimum-tap-target concern — the element carries no `onPress`, so the 44×44 floor (a
+  POINTER-activation requirement) does not apply to it.
+
+### B. Detailed badge — recipe detail screen
+
+Applies to the mobile detail screen (`RecipeOverview`,
+`src/presentation/app/recipes/[recipeId]/body/recipe-overview.tsx`) and the web detail header
+(`WebRecipeDetailHeader`, `src/presentation/app/recipes/[recipeId]/body/web-recipe-detail-header.tsx`).
+Icon + label; for `IMPORT`, the account handle is a separate, tappable inline link.
+
+**Reference:** [instagram-entry-card.tsx](../../../../src/presentation/app/create-recipe/items/instagram-entry-card.tsx)
+already ships the exact gradient-plate + white `logo-instagram` treatment for the import ENTRY
+point — deliberately **not** reused here. That plate is a call-to-action ("start an import"); this
+badge is a passive fact about a recipe that already exists, and the ordinary case (`USER`) draws
+nothing at all, so its two exceptional siblings should read as a quiet footnote, not a promotional
+plate. Reusing the loud gradient on a passive marker would contradict the badge's own premise.
+
+#### Layout
+
+- **Mobile** (`recipe-overview.tsx`): a new row inserted directly **after** the `RecipeAuthorCard` /
+  its loading skeleton (current line 125) and **before** `<RecipeMetaCard .../>` (current line
+  127). `marginTop: spacing.sm` — tighter than the `spacing.lg` above `RecipeAuthorCard`, because
+  this reads as a continuation of "about this recipe," not a new section. Do **not** modify
+  `RecipeAuthorCard` itself — its doc comment contracts it as "not pressable, identifies the
+  author and nothing more," and provenance is a different axis (how the text was produced, not
+  who owns the record) that deserves its own element rather than growing that one's scope.
+- **Web** (`web-recipe-detail-header.tsx`): a new row inserted directly **below** `styles.statsRow`
+  (after the closing `</View>` around current line 128, i.e. as a sibling under the same `left`
+  column), `marginTop: spacing.xs2`. Not appended INTO `statsRow` itself — that row is a series of
+  compact icon+number pairs (rating, likes, views) of near-identical width; a variable-length
+  sentence with an inline link does not fit that rhythm and would make the row wrap unevenly.
+- Neither placement adds card chrome (no `border`, no `surface` background) — plain inline row on
+  the page's own background, consistent with "a footnote, not a headline."
+
+#### Tokens used
+
+**AI — pill, cloned from `CreateRecipeHeader`'s existing `aiBadge`/`aiBadgeLabel` styles:**
+
+| Element | Token | Notes |
+|---|---|---|
+| Pill background | `colors.chipBackground` | |
+| Icon (`sparkles`) | `colors.chipText`, `iconSizes.xs` (12) | |
+| Label | `colors.chipText`, `fontSizes.micro`, `fontWeights.bold` | Text: `t().recipes.originAiDetailLabel` ("AI-written recipe" / "Yapay zekâ ile yazılmış tarif") |
+| Pill shape | `radii.round`, `paddingHorizontal: spacing.sm`, `paddingVertical: spacing.xxs` | |
+
+**IMPORT — plain sentence row, no pill (variable-length handle doesn't fit a pill predictably):**
+
+| Element | Token | Notes |
+|---|---|---|
+| Icon (`logo-instagram`) | `colors.text`, `iconSizes.md` (16) | Same reasoning as the compact badge — `textMuted` is the unsafe token here (see audit finding). |
+| Static text ("Imported from … on Instagram") | `colors.text`, `fontSizes.caption` | NOT `textMuted` — see audit finding. |
+| Handle ("@{handle}") | `colors.chipText` (= `colors.primary`), `fontWeights.semibold`, `textDecorationLine: 'underline'` | Underline is deliberate, not decorative — see Accessibility. Verified ≥4.57:1 against both `colors.background` and `colors.surface` in every current theme (see Contrast verification). |
+| Row gap | `spacing.xs` (icon↔text) | |
+| Text wrap | no `numberOfLines` cap | The sentence is short (~40–55 chars incl. handle); let it wrap to 2 lines on a narrow phone rather than truncating a fact the badge exists specifically to state. |
+
+Both variants wrap their non-link content in `HoverTooltip` (`label` =
+`t().recipes.originAiTooltip` / `t().recipes.originImportTooltip`). For `IMPORT`, the tooltip
+region covers the icon + "Imported from … on Instagram" text but **not** the `@{handle}` segment —
+that segment already carries its own affordance (color + underline + cursor:pointer on web) and
+giving it a second, overlapping hover behavior for a different purpose (explaining vs. navigating)
+would be confusing on the one element doing double duty.
+
+#### Interaction & state
+
+- **AI**: no interaction. Static pill.
+- **IMPORT handle**: tapping `@{handle}` opens `https://instagram.com/{handle}` via
+  `Linking.openURL(...).catch(() => undefined)` — the same silent-catch pattern already used for
+  every other outbound `Linking.openURL` call in this codebase (`recipe-share-sheet.tsx`). URL
+  built by a new `instagramProfileUrl(handle)` helper (see Hand-off) rather than a string literal
+  at the call site — a bare `'https://instagram.com/' + handle` would be exactly the "magic value
+  outside constants" rule 5 forbids.
+- Renders nothing if `sourceHandle` is absent (defensive — `RecipeEntityProps.sourceHandle` is
+  optional even though `IMPORT` recipes are expected to always carry it): show the icon + static
+  "Imported from Instagram" text with no handle segment, rather than a broken `@undefined`.
+- Missing `origin` (treated as `User` by `toRecipeOrigin`'s own fallback contract) → the whole row
+  renders nothing, same as the compact badge.
+
+#### Accessibility
+
+- **AI pill**: wrapped in `HoverTooltip` with `accessibilityLabel={t().recipes.originAiA11y}`.
+- **IMPORT static part**: wrapped in `HoverTooltip` with
+  `accessibilityLabel={t().recipes.originImportA11y}`.
+- **`@{handle}` link**: this is inline text inside a sentence, not a standalone control — implement
+  it as a nested `<Text onPress={...}>` inside the parent `ThemedText` (React Native supports
+  `onPress` + `accessibilityRole` on a nested `Text`; a `Pressable` cannot be nested inside `Text`
+  without breaking the inline flow, so `Pressable` is the wrong primitive here). Set
+  `accessibilityRole="link"` and `accessibilityLabel={t().recipes.originImportHandleA11y.replace('{handle}', sourceHandle)}`
+  ("Open @{handle} on Instagram" / "Instagram'da @{handle} hesabını aç") directly on that nested
+  `Text` — a screen reader landing on it must hear what it DOES, not just the visible "@handle".
+- **Tap target**: no `hitSlop` — nested `Text` does not support it (`hitSlop` is a `View`/
+  `Pressable`-only prop). This is a deliberate, bounded exception to the 44×44 floor: WCAG 2.5.5
+  Target Size (itself AAA, not required for our AA bar) explicitly exempts targets that are
+  **inline within a run of text**, which is exactly this case — the same exemption every hyperlink
+  inside a paragraph relies on, everywhere. `likeBtn` in `RecipeCard`, by contrast, IS a standalone
+  `Pressable` and correctly keeps its `hitSlop={spacing.sm}` — that precedent doesn't transfer here
+  because the primitive is different.
+
+### Contrast verification (current 4 real themes — `pearl-white`, `crimson-ember`,
+### `emerald-garden`, `royal-purple`, light + dark of each)
+
+Computed with the exact `relativeLuminance`/`contrastRatio` formulas in
+`src/presentation/base/theme/colors/contrast/contrast.ts`, against the real hex values in
+`src/presentation/base/theme/colors/palette/themes.ts` (NOT the aspirational 20-theme table
+earlier in this document — only 4 themes exist in code today).
+
+| Pairing | Worst case | Ratio | Floor | Result |
+|---|---|---|---|---|
+| `chipText` on `chipBackground` (AI icon/pill, both variants) | `pearl-white` dark | 4.52:1 | 4.5:1 (text) | PASS |
+| `colors.text` on `colors.surface` (IMPORT icon/text, `cardBackground`-equivalent) | `emerald-garden` dark | 9.68:1 | 4.5:1 (text) / 3:1 (icon) | PASS |
+| `colors.primary` (= `chipText`) on `colors.background` (handle link, page bg) | `crimson-ember` light | 5.43:1 | 4.5:1 | PASS |
+| `colors.primary` (= `chipText`) on `colors.surface` (handle link, card bg) | `royal-purple` dark | 4.57:1 | 4.5:1 | PASS |
+| `onOverlay` on `overlay` (tooltip bubble, worst-case white backdrop) | any theme | 5.74:1 | 4.5:1 | PASS (already verified in the Apr 2026 palette section) |
+
+**Audit finding — not part of this badge, found while verifying it:** `colors.textMuted` on
+`colors.surface`/`colors.cardBackground` measures **2.52:1** in `pearl-white` dark — below even
+the 3:1 non-text floor, let alone 4.5:1. This is a real, currently-shipping pairing (`RecipeCard`'s
+like icon, `WebRecipeCard`'s time/difficulty icons, `RecipeAuthorCard`'s eyebrow/caption all use
+`colors.textMuted` on this exact surface) — not something this spec introduces. Root cause:
+`pearl-white` is the only current theme that does not override `textMuted` per-variant, so its
+dark mode falls back to the shared `DARK_TEXT_MUTED = '#64748B'`, tuned against a bluer, brighter
+`surface` (`crimson-ember`/`emerald-garden`/`royal-purple` all define their own darker-surface-
+matched `textMuted` and pass). This is WHY the compact/detailed badges above deliberately avoid
+`textMuted` — reusing a known-bad token in new UI would compound the problem rather than sidestep
+it. Flagged in Hand-off for `ts-developer`; out of scope to fix here (would move `pearl-white`'s
+dark background/surface or its `textMuted`, which are outside this badge's blast radius).
+
+### Hand-off
+
+**ts-developer** (domain + infrastructure — the badge has no data to render without these):
+1. `src/domain/recipes/recipe-entity.ts` — add three getters mirroring the existing pattern
+   (`get origin(): RecipeOriginType { return this.props.origin; }`, plus `sourceUrl` and
+   `sourceHandle` as `string | undefined`). Props already exist on `RecipeEntityProps`; only the
+   getters are missing.
+2. `src/domain/recipes/recipe-summary-entity-props.ts` — add `origin: RecipeOriginType`.
+3. `src/domain/recipes/recipe-summary-entity.ts` — add the matching `origin` getter.
+4. `src/infrastructure/recipes/recipe-mapper.ts` — in `toRecipeSummary`, add
+   `origin: toRecipeOrigin(dto.origin)` (reuse the existing helper, same as `toRecipe` already
+   does at line 50). `RecipeListItemDto.origin` already exists on the wire type — no DTO change.
+5. Do **not** add `sourceHandle`/`sourceUrl` to `RecipeSummaryEntityProps` — the list endpoint
+   doesn't send them (confirmed: `RecipeListItemDto` has no such fields), and the compact badge
+   never needs them (Section A).
+6. `test-developer` follow-up: `recipe-summary-entity.test.ts` and any `toRecipeSummary` mapper
+   test need a case asserting `origin` round-trips; existing fixtures that omit `origin` should
+   default through `toRecipeOrigin(undefined)` → `RecipeOrigin.User`.
+7. Flag the `pearl-white` dark `textMuted`/`surface` = 2.52:1 audit finding above for a follow-up
+   fix (out of scope for this badge) — likely either a per-theme `textMuted` override for
+   `pearl-white` dark (matching the pattern the other three themes already use) or a `surface` mix
+   adjustment. Re-run needed: none for THIS badge's tokens (it uses none of the failing pairing).
+
+**rn-developer** (presentation — theme tokens, i18n, widgets, wiring):
+8. `src/presentation/base/theme/tokens/sizing/layout-sizes.ts` — add
+   `tooltipMaxWidth: 220` (not device-scaled, consistent with the rest of `layoutSizes`).
+9. New file `src/presentation/base/constants/external-links.ts` — export
+   `instagramProfileUrl(handle: string): string`, returning `` `https://instagram.com/${handle}` ``.
+   Follows the same "parameterised builder, not a literal at the call site" convention as
+   `RoutePaths`'s builder functions, for an external rather than in-app target.
+10. New file `src/presentation/base/widgets/tooltip/hover-tooltip.tsx` — `HoverTooltip` per the
+    Shared Primitive section above.
+11. New file `src/presentation/base/widgets/badges/provenance-badge.tsx` — `ProvenanceBadge`,
+    props `{ origin: RecipeOriginType; variant: 'compact' | 'detailed'; sourceHandle?: string;
+    style?: StyleProp<ViewStyle> }`. Returns `null` for `RecipeOrigin.User` before touching any
+    other prop (mirrors `CountBadge`'s "nothing at zero" pattern in
+    `src/presentation/base/widgets/text/count-badge.tsx`). Internal icon/color lookup keyed by
+    origin, same shape as `count-badge.tsx`'s `OVERFLOW` lookup.
+12. `src/presentation/i18n/locales/en.ts` and `.../tr.ts` — add under `recipes:`:
+
+    | Key | en | tr |
+    |---|---|---|
+    | `originAiTooltip` | `AI wrote this recipe from a prompt.` | `Yapay zekâ bu tarifi bir istemden yazdı.` |
+    | `originAiA11y` | `AI-written recipe` | `Yapay zekâ ile yazılmış tarif` |
+    | `originAiDetailLabel` | `AI-written recipe` | `Yapay zekâ ile yazılmış tarif` |
+    | `originImportTooltip` | `Imported from an Instagram post.` | `Bir Instagram gönderisinden alındı.` |
+    | `originImportA11y` | `Imported from Instagram` | `Instagram'dan alındı` |
+    | `originImportDetailLabel` | `Imported from {handle} on Instagram` | `Instagram'da {handle} hesabından alındı` |
+    | `originImportHandleA11y` | `Open {handle} on Instagram` | `Instagram'da {handle} hesabını aç` |
+
+    `originAiA11y`/`originAiDetailLabel` intentionally duplicate their en value (same reasoning
+    the existing `cuisineAll`/`difficultyAll` pair already documents in this file: kept as
+    separate keys for independent future localization). Render `{handle}` as `@` + the raw
+    `sourceHandle` (i.e., the template's `{handle}` placeholder is replaced with `@{sourceHandle}`,
+    not the bare handle) when composing `originImportDetailLabel` / `originImportHandleA11y`.
+13. `src/presentation/base/widgets/cards/recipe-card.tsx` — add `origin?: RecipeOriginType` to
+    `RecipeCardProps`; render `<ProvenanceBadge origin={origin ?? RecipeOrigin.User} variant="compact" />`
+    as the first child of `styles.metaRow`.
+14. `src/presentation/app/recipes/items/cards/recipe-list-item.tsx` — pass `origin={recipe.origin}`
+    into `<RecipeCard .../>`.
+15. `src/presentation/base/widgets/cards/web-recipe-card.tsx` — render
+    `<ProvenanceBadge origin={recipe.origin} variant="compact" />` as the last child of
+    `styles.metaRow` (reads `recipe.origin` directly — `WebRecipeCard` already takes the entity).
+16. `src/presentation/app/recipes/[recipeId]/body/recipe-overview.tsx` — insert the detailed
+    `<ProvenanceBadge variant="detailed" origin={recipe.origin} sourceHandle={recipe.sourceHandle} />`
+    row per Section B's mobile layout.
+17. `src/presentation/app/recipes/[recipeId]/body/web-recipe-detail-header.tsx` — same, per
+    Section B's web layout.
+18. Known, accepted gap: `HoverTooltip` has no Escape-key dismiss handler (see "General rule"
+    above) — acceptable for this feature, not acceptable to copy forward uncritically the next
+    time this primitive is reused for something where the tooltip is the ONLY place the
+    information lives.
+
+**Contrast tests:** add the five pairings from the "Contrast verification" table above as
+assertions (`contrastRatio(...) >= 4.5` / `>= 3.0` as marked) across the 4 current themes ×
+light/dark — the numbers above are the floor, not a suggestion. The `pearl-white` dark
+`textMuted`/`surface` finding is a separate, pre-existing regression test to add
+(`contrastRatio(colors.textMuted, colors.surface) >= 3.0`, currently failing) — file it as
+expected-to-fail or `.skip` with a comment pointing at this section until `ts-developer` fixes it,
+per item 7 above; do not silently drop it.

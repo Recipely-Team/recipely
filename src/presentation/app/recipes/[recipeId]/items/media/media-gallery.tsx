@@ -10,14 +10,7 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, mediaS
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
-
-/** The two controls only the recipe's owner is offered. Only this file names it. */
-interface GalleryOwnerControls {
-  onAdd: () => void;
-  /** Asked about the photo on screen; the screen confirms before anything goes. */
-  onRemove: (mediaId: string) => void;
-  isBusy: boolean;
-}
+import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
 
 export interface MediaGalleryProps {
   media: readonly MediaItem[];
