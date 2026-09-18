@@ -39,6 +39,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),
@@ -63,6 +64,7 @@ const original = (): EditableRecipe => ({
 /** The recipe the assistant would write: same dish, four servings, more garlic. */
 const refinedEntity = (): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r-refined',
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,
@@ -294,6 +296,7 @@ describe('useRefineProposal — what reaches the backend', () => {
 describe('useRefineProposal — an answer with nothing in it', () => {
   it('offers no proposal when the assistant returns the recipe unchanged', async () => {
     const unchanged = RecipeEntity.create({
+    origin: RecipeOrigin.User,
       id: 'r-same',
       name: 'Garlic Pasta',
       cuisine: CuisineKey.Italian,

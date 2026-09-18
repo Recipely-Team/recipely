@@ -7,6 +7,7 @@ import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { toRecipeOrigin } from '@domain/recipes/to-recipe-origin';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -46,6 +47,9 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
     viewCount: dto.viewCount ?? ValueConstants.zero,
+    origin: toRecipeOrigin(dto.origin),
+    ...(dto.sourceUrl !== undefined ? { sourceUrl: dto.sourceUrl } : {}),
+    ...(dto.sourceHandle !== undefined ? { sourceHandle: dto.sourceHandle } : {}),
     moderationStatus: dto.moderationStatus,
     commentCount: dto.commentCount ?? ValueConstants.zero,
   });

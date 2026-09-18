@@ -24,4 +24,6 @@ export interface RecipeListItemDto {
   readonly likedByMe: boolean;
   readonly commentCount: number;
   readonly viewCount: number;
+  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  origin?: string;
 }

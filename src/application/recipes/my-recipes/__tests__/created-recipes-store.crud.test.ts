@@ -1,3 +1,4 @@
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 import { recipePageOf } from "@application/__fixtures__/recipe-page-of";
 import type { CreateRecipeUseCase } from "@application/recipes/create/create-recipe-use-case";
 import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";
@@ -22,6 +23,7 @@ const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {},
 ): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: "r1",
     name: "My Recipe",
     cuisine: CuisineKey.Italian,

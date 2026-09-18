@@ -54,6 +54,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { t } from '@presentation/i18n';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
@@ -169,6 +170,7 @@ const makeRealCommentsStore = (
  */
 const buildRecipe = (likedByMe: boolean): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: RECIPE_ID,
     name: 'Baklava',
     cuisine: 'TURKISH',

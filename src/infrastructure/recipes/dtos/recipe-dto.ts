@@ -29,5 +29,11 @@ export interface RecipeDto {
   createdAt: string;
   updatedAt: string;
   viewCount: number;
+  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  origin?: string;
+  /** The post an import came from. */
+  sourceUrl?: string;
+  /** The account that posted it, without the '@'. */
+  sourceHandle?: string;
   moderationStatus: string;
 }
