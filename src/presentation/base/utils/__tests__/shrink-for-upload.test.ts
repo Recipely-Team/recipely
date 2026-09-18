@@ -15,8 +15,9 @@ jest.mock('expo-image-manipulator', () => ({
   SaveFormat: { JPEG: 'jpeg' },
 }));
 
-import { shrinkForUpload } from '@presentation/app/create-recipe/model/saving/shrink-for-upload';
+import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import {
+  AVATAR_UPLOAD_MAX_EDGE,
   MEDIA_UPLOAD_MAX_EDGE,
   MEDIA_UPLOAD_QUALITY,
 } from '@infrastructure/constants/media-upload';
@@ -78,5 +79,42 @@ describe('shrinkForUpload', () => {
     const uri = await shrinkForUpload({ uri: 'file://odd.tiff', width: 4032, height: 3024 });
 
     expect(uri).toBe('file://odd.tiff');
+  });
+});
+
+/**
+ * An avatar is rendered by the server at 256 square, so the recipe budget sends
+ * bytes nobody ever sees. The bound became a parameter when the profile photo
+ * path started using this at all — it had been uploading the original capture,
+ * which the reverse proxy refused.
+ */
+describe('a caller that needs a smaller picture than a recipe photo', () => {
+  it('resizes to the bound it was given, not the default', async () => {
+    await shrinkForUpload({ uri: 'file://big.jpg', width: 4032, height: 3024 }, AVATAR_UPLOAD_MAX_EDGE);
+
+    expect(actionsFor()[0]?.resize).toEqual({ width: AVATAR_UPLOAD_MAX_EDGE });
+  });
+
+  it('keeps the recipe budget for a caller that names no bound', async () => {
+    await shrinkForUpload({ uri: 'file://big.jpg', width: 4032, height: 3024 });
+
+    expect(actionsFor()[0]?.resize).toEqual({ width: MEDIA_UPLOAD_MAX_EDGE });
+  });
+
+  it('measures the bound against the long edge of a portrait photo too', async () => {
+    await shrinkForUpload({ uri: 'file://tall.jpg', width: 3024, height: 4032 }, AVATAR_UPLOAD_MAX_EDGE);
+
+    expect(actionsFor()[0]?.resize).toEqual({ height: AVATAR_UPLOAD_MAX_EDGE });
+  });
+
+  it('still re-encodes a picture already inside the smaller bound', async () => {
+    await shrinkForUpload({ uri: 'file://tiny.jpg', width: 200, height: 200 }, AVATAR_UPLOAD_MAX_EDGE);
+
+    expect(actionsFor()).toEqual([]);
+    expect(mockManipulate).toHaveBeenCalledWith(
+      'file://tiny.jpg',
+      [],
+      expect.objectContaining({ compress: MEDIA_UPLOAD_QUALITY }),
+    );
   });
 });

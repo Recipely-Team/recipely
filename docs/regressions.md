@@ -2096,3 +2096,31 @@ either mapper alone.
 
 *The class:* **when a value is written by one mapper and read by another, test the round
 trip.** A pair of unit tests can both pass over a field that never survives the journey.
+
+## One upload path learned the lesson; the one beside it never heard about it
+
+A profile photo over 1 MB was refused, for a picture the server renders at 256 square.
+
+The picker hands back the ORIGINAL capture — several megabytes at 4000px on a recent
+phone — and `useAvatarUpload` sent it untouched. The recipe media picker has shrunk its
+photos since the day the identical upload failed there, and the constants file it added
+even documents the reverse proxy's 1 MB default that does the refusing. None of it
+reached the avatar path, because the shrinker was written inside the create-recipe page
+folder where the only other screen that uploads photos could not see it.
+
+*Guard:* `shrinkForUpload` moved to `base/utils/` (two consumers, per rule 14), takes the
+bound as a parameter — an avatar's budget is not a recipe photo's — and a test drives the
+hook to assert the shrunk URI is what gets uploaded, name and MIME type derived from it
+rather than from the original.
+
+*The class:* **a fix that lives in a page folder is a fix one screen got.** When the same
+bug can arrive through two doors, the repair belongs where both can reach it — and the
+second door is worth opening at the time, because nobody goes looking for it later.
+
+*A second lesson, from the review of that same fix:* the shrink was inserted BEFORE
+`setIsUploading(true)`, because that is where the code that produces the file goes. But a
+re-encode of a 4000px capture is a real pass over the image, so it opened a window with no
+spinner, an enabled button, and a re-entrancy guard (`if (isUploading) return`) that could
+not fire — two taps started two flights and the later upload won the avatar. **A busy flag
+belongs around the work, not around the request.** Making an operation slower moves what
+has to be inside it.

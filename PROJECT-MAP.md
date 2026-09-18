@@ -115,7 +115,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` — small pure helpers _(7)_
+- `utils/` — small pure helpers _(8)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (ads, assistant, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(90)_
 
@@ -150,4 +150,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 69312a4337201f54 -->
+<!-- fingerprint: 47c29e1d0e6d3fe3 -->

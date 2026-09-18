@@ -10,7 +10,7 @@ import { upperCase } from '@presentation/i18n/upper-case';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
-import { shrinkForUpload } from '@presentation/app/create-recipe/model/saving/shrink-for-upload';
+import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 
 export interface MediaPickerProps {
   media: readonly MediaItem[];
