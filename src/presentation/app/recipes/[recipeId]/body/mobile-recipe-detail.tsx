@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { MediaGallery, type MediaGalleryProps } from '@presentation/app/recipes/[recipeId]/items/media/media-gallery';
+import { mobileContentOverlap } from '@presentation/app/recipes/[recipeId]/model/mobile-content-overlap';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
@@ -61,7 +62,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
 
   return (
     <View>
-      <MediaGallery media={media} owner={props.photos} />
+      <MediaGallery media={media} owner={props.photos} contentOverlap={mobileContentOverlap} />
 
       <View style={[styles.content, { backgroundColor: colors.background }]}>
         <RecipeOverview
@@ -107,7 +108,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
 
 const styles = StyleSheet.create({
   content: {
-    marginTop: -spacing.xxl,
+    marginTop: -mobileContentOverlap,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     paddingHorizontal: spacing.lg,
