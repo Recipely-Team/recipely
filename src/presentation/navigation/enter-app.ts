@@ -1,4 +1,4 @@
-import type { Href, Router } from 'expo-router';
+import type { Href, ImperativeRouter } from 'expo-router';
 
 /**
  * Lands on `href` with the auth flow discarded rather than parked underneath.
@@ -17,7 +17,7 @@ import type { Href, Router } from 'expo-router';
  * (entering straight from the launch redirect), which `dismissAll` treats as
  * an error rather than a no-op.
  */
-export const enterApp = (router: Router, href: Href): void => {
+export const enterApp = (router: ImperativeRouter, href: Href): void => {
   if (router.canDismiss()) router.dismissAll();
   router.replace(href);
 };

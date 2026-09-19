@@ -152,7 +152,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
   },
   backdrop: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
   },
   sheet: {
     borderTopLeftRadius: radii.xl,

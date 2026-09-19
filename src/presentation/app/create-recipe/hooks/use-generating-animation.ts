@@ -7,6 +7,7 @@ import {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
+import type { AnimatedStyle } from 'react-native-reanimated';
 import { AnimationConstants } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
@@ -15,11 +16,11 @@ import type { ViewStyle } from 'react-native';
 /** The three animated layers of the "AI is cooking" showpiece. */
 interface GeneratingAnimationResult {
   /** Orbiting dots — one slow clockwise revolution. */
-  orbitStyle: ViewStyle;
+  orbitStyle: AnimatedStyle<ViewStyle>;
   /** Outer ring — the same revolution, counter-clockwise. */
-  ringStyle: ViewStyle;
+  ringStyle: AnimatedStyle<ViewStyle>;
   /** Centre mark — a gentle breathing pulse. */
-  coreStyle: ViewStyle;
+  coreStyle: AnimatedStyle<ViewStyle>;
 }
 
 /** One full revolution, in degrees. */
