@@ -29,6 +29,10 @@ const { withDangerousMod, withInfoPlist, withXcodeProject } = require('@expo/con
  *   Run this one first and Firebase finds no anchor, logs a warning nobody
  *   reads, and never initialises — Auth, Analytics and Crashlytics all
  *   silently dead in a build that compiles green.
+ * - **Delete this on SDK 58.** The SDK 58 template adopts the scene delegate
+ *   itself, at which point every edit below is a no-op — which the tests cover,
+ *   but green tests against a plugin that does nothing will not tell anyone to
+ *   remove it.
  * - **It throws rather than skipping.** A no-op here is a black screen on the
  *   only OS this exists for, and the config would still look right. Config is
  *   not the artifact, so each edit is asserted against the text it produced.
@@ -38,6 +42,9 @@ const SCENE_DELEGATE_CLASS = '$(PRODUCT_MODULE_NAME).SceneDelegate';
 const SCENE_CONFIGURATION_NAME = 'Default Configuration';
 const APPLICATION_SESSION_ROLE = 'UIWindowSceneSessionRoleApplication';
 const FACTORY_PROVIDER_PROTOCOL = 'ExpoReactNativeFactoryProvider';
+const START_REACT_NATIVE = 'factory.startReactNative(';
+const FIREBASE_INIT = 'FirebaseApp.configure()';
+const APPLICATION_PRODUCT_TYPE = 'com.apple.product-type.application';
 
 const SCENE_DELEGATE_SOURCE = `internal import Expo
 
@@ -52,6 +59,10 @@ class SceneDelegate: ExpoAppSceneDelegate {
 }
 `;
 
+/** Whether the Firebase plugin that anchors on the removed call is installed. */
+const hasFirebaseApp = (projectRoot) =>
+  fs.existsSync(path.join(projectRoot, 'node_modules', '@react-native-firebase', 'app'));
+
 /** Drops the `factory.startReactNative(...)` call, however many lines it spans. */
 const removeStartReactNative = (lines) => {
   const start = lines.findIndex((line) => line.includes('factory.startReactNative('));
@@ -64,9 +75,37 @@ const removeStartReactNative = (lines) => {
   return [...lines.slice(0, start), ...lines.slice(end + 1)];
 };
 
-const rewriteAppDelegate = (source) => {
-  // Already rewritten — a prebuild without --clean runs over its own output.
-  if (source.includes(FACTORY_PROVIDER_PROTOCOL)) return source;
+const rewriteAppDelegate = (source, { expectsFirebase }) => {
+  // Already rewritten — a prebuild without --clean runs over its own output,
+  // and SDK 58's template arrives in this shape to begin with. The window work
+  // has to be gone too: a template that conforms AND still starts React Native
+  // into its own window is a black screen this would otherwise wave through.
+  if (source.includes(FACTORY_PROVIDER_PROTOCOL)) {
+    if (source.includes(START_REACT_NATIVE)) {
+      throw new Error(
+        'withIosSceneDelegate: AppDelegate.swift declares ' +
+          `${FACTORY_PROVIDER_PROTOCOL} but still calls ${START_REACT_NATIVE} into its own ` +
+          'window. That combination launches to a black screen on iOS 27 — re-derive this ' +
+          'plugin against the template rather than letting it skip.',
+      );
+    }
+    return source;
+  }
+
+  // This plugin runs LAST so that @react-native-firebase/app has already
+  // anchored its call on `factory.startReactNative(` — the line removed below.
+  // Reaching here with the anchor still present and the Firebase call absent
+  // means the order in app.json has been changed and Firebase has ALREADY
+  // skipped itself, silently, leaving Auth, Analytics and Crashlytics dead in
+  // a build that otherwise succeeds. check:structure rule AH guards the order;
+  // this catches it at prebuild, including in CI.
+  if (expectsFirebase && !source.includes(FIREBASE_INIT)) {
+    throw new Error(
+      `withIosSceneDelegate: @react-native-firebase/app is installed but ${FIREBASE_INIT} is ` +
+        'not in AppDelegate.swift. This plugin must run AFTER it — that means being registered ' +
+        'FIRST in app.json, because expo runs the last plugin first.',
+    );
+  }
 
   const declaration = 'class AppDelegate: ExpoAppDelegate {';
   if (!source.includes(declaration)) {
@@ -93,6 +132,19 @@ const rewriteAppDelegate = (source) => {
   }
 
   const withoutStart = removeStartReactNative(withoutWindow);
+  if (withoutStart !== null) {
+    const result = withoutStart.join('\n');
+    // A mis-scan that stopped at the wrong `)` would swallow `#endif` and the
+    // `return super.application(...)` under it and still look like a file.
+    if (result.includes('withModuleName:') || !result.includes('return super.application')) {
+      throw new Error(
+        'withIosSceneDelegate: removing factory.startReactNative(...) took the wrong lines with ' +
+          'it — the call spans a shape this plugin does not understand. Re-derive it against ' +
+          'the template.',
+      );
+    }
+    return result;
+  }
   if (withoutStart === null) {
     throw new Error(
       'withIosSceneDelegate: could not find a complete factory.startReactNative(...) call ' +
@@ -100,8 +152,6 @@ const rewriteAppDelegate = (source) => {
         'also just lost its anchor — check the plugin order in app.json.',
     );
   }
-
-  return withoutStart.join('\n');
 };
 
 const withSceneDelegateSource = (config) =>
@@ -113,7 +163,9 @@ const withSceneDelegateSource = (config) =>
       fs.writeFileSync(path.join(targetDir, SCENE_DELEGATE_FILENAME), SCENE_DELEGATE_SOURCE);
 
       const appDelegatePath = path.join(targetDir, 'AppDelegate.swift');
-      const rewritten = rewriteAppDelegate(fs.readFileSync(appDelegatePath, 'utf8'));
+      const rewritten = rewriteAppDelegate(fs.readFileSync(appDelegatePath, 'utf8'), {
+        expectsFirebase: hasFirebaseApp(mod.modRequest.projectRoot),
+      });
       fs.writeFileSync(appDelegatePath, rewritten);
 
       return mod;
@@ -129,7 +181,24 @@ const withSceneDelegateInProject = (config) =>
     if (project.hasFile(relative)) return mod;
 
     const groupKey = project.findPBXGroupKey({ name: mod.modRequest.projectName });
-    project.addSourceFile(relative, { target: project.getFirstTarget().uuid }, groupKey);
+    if (groupKey === undefined || groupKey === null) {
+      throw new Error(
+        `withIosSceneDelegate: no Xcode group named "${mod.modRequest.projectName}" to put ` +
+          `${SCENE_DELEGATE_FILENAME} in.`,
+      );
+    }
+
+    // BY PRODUCT TYPE, not `getFirstTarget()`. expo-share-intent adds a second
+    // native target, and the order of the two is decided by its mod rather than
+    // by this one. Compiled into the extension instead of the app, the class
+    // named in the scene manifest does not exist at launch — a black screen
+    // again, from a build with no error in it.
+    const target = project.getTarget(APPLICATION_PRODUCT_TYPE);
+    if (target === undefined || target === null) {
+      throw new Error('withIosSceneDelegate: the project has no application target.');
+    }
+
+    project.addSourceFile(relative, { target: target.uuid }, groupKey);
     return mod;
   });
 
