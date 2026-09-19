@@ -1,6 +1,6 @@
 import { act } from 'react-test-renderer';
-import { NavigationContext } from '@react-navigation/native';
-import type { NavigationProp, ParamListBase } from '@react-navigation/native';
+import { NavigationContext } from 'expo-router/react-navigation';
+import type { NavigationProp, ParamListBase } from 'expo-router/react-navigation';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
