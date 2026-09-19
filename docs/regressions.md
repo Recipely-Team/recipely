@@ -2155,3 +2155,30 @@ in React Native 0.86, runtime included. Eight overlays would have read `undefine
 silently lost their fill — no crash, no warning, just layout that is wrong. `tsc` is what
 caught it, which is the argument for running the type gate against a dependency bump
 rather than only against hand-written changes.
+
+---
+
+## The owner's photo controls were drawn where nobody could press them
+
+*Symptom:* "webde fotoğraf ekleme butonu yok mobilde de gözükmüyor" — on the web the owner of a
+recipe could only delete it, and on the phone neither photo control was visible.
+
+*Root cause:* two different faults behind one report. On the web the controls genuinely did not
+exist: adding and removing live in `MediaGallery`, which only the mobile layout renders, and the
+web detail draws its own hero. On mobile both were rendered and both were unreachable —
+`MobileRecipeDetail` pulls its content card up over the hero by `spacing.xxl` (32) and that card
+is a LATER SIBLING, so it paints and hit-tests above it; the add button at `bottom: 12` standing
+32 tall had twenty of its points buried and its centred icon with them. The remove button was
+pinned to `top: 12` of a hero that runs edge to edge under the status bar, in the corner
+`RecipeFloatingActions` already occupies.
+
+*What now prevents a recurrence:* `media-gallery.owner-controls.test.tsx` asserts the cluster's
+offset clears the overlap AND tracks it, and `mobileContentOverlap` is one constant the card's
+margin and the controls' offset both spend.
+
+*The class:* **rendered is not reachable, and a presence test cannot tell the difference.** A test
+asking "is the button in the tree?" passed for the entire life of this bug. When a screen stacks
+siblings with a negative margin, the overlap is a real layout fact that has to be a named value
+both sides read — written twice it drifts, and the drift is invisible because the thing on top is
+opaque. Anything interactive inside that band is not merely hard to see; the press lands on the
+wrong view.

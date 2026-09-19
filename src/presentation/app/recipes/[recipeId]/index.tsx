@@ -54,6 +54,16 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // it is their own picture, but it may also be the only one the recipe has.
   const photos = useRecipePhotoUpload(vm.recipeId);
   const [photoPendingRemoval, setPhotoPendingRemoval] = useState<string | null>(null);
+  // Built once and handed to whichever layout renders. It used to be written
+  // out at each call site, and the web one was simply never written — the
+  // owner had no way to add a photo on that surface at all.
+  const ownerPhotoControls = vm.isOwner
+    ? {
+        onAdd: () => void photos.pickAndAdd(),
+        onRemove: setPhotoPendingRemoval,
+        isBusy: photos.isBusy,
+      }
+    : undefined;
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
@@ -165,6 +175,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onToggleSave={vm.onToggleSave}
                   onCopyToDraft={vm.onCopyToDraft}
                   onDelete={vm.onOpenDelete}
+                  photos={ownerPhotoControls}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}
                   completedSteps={vm.completedSteps}
@@ -206,15 +217,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onLoadMoreComments={vm.onLoadMoreComments}
                   onToggleCommentLike={vm.onToggleCommentLike}
                   onDeleteComment={vm.onDeleteComment}
-                  photos={
-                    vm.isOwner
-                      ? {
-                          onAdd: () => void photos.pickAndAdd(),
-                          onRemove: setPhotoPendingRemoval,
-                          isBusy: photos.isBusy,
-                        }
-                      : undefined
-                  }
+                  photos={ownerPhotoControls}
                   commentHighlight={commentHighlight}
                 />
               )

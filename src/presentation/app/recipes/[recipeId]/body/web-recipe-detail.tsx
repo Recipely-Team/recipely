@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-sidebar';
@@ -12,12 +11,14 @@ import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recip
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, mediaSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, iconSizes, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
+import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
+import { WebRecipeDetailHero } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-hero';
 
 /**
  * Weight of the reading column against the side column beside it.
@@ -32,6 +33,12 @@ export interface WebRecipeDetailProps {
   recipe: RecipeEntity;
   media: readonly MediaItem[];
   isOwner: boolean;
+  /**
+   * The owner's photo controls, when the viewer is the owner. Named the same as
+   * the mobile layout's, because it is the same thing handed to a second
+   * surface — `index.tsx` passes one object to whichever layout renders.
+   */
+  photos?: GalleryOwnerControls;
   authorState: RecipeAuthorState;
   liked: boolean;
   likeCount: number;
@@ -60,7 +67,6 @@ export interface WebRecipeDetailProps {
   commentHighlight: UseCommentHighlightResult;
 }
 
-const HERO_ASPECT = 16 / 10;
 
 // react-native-web honours CSS `position: sticky`, which RN's ViewStyle type
 // omits. This component only renders on the web shell, so widen the value
@@ -82,7 +88,6 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
   const [activeImage, setActiveImage] = useState(ValueConstants.zero);
   const { recipe, media } = props;
   const twoColumn = width >= layoutSizes.webDetailTwoColMin;
-  const activeUrl = media[activeImage]?.url ?? recipe.image;
 
   return (
     <View style={styles.page}>
@@ -114,34 +119,13 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
 
       <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>
         <View style={styles.mainColumn}>
-          <View style={[styles.hero, { borderColor: colors.cardBorder }]}>
-            <RecipeImage
-              uri={activeUrl}
-              style={styles.heroImage}
-              accessibilityLabel={recipe.name}
-              placeholderLabel={t().recipes.noPhoto}
-            />
-          </View>
-
-          {media.length > ValueConstants.one ? (
-            <View style={styles.thumbStrip}>
-              {media.map((item, i) => (
-                <Pressable
-                  key={`${item.url}:${String(i)}`}
-                  onPress={() => setActiveImage(i)}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${recipe.name} ${String(i + ValueConstants.one)}`}
-                  style={[
-                    styles.thumb,
-                    { borderColor: i === activeImage ? colors.primary : colors.cardBorder },
-                    i === activeImage ? styles.thumbActive : null,
-                  ]}
-                >
-                  <RecipeImage uri={item.url} style={styles.thumbImage} placeholderCompact />
-                </Pressable>
-              ))}
-            </View>
-          ) : null}
+          <WebRecipeDetailHero
+            recipe={recipe}
+            media={media}
+            activeImage={activeImage}
+            onSelectImage={setActiveImage}
+            {...(props.photos !== undefined ? { photos: props.photos } : {})}
+          />
 
           <View style={styles.section}>
             <ThemedText style={[styles.heading, { color: colors.text }]}>
@@ -222,37 +206,6 @@ const styles = StyleSheet.create({
   sideColumn: {
     flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
-  },
-  hero: {
-    aspectRatio: HERO_ASPECT,
-    borderRadius: radii.xl,
-    borderWidth: borderWidths.hairline,
-    overflow: 'hidden',
-  },
-  heroImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  thumbStrip: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  thumb: {
-    width: mediaSizes.webDetailThumbWidth,
-    height: mediaSizes.webDetailThumbHeight,
-    borderRadius: radii.md,
-    borderWidth: borderWidths.hairline,
-    overflow: 'hidden',
-  },
-  thumbActive: {
-    borderWidth: borderWidths.medium,
-  },
-  thumbImage: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
   },
   section: {
     gap: spacing.md,

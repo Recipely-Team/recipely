@@ -10,19 +10,21 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, mediaS
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
-
-/** The two controls only the recipe's owner is offered. Only this file names it. */
-interface GalleryOwnerControls {
-  onAdd: () => void;
-  /** Asked about the photo on screen; the screen confirms before anything goes. */
-  onRemove: (mediaId: string) => void;
-  isBusy: boolean;
-}
+import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
 
 export interface MediaGalleryProps {
   media: readonly MediaItem[];
   /** Pins the gallery height; by default it follows the measured width's ratio. */
   height?: number;
+  /**
+   * How much of the gallery's bottom edge the screen draws something else over.
+   *
+   * The mobile layout pulls its content card up across the hero, and that card
+   * is a later sibling — it paints and hit-tests above this. The owner controls
+   * sit above whatever it covers; everything else may stay under it, because
+   * nothing else down there is pressable.
+   */
+  contentOverlap?: number;
   /**
    * Present only for the owner.
    *
@@ -41,7 +43,12 @@ export interface MediaGalleryProps {
  * being cropped by a window-wide slide. On web, where the FlatList cannot be swiped
  * with a mouse, prev/next arrows scroll to the adjacent slide.
  */
-export const MediaGallery = ({ media, height, owner }: MediaGalleryProps): React.JSX.Element => {
+export const MediaGallery = ({
+  media,
+  height,
+  owner,
+  contentOverlap = ValueConstants.zero,
+}: MediaGalleryProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [active, setActive] = useState(ValueConstants.zero);
   const [width, setWidth] = useState(() => Dimensions.get('window').width);
@@ -107,30 +114,38 @@ export const MediaGallery = ({ media, height, owner }: MediaGalleryProps): React
         scrollEventThrottle={scrollThrottleMs.perFrame}
       />
 
+      {/* Both owner controls in one cluster, lifted clear of the content card.
+          Apart, each landed somewhere the user could not reach it: `add` under
+          that card, and `remove` in the top-right corner, which on a phone is
+          both behind the status bar and already occupied by the share / like /
+          save cluster. Together they are also what they are — a pair, offered
+          to one person. */}
       {owner !== undefined ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.addPhoto}
-          disabled={owner.isBusy}
-          onPress={owner.onAdd}
-          style={[styles.ownerButton, styles.addButton, { backgroundColor: colors.overlay }]}
-        >
-          <Ionicons name="camera" size={iconSizes.lg} color={colors.onOverlay} />
-        </Pressable>
-      ) : null}
+        <View style={[styles.ownerControls, { bottom: contentOverlap + spacing.md }]}>
+          {/* Only a photo that HAS a row can be removed — a picture still on
+              the device has nothing on the server to take down. */}
+          {activeMediaId !== undefined ? (
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={t().recipes.removePhoto}
+              disabled={owner.isBusy}
+              onPress={() => owner.onRemove(activeMediaId)}
+              style={[styles.ownerButton, { backgroundColor: colors.overlay }]}
+            >
+              <Ionicons name="trash-outline" size={iconSizes.lg} color={colors.onOverlay} />
+            </Pressable>
+          ) : null}
 
-      {/* Only a photo that HAS a row can be removed — a picture still on the
-          device has nothing on the server to take down. */}
-      {owner !== undefined && activeMediaId !== undefined ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t().recipes.removePhoto}
-          disabled={owner.isBusy}
-          onPress={() => owner.onRemove(activeMediaId)}
-          style={[styles.ownerButton, styles.removeButton, { backgroundColor: colors.overlay }]}
-        >
-          <Ionicons name="trash-outline" size={iconSizes.lg} color={colors.onOverlay} />
-        </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t().recipes.addPhoto}
+            disabled={owner.isBusy}
+            onPress={owner.onAdd}
+            style={[styles.ownerButton, { backgroundColor: colors.overlay }]}
+          >
+            <Ionicons name="camera" size={iconSizes.lg} color={colors.onOverlay} />
+          </Pressable>
+        </View>
       ) : null}
 
       {showArrows && active > ValueConstants.zero ? (
@@ -189,17 +204,21 @@ export const MediaGallery = ({ media, height, owner }: MediaGalleryProps): React
 };
 
 const styles = StyleSheet.create({
+  // `bottom` is set inline: it follows whatever the screen draws over the hero.
+  ownerControls: {
+    position: 'absolute',
+    right: spacing.md,
+    flexDirection: 'row',
+    gap: spacing.sm,
+  },
   // Pinned: circles, not text boxes.
   ownerButton: {
-    position: 'absolute',
     width: controlSizes.iconBtnSm,
     height: controlSizes.iconBtnSm,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  addButton: { right: spacing.md, bottom: spacing.md },
-  removeButton: { right: spacing.md, top: spacing.md },
   arrow: {
     position: 'absolute',
     top: '50%',
