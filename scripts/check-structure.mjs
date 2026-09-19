@@ -383,6 +383,28 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       return Array.isArray(entry) ? (entry[1] ?? {}) : {};
     };
 
+    // Rule AH — `withIosSceneDelegate` must be the FIRST plugin, because expo
+    // runs the LAST one first and this one has to run LAST.
+    //
+    // It removes the `factory.startReactNative(` call from AppDelegate.swift,
+    // and that call is the anchor `@react-native-firebase/app` inserts
+    // `FirebaseApp.configure()` above. Run it any earlier and Firebase finds no
+    // anchor, calls `WarningAggregator.addWarningIOS(... 'Skipping Firebase
+    // addition.')`, and returns the file unchanged — so the app ships with
+    // Auth, Analytics and Crashlytics silently dead, through a green lint,
+    // tsc, jest and check:structure and a build that succeeds.
+    //
+    // The plugin throws when the template stops matching it, but it cannot see
+    // THIS failure: from where it stands the AppDelegate looks exactly right.
+    // Ordering is decided in app.json, so app.json is where it is checked.
+    const SCENE_DELEGATE_PLUGIN = './plugins/withIosSceneDelegate';
+    const pluginNames = plugins.map((p) => (Array.isArray(p) ? p[0] : p));
+    if (pluginNames.includes(SCENE_DELEGATE_PLUGIN) && pluginNames[0] !== SCENE_DELEGATE_PLUGIN) {
+      errors.push(
+        `app.json: "${SCENE_DELEGATE_PLUGIN}" must be the FIRST plugin so it runs LAST — it removes the factory.startReactNative( call that @react-native-firebase/app anchors FirebaseApp.configure() on, and Firebase skips silently when the anchor is gone (CLAUDE.md rule 24)`,
+      );
+    }
+
     const audio = optionsFor('expo-audio');
     if (audio !== null && audio.enableBackgroundPlayback !== false) {
       errors.push(

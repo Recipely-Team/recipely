@@ -26,6 +26,13 @@ const mockAppStateListeners: ((next: string) => void)[] = [];
 const mockAppState = { current: 'active' };
 
 jest.mock('react-native', () => ({
+  // `Platform` is not what this test is about, but jest-expo's SDK 57 setup
+  // loads expo-modules-core eagerly and that reads `Platform.select` at module
+  // scope. A mock without it makes the suite fail to load, not fail a test.
+  Platform: {
+    OS: 'ios',
+    select: (specifics: Record<string, unknown>) => specifics.ios ?? specifics.default,
+  },
   AppState: {
     get currentState() {
       return mockAppState.current;

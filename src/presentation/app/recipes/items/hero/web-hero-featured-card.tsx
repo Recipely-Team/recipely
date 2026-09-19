@@ -125,7 +125,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },
-  openOverlay: StyleSheet.absoluteFillObject,
+  openOverlay: StyleSheet.absoluteFill,
   pressed: {
     opacity: opacities.onMediaFaint,
   },

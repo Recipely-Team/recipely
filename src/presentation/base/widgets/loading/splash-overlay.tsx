@@ -86,7 +86,7 @@ export const SplashOverlay = (): React.JSX.Element | null => {
 
 const styles = StyleSheet.create({
   root: {
-    ...StyleSheet.absoluteFillObject,
+    ...StyleSheet.absoluteFill,
     zIndex: zIndices.splash,
   },
   fill: {

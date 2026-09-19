@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
-import { ThemeProvider } from '@react-navigation/native';
-import { Stack, usePathname } from 'expo-router';
+import { Stack, ThemeProvider, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, View } from 'react-native';
 import { ShareIntentProvider } from 'expo-share-intent';

@@ -2124,3 +2124,34 @@ spinner, an enabled button, and a re-entrancy guard (`if (isUploading) return`) 
 not fire — two taps started two flights and the later upload won the avatar. **A busy flag
 belongs around the work, not around the request.** Making an operation slower moves what
 has to be inside it.
+
+---
+
+## The app launched to a black screen on iOS 27
+
+*Symptom:* on the iPhone Duo (iOS 27.1) the app started, the process stayed alive, and the
+screen stayed black. On iOS 26.4 the same build was fine.
+
+*Root cause:* iOS 27 requires the scene life cycle. Declaring a complete
+`UIApplicationSceneManifest` stopped the launch assertion and changed nothing visible,
+because `AppDelegate` still created the `UIWindow` in `didFinishLaunchingWithOptions` and
+started React Native into it — a window UIKit never presents once the app is scene-based.
+Expo 57 ships the missing half (`ExpoAppSceneDelegate`), but its SDK 57 prebuild template
+still generates the app-life-cycle delegate; the template only adopts the scene delegate in
+SDK 58. `plugins/withIosSceneDelegate.js` applies the SDK 58 wiring to the SDK 57 template.
+
+*What now prevents a recurrence:* `plugins/__tests__/withIosSceneDelegate.test.js`, and the
+plugin throwing instead of skipping when the template stops matching.
+
+*The class:* **a process that is alive is not a screen that is drawn, and a config that
+reads right is not an artifact that works.** Two of the three parts of this fix produce no
+error on their own — the manifest without the delegate boots to black, the delegate without
+the manifest is never asked for — so only the running app is evidence. This is the same
+lesson as the `UIBackgroundModes` rejection (rule 23c): check the artifact, and where the
+artifact is a screen, look at the screen.
+
+*A second lesson, from the same upgrade:* `StyleSheet.absoluteFillObject` was **removed**
+in React Native 0.86, runtime included. Eight overlays would have read `undefined` and
+silently lost their fill — no crash, no warning, just layout that is wrong. `tsc` is what
+caught it, which is the argument for running the type gate against a dependency bump
+rather than only against hand-written changes.
