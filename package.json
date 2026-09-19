@@ -88,7 +88,7 @@
     "@react-native/jest-preset": "^0.86.3",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.2.10",
-    "@types/react-dom": "^19.2.7",
+    "@types/react-dom": "~19.2.7",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~57.0.2",
     "husky": "^9.1.7",
