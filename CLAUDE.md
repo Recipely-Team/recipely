@@ -36,7 +36,8 @@ Every agent spawn starts cold and re-derives context; that is the expensive path
 4. **`code-reviewer`: one pass, diff-scoped.** Point it at `git diff dev...HEAD` at the
    end; still blocking, but never multiple review rounds for style nits the gates catch.
 5. **`ui-designer` only for a genuinely new visual surface**, not for reusing existing
-   widgets/specs.
+   widgets/specs. A new surface goes through Claude Design first either way (rule 28) —
+   that step is not the thing token economy is trying to save.
 6. **No polling, no repetition.** Background agents notify on completion; don't re-ask,
    re-list, or re-read what is already in context.
 
@@ -47,12 +48,12 @@ Every agent spawn starts cold and re-derives context; that is the expensive path
 | **ts-developer** | `domain` / `application` / `infrastructure` / `core` — entities, value objects, use cases, repositories, DTOs, mappers, DI, types. |
 | **rn-developer** | `src/presentation/` UI — screens, widgets, expo-router routes, themed components, hooks. |
 | **test-developer** | Jest + jest-expo tests for every new use case, repository, mapper, store, value object. |
-| **ui-designer** | Research + `src/presentation/design-spec.md` (no production code). |
+| **ui-designer** | Design in **Claude Design** first (see rule 28), then the written spec in `src/presentation/design-spec.md` (no production code). |
 | **code-reviewer** | Read-only DDD / Clean Architecture / TS-strictness audit before merge. Blocks on any violation. |
 
 ### Pipelines
 
-- **Feature** → (`ui-designer` first if it has a visual surface) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer`
+- **Feature** → (**Claude Design** then `ui-designer` if it has a visual surface — rule 28) → `ts-developer` and/or `rn-developer` → `test-developer` → `code-reviewer` → check the built screen back against the prototype
 - **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test
   → guard + [`docs/regressions.md`](docs/regressions.md) row, per **rule 24**) → `code-reviewer`
 
@@ -591,6 +592,43 @@ blocking.
     `packages/` directory that reappears here: no `@layer/*` import, no relative
     path out of its own folder, no file naming Recipely. It is inert while there
     is none, which is the intended state.
+
+28. **Design happens in Claude Design first, and is checked back against it after** —
+    the prototype is the visual source of truth, not a document about it.
+
+    **The prototype:** [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html).
+    It carries the real screens (Onboarding, Login, Register, Reset, Recipes,
+    Detail, My Recipes, Create (AI + Manual), Profile, Notifs, Settings, IG paste
+    link, IG importing, Alarm, Search), and its TWEAKS panel switches platform
+    (Auto / Mobil / Web), mode (System / Light / Dark), language (English /
+    Türkçe) and the four theme palettes — so a design is reviewed in every
+    combination it will actually ship in, before a line of it is written.
+
+    Three steps, in this order, for anything with a visual surface — a new
+    screen, a new widget, a badge, a state nobody has drawn yet:
+
+    1. **Draw it in the prototype.** Not a description of it, not a token table:
+       the thing itself, on the screen it belongs to, in the prototype.
+    2. **Then write it down.** `src/presentation/design-spec.md` records the
+       tokens, the contrast measurements and the reasoning, so an implementer
+       does not have to re-derive them from pixels. The spec explains the
+       prototype; it does not replace it.
+    3. **Then build, and go back and compare.** Open the same screen in the
+       prototype beside the built one and check them against each other. "Tests
+       pass" is not the same claim as "it looks like the design."
+
+    **A written spec is not a design.** The provenance badge was specced into
+    `design-spec.md` and implemented from there without the prototype ever being
+    opened — a token table dressed up as a design decision. It may even have been
+    a good badge; it was not the designed one, and nobody could tell by looking at
+    the repo. If the prototype link is dead or missing, that is a reason to STOP
+    and ask for it, not a reason to substitute something else and call it the
+    design.
+
+    This is the mechanical half of a standing instruction that predates it —
+    *"designdan tasarımı al, kafana göre saçma tasarım yapma."* Inventing
+    measurements at the call site is the same fault whether it happens in a
+    component or in a markdown file.
 
 ### Pre-commit quality gate
 
