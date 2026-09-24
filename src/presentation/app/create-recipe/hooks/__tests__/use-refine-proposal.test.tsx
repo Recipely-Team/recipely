@@ -87,6 +87,8 @@ const refinedEntity = (): RecipeEntity => {
     viewCount: 0,
     moderationStatus: 'approved',
     commentCount: 0,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeEntity fixture');
   return result.value;
@@ -319,6 +321,8 @@ describe('useRefineProposal — an answer with nothing in it', () => {
       viewCount: 0,
       moderationStatus: 'approved',
       commentCount: 0,
+          sourcePlatform: null,
+      aiWritten: false,
     });
     if (!unchanged.ok) throw new Error('fixture');
     const repo = new FakeRecipeRepository({

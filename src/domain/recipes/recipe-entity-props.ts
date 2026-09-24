@@ -2,6 +2,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/source-platform';
 
 export interface RecipeEntityProps {
   id: string;
@@ -34,6 +35,10 @@ export interface RecipeEntityProps {
   sourceUrl?: string;
   /** The account that posted it, without the '@'. */
   sourceHandle?: string;
+  /** Which platform an import came from; `null` when nothing was imported. */
+  sourcePlatform: SourcePlatformType | null;
+  /** Whether a model produced the text — true for a generation AND an import. */
+  aiWritten: boolean;
   moderationStatus: string;
   commentCount: number;
 }

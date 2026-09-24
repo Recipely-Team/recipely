@@ -47,6 +47,8 @@ const makeRecipe = (
     moderationStatus: "approved",
     commentCount: 0,
     ...overrides,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error("failed to build Recipe fixture");
   return result.value;
@@ -71,6 +73,8 @@ const makeSummary = (
     viewCount: 0,
     ...overrides,
       origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok)
     throw new Error("failed to build RecipeSummaryEntity fixture");

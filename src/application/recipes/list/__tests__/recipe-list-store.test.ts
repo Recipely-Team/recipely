@@ -31,6 +31,8 @@ const makeRecipe = (
     viewCount: 0,
     ...overrides,
       origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

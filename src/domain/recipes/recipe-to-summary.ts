@@ -30,5 +30,7 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     // the badge appear only after a refresh — present on the server, absent on
     // the one screen that just created it.
     origin: recipe.origin,
+    sourcePlatform: recipe.sourcePlatform,
+    aiWritten: recipe.aiWritten,
   });
 };

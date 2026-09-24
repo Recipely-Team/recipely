@@ -6,6 +6,8 @@ import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const validProps = {
   origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
   id: 'r1',
   name: 'Margherita Pizza',
   cuisine: CuisineKey.Italian,

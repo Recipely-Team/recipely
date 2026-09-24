@@ -81,3 +81,44 @@ describe('toRecipe — where the recipe came from', () => {
     expect(entity.sourceHandle).toBeUndefined();
   });
 });
+
+/**
+ * The two-fact model, at the boundary.
+ *
+ * `origin` alone had to choose between "a model wrote it" and "it came from
+ * Instagram", and an import is both — the model is what turns a video into a
+ * recipe. These pin the wire's half of that.
+ */
+describe('a recipe carries its platform and its authorship separately', () => {
+  it('reads an import as a platform AND a model', () => {
+    const entity = mapped({ origin: 'IMPORT', sourcePlatform: 'TIKTOK', aiWritten: true });
+
+    expect(entity.sourcePlatform).toBe('TIKTOK');
+    expect(entity.aiWritten).toBe(true);
+  });
+
+  // A server that predates the columns sends neither. An import is still a
+  // model's work, so `origin` answers rather than letting the row read as
+  // something a person typed out.
+  it('infers authorship from origin when the server is older than the field', () => {
+    const entity = mapped({ origin: 'IMPORT' });
+
+    expect(entity.aiWritten).toBe(true);
+    expect(entity.sourcePlatform).toBeNull();
+  });
+
+  it('claims neither for a recipe somebody typed', () => {
+    const entity = mapped({ origin: 'USER' });
+
+    expect(entity.aiWritten).toBe(false);
+    expect(entity.sourcePlatform).toBeNull();
+  });
+
+  // A platform this build has no word for must not become a mark it cannot draw.
+  it('degrades an unknown platform to none, keeping the import itself', () => {
+    const entity = mapped({ origin: 'IMPORT', sourcePlatform: 'THREADS', aiWritten: true });
+
+    expect(entity.sourcePlatform).toBeNull();
+    expect(entity.origin).toBe(RecipeOrigin.Import);
+  });
+});

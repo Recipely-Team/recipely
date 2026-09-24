@@ -63,6 +63,8 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
     commentCount: 0,
     viewCount: 0,
       origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('fixture summary invalid');
   return result.value;

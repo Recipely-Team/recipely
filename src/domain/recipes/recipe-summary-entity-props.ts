@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/source-platform';
 
 export interface RecipeSummaryEntityProps {
   id: string;
@@ -27,4 +28,8 @@ export interface RecipeSummaryEntityProps {
    * promise the feed cannot keep.
    */
   origin: RecipeOriginType;
+  /** Which platform an import came from; the card draws that platform's mark. */
+  sourcePlatform: SourcePlatformType | null;
+  /** Whether a model produced the text. A card can show both marks at once. */
+  aiWritten: boolean;
 }
