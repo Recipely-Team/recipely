@@ -17,6 +17,7 @@
     "test": "jest",
     "typecheck": "tsc --noEmit",
     "check:structure": "node scripts/check-structure.mjs && node scripts/assert-crawlable-surface.mjs && npm run --silent verify:envelope && npm run --silent verify:spotlight",
+    "check:structure:ci": "node scripts/check-structure.mjs && node scripts/assert-crawlable-surface.mjs",
     "prepare": "husky",
     "release:patch": "npm version patch -m 'chore(release): v%s' && git push --follow-tags",
     "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { Linking, Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';
@@ -14,8 +14,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
-import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
-import { isWeb } from '@infrastructure/constants/platform';
+import { AssistantNoticeBlock } from '@presentation/base/widgets/assistant/parts/assistant-notice-block';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -98,8 +97,6 @@ export const AssistantPanel = ({
       ? t().assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
       : assistantNotice(status, deniedReason);
   const noticeTone = assistantNoticeTone(error !== null, deniedReason);
-  const showsSettingsAction =
-    error === null && deniedReason === AssistantDenialReason.MicrophoneDenied && !isWeb();
 
   const send = (text: string): void => {
     clearError();
@@ -183,51 +180,12 @@ export const AssistantPanel = ({
         </Pressable>
       </View>
 
-      {notice !== null ? (
-        <>
-          {noticeTone === SeverityType.Neutral ? (
-            <View style={[styles.notice, shadows.md, { backgroundColor: colors.cardBackground }]}>
-              <ThemedText variant="caption">{notice}</ThemedText>
-            </View>
-          ) : (
-            // A failure gets the app's own error surface rather than a caption on
-            // a card: on the dark panel the two were indistinguishable, and the
-            // one that mattered was the one nobody saw.
-            <View style={styles.notice}>
-              <FormBanner
-                message={notice}
-                severity={noticeTone}
-                icon={noticeTone === SeverityType.Danger ? 'alert-circle' : 'time-outline'}
-              />
-            </View>
-          )}
-
-          {/* A denied microphone is the one notice the user can still act on,
-              and the only one they CANNOT act on from here. iOS shows its
-              permission prompt exactly once ever: after that
-              `requestRecordingPermissions()` answers "Denied" immediately and
-              draws nothing, so the sentence above was a dead end that reappeared
-              on every press and never asked again. Settings is where the
-              decision now lives, so that is where this goes.
-              Native only — on the web the permission belongs to the browser and
-              `openSettings` has nothing to open. */}
-          {showsSettingsAction ? (
-            <Pressable
-              accessibilityRole="button"
-              accessibilityLabel={t().assistant.openSettings}
-              onPress={() => void Linking.openSettings().catch(() => undefined)}
-              style={({ pressed }) => [
-                styles.settingsAction,
-                { opacity: pressed ? opacities.pressed : opacities.full },
-              ]}
-            >
-              <ThemedText variant="caption" style={{ color: colors.primary }}>
-                {t().assistant.openSettings}
-              </ThemedText>
-            </Pressable>
-          ) : null}
-        </>
-      ) : null}
+      <AssistantNoticeBlock
+        notice={notice}
+        noticeTone={noticeTone}
+        deniedReason={deniedReason}
+        hasError={error !== null}
+      />
 
       <View style={styles.gap} pointerEvents="none" />
 
@@ -255,7 +213,6 @@ export const AssistantPanel = ({
 };
 
 const styles = StyleSheet.create({
-  settingsAction: { alignSelf: 'center', paddingVertical: spacing.xs, paddingHorizontal: spacing.sm },
   // No surface of its own: the conversation floats over the screen it is
   // driving, and only the pieces carrying text take a background.
   overlay: { gap: spacing.sm },
