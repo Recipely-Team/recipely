@@ -954,6 +954,7 @@ export const en = {
     publishConfirm: "Publish",
     requestFailed: "That did not go through. Try again in a moment.",
     micDenied: "Recipely needs the microphone to hear you.",
+    openSettings: 'Open Settings',
     mute: "Mute",
     unmute: "Unmute",
     muted: "Mic muted",

@@ -940,6 +940,7 @@ export const ru = {
     publishConfirm: "Опубликовать",
     requestFailed: "Запрос не прошёл. Повторите чуть позже.",
     micDenied: "Recipely нужен микрофон, чтобы вас слышать.",
+    openSettings: 'Открыть настройки',
     mute: "Выключить микрофон",
     unmute: "Включить микрофон",
     muted: "Микрофон выключен",

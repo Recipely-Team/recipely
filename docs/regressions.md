@@ -2182,3 +2182,29 @@ siblings with a negative margin, the overlap is a real layout fact that has to b
 both sides read — written twice it drifts, and the drift is invisible because the thing on top is
 opaque. Anything interactive inside that band is not merely hard to see; the press lands on the
 wrong view.
+
+---
+
+## The assistant "never asked" for the microphone
+
+*Symptom:* on the live iOS build the assistant did not ask for microphone permission, so voice
+never worked.
+
+*Root cause:* it did ask — once. **iOS presents that prompt exactly one time, ever.** After the
+first answer `AudioManager.requestRecordingPermissions()` returns `Denied` immediately and draws
+no dialog at all. The app turned that into a sentence on the panel — "Recipely needs the
+microphone to hear you." — and nothing else. Every later press repeated the sentence and asked
+nothing, which from the user's side is indistinguishable from an app that never asks. The plist
+key, the request call and the order (`ensureAccess` runs before any network work) were all
+correct; what was missing was the way out.
+
+*What now prevents a recurrence:* `assistant-panel.microphone-denied.test.tsx` — the denied
+notice offers Settings, and only for that reason.
+
+*The class:* **a permission the OS will only ask about once needs an answer for the second time
+the user asks.** Any one-shot system grant — microphone, camera, notifications, photos — has two
+states worth designing for, not one: not yet asked (the prompt does the work) and already
+refused (the prompt is gone and the only remaining door is Settings). A screen that states the
+requirement without offering that door is a dead end that looks like a bug in the request, and
+it sends everyone hunting the wrong layer — the plist, the native module, the call order — none
+of which is broken.

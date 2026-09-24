@@ -936,6 +936,7 @@ export const hi: Translations = {
     publishConfirm: "प्रकाशित करें",
     requestFailed: "यह अनुरोध नहीं पहुँचा। थोड़ी देर बाद फिर कोशिश करें।",
     micDenied: "आपको सुनने के लिए Recipely को माइक्रोफ़ोन चाहिए।",
+    openSettings: 'सेटिंग्स खोलें',
     mute: "माइक बंद करें",
     unmute: "माइक चालू करें",
     muted: "माइक बंद है",
