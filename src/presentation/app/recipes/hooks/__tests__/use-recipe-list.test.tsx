@@ -53,7 +53,7 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),

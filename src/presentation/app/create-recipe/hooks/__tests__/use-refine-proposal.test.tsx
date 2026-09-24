@@ -39,7 +39,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),

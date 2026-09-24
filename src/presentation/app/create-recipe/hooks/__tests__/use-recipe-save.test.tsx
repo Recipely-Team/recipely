@@ -51,7 +51,7 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { en } from '@presentation/i18n/locales/en';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 

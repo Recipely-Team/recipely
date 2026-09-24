@@ -25,8 +25,9 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { formatRating } from '@presentation/base/utils/format-rating';
-import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
-import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -98,10 +99,19 @@ export const WebRecipeCard = ({
               accessibilityLabel={recipe.name}
               placeholderLabel={t().recipes.noPhoto}
             />
-            <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
-              <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
-                {cuisineLabel(recipe.cuisine).name}
-              </ThemedText>
+            {/* Top-left here: the save bookmark holds the top-right, so the
+                seal shares the cuisine tag's corner instead. */}
+            <View style={styles.topLeft}>
+              <ProvenanceSeal
+                marks={recipe.provenanceMarks}
+                surface={SealSurface.Photo}
+                size={provenanceSealMetrics.webCardSize}
+              />
+              <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
+                <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
+                  {cuisineLabel(recipe.cuisine).name}
+                </ThemedText>
+              </View>
             </View>
             {ownedByMe ? (
               <View style={[styles.ownedBadge, { backgroundColor: colors.primary }]}>
@@ -129,10 +139,6 @@ export const WebRecipeCard = ({
               <ThemedText variant="caption" muted>
                 {difficultyLabel(recipe.difficulty)}
               </ThemedText>
-              {/* Last in the row, after the time and difficulty pair — the
-                  card's own corners already carry a cuisine tag and the save
-                  bookmark. */}
-              <ProvenanceBadge origin={recipe.origin} variant={ProvenanceBadgeVariant.Compact} />
             </View>
 
             <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>
@@ -192,10 +198,15 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  cuisineTag: {
+  topLeft: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+  },
+  cuisineTag: {
     borderRadius: radii.round,
     paddingHorizontal: spacing.sm2,
     paddingVertical: spacing.xs,

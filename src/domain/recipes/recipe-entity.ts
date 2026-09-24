@@ -8,8 +8,10 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
-import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
-import type { SourcePlatformType } from '@domain/recipes/source-platform';
+import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
+import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
+import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 
 /**
@@ -118,6 +120,10 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get aiWritten(): boolean {
     return this.props.aiWritten;
+  }
+  /** What the provenance seal carries; empty when a person wrote the recipe. */
+  get provenanceMarks(): readonly ProvenanceMarkType[] {
+    return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);
   }
   get moderationStatus(): string {
     return this.props.moderationStatus;

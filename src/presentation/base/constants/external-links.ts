@@ -8,3 +8,5 @@
  *   quietly forks when a second screen needs the same link.
  */
 export const instagramProfileUrl = (handle: string): string => `https://instagram.com/${handle}`;
+
+export const tiktokProfileUrl = (handle: string): string => `https://www.tiktok.com/@${handle}`;

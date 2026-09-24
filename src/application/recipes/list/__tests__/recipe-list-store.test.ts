@@ -10,7 +10,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},

@@ -7,7 +7,7 @@
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');

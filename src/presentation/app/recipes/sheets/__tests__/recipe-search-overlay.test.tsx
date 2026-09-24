@@ -13,7 +13,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');

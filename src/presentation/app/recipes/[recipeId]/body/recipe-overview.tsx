@@ -15,8 +15,7 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes } from '
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
-import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
-import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
+import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
 
 export interface RecipeOverviewProps {
   recipe: RecipeEntity;
@@ -131,9 +130,8 @@ export const RecipeOverview = ({
           text was produced is a different axis from who owns the record.
           `spacing.sm` because it reads as a continuation of "about this
           recipe", not a new section. */}
-      <ProvenanceBadge
-        origin={recipe.origin}
-        variant={ProvenanceBadgeVariant.Detailed}
+      <ProvenanceNote
+        marks={recipe.provenanceMarks}
         sourceHandle={recipe.sourceHandle}
         style={styles.provenance}
       />

@@ -1,4 +1,4 @@
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { recipePageOf } from "@application/__fixtures__/recipe-page-of";
 import type { CreateRecipeUseCase } from "@application/recipes/create/create-recipe-use-case";
 import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";

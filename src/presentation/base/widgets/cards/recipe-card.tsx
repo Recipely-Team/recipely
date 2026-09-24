@@ -26,9 +26,10 @@ import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
 import { formatRating } from '@presentation/base/utils/format-rating';
-import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/recipe-origin';
-import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
-import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
+import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
@@ -49,15 +50,15 @@ export interface RecipeCardProps {
   onLike?: () => void;
   /** Web-only: lift the card slightly on mouse hover (used by the web grid). */
   hoverEffect?: boolean;
-  /** Where the recipe's text came from. A hand-written one draws no badge. */
-  origin?: RecipeOriginType;
+  /** Where the recipe came from. A hand-written one carries none and draws no seal. */
+  provenance?: readonly ProvenanceMarkType[];
 }
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags = [],
   likeCount = ValueConstants.zero, likedByMe = false,
-  onPress, onLike, hoverEffect = false, origin,
+  onPress, onLike, hoverEffect = false, provenance = [],
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
@@ -122,10 +123,14 @@ export const RecipeCard = ({
           accessibilityLabel={name}
           placeholderLabel={t().recipes.noPhoto}
         />
-        <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
-          <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: fontWeights.semibold }}>
-            {cuisine}
-          </ThemedText>
+        {/* The seal shares the cuisine tag's corner, so nothing had to move. */}
+        <View style={styles.topRight}>
+          <ProvenanceSeal marks={provenance} surface={SealSurface.Photo} size={provenanceSealMetrics.cardSize} />
+          <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
+            <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: fontWeights.semibold }}>
+              {cuisine}
+            </ThemedText>
+          </View>
         </View>
         <View style={[styles.difficultyChip, { backgroundColor: colors.overlay }]}>
           <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: fontWeights.semibold }}>
@@ -148,10 +153,6 @@ export const RecipeCard = ({
               : null}
           </View>
           <View style={styles.metaRow}>
-            {/* Inline in the row that already holds the rating and the like
-                button, rather than a fifth floating chip on an image whose
-                corners are both already spoken for. */}
-            <ProvenanceBadge origin={origin ?? RecipeOrigin.User} variant={ProvenanceBadgeVariant.Compact} />
             <View style={styles.ratingRow}>
               {Array.from({ length: 5 }, (_, i) => {
                 const iconName = i < fullStars ? 'star' : i === fullStars && hasHalf ? 'star-half-full' : 'star-outline';
@@ -212,10 +213,15 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  cuisineBadge: {
+  topRight: {
     position: 'absolute',
     top: spacing.md,
     right: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+  },
+  cuisineBadge: {
     borderRadius: radii.round,
     paddingHorizontal: spacing.sm2,
     paddingVertical: spacing.xs,

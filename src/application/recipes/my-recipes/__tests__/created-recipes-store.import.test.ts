@@ -16,7 +16,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 
 

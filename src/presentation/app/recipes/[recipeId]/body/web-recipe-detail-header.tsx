@@ -12,8 +12,7 @@ import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
-import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
-import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
+import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -130,9 +129,8 @@ export const WebRecipeDetailHeader = ({
             row is compact icon+number pairs of near-identical width, and a
             variable-length sentence with an inline link would make it wrap
             unevenly. */}
-        <ProvenanceBadge
-          origin={recipe.origin}
-          variant={ProvenanceBadgeVariant.Detailed}
+        <ProvenanceNote
+          marks={recipe.provenanceMarks}
           sourceHandle={recipe.sourceHandle}
           style={styles.provenance}
         />

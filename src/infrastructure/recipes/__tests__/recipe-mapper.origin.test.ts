@@ -8,7 +8,7 @@
  */
 
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 
 const dto = (overrides: Partial<RecipeDto> = {}): RecipeDto =>

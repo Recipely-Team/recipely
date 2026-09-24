@@ -1,5 +1,5 @@
 import { isString } from '@core/guards/type-guards';
-import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/source-platform';
+import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 const KNOWN: ReadonlySet<string> = new Set(Object.values(SourcePlatform));
 

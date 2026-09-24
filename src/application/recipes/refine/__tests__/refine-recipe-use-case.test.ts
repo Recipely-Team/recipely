@@ -7,7 +7,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const snapshot: DraftRecipeSnapshot = {
   name: 'Spicy Pasta',
