@@ -2,6 +2,7 @@ import type { Translations } from '@presentation/i18n/translations';
 
 export const hi: Translations = {
   common: {
+    openSettings: 'सेटिंग्स खोलें',
     retry: 'फिर कोशिश करें',
     loading: 'लोड हो रहा है...',
     error: 'कुछ गड़बड़ हो गई',
@@ -652,7 +653,6 @@ export const hi: Translations = {
     add: 'फ़ोटो जोड़ें',
     hint: 'गैलरी से चुनने के लिए टैप करें',
     hintWithCamera: 'फ़ोटो लें या गैलरी से चुनें',
-    openSettings: 'सेटिंग्स खोलें',
     cover: 'कवर',
     setCover: 'कवर बनाएँ',
     remove: 'फ़ोटो हटाएँ',
@@ -938,7 +938,6 @@ export const hi: Translations = {
     publishConfirm: "प्रकाशित करें",
     requestFailed: "यह अनुरोध नहीं पहुँचा। थोड़ी देर बाद फिर कोशिश करें।",
     micDenied: "आपको सुनने के लिए Recipely को माइक्रोफ़ोन चाहिए।",
-    openSettings: 'सेटिंग्स खोलें',
     mute: "माइक बंद करें",
     unmute: "माइक चालू करें",
     muted: "माइक बंद है",

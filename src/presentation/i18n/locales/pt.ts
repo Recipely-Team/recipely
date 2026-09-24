@@ -1,5 +1,6 @@
 export const pt = {
   common: {
+    openSettings: 'Abrir Definições',
     retry: 'Tentar novamente',
     loading: 'Carregando...',
     error: 'Algo deu errado',
@@ -656,7 +657,6 @@ export const pt = {
     add: 'Adicionar fotos',
     hint: 'Toque para escolher da sua galeria',
     hintWithCamera: 'Tire uma foto ou escolha da sua galeria',
-    openSettings: 'Abrir Ajustes',
     cover: 'Capa',
     setCover: 'Definir como capa',
     remove: 'Remover foto',
@@ -942,7 +942,6 @@ export const pt = {
     publishConfirm: "Publicar",
     requestFailed: "Não foi enviado. Tente de novo em instantes.",
     micDenied: "O Recipely precisa do microfone para ouvir você.",
-    openSettings: 'Abrir Definições',
     mute: "Silenciar",
     unmute: "Ativar microfone",
     muted: "Microfone silenciado",

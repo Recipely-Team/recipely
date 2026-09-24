@@ -1,5 +1,6 @@
 export const es = {
   common: {
+    openSettings: 'Abrir Ajustes',
     retry: 'Reintentar',
     loading: 'Cargando...',
     error: 'Algo salió mal',
@@ -656,7 +657,6 @@ export const es = {
     add: 'Añadir fotos',
     hint: 'Toca para elegir de tu galería',
     hintWithCamera: 'Haz una foto o elige una de tu galería',
-    openSettings: 'Abrir Ajustes',
     cover: 'Portada',
     setCover: 'Usar como portada',
     remove: 'Eliminar foto',
@@ -942,7 +942,6 @@ export const es = {
     publishConfirm: "Publicar",
     requestFailed: "No se pudo enviar. Inténtalo en un momento.",
     micDenied: "Recipely necesita el micrófono para oírte.",
-    openSettings: 'Abrir Ajustes',
     mute: "Silenciar",
     unmute: "Activar micrófono",
     muted: "Micrófono silenciado",

@@ -20,7 +20,7 @@ const tellPermissionDenied = (): void => {
   Alert.alert(t().recipes.photoPermissionDenied, undefined, [
     { text: t().common.cancel, style: 'cancel' },
     {
-      text: t().mediaPicker.openSettings,
+      text: t().common.openSettings,
       onPress: () => void Linking.openSettings().catch(() => undefined),
     },
   ]);
@@ -39,6 +39,8 @@ const tellPermissionDenied = (): void => {
  * - **A refused permission says so, and leads to Settings.** The picker used
  *   to return nothing, which read as a dead button; once iOS has been answered
  *   it never asks again, so the way back is the Settings app.
+ * - **A picker or re-encode that throws is said out loud**, not left as an
+ *   unhandled rejection behind a button that did nothing.
  * - **One flight at a time.** A second tap while the sheet or the re-encode is
  *   in flight is ignored rather than stacking a second picker.
  */
@@ -72,6 +74,8 @@ export const useMediaPick = (onAdd: (items: MediaItem[]) => void): (() => Promis
       if (shrunk.length > ValueConstants.zero) {
         onAdd(shrunk.map((url) => ({ type: MediaType.Image, url })));
       }
+    } catch {
+      Alert.alert(t().recipes.photoAddFailed);
     } finally {
       busy.current = false;
     }

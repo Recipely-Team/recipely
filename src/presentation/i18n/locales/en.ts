@@ -1,5 +1,6 @@
 export const en = {
   common: {
+    openSettings: 'Open Settings',
     retry: 'Retry',
     loading: 'Loading...',
     error: 'Something went wrong',
@@ -667,7 +668,6 @@ export const en = {
     add: 'Add photos',
     hint: 'Tap to choose from your library',
     hintWithCamera: 'Take a photo or choose from your library',
-    openSettings: 'Open Settings',
     cover: 'Cover',
     setCover: 'Set cover',
     remove: 'Remove photo',
@@ -956,7 +956,6 @@ export const en = {
     publishConfirm: "Publish",
     requestFailed: "That did not go through. Try again in a moment.",
     micDenied: "Recipely needs the microphone to hear you.",
-    openSettings: 'Open Settings',
     mute: "Mute",
     unmute: "Unmute",
     muted: "Mic muted",

@@ -1,5 +1,6 @@
 export const id = {
   common: {
+    openSettings: 'Buka Pengaturan',
     retry: 'Coba lagi',
     loading: 'Memuat...',
     error: 'Ada yang tidak beres',
@@ -656,7 +657,6 @@ export const id = {
     add: 'Tambah foto',
     hint: 'Ketuk untuk memilih dari galeri',
     hintWithCamera: 'Ambil foto atau pilih dari galeri',
-    openSettings: 'Buka Pengaturan',
     cover: 'Sampul',
     setCover: 'Jadikan sampul',
     remove: 'Hapus foto',
@@ -942,7 +942,6 @@ export const id = {
     publishConfirm: "Terbitkan",
     requestFailed: "Permintaan tidak terkirim. Coba lagi sebentar lagi.",
     micDenied: "Recipely butuh mikrofon untuk mendengarmu.",
-    openSettings: 'Buka Pengaturan',
     mute: "Bisukan",
     unmute: "Nyalakan mikrofon",
     muted: "Mikrofon bisu",

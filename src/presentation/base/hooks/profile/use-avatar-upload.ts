@@ -38,9 +38,8 @@ const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
  * permission checks, the image picker, and the auth-store `uploadAvatar` call.
  * Surfaces every failure through `uploadError`, which the owning screen shows
  * as a dialog — a toast can be missed, and the user must never get a silent
- * dead end. The source question is
- * `askPickSource`'s, which skips it on web. The avatar re-renders from the session the store
- * updates.
+ * dead end. The camera-or-library question is `askPickSource`'s, which skips
+ * it on web. The avatar re-renders from the session the store updates.
  */
 export const useAvatarUpload = (): AvatarUpload => {
   const { authStore } = useStores();

@@ -12,11 +12,12 @@ const mockAsk = jest.fn();
 const mockLaunchCamera = jest.fn();
 const mockLaunchLibrary = jest.fn();
 const mockCameraPermission = jest.fn();
+const mockLibraryPermission = jest.fn();
 const mockShrink = jest.fn();
 
 jest.mock('expo-image-picker', () => ({
   requestCameraPermissionsAsync: (...args: unknown[]) => mockCameraPermission(...args),
-  requestMediaLibraryPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
+  requestMediaLibraryPermissionsAsync: (...args: unknown[]) => mockLibraryPermission(...args),
   launchCameraAsync: (...args: unknown[]) => mockLaunchCamera(...args),
   launchImageLibraryAsync: (...args: unknown[]) => mockLaunchLibrary(...args),
 }));
@@ -43,6 +44,7 @@ const SHRUNK = 'file://shrunk.jpg';
 beforeEach(() => {
   jest.clearAllMocks();
   mockCameraPermission.mockResolvedValue({ granted: true });
+  mockLibraryPermission.mockResolvedValue({ granted: true });
   mockLaunchCamera.mockResolvedValue({ canceled: false, assets: [CAPTURE] });
   mockShrink.mockResolvedValue(SHRUNK);
 });
@@ -83,6 +85,32 @@ describe('useMediaPick', () => {
     expect(onAdd).not.toHaveBeenCalled();
   });
 
+  it('says a refused library out loud instead of doing nothing', async () => {
+    mockAsk.mockResolvedValue(PickSource.Library);
+    mockLibraryPermission.mockResolvedValue({ granted: false });
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const onAdd = jest.fn();
+
+    await pick(onAdd);
+
+    expect(mockLaunchLibrary).not.toHaveBeenCalled();
+    expect(alert).toHaveBeenCalledWith(t().recipes.photoPermissionDenied, undefined, expect.any(Array));
+    alert.mockRestore();
+  });
+
+  it('says a picker that throws out loud', async () => {
+    mockAsk.mockResolvedValue(PickSource.Camera);
+    mockLaunchCamera.mockRejectedValue(new Error('camera unavailable'));
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const onAdd = jest.fn();
+
+    await pick(onAdd);
+
+    expect(alert).toHaveBeenCalledWith(t().recipes.photoAddFailed);
+    expect(onAdd).not.toHaveBeenCalled();
+    alert.mockRestore();
+  });
+
   it('says a refused camera out loud and offers the way to Settings', async () => {
     mockAsk.mockResolvedValue(PickSource.Camera);
     mockCameraPermission.mockResolvedValue({ granted: false });
@@ -95,7 +123,7 @@ describe('useMediaPick', () => {
     expect(mockLaunchCamera).not.toHaveBeenCalled();
     expect(onAdd).not.toHaveBeenCalled();
     const buttons = alert.mock.calls[0]?.[2] ?? [];
-    const settings = buttons.find((b) => b.text === t().mediaPicker.openSettings);
+    const settings = buttons.find((b) => b.text === t().common.openSettings);
     settings?.onPress?.();
     expect(openSettings).toHaveBeenCalledTimes(1);
 
