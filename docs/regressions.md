@@ -2213,3 +2213,9 @@ of which is broken.
 refused library permission — the "Add photos" button simply did nothing. It now says so and
 offers Settings (`use-media-pick.test.tsx`). The camera and the library are asked through one
 `askPickSource`, so the three photo flows cannot drift apart on which sources they offer.
+
+### A written section heading was read as an ingredient
+
+*Symptom:* a pasted trileçe (cake, caramel, milk syrup) showed as one undivided ingredient list.
+*Why:* only a leading `#` counted as a group heading; people and recipe sites write "Trileçenin karameli için:".
+*Guard:* `isIngredientGroup` also accepts a short colon-terminated line with no digits (`ingredient-group.test.ts`); the backend prompt keeps user sections as groups.

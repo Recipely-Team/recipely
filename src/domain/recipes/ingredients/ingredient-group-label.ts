@@ -6,5 +6,8 @@ import { CharConstants, RegexConstants } from '@core/constants';
  * one the moment "add a group" is tapped, and an unnamed group is dropped on
  * save rather than published as a blank heading.
  */
+/** The colon that closes a written heading is not part of its name. */
+const TRAILING_COLON = /\s*:\s*$/;
+
 export const ingredientGroupLabel = (line: string): string =>
-  line.trimStart().replace(RegexConstants.leadingIngredientGroupMarkers, CharConstants.empty).trim();
+  line.trimStart().replace(RegexConstants.leadingIngredientGroupMarkers, CharConstants.empty).trim().replace(TRAILING_COLON, CharConstants.empty);
