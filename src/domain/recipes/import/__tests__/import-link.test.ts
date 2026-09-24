@@ -47,17 +47,15 @@ describe('ImportLink', () => {
     });
   });
 
-  describe('TikTok', () => {
+  // TikTok blocks the worker's IP for every video, so accepting a TikTok link
+  // would only ever end in a failure minutes later. Refused up front instead.
+  describe('TikTok, while our servers cannot reach it', () => {
     it.each([
       'https://www.tiktok.com/@mutfaktaki_hayat/video/7300000000000000000',
       'https://vm.tiktok.com/ZMabc123/',
-      'https://www.tiktok.com/t/ZTabc123/',
-    ])('accepts %s', (raw) => {
-      expect(accepted(raw).platform).toBe(SourcePlatform.TikTok);
-    });
-
-    it('refuses a TikTok profile, which has no single video', () => {
-      expect(failureKeyOf('https://www.tiktok.com/@mutfaktaki_hayat')).toBe(ErrorMessageKey.importInvalidUrl);
+      'https://www.tiktok.com/@mutfaktaki_hayat',
+    ])('names %s as a site it cannot import from', (raw) => {
+      expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importNotInstagram);
     });
   });
 
