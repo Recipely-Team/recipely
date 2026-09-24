@@ -2870,7 +2870,8 @@ has no such assertion.
 ## Provenance Badge (recipe origin marker)
 
 > **Superseded** by the Provenance Seal above. Kept for its reasoning (the accessibility rule
-> below still applies); its placements and widget names no longer exist.
+> below still applies); its placements, widget names and i18n keys (`originImport*`) no longer
+> exist — the keys are now per platform (`originInstagram*` / `originTiktok*`).
 
 Marks where a recipe's text came from — `AI` (a model wrote it), `IMPORT` (lifted from an
 Instagram post), or `USER` (a person wrote it, and the badge draws nothing). Appears as a bare

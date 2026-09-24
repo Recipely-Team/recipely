@@ -2,8 +2,8 @@
  * The provenance seal's measurements, as the prototype draws them.
  *
  * @remarks
- * - **One widget reads these**, so they sit beside it rather than in the
- *   theme (rule 5: the test is reuse).
+ * - **The seal's own options**, so they sit beside it rather than in the
+ *   theme: the cards and the detail note read them only to pick a seal size.
  * - **Everything inside the seal is a share of its size**, so the card's 27,
  *   the web card's 28 and the detail line's 22 are one drawing at three sizes.
  */
