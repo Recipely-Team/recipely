@@ -7,6 +7,7 @@ import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const snapshot: DraftRecipeSnapshot = {
   name: 'Spicy Pasta',
@@ -16,6 +17,7 @@ const snapshot: DraftRecipeSnapshot = {
 
 const makeRecipe = (): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r1',
     name: 'Refined Recipe',
     cuisine: CuisineKey.Italian,

@@ -1,6 +1,7 @@
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
+import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
 
 export interface RecipeEntityProps {
   id: string;
@@ -27,6 +28,12 @@ export interface RecipeEntityProps {
   likeCount: number;
   likedByMe: boolean;
   viewCount: number;
+  /** Where the text came from; `User` for anything this app does not know. */
+  origin: RecipeOriginType;
+  /** The post an import came from, when there is one. */
+  sourceUrl?: string;
+  /** The account that posted it, without the '@'. */
+  sourceHandle?: string;
   moderationStatus: string;
   commentCount: number;
 }

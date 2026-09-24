@@ -25,5 +25,10 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     likedByMe: recipe.likedByMe,
     commentCount: recipe.commentCount,
     viewCount: recipe.viewCount,
+    // Carried, not defaulted. This is the path a just-published recipe takes
+    // into the feed cache without a round-trip, so dropping it here would make
+    // the badge appear only after a refresh — present on the server, absent on
+    // the one screen that just created it.
+    origin: recipe.origin,
   });
 };

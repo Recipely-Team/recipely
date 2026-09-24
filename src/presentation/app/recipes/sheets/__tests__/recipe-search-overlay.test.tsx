@@ -13,6 +13,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -52,6 +53,7 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('fixture invalid');
   return result.value;

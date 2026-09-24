@@ -11,9 +11,11 @@ import { editableToSnapshot } from '@presentation/app/create-recipe/model/drafti
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { recipeToEditable } from '@presentation/app/create-recipe/model/drafting/recipe-to-editable';
 import { snapshotToEditable } from '@presentation/app/create-recipe/model/drafting/snapshot-to-editable';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r1',
     name: 'Stub Recipe',
     cuisine: CuisineKey.Italian,

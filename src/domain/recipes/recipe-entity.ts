@@ -8,6 +8,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
+import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
 
 
 /**
@@ -95,6 +96,21 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
 
   get viewCount(): number {
     return this.props.viewCount;
+  }
+
+  /** Where the text came from; see `RecipeOrigin`. */
+  get origin(): RecipeOriginType {
+    return this.props.origin;
+  }
+
+  /** The post an import came from, when there is one. */
+  get sourceUrl(): string | undefined {
+    return this.props.sourceUrl;
+  }
+
+  /** The account that posted it, without the '@'. */
+  get sourceHandle(): string | undefined {
+    return this.props.sourceHandle;
   }
   get moderationStatus(): string {
     return this.props.moderationStatus;

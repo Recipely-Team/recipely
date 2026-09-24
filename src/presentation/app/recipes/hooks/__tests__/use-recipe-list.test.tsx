@@ -53,6 +53,7 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
@@ -124,6 +125,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

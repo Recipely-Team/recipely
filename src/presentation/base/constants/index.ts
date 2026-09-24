@@ -19,3 +19,4 @@ export { ListConstants } from './list-constants';
 export { KeyboardKey } from './platform-events';
 export { scrollThrottleMs } from './scroll-constants';
 export { SiteMetadata } from './site-metadata';
+export { instagramProfileUrl } from './external-links';

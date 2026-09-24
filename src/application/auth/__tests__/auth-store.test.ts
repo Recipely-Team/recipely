@@ -24,6 +24,7 @@ import { Email } from '@domain/common/email';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -61,6 +62,7 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('fixture summary invalid');
   return result.value;

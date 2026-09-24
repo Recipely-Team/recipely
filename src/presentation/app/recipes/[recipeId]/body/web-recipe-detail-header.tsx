@@ -12,6 +12,8 @@ import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
+import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -123,6 +125,17 @@ export const WebRecipeDetailHeader = ({
             </View>
           ) : null}
         </View>
+
+        {/* A sibling under the same column, not another `statsRow` item: that
+            row is compact icon+number pairs of near-identical width, and a
+            variable-length sentence with an inline link would make it wrap
+            unevenly. */}
+        <ProvenanceBadge
+          origin={recipe.origin}
+          variant={ProvenanceBadgeVariant.Detailed}
+          sourceHandle={recipe.sourceHandle}
+          style={styles.provenance}
+        />
       </View>
 
       <View style={styles.actions}>
@@ -187,6 +200,7 @@ export const WebRecipeDetailHeader = ({
 };
 
 const styles = StyleSheet.create({
+  provenance: { marginTop: spacing.xs2 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',

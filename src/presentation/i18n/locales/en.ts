@@ -279,6 +279,17 @@ export const en = {
     photoPermissionDenied: 'Recipely needs permission to use your camera or photos.',
     removePhoto: 'Remove photo',
     removePhotoConfirm: 'Remove this photo from your recipe?',
+    // Provenance. `originAiA11y` and `originAiDetailLabel` hold the same English
+    // sentence on purpose — one is a screen reader's name for a glyph, the other
+    // is visible copy, and they are free to diverge in any language that needs
+    // them to. Same reasoning the `cuisineAll` / `difficultyAll` pair documents.
+    originAiTooltip: 'AI wrote this recipe from a prompt.',
+    originAiA11y: 'AI-written recipe',
+    originAiDetailLabel: 'AI-written recipe',
+    originImportTooltip: 'Imported from an Instagram post.',
+    originImportA11y: 'Imported from Instagram',
+    originImportDetailLabel: 'Imported from {handle} on Instagram',
+    originImportHandleA11y: 'Open {handle} on Instagram',
     previousPhoto: 'Previous photo',
     nextPhoto: 'Next photo',
     cuisine: 'Cuisine',

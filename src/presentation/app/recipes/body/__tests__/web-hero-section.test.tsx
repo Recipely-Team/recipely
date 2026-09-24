@@ -34,6 +34,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 // The three blocks are stood in for: this suite is about the row that holds
 // them, and the real cards pull images, gradients and the favourites store.
@@ -68,6 +69,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;
