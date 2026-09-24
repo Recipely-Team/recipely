@@ -176,6 +176,14 @@ jobs:
       - name: Type Check
         run: npx tsc --noEmit
 
+      # CLAUDE.md calls this a gate that "must be green before any commit/PR",
+      # but until now the only thing running it was the husky pre-commit hook —
+      # which `--no-verify` skips, and CI never checked. A 308-line .tsx and a
+      # stale PROJECT-MAP both reached dev that way. A gate nothing runs is a
+      # style guide.
+      - name: Structure Gate
+        run: npm run check:structure
+
   test:
     name: Unit Tests
     runs-on: ubuntu-latest
