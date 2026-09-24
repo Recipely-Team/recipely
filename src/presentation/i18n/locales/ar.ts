@@ -1,5 +1,6 @@
 export const ar = {
   common: {
+    openSettings: 'فتح الإعدادات',
     retry: "إعادة المحاولة",
     loading: "جارٍ التحميل...",
     error: "حدث خطأ ما",
@@ -655,6 +656,7 @@ export const ar = {
   mediaPicker: {
     add: "إضافة صور",
     hint: "اضغط للاختيار من مكتبتك",
+    hintWithCamera: 'التقط صورة أو اختر من مكتبتك',
     cover: "الغلاف",
     setCover: "تعيين كغلاف",
     remove: "إزالة الصورة",
@@ -940,7 +942,6 @@ export const ar = {
     publishConfirm: "نشر",
     requestFailed: "لم يصل الطلب. حاول بعد قليل.",
     micDenied: "يحتاج Recipely إلى الميكروفون ليسمعك.",
-    openSettings: 'فتح الإعدادات',
     mute: "كتم الصوت",
     unmute: "إلغاء الكتم",
     muted: "الميكروفون مكتوم",

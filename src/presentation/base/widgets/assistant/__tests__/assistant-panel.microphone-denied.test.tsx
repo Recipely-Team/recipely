@@ -73,7 +73,7 @@ beforeEach(() => {
 const settingsControl = (root: { findAll: (m: (n: { props: Record<string, unknown> }) => boolean) => { props: Record<string, unknown> }[] }) =>
   root.findAll(
     (n) =>
-      n.props['accessibilityLabel'] === t().assistant.openSettings &&
+      n.props['accessibilityLabel'] === t().common.openSettings &&
       typeof n.props['onPress'] === 'function',
   );
 

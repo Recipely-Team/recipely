@@ -1,5 +1,6 @@
 export const fr = {
   common: {
+    openSettings: 'Ouvrir les Réglages',
     retry: 'Réessayer',
     loading: 'Chargement...',
     error: 'Un problème est survenu',
@@ -655,6 +656,7 @@ export const fr = {
   mediaPicker: {
     add: 'Ajouter des photos',
     hint: 'Touchez pour choisir dans votre photothèque',
+    hintWithCamera: 'Prenez une photo ou choisissez-en une dans votre photothèque',
     cover: 'Couverture',
     setCover: 'Définir comme couverture',
     remove: 'Supprimer la photo',
@@ -940,7 +942,6 @@ export const fr = {
     publishConfirm: "Publier",
     requestFailed: "Ça n'est pas passé. Réessaie dans un instant.",
     micDenied: "Recipely a besoin du micro pour t'entendre.",
-    openSettings: 'Ouvrir les Réglages',
     mute: "Couper le micro",
     unmute: "Activer le micro",
     muted: "Micro coupé",

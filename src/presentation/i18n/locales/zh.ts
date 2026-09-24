@@ -1,5 +1,6 @@
 export const zh = {
   common: {
+    openSettings: '打开设置',
     retry: '重试',
     loading: '加载中...',
     error: '出了点问题',
@@ -659,6 +660,7 @@ export const zh = {
   mediaPicker: {
     add: '添加照片',
     hint: '点击从相册选择',
+    hintWithCamera: '拍照或从相册选择',
     cover: '封面',
     setCover: '设为封面',
     remove: '移除照片',
@@ -947,7 +949,6 @@ export const zh = {
     publishConfirm: "发布",
     requestFailed: "请求未送达，请稍后再试。",
     micDenied: "Recipely 需要麦克风才能听到你。",
-    openSettings: '打开设置',
     mute: "静音",
     unmute: "取消静音",
     muted: "麦克风已静音",

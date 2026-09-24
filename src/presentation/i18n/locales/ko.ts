@@ -2,6 +2,7 @@ import type { Translations } from '@presentation/i18n/translations';
 
 export const ko: Translations = {
   common: {
+    openSettings: '설정 열기',
     retry: '다시 시도',
     loading: '불러오는 중...',
     error: '문제가 발생했어요',
@@ -651,6 +652,7 @@ export const ko: Translations = {
   mediaPicker: {
     add: '사진 추가',
     hint: '탭해서 사진을 선택하세요',
+    hintWithCamera: '사진을 찍거나 앨범에서 선택하세요',
     cover: '대표 사진',
     setCover: '대표 사진으로 설정',
     remove: '사진 삭제',
@@ -936,7 +938,6 @@ export const ko: Translations = {
     publishConfirm: "공개",
     requestFailed: "요청이 전달되지 않았어요. 잠시 후 다시 시도해 주세요.",
     micDenied: "목소리를 들으려면 마이크 권한이 필요해요.",
-    openSettings: '설정 열기',
     mute: "음소거",
     unmute: "음소거 해제",
     muted: "마이크 꺼짐",

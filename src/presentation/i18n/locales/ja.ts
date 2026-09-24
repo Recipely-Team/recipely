@@ -1,5 +1,6 @@
 export const ja = {
   common: {
+    openSettings: '設定を開く',
     retry: '再試行',
     loading: '読み込み中...',
     error: '問題が発生しました',
@@ -655,6 +656,7 @@ export const ja = {
   mediaPicker: {
     add: '写真を追加',
     hint: 'タップしてライブラリから選択',
+    hintWithCamera: '写真を撮るか、ライブラリから選択',
     cover: 'カバー',
     setCover: 'カバーに設定',
     remove: '写真を削除',
@@ -940,7 +942,6 @@ export const ja = {
     publishConfirm: "公開",
     requestFailed: "送信できませんでした。少ししてからもう一度お試しください。",
     micDenied: "声を聞くにはマイクの許可が必要です。",
-    openSettings: '設定を開く',
     mute: "ミュート",
     unmute: "ミュート解除",
     muted: "マイクはオフ",

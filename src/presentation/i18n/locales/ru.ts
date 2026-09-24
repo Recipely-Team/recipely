@@ -1,5 +1,6 @@
 export const ru = {
   common: {
+    openSettings: 'Открыть настройки',
     retry: 'Повторить',
     loading: 'Загрузка...',
     error: 'Что-то пошло не так',
@@ -655,6 +656,7 @@ export const ru = {
   mediaPicker: {
     add: 'Добавить фото',
     hint: 'Нажмите, чтобы выбрать из медиатеки',
+    hintWithCamera: 'Сделайте фото или выберите из медиатеки',
     cover: 'Обложка',
     setCover: 'Сделать обложкой',
     remove: 'Удалить фото',
@@ -940,7 +942,6 @@ export const ru = {
     publishConfirm: "Опубликовать",
     requestFailed: "Запрос не прошёл. Повторите чуть позже.",
     micDenied: "Recipely нужен микрофон, чтобы вас слышать.",
-    openSettings: 'Открыть настройки',
     mute: "Выключить микрофон",
     unmute: "Включить микрофон",
     muted: "Микрофон выключен",

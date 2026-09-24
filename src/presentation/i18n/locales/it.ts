@@ -1,5 +1,6 @@
 export const it = {
   common: {
+    openSettings: 'Apri Impostazioni',
     retry: 'Riprova',
     loading: 'Caricamento...',
     error: 'Qualcosa è andato storto',
@@ -655,6 +656,7 @@ export const it = {
   mediaPicker: {
     add: 'Aggiungi foto',
     hint: 'Tocca per scegliere dalla libreria',
+    hintWithCamera: 'Scatta una foto o scegline una dalla libreria',
     cover: 'Copertina',
     setCover: 'Imposta come copertina',
     remove: 'Rimuovi foto',
@@ -940,7 +942,6 @@ export const it = {
     publishConfirm: "Pubblica",
     requestFailed: "Non è arrivato. Riprova tra poco.",
     micDenied: "Recipely ha bisogno del microfono per sentirti.",
-    openSettings: 'Apri Impostazioni',
     mute: "Disattiva microfono",
     unmute: "Attiva microfono",
     muted: "Microfono muto",

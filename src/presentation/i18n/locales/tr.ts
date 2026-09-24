@@ -2,6 +2,7 @@ import type { Translations } from '@presentation/i18n/translations';
 
 export const tr: Translations = {
   common: {
+    openSettings: 'Ayarları aç',
     retry: 'Tekrar dene',
     loading: 'Yükleniyor...',
     error: 'Bir şeyler ters gitti',
@@ -659,6 +660,7 @@ export const tr: Translations = {
   mediaPicker: {
     add: 'Fotoğraf ekle',
     hint: 'Galeriden seçmek için dokun',
+    hintWithCamera: 'Fotoğraf çek ya da galeriden seç',
     cover: 'Kapak',
     setCover: 'Kapak yap',
     remove: 'Fotoğrafı kaldır',
@@ -947,7 +949,6 @@ export const tr: Translations = {
     publishConfirm: "Yayınla",
     requestFailed: "Bu istek ulaşmadı. Birazdan tekrar dene.",
     micDenied: "Seni duyabilmek için mikrofon izni gerekiyor.",
-    openSettings: 'Ayarları aç',
     mute: "Sustur",
     unmute: "Sesi aç",
     muted: "Mikrofon kapalı",

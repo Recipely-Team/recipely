@@ -69,7 +69,7 @@ export const AssistantNoticeBlock = ({
       {showsSettingsAction ? (
         <Pressable
           accessibilityRole="button"
-          accessibilityLabel={t().assistant.openSettings}
+          accessibilityLabel={t().common.openSettings}
           onPress={() => void Linking.openSettings().catch(() => undefined)}
           style={({ pressed }) => [
             styles.settingsAction,
@@ -77,7 +77,7 @@ export const AssistantNoticeBlock = ({
           ]}
         >
           <ThemedText variant="caption" style={{ color: colors.primary }}>
-            {t().assistant.openSettings}
+            {t().common.openSettings}
           </ThemedText>
         </Pressable>
       ) : null}

@@ -1,6 +1,4 @@
-import { useCallback } from 'react';
 import { Image, Pressable, StyleSheet, View } from 'react-native';
-import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -9,8 +7,8 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ValueConstants } from '@core/constants';
-import { MediaType } from '@domain/recipes/media/media-type';
-import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
+import { useMediaPick } from '@presentation/app/create-recipe/hooks/use-media-pick';
+import { isWeb } from '@infrastructure/constants/platform';
 
 export interface MediaPickerProps {
   media: readonly MediaItem[];
@@ -18,27 +16,6 @@ export interface MediaPickerProps {
   onRemove: (index: number) => void;
   onSetCover: (index: number) => void;
 }
-
-const pickImages = async (): Promise<MediaItem[]> => {
-  const perm = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!perm.granted) return [];
-  const result = await ImagePicker.launchImageLibraryAsync({
-    allowsMultipleSelection: true,
-    mediaTypes: 'images',
-    // No `quality` here on purpose: `shrinkForUpload` owns the one re-encode.
-    // Two lossy passes cost detail and saved nothing — the picker's pass ran
-    // before the resize that actually removes the bytes.
-  });
-  if (result.canceled) return [];
-  // Shrink BEFORE the picker's result reaches the editor, so the URI the draft
-  // carries is already the one that will be uploaded. Doing it at publish time
-  // instead would leave autosave holding a multi-megabyte device path and the
-  // preview rendering a different file from the one that gets sent.
-  const shrunk = await Promise.all(
-    result.assets.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
-  );
-  return shrunk.map((url) => ({ type: MediaType.Image, url }));
-};
 
 export const MediaPicker = ({
   media,
@@ -48,10 +25,7 @@ export const MediaPicker = ({
 }: MediaPickerProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
-  const addPhotos = useCallback(async () => {
-    const items = await pickImages();
-    if (items.length > ValueConstants.zero) onAdd(items);
-  }, [onAdd]);
+  const addPhotos = useMediaPick(onAdd);
 
   if (media.length === ValueConstants.zero) {
     return (
@@ -71,7 +45,7 @@ export const MediaPicker = ({
           {t().mediaPicker.add}
         </ThemedText>
         <ThemedText variant="caption" muted style={styles.dropHint}>
-          {t().mediaPicker.hint}
+          {isWeb() ? t().mediaPicker.hint : t().mediaPicker.hintWithCamera}
         </ThemedText>
       </Pressable>
     );
