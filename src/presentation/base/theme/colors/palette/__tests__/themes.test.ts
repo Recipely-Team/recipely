@@ -29,10 +29,32 @@ const CONTRAST_PAIRS: ContrastPair[] = [
     minRatio: 4.5,
   },
   {
+    // 3.0 is the WCAG floor for a graphical object, and this pairing carries
+    // TEXT as well — the AI pill's label. design-spec.md measured 4.52 as the
+    // worst case across the four themes, so the floor is set where the design
+    // actually stands: a palette edit that drops below it is a regression, and
+    // at 3.0 nothing would have said so.
     label: "chipText vs chipBackground",
     fg: "chipText",
     bg: "chipBackground",
-    minRatio: 3.0,
+    minRatio: 4.5,
+  },
+  // The provenance badge's own pairings (design-spec.md → Provenance Badge).
+  // The underlined @handle on the detail screen is body-weight text on the page
+  // itself, so it carries the 4.5 floor rather than the 3.0 a graphical object
+  // would — and it sits on `background` on one layout and `surface` on the
+  // other, which are different colours in every theme.
+  {
+    label: "chipText vs background — the import handle link",
+    fg: "chipText",
+    bg: "background",
+    minRatio: 4.5,
+  },
+  {
+    label: "chipText vs surface — the import handle link on a card",
+    fg: "chipText",
+    bg: "surface",
+    minRatio: 4.5,
   },
   {
     label: "tabBarActive vs tabBarBackground",
