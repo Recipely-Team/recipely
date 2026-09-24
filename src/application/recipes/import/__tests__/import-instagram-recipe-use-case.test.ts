@@ -84,6 +84,19 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(repo.importInstagramCallCount).toBe(0);
   });
 
+  // The legacy endpoint runs only Instagram video. A recipe page is a valid
+  // import link everywhere else, so this is the one check keeping it off here.
+  it('refuses a recipe web page on the video-only endpoint without hitting the repo', async () => {
+    const repo = new FakeRecipeRepository();
+    const useCase = new ImportInstagramRecipeUseCase(repo);
+
+    const r = await useCase.execute({ url: 'https://www.nefisyemektarifleri.com/menemen-tarifi/' });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
+    expect(repo.importInstagramCallCount).toBe(0);
+  });
+
   it('returns ValidationFailure importInvalidUrl for a malformed/unparseable url without hitting the repo', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);

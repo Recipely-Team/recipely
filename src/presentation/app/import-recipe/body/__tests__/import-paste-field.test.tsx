@@ -3,6 +3,7 @@
  * one: a recognised link swaps the neutral link icon for its platform's glyph,
  * in the same white seal a recipe card wears.
  */
+import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { ImportLink } from '@domain/recipes/import/import-link';
 import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
 import { ProvenanceGlyph } from '@presentation/base/widgets/badges/provenance-glyph';
@@ -53,6 +54,6 @@ describe('ImportPasteField', () => {
     const page = linkOf('https://www.nefisyemektarifleri.com/menemen-tarifi/');
 
     expect(glyphs(page)).toEqual([ProvenanceMark.Web]);
-    expect(labels(page)).toContain(en.importRecipe.pasteDetectedWeb.replace('{host}', 'nefisyemektarifleri.com'));
+    expect(labels(page)).toContain(en.importRecipe.pasteDetectedWeb.replace(HOST_TOKEN, 'nefisyemektarifleri.com'));
   });
 });

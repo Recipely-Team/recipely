@@ -658,7 +658,6 @@ export const ja = {
     webReading: '読み込み中',
     webSite: 'サイト',
     webEstimateValue: '約5秒',
-    webCancel: 'キャンセル',
     webStage0: 'ページを開いています',
     webStage1: 'レシピを読み込んでいます',
     webStage2: '下書きに入力しています',

@@ -1,8 +1,10 @@
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { ValueConstants } from '@core/constants';
+import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
+import { importStageKeysFor } from '@presentation/app/import-recipe/model/import-stage-keys';
 
-/** How many named stages a video import's checklist shows. */
-export const IMPORT_STAGE_COUNT = 4;
+/** How many named stages a video import's checklist shows — read from the checklist itself. */
+export const IMPORT_STAGE_COUNT = importStageKeysFor(SourcePlatform.Instagram).length;
 
 /**
  * How far down the stage checklist a job has got.

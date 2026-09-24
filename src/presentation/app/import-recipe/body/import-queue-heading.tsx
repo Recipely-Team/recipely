@@ -1,3 +1,4 @@
+import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -36,7 +37,6 @@ const STATUS_DOT = 6;
 /** Placeholder the queue-position sentence carries in every catalogue. */
 const POSITION_TOKEN = '{position}';
 /** Placeholder the web title carries in every catalogue. */
-const HOST_TOKEN = '{host}';
 const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.one };
 const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
 

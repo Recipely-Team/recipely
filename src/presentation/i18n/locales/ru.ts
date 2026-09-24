@@ -658,7 +658,6 @@ export const ru = {
     webReading: 'Читаем',
     webSite: 'Сайт',
     webEstimateValue: '~5 сек',
-    webCancel: 'Отмена',
     webStage0: 'Открываем страницу',
     webStage1: 'Читаем рецепт',
     webStage2: 'Заполняем черновик',

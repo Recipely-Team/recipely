@@ -662,7 +662,6 @@ export const tr: Translations = {
     webReading: 'Okunuyor',
     webSite: 'Site',
     webEstimateValue: '~5 sn',
-    webCancel: 'Vazgeç',
     webStage0: 'Sayfa açılıyor',
     webStage1: 'Tarif okunuyor',
     webStage2: 'Taslağın dolduruluyor',

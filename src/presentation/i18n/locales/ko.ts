@@ -654,7 +654,6 @@ export const ko: Translations = {
     webReading: '읽는 중',
     webSite: '사이트',
     webEstimateValue: '~5초',
-    webCancel: '취소',
     webStage0: '페이지 여는 중',
     webStage1: '레시피 읽는 중',
     webStage2: '초안 채우는 중',

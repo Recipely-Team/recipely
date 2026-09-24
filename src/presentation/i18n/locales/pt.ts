@@ -658,7 +658,6 @@ export const pt = {
     webReading: 'A ler',
     webSite: 'Site',
     webEstimateValue: '~5 s',
-    webCancel: 'Cancelar',
     webStage0: 'A abrir a página',
     webStage1: 'A ler a receita',
     webStage2: 'A preencher o rascunho',

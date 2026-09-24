@@ -658,7 +658,6 @@ export const id = {
     webReading: 'Membaca',
     webSite: 'Situs',
     webEstimateValue: '~5 dtk',
-    webCancel: 'Batal',
     webStage0: 'Membuka halaman',
     webStage1: 'Membaca resep',
     webStage2: 'Mengisi drafmu',

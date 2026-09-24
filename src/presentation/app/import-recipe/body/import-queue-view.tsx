@@ -58,7 +58,7 @@ export const ImportQueueView = ({
   const isWeb = platform === SourcePlatform.Web;
   const look = importLookFor(platform, colors);
 
-  const primaryLabel = isDone ? copy.openDraft : isWeb ? copy.webCancel : copy.notify;
+  const primaryLabel = isDone ? copy.openDraft : isWeb ? t().common.close : copy.notify;
 
   return (
     <>

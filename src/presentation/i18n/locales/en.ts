@@ -669,7 +669,6 @@ export const en = {
     webReading: 'Reading',
     webSite: 'Site',
     webEstimateValue: '~5 sec',
-    webCancel: 'Cancel',
     webStage0: 'Opening the page',
     webStage1: 'Reading the recipe',
     webStage2: 'Filling in your draft',

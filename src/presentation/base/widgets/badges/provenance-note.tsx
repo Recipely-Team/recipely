@@ -17,13 +17,16 @@ const HANDLE_PREFIX = '@';
 const WEB_SCHEME = 'https://';
 
 /** What the sentence says for each source, and where its one link goes. */
-const SOURCE_WORDS: Partial<Record<ProvenanceMarkType, {
+/** The marks that name a source; the AI mark qualifies one and names none. */
+type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai>;
+
+const SOURCE_WORDS: Record<SourceMarkType, {
   sentence: () => string;
   fallback: () => string;
   open: () => string;
   prefix: string;
   href: (handle: string, sourceUrl: string | undefined) => string;
-}>> = {
+}> = {
   [ProvenanceMark.Instagram]: {
     sentence: () => t().recipes.originInstagramDetailLabel,
     fallback: () => t().recipes.originInstagramA11y,
@@ -82,7 +85,7 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   if (marks.length === ValueConstants.zero) return null;
 
   const seal = <ProvenanceSeal marks={marks} surface={SealSurface.Page} size={provenanceSealMetrics.pageSize} />;
-  const platform = marks.find((mark) => mark !== ProvenanceMark.Ai);
+  const platform = marks.find((mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai);
 
   if (platform === undefined) {
     return (
@@ -97,7 +100,7 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
     );
   }
 
-  const words = SOURCE_WORDS[platform] ?? SOURCE_WORDS[ProvenanceMark.Instagram]!;
+  const words = SOURCE_WORDS[platform];
   const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originWrittenByAiSuffix : '';
   // An import with no handle still says where it came from; `@undefined` would
   // be worse than the missing half of a sentence.

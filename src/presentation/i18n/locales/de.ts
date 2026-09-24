@@ -658,7 +658,6 @@ export const de = {
     webReading: 'Wird gelesen',
     webSite: 'Seite',
     webEstimateValue: '~5 Sek.',
-    webCancel: 'Abbrechen',
     webStage0: 'Seite wird geöffnet',
     webStage1: 'Rezept wird gelesen',
     webStage2: 'Entwurf wird ausgefüllt',

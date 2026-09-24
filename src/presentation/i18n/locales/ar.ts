@@ -658,7 +658,6 @@ export const ar = {
     webReading: 'جارٍ القراءة',
     webSite: 'الموقع',
     webEstimateValue: '~5 ث',
-    webCancel: 'إلغاء',
     webStage0: 'جارٍ فتح الصفحة',
     webStage1: 'جارٍ قراءة الوصفة',
     webStage2: 'جارٍ ملء المسودة',

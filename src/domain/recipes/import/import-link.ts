@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, ValidationFailure } from '@core/failure';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 const INSTAGRAM_HOSTS: readonly string[] = ['instagram.com', 'instagr.am'];
@@ -65,7 +65,7 @@ export class ImportLink extends BaseValueObject<string> {
 
   static create(raw: string): Result<ImportLink, ValidationFailure> {
     const trimmed = raw.trim();
-    if (trimmed.length === 0) {
+    if (trimmed.length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.recipeImport.urlRequired, undefined, ErrorMessageKey.importInvalidUrl));
     }
 

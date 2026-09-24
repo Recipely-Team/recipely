@@ -658,7 +658,6 @@ export const fr = {
     webReading: 'Lecture',
     webSite: 'Site',
     webEstimateValue: '~5 s',
-    webCancel: 'Annuler',
     webStage0: 'Ouverture de la page',
     webStage1: 'Lecture de la recette',
     webStage2: 'Remplissage de ton brouillon',

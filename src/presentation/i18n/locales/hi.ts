@@ -654,7 +654,6 @@ export const hi: Translations = {
     webReading: 'पढ़ रहे हैं',
     webSite: 'साइट',
     webEstimateValue: '~5 सेकंड',
-    webCancel: 'रद्द करो',
     webStage0: 'पेज खोला जा रहा है',
     webStage1: 'रेसिपी पढ़ी जा रही है',
     webStage2: 'तुम्हारा ड्राफ़्ट भरा जा रहा है',

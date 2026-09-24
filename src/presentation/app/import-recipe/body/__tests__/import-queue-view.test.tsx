@@ -13,6 +13,7 @@
  * it.
  */
 
+import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { ScrollView } from 'react-native';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
@@ -123,7 +124,7 @@ describe('a recipe web page, which is read rather than queued', () => {
   it('names the site in the title instead of promising a video', () => {
     const shown = shownText(web);
 
-    expect(shown).toContain(en.importRecipe.webTitle.replace('{host}', HOST));
+    expect(shown).toContain(en.importRecipe.webTitle.replace(HOST_TOKEN, HOST));
     expect(shown).not.toContain(en.importRecipe.title);
   });
 
@@ -147,7 +148,10 @@ describe('a recipe web page, which is read rather than queued', () => {
   it('offers Cancel, not "notify me", and drops the background note', () => {
     const shown = shownText(web);
 
-    expect(shown).toContain(en.importRecipe.webCancel);
+    // The job runs on once the screen closes (the draft still lands, the push
+    // still comes), so the button says Close — never a Cancel it cannot keep.
+    expect(shown).toContain(en.common.close);
+    expect(shown).not.toContain(en.common.cancel);
     expect(shown).not.toContain(en.importRecipe.notify);
     expect(shown).not.toContain(en.importRecipe.background);
   });

@@ -7,7 +7,7 @@ import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repositor
 import type { ImportInstagramRecipeInput } from '@application/recipes/import/import-instagram-recipe-input';
 
 /**
- * Queues an import — an Instagram or TikTok video, or a recipe web page — and
+ * Queues an import — an Instagram video or a recipe web page — and
  * returns a receipt, without waiting for it.
  *
  * @remarks

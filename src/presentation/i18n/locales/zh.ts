@@ -662,7 +662,6 @@ export const zh = {
     webReading: '读取中',
     webSite: '网站',
     webEstimateValue: '约 5 秒',
-    webCancel: '取消',
     webStage0: '正在打开页面',
     webStage1: '正在读取食谱',
     webStage2: '正在填写你的草稿',
