@@ -7,9 +7,9 @@ import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
-import { toRecipeOrigin } from '@domain/recipes/to-recipe-origin';
-import { toSourcePlatform } from '@domain/recipes/to-source-platform';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { toRecipeOrigin } from '@domain/recipes/provenance/to-recipe-origin';
+import { toSourcePlatform } from '@domain/recipes/provenance/to-source-platform';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the

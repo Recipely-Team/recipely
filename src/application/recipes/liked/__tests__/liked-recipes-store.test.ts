@@ -16,7 +16,7 @@ import { Difficulty } from "@domain/recipes/difficulty";
 import { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import { CuisineKey } from "@domain/recipes/taxonomy/cuisine-key";
 import { RecipeCategory } from "@domain/recipes/taxonomy/recipe-category";
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const makeRecipe = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({

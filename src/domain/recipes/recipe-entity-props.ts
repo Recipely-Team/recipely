@@ -1,8 +1,8 @@
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
-import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
-import type { SourcePlatformType } from '@domain/recipes/source-platform';
+import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 export interface RecipeEntityProps {
   id: string;

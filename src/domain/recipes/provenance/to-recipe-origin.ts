@@ -1,4 +1,4 @@
-import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 
 /**
  * The origin a wire value names, or `User` when it names none this app knows.

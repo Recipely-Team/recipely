@@ -2822,7 +2822,56 @@ No per-theme re-run is needed for spacing/i18n changes.
 
 ---
 
+## Provenance Seal (supersedes the Provenance Badge below)
+
+Drawn in the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(`src/widgets.jsx` → `SourceCapsule`, `RecipeSourceNote`; `src/web-pages.jsx` → the web card).
+This section explains that drawing; the prototype is the design.
+
+**Why it replaced the badge.** The badge was a grey glyph in the card's rating row, and the owner
+said of it: *"I saw that you put it next to the rating, but it doesn't really stand out."* It could
+also say only one fact, while the ordinary import is two: a video from an account, written up
+by a model.
+
+**Model.** Two independent facts → a list of marks (`toProvenanceMarks`, domain): the source
+platform (Instagram / TikTok) when there is one, then AI when a model wrote the text. A
+hand-written recipe has no marks and draws nothing, anywhere.
+
+**Seal.** A white capsule. One mark → a circle; two marks → one capsule with the glyphs side by
+side, platform first, split by a hairline (two seals would crowd a corner the cuisine tag already
+shares; one merged glyph blurs at 27px).
+
+| Where | Size | Glyph | Ring |
+|---|---|---|---|
+| Mobile card, top-right, before the cuisine tag (difficulty keeps top-left) | 27 | 54% | 2px `sealRing` + `shadows.md` |
+| Web card, top-left, before the cuisine tag (the save bookmark keeps top-right) | 28 | 54% | 2px `sealRing` + `shadows.md` |
+| Detail line (both shells) | 22 | 60% | 1px `cardBorder` + `shadows.sm` |
+
+Pair padding 20% of size, gap 18%, divider 1 × 42% in `sealDivider`. All in
+`provenance-seal-metrics.ts`.
+
+**Contrast.** Face `#FFFFFF` is 21:1 against a black photo pixel; the ring (slate at 62%, ≈`#6A6F7B`
+over white) is 5.1:1 against a white one. Inks on the face: Instagram `#F56040 → #E1306C → #C13584 →
+#833AB4` and AI `#4F46E5 → #0E7490`, every stop at least 3:1 on white; TikTok's `#121212` note
+carries the shape (18:1), the `#FE2C55` echo is 3.9:1 and the `#25F4EE` echo is decoration only.
+Colours in `BrandColors`.
+
+**Detail.** One sentence for the whole truth: "Imported from @handle on TikTok, written by AI" /
+"TikTok'ta @handle hesabından alındı, yapay zekâ ile yazıldı". The handle is the only link. The
+sentence is in `text`, never `textMuted` (2.52:1 on pearl-white dark). An AI-only recipe has no
+platform to name, so it is a chip: seal + "AI-written recipe" in `chipText` on `chipBackground`.
+
+**Deviation, on purpose.** The prototype colours the handle `primary`; the build keeps `chipText`,
+which the palette suite holds at 4.5:1 on `background` and `surface` in all four themes. `primary`
+has no such assertion.
+
+**The rating-row glyph is removed.** A second marker for the same fact would be noise.
+
 ## Provenance Badge (recipe origin marker)
+
+> **Superseded** by the Provenance Seal above. Kept for its reasoning (the accessibility rule
+> below still applies); its placements, widget names and i18n keys (`originImport*`) no longer
+> exist — the keys are now per platform (`originInstagram*` / `originTiktok*`).
 
 Marks where a recipe's text came from — `AI` (a model wrote it), `IMPORT` (lifted from an
 Instagram post), or `USER` (a person wrote it, and the badge draws nothing). Appears as a bare

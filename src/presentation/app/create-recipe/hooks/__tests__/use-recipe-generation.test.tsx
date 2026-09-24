@@ -71,7 +71,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import { RecipeOrigin } from '@domain/recipes/recipe-origin';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
-import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
-import type { SourcePlatformType } from '@domain/recipes/source-platform';
+import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 export interface RecipeSummaryEntityProps {
   id: string;
