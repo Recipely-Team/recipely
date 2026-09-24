@@ -7,6 +7,7 @@
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -28,6 +29,7 @@ const recipe = RecipeSummaryEntity.create({
   likedByMe: false,
   commentCount: 2,
   viewCount: 100,
+  origin: RecipeOrigin.User,
 });
 
 describe('WebHeroFeaturedCard — author row removed', () => {

@@ -10,6 +10,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
@@ -29,6 +30,7 @@ const makeRecipe = (
     commentCount: 0,
     viewCount: 0,
     ...overrides,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

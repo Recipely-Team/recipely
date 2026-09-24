@@ -76,5 +76,9 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     likedByMe: dto.likedByMe ?? false,
     commentCount: dto.commentCount ?? ValueConstants.zero,
     viewCount: dto.viewCount ?? ValueConstants.zero,
+    // A row saved before the column existed sends nothing; `toRecipeOrigin`
+    // answers `User` for that, which is the honest reading — we do not know of
+    // anything else that wrote it.
+    origin: toRecipeOrigin(dto.origin),
   });
 };

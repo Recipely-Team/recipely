@@ -26,6 +26,9 @@ import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/recipe-origin';
+import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
+import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
@@ -46,13 +49,15 @@ export interface RecipeCardProps {
   onLike?: () => void;
   /** Web-only: lift the card slightly on mouse hover (used by the web grid). */
   hoverEffect?: boolean;
+  /** Where the recipe's text came from. A hand-written one draws no badge. */
+  origin?: RecipeOriginType;
 }
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags = [],
   likeCount = ValueConstants.zero, likedByMe = false,
-  onPress, onLike, hoverEffect = false,
+  onPress, onLike, hoverEffect = false, origin,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
@@ -143,6 +148,10 @@ export const RecipeCard = ({
               : null}
           </View>
           <View style={styles.metaRow}>
+            {/* Inline in the row that already holds the rating and the like
+                button, rather than a fifth floating chip on an image whose
+                corners are both already spoken for. */}
+            <ProvenanceBadge origin={origin ?? RecipeOrigin.User} variant={ProvenanceBadgeVariant.Compact} />
             <View style={styles.ratingRow}>
               {Array.from({ length: 5 }, (_, i) => {
                 const iconName = i < fullStars ? 'star' : i === fullStars && hasHalf ? 'star-half-full' : 'star-outline';

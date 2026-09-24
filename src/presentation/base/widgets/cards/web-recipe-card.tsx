@@ -25,6 +25,8 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
+import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -127,6 +129,10 @@ export const WebRecipeCard = ({
               <ThemedText variant="caption" muted>
                 {difficultyLabel(recipe.difficulty)}
               </ThemedText>
+              {/* Last in the row, after the time and difficulty pair — the
+                  card's own corners already carry a cuisine tag and the save
+                  bookmark. */}
+              <ProvenanceBadge origin={recipe.origin} variant={ProvenanceBadgeVariant.Compact} />
             </View>
 
             <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>

@@ -70,6 +70,7 @@ const makeSummary = (
     commentCount: 0,
     viewCount: 0,
     ...overrides,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok)
     throw new Error("failed to build RecipeSummaryEntity fixture");

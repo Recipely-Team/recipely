@@ -2,6 +2,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const validProps = {
   id: 'r1',
@@ -17,6 +18,7 @@ const validProps = {
   likedByMe: true,
   commentCount: 2,
   viewCount: 100,
+  origin: RecipeOrigin.User,
 };
 
 describe('RecipeSummaryEntity.create', () => {

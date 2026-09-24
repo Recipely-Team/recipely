@@ -22,6 +22,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 const RECIPE_ID = 'r-1';
 
@@ -40,6 +41,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
     likedByMe: true,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

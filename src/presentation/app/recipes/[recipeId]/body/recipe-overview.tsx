@@ -15,6 +15,8 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes } from '
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { ProvenanceBadge } from '@presentation/base/widgets/badges/provenance-badge';
+import { ProvenanceBadgeVariant } from '@presentation/base/widgets/badges/provenance-badge-variant';
 
 export interface RecipeOverviewProps {
   recipe: RecipeEntity;
@@ -124,6 +126,18 @@ export const RecipeOverview = ({
         />
       ) : null}
 
+      {/* Its own row rather than growing `RecipeAuthorCard`: that one is
+          contracted as "identifies the author and nothing more", and how the
+          text was produced is a different axis from who owns the record.
+          `spacing.sm` because it reads as a continuation of "about this
+          recipe", not a new section. */}
+      <ProvenanceBadge
+        origin={recipe.origin}
+        variant={ProvenanceBadgeVariant.Detailed}
+        sourceHandle={recipe.sourceHandle}
+        style={styles.provenance}
+      />
+
       <RecipeMetaCard
         prepTimeMinutes={recipe.prepTimeMinutes}
         cookTimeMinutes={recipe.cookTimeMinutes}
@@ -160,6 +174,7 @@ export const RecipeOverview = ({
 };
 
 const styles = StyleSheet.create({
+  provenance: { marginTop: spacing.sm },
   captionRow: {
     flexDirection: 'row',
     alignItems: 'center',
