@@ -14,7 +14,9 @@ export const provenanceLabel = (marks: readonly ProvenanceMarkType[]): string =>
     ? t().recipes.originInstagramA11y
     : marks.includes(ProvenanceMark.TikTok)
       ? t().recipes.originTiktokA11y
-      : null;
+      : marks.includes(ProvenanceMark.Web)
+        ? t().recipes.originWebA11y
+        : null;
   if (base === null) return byModel ? t().recipes.originAiA11y : '';
   return byModel ? `${base}${t().recipes.originWrittenByAiSuffix}` : base;
 };

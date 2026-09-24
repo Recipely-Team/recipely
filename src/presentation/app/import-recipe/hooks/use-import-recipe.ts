@@ -5,8 +5,11 @@ import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
-import { IMPORT_STAGE_COUNT, importStageFor } from '@presentation/app/import-recipe/model/import-stage';
-import { ValueConstants } from '@core/constants';
+import { importStageFor } from '@presentation/app/import-recipe/model/import-stage';
+import { importStageKeysFor } from '@presentation/app/import-recipe/model/import-stage-keys';
+import { ImportLink } from '@domain/recipes/import/import-link';
+import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { UnknownFailure, type Failure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
@@ -35,8 +38,14 @@ interface UseImportRecipeResult {
   failure: Failure | null;
   /** The job's own status, or null before there is a job. */
   jobStatus: ImportJobStatus | null;
-  /** 0..IMPORT_STAGE_COUNT — how far the checklist has filled. */
+  /** 0..stageCount — how far the checklist has filled. */
   activeStage: number;
+  /** How many stages the platform's checklist has: four for a video, three for a page. */
+  stageCount: number;
+  /** Where the link points; Instagram until a link is known. */
+  platform: SourcePlatformType;
+  /** The site as a person names it, for a web page's copy. */
+  host: string;
   /** 0..1 for the ring. */
   progress: number;
   isDone: boolean;
@@ -50,11 +59,17 @@ interface UseImportRecipeResult {
   onNotifyMe: () => void;
   /** Opens the finished draft. No-op until the job reports one. */
   onOpenDraft: () => void;
+  /**
+   * The queue screen's one button: the draft once it is ready; before that,
+   * "notify me" for a video and plain Cancel for a web page, which is read in
+   * seconds and has no notification to promise.
+   */
+  onPrimary: () => void;
 }
 
 /**
- * Drives the Instagram import screen: queue the reel, then say something true
- * about it until the user leaves.
+ * Drives the import screen: queue the link, then say something true about it
+ * until the user leaves.
  *
  * @remarks
  * - **Leaving is not cancelling.** The job runs on a worker and its result
@@ -215,8 +230,13 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     job !== null && job.status === ImportJobStatus.Failed
       ? new UnknownFailure(DiagnosticMessage.recipeImport.jobFailed, undefined, job.errorKey ?? undefined)
       : null;
-  const activeStage = jobStatus === null ? ValueConstants.zero : importStageFor(jobStatus, ticks);
+  const link = activeUrl === null || activeUrl === undefined ? null : ImportLink.create(activeUrl);
+  const platform = link !== null && link.ok ? link.value.platform : SourcePlatform.Instagram;
+  const host = link !== null && link.ok ? link.value.host : CharConstants.empty;
+  const stageCount = importStageKeysFor(platform).length;
+  const activeStage = jobStatus === null ? ValueConstants.zero : importStageFor(jobStatus, ticks, stageCount);
   const isDone = jobStatus === ImportJobStatus.Done;
+  const onPrimary = isDone ? onOpenDraft : platform === SourcePlatform.Web ? onClose : onNotifyMe;
 
   return {
     isQueueing: state.status === StoreStatus.Loading,
@@ -224,7 +244,10 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     failure: state.status === StoreStatus.Error ? state.failure : jobFailure,
     jobStatus,
     activeStage,
-    progress: activeStage / IMPORT_STAGE_COUNT,
+    stageCount,
+    platform,
+    host,
+    progress: activeStage / stageCount,
     isDone,
     queuePosition,
     onRetry: start,
@@ -232,5 +255,6 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     onClose,
     onNotifyMe,
     onOpenDraft,
+    onPrimary,
   };
 };

@@ -30,12 +30,16 @@ export const ErrorMessageKey = {
   // screen — the user is asked what to CHANGE, not what to cook.
   refineInstructionRequired: 'errors.ai.refine_instruction_required',
 
-  // Instagram import
+  // Link import: Instagram videos and recipe web pages
   importInvalidUrl: 'errors.import.invalid_url',
   importNotInstagram: 'errors.import.not_instagram',
   importFetchFailed: 'errors.import.fetch_failed',
   importDurationExceeded: 'errors.import.duration_exceeded',
   importNoRecipeFound: 'errors.import.no_recipe_found',
+  /** A web page opened, but it publishes no recipe markup to read. */
+  importNoRecipeOnPage: 'errors.import.no_recipe_on_page',
+  /** A web page could not be fetched at all: dead link, blocked, or down. */
+  importPageUnreachable: 'errors.import.page_unreachable',
   importBusy: 'errors.import.busy',
   recipeExists: 'errors.conflict.recipe_exists',
   /** The title names nothing you could eat — keyboard mash, a placeholder. */

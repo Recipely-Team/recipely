@@ -70,11 +70,11 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(repo.importInstagramCallCount).toBe(0);
   });
 
-  it('returns ValidationFailure importNotInstagram for a non-instagram host without hitting the repo', async () => {
+  it('returns ValidationFailure importNotInstagram for a site the import cannot read, without hitting the repo', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'https://tiktok.com/x' });
+    const r = await useCase.execute({ url: 'https://www.youtube.com/watch?v=x' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {
@@ -84,7 +84,20 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(repo.importInstagramCallCount).toBe(0);
   });
 
-  it('returns ValidationFailure importNotInstagram for a malformed/unparseable url without hitting the repo', async () => {
+  // The legacy endpoint runs only Instagram video. A recipe page is a valid
+  // import link everywhere else, so this is the one check keeping it off here.
+  it('refuses a recipe web page on the video-only endpoint without hitting the repo', async () => {
+    const repo = new FakeRecipeRepository();
+    const useCase = new ImportInstagramRecipeUseCase(repo);
+
+    const r = await useCase.execute({ url: 'https://www.nefisyemektarifleri.com/menemen-tarifi/' });
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
+    expect(repo.importInstagramCallCount).toBe(0);
+  });
+
+  it('returns ValidationFailure importInvalidUrl for a malformed/unparseable url without hitting the repo', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
@@ -93,7 +106,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importInvalidUrl);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });
@@ -121,8 +134,9 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const r = await useCase.execute({ url: 'https://instagram.com/p/xyz' });
 
     expect(repo.importInstagramCallCount).toBe(1);
+    // Sent on canonical: the backend's allowlist names www.instagram.com.
     expect(repo.lastImportInstagramCall).toEqual({
-      url: 'https://instagram.com/p/xyz',
+      url: 'https://www.instagram.com/p/xyz/',
     });
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBe(recipe);

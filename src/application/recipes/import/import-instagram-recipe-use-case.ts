@@ -6,61 +6,35 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 
 import type { ImportInstagramRecipeInput } from '@application/recipes/import/import-instagram-recipe-input';
-import { ValueConstants } from '@core/constants';
-
-const INSTAGRAM_HOSTS = ['instagram.com', 'www.instagram.com'];
+import { ImportLink } from '@domain/recipes/import/import-link';
+import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
 
 /**
- * Imports an Instagram reel/video into a preview `Recipe`. Two client-side
- * guards short-circuit before the network so a slow (~120s) backend round-trip
- * is never wasted on input that cannot succeed: a blank URL fails as
- * `errors.import.invalid_url`, and a URL that does not parse or whose host is
- * not Instagram fails as `errors.import.not_instagram`. The returned recipe is
- * a NON-persisted preview (same contract as `generateRecipe`).
- *
- * Those keys ride on `messageKey` — the SAME channel the backend uses for the
- * identical rules — so presentation resolves copy for a locally-refused URL and
- * a server-refused one through one lookup. `message` stays what it is meant to
- * be: a developer sentence for logs, never an i18n key.
+ * Imports an Instagram reel/video into a preview `Recipe` through the legacy
+ * synchronous endpoint, which runs only Instagram. The link is judged by
+ * {@link ImportLink} — the same rule the queue and the paste screen apply, so
+ * there is no second allowlist here to drift — and anything it does not class
+ * as an Instagram post fails as `errors.import.not_instagram` before the ~120 s
+ * round trip. The returned recipe is a NON-persisted preview (same contract as
+ * `generateRecipe`).
  */
 export class ImportInstagramRecipeUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
   execute(input: ImportInstagramRecipeInput): Promise<Result<RecipeEntity, Failure>> {
-    const trimmed = input.url.trim();
-    if (trimmed.length === ValueConstants.zero) {
+    const link = ImportLink.create(input.url);
+    if (!link.ok) return Promise.resolve(fail(link.failure));
+    if (link.value.platform !== SourcePlatform.Instagram) {
       return Promise.resolve(
         fail(
           new ValidationFailure(
-            DiagnosticMessage.recipeImport.urlRequired,
+            DiagnosticMessage.recipeImport.unsupportedSite(input.url.trim()),
             undefined,
-            ErrorMessageKey.importInvalidUrl,
+            ErrorMessageKey.importNotInstagram,
           ),
         ),
       );
     }
-    let host: string;
-    try {
-      host = new URL(trimmed).hostname;
-    } catch {
-      return Promise.resolve(fail(this.notInstagram(trimmed)));
-    }
-    if (!INSTAGRAM_HOSTS.includes(host.toLowerCase())) {
-      return Promise.resolve(fail(this.notInstagram(trimmed)));
-    }
-    return this.repo.importInstagramRecipe(trimmed);
-  }
-
-  /**
-   * NOTE the parenthesised url: `ValidationFailure.fieldErrors` splits `message`
-   * on `': '`, so a colon here would parse back as a phantom field named
-   * "Not an Instagram URL".
-   */
-  private notInstagram(url: string): ValidationFailure {
-    return new ValidationFailure(
-      DiagnosticMessage.recipeImport.notAnInstagramUrl(url),
-      undefined,
-      ErrorMessageKey.importNotInstagram,
-    );
+    return this.repo.importInstagramRecipe(link.value.value);
   }
 }

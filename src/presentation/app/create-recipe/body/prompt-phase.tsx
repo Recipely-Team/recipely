@@ -9,7 +9,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
-import { InstagramEntryCard } from '@presentation/app/create-recipe/items/instagram-entry-card';
+import { ImportEntryCard } from '@presentation/app/create-recipe/items/import-entry-card';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
@@ -95,7 +95,7 @@ export const PromptPhase = ({
           <ResumeDraftCard draftName={draftName} onPress={onResumeDraft} />
         ) : null}
 
-        <InstagramEntryCard onPress={onImportFromInstagram} />
+        <ImportEntryCard onPress={onImportFromInstagram} />
 
         <View
           style={[

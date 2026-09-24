@@ -30,12 +30,14 @@ export type FailureContentKey =
   | 'promptRequired'
   | 'promptTooLong'
   | 'refineInstructionRequired'
-  // ── key-tier: Instagram import ─────────────────────────────────────────────
+  // ── key-tier: link import ──────────────────────────────────────────────────
   | 'importInvalidUrl'
   | 'importNotInstagram'
   | 'importFetchFailed'
   | 'importDurationExceeded'
   | 'importNoRecipeFound'
+  | 'importNoRecipeOnPage'
+  | 'importPageUnreachable'
   | 'importBusy'
   | 'recipeExists'
   | 'nameMeaningless'

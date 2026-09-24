@@ -1,6 +1,4 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
@@ -10,50 +8,48 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   spacing,
   radii,
-  fontSizes,
   fontWeights,
   iconSizes,
   controlSizes,
-  decorSizes,
   borderWidths,
-  BrandColors,
 } from '@presentation/base/theme';
-import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { t } from '@presentation/i18n';
 import { ImportPasteSteps } from '@presentation/app/import-recipe/body/import-paste-steps';
 import { usePasteImportLink } from '@presentation/app/import-recipe/hooks/use-paste-import-link';
 import { ValueConstants } from '@core/constants';
+import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
+import { ImportPasteField } from '@presentation/app/import-recipe/body/import-paste-field';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
 export interface ImportPasteViewProps {
-  /** Hands back a validated Instagram URL to queue. */
+  /** Hands back a validated Instagram or recipe-page URL to queue. */
   onSubmit: (url: string) => void;
   onCancel: () => void;
 }
 
-const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.zero };
-const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.one };
-const GRADIENT_STOPS = [
-  BrandColors.instagramGradientStart,
-  BrandColors.instagramGradientMid,
-  BrandColors.instagramGradientEnd,
-] as const;
+const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.Web] as const;
 
 /**
  * Import by pasting a link — the entry that does not depend on the OS.
  *
  * @remarks
- * The share sheet only exists on Android today, and never on the web, so this
- * is the path that works everywhere: copy the link in Instagram, paste it here.
- * The three-step card is not decoration — "Copy link" is buried in Instagram's
- * ⋯ menu, and a user who cannot find it has no way to use the feature at all.
+ * - **The path that works everywhere.** The share sheet only exists on the
+ *   phone, and never on the web: copy the link in Instagram or the browser,
+ *   paste it here.
+ * - **The three-step card is not decoration** — "Copy link" is buried in
+ *   Instagram's ⋯ menu, and a user who cannot find it cannot use the feature.
+ * - **A recognised link shows its platform's glyph in the field**, in the same
+ *   white seal a recipe card wears, so the user sees WHICH link was understood.
  */
 export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
   const copy = t().importRecipe;
   const vm = usePasteImportLink();
-  const inputLineHeight = useTextLineHeight(fontSizes.body);
+  const recognised = vm.failure === null ? vm.recognised : null;
 
   const handleSubmit = (): void => {
     const url = vm.submit();
@@ -79,14 +75,14 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
       </View>
 
       <View style={[styles.lead, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-        <LinearGradient
-          colors={[...GRADIENT_STOPS]}
-          start={GRADIENT_START}
-          end={GRADIENT_END}
-          style={styles.leadBadge}
-        >
-          <Ionicons name="logo-instagram" size={iconSizes.xl} color={BrandColors.white} />
-        </LinearGradient>
+        <View>
+          <ProvenanceSeal
+            marks={ACCEPTED_MARKS}
+            surface={SealSurface.Page}
+            size={provenanceSealMetrics.importLeadSize}
+            label={copy.pasteLabel}
+          />
+        </View>
         <ThemedText variant="body" style={[styles.leadText, { color: colors.textMuted }]}>
           {copy.pasteLead}
         </ThemedText>
@@ -96,55 +92,24 @@ export const ImportPasteView = ({ onSubmit, onCancel }: ImportPasteViewProps): R
         {copy.pasteLabel}
       </ThemedText>
 
-      <View
-        style={[
-          styles.field,
-          {
-            backgroundColor: colors.inputBackground,
-            borderColor: vm.failure !== null ? colors.danger : colors.inputBorder,
-          },
-        ]}
-      >
-        <Ionicons name="link-outline" size={iconSizes.md} color={colors.textMuted} />
-        {/* Auto-grow, not a single line: a pasted URL is longer than the field
-            and scrolled its own identifying half out of sight, leaving the user
-            staring at `https://www.instagram.com/p/` wondering what they had
-            copied. It wraps now, and the whole link is readable at once. */}
-        <AutoGrowTextInput
-          value={vm.value}
-          onChangeText={vm.onChangeValue}
-          onBlur={vm.onBlur}
-          onSubmitEditing={handleSubmit}
-          placeholder={copy.pastePlaceholder}
-          placeholderTextColor={colors.textMuted}
-          inputMode="url"
-          autoCapitalize="none"
-          autoCorrect={false}
-          returnKeyType="go"
-          minHeight={controlSizes.input}
-          accessibilityLabel={copy.pasteLabel}
-          style={[styles.input, { color: colors.text, lineHeight: inputLineHeight }]}
-        />
-        <Pressable
-          onPress={vm.onPaste}
-          style={[styles.pasteBtn, { backgroundColor: colors.chipBackground }]}
-          accessibilityRole="button"
-          accessibilityLabel={copy.pasteAction}
-        >
-          <ThemedText variant="caption" style={[styles.pasteLabel, { color: colors.chipText }]}>
-            {copy.pasteAction}
-          </ThemedText>
-        </Pressable>
-      </View>
+      <ImportPasteField
+        value={vm.value}
+        onChangeValue={vm.onChangeValue}
+        onBlur={vm.onBlur}
+        onSubmit={handleSubmit}
+        onPaste={vm.onPaste}
+        recognised={recognised}
+        hasFailure={vm.failure !== null}
+      />
 
-      {vm.recognised !== null && vm.failure === null ? (
+      {recognised !== null ? (
         <View style={styles.hint}>
           <Ionicons name="checkmark-circle" size={iconSizes.sm} color={colors.success} />
           <ThemedText variant="caption" style={{ color: colors.success }}>
             {copy.pasteRecognised}
           </ThemedText>
           <ThemedText variant="caption" style={[styles.recognised, { color: colors.textMuted }]}>
-            {vm.recognised}
+            {recognised.shortForm}
           </ThemedText>
         </View>
       ) : null}
@@ -219,41 +184,11 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     borderWidth: borderWidths.hairline,
   },
-  leadBadge: {
-    width: decorSizes.badgeSm,
-    height: decorSizes.badgeSm,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   leadText: {
     flex: ValueConstants.one,
   },
   label: {
     fontWeight: fontWeights.semibold,
-  },
-  field: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    gap: spacing.sm,
-    minHeight: controlSizes.input,
-    paddingLeft: spacing.md,
-    paddingRight: spacing.xs,
-    borderRadius: radii.lg,
-    borderWidth: borderWidths.thin,
-  },
-  input: {
-    flex: ValueConstants.one,
-    fontSize: fontSizes.body,
-  },
-  pasteBtn: {
-    minHeight: controlSizes.chip,
-    justifyContent: 'center',
-    paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
-  },
-  pasteLabel: {
-    fontWeight: fontWeights.bold,
   },
   hint: {
     flexDirection: 'row',

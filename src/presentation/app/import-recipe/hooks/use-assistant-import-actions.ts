@@ -4,7 +4,6 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants } from '@core/constants';
 import type { ImportJobStatus } from '@domain/recipes/import/import-job-status';
-import { IMPORT_STAGE_COUNT } from '@presentation/app/import-recipe/model/import-stage';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
@@ -15,8 +14,10 @@ interface AssistantImportActionsDeps {
   sharedUrl: string | undefined;
   /** What the queue is doing, or null before a job has been accepted. */
   jobStatus: ImportJobStatus | null;
-  /** How many of the four checklist stages are ticked. */
+  /** How many of the checklist's stages are ticked. */
   activeStage: number;
+  /** The checklist's length: four for a video, three for a web page. */
+  stageCount: number;
   /** Where in the queue this job sits, when the backend says. */
   queuePosition: number | null;
   isDone: boolean;
@@ -36,7 +37,7 @@ const NO_JOB = 'none';
  * not to transcribe a URL character by character.
  */
 export const useAssistantImportActions = (deps: AssistantImportActionsDeps): void => {
-  const { sharedUrl, jobStatus, activeStage, queuePosition, isDone, onSubmitLink, onOpenDraft } = deps;
+  const { sharedUrl, jobStatus, activeStage, stageCount, queuePosition, isDone, onSubmitLink, onOpenDraft } = deps;
 
   // A wait screen still has something to say, and this one is asked about more
   // than most: "ne durumda" during an import had no answer at all, because the
@@ -44,7 +45,7 @@ export const useAssistantImportActions = (deps: AssistantImportActionsDeps): voi
   const describe = (): string =>
     [
       `import=${jobStatus ?? NO_JOB}`,
-      `stage=${activeStage}/${IMPORT_STAGE_COUNT}`,
+      `stage=${activeStage}/${stageCount}`,
       ...(queuePosition === null ? [] : [`queue=${queuePosition}`]),
       `done=${isDone ? Answer.yes : Answer.no}`,
     ].join(SCREEN_PART_SEPARATOR);

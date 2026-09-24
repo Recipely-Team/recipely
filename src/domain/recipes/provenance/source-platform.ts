@@ -1,5 +1,5 @@
 /**
- * Which video platform an imported recipe was lifted from.
+ * Where an imported recipe was lifted from: a video platform, or a web page.
  *
  * @remarks
  * - **Independent of `RecipeOrigin`.** They answer different questions, and one
@@ -11,6 +11,8 @@
 export const SourcePlatform = {
   Instagram: 'INSTAGRAM',
   TikTok: 'TIKTOK',
+  /** Any recipe web page, read from its own schema.org markup. The handle is the site. */
+  Web: 'WEB',
 } as const;
 
 export type SourcePlatformType = (typeof SourcePlatform)[keyof typeof SourcePlatform];

@@ -14,7 +14,7 @@ import { ValueConstants } from '@core/constants';
 const STEP_KEYS = ['pasteStep0', 'pasteStep1', 'pasteStep2'] as const;
 
 /**
- * The three taps that get a link out of Instagram.
+ * The three taps that get a link out of Instagram or a browser.
  *
  * Not decoration: "Copy link" lives behind Instagram's ⋯ menu, and a user who
  * cannot find it cannot use the feature at all.

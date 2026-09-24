@@ -15,6 +15,11 @@ export interface ProvenanceSealProps {
   marks: readonly ProvenanceMarkType[];
   surface: SealSurfaceType;
   size: number;
+  /**
+   * Replaces the provenance phrase, for a seal that is not about a recipe: the
+   * paste field's "TikTok link", the import card's list of what it accepts.
+   */
+  label?: string;
 }
 
 /**
@@ -24,7 +29,7 @@ export interface ProvenanceSealProps {
  * @remarks
  * - **Nothing for an empty list, before anything else is read.** Most recipes
  *   are hand-written, and a marker on every one of them is noise.
- * - **Two marks are one capsule, not two seals.** An import a model wrote
+ * - **Several marks are one capsule, not several seals.** An import a model wrote
  *   carries the platform and the AI mark side by side, split by a hairline: two
  *   seals would put three objects in a corner the cuisine tag already shares.
  * - **White face, dark ring, on a photo of any brightness.** The face is 21:1
@@ -34,14 +39,14 @@ export interface ProvenanceSealProps {
  *   which on web shows the same phrase as a bubble — on a card the seal is the
  *   only place the fact lives.
  */
-export const ProvenanceSeal = ({ marks, surface, size }: ProvenanceSealProps): React.JSX.Element | null => {
+export const ProvenanceSeal = ({ marks, surface, size, label: override }: ProvenanceSealProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
   const onPhoto = surface === SealSurface.Photo;
   const glyph = Math.round(size * (onPhoto ? m.glyphShareOnPhoto : m.glyphShareOnPage));
   const pair = marks.length > ValueConstants.one;
-  const label = provenanceLabel(marks);
+  const label = override ?? provenanceLabel(marks);
 
   return (
     <HoverTooltip label={label} accessibilityLabel={label}>
