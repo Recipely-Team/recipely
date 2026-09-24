@@ -181,8 +181,13 @@ jobs:
       # which `--no-verify` skips, and CI never checked. A 308-line .tsx and a
       # stale PROJECT-MAP both reached dev that way. A gate nothing runs is a
       # style guide.
+      #
+      # `:ci` is the portable half. The full `check:structure` also chains
+      # verify:envelope and verify:spotlight, which compile Swift against
+      # CryptoKit / CoreSpotlight and cannot run on ubuntu. Those two still run
+      # only in the local pre-commit hook — a known gap, not a covered one.
       - name: Structure Gate
-        run: npm run check:structure
+        run: npm run check:structure:ci
 
   test:
     name: Unit Tests
