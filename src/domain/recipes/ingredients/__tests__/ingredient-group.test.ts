@@ -59,3 +59,19 @@ describe('ingredientGroupLabel', () => {
     expect(ingredientGroupLabel('# Kat #2')).toBe('Kat #2');
   });
 });
+
+// The symptom: a pasted trileçe with three parts — cake, caramel, milk syrup —
+// came out as one list, because only a leading `#` counted as a heading.
+describe('headings written the way people write them', () => {
+  it.each(['Trileçenin keki için:', 'Trileçenin sütlü şerbeti için:', 'For the caramel:'])('%s is a heading', (line) => {
+    expect(isIngredientGroup(line)).toBe(true);
+  });
+
+  it.each(['5 adet büyük boy yumurta', '1 paket krem şanti', 'Tuz, karabiber', 'Not: 2 kaşık:'])('%s is an ingredient', (line) => {
+    expect(isIngredientGroup(line)).toBe(false);
+  });
+
+  it('names the group without its colon', () => {
+    expect(ingredientGroupLabel('Trileçenin karameli için:')).toBe('Trileçenin karameli için');
+  });
+});

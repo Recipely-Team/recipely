@@ -13,5 +13,15 @@ import { INGREDIENT_GROUP_MARKER } from '@domain/recipes/ingredients/ingredient-
  * The cost of that choice is this predicate: every place that counts,
  * validates, parses or renders an ingredient has to ask first.
  */
-export const isIngredientGroup = (line: string): boolean =>
-  line.trimStart().startsWith(INGREDIENT_GROUP_MARKER);
+/**
+ * A section heading the way people write one: "Trileçenin karameli için:" —
+ * words ending in a colon, no quantity. Pasted recipes and recipe sites use
+ * this far more than a leading `#`, and missing it put a cake, its caramel and
+ * its syrup into one undivided list.
+ */
+const COLON_HEADING = /^[^\d]{2,80}:\s*$/u;
+
+export const isIngredientGroup = (line: string): boolean => {
+  const trimmed = line.trim();
+  return trimmed.startsWith(INGREDIENT_GROUP_MARKER) || COLON_HEADING.test(trimmed);
+};
