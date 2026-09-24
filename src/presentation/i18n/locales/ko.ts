@@ -936,6 +936,7 @@ export const ko: Translations = {
     publishConfirm: "공개",
     requestFailed: "요청이 전달되지 않았어요. 잠시 후 다시 시도해 주세요.",
     micDenied: "목소리를 들으려면 마이크 권한이 필요해요.",
+    openSettings: '설정 열기',
     mute: "음소거",
     unmute: "음소거 해제",
     muted: "마이크 꺼짐",

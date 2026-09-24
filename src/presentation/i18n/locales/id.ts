@@ -940,6 +940,7 @@ export const id = {
     publishConfirm: "Terbitkan",
     requestFailed: "Permintaan tidak terkirim. Coba lagi sebentar lagi.",
     micDenied: "Recipely butuh mikrofon untuk mendengarmu.",
+    openSettings: 'Buka Pengaturan',
     mute: "Bisukan",
     unmute: "Nyalakan mikrofon",
     muted: "Mikrofon bisu",

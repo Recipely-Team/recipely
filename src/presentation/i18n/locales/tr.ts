@@ -947,6 +947,7 @@ export const tr: Translations = {
     publishConfirm: "Yayınla",
     requestFailed: "Bu istek ulaşmadı. Birazdan tekrar dene.",
     micDenied: "Seni duyabilmek için mikrofon izni gerekiyor.",
+    openSettings: 'Ayarları aç',
     mute: "Sustur",
     unmute: "Sesi aç",
     muted: "Mikrofon kapalı",

@@ -940,6 +940,7 @@ export const fr = {
     publishConfirm: "Publier",
     requestFailed: "Ça n'est pas passé. Réessaie dans un instant.",
     micDenied: "Recipely a besoin du micro pour t'entendre.",
+    openSettings: 'Ouvrir les Réglages',
     mute: "Couper le micro",
     unmute: "Activer le micro",
     muted: "Micro coupé",

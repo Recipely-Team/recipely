@@ -940,6 +940,7 @@ export const pt = {
     publishConfirm: "Publicar",
     requestFailed: "Não foi enviado. Tente de novo em instantes.",
     micDenied: "O Recipely precisa do microfone para ouvir você.",
+    openSettings: 'Abrir Definições',
     mute: "Silenciar",
     unmute: "Ativar microfone",
     muted: "Microfone silenciado",

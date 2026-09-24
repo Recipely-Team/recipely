@@ -940,6 +940,7 @@ export const ar = {
     publishConfirm: "نشر",
     requestFailed: "لم يصل الطلب. حاول بعد قليل.",
     micDenied: "يحتاج Recipely إلى الميكروفون ليسمعك.",
+    openSettings: 'فتح الإعدادات',
     mute: "كتم الصوت",
     unmute: "إلغاء الكتم",
     muted: "الميكروفون مكتوم",
