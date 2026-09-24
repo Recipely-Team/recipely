@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useId } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Stop } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -20,12 +20,18 @@ import {
   BrandColors,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
+import { ProvenanceGlyph } from '@presentation/base/widgets/badges/provenance-glyph';
+import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
 
 export interface ImportProgressRingProps {
   /** 0..1 — how much of the ring is drawn. */
   progress: number;
   /** Swaps the ring to the success hue and shows the check badge. */
   done: boolean;
+  look: ImportLook;
+  /** A web page has no dish photo to stand for: the dish shows the site's globe. */
+  isWeb: boolean;
 }
 
 const RING_SIZE = 152;
@@ -42,22 +48,20 @@ const BLOOM_SPREAD = 10;
 const BLOOM_MIN_SCALE = 0.96;
 const BLOOM_MAX_SCALE = 1.04;
 
+/** The globe inside a web import's dish, as the prototype draws it. */
+const WEB_MARK = 44;
+
 const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.one };
 const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
-const INSTAGRAM_STOPS = [
-  BrandColors.instagramGradientStart,
-  BrandColors.instagramGradientWarm,
-  BrandColors.instagramGradientMid,
-  BrandColors.instagramGradientEnd,
-] as const;
 
 /**
- * The waiting showpiece: an Instagram-gradient ring wound around the dish.
+ * The waiting showpiece: a ring in the source platform's colours wound around the dish.
  *
  * @remarks
  * - **The gradient IS the provenance.** This screen used to carry a "From
  *   Instagram" chip to say where the reel came from; the gradient says it
- *   without a label, in the one place the eye is already looking.
+ *   without a label, in the one place the eye is already looking. A web page
+ *   has no platform to credit, so it wears the app's own colours.
  * - **The ring is the JOB's progress, not a timer** — it moves when the backend
  *   says the job moved. Only the bloom is decorative, which is the honest
  *   division: something has to say "still working" through the minutes when
@@ -66,8 +70,9 @@ const INSTAGRAM_STOPS = [
  *   A low-opacity gradient disc breathing behind the ring reads as the same
  *   glow without pulling in a blur view for one decorative element.
  */
-export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps): React.JSX.Element => {
+export const ImportProgressRing = ({ progress, done, look, isWeb }: ImportProgressRingProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const ringId = `import-ring-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const bloom = useSharedValue(ValueConstants.zero);
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps):
     <View style={styles.root}>
       <Animated.View style={[styles.bloom, bloomStyle]}>
         <LinearGradient
-          colors={[...INSTAGRAM_STOPS]}
+          colors={[...look.gradient]}
           start={GRADIENT_START}
           end={GRADIENT_END}
           style={styles.bloomFill}
@@ -95,11 +100,10 @@ export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps):
 
       <Svg width={RING_SIZE} height={RING_SIZE} style={styles.ring}>
         <Defs>
-          <SvgGradient id="igRing" x1="0" y1="1" x2="1" y2="0">
-            <Stop offset="0%" stopColor={BrandColors.instagramGradientStart} />
-            <Stop offset="30%" stopColor={BrandColors.instagramGradientWarm} />
-            <Stop offset="62%" stopColor={BrandColors.instagramGradientMid} />
-            <Stop offset="100%" stopColor={BrandColors.instagramGradientEnd} />
+          <SvgGradient id={ringId} x1="0" y1="1" x2="1" y2="0">
+            {look.gradient.map((color, i) => (
+              <Stop key={`${color}-${i}`} offset={look.ringStops[i] ?? ValueConstants.one} stopColor={color} />
+            ))}
           </SvgGradient>
         </Defs>
         <Circle
@@ -114,7 +118,7 @@ export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps):
           cx={RING_CENTER}
           cy={RING_CENTER}
           r={RING_RADIUS}
-          stroke={done ? colors.success : 'url(#igRing)'}
+          stroke={done ? colors.success : `url(#${ringId})`}
           strokeWidth={RING_STROKE}
           strokeLinecap="round"
           fill="none"
@@ -125,19 +129,23 @@ export const ImportProgressRing = ({ progress, done }: ImportProgressRingProps):
       </Svg>
 
       <LinearGradient
-        colors={[...INSTAGRAM_STOPS]}
+        colors={[...look.gradient]}
         start={GRADIENT_START}
         end={GRADIENT_END}
         style={styles.rim}
       >
         <View style={[styles.dish, { borderColor: colors.background }]}>
           <LinearGradient
-            colors={[...INSTAGRAM_STOPS]}
+            colors={[...look.gradient]}
             start={GRADIENT_START}
             end={GRADIENT_END}
             style={styles.dishFill}
           >
-            <Ionicons name="restaurant-outline" size={iconSizes.huge} color={BrandColors.white} />
+            {isWeb ? (
+              <ProvenanceGlyph mark={ProvenanceMark.Web} size={WEB_MARK} tint={colors.primaryText} />
+            ) : (
+              <Ionicons name="restaurant-outline" size={iconSizes.huge} color={BrandColors.white} />
+            )}
           </LinearGradient>
         </View>
       </LinearGradient>

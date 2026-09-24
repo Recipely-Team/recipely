@@ -11,27 +11,30 @@ import {
   decorSizes,
   borderWidths,
   opacities,
-  BrandColors,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import type { importStageKeysFor } from '@presentation/app/import-recipe/model/import-stage-keys';
 
 export interface ImportStageListProps {
   /** Stages below this index are done; this one is in progress. */
   activeStage: number;
+  /** The platform's checklist — four stages for a video, three for a web page. */
+  stageKeys: ReturnType<typeof importStageKeysFor>;
+  /** The active stage's marker, in the ring's colours. */
+  accent: string;
 }
 
-const STAGE_KEYS = ['stage0', 'stage1', 'stage2', 'stage3'] as const;
 const DOT = 7;
 
-/** The queue made legible: the four things the worker does, in order. */
-export const ImportStageList = ({ activeStage }: ImportStageListProps): React.JSX.Element => {
+/** The queue made legible: the things the worker does, in order. */
+export const ImportStageList = ({ activeStage, stageKeys, accent }: ImportStageListProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().importRecipe;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-      {STAGE_KEYS.map((key, index) => {
+      {stageKeys.map((key, index) => {
         const isDone = index < activeStage;
         const isActive = index === activeStage;
         return (
@@ -43,14 +46,9 @@ export const ImportStageList = ({ activeStage }: ImportStageListProps): React.JS
               style={[
                 styles.marker,
                 {
-                  // The active step wears Instagram's pink, matching the ring
-                  // above it — the whole screen says where this came from
-                  // without a badge repeating it.
-                  backgroundColor: isDone
-                    ? colors.success
-                    : isActive
-                      ? BrandColors.instagramGradientMid
-                      : colors.skeleton,
+                  // The active step wears the ring's accent, so the whole
+                  // screen says where this came from.
+                  backgroundColor: isDone ? colors.success : isActive ? accent : colors.skeleton,
                 },
               ]}
             >

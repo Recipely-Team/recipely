@@ -50,6 +50,7 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   codeCooldown: SeverityType.Warning,
   importBusy: SeverityType.Warning,
   importNoRecipeFound: SeverityType.Neutral,
+  importNoRecipeOnPage: SeverityType.Neutral,
   registrationExpired: SeverityType.Neutral,
   resetLinkInvalid: SeverityType.Warning,
   resetLinkExpired: SeverityType.Warning,
@@ -79,10 +80,12 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   refineInstructionRequired: 'chatbubble-ellipses-outline',
 
   importInvalidUrl: 'link-outline',
-  importNotInstagram: 'logo-instagram',
+  importNotInstagram: 'ban-outline',
   importFetchFailed: 'cloud-download-outline',
   importDurationExceeded: 'time-outline',
   importNoRecipeFound: 'search-outline',
+  importNoRecipeOnPage: 'search-outline',
+  importPageUnreachable: 'globe-outline',
   importBusy: 'hourglass-outline',
   recipeExists: 'copy-outline',
 

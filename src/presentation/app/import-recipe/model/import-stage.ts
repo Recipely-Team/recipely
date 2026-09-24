@@ -1,7 +1,7 @@
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { ValueConstants } from '@core/constants';
 
-/** How many named stages the checklist shows. */
+/** How many named stages a video import's checklist shows. */
 export const IMPORT_STAGE_COUNT = 4;
 
 /**
@@ -15,12 +15,17 @@ export const IMPORT_STAGE_COUNT = 4;
  *   the work continues is a lie the user can catch.
  * - `elapsedTicks` lets a long `running` walk forward instead of freezing, and
  *   is clamped — the wait must never look finished until the job says it is.
+ * - **`stageCount` is the checklist's length**, which is the platform's: a web
+ *   page is read in three stages, a video in four.
  */
-export const importStageFor = (status: ImportJobStatus, elapsedTicks: number): number => {
-  if (status === ImportJobStatus.Done) return IMPORT_STAGE_COUNT;
+export const importStageFor = (
+  status: ImportJobStatus,
+  elapsedTicks: number,
+  stageCount: number = IMPORT_STAGE_COUNT,
+): number => {
+  if (status === ImportJobStatus.Done) return stageCount;
   if (status === ImportJobStatus.Queued) return ValueConstants.zero;
   if (status === ImportJobStatus.Failed) return ValueConstants.zero;
-  // Running: start at the first stage and creep, stopping one short of the end.
-  const lastRunningStage = IMPORT_STAGE_COUNT - ValueConstants.two;
+  const lastRunningStage = stageCount - ValueConstants.two;
   return Math.min(lastRunningStage, Math.max(ValueConstants.zero, elapsedTicks));
 };

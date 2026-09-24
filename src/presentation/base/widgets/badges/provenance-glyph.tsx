@@ -6,6 +6,8 @@ import { BrandColors } from '@presentation/base/theme';
 export interface ProvenanceGlyphProps {
   mark: ProvenanceMarkType;
   size: number;
+  /** Repaints the web globe, for a plate of the app's own colour rather than the seal's white face. */
+  tint?: string;
 }
 
 const VIEW_BOX = '0 0 24 24';
@@ -42,12 +44,12 @@ const AI_STOPS = [
  * - **A gradient id per instance.** SVG ids are document-global on web, so two
  *   seals sharing one id would both paint with whichever gradient came last.
  */
-export const ProvenanceGlyph = ({ mark, size }: ProvenanceGlyphProps): React.JSX.Element => {
+export const ProvenanceGlyph = ({ mark, size, tint }: ProvenanceGlyphProps): React.JSX.Element => {
   const inkId = `provenance-ink-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const ink = `url(#${inkId})`;
 
   if (mark === ProvenanceMark.Web) {
-    const line = { fill: 'none', stroke: BrandColors.webInk, strokeWidth: WEB_STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+    const line = { fill: 'none', stroke: tint ?? BrandColors.webInk, strokeWidth: WEB_STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
     return (
       <Svg width={size} height={size} viewBox={VIEW_BOX}>
         <Circle cx="12" cy="12" r="9" {...line} />

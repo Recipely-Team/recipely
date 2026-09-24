@@ -12,6 +12,7 @@ import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { usePasteImportLink } from '@presentation/app/import-recipe/hooks/use-paste-import-link';
 import { ErrorMessageKey } from '@core/failure';
+import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
 import * as Clipboard from 'expo-clipboard';
 
 jest.mock('expo-clipboard', () => ({ getStringAsync: jest.fn() }));
@@ -121,7 +122,7 @@ describe('usePasteImportLink', () => {
     });
 
     // The identifying half, which is exactly what a truncated field hid.
-    expect(vm().recognised).toBe('instagram.com/reel/Cx1y2z3');
+    expect(vm().recognised?.shortForm).toBe('instagram.com/reel/Cx1y2z3');
   });
 
   it('confirms a link the user typed once they leave the field', () => {
@@ -130,7 +131,7 @@ describe('usePasteImportLink', () => {
 
     act(() => vm().onBlur());
 
-    expect(vm().recognised).toBe('instagram.com/reel/Cx1y2z3');
+    expect(vm().recognised?.shortForm).toBe('instagram.com/reel/Cx1y2z3');
   });
 
   it('says nothing while the link is still being typed', () => {
@@ -180,5 +181,17 @@ describe('usePasteImportLink', () => {
 
     expect(vm().showManualHint).toBe(true);
     expect(vm().value).toBe('');
+  });
+
+  it('recognises which platform a link is for, so the field can show its glyph', () => {
+    const vm = drive();
+    act(() => vm().onChangeValue(REEL));
+    act(() => vm().onBlur());
+    expect(vm().recognised?.platform).toBe(SourcePlatform.Instagram);
+
+    act(() => vm().onChangeValue('https://www.nefisyemektarifleri.com/menemen-tarifi/'));
+    act(() => vm().onBlur());
+    expect(vm().recognised?.platform).toBe(SourcePlatform.Web);
+    expect(vm().recognised?.host).toBe('nefisyemektarifleri.com');
   });
 });

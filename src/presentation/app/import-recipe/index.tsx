@@ -20,7 +20,7 @@ import { ImportQueueView } from '@presentation/app/import-recipe/body/import-que
 import { ValueConstants } from '@core/constants';
 
 /**
- * The Instagram import, in its two states.
+ * The link import — an Instagram video or a recipe page — in its two states.
  *
  * @remarks
  * - **One route, because it is one thing.** Arriving with `?importUrl=` (a
@@ -40,6 +40,7 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
     sharedUrl: importUrl,
     jobStatus: vm.jobStatus,
     activeStage: vm.activeStage,
+    stageCount: vm.stageCount,
     queuePosition: vm.queuePosition,
     isDone: vm.isDone,
     onSubmitLink: vm.onSubmitLink,
@@ -81,7 +82,9 @@ export const ImportRecipeScreen = (): React.JSX.Element => {
               isDone={vm.isDone}
               queuePosition={vm.queuePosition}
               isQueueing={vm.isQueueing}
-              onPrimary={vm.isDone ? vm.onOpenDraft : vm.onNotifyMe}
+              platform={vm.platform}
+              host={vm.host}
+              onPrimary={vm.onPrimary}
             />
           )}
         </ResponsiveContainer>

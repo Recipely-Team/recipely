@@ -36,6 +36,8 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.importFetchFailed]: 'importFetchFailed',
   [ErrorMessageKey.importDurationExceeded]: 'importDurationExceeded',
   [ErrorMessageKey.importNoRecipeFound]: 'importNoRecipeFound',
+  [ErrorMessageKey.importNoRecipeOnPage]: 'importNoRecipeOnPage',
+  [ErrorMessageKey.importPageUnreachable]: 'importPageUnreachable',
   [ErrorMessageKey.importBusy]: 'importBusy',
   [ErrorMessageKey.recipeExists]: 'recipeExists',
   [ErrorMessageKey.nameMeaningless]: 'nameMeaningless',

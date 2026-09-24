@@ -1,7 +1,10 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
+import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   spacing,
@@ -10,30 +13,28 @@ import {
   iconSizes,
   controlSizes,
   borderWidths,
-  BrandColors,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
-export interface InstagramEntryCardProps {
+export interface ImportEntryCardProps {
   onPress: () => void;
 }
 
-const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.zero };
-const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.one };
-const GRADIENT_STOPS = [
-  BrandColors.instagramGradientStart,
-  BrandColors.instagramGradientMid,
-  BrandColors.instagramGradientEnd,
-] as const;
+const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.Web] as const;
 
 /**
- * The way into the Instagram import that does not depend on the OS share sheet.
+ * The way into the link import that does not depend on the OS share sheet.
  *
- * Sharing from Instagram works on Android only, and never on the web — so this
- * card is how everyone else reaches the feature at all.
+ * @remarks
+ * - **Sharing works on the phone only, and never on the web** — so this card is
+ *   how everyone else reaches the feature at all.
+ * - **A neutral link tile, not a platform's plate.** The import takes an
+ *   Instagram video or a recipe page; the capsule of glyphs says which, and no
+ *   one platform's gradient claims the whole card. TikTok's glyph is left out
+ *   while TikTok blocks the import worker.
  */
-export const InstagramEntryCard = ({ onPress }: InstagramEntryCardProps): React.JSX.Element => {
+export const ImportEntryCard = ({ onPress }: ImportEntryCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().importRecipe;
 
@@ -44,14 +45,9 @@ export const InstagramEntryCard = ({ onPress }: InstagramEntryCardProps): React.
       accessibilityRole="button"
       accessibilityLabel={copy.pasteEntry}
     >
-      <LinearGradient
-        colors={[...GRADIENT_STOPS]}
-        start={GRADIENT_START}
-        end={GRADIENT_END}
-        style={styles.badge}
-      >
-        <Ionicons name="logo-instagram" size={iconSizes.xl} color={BrandColors.white} />
-      </LinearGradient>
+      <View style={[styles.tile, { backgroundColor: colors.chipBackground }]}>
+        <Ionicons name="link" size={iconSizes.xl} color={colors.chipText} />
+      </View>
       <View style={styles.body}>
         <ThemedText variant="body" style={styles.title}>
           {copy.pasteEntry}
@@ -60,6 +56,12 @@ export const InstagramEntryCard = ({ onPress }: InstagramEntryCardProps): React.
           {copy.pasteEntryHint}
         </ThemedText>
       </View>
+      <ProvenanceSeal
+        marks={ACCEPTED_MARKS}
+        surface={SealSurface.Page}
+        size={provenanceSealMetrics.importEntrySize}
+        label={copy.pasteEntryHint}
+      />
       <Ionicons name="chevron-forward" size={iconSizes.lg} color={colors.textMuted} />
     </Pressable>
   );
@@ -74,7 +76,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     borderWidth: borderWidths.hairline,
   },
-  badge: {
+  tile: {
     width: controlSizes.iconBtn,
     height: controlSizes.iconBtn,
     borderRadius: radii.md,

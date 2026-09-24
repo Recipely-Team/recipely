@@ -2986,7 +2986,7 @@ follows, applied to our own `metaRow`/`footer` rows rather than a new one.
 |---|---|---|
 | AI icon glyph | `Ionicons name="sparkles"` | Already the app's AI glyph — `create-recipe`, the AI banners, the assistant widgets all use it. Reused, not reinvented. |
 | AI icon color | `colors.chipText` | = `palette.primary` today, but the semantically-correct token (contract: "text/icon on `chipBackground`" family) rather than raw `colors.primary`. Verified ≥4.52:1 against `chipBackground` in every current theme (see Contrast verification). |
-| Import icon glyph | `Ionicons name="logo-instagram"` | Already the app's Instagram glyph — `import-paste-view.tsx`, `instagram-entry-card.tsx`. |
+| Import icon glyph | `Ionicons name="logo-instagram"` | Already the app's Instagram glyph — `import-paste-view.tsx`. |
 | Import icon color | `colors.text` | NOT `colors.textMuted` — see the audit finding below. `colors.text` is verified ≥9.68:1 against `colors.surface`/`cardBackground` in every current theme, comfortably above the 3:1 WCAG 1.4.11 floor for a graphical object. |
 | Icon size (`RecipeCard`) | `iconSizes.sm` (14) | Matches the star icons already in that row. |
 | Icon size (`WebRecipeCard`) | `iconSizes.md` (16) | Matches the `time-outline` / `speedometer-outline` icons already in that row. |
@@ -3034,7 +3034,7 @@ Applies to the mobile detail screen (`RecipeOverview`,
 (`WebRecipeDetailHeader`, `src/presentation/app/recipes/[recipeId]/body/web-recipe-detail-header.tsx`).
 Icon + label; for `IMPORT`, the account handle is a separate, tappable inline link.
 
-**Reference:** [instagram-entry-card.tsx](../../../../src/presentation/app/create-recipe/items/instagram-entry-card.tsx)
+**Reference:** [import-entry-card.tsx](../../../../src/presentation/app/create-recipe/items/import-entry-card.tsx)
 already ships the exact gradient-plate + white `logo-instagram` treatment for the import ENTRY
 point — deliberately **not** reused here. That plate is a call-to-action ("start an import"); this
 badge is a passive fact about a recipe that already exists, and the ordinary case (`USER`) draws

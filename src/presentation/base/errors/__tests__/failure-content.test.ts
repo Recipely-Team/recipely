@@ -74,6 +74,36 @@ describe('failure-content resolver — messageKey tier', () => {
   });
 });
 
+describe('failure-content resolver — a recipe web page', () => {
+  // The backend sends these two once it reads web pages. Without them in the
+  // catalogue they fell back to the generic code copy, which told a user whose
+  // link was simply dead that "something went wrong".
+  it('says a page had no recipe on it, as the backend key asks', () => {
+    const failure = new ValidationFailure('no recipe', undefined, 'errors.import.no_recipe_on_page');
+
+    expect(failureContent(failure)).toEqual({
+      title: en.errors.importNoRecipeOnPage.title,
+      body: en.errors.importNoRecipeOnPage.body,
+    });
+    expect(failureSeverity(failure)).toBe('neutral');
+  });
+
+  it('says a page could not be opened, as the backend key asks', () => {
+    const failure = new ServerFailure('unreachable', 502, 'errors.import.page_unreachable');
+
+    expect(failureContent(failure)).toEqual({
+      title: en.errors.importPageUnreachable.title,
+      body: en.errors.importPageUnreachable.body,
+    });
+    expect(failureKeyMessage(failure)).toBe(en.errors.importPageUnreachable.short);
+  });
+
+  it('keys the wire strings through ErrorMessageKey', () => {
+    expect(ErrorMessageKey.importNoRecipeOnPage).toBe('errors.import.no_recipe_on_page');
+    expect(ErrorMessageKey.importPageUnreachable).toBe('errors.import.page_unreachable');
+  });
+});
+
 describe('failure-content resolver', () => {
   it('selects localized title/body from the failure class (not its raw message)', () => {
     const failure = new NetworkFailure('axios ECONNREFUSED 127.0.0.1');

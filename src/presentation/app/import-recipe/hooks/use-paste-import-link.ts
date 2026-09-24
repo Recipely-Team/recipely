@@ -15,13 +15,14 @@ interface UsePasteImportLinkResult {
   /** Shown when the clipboard could not be read — the field is the fallback. */
   showManualHint: boolean;
   /**
-   * `instagram.com/reel/Cx1y2z3` once the field holds a real post link.
+   * The link once the field holds one an import can run against: its platform
+   * for the field's seal, and its `shortForm` (`instagram.com/reel/Cx1y2z3`).
    *
    * A pasted URL overflows the field, so the user sees `https://www.instagram.com/p/`
    * and cannot tell whether the identifying part came along. This is the
-   * positive confirmation that it did.
+   * positive confirmation that it did — and of which kind of link it is.
    */
-  recognised: string | null;
+  recognised: ImportLink | null;
   onBlur: () => void;
   onPaste: () => void;
   onDismissFailure: () => void;
@@ -47,7 +48,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
   const [isEmpty, setIsEmpty] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [showManualHint, setShowManualHint] = useState(false);
-  const [recognised, setRecognised] = useState<string | null>(null);
+  const [recognised, setRecognised] = useState<ImportLink | null>(null);
 
   /**
    * Checks the link WITHOUT complaining. Used after a paste and on blur: the
@@ -57,7 +58,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
    */
   const inspect = useCallback((raw: string): void => {
     const url = ImportLink.create(raw);
-    setRecognised(url.ok ? url.value.shortForm : null);
+    setRecognised(url.ok ? url.value : null);
   }, []);
 
   const onChangeValue = useCallback((next: string): void => {
@@ -101,7 +102,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
       return null;
     }
     setFailure(null);
-    setRecognised(url.value.shortForm);
+    setRecognised(url.value);
     return url.value.value;
   }, [value]);
 
