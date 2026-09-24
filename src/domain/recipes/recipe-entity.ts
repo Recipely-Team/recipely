@@ -9,6 +9,7 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
 import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/source-platform';
 
 
 /**
@@ -111,6 +112,12 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   /** The account that posted it, without the '@'. */
   get sourceHandle(): string | undefined {
     return this.props.sourceHandle;
+  }
+  get sourcePlatform(): SourcePlatformType | null {
+    return this.props.sourcePlatform;
+  }
+  get aiWritten(): boolean {
+    return this.props.aiWritten;
   }
   get moderationStatus(): string {
     return this.props.moderationStatus;

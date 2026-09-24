@@ -19,6 +19,8 @@ const validProps = {
   commentCount: 2,
   viewCount: 100,
   origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
 };
 
 describe('RecipeSummaryEntity.create', () => {

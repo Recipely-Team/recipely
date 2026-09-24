@@ -193,6 +193,8 @@ const buildRecipe = (likedByMe: boolean): RecipeEntity => {
     viewCount: 60,
     moderationStatus: 'approved',
     commentCount: 1,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeEntity fixture');
   return result.value;

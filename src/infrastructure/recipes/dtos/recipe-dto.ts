@@ -35,5 +35,9 @@ export interface RecipeDto {
   sourceUrl?: string;
   /** The account that posted it, without the '@'. */
   sourceHandle?: string;
+  /** Which platform an import came from: `INSTAGRAM` or `TIKTOK`. */
+  sourcePlatform?: string | null;
+  /** Whether a model produced the text — true for a generation AND an import. */
+  aiWritten?: boolean;
   moderationStatus: string;
 }

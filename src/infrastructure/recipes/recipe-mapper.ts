@@ -8,6 +8,8 @@ import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
 import { toRecipeOrigin } from '@domain/recipes/to-recipe-origin';
+import { toSourcePlatform } from '@domain/recipes/to-source-platform';
+import { RecipeOrigin } from '@domain/recipes/recipe-origin';
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -48,6 +50,11 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     likedByMe: dto.likedByMe ?? false,
     viewCount: dto.viewCount ?? ValueConstants.zero,
     origin: toRecipeOrigin(dto.origin),
+    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    // A server that predates the column says nothing; an import is a model's
+    // work by definition, so `origin` answers for those rows rather than
+    // letting them read as hand-written.
+    aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
     ...(dto.sourceUrl !== undefined ? { sourceUrl: dto.sourceUrl } : {}),
     ...(dto.sourceHandle !== undefined ? { sourceHandle: dto.sourceHandle } : {}),
     moderationStatus: dto.moderationStatus,
@@ -80,5 +87,7 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     // answers `User` for that, which is the honest reading — we do not know of
     // anything else that wrote it.
     origin: toRecipeOrigin(dto.origin),
+    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
   });
 };

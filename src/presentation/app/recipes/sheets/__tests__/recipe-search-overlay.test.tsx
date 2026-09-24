@@ -54,6 +54,8 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
     commentCount: 0,
     viewCount: 0,
       origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('fixture invalid');
   return result.value;

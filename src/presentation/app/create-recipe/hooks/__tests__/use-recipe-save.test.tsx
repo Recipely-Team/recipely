@@ -97,6 +97,8 @@ const makeRecipe = (id: string): RecipeEntity => {
     viewCount: 0,
     moderationStatus: 'approved',
     commentCount: 0,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;

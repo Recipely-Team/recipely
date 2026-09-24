@@ -30,6 +30,8 @@ const recipe = RecipeSummaryEntity.create({
   commentCount: 2,
   viewCount: 100,
   origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
 });
 
 describe('WebHeroFeaturedCard — author row removed', () => {

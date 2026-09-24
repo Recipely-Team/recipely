@@ -31,6 +31,8 @@ const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]
     moderationStatus: 'approved',
     commentCount: 3,
     ...overrides,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;

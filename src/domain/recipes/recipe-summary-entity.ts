@@ -1,5 +1,6 @@
 import { BaseEntity } from '@core/entity/base-entity';
 import type { RecipeOriginType } from '@domain/recipes/recipe-origin';
+import type { SourcePlatformType } from '@domain/recipes/source-platform';
 import type { RecipeSummaryEntityProps } from '@domain/recipes/recipe-summary-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
@@ -69,5 +70,11 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
   get origin(): RecipeOriginType {
     return this.props.origin;
+  }
+  get sourcePlatform(): SourcePlatformType | null {
+    return this.props.sourcePlatform;
+  }
+  get aiWritten(): boolean {
+    return this.props.aiWritten;
   }
 }
