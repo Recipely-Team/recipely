@@ -1,10 +1,9 @@
-import { ActionSheetIOS, Alert } from 'react-native';
 import { useCallback, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
 import { DEFAULT_IMAGE_MIME, MIME_BY_EXTENSION } from '@infrastructure/constants/image-mime';
-import { isIos, isWeb } from '@infrastructure/constants/platform';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
-import { PickSource } from '@presentation/base/hooks/profile/pick-source';
+import { PickSource } from '@presentation/base/utils/pick-source';
+import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import type { RecipePhotoUpload } from '@presentation/app/recipes/[recipeId]/model/recipe-photo-upload';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
@@ -93,34 +92,8 @@ export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
 
   const pickAndAdd = useCallback(async (): Promise<void> => {
     if (isBusy) return;
-
-    // Web has no reliable camera through the picker, so it goes straight to
-    // the library — the same call the avatar flow makes, for the same reason.
-    if (isWeb()) {
-      await launch(PickSource.Library);
-      return;
-    }
-
-    if (isIos()) {
-      ActionSheetIOS.showActionSheetWithOptions(
-        {
-          title: t().recipes.addPhoto,
-          options: [t().profile.takePhoto, t().profile.chooseFromLibrary, t().common.cancel],
-          cancelButtonIndex: 2,
-        },
-        (index) => {
-          if (index === ValueConstants.zero) void launch(PickSource.Camera);
-          else if (index === 1) void launch(PickSource.Library);
-        },
-      );
-      return;
-    }
-
-    Alert.alert(t().recipes.addPhoto, undefined, [
-      { text: t().profile.takePhoto, onPress: () => void launch(PickSource.Camera) },
-      { text: t().profile.chooseFromLibrary, onPress: () => void launch(PickSource.Library) },
-      { text: t().common.cancel, style: 'cancel' },
-    ]);
+    const source = await askPickSource(t().recipes.addPhoto);
+    if (source !== null) await launch(source);
   }, [isBusy, launch]);
 
   const remove = useCallback(

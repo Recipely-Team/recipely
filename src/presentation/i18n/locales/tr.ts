@@ -659,6 +659,8 @@ export const tr: Translations = {
   mediaPicker: {
     add: 'Fotoğraf ekle',
     hint: 'Galeriden seçmek için dokun',
+    hintWithCamera: 'Fotoğraf çek ya da galeriden seç',
+    openSettings: 'Ayarları aç',
     cover: 'Kapak',
     setCover: 'Kapak yap',
     remove: 'Fotoğrafı kaldır',

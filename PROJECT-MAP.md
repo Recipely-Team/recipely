@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1039 source files.
+[architecture.md](architecture.md). 1041 source files.
 
 ## Layers
 
@@ -109,13 +109,13 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(65)_
+- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(64)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` — small pure helpers _(8)_
+- `utils/` — small pure helpers _(10)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(94)_
 
@@ -150,4 +150,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: b50fe410a19f53cf -->
+<!-- fingerprint: d814828ed181e468 -->

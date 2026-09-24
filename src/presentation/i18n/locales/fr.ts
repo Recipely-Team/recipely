@@ -655,6 +655,8 @@ export const fr = {
   mediaPicker: {
     add: 'Ajouter des photos',
     hint: 'Touchez pour choisir dans votre photothèque',
+    hintWithCamera: 'Prenez une photo ou choisissez-en une dans votre photothèque',
+    openSettings: 'Ouvrir les Réglages',
     cover: 'Couverture',
     setCover: 'Définir comme couverture',
     remove: 'Supprimer la photo',

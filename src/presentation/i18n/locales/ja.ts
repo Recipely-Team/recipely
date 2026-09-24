@@ -655,6 +655,8 @@ export const ja = {
   mediaPicker: {
     add: '写真を追加',
     hint: 'タップしてライブラリから選択',
+    hintWithCamera: '写真を撮るか、ライブラリから選択',
+    openSettings: '設定を開く',
     cover: 'カバー',
     setCover: 'カバーに設定',
     remove: '写真を削除',

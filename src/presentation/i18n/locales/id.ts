@@ -655,6 +655,8 @@ export const id = {
   mediaPicker: {
     add: 'Tambah foto',
     hint: 'Ketuk untuk memilih dari galeri',
+    hintWithCamera: 'Ambil foto atau pilih dari galeri',
+    openSettings: 'Buka Pengaturan',
     cover: 'Sampul',
     setCover: 'Jadikan sampul',
     remove: 'Hapus foto',

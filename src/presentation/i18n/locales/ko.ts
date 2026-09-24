@@ -651,6 +651,8 @@ export const ko: Translations = {
   mediaPicker: {
     add: '사진 추가',
     hint: '탭해서 사진을 선택하세요',
+    hintWithCamera: '사진을 찍거나 앨범에서 선택하세요',
+    openSettings: '설정 열기',
     cover: '대표 사진',
     setCover: '대표 사진으로 설정',
     remove: '사진 삭제',

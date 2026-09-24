@@ -655,6 +655,8 @@ export const ar = {
   mediaPicker: {
     add: "إضافة صور",
     hint: "اضغط للاختيار من مكتبتك",
+    hintWithCamera: 'التقط صورة أو اختر من مكتبتك',
+    openSettings: 'فتح الإعدادات',
     cover: "الغلاف",
     setCover: "تعيين كغلاف",
     remove: "إزالة الصورة",

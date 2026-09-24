@@ -655,6 +655,8 @@ export const it = {
   mediaPicker: {
     add: 'Aggiungi foto',
     hint: 'Tocca per scegliere dalla libreria',
+    hintWithCamera: 'Scatta una foto o scegline una dalla libreria',
+    openSettings: 'Apri Impostazioni',
     cover: 'Copertina',
     setCover: 'Imposta come copertina',
     remove: 'Rimuovi foto',

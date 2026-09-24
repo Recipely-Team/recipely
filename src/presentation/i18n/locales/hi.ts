@@ -651,6 +651,8 @@ export const hi: Translations = {
   mediaPicker: {
     add: 'फ़ोटो जोड़ें',
     hint: 'गैलरी से चुनने के लिए टैप करें',
+    hintWithCamera: 'फ़ोटो लें या गैलरी से चुनें',
+    openSettings: 'सेटिंग्स खोलें',
     cover: 'कवर',
     setCover: 'कवर बनाएँ',
     remove: 'फ़ोटो हटाएँ',

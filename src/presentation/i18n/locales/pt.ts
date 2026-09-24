@@ -655,6 +655,8 @@ export const pt = {
   mediaPicker: {
     add: 'Adicionar fotos',
     hint: 'Toque para escolher da sua galeria',
+    hintWithCamera: 'Tire uma foto ou escolha da sua galeria',
+    openSettings: 'Abrir Ajustes',
     cover: 'Capa',
     setCover: 'Definir como capa',
     remove: 'Remover foto',

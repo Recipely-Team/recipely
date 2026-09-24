@@ -659,6 +659,8 @@ export const zh = {
   mediaPicker: {
     add: '添加照片',
     hint: '点击从相册选择',
+    hintWithCamera: '拍照或从相册选择',
+    openSettings: '打开设置',
     cover: '封面',
     setCover: '设为封面',
     remove: '移除照片',

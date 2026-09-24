@@ -2208,3 +2208,8 @@ refused (the prompt is gone and the only remaining door is Settings). A screen t
 requirement without offering that door is a dead end that looks like a bug in the request, and
 it sends everyone hunting the wrong layer — the plist, the native module, the call order — none
 of which is broken.
+
+*Second instance, same class:* the recipe editor's photo picker returned an empty list on a
+refused library permission — the "Add photos" button simply did nothing. It now says so and
+offers Settings (`use-media-pick.test.tsx`). The camera and the library are asked through one
+`askPickSource`, so the three photo flows cannot drift apart on which sources they offer.

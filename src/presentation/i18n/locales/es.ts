@@ -655,6 +655,8 @@ export const es = {
   mediaPicker: {
     add: 'Añadir fotos',
     hint: 'Toca para elegir de tu galería',
+    hintWithCamera: 'Haz una foto o elige una de tu galería',
+    openSettings: 'Abrir Ajustes',
     cover: 'Portada',
     setCover: 'Usar como portada',
     remove: 'Eliminar foto',

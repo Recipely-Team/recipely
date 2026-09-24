@@ -655,6 +655,8 @@ export const de = {
   mediaPicker: {
     add: 'Fotos hinzufügen',
     hint: 'Tippe, um aus deiner Mediathek auszuwählen',
+    hintWithCamera: 'Mach ein Foto oder wähle eins aus deiner Mediathek',
+    openSettings: 'Einstellungen öffnen',
     cover: 'Titelbild',
     setCover: 'Als Titelbild festlegen',
     remove: 'Foto entfernen',

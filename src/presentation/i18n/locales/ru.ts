@@ -655,6 +655,8 @@ export const ru = {
   mediaPicker: {
     add: 'Добавить фото',
     hint: 'Нажмите, чтобы выбрать из медиатеки',
+    hintWithCamera: 'Сделайте фото или выберите из медиатеки',
+    openSettings: 'Открыть настройки',
     cover: 'Обложка',
     setCover: 'Сделать обложкой',
     remove: 'Удалить фото',

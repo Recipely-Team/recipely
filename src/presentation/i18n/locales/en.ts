@@ -666,6 +666,8 @@ export const en = {
   mediaPicker: {
     add: 'Add photos',
     hint: 'Tap to choose from your library',
+    hintWithCamera: 'Take a photo or choose from your library',
+    openSettings: 'Open Settings',
     cover: 'Cover',
     setCover: 'Set cover',
     remove: 'Remove photo',
