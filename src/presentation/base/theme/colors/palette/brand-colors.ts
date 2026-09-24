@@ -41,6 +41,8 @@ export const BrandColors = {
   tiktokNote: '#121212',
   tiktokCyan: '#25F4EE',
   tiktokRed: '#FE2C55',
+  /** A web page's globe: neutral slate rather than any site's colour, 10.4:1 on white. */
+  webInk: '#334155',
   /** The AI sparkles' indigo-to-teal ink, both stops at least 3:1 on white. */
   aiInkIndigo: '#4F46E5',
   aiInkTeal: '#0E7490',

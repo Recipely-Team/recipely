@@ -133,6 +133,7 @@ export const RecipeOverview = ({
       <ProvenanceNote
         marks={recipe.provenanceMarks}
         sourceHandle={recipe.sourceHandle}
+        sourceUrl={recipe.sourceUrl}
         style={styles.provenance}
       />
 

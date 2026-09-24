@@ -15,6 +15,7 @@ import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
 export const ProvenanceMark = {
   Instagram: SourcePlatform.Instagram,
   TikTok: SourcePlatform.TikTok,
+  Web: SourcePlatform.Web,
   Ai: RecipeOrigin.Ai,
 } as const;
 

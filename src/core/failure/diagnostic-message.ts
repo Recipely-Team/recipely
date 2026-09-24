@@ -52,10 +52,11 @@ export const DiagnosticMessage = {
     uploadFailed: (status: number): string => `Network error (status ${status})`,
   },
   recipeImport: {
-    urlRequired: 'Instagram URL is required',
-    notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
-    /** Right host, wrong page — a profile or an explore link has no video behind it. */
-    notAPostUrl: (url: string): string => `Not a link to a post or reel (${url})`,
+    urlRequired: 'Import link is required',
+    /** A site known to hold recipes this import cannot read (YouTube, Facebook, X, Pinterest). */
+    unsupportedSite: (url: string): string => `Not a site imports can read (${url})`,
+    /** Not a link at all, or a video platform's page that is not one video (a profile). */
+    notImportable: (url: string): string => `Not an importable link (${url})`,
     /** The queued job came back `failed`; the reason rides on its `errorKey`. */
     jobFailed: 'Instagram import job failed',
     /** `done` with no draft to open — the backend writes one before reporting done. */

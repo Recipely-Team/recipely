@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react';
 import * as Clipboard from 'expo-clipboard';
-import { InstagramUrl } from '@domain/recipes/import/instagram-url';
+import { ImportLink } from '@domain/recipes/import/import-link';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { Failure } from '@core/failure';
 
@@ -33,7 +33,7 @@ interface UsePasteImportLinkResult {
  * Owns the paste field: what is in it, what is wrong with it, and the clipboard.
  *
  * @remarks
- * - **Validated here, before the network.** {@link InstagramUrl} is the same
+ * - **Validated here, before the network.** {@link ImportLink} is the same
  *   rule the use case applies, so the user is told that a profile link has no
  *   video behind it now rather than after a request.
  * - **Empty is not an error.** It gets a one-line nudge under the field; a
@@ -56,7 +56,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
    * typing one.
    */
   const inspect = useCallback((raw: string): void => {
-    const url = InstagramUrl.create(raw);
+    const url = ImportLink.create(raw);
     setRecognised(url.ok ? url.value.shortForm : null);
   }, []);
 
@@ -93,7 +93,7 @@ export const usePasteImportLink = (): UsePasteImportLinkResult => {
       setFailure(null);
       return null;
     }
-    const url = InstagramUrl.create(value);
+    const url = ImportLink.create(value);
     if (!url.ok) {
       setIsEmpty(false);
       setFailure(url.failure);

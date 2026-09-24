@@ -14,6 +14,8 @@ const TIKTOK_NOTE = 'M10.2 10.9a3.3 3.3 0 1 0 3.3 3.3V3c.4 2.4 2.3 4.2 4.8 4.5';
 const TIKTOK_OFFSET = 'translate(-0.6 1.6)';
 const TIKTOK_CYAN_ECHO = 'translate(-0.9 -0.9)';
 const TIKTOK_RED_ECHO = 'translate(0.9 0.9)';
+const WEB_STROKE = 2.1;
+const GLOBE_MERIDIAN = 'M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3Z';
 const SPARKLE_LARGE =
   'M11 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5Z';
 const SPARKLE_SMALL =
@@ -43,6 +45,17 @@ const AI_STOPS = [
 export const ProvenanceGlyph = ({ mark, size }: ProvenanceGlyphProps): React.JSX.Element => {
   const inkId = `provenance-ink-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const ink = `url(#${inkId})`;
+
+  if (mark === ProvenanceMark.Web) {
+    const line = { fill: 'none', stroke: BrandColors.webInk, strokeWidth: WEB_STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+    return (
+      <Svg width={size} height={size} viewBox={VIEW_BOX}>
+        <Circle cx="12" cy="12" r="9" {...line} />
+        <Path d="M3 12h18" {...line} />
+        <Path d={GLOBE_MERIDIAN} {...line} />
+      </Svg>
+    );
+  }
 
   if (mark === ProvenanceMark.TikTok) {
     const note = { d: TIKTOK_NOTE, fill: 'none', strokeWidth: STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
