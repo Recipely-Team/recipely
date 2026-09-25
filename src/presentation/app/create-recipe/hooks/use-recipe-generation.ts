@@ -73,7 +73,8 @@ const GEN_STEP_INTERVAL_MS = 620;
  *   the mapping normalises.
  * - **Editing a saved recipe is not a draft.** `?editRecipeId=` seeds the
  *   editor from the recipe itself (photos included, for display), waits in
- *   `Resuming`, autosaves nothing and leaves without the draft question.
+ *   `Resuming` and autosaves nothing. Leaving with changes asks save-or-discard
+ *   (the screen routes "save" to PATCH); leaving unchanged just goes.
  */export const useRecipeGeneration = ({
   recipe,
   setRecipe,
@@ -226,7 +227,10 @@ const GEN_STEP_INTERVAL_MS = 620;
   useEffect(() => {
     if (editing === null || seeded.current) return;
     seeded.current = true;
-    setRecipe(recipeToEditable(editing, []));
+    const opened = recipeToEditable(editing, []);
+    setRecipe(opened);
+    // What "unchanged" is measured against when the user leaves.
+    openedAs.current = JSON.stringify(editableToSnapshot(opened, undefined));
     setPhase(PhaseType.Preview);
   }, [editing, setRecipe]);
 
@@ -378,12 +382,9 @@ const GEN_STEP_INTERVAL_MS = 620;
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
-    return (
-      editRecipeId === undefined &&
-      phase === PhaseType.Preview &&
-      editableHasContent(recipe) &&
-      !unchanged
-    );
+    // Editing a saved recipe asks about ANY change — clearing a field is one too.
+    if (editRecipeId !== undefined) return phase === PhaseType.Preview && !unchanged;
+    return phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged;
   }, [editRecipeId, phase, recipe]);
 
   const onClose = useCallback((): boolean => {
@@ -453,10 +454,11 @@ const GEN_STEP_INTERVAL_MS = 620;
     // do nothing.
     cancelAutosave();
     // Best-effort: if the delete fails the draft simply remains in My Recipes.
-    await draftsStore.getState().deleteDraft(activeDraftId);
+    // Editing a saved recipe has no draft; discarding drops only the edits.
+    if (editRecipeId === undefined) await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     leave();
-  }, [cancelAutosave, draftsStore, activeDraftId, leave]);
+  }, [cancelAutosave, draftsStore, activeDraftId, editRecipeId, leave]);
 
   return {
     phase,

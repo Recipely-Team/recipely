@@ -13,7 +13,28 @@ export interface ExitSheetProps {
   onSaveDraft: () => void;
   onDiscard: () => void;
   onKeepEditing: () => void;
+  /**
+   * Editing a saved private recipe: the question is about changes, not a draft,
+   * so "save" means save through PATCH and "discard" drops only the edits.
+   */
+  editing?: boolean;
 }
+
+/** The sheet's words, by what is being left: a draft, or edits to a saved recipe. */
+const copyFor = (editing: boolean) =>
+  editing
+    ? {
+        title: t().createRecipe.editExitTitle,
+        body: t().createRecipe.editExitBody,
+        save: t().createRecipe.save,
+        discard: t().createRecipe.editExitDiscard,
+      }
+    : {
+        title: t().createRecipe.exitTitle,
+        body: t().createRecipe.exitBody,
+        save: t().createRecipe.exitSave,
+        discard: t().createRecipe.exitDiscard,
+      };
 
 /**
  * Confirmation shown when leaving a recipe that is not in the drafts list yet.
@@ -34,13 +55,15 @@ export const ExitSheet = ({
   onSaveDraft,
   onDiscard,
   onKeepEditing,
+  editing = false,
 }: ExitSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const copy = copyFor(editing);
 
   return (
     <BottomSheet
       visible={visible}
-      title={t().createRecipe.exitTitle}
+      title={copy.title}
       onClose={onKeepEditing}
       footer={
         <View style={styles.actions}>
@@ -48,7 +71,7 @@ export const ExitSheet = ({
             onPress={onSaveDraft}
             style={styles.primaryBtn}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.exitSave}
+            accessibilityLabel={copy.save}
           >
             <LinearGradient
               colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -57,7 +80,7 @@ export const ExitSheet = ({
               style={styles.primaryInner}
             >
               <ThemedText variant="body" style={[styles.primaryLabel, { color: colors.primaryText }]}>
-                {t().createRecipe.exitSave}
+                {copy.save}
               </ThemedText>
             </LinearGradient>
           </Pressable>
@@ -66,10 +89,10 @@ export const ExitSheet = ({
             onPress={onDiscard}
             style={styles.textBtn}
             accessibilityRole="button"
-            accessibilityLabel={t().createRecipe.exitDiscard}
+            accessibilityLabel={copy.discard}
           >
             <ThemedText variant="body" style={[styles.discardLabel, { color: colors.danger }]}>
-              {t().createRecipe.exitDiscard}
+              {copy.discard}
             </ThemedText>
           </Pressable>
 
@@ -91,7 +114,7 @@ export const ExitSheet = ({
           <Ionicons name="bookmark" size={iconSizes.xxl} color={colors.primary} />
         </View>
         <ThemedText variant="body" style={[styles.bodyText, { color: colors.textMuted }]}>
-          {t().createRecipe.exitBody}
+          {copy.body}
         </ThemedText>
       </View>
     </BottomSheet>

@@ -101,7 +101,15 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onRemoveMedia: editable.onRemoveMedia,
     onSetCover: editable.onSetCover,
     exitOpen: generation.exitOpen,
-    onSaveDraftAndExit: generation.onSaveDraftAndExit,
+    // Editing a saved recipe: the exit sheet's "save" is the PATCH save, which
+    // opens the recipe on success and keeps the editor up with its dialog on failure.
+    onSaveDraftAndExit:
+      editRecipeId === undefined
+        ? generation.onSaveDraftAndExit
+        : () => {
+            generation.onKeepEditing();
+            save.onSave();
+          },
     onDiscardAndExit: generation.onDiscardAndExit,
     onKeepEditing: generation.onKeepEditing,
     saveError: save.saveError,

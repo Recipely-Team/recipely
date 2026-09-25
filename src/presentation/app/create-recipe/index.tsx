@@ -162,6 +162,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       />
       <ExitSheet
         visible={vm.exitOpen}
+        editing={vm.isEditingSaved}
         onSaveDraft={vm.onSaveDraftAndExit}
         onDiscard={vm.onDiscardAndExit}
         onKeepEditing={vm.onKeepEditing}
