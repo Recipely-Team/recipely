@@ -8,6 +8,7 @@ const INSTAGRAM_GRADIENT = [
   BrandColors.instagramGradientMid,
   BrandColors.instagramGradientEnd,
 ] as const;
+const TIKTOK_GRADIENT = [BrandColors.tiktokCyan, BrandColors.tiktokRed] as const;
 const INSTAGRAM_RING_STOPS = [0, 0.3, 0.62, 1] as const;
 const TWO_STOP_RING = [0, 1] as const;
 
@@ -30,6 +31,16 @@ export const importLookFor = (platform: SourcePlatformType, colors: ThemeColors)
       accent: colors.primary,
       pill: [colors.primary, colors.primary],
       pillText: colors.primaryText,
+    };
+  }
+  if (platform === SourcePlatform.TikTok) {
+    // A black pill: white text on TikTok's cyan would be unreadable.
+    return {
+      gradient: TIKTOK_GRADIENT,
+      ringStops: TWO_STOP_RING,
+      accent: BrandColors.tiktokRed,
+      pill: [BrandColors.tiktokNote, BrandColors.tiktokNote],
+      pillText: BrandColors.white,
     };
   }
   return {

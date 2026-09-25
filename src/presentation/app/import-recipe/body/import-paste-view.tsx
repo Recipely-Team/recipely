@@ -30,7 +30,7 @@ export interface ImportPasteViewProps {
   onCancel: () => void;
 }
 
-const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.Web] as const;
+const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.TikTok, ProvenanceMark.Web] as const;
 
 /**
  * Import by pasting a link — the entry that does not depend on the OS.

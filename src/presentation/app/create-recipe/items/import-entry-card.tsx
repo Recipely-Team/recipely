@@ -21,7 +21,7 @@ export interface ImportEntryCardProps {
   onPress: () => void;
 }
 
-const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.Web] as const;
+const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.TikTok, ProvenanceMark.Web] as const;
 
 /**
  * The way into the link import that does not depend on the OS share sheet.
