@@ -178,19 +178,31 @@ Consumed through the \`@presentation/base/theme\` barrel. \`colors/\` holds
 All four gates must be green before anything is done.
 `;
 
-/** Structural fingerprint — every folder and file name under src/. */
+/**
+ * Structural fingerprint — every file under src/ and the folders that hold
+ * them, in code-point order. Two things made it differ between a laptop and
+ * CI: `localeCompare` (collation follows the machine locale) and empty
+ * folders (git does not carry them). Neither is used now.
+ */
 export const fingerprint = () => {
-  const parts = [];
+  const files = [];
   const walk = (dir) => {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true })) {
       const p = path.join(dir, e.name);
-      if (e.isDirectory()) {
-        parts.push('d:' + path.relative(SRC, p));
-        walk(p);
-      } else if (isCode(e.name)) parts.push('f:' + path.relative(SRC, p));
+      if (e.isDirectory()) walk(p);
+      else if (isCode(e.name)) files.push(path.relative(SRC, p).split(path.sep).join('/'));
     }
   };
   walk(SRC);
+  // Folders are taken from the files, never listed on their own: git does not
+  // carry an empty folder, so one left behind locally made the map "stale" in
+  // CI while fresh on the laptop.
+  const dirs = new Set();
+  for (const f of files) {
+    const segments = f.split('/');
+    for (let i = 1; i < segments.length; i++) dirs.add(segments.slice(0, i).join('/'));
+  }
+  const parts = [...[...dirs].map((d) => 'd:' + d), ...files.map((f) => 'f:' + f)].sort((x, y) => (x < y ? -1 : x > y ? 1 : 0));
   return crypto.createHash('sha256').update(parts.join('\n')).digest('hex').slice(0, 16);
 };
 
