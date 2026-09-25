@@ -49,6 +49,7 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
     totalTimeMinutes: 20,
     rating: 4.2,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,

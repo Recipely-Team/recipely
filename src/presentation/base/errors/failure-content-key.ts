@@ -50,6 +50,12 @@ export type FailureContentKey =
   | 'promptMeaningless'
   | 'photoRejected'
   | 'photoUnchecked'
+  // ── key-tier: publishing / editing ─────────────────────────────────────────
+  | 'publishRejected'
+  | 'publishBlockedCopyright'
+  | 'editPublished'
+  | 'photoNotFound'
+  | 'nothingToEdit'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

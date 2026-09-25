@@ -34,6 +34,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -53,7 +54,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // Adding and removing photos on a recipe the user owns. Removing asks first:
   // it is their own picture, but it may also be the only one the recipe has.
   const photos = useRecipePhotoUpload(vm.recipeId);
-  const [photoPendingRemoval, setPhotoPendingRemoval] = useState<string | null>(null);
+  const [photoPendingRemoval, setPhotoPendingRemoval] = useState<MediaItem | null>(null);
   // Built once and handed to whichever layout renders. It used to be written
   // out at each call site, and the web one was simply never written — the
   // owner had no way to add a photo on that surface at all.
@@ -236,9 +237,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         }}
         onCancelUnsave={() => setUnsavePending(false)}
         photoPendingRemoval={photoPendingRemoval}
-        onConfirmRemovePhoto={(mediaId) => {
+        onConfirmRemovePhoto={(item) => {
           setPhotoPendingRemoval(null);
-          void photos.remove(mediaId);
+          void photos.remove(item);
         }}
         onCancelRemovePhoto={() => setPhotoPendingRemoval(null)}
         photoError={photos.error}

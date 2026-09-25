@@ -40,7 +40,11 @@ export const WebRecipeDetailHero = ({
   photos,
 }: WebRecipeDetailHeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const activeUrl = media[activeImage]?.url ?? recipe.image;
+  // Clamped for the same reason as the mobile gallery: removing the last
+  // thumbnail while it is selected must not leave the selection past the end.
+  const current = Math.min(activeImage, Math.max(media.length - ValueConstants.one, ValueConstants.zero));
+  const activeItem = media[current];
+  const activeUrl = activeItem?.url ?? recipe.image;
 
   return (
     <>
@@ -71,15 +75,13 @@ export const WebRecipeDetailHero = ({
         </Pressable>
       ) : null}
 
-      {/* Only a photo that HAS a row can be removed — the cover falls back
-          to `recipe.image`, which is not a gallery item and has nothing on
-          the server to take down. */}
-      {photos !== undefined && media[activeImage]?.id !== undefined ? (
+      {/* Any photo, the cover included — it has its own request. */}
+      {photos !== undefined && activeItem !== undefined ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.removePhoto}
           disabled={photos.isBusy}
-          onPress={() => photos?.onRemove(media[activeImage]?.id ?? '')}
+          onPress={() => photos.onRemove(activeItem)}
           style={[styles.ownerButton, styles.removeButton, { backgroundColor: colors.overlay }]}
         >
           <Ionicons name="trash" size={iconSizes.md} color={colors.onOverlay} />
@@ -97,8 +99,8 @@ export const WebRecipeDetailHero = ({
             accessibilityLabel={`${recipe.name} ${String(i + ValueConstants.one)}`}
             style={[
               styles.thumb,
-              { borderColor: i === activeImage ? colors.primary : colors.cardBorder },
-              i === activeImage ? styles.thumbActive : null,
+              { borderColor: i === current ? colors.primary : colors.cardBorder },
+              i === current ? styles.thumbActive : null,
             ]}
           >
             <RecipeImage uri={item.url} style={styles.thumbImage} placeholderCompact />

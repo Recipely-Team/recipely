@@ -28,6 +28,7 @@ import { formatRating } from '@presentation/base/utils/format-rating';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import { RecipeStatusBadge } from '@presentation/base/widgets/badges/recipe-status-badge';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -46,7 +47,7 @@ export interface WebRecipeCardProps {
    */
   likedByMe?: boolean;
   likeCount?: number;
-  /** Optional "Yours" badge for the My Recipes "Created" tab. */
+  /** The My Recipes "Created" tab: the recipe's status badge on the photo's bottom-left. */
   ownedByMe?: boolean;
 }
 
@@ -113,13 +114,7 @@ export const WebRecipeCard = ({
                 </ThemedText>
               </View>
             </View>
-            {ownedByMe ? (
-              <View style={[styles.ownedBadge, { backgroundColor: colors.primary }]}>
-                <ThemedText variant="caption" style={[styles.ownedText, { color: colors.primaryText }]}>
-                  {t().recipes.youPill}
-                </ThemedText>
-              </View>
-            ) : null}
+            {ownedByMe ? <RecipeStatusBadge status={recipe.ownerStatus} /> : null}
           </View>
 
           <View style={styles.body}>
@@ -213,17 +208,6 @@ const styles = StyleSheet.create({
   },
   cuisineText: {
     fontWeight: fontWeights.semibold,
-  },
-  ownedBadge: {
-    position: 'absolute',
-    bottom: spacing.md,
-    left: spacing.md,
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.sm2,
-    paddingVertical: spacing.xs,
-  },
-  ownedText: {
-    fontWeight: fontWeights.bold,
   },
   saveBtn: {
     position: 'absolute',

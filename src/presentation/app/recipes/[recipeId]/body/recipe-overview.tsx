@@ -16,6 +16,8 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
 import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
+import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
+import { OwnerStatusPanel } from '@presentation/app/recipes/[recipeId]/items/publishing/owner-status-panel';
 
 export interface RecipeOverviewProps {
   recipe: RecipeEntity;
@@ -27,6 +29,8 @@ export interface RecipeOverviewProps {
   onToggleLike: () => void;
   /** The backend is still computing nutrition; the card's empty state says so. */
   isNutritionCalculating: boolean;
+  /** The owner's photo controls; present only for the owner, who also gets the status panel. */
+  photos: GalleryOwnerControls | undefined;
 }
 
 /**
@@ -42,6 +46,7 @@ export const RecipeOverview = ({
   authorState,
   onToggleLike,
   isNutritionCalculating,
+  photos,
 }: RecipeOverviewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -124,6 +129,8 @@ export const RecipeOverview = ({
           isOwner={authorState.author.isOwner}
         />
       ) : null}
+
+      {photos !== undefined ? <OwnerStatusPanel recipe={recipe} onAddPhoto={photos.onAdd} /> : null}
 
       {/* Its own row rather than growing `RecipeAuthorCard`: that one is
           contracted as "identifies the author and nothing more", and how the

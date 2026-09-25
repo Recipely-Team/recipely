@@ -28,6 +28,10 @@ jest.mock('expo-router', () => ({
 jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: () => ({
     taxonomyStore: (select: (s: unknown) => unknown) => select({ cuisines: [], categories: [] }),
+    // The owner also gets the status panel, which reads these two.
+    recipeDetailStore: (select: (s: unknown) => unknown) =>
+      select({ removePhoto: jest.fn(), isPhotoBusy: false }),
+    recipePublishingStore: (select: (s: unknown) => unknown) => select({ isBusy: false }),
   }),
 }));
 

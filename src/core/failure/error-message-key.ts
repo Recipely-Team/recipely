@@ -61,6 +61,16 @@ export const ErrorMessageKey = {
   photoRejected: 'errors.recipe.photo_rejected',
   /** The moderator could not answer, so the upload was refused rather than published unchecked. */
   photoUnchecked: 'errors.recipe.photo_unchecked',
+  /** The moderator rejected the recipe; it cannot be offered again. */
+  publishRejected: 'errors.recipe.publish_rejected',
+  /** A website import still carries the site's photo or wording (409, `details.blockers`). */
+  publishBlockedCopyright: 'errors.recipe.publish_blocked_copyright',
+  /** A published recipe cannot be edited; it is taken back to private first. */
+  editPublished: 'errors.recipe.edit_published',
+  /** The photo is not on the recipe (any more). */
+  photoNotFound: 'errors.not_found.photo',
+  /** An edit that changes nothing. */
+  nothingToEdit: 'errors.validation.nothing_to_edit',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

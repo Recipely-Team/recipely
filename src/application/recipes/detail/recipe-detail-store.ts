@@ -5,12 +5,15 @@ import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import type { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
+import type { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
 
 interface RecipeDetailStoreDeps {
   getRecipe: GetRecipeUseCase;
   addRecipePhoto: AddRecipePhotoUseCase;
   removeRecipePhoto: RemoveRecipePhotoUseCase;
+  removeRecipeCover: RemoveRecipeCoverUseCase;
 }
+
 
 export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
   return create<RecipeDetailStoreState>((set, get) => ({
@@ -54,15 +57,39 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
       return null;
     },
 
-    removePhoto: async (recipeId, mediaId) => {
+    removePhoto: async (recipeId, item) => {
+      const cached = get().byId[recipeId];
+      const recipe = cached?.status === StoreStatus.Loaded ? cached.recipe : null;
       set({ isPhotoBusy: true });
-      const result = await deps.removeRecipePhoto.execute(recipeId, mediaId);
-      set({ isPhotoBusy: false });
-      if (!result.ok) return result.failure;
+      if (recipe !== null && recipe.isCover(item)) {
+        const removal = await deps.removeRecipeCover.execute(recipeId);
+        set({ isPhotoBusy: false });
+        if (!removal.ok) return removal.failure;
+        // The server's answer goes on screen at once; the reload that follows
+        // refreshes what it does not carry (the publish checklist).
+        get().put(recipe.withCoverRemoved(removal.value));
+      } else {
+        // A photo with no row is only on the device; there is nothing to ask the server.
+        if (item.id === undefined) {
+          set({ isPhotoBusy: false });
+          return null;
+        }
+        const result = await deps.removeRecipePhoto.execute(recipeId, item.id);
+        set({ isPhotoBusy: false });
+        if (!result.ok) return result.failure;
+      }
 
       await get().load(recipeId);
       return null;
     },
+
+    put: (recipe) =>
+      set((s) => ({
+        byId: {
+          ...s.byId,
+          [recipe.id]: { status: StoreStatus.Loaded, recipe, fetchedAt: Date.now() },
+        },
+      })),
 
     remove: (id) =>
       set((s) => {

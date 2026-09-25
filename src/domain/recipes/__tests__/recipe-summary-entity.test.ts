@@ -14,6 +14,7 @@ const validProps = {
   totalTimeMinutes: 35,
   rating: 4.6,
   moderationStatus: 'approved',
+  isPublished: true,
   likeCount: 3,
   likedByMe: true,
   commentCount: 2,

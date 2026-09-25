@@ -47,7 +47,8 @@ export interface RecipePreviewEditorProps {
   onChangeStep: (index: number, value: string) => void;
   onRemoveStep: (index: number) => void;
   onAddStep: () => void;
-  onOpenPhotos: () => void;
+  /** Null while editing a saved recipe: its photos are managed on its own page. */
+  onOpenPhotos: (() => void) | null;
 }
 
 /** Inline live editor of every recipe field shown in the preview phase. */
@@ -98,17 +99,19 @@ export const RecipePreviewEditor = ({
     >
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
         <RecipeImage uri={cover?.url} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
-        <Pressable
-          onPress={onOpenPhotos}
-          style={[styles.photoBtn, { backgroundColor: colors.overlay }]}
-          accessibilityRole="button"
-          accessibilityLabel={cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
-        >
-          <Ionicons name="camera" size={iconSizes.md} color={colors.onOverlay} />
-          <ThemedText variant="caption" style={[styles.photoLabel, { color: colors.onOverlay }]}>
-            {cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
-          </ThemedText>
-        </Pressable>
+        {onOpenPhotos !== null ? (
+          <Pressable
+            onPress={onOpenPhotos}
+            style={[styles.photoBtn, { backgroundColor: colors.overlay }]}
+            accessibilityRole="button"
+            accessibilityLabel={cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
+          >
+            <Ionicons name="camera" size={iconSizes.md} color={colors.onOverlay} />
+            <ThemedText variant="caption" style={[styles.photoLabel, { color: colors.onOverlay }]}>
+              {cover !== undefined ? t().createRecipe.changePhoto : t().createRecipe.addPhoto}
+            </ThemedText>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.body}>

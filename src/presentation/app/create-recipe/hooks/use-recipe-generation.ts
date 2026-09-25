@@ -36,6 +36,8 @@ interface UseRecipeGenerationArgs {
   setRecipe: Dispatch<SetStateAction<EditableRecipe>>;
   activeDraftId: string;
   draftId: string | undefined;
+  /** A saved private recipe being edited; no drafts, no generation. */
+  editRecipeId: string | undefined;
 }
 
 const GEN_STEP_COUNT = 5;
@@ -69,11 +71,15 @@ const GEN_STEP_INTERVAL_MS = 620;
  * - **Drafts round-trip through the same mapper the comparison uses**, or a
  *   draft that was only opened and closed would compare as changed by whatever
  *   the mapping normalises.
+ * - **Editing a saved recipe is not a draft.** `?editRecipeId=` seeds the
+ *   editor from the recipe itself (photos included, for display), waits in
+ *   `Resuming`, autosaves nothing and leaves without the draft question.
  */export const useRecipeGeneration = ({
   recipe,
   setRecipe,
   activeDraftId,
   draftId,
+  editRecipeId,
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
@@ -89,6 +95,10 @@ const GEN_STEP_INTERVAL_MS = 620;
   const copiedFrom = recipeDetailStore((st) =>
     fromRecipeIdOf(st.byId, fromRecipeId),
   );
+  const editing = recipeDetailStore((st) => fromRecipeIdOf(st.byId, editRecipeId));
+  const editState = recipeDetailStore((st) =>
+    editRecipeId === undefined ? undefined : st.byId[editRecipeId],
+  );
   const refineState = createdRecipesStore((s) => s.refineState);
   const latestDraft = draftsStore((s) => s.latestDraft);
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
@@ -99,7 +109,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   // AI-generate screen for the length of that request — tapping a draft looked
   // like it had opened the wrong screen, or like nothing had happened at all.
   const [phase, setPhase] = useState<PhaseType>(
-    draftId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
+    draftId === undefined && editRecipeId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
   );
   const [genStep, setGenStep] = useState(ValueConstants.zero);
   const [prompt, setPrompt] = useState(CharConstants.empty);
@@ -197,8 +207,28 @@ const GEN_STEP_INTERVAL_MS = 620;
 
   // Surface a "Resume your draft" card on a fresh prompt phase.
   useEffect(() => {
-    if (draftId === undefined) void loadLatestDraft();
-  }, [draftId, loadLatestDraft]);
+    if (draftId === undefined && editRecipeId === undefined) void loadLatestDraft();
+  }, [draftId, editRecipeId, loadLatestDraft]);
+
+  useEffect(() => {
+    if (editRecipeId === undefined) return;
+    void loadRecipeDetail(editRecipeId);
+  }, [editRecipeId, loadRecipeDetail]);
+
+  // A recipe that cannot be opened for editing leaves, saying why, rather than
+  // shimmering in `Resuming` for good.
+  useEffect(() => {
+    if (editState?.status !== StoreStatus.Error) return;
+    showErrorToast(editState.failure);
+    goBackOrHome();
+  }, [editState, goBackOrHome]);
+
+  useEffect(() => {
+    if (editing === null || seeded.current) return;
+    seeded.current = true;
+    setRecipe(recipeToEditable(editing, []));
+    setPhase(PhaseType.Preview);
+  }, [editing, setRecipe]);
 
   // Drive the generating checklist while the backend works.
   useEffect(() => {
@@ -212,7 +242,7 @@ const GEN_STEP_INTERVAL_MS = 620;
 
   const cancelAutosave = useDraftAutosave({
     carried: carried.current,
-    enabled: phase === PhaseType.Preview,
+    enabled: phase === PhaseType.Preview && editRecipeId === undefined,
     draftId: activeDraftId,
     prompt: originalPrompt.current,
     recipe,
@@ -269,11 +299,11 @@ const GEN_STEP_INTERVAL_MS = 620;
   // for a failed run, so any change to it drops the stale error.
   useEffect(() => {
     if (promptParam === undefined || promptParam === CharConstants.empty) return;
-    if (draftId !== undefined || startedFromParam.current) return;
+    if (draftId !== undefined || editRecipeId !== undefined || startedFromParam.current) return;
     startedFromParam.current = true;
     setPrompt(promptParam);
     void runGenerate(promptParam);
-  }, [promptParam, draftId, runGenerate]);
+  }, [promptParam, draftId, editRecipeId, runGenerate]);
 
   /**
    * Fills the editor from a recipe that already exists.
@@ -290,11 +320,11 @@ const GEN_STEP_INTERVAL_MS = 620;
    */
   useEffect(() => {
     if (fromRecipeId === undefined || fromRecipeId === CharConstants.empty) return;
-    if (draftId !== undefined || startedFromParam.current) return;
+    if (draftId !== undefined || editRecipeId !== undefined || startedFromParam.current) return;
     startedFromParam.current = true;
 
     void loadRecipeDetail(fromRecipeId);
-  }, [fromRecipeId, draftId, loadRecipeDetail]);
+  }, [fromRecipeId, draftId, editRecipeId, loadRecipeDetail]);
 
   useEffect(() => {
     if (copiedFrom === null || seeded.current) return;
@@ -348,8 +378,13 @@ const GEN_STEP_INTERVAL_MS = 620;
     const unchanged =
       openedAs.current !== null &&
       openedAs.current === JSON.stringify(editableToSnapshot(recipe, carried.current));
-    return phase === PhaseType.Preview && editableHasContent(recipe) && !unchanged;
-  }, [phase, recipe]);
+    return (
+      editRecipeId === undefined &&
+      phase === PhaseType.Preview &&
+      editableHasContent(recipe) &&
+      !unchanged
+    );
+  }, [editRecipeId, phase, recipe]);
 
   const onClose = useCallback((): boolean => {
     if (hasUnkeptWork()) {

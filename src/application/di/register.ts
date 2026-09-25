@@ -45,6 +45,11 @@ import { configureImportJobStore } from '@application/recipes/import/import-job-
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
+import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
+import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
+import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
+import { configureRecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
@@ -137,6 +142,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     getRecipe,
     addRecipePhoto: addRecipePhotoUseCase,
     removeRecipePhoto: removeRecipePhotoUseCase,
+    removeRecipeCover: new RemoveRecipeCoverUseCase(recipeRepo),
+  });
+  const recipePublishingStore = configureRecipePublishingStore({
+    publishRecipe: new PublishRecipeUseCase(recipeRepo),
+    unpublishRecipe: new UnpublishRecipeUseCase(recipeRepo),
+    editRecipe: new EditRecipeUseCase(recipeRepo),
+    recipeDetailStore,
   });
   const favoritesStore = configureFavoritesStore({
     addFavoriteUseCase,
@@ -251,6 +263,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     recipeListStore,
     trendingRecipesStore,
     recipeDetailStore,
+    recipePublishingStore,
     savedRecipesStore,
     likedRecipesStore,
     createdRecipesStore,

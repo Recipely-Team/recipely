@@ -36,6 +36,12 @@ import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-ba
 import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
 import type { FileImportResponseDto } from '@infrastructure/recipes/import-file/file-import-response-dto';
 import { buildImportFileFormData } from '@infrastructure/recipes/import-file/build-import-file-form-data';
+import type { EditRecipeInput } from '@domain/recipes/edit/edit-recipe-input';
+import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
+import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
+import type { PublishOutcomeDto } from '@infrastructure/recipes/publishing/publish-outcome-dto';
+import type { CoverRemovalDto } from '@infrastructure/recipes/publishing/cover-removal-dto';
+import { toEditRecipeRequest } from '@infrastructure/recipes/edit/to-edit-recipe-request';
 
 /**
  * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
@@ -153,6 +159,28 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return ok(undefined);
   }
 
+  async removeRecipeCover(recipeId: string): Promise<Result<CoverRemoval, Failure>> {
+    const result = await this.http.delete<CoverRemovalDto>(ApiRoutes.recipes.cover(recipeId));
+    if (!result.ok) return result;
+
+    return ok({ image: result.value.image, removedMediaIds: result.value.removedMediaIds });
+  }
+
+  async updateRecipe(id: string, input: EditRecipeInput): Promise<Result<RecipeEntity, Failure>> {
+    const result = await this.http.patch<RecipeDto>(ApiRoutes.recipes.byId(id), toEditRecipeRequest(input));
+    if (!result.ok) return result;
+
+    return this.mapRecipe(result.value);
+  }
+
+  publishRecipe(id: string): Promise<Result<PublishOutcome, Failure>> {
+    return this.postOutcome(ApiRoutes.recipes.publish(id));
+  }
+
+  unpublishRecipe(id: string): Promise<Result<PublishOutcome, Failure>> {
+    return this.postOutcome(ApiRoutes.recipes.unpublish(id));
+  }
+
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
     const result = await this.http.delete<unknown>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
@@ -234,6 +262,13 @@ export class RecipeRepository implements RecipeRepositoryInterface {
       summary: result.value.summary,
       suggestion: result.value.suggestion,
     });
+  }
+
+  private async postOutcome(url: string): Promise<Result<PublishOutcome, Failure>> {
+    const result = await this.http.post<PublishOutcomeDto>(url);
+    if (!result.ok) return result;
+
+    return ok({ isPublished: result.value.isPublished, moderationStatus: result.value.moderationStatus });
   }
 
   private mapRecipe(dto: RecipeDto): Result<RecipeEntity, Failure> {
