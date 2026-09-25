@@ -695,6 +695,8 @@ export const ja = {
     lead: '1つのレシピの写真を順番に5枚まで、またはPDFを1つ追加してください。AIが読み取り、編集できる下書きを開きます。',
     camera: '写真を撮る',
     cameraHint: '料理本のページや手書きのカード',
+    pdf: 'PDFを選択',
+    pdfHint: '1ファイル、10MBまで',
     library: 'ライブラリから選ぶ',
     libraryHint: '写真とスクリーンショット、5枚まで',
     drop: 'ここに写真かPDFをドロップ',

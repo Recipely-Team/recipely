@@ -1,6 +1,7 @@
 import { useCallback, useRef } from 'react';
 import { Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import * as DocumentPicker from 'expo-document-picker';
 import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ImportFileLimits } from '@domain/recipes/import-file/import-file-limits';
 import { ImportFileMimeType } from '@domain/recipes/import-file/import-file-mime-type';
@@ -32,10 +33,8 @@ const tellPermissionDenied = (): void => {
  * order they were tapped.
  *
  * @remarks
- * - **Photos only on the phone.** Picking a PDF needs `expo-document-picker`,
- *   a native module this app does not ship, and adding one is a native change
- *   that waits for the owner's approval. The web half reads a PDF through the
- *   browser's own file input, which needs nothing native.
+ * - **A PDF comes from the device's files** through `expo-document-picker`;
+ *   the web half reads one through the browser's own file input.
  * - **Every page leaves as a JPEG** through `shrinkForUpload`: a HEIC capture
  *   becomes a format every reader takes, and a 4000px photo stops being
  *   several megabytes. Its size is unknown after the re-encode, so the
@@ -49,6 +48,12 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
     if (busy.current) return [];
     busy.current = true;
     try {
+      if (source === PickSource.File) {
+        const doc = await DocumentPicker.getDocumentAsync({ type: ImportFileMimeType.Pdf, copyToCacheDirectory: true, multiple: false });
+        const asset = doc.canceled ? undefined : doc.assets[0];
+        if (asset === undefined) return [];
+        return [{ uri: asset.uri, fileName: asset.name, mimeType: ImportFileMimeType.Pdf, sizeBytes: asset.size ?? null }];
+      }
       const isCamera = source === PickSource.Camera;
       const permission = isCamera
         ? await ImagePicker.requestCameraPermissionsAsync()

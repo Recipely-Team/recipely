@@ -706,6 +706,8 @@ export const en = {
     lead: 'Add up to 5 photos of one recipe, in order, or a single PDF. AI reads them and opens a draft you can edit.',
     camera: 'Take a photo',
     cameraHint: 'Cookbook page or handwritten card',
+    pdf: 'Choose a PDF',
+    pdfHint: 'One file, up to 10 MB',
     library: 'Choose from library',
     libraryHint: 'Photos and screenshots, up to 5',
     drop: 'Drop photos or a PDF here',

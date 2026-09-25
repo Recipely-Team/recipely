@@ -691,6 +691,8 @@ export const ko: Translations = {
     lead: '한 레시피의 사진을 순서대로 최대 5장, 또는 PDF 1개를 추가하세요. AI가 읽고 수정할 수 있는 초안을 열어요.',
     camera: '사진 찍기',
     cameraHint: '요리책 페이지나 손글씨 카드',
+    pdf: 'PDF 선택',
+    pdfHint: '파일 1개, 최대 10MB',
     library: '앨범에서 선택',
     libraryHint: '사진과 스크린샷, 최대 5장',
     drop: '여기에 사진이나 PDF를 놓으세요',

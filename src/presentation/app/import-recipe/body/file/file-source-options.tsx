@@ -11,11 +11,8 @@ export interface FileSourceOptionsProps {
 }
 
 /**
- * The phone's empty state: the camera, or the library.
- *
- * The design offers a third row, "Choose a PDF"; the phone has no document
- * picker installed (see `use-pick-import-files`), so a PDF is a web feature
- * until one is.
+ * The phone's empty state: the camera, the library, or a PDF from the
+ * device's files — the three rows the design draws.
  */
 export const FileSourceOptions = ({ onPick }: FileSourceOptionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -35,8 +32,14 @@ export const FileSourceOptions = ({ onPick }: FileSourceOptionsProps): React.JSX
         hint={copy.libraryHint}
         onPress={() => onPick(PickSource.Library)}
       />
+      <FileOptionRow
+        icon="document-outline"
+        label={copy.pdf}
+        hint={copy.pdfHint}
+        onPress={() => onPick(PickSource.File)}
+      />
       <ThemedText variant="caption" style={[styles.formats, { color: colors.textMuted }]}>
-        {copy.formatsPhotos}
+        {copy.formats}
       </ThemedText>
     </View>
   );

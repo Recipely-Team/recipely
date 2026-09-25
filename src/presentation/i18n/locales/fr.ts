@@ -695,6 +695,8 @@ export const fr = {
     lead: 'Ajoutez jusqu\'à 5 photos d\'une recette, dans l\'ordre, ou un seul PDF. L\'IA les lit et ouvre un brouillon modifiable.',
     camera: 'Prendre une photo',
     cameraHint: 'Page de livre ou fiche manuscrite',
+    pdf: 'Choisir un PDF',
+    pdfHint: "Un fichier, jusqu'à 10 Mo",
     library: 'Choisir dans la galerie',
     libraryHint: 'Photos et captures, jusqu\'à 5',
     drop: 'Déposez des photos ou un PDF ici',
