@@ -32,14 +32,14 @@ const SOURCE_WORDS: Record<SourceMarkType, {
     fallback: () => t().recipes.originInstagramA11y,
     open: () => t().recipes.originInstagramHandleA11y,
     prefix: HANDLE_PREFIX,
-    href: (handle) => instagramProfileUrl(handle),
+    href: (handle, sourceUrl) => sourceUrl ?? instagramProfileUrl(handle),
   },
   [ProvenanceMark.TikTok]: {
     sentence: () => t().recipes.originTiktokDetailLabel,
     fallback: () => t().recipes.originTiktokA11y,
     open: () => t().recipes.originTiktokHandleA11y,
     prefix: HANDLE_PREFIX,
-    href: (handle) => tiktokProfileUrl(handle),
+    href: (handle, sourceUrl) => sourceUrl ?? tiktokProfileUrl(handle),
   },
   // A site is named as a site, and its link is the page the recipe came from.
   [ProvenanceMark.Web]: {
@@ -75,6 +75,9 @@ export interface ProvenanceNoteProps {
  * - **The sentence is in `text`, never `textMuted`**, which measures 2.52:1 on
  *   pearl-white dark. The handle keeps `chipText`, which the palette suite
  *   holds at 4.5:1 on both `background` and `surface` in every theme.
+ * - **The link opens the video itself**, named by its account: the recipe came
+ *   from that post, not from everything the account has made. The profile is
+ *   the fallback only when the post's address is unknown.
  * - **A web page is named by its site**, without an `@`, and the site links to
  *   the page itself — the one address that recipe actually came from.
  * - **An AI-only recipe has no platform to name**, so it is a chip — seal and

@@ -83,6 +83,18 @@ describe('ProvenanceNote', () => {
     open.mockRestore();
   });
 
+  it('opens the video itself when its address is known, still named by the account', () => {
+    const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const VIDEO = 'https://www.instagram.com/reel/Cx1y2z3/';
+    const { root } = renderComponent(<ProvenanceNote marks={[ProvenanceMark.Instagram]} sourceHandle={HANDLE} sourceUrl={VIDEO} />);
+
+    expect(textOf(root)).toContain(`@${HANDLE}`);
+    const link = root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function')[0];
+    (link?.props['onPress'] as () => void)();
+    expect(open).toHaveBeenCalledWith(VIDEO);
+    open.mockRestore();
+  });
+
   it('still says where an import came from when the handle is unknown', () => {
     const { root } = renderComponent(<ProvenanceNote marks={[ProvenanceMark.Instagram]} />);
     expect(textOf(root)).toContain(t().recipes.originInstagramA11y);
