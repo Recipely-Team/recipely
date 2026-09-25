@@ -298,7 +298,7 @@ export const tr: Translations = {
     originWebA11y: 'Bir web sitesinden alındı',
     originWebDetailLabel: '{handle} sitesinden alındı',
     originWebHandleA11y: '{handle} sayfasını aç',
-    originWrittenByAiSuffix: ', yapay zekâ ile yazıldı',
+    originEditedByAiSuffix: ', yapay zekâ ile düzenlendi',
     previousPhoto: 'Önceki fotoğraf',
     nextPhoto: 'Sonraki fotoğraf',
     cuisine: 'Mutfak',

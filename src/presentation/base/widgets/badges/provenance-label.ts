@@ -5,7 +5,7 @@ import { t } from '@presentation/i18n';
  * The seal's accessible name — the whole truth in one phrase, or `''` for a
  * recipe a person wrote.
  *
- * "Imported from TikTok, written by AI" rather than two names read one after
+ * "Imported from TikTok, edited by AI" rather than two names read one after
  * the other: the capsule is one object, so a screen reader meets it once.
  */
 export const provenanceLabel = (marks: readonly ProvenanceMarkType[]): string => {
@@ -18,5 +18,5 @@ export const provenanceLabel = (marks: readonly ProvenanceMarkType[]): string =>
         ? t().recipes.originWebA11y
         : null;
   if (base === null) return byModel ? t().recipes.originAiA11y : '';
-  return byModel ? `${base}${t().recipes.originWrittenByAiSuffix}` : base;
+  return byModel ? `${base}${t().recipes.originEditedByAiSuffix}` : base;
 };

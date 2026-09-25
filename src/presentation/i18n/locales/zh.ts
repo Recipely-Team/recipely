@@ -298,7 +298,7 @@ export const zh = {
     originWebA11y: '从网站导入',
     originWebDetailLabel: '从 {handle} 导入',
     originWebHandleA11y: '打开 {handle}',
-    originWrittenByAiSuffix: '，由 AI 撰写',
+    originEditedByAiSuffix: '，由 AI 编辑',
     previousPhoto: '上一张照片',
     nextPhoto: '下一张照片',
     cuisine: '菜系',

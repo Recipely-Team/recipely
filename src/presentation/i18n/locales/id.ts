@@ -295,7 +295,7 @@ export const id = {
     originWebA11y: 'Diimpor dari sebuah situs web',
     originWebDetailLabel: 'Diimpor dari {handle}',
     originWebHandleA11y: 'Buka {handle}',
-    originWrittenByAiSuffix: ', ditulis oleh AI',
+    originEditedByAiSuffix: ', disunting oleh AI',
     previousPhoto: 'Foto sebelumnya',
     nextPhoto: 'Foto berikutnya',
     cuisine: 'Masakan',
