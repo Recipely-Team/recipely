@@ -695,6 +695,8 @@ export const id = {
     lead: 'Tambahkan hingga 5 foto dari satu resep secara berurutan, atau satu PDF. AI membacanya dan membuka draf yang bisa kamu edit.',
     camera: 'Ambil foto',
     cameraHint: 'Halaman buku masak atau kartu tulisan tangan',
+    pdf: 'Pilih PDF',
+    pdfHint: 'Satu file, maksimal 10 MB',
     library: 'Pilih dari galeri',
     libraryHint: 'Foto dan tangkapan layar, hingga 5',
     drop: 'Letakkan foto atau PDF di sini',

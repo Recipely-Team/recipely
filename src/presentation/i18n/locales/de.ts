@@ -695,6 +695,8 @@ export const de = {
     lead: 'Füge bis zu 5 Fotos eines Rezepts in Reihenfolge hinzu oder ein einzelnes PDF. Die KI liest sie und öffnet einen Entwurf zum Bearbeiten.',
     camera: 'Foto aufnehmen',
     cameraHint: 'Kochbuchseite oder handschriftliche Karte',
+    pdf: 'PDF auswählen',
+    pdfHint: 'Eine Datei, bis 10 MB',
     library: 'Aus Mediathek wählen',
     libraryHint: 'Fotos und Screenshots, bis zu 5',
     drop: 'Fotos oder ein PDF hier ablegen',

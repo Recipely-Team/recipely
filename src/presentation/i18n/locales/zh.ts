@@ -699,6 +699,8 @@ export const zh = {
     lead: '按顺序添加一份食谱的最多 5 张照片，或一个 PDF。AI 会读取并打开可编辑的草稿。',
     camera: '拍照',
     cameraHint: '食谱书页或手写卡片',
+    pdf: '选择 PDF',
+    pdfHint: '一个文件，最大 10 MB',
     library: '从相册选择',
     libraryHint: '照片和截图，最多 5 张',
     drop: '将照片或 PDF 拖放到这里',

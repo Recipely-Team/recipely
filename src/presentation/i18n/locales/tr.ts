@@ -699,6 +699,8 @@ export const tr: Translations = {
     lead: 'Tek bir tarifin en fazla 5 fotoğrafını sırayla ekle ya da tek bir PDF seç. Yapay zekâ okuyup düzenleyebileceğin bir taslak açar.',
     camera: 'Fotoğraf çek',
     cameraHint: 'Yemek kitabı sayfası ya da el yazısı kart',
+    pdf: 'PDF seç',
+    pdfHint: 'Tek dosya, en fazla 10 MB',
     library: 'Galeriden seç',
     libraryHint: 'Fotoğraflar ve ekran görüntüleri, en fazla 5',
     drop: 'Fotoğrafları ya da PDF’i buraya bırak',

@@ -695,6 +695,8 @@ export const it = {
     lead: 'Aggiungi fino a 5 foto di una ricetta, in ordine, o un solo PDF. L\'IA le legge e apre una bozza da modificare.',
     camera: 'Scatta una foto',
     cameraHint: 'Pagina di un libro o biglietto scritto a mano',
+    pdf: 'Scegli un PDF',
+    pdfHint: 'Un file, fino a 10 MB',
     library: 'Scegli dalla galleria',
     libraryHint: 'Foto e screenshot, fino a 5',
     drop: 'Trascina qui foto o un PDF',
