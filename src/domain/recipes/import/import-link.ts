@@ -12,7 +12,7 @@ const TIKTOK_HOSTS: readonly string[] = ['tiktok.com'];
 const TIKTOK_SHORT_HOSTS: readonly string[] = ['vm.tiktok.com', 'vt.tiktok.com'];
 /** Sites with recipes on them that this import cannot read: video it has no pipeline for, or no page to read. */
 const UNSUPPORTED_HOSTS: readonly string[] = [
-  'youtube.com', 'youtu.be', 'facebook.com', 'fb.watch', 'x.com', 'twitter.com', 'pinterest.com', 'pin.it',
+  'youtube.com', 'youtu.be', 'facebook.com', 'fb.watch', 'x.com', 'twitter.com',
 ];
 /** The four path shapes that address a single Instagram post: post, reel, reels, TV. */
 const INSTAGRAM_POST = /^\/(p|reel|reels|tv)\/([^/?#]+)/;

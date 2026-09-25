@@ -76,7 +76,7 @@ describe('ImportLink', () => {
 
     // Recipes live on these, but the import cannot read them; saying so now
     // beats a minute of waiting for "no recipe on that page".
-    it.each(['https://www.youtube.com/watch?v=x', 'https://youtu.be/x', 'https://www.facebook.com/x/videos/1', 'https://x.com/a/status/1', 'https://pin.it/abc'])(
+    it.each(['https://www.youtube.com/watch?v=x', 'https://youtu.be/x', 'https://www.facebook.com/x/videos/1', 'https://x.com/a/status/1'])(
       'names %s as a site it cannot import from',
       (raw) => {
         expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importNotInstagram);
@@ -89,6 +89,11 @@ describe('ImportLink', () => {
         expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importInvalidUrl);
       },
     );
+  });
+
+  // A pin links to the site its recipe is on; the backend follows it there.
+  it.each(['https://www.pinterest.com/pin/1970393584739280/', 'https://pin.it/abc123'])('takes the Pinterest link %s as a page', (raw) => {
+    expect(accepted(raw).platform).toBe(SourcePlatform.Web);
   });
 
   it('treats an empty field as an invalid link', () => {
