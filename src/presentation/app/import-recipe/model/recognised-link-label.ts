@@ -11,5 +11,6 @@ import type { Translations } from '@presentation/i18n/translations';
  */
 export const recognisedLinkLabel = (link: ImportLink, copy: Translations['importRecipe']): string => {
   if (link.platform === SourcePlatform.Web) return copy.pasteDetectedWeb.replace(HOST_TOKEN, link.host);
+  if (link.platform === SourcePlatform.TikTok) return copy.pasteDetectedTiktok;
   return link.platform === SourcePlatform.Instagram ? copy.pasteDetectedInstagram : copy.pasteRecognised;
 };

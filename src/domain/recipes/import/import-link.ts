@@ -16,6 +16,8 @@ const UNSUPPORTED_HOSTS: readonly string[] = [
 ];
 /** The four path shapes that address a single Instagram post: post, reel, reels, TV. */
 const INSTAGRAM_POST = /^\/(p|reel|reels|tv)\/([^/?#]+)/;
+/** A TikTok video page, `/@account/video/123`, or the `/t/abc` short form. */
+const TIKTOK_VIDEO = /^\/(?:@[^/]+\/video\/\d+|t\/[^/?#]+)/;
 const LEADING_SUBDOMAIN = /^(?:www|m)\./;
 const HTTP_PREFIX = /^https?:\/\//i;
 const WEB_PROTOCOLS: readonly string[] = ['http:', 'https:'];
@@ -26,8 +28,8 @@ const SHORT_FORM_MAX = 48;
 const ELLIPSIS = '…';
 
 /**
- * A link an import can run against: an Instagram post or a recipe web page —
- * and which of the two it is.
+ * A link an import can run against: an Instagram post, a TikTok video, or a
+ * recipe web page — and which of the three it is.
  *
  * @remarks
  * - **One rule, three callers.** The use case that queues the import, the
@@ -87,13 +89,12 @@ export class ImportLink extends BaseValueObject<string> {
       if (kind === undefined || code === undefined) return fail(ImportLink.invalid(trimmed));
       return ok(new ImportLink(`https://www.instagram.com/${kind}/${code}/`, SourcePlatform.Instagram, 'instagram.com', `instagram.com/${kind}/${code}`));
     }
-    // TikTok refuses our servers' addresses ("Your IP address is blocked"),
-    // so a TikTok link could only ever fail on the worker. Named as a site we
-    // cannot import from until a route to TikTok exists; the platform, the
-    // seal and the provenance copy already know it.
-    if (TIKTOK_SHORT_HOSTS.includes(fullHost) || TIKTOK_HOSTS.includes(host)) {
-      return fail(ImportLink.unsupported(trimmed));
+    if (TIKTOK_SHORT_HOSTS.includes(fullHost) || (TIKTOK_HOSTS.includes(host) && TIKTOK_VIDEO.test(path))) {
+      const short = `${host}${path.replace(TRAILING_SLASH, CharConstants.empty)}`;
+      return ok(new ImportLink(url.toString(), SourcePlatform.TikTok, 'tiktok.com', short));
     }
+    // A profile is on tiktok.com and has no single video behind it.
+    if (TIKTOK_HOSTS.includes(host)) return fail(ImportLink.invalid(trimmed));
     if (UNSUPPORTED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) {
       return fail(ImportLink.unsupported(trimmed));
     }
