@@ -2228,5 +2228,5 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 ### CI called a fresh project map stale
 
 *Symptom:* `check:structure` passed locally and failed in CI with "PROJECT-MAP.md is stale".
-*Why:* the map fingerprint sorted names with `localeCompare`, whose collation follows the machine locale (Turkish Mac vs C on CI).
-*Guard:* code-point ordering in `generate-map.mjs`; checked under both `LANG=C` and `tr_TR`.
+*Why:* the fingerprint listed empty folders, which exist on a laptop after a move but never in a git checkout, and sorted with locale-dependent `localeCompare`.
+*Guard:* `generate-map.mjs` derives folders from files and sorts by code point; an empty folder or a different locale no longer changes it.
