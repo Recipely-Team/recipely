@@ -295,7 +295,7 @@ export const ar = {
     originWebA11y: 'مستوردة من موقع ويب',
     originWebDetailLabel: 'مستوردة من {handle}',
     originWebHandleA11y: 'فتح {handle}',
-    originWrittenByAiSuffix: '، وكتبها الذكاء الاصطناعي',
+    originEditedByAiSuffix: '، وحرّرها الذكاء الاصطناعي',
     previousPhoto: "الصورة السابقة",
     nextPhoto: "الصورة التالية",
     cuisine: "المطبخ",

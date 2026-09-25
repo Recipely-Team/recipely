@@ -295,7 +295,7 @@ export const pt = {
     originWebA11y: 'Importada de um site',
     originWebDetailLabel: 'Importada de {handle}',
     originWebHandleA11y: 'Abrir {handle}',
-    originWrittenByAiSuffix: ', escrita por IA',
+    originEditedByAiSuffix: ', editada por IA',
     previousPhoto: 'Foto anterior',
     nextPhoto: 'Próxima foto',
     cuisine: 'Culinária',

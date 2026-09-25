@@ -297,7 +297,7 @@ export const hi: Translations = {
     originWebA11y: 'एक वेबसाइट से आयात की गई',
     originWebDetailLabel: '{handle} से आयात की गई',
     originWebHandleA11y: '{handle} खोलें',
-    originWrittenByAiSuffix: ', AI द्वारा लिखी गई',
+    originEditedByAiSuffix: ', AI द्वारा संपादित',
     previousPhoto: 'पिछली फ़ोटो',
     nextPhoto: 'अगली फ़ोटो',
     cuisine: 'क्यूज़ीन',

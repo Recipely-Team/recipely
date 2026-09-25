@@ -62,7 +62,7 @@ export interface ProvenanceNoteProps {
 
 /**
  * The detail screen's provenance line: the seal, and one sentence that tells
- * the whole truth — "Imported from @handle on TikTok, written by AI".
+ * the whole truth — "Imported from @handle on TikTok, edited by AI".
  *
  * @remarks
  * - **Nothing for a hand-written recipe**, the same silence as the seal.
@@ -101,7 +101,7 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   }
 
   const words = SOURCE_WORDS[platform];
-  const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originWrittenByAiSuffix : '';
+  const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originEditedByAiSuffix : '';
   // An import with no handle still says where it came from; `@undefined` would
   // be worse than the missing half of a sentence.
   const [before, after] =

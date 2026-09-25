@@ -55,7 +55,7 @@ describe('ProvenanceSeal', () => {
       <ProvenanceSeal marks={[ProvenanceMark.TikTok, ProvenanceMark.Ai]} surface={SealSurface.Photo} size={SIZE} />,
     );
     expect(glyphsOf(root)).toEqual([ProvenanceMark.TikTok, ProvenanceMark.Ai]);
-    expect(labelsOf(root)).toContain(`${t().recipes.originTiktokA11y}${t().recipes.originWrittenByAiSuffix}`);
+    expect(labelsOf(root)).toContain(`${t().recipes.originTiktokA11y}${t().recipes.originEditedByAiSuffix}`);
   });
 
   it('names an AI-only recipe without inventing a platform', () => {
@@ -73,7 +73,7 @@ describe('ProvenanceNote', () => {
       <ProvenanceNote marks={[ProvenanceMark.TikTok, ProvenanceMark.Ai]} sourceHandle={HANDLE} />,
     );
 
-    const expected = `${t().recipes.originTiktokDetailLabel.replace('{handle}', `@${HANDLE}`)}${t().recipes.originWrittenByAiSuffix}`;
+    const expected = `${t().recipes.originTiktokDetailLabel.replace('{handle}', `@${HANDLE}`)}${t().recipes.originEditedByAiSuffix}`;
     expect(textOf(root)).toContain(expected);
 
     const links = root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function');

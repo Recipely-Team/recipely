@@ -295,7 +295,7 @@ export const ja = {
     originWebA11y: 'ウェブサイトから取り込み',
     originWebDetailLabel: '{handle} から取り込み',
     originWebHandleA11y: '{handle} を開く',
-    originWrittenByAiSuffix: '、AI が執筆',
+    originEditedByAiSuffix: '、AI が編集',
     previousPhoto: '前の写真',
     nextPhoto: '次の写真',
     cuisine: '料理ジャンル',

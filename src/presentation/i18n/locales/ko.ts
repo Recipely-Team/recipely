@@ -297,7 +297,7 @@ export const ko: Translations = {
     originWebA11y: '웹사이트에서 가져옴',
     originWebDetailLabel: '{handle}에서 가져옴',
     originWebHandleA11y: '{handle} 열기',
-    originWrittenByAiSuffix: ', AI가 작성',
+    originEditedByAiSuffix: ', AI가 편집',
     previousPhoto: '이전 사진',
     nextPhoto: '다음 사진',
     cuisine: '요리 종류',

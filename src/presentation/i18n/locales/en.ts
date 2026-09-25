@@ -305,7 +305,7 @@ export const en = {
     originWebA11y: 'Imported from a website',
     originWebDetailLabel: 'Imported from {handle}',
     originWebHandleA11y: 'Open {handle}',
-    originWrittenByAiSuffix: ', written by AI',
+    originEditedByAiSuffix: ', edited by AI',
     previousPhoto: 'Previous photo',
     nextPhoto: 'Next photo',
     cuisine: 'Cuisine',

@@ -295,7 +295,7 @@ export const ru = {
     originWebA11y: 'Импортировано с сайта',
     originWebDetailLabel: 'Импортировано с {handle}',
     originWebHandleA11y: 'Открыть {handle}',
-    originWrittenByAiSuffix: ', написан ИИ',
+    originEditedByAiSuffix: ', отредактировано ИИ',
     previousPhoto: 'Предыдущее фото',
     nextPhoto: 'Следующее фото',
     cuisine: 'Кухня',

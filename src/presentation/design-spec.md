@@ -2856,8 +2856,8 @@ over white) is 5.1:1 against a white one. Inks on the face: Instagram `#F56040 �
 carries the shape (18:1), the `#FE2C55` echo is 3.9:1 and the `#25F4EE` echo is decoration only.
 Colours in `BrandColors`.
 
-**Detail.** One sentence for the whole truth: "Imported from @handle on TikTok, written by AI" /
-"TikTok'ta @handle hesabından alındı, yapay zekâ ile yazıldı". The handle is the only link. The
+**Detail.** One sentence for the whole truth: "Imported from @handle on TikTok, edited by AI" /
+"TikTok'ta @handle hesabından alındı, yapay zekâ ile düzenlendi". The handle is the only link. The
 sentence is in `text`, never `textMuted` (2.52:1 on pearl-white dark). An AI-only recipe has no
 platform to name, so it is a chip: seal + "AI-written recipe" in `chipText` on `chipBackground`.
 
