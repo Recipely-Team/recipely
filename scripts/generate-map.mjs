@@ -178,11 +178,19 @@ Consumed through the \`@presentation/base/theme\` barrel. \`colors/\` holds
 All four gates must be green before anything is done.
 `;
 
+/**
+ * Order by code point, never `localeCompare`: collation depends on the
+ * machine's locale, so a Mac in Turkish and CI in C sorted `__tests__` and
+ * `[recipeId]` differently, the fingerprints disagreed, and CI called a fresh
+ * map stale.
+ */
+const byCodePoint = (a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0);
+
 /** Structural fingerprint — every folder and file name under src/. */
 export const fingerprint = () => {
   const parts = [];
   const walk = (dir) => {
-    for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort((a, b) => a.name.localeCompare(b.name))) {
+    for (const e of fs.readdirSync(dir, { withFileTypes: true }).sort(byCodePoint)) {
       const p = path.join(dir, e.name);
       if (e.isDirectory()) {
         parts.push('d:' + path.relative(SRC, p));
