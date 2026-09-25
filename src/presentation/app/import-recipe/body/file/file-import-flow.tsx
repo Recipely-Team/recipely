@@ -36,7 +36,7 @@ export const FileImportFlow = (): React.JSX.Element => {
           body={content.body}
           primaryLabel={copy.retry}
           onPrimary={vm.onChoosePages}
-          secondaryLabel={t().common.cancel}
+          secondaryLabel={t().common.close}
           onSecondary={vm.onClose}
         />
       </ScreenContainer>
@@ -52,7 +52,7 @@ export const FileImportFlow = (): React.JSX.Element => {
             isDone={vm.isDone}
             subject={readingSubject(vm.pages, copy)}
             pagesLabel={vm.isPdf ? copy.pdfLabel : String(vm.pages.length)}
-            onCancel={vm.onClose}
+            onClose={vm.onClose}
           />
         ) : (
           <FilePickerView

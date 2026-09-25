@@ -21,7 +21,8 @@ export interface FileReadingViewProps {
   subject: string;
   /** How many pages were sent, or the PDF label. */
   pagesLabel: string;
-  onCancel: () => void;
+  /** Leaves the screen. The reading runs on and its draft still lands, so this is Close, never Cancel. */
+  onClose: () => void;
 }
 
 const WHAT_TOKEN = '{what}';
@@ -36,7 +37,7 @@ export const FileReadingView = ({
   isDone,
   subject,
   pagesLabel,
-  onCancel,
+  onClose,
 }: FileReadingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
@@ -85,7 +86,7 @@ export const FileReadingView = ({
       </ScrollView>
 
       <View style={styles.footer}>
-        <PrimaryButton label={t().common.cancel} onPress={onCancel} disabled={isDone} />
+        <PrimaryButton label={t().common.close} onPress={onClose} disabled={isDone} />
       </View>
     </>
   );
