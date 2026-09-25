@@ -75,7 +75,7 @@ const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockDismissTo = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack, dismissTo: mockDismissTo })),
+  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack, dismissTo: mockDismissTo, canGoBack: () => true })),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -272,7 +272,9 @@ describe('useRecipeSave — publish', () => {
     expect(driver.repo.lastUpdateCall?.id).toBe('r-edit');
     expect(driver.repo.lastUpdateCall?.input.name).toEqual({ en: 'Garlic Pasta' });
     expect(driver.repo.lastCreateInput).toBeNull();
-    expect(mockReplace).toHaveBeenCalledWith('/recipes/r-edit');
+    // The recipe's page is still under the editor: go back to it, never stack a second copy.
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalledWith('/recipes/r-edit');
   });
 
   it("the assistant's publish saves privately, then publishes", async () => {

@@ -146,9 +146,15 @@ export const useRecipeSave = ({
 
   const openSaved = useCallback(
     (recipeId: string): void => {
+      // An edit was opened from the recipe's own page, which is still below
+      // the editor: go back to it rather than stacking a second copy.
+      if (editRecipeId !== undefined && router.canGoBack()) {
+        router.back();
+        return;
+      }
       router.replace(RoutePaths.recipeDetail(recipeId) as Href);
     },
-    [router],
+    [router, editRecipeId],
   );
 
   const onSave = useCallback((): void => {
