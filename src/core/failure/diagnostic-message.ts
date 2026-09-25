@@ -62,6 +62,12 @@ export const DiagnosticMessage = {
     /** `done` with no draft to open — the backend writes one before reporting done. */
     doneWithoutDraft: 'Instagram import reported done with no draft id',
   },
+  fileImport: {
+    noFile: 'File import has no file',
+    unsupportedFile: 'File import got a type it cannot read',
+    fileTooLarge: 'File import got a file over the size limit',
+    tooManyFiles: 'File import got more files than one import takes',
+  },
   recipeCreate: {
     /** Publishing threw instead of returning a Result; the UI must not hang. */
     threw: 'Recipe creation threw',

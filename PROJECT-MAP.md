@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1056 source files.
+[architecture.md](architecture.md). 1100 source files.
 
 ## Layers
 
@@ -39,7 +39,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(10)_
-- `recipes/` — create, import, ingredients, list, media, provenance, refine, taxonomy _(33)_
+- `recipes/` — create, import, import-file, ingredients, list, media, provenance, refine, taxonomy _(39)_
 - `storage/` _(1)_
 - `user-profile/` _(3)_
 
@@ -58,7 +58,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(6)_
 - `notifications/` — list, read _(11)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, liked, list, my-recipes, photos, refine, saved, taxonomy, trending _(47)_
+- `recipes/` — create, delete, detail, generate, import, import-file, liked, list, my-recipes, photos, refine, saved, taxonomy, trending _(51)_
 - `storage/` _(2)_
 - `store/` _(2)_
 - `timers/` _(7)_
@@ -84,7 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, import, media, refine, taxonomy _(23)_
+- `recipes/` — create, dtos, import, import-file, media, refine, taxonomy _(25)_
 - `storage/` _(6)_
 - `user-profile/` _(3)_
 
@@ -105,7 +105,7 @@ locale list `application/i18n/locale-constants.ts`.
 
 ## `src/presentation/base/` — shared UI
 
-- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(8)_
+- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(9)_
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
@@ -150,4 +150,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 9f24312596cbeb50 -->
+<!-- fingerprint: 13d8f092af980501 -->

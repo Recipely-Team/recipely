@@ -51,6 +51,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onGenerate: generation.onGenerate,
     onStartBlank: generation.onStartBlank,
     onImportFromInstagram: generation.onImportFromInstagram,
+    onImportFromFile: generation.onImportFromFile,
     onClose: generation.onClose,
     onGenerateAnother: generation.onGenerateAnother,
     latestDraft: generation.latestDraft,

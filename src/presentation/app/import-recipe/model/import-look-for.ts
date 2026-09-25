@@ -1,6 +1,7 @@
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 import { BrandColors, type ThemeColors } from '@presentation/base/theme';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
+import { appImportLook } from '@presentation/app/import-recipe/model/app-import-look';
 
 const INSTAGRAM_GRADIENT = [
   BrandColors.instagramGradientStart,
@@ -23,16 +24,7 @@ const TWO_STOP_RING = [0, 1] as const;
  *   and borrowing a site's colours would credit one we never asked.
  */
 export const importLookFor = (platform: SourcePlatformType, colors: ThemeColors): ImportLook => {
-  if (platform === SourcePlatform.Web) {
-    const gradient = [colors.primaryGradientStart, colors.primaryGradientEnd] as const;
-    return {
-      gradient,
-      ringStops: TWO_STOP_RING,
-      accent: colors.primary,
-      pill: [colors.primary, colors.primary],
-      pillText: colors.primaryText,
-    };
-  }
+  if (platform === SourcePlatform.Web) return appImportLook(colors);
   if (platform === SourcePlatform.TikTok) {
     // A black pill: white text on TikTok's cyan would be unreadable.
     return {

@@ -22,4 +22,6 @@ export const aspectRatios = {
   heroWide: 16 / 10,
   /** Card cover strip in a feed. */
   cardCover: 16 / 9,
+  /** A photographed page — a cookbook page, a handwritten card — standing upright. */
+  pagePortrait: 3 / 4,
 } as const;

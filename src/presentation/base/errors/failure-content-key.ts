@@ -39,6 +39,12 @@ export type FailureContentKey =
   | 'importNoRecipeOnPage'
   | 'importPageUnreachable'
   | 'importBusy'
+  // ── key-tier: file import ──────────────────────────────────────────────────
+  | 'importNoFile'
+  | 'importUnsupportedFile'
+  | 'importTooManyFiles'
+  | 'importNoRecipeInFile'
+  | 'importUnreadableFile'
   | 'recipeExists'
   | 'nameMeaningless'
   | 'promptMeaningless'

@@ -17,3 +17,9 @@ export const AI_REQUEST_TIMEOUT_MS = 90_000;
 
 /** A 3 MB JPEG at 1 Mbps is ~25s — multipart needs its own budget. */
 export const MULTIPART_UPLOAD_TIMEOUT_MS = 60_000;
+
+/**
+ * A file reading takes 10-30 s and the backend gives up at 60 s; the extra ten
+ * cover uploading up to five photos, so its own answer arrives before ours.
+ */
+export const FILE_IMPORT_TIMEOUT_MS = 70_000;

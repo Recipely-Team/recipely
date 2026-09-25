@@ -19,6 +19,8 @@ import type { RecipeEntity } from "@domain/recipes/recipe-entity";
 import type { RecipeRepositoryInterface } from "@domain/recipes/recipe-repository-interface";
 import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import type { RefinedRecipe } from "@domain/recipes/refine/refined-recipe";
+import type { ImportFileBatch } from "@domain/recipes/import-file/import-file-batch";
+import type { FileImportReceipt } from "@domain/recipes/import-file/file-import-receipt";
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -152,5 +154,13 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
 
   removeRecipePhoto(_recipeId: string, _mediaId: string): Promise<Result<void, Failure>> {
     return Promise.resolve(this.config.removeRecipePhotoResult ?? ok(undefined as void));
+  }
+
+  /** The batch the last file import was asked to read, so a test can see it reached the port. */
+  lastImportFilesCall: ImportFileBatch | null = null;
+
+  importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
+    this.lastImportFilesCall = batch;
+    return Promise.resolve(this.config.importRecipeFromFilesResult ?? ok({ draftId: 'draft-1' }));
   }
 }

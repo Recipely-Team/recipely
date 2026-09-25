@@ -41,6 +41,17 @@ export const ErrorMessageKey = {
   /** A web page could not be fetched at all: dead link, blocked, or down. */
   importPageUnreachable: 'errors.import.page_unreachable',
   importBusy: 'errors.import.busy',
+  // File import: photos of a recipe's pages, or a PDF
+  /** The request carried no file at all. */
+  importNoFile: 'errors.import.no_file',
+  /** A file that is neither a photo (JPEG, PNG, WebP, HEIC) nor a PDF. */
+  importUnsupportedFile: 'errors.import.unsupported_file',
+  /** More than five photos, more than one PDF, or photos and a PDF together. */
+  importTooManyFiles: 'errors.import.too_many_files',
+  /** The pages were read, and no recipe was on them. */
+  importNoRecipeInFile: 'errors.import.no_recipe_in_file',
+  /** The file could not be opened: corrupt, encrypted, or not what it claims to be. */
+  importUnreadableFile: 'errors.import.unreadable_file',
   recipeExists: 'errors.conflict.recipe_exists',
   /** The title names nothing you could eat — keyboard mash, a placeholder. */
   nameMeaningless: 'errors.recipe.name_meaningless',

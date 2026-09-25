@@ -1,6 +1,5 @@
 import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { StyleSheet, View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -12,14 +11,12 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   spacing,
   radii,
-  fontSizes,
   fontWeights,
-  letterSpacings,
   iconSizes,
   borderWidths,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { upperCase } from '@presentation/i18n/upper-case';
+import { ImportStatusPill } from '@presentation/app/import-recipe/items/import-status-pill';
 import { ValueConstants } from '@core/constants';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
 
@@ -33,12 +30,8 @@ export interface ImportQueueHeadingProps {
   look: ImportLook;
 }
 
-const STATUS_DOT = 6;
 /** Placeholder the queue-position sentence carries in every catalogue. */
 const POSITION_TOKEN = '{position}';
-/** Placeholder the web title carries in every catalogue. */
-const GRADIENT_START = { x: ValueConstants.zero, y: ValueConstants.one };
-const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
 
 /**
  * The status pill, where the link came from, and what is happening to it.
@@ -76,21 +69,7 @@ export const ImportQueueHeading = ({
 
   return (
     <View style={styles.heading}>
-      {isDone ? (
-        <View style={[styles.statusPill, { backgroundColor: colors.successLight }]}>
-          <View style={[styles.statusDot, { backgroundColor: colors.success }]} />
-          <ThemedText variant="caption" style={[styles.statusLabel, { color: colors.success }]}>
-            {upperCase(statusLabel)}
-          </ThemedText>
-        </View>
-      ) : (
-        <LinearGradient colors={[...look.pill]} start={GRADIENT_START} end={GRADIENT_END} style={styles.statusPill}>
-          <View style={[styles.statusDot, { backgroundColor: look.pillText }]} />
-          <ThemedText variant="caption" style={[styles.statusLabel, { color: look.pillText }]}>
-            {upperCase(statusLabel)}
-          </ThemedText>
-        </LinearGradient>
-      )}
+      <ImportStatusPill label={statusLabel} done={isDone} look={look} />
 
       {isWeb ? (
         <View style={styles.origin}>
@@ -124,24 +103,6 @@ const styles = StyleSheet.create({
   heading: {
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xxs,
-    borderRadius: radii.round,
-  },
-  statusDot: {
-    width: STATUS_DOT,
-    height: STATUS_DOT,
-    borderRadius: radii.round,
-  },
-  statusLabel: {
-    fontSize: fontSizes.nano,
-    fontWeight: fontWeights.bold,
-    letterSpacing: letterSpacings.wider,
   },
   origin: {
     flexDirection: 'row',

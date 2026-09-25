@@ -13,6 +13,7 @@ import { ImportQueueHeading } from '@presentation/app/import-recipe/body/import-
 import { ImportQueueStats } from '@presentation/app/import-recipe/body/import-queue-stats';
 import { importLookFor } from '@presentation/app/import-recipe/model/import-look-for';
 import { importStageKeysFor } from '@presentation/app/import-recipe/model/import-stage-keys';
+import { ImportDish } from '@presentation/app/import-recipe/model/import-dish';
 import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 
@@ -63,7 +64,7 @@ export const ImportQueueView = ({
   return (
     <>
       <ScrollView {...scrollable} style={styles.scroll} contentContainerStyle={styles.content}>
-        <ImportProgressRing progress={progress} done={isDone} look={look} isWeb={isWeb} />
+        <ImportProgressRing progress={progress} done={isDone} look={look} dish={isWeb ? ImportDish.Globe : ImportDish.Dish} />
         <ImportQueueHeading
           jobStatus={jobStatus}
           isDone={isDone}
@@ -72,7 +73,11 @@ export const ImportQueueView = ({
           host={host}
           look={look}
         />
-        <ImportStageList activeStage={activeStage} stageKeys={importStageKeysFor(platform)} accent={look.accent} />
+        <ImportStageList
+          activeStage={activeStage}
+          labels={importStageKeysFor(platform).map((key) => copy[key])}
+          accent={look.accent}
+        />
         <ImportQueueStats isWeb={isWeb} host={host} />
       </ScrollView>
 
