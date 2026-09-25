@@ -998,7 +998,7 @@ export const en = {
     saved: 'saved',
     aiDoneLabel: 'AI finished your recipe',
     genericLabel: 'New notification',
-    importDoneLabel: 'Your Instagram recipe is ready',
+    importDoneLabel: 'Your imported recipe is ready',
     modOk: 'approved your recipe',
     modPending: 'review pending for',
     followed: 'followed you',

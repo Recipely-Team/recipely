@@ -986,7 +986,7 @@ export const de = {
     liked: 'gefiel',
     saved: 'speicherte',
     aiDoneLabel: 'KI hat dein Rezept fertiggestellt',
-    importDoneLabel: 'Dein Instagram-Rezept ist fertig',
+    importDoneLabel: 'Dein importiertes Rezept ist fertig',
     genericLabel: 'Neue Benachrichtigung',
     modOk: 'hat dein Rezept freigegeben',
     modPending: 'Prüfung ausstehend für',

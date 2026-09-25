@@ -986,7 +986,7 @@ export const ja = {
     liked: 'がいいねしました：',
     saved: 'が保存しました：',
     aiDoneLabel: 'AIがレシピを完成させました',
-    importDoneLabel: 'Instagramのレシピができました',
+    importDoneLabel: '取り込んだレシピの準備ができました',
     genericLabel: '新しい通知',
     modOk: 'があなたのレシピを承認しました',
     modPending: 'の審査待ち：',

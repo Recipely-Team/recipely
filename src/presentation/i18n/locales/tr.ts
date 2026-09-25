@@ -990,7 +990,7 @@ export const tr: Translations = {
     liked: 'tarifini beğendi:',
     saved: 'tarifini kaydetti:',
     aiDoneLabel: 'Yapay zekâ tarifini tamamladı',
-    importDoneLabel: 'Instagram tarifin hazır',
+    importDoneLabel: 'İçe aktardığın tarif hazır',
     genericLabel: 'Yeni bildirim',
     modOk: 'tarifini onayladı:',
     modPending: 'tarifin inceleniyor:',

@@ -982,7 +982,7 @@ export const ko: Translations = {
     liked: '좋아요를 눌렀어요:',
     saved: '저장했어요:',
     aiDoneLabel: 'AI가 레시피를 완성했어요',
-    importDoneLabel: 'Instagram 레시피가 준비됐어요',
+    importDoneLabel: '가져온 레시피가 준비됐어요',
     genericLabel: '새 알림',
     modOk: '레시피를 승인했어요:',
     modPending: '검토 중인 레시피:',

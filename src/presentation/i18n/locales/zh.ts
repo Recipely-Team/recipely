@@ -990,7 +990,7 @@ export const zh = {
     liked: '喜欢了',
     saved: '收藏了',
     aiDoneLabel: 'AI 已完成你的食谱',
-    importDoneLabel: '你的 Instagram 食谱已就绪',
+    importDoneLabel: '你导入的食谱已准备好',
     genericLabel: '新通知',
     modOk: '通过了你的食谱',
     modPending: '正在审核',

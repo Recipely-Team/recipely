@@ -986,7 +986,7 @@ export const fr = {
     liked: 'a aimé',
     saved: 'a enregistré',
     aiDoneLabel: 'L’IA a terminé votre recette',
-    importDoneLabel: 'Votre recette Instagram est prête',
+    importDoneLabel: 'Ta recette importée est prête',
     genericLabel: 'Nouvelle notification',
     modOk: 'a approuvé votre recette',
     modPending: 'révision en attente pour',

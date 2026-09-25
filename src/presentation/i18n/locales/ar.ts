@@ -986,7 +986,7 @@ export const ar = {
     liked: "أعجب بـ",
     saved: "حفظ",
     aiDoneLabel: "أنهى الذكاء الاصطناعي وصفتك",
-    importDoneLabel: 'وصفتك من إنستغرام جاهزة',
+    importDoneLabel: 'وصفتك المستوردة جاهزة',
     genericLabel: 'إشعار جديد',
     modOk: "وافق على وصفتك",
     modPending: "المراجعة معلّقة لـ",
