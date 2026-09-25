@@ -318,6 +318,10 @@ const GEN_STEP_INTERVAL_MS = 620;
     router.push(RoutePaths.importRecipe);
   }, [router]);
 
+  const onImportFromFile = useCallback((): void => {
+    router.push(RoutePaths.importRecipeFromFile);
+  }, [router]);
+
   const onStartBlank = useCallback((): void => {
     setRecipe(emptyEditable());
     setChatHistory([]);
@@ -430,6 +434,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     onGenerate: () => void runGenerate(prompt),
     onStartBlank,
     onImportFromInstagram,
+    onImportFromFile,
     onClose,
     latestDraft,
     onResumeDraft,

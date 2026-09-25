@@ -12,15 +12,13 @@ import {
   borderWidths,
   opacities,
 } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
-import type { importStageKeysFor } from '@presentation/app/import-recipe/model/import-stage-keys';
 
 export interface ImportStageListProps {
   /** Stages below this index are done; this one is in progress. */
   activeStage: number;
-  /** The platform's checklist — four stages for a video, three for a web page. */
-  stageKeys: ReturnType<typeof importStageKeysFor>;
+  /** The checklist, in order — four stages for a video or a file, three for a web page. */
+  labels: readonly string[];
   /** The active stage's marker, in the ring's colours. */
   accent: string;
 }
@@ -28,18 +26,17 @@ export interface ImportStageListProps {
 const DOT = 7;
 
 /** The queue made legible: the things the worker does, in order. */
-export const ImportStageList = ({ activeStage, stageKeys, accent }: ImportStageListProps): React.JSX.Element => {
+export const ImportStageList = ({ activeStage, labels, accent }: ImportStageListProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const copy = t().importRecipe;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-      {stageKeys.map((key, index) => {
+      {labels.map((label, index) => {
         const isDone = index < activeStage;
         const isActive = index === activeStage;
         return (
           <View
-            key={key}
+            key={label}
             style={[styles.row, { opacity: isDone || isActive ? opacities.full : opacities.inactive }]}
           >
             <View
@@ -72,7 +69,7 @@ export const ImportStageList = ({ activeStage, stageKeys, accent }: ImportStageL
                 },
               ]}
             >
-              {copy[key]}
+              {label}
             </ThemedText>
           </View>
         );

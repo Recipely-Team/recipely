@@ -8,6 +8,7 @@ import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/c
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
+import type { FileImportStoreState } from '@application/recipes/import-file/file-import-store-state';
 import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
@@ -39,6 +40,8 @@ export interface ApplicationStores {
   createdRecipesStore: BoundStore<CreatedRecipesStoreState>;
   draftsStore: BoundStore<DraftsStoreState>;
   importJobStore: BoundStore<ImportJobStoreState>;
+  /** One synchronous reading of photos or a PDF into a draft. */
+  fileImportStore: BoundStore<FileImportStoreState>;
   favoritesStore: BoundStore<FavoritesStoreState>;
   commentsStore: BoundStore<CommentsStoreState>;
   likesStore: BoundStore<LikesStoreState>;

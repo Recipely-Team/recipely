@@ -23,6 +23,7 @@ import { ValueConstants } from '@core/constants';
 import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
 import { ProvenanceGlyph } from '@presentation/base/widgets/badges/provenance-glyph';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
+import { ImportDish, type ImportDishType } from '@presentation/app/import-recipe/model/import-dish';
 
 export interface ImportProgressRingProps {
   /** 0..1 — how much of the ring is drawn. */
@@ -30,8 +31,8 @@ export interface ImportProgressRingProps {
   /** Swaps the ring to the success hue and shows the check badge. */
   done: boolean;
   look: ImportLook;
-  /** A web page has no dish photo to stand for: the dish shows the site's globe. */
-  isWeb: boolean;
+  /** A web page shows the site's globe and a file its page; a video keeps the dish. */
+  dish: ImportDishType;
 }
 
 const RING_SIZE = 152;
@@ -70,7 +71,7 @@ const GRADIENT_END = { x: ValueConstants.one, y: ValueConstants.zero };
  *   A low-opacity gradient disc breathing behind the ring reads as the same
  *   glow without pulling in a blur view for one decorative element.
  */
-export const ImportProgressRing = ({ progress, done, look, isWeb }: ImportProgressRingProps): React.JSX.Element => {
+export const ImportProgressRing = ({ progress, done, look, dish }: ImportProgressRingProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const ringId = `import-ring-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const bloom = useSharedValue(ValueConstants.zero);
@@ -141,8 +142,10 @@ export const ImportProgressRing = ({ progress, done, look, isWeb }: ImportProgre
             end={GRADIENT_END}
             style={styles.dishFill}
           >
-            {isWeb ? (
+            {dish === ImportDish.Globe ? (
               <ProvenanceGlyph mark={ProvenanceMark.Web} size={WEB_MARK} tint={colors.primaryText} />
+            ) : dish === ImportDish.Document ? (
+              <Ionicons name="document-text-outline" size={iconSizes.huge} color={colors.primaryText} />
             ) : (
               <Ionicons name="restaurant-outline" size={iconSizes.huge} color={BrandColors.white} />
             )}

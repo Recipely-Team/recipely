@@ -8,8 +8,10 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { ResumeDraftCard } from '@presentation/app/create-recipe/items/resume-draft-card';
-import { ImportEntryCard } from '@presentation/app/create-recipe/items/import-entry-card';
+import { ResumeDraftCard } from '@presentation/app/create-recipe/items/prompt/resume-draft-card';
+import { ImportEntryCard } from '@presentation/app/create-recipe/items/prompt/import-entry-card';
+import { FileImportEntryCard } from '@presentation/app/create-recipe/items/prompt/file-import-entry-card';
+import { StartBlankButton } from '@presentation/app/create-recipe/items/prompt/start-blank-button';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
@@ -25,6 +27,8 @@ export interface PromptPhaseProps {
   onStartBlank: () => void;
   /** Opens the paste-a-link import screen. */
   onImportFromInstagram: () => void;
+  /** Opens the photos-or-PDF import screen. */
+  onImportFromFile: () => void;
   onClose: () => void;
   latestDraft: RecipeDraft | null;
   onResumeDraft: () => void;
@@ -40,6 +44,7 @@ export const PromptPhase = ({
   onGenerate,
   onStartBlank,
   onImportFromInstagram,
+  onImportFromFile,
   onClose,
   latestDraft,
   onResumeDraft,
@@ -96,6 +101,7 @@ export const PromptPhase = ({
         ) : null}
 
         <ImportEntryCard onPress={onImportFromInstagram} />
+        <FileImportEntryCard onPress={onImportFromFile} />
 
         <View
           style={[
@@ -153,24 +159,7 @@ export const PromptPhase = ({
           </LinearGradient>
         </Pressable>
 
-        <View style={styles.dividerRow}>
-          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-          <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-            {t().createRecipe.or}
-          </ThemedText>
-          <View style={[styles.dividerLine, { backgroundColor: colors.border }]} />
-        </View>
-
-        <Pressable
-          onPress={onStartBlank}
-          style={[styles.blankBtn, { borderColor: colors.border }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().createRecipe.startBlank}
-        >
-          <ThemedText variant="body" style={[styles.blankLabel, { color: colors.text }]}>
-            {t().createRecipe.startBlank}
-          </ThemedText>
-        </Pressable>
+        <StartBlankButton onPress={onStartBlank} />
       </ScrollView>
     </View>
   );
@@ -273,25 +262,5 @@ const styles = StyleSheet.create({
   ctaLabel: {
     fontWeight: fontWeights.bold,
     fontSize: fontSizes.heading,
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  dividerLine: {
-    flex: ValueConstants.one,
-    height: StyleSheet.hairlineWidth,
-  },
-  blankBtn: {
-    minHeight: controlSizes.buttonSm,
-    borderRadius: radii.lg,
-    borderWidth: borderWidths.thin,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  blankLabel: {
-    fontWeight: fontWeights.semibold,
-    fontSize: fontSizes.medium,
   },
 });

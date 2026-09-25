@@ -126,11 +126,13 @@ export class HttpClient {
     return fail(failure);
   }
 
+  /** `timeoutMs` overrides the multipart default for an upload the server answers slowly. */
   uploadMultipart<T>(
     url: string,
     formData: FormData,
     onProgress?: (event: UploadProgressEvent) => void,
+    timeoutMs?: number,
   ): Promise<Result<T, Failure>> {
-    return uploadMultipart<T>(this.options, this.aesKey, url, formData, onProgress);
+    return uploadMultipart<T>(this.options, this.aesKey, url, formData, onProgress, timeoutMs);
   }
 }

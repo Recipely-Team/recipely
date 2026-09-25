@@ -14,7 +14,7 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
-import { AI_REQUEST_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { AI_REQUEST_TIMEOUT_MS, FILE_IMPORT_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
 import type { MediaItem } from '@domain/recipes/media/media-item';
@@ -32,6 +32,10 @@ import type { ImportJob } from '@domain/recipes/import/import-job';
 import { toImportJob } from '@infrastructure/recipes/import/to-import-job';
 import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-batch';
+import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
+import type { FileImportResponseDto } from '@infrastructure/recipes/import-file/file-import-response-dto';
+import { buildImportFileFormData } from '@infrastructure/recipes/import-file/build-import-file-form-data';
 
 /**
  * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
@@ -121,6 +125,25 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     if (!result.ok) return result;
 
     return ok({ id: result.value.id, type: result.value.type, url: result.value.url });
+  }
+
+  /**
+   * Reads photos of a recipe's pages, or a PDF, into a draft.
+   *
+   * The XHR multipart path, like every upload here, on its own 70 s budget:
+   * the reading itself takes 10-30 s and the backend stops at 60.
+   */
+  async importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
+    const formData = await buildImportFileFormData(batch);
+    const result = await this.http.uploadMultipart<FileImportResponseDto>(
+      ApiRoutes.recipes.importFile,
+      formData,
+      undefined,
+      FILE_IMPORT_TIMEOUT_MS,
+    );
+    if (!result.ok) return result;
+
+    return ok({ draftId: result.value.draftId });
   }
 
   async removeRecipePhoto(recipeId: string, mediaId: string): Promise<Result<void, Failure>> {

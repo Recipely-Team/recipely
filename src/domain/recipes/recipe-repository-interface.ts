@@ -11,6 +11,8 @@ import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-batch';
+import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
 
 export interface RecipeRepositoryInterface {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>>;
@@ -51,6 +53,14 @@ export interface RecipeRepositoryInterface {
    * result without one.
    */
   getImportJob(id: string): Promise<Result<ImportJob, Failure>>;
+
+  /**
+   * Reads photos of a recipe's pages, or a PDF, into a draft and returns its id.
+   *
+   * Synchronous, unlike the link import: a reading takes 10-30 s, so it holds
+   * the request open on its own timeout rather than going through the queue.
+   */
+  importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>>;
   /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * `RefinedRecipe` read model: the full preview `Recipe` plus the AI's

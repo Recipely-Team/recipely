@@ -31,6 +31,8 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
+import { ImportRecipeFromFilesUseCase } from '@application/recipes/import-file/import-recipe-from-files-use-case';
+import { configureFileImportStore } from '@application/recipes/import-file/file-import-store';
 import { GetImportJobUseCase } from '@application/recipes/import/get-import-job-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
@@ -155,6 +157,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
     enqueueInstagramImportUseCase,
     getImportJobUseCase,
   });
+  const fileImportStore = configureFileImportStore({
+    importRecipeFromFilesUseCase: new ImportRecipeFromFilesUseCase(recipeRepo),
+  });
   const draftsStore = configureDraftsStore({
     listDraftsUseCase,
     getLatestDraftUseCase,
@@ -228,6 +233,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
     importJobStore.getState().clear();
+    fileImportStore.getState().clear();
     userProfileStore.getState().reset();
     // The transcript is the previous user's conversation, and a live socket
     // outlives a sign-out unless something closes it.
@@ -250,6 +256,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createdRecipesStore,
     draftsStore,
     importJobStore,
+    fileImportStore,
     favoritesStore,
     commentsStore,
     likesStore,

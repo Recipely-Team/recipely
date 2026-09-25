@@ -35,6 +35,8 @@ export const ApiRoutes = {
     /** Queues a background import and returns a job id, instead of waiting ~2 min. */
     importJobs: '/recipes/import/jobs',
     importJob: (id: string): string => `/recipes/import/jobs/${encodeURIComponent(id)}`,
+    /** Photos of a recipe's pages, or a PDF, read into a draft (multipart, synchronous). */
+    importFile: '/recipes/import/file',
     refine: '/recipes/refine',
     withMedia: '/recipes/with-media',
     drafts: '/recipes/drafts',

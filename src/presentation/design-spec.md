@@ -3034,7 +3034,7 @@ Applies to the mobile detail screen (`RecipeOverview`,
 (`WebRecipeDetailHeader`, `src/presentation/app/recipes/[recipeId]/body/web-recipe-detail-header.tsx`).
 Icon + label; for `IMPORT`, the account handle is a separate, tappable inline link.
 
-**Reference:** [import-entry-card.tsx](../../../../src/presentation/app/create-recipe/items/import-entry-card.tsx)
+**Reference:** [import-entry-card.tsx](../../../../src/presentation/app/create-recipe/items/prompt/import-entry-card.tsx)
 already ships the exact gradient-plate + white `logo-instagram` treatment for the import ENTRY
 point — deliberately **not** reused here. That plate is a call-to-action ("start an import"); this
 badge is a passive fact about a recipe that already exists, and the ordinary case (`USER`) draws

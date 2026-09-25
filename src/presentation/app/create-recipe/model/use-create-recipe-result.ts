@@ -22,6 +22,8 @@ export interface UseCreateRecipeResult {
   onGenerate: () => void;
   onStartBlank: () => void;
   onImportFromInstagram: () => void;
+  /** Opens the import screen asking for photos or a PDF of a written recipe. */
+  onImportFromFile: () => void;
   /**
    * Leaves the flow, or opens the exit sheet when there is work to decide
    * about. Returns true in the second case — the assistant's `goBack` reports
