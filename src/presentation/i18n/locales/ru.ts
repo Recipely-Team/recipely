@@ -986,7 +986,7 @@ export const ru = {
     liked: 'понравилось',
     saved: 'сохранил(а)',
     aiDoneLabel: 'ИИ закончил ваш рецепт',
-    importDoneLabel: 'Ваш рецепт из Instagram готов',
+    importDoneLabel: 'Импортированный рецепт готов',
     genericLabel: 'Новое уведомление',
     modOk: 'одобрил(а) ваш рецепт',
     modPending: 'ожидает проверки для',

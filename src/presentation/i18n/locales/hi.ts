@@ -982,7 +982,7 @@ export const hi: Translations = {
     liked: 'ने पसंद किया:',
     saved: 'ने सेव किया:',
     aiDoneLabel: 'AI ने आपकी रेसिपी पूरी कर दी',
-    importDoneLabel: 'आपकी Instagram रेसिपी तैयार है',
+    importDoneLabel: 'आपकी आयात की गई रेसिपी तैयार है',
     genericLabel: 'नई सूचना',
     modOk: 'ने आपकी रेसिपी मंज़ूर की:',
     modPending: 'यह रेसिपी समीक्षा में है:',

@@ -986,7 +986,7 @@ export const id = {
     liked: 'menyukai',
     saved: 'menyimpan',
     aiDoneLabel: 'AI selesai membuat resep kamu',
-    importDoneLabel: 'Resep Instagram kamu sudah siap',
+    importDoneLabel: 'Resep yang kamu impor sudah siap',
     genericLabel: 'Notifikasi baru',
     modOk: 'menyetujui resep kamu',
     modPending: 'menunggu tinjauan untuk',
