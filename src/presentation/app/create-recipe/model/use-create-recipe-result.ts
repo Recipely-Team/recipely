@@ -45,7 +45,12 @@ export interface UseCreateRecipeResult {
   headerTitle: string;
   saveLabel: string;
   isSaving: boolean;
+  /** Saves privately and opens the recipe's page. */
   onSave: () => void;
+  /** The assistant's publish: the same private save, then the publish request. */
+  onSaveAndPublish: () => void;
+  /** True when the editor was opened on a saved private recipe (PATCH, no photos here). */
+  isEditingSaved: boolean;
 
   // Preview editor.
   refining: boolean;
@@ -105,9 +110,4 @@ export interface UseCreateRecipeResult {
   // Rejected-save dialog (pre-submit guards + validation failures).
   saveIssue: string | null;
   onCloseSaveIssue: () => void;
-
-  // Save-success dialog.
-  saveSuccess: { recipeId: string } | null;
-  onSuccessPrimary: () => void;
-  onCloseSuccess: () => void;
 }

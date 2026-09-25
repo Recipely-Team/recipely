@@ -20,6 +20,7 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     difficulty: recipe.difficulty,
     totalTimeMinutes: recipe.prepTimeMinutes + recipe.cookTimeMinutes,
     rating: recipe.rating,
+    isPublished: recipe.isPublished,
     moderationStatus: recipe.moderationStatus,
     likeCount: recipe.likeCount,
     likedByMe: recipe.likedByMe,

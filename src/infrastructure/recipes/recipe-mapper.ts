@@ -10,6 +10,22 @@ import { MediaType } from '@domain/recipes/media/media-type';
 import { toRecipeOrigin } from '@domain/recipes/provenance/to-recipe-origin';
 import { toSourcePlatform } from '@domain/recipes/provenance/to-source-platform';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { ModerationStatus } from '@domain/recipes/publishing/moderation-status';
+import { toPublishBlockers } from '@domain/recipes/publishing/to-publish-blockers';
+import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
+
+/**
+ * A server that predates private saves sends no `isPublished`; every recipe it
+ * held was public once approved, so approval answers for it.
+ */
+const isPublishedOf = (isPublished: boolean | undefined, moderationStatus: string): boolean =>
+  isPublished ?? moderationStatus === ModerationStatus.Approved;
+
+/** Owner-only: absent stays absent, so "not told" never reads as "nothing missing". */
+const optionalBlockers = (raw: string[] | undefined): Pick<RecipeEntityProps, 'publishBlockers'> => {
+  const blockers = toPublishBlockers(raw);
+  return blockers === undefined ? {} : { publishBlockers: blockers };
+};
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -57,7 +73,9 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
     ...(dto.sourceUrl !== undefined ? { sourceUrl: dto.sourceUrl } : {}),
     ...(dto.sourceHandle !== undefined ? { sourceHandle: dto.sourceHandle } : {}),
+    isPublished: isPublishedOf(dto.isPublished, dto.moderationStatus),
     moderationStatus: dto.moderationStatus,
+    ...optionalBlockers(dto.publishBlockers),
     commentCount: dto.commentCount ?? ValueConstants.zero,
   });
 };
@@ -78,6 +96,7 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     difficulty: dto.difficulty,
     totalTimeMinutes: dto.totalTimeMinutes ?? null,
     rating: dto.rating,
+    isPublished: isPublishedOf(dto.isPublished, dto.moderationStatus),
     moderationStatus: dto.moderationStatus,
     likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,

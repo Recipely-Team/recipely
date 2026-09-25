@@ -12,11 +12,22 @@ import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin'
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
+import type { PublishBlockerType } from '@domain/recipes/publishing/publish-blocker';
+import { OwnerStatus, type OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
+import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
+import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
+import { MediaType } from '@domain/recipes/media/media-type';
 
 
 /**
  * Domain entity representing a recipe. Validates that `id` and `name` are
  * non-empty before construction; use `RecipeEntity.create` to obtain an instance.
+ *
+ * @remarks
+ * - **Publishing state is derived, not stored.** `ownerStatus` and `canPublish`
+ *   read `isPublished`, the moderation status and the owner-only blockers; a
+ *   publish or cover removal returns a NEW entity carrying the server's answer.
  */
 export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   private constructor(props: RecipeEntityProps) {
@@ -127,6 +138,44 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get moderationStatus(): string {
     return this.props.moderationStatus;
+  }
+  get isPublished(): boolean {
+    return this.props.isPublished;
+  }
+  /** What still keeps a website import private; empty when nothing does or nobody said. */
+  get publishBlockers(): readonly PublishBlockerType[] {
+    return this.props.publishBlockers ?? [];
+  }
+  /** How the recipe reads to its owner. */
+  get ownerStatus(): OwnerStatusType {
+    return toOwnerStatus(this.props.isPublished, this.props.moderationStatus);
+  }
+  /** A private recipe with nothing left on its checklist. Rejected is never publishable. */
+  get canPublish(): boolean {
+    return this.ownerStatus === OwnerStatus.Private && this.publishBlockers.length === ValueConstants.zero;
+  }
+  /** Whether a gallery item is the cover — removed with its own request, everywhere it appears. */
+  isCover(item: MediaItem): boolean {
+    return this.props.image.length > ValueConstants.zero && item.url === this.props.image;
+  }
+  withPublishOutcome(outcome: PublishOutcome): RecipeEntity {
+    return new RecipeEntity({
+      ...this.props,
+      isPublished: outcome.isPublished,
+      moderationStatus: outcome.moderationStatus,
+    });
+  }
+  /** The recipe as the server left it after its cover was taken off. */
+  withCoverRemoved(removal: CoverRemoval): RecipeEntity {
+    const removed = new Set(removal.removedMediaIds);
+    const kept = this.props.media.filter(
+      (m) => !(m.id !== undefined && removed.has(m.id)) && m.url !== this.props.image,
+    );
+    const media =
+      kept.length === ValueConstants.zero && removal.image.length > ValueConstants.zero
+        ? [{ type: MediaType.Image, url: removal.image }]
+        : kept;
+    return new RecipeEntity({ ...this.props, image: removal.image, media });
   }
   get commentCount(): number {
     return this.props.commentCount;

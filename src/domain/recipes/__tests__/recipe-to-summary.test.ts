@@ -29,6 +29,7 @@ const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]
     likedByMe: true,
     viewCount: 42,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 3,
     ...overrides,
       sourcePlatform: null,

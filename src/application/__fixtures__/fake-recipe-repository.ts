@@ -21,6 +21,9 @@ import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity"
 import type { RefinedRecipe } from "@domain/recipes/refine/refined-recipe";
 import type { ImportFileBatch } from "@domain/recipes/import-file/import-file-batch";
 import type { FileImportReceipt } from "@domain/recipes/import-file/file-import-receipt";
+import type { EditRecipeInput } from "@domain/recipes/edit/edit-recipe-input";
+import type { PublishOutcome } from "@domain/recipes/publishing/publish-outcome";
+import type { CoverRemoval } from "@domain/recipes/publishing/cover-removal";
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -70,10 +73,14 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     );
   }
 
+  /** The last create payload, so a test can see what reached the port. */
+  lastCreateInput: CreateRecipeInput | null = null;
+
   createRecipe(
-    _input: CreateRecipeInput,
+    input: CreateRecipeInput,
     _onProgress?: CreateRecipeProgressCallback,
   ): Promise<Result<RecipeEntity, Failure>> {
+    this.lastCreateInput = input;
     return Promise.resolve(
       this.config.createRecipeResult ??
         fail(new UnknownFailure("not configured")),
@@ -162,5 +169,29 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
   importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
     this.lastImportFilesCall = batch;
     return Promise.resolve(this.config.importRecipeFromFilesResult ?? ok({ draftId: 'draft-1' }));
+  }
+
+  removeRecipeCover(_recipeId: string): Promise<Result<CoverRemoval, Failure>> {
+    return Promise.resolve(this.config.removeRecipeCoverResult ?? ok({ image: '', removedMediaIds: [] }));
+  }
+
+  /** The last edit sent, so a test can see what reached the port. */
+  lastUpdateCall: { id: string; input: EditRecipeInput } | null = null;
+
+  updateRecipe(id: string, input: EditRecipeInput): Promise<Result<RecipeEntity, Failure>> {
+    this.lastUpdateCall = { id, input };
+    return Promise.resolve(this.config.updateRecipeResult ?? fail(new UnknownFailure("not configured")));
+  }
+
+  publishRecipe(_id: string): Promise<Result<PublishOutcome, Failure>> {
+    return Promise.resolve(
+      this.config.publishRecipeResult ?? ok({ isPublished: true, moderationStatus: 'approved' }),
+    );
+  }
+
+  unpublishRecipe(_id: string): Promise<Result<PublishOutcome, Failure>> {
+    return Promise.resolve(
+      this.config.unpublishRecipeResult ?? ok({ isPublished: false, moderationStatus: 'unreviewed' }),
+    );
   }
 }

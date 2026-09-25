@@ -24,7 +24,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
     <>
       <CreateRecipeHeader
         title={vm.headerTitle}
-        showAiBadge
+        showAiBadge={!vm.isEditingSaved}
         saveLabel={vm.saveLabel}
         isSaving={vm.isSaving}
         isWebShell={vm.isWebShell}
@@ -65,7 +65,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
           onChangeStep={vm.onChangeStep}
           onRemoveStep={vm.onRemoveStep}
           onAddStep={vm.onAddStep}
-          onOpenPhotos={vm.onOpenPhotos}
+          onOpenPhotos={vm.isEditingSaved ? null : vm.onOpenPhotos}
         />
       </View>
 

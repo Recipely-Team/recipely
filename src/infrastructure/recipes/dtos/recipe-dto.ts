@@ -39,5 +39,9 @@ export interface RecipeDto {
   sourcePlatform?: string | null;
   /** Whether a model produced the text — true for a generation AND an import. */
   aiWritten?: boolean;
+  /** Absent from a server that predates private saves. */
+  isPublished?: boolean;
   moderationStatus: string;
+  /** Owner only: what a website import still needs before it can be published. */
+  publishBlockers?: string[];
 }

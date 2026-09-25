@@ -12,15 +12,16 @@ import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/mode
 /**
  * Assembles the create-recipe view model from the focused sub-hooks:
  * {@link useEditableRecipe} (form state), {@link useRecipeGeneration} (AI phase
- * flow + drafts), and {@link useRecipeSave} (publish). The screen renders the
+ * flow + drafts), and {@link useRecipeSave} (private save). The screen renders the
  * returned state and dispatches its handlers.
  */
 export const useCreateRecipe = (): UseCreateRecipeResult => {
   const insets = useSafeAreaInsets();
   const { isWebShell } = useLayout();
 
-  const params = useLocalSearchParams<{ draftId?: string }>();
+  const params = useLocalSearchParams<{ draftId?: string; editRecipeId?: string }>();
   const draftId = isString(params.draftId) ? params.draftId : undefined;
+  const editRecipeId = isString(params.editRecipeId) ? params.editRecipeId : undefined;
 
   // A stable draft id for the lifetime of a NEW draft. A real UUID is required
   // by the backend; resumed drafts reuse their own id.
@@ -33,11 +34,13 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     setRecipe: editable.setRecipe,
     activeDraftId,
     draftId,
+    editRecipeId,
   });
   const save = useRecipeSave({
     recipe: editable.recipe,
     activeDraftId,
     setFieldErrors: editable.setFieldErrors,
+    editRecipeId,
   });
 
   return {
@@ -61,6 +64,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     saveLabel: save.saveLabel,
     isSaving: save.isSaving,
     onSave: save.onSave,
+    onSaveAndPublish: save.onSaveAndPublish,
+    isEditingSaved: editRecipeId !== undefined,
     refining: generation.refining,
     recipe: editable.recipe,
     fieldErrors: editable.fieldErrors.fields,
@@ -96,7 +101,15 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onRemoveMedia: editable.onRemoveMedia,
     onSetCover: editable.onSetCover,
     exitOpen: generation.exitOpen,
-    onSaveDraftAndExit: generation.onSaveDraftAndExit,
+    // Editing a saved recipe: the exit sheet's "save" is the PATCH save, which
+    // opens the recipe on success and keeps the editor up with its dialog on failure.
+    onSaveDraftAndExit:
+      editRecipeId === undefined
+        ? generation.onSaveDraftAndExit
+        : () => {
+            generation.onKeepEditing();
+            save.onSave();
+          },
     onDiscardAndExit: generation.onDiscardAndExit,
     onKeepEditing: generation.onKeepEditing,
     saveError: save.saveError,
@@ -104,8 +117,5 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onCloseSaveError: save.onCloseSaveError,
     saveIssue: save.saveIssue,
     onCloseSaveIssue: save.onCloseSaveIssue,
-    saveSuccess: save.saveSuccess,
-    onSuccessPrimary: save.onSuccessPrimary,
-    onCloseSuccess: save.onCloseSuccess,
   };
 };

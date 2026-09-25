@@ -3,6 +3,7 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
+import type { PublishBlockerType } from '@domain/recipes/publishing/publish-blocker';
 
 export interface RecipeEntityProps {
   id: string;
@@ -39,6 +40,13 @@ export interface RecipeEntityProps {
   sourcePlatform: SourcePlatformType | null;
   /** Whether a model produced the text — true for a generation AND an import. */
   aiWritten: boolean;
+  /** Whether the owner has put it out; see `ModerationStatus` for the review half. */
+  isPublished: boolean;
   moderationStatus: string;
+  /**
+   * What still keeps a website import from being published. Sent to the owner
+   * only, so absent for everyone else — optional data, not a viewer flag.
+   */
+  publishBlockers?: readonly PublishBlockerType[];
   commentCount: number;
 }

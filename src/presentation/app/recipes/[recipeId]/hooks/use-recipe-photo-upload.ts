@@ -9,6 +9,7 @@ import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ValueConstants } from '@core/constants';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 /**
  * No `allowsEditing`, unlike the avatar.
@@ -42,9 +43,9 @@ const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
  * Adding and removing photos on a recipe the user owns.
  *
  * @remarks
- * - **Why the screen has this at all.** Editing a published recipe was removed,
- *   which left no way to add a photo to one — and the dish looking better than
- *   the picture that went out with it is the ordinary case, not an edge one.
+ * - **Why the screen has this at all.** Photos are not part of the edit form:
+ *   each add and remove is its own request, the cover included — which is how
+ *   a website import's photo is taken off before it can be published.
  * - **Every failure reaches a dialog, none is a toast.** The server judges the
  *   photo before it stores it, so "that picture cannot go up" is an answer the
  *   user has to be able to read and act on; a toast that scrolls away is how a
@@ -97,9 +98,9 @@ export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
   }, [isBusy, launch]);
 
   const remove = useCallback(
-    async (mediaId: string): Promise<void> => {
+    async (item: MediaItem): Promise<void> => {
       if (isBusy) return;
-      const failure = await removePhoto(recipeId, mediaId);
+      const failure = await removePhoto(recipeId, item);
       if (failure !== null) {
         setError(failureKeyMessage(failure) ?? t().recipes.photoRemoveFailed);
         return;

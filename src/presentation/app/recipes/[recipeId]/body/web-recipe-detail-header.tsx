@@ -13,6 +13,8 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
 import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
+import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
+import { OwnerStatusPanel } from '@presentation/app/recipes/[recipeId]/items/publishing/owner-status-panel';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -26,6 +28,8 @@ export interface WebRecipeDetailHeaderProps {
   saveDisabled: boolean;
   onToggleSave: () => void;
   onCopyToDraft: () => void;
+  /** The owner's photo controls; present only for the owner, who also gets the status panel. */
+  photos: GalleryOwnerControls | undefined;
 }
 
 /**
@@ -49,6 +53,7 @@ export const WebRecipeDetailHeader = ({
   saveDisabled,
   onToggleSave,
   onCopyToDraft,
+  photos,
 }: WebRecipeDetailHeaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -135,6 +140,8 @@ export const WebRecipeDetailHeader = ({
           sourceUrl={recipe.sourceUrl}
           style={styles.provenance}
         />
+
+        {photos !== undefined ? <OwnerStatusPanel recipe={recipe} onAddPhoto={photos.onAdd} /> : null}
       </View>
 
       <View style={styles.actions}>

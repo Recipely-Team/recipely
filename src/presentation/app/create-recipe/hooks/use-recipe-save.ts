@@ -8,6 +8,9 @@ import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ValidationFailure, type Failure } from '@core/failure';
 import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
+import { buildEditInput } from '@presentation/app/create-recipe/model/saving/build-edit-input';
+import { showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { usePublishRecipe } from '@presentation/base/hooks/recipes/use-publish-recipe';
 import { mapFieldErrorsToInputs, NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
@@ -22,25 +25,39 @@ interface UseRecipeSaveArgs {
   recipe: EditableRecipe;
   activeDraftId: string;
   setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
+  /** Set when the editor was opened on a private recipe: saving goes through PATCH. */
+  editRecipeId: string | undefined;
 }
 
 /**
- * Handles publishing a recipe: the required-field guards, the per-field
- * validation binding, and the blocking retry dialog for non-validation
- * failures.
+ * Saves the recipe in the editor — always privately.
+ *
+ * @remarks
+ * - **Save first, publish later.** The button is a lock and "Save"; there is no
+ *   save-and-publish shortcut for a tap. A new recipe is created private, an
+ *   opened private recipe is saved through PATCH, and either way the user lands
+ *   on its page with a toast saying only they can see it. Publishing happens
+ *   there, from the owner's status panel.
+ * - **The assistant's publish is save, then publish** — a spoken "yayınla" asks
+ *   for both, and the publish toast says where the recipe landed.
+ * - **Every rejected save is a dialog**, never a toast: a positional message can
+ *   sit off-screen on a long editor. Validation failures also bind their field
+ *   errors to the inputs; copy always comes from the localized key/code tiers.
  */
 export const useRecipeSave = ({
   recipe,
   activeDraftId,
   setFieldErrors,
+  editRecipeId,
 }: UseRecipeSaveArgs) => {
   const router = useRouter();
-  const { createdRecipesStore, draftsStore } = useStores();
+  const { createdRecipesStore, draftsStore, recipePublishingStore } = useStores();
   const createState = createdRecipesStore((s) => s.createState);
+  const isEditing = recipePublishingStore((s) => s.isBusy);
+  const { publish } = usePublishRecipe();
 
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveIssue, setSaveIssue] = useState<string | null>(null);
-  const [saveSuccess, setSaveSuccess] = useState<{ recipeId: string } | null>(null);
 
   // WHY: every rejected save surfaces as a dialog — a positional banner/toast can
   // sit off-screen on a long scrolling editor, and a dialog cannot be missed. A
@@ -91,93 +108,87 @@ export const useRecipeSave = ({
     return true;
   };
 
-  const handlePublish = useCallback(async (): Promise<void> => {
+  /** Saves privately — create, or PATCH when editing — and answers with the recipe id. */
+  const persist = useCallback(async (): Promise<string | null> => {
     clearSaveFeedback();
-    if (!hasRequiredText()) return;
-    // A photo is no longer required. It was only ever a guard mirroring the
-    // backend's own `image` requirement, and that requirement cost more than it
-    // bought: a recipe someone had written out in full could not be published
-    // because they had no photo to hand, and a resumed draft — whose cover was
-    // a device URI that no longer resolved — hit it with no way to understand
-    // why. Publishing without a cover is now allowed on both sides.
+    if (!hasRequiredText()) return null;
+    if (editRecipeId !== undefined) {
+      const failure = await recipePublishingStore
+        .getState()
+        .edit(editRecipeId, buildEditInput(recipe, getLocale()));
+      if (failure !== null) {
+        surfaceSaveFailure(failure);
+        return null;
+      }
+      return editRecipeId;
+    }
+    // A photo is not required: a recipe written out in full saves without one.
     await createdRecipesStore
       .getState()
       .createRecipe(buildCreateInput(recipe, getLocale(), activeDraftId));
     const state = createdRecipesStore.getState().createState;
     if (state.status === StoreStatus.Success) {
-      // Capture the new recipe's id before the store state is reset so the
-      // success dialog can deep-link straight to its detail page.
       const newRecipeId = state.recipe.id;
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
-      // The server retires the draft itself now — it is told which one by
-      // `fromDraftId`, which is also how the import notification learns to open
-      // the recipe instead of the draft it used to point at. This delete stays
-      // as the fallback for a build running against a backend that predates
-      // that: against a current one it simply 404s, which this call already
-      // tolerates. Remove it once no shipped version can reach an older API.
+      // The server retires the draft itself (`fromDraftId`); this delete is the
+      // fallback for an older backend, and a 404 from a current one is fine.
       await draftsStore.getState().deleteDraft(activeDraftId);
-      setSaveSuccess({ recipeId: newRecipeId });
-      return;
+      return newRecipeId;
     }
     if (state.status === StoreStatus.Error) {
       surfaceSaveFailure(state.failure);
       createdRecipesStore.getState().resetCreateState();
     }
+    return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, createdRecipesStore, draftsStore, activeDraftId, surfaceSaveFailure]);
+  }, [recipe, createdRecipesStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure]);
+
+  const openSaved = useCallback(
+    (recipeId: string): void => {
+      router.replace(RoutePaths.recipeDetail(recipeId) as Href);
+    },
+    [router],
+  );
 
   const onSave = useCallback((): void => {
-    void handlePublish();
-  }, [handlePublish]);
+    void (async () => {
+      const recipeId = await persist();
+      if (recipeId === null) return;
+      openSaved(recipeId);
+      showSuccessToast(t().createRecipe.savedPrivately);
+    })();
+  }, [persist, openSaved]);
 
-  // Primary action: open the recipe that was just published.
-  const onSuccessPrimary = useCallback((): void => {
-    const success = saveSuccess;
-    setSaveSuccess(null);
-    if (success !== null) router.replace(RoutePaths.recipeDetail(success.recipeId) as Href);
-  }, [saveSuccess, router]);
+  // The assistant's "publish": the same private save, then the publish request,
+  // whose toast says where the recipe landed.
+  const onSaveAndPublish = useCallback((): void => {
+    void (async () => {
+      const recipeId = await persist();
+      if (recipeId === null) return;
+      openSaved(recipeId);
+      await publish(recipeId);
+    })();
+  }, [persist, openSaved, publish]);
 
-  // Dismiss / secondary "Done", and the backdrop close: go to My Recipes — on
-  // the "created" tab, which is where the recipe that was just published is.
-  const onCloseSuccess = useCallback((): void => {
-    setSaveSuccess(null);
-    // `dismissTo`, not `replace`: My Recipes is already under the create screen,
-    // and replacing would leave a second copy of it below this one — a back
-    // press would then land on the saved tab and read as the recipe vanishing.
-    router.dismissTo({
-      pathname: RoutePaths.myRecipes,
-      params: { tab: RoutePaths.myRecipesCreatedTab },
-    });
-  }, [router]);
-
-  const headerTitle = t().createRecipe.previewTitle;
-  const isSaving = createState.status === StoreStatus.Creating;
-  // `publishShort`, not `save`: the button does not save anything private — it
-  // puts the recipe out where other people can find it, and the in-flight label
-  // has always said "Publishing…". Reading "Kaydet" and then "Yayınlanıyor…" on
-  // the same press described two different actions, and the first one was the
-  // wrong one.
-  const saveLabel =
-    createState.status === StoreStatus.Creating
-      ? t().createRecipe.publishing
-      : t().createRecipe.publishShort;
+  const isSaving = createState.status === StoreStatus.Creating || isEditing;
+  const headerTitle =
+    editRecipeId === undefined ? t().createRecipe.previewTitle : t().createRecipe.editTitle;
+  const saveLabel = isSaving ? t().createRecipe.saving : t().createRecipe.save;
 
   return {
     onSave,
+    onSaveAndPublish,
     isSaving,
     saveLabel,
     headerTitle,
     saveError,
     onConfirmSaveError: () => {
       setSaveError(null);
-      void handlePublish();
+      onSave();
     },
     onCloseSaveError: () => setSaveError(null),
     saveIssue,
     onCloseSaveIssue: () => setSaveIssue(null),
-    saveSuccess,
-    onSuccessPrimary,
-    onCloseSuccess,
   };
 };

@@ -2219,3 +2219,8 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* a pasted trileçe (cake, caramel, milk syrup) showed as one undivided ingredient list.
 *Why:* only a leading `#` counted as a group heading; people and recipe sites write "Trileçenin karameli için:".
 *Guard:* `isIngredientGroup` also accepts a short colon-terminated line with no digits (`ingredient-group.test.ts`); the backend prompt keeps user sections as groups.
+
+---
+*Symptom:* after removing the last photo of a gallery while viewing it, the counter read "3 / 2" and the remove button vanished; the cover itself could never be removed.
+*Why:* the gallery's active index only moves on a scroll event, and removing a slide scrolls nothing; the cover of a cover-only recipe maps to an item with no id, and removal was keyed on the id.
+*Guard:* every read goes through an index clamped to the current list (`media-gallery.removal.test.tsx`); removal takes the `MediaItem` and `RecipeEntity.isCover` routes the cover to its own request (`recipe-detail-store-photos.test.ts`).

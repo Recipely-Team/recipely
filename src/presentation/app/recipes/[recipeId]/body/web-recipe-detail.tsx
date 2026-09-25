@@ -115,6 +115,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
         saveDisabled={props.saveDisabled}
         onToggleSave={props.onToggleSave}
         onCopyToDraft={props.onCopyToDraft}
+        photos={props.photos}
       />
 
       <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>

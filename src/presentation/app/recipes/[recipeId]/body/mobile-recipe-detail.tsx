@@ -74,6 +74,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           authorState={props.authorState}
           onToggleLike={props.onToggleLike}
           isNutritionCalculating={props.isNutritionCalculating}
+          photos={props.photos}
         />
 
         <RecipeSteps

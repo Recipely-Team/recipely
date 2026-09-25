@@ -19,6 +19,8 @@ export interface RecipeListItemDto {
    */
   readonly totalTimeMinutes?: number;
   readonly rating: number;
+  /** Absent from a server that predates private saves. */
+  readonly isPublished?: boolean;
   readonly moderationStatus: string;
   readonly likeCount: number;
   readonly likedByMe: boolean;

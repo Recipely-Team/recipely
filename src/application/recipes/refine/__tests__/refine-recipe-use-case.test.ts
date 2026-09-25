@@ -39,6 +39,7 @@ const makeRecipe = (): RecipeEntity => {
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
       sourcePlatform: null,
     aiWritten: false,

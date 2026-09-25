@@ -10,6 +10,8 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
+import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
 
 
 /**
@@ -57,6 +59,13 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
   get moderationStatus(): string {
     return this.props.moderationStatus;
+  }
+  get isPublished(): boolean {
+    return this.props.isPublished;
+  }
+  /** How the recipe reads to its owner — the Created tab's badge. */
+  get ownerStatus(): OwnerStatusType {
+    return toOwnerStatus(this.props.isPublished, this.props.moderationStatus);
   }
   get likeCount(): number {
     return this.props.likeCount;

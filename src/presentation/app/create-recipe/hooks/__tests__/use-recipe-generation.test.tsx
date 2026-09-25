@@ -132,6 +132,7 @@ const makeRecipe = (): RecipeEntity => {
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
       sourcePlatform: null,
     aiWritten: false,
@@ -310,6 +311,7 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
       setRecipe: setRecipeState,
       activeDraftId: resume?.draftId ?? 'draft-1',
       draftId: resume?.draftId,
+      editRecipeId: undefined,
     });
     return null;
   };

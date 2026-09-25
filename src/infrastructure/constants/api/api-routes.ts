@@ -49,6 +49,12 @@ export const ApiRoutes = {
     media: (id: string): string => `/recipes/${encodeURIComponent(id)}/media`,
     mediaItem: (id: string, mediaId: string): string =>
       `/recipes/${encodeURIComponent(id)}/media/${encodeURIComponent(mediaId)}`,
+    /** The cover photo, removed everywhere it appears. */
+    cover: (id: string): string => `/recipes/${encodeURIComponent(id)}/cover`,
+    /** Owner: offer a private recipe for publishing. */
+    publish: (id: string): string => `/recipes/${encodeURIComponent(id)}/publish`,
+    /** Owner: take a recipe back to private. */
+    unpublish: (id: string): string => `/recipes/${encodeURIComponent(id)}/unpublish`,
     comments: (recipeId: string): string =>
       `/recipes/${encodeURIComponent(recipeId)}/comments`,
     comment: (recipeId: string, commentId: string): string =>

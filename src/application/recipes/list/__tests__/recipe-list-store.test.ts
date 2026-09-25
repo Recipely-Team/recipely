@@ -25,6 +25,7 @@ const makeRecipe = (
     totalTimeMinutes: 30,
     rating: 4.5,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,

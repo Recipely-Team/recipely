@@ -85,6 +85,8 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         }
         const recipe = result.value;
         get().add(recipe);
+        // The saved recipe's page opens next, and its status panel reads this cache.
+        deps.recipeDetailStore.getState().put(recipe);
         set({ createState: { status: StoreStatus.Success, recipe } });
       } catch (error) {
         set({

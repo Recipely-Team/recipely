@@ -30,6 +30,8 @@ import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-m
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import { RecipeStatusBadge } from '@presentation/base/widgets/badges/recipe-status-badge';
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
@@ -52,13 +54,15 @@ export interface RecipeCardProps {
   hoverEffect?: boolean;
   /** Where the recipe came from. A hand-written one carries none and draws no seal. */
   provenance?: readonly ProvenanceMarkType[];
+  /** The owner's view of the recipe (Created tab): a status badge on the photo's bottom-left. */
+  ownerStatus?: OwnerStatusType;
 }
 
 /** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags = [],
   likeCount = ValueConstants.zero, likedByMe = false,
-  onPress, onLike, hoverEffect = false, provenance = [],
+  onPress, onLike, hoverEffect = false, provenance = [], ownerStatus,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
@@ -137,6 +141,7 @@ export const RecipeCard = ({
             {difficulty}
           </ThemedText>
         </View>
+        {ownerStatus !== undefined ? <RecipeStatusBadge status={ownerStatus} /> : null}
       </View>
       <View style={styles.info}>
         <ThemedText variant="subtitle" numberOfLines={ValueConstants.one}>{name}</ThemedText>

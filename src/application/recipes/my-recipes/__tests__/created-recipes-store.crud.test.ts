@@ -45,6 +45,7 @@ const makeRecipe = (
     likedByMe: false,
     viewCount: 0,
     moderationStatus: "approved",
+    isPublished: true,
     commentCount: 0,
     ...overrides,
       sourcePlatform: null,
@@ -67,6 +68,7 @@ const makeSummary = (
     totalTimeMinutes: 30,
     rating: 4.0,
     moderationStatus: "approved",
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
@@ -144,6 +146,7 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     getState: () => ({
       replace: recipeDetailStoreReplace,
       remove: recipeDetailStoreRemove,
+      put: jest.fn(),
     }),
   } as unknown as BoundStore<RecipeDetailStoreState>;
 

@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1100 source files.
+[architecture.md](architecture.md). 1136 source files.
 
 ## Layers
 
@@ -39,7 +39,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(10)_
-- `recipes/` — create, import, import-file, ingredients, list, media, provenance, refine, taxonomy _(39)_
+- `recipes/` — create, edit, import, import-file, ingredients, list, media, provenance, publishing, refine, taxonomy _(48)_
 - `storage/` _(1)_
 - `user-profile/` _(3)_
 
@@ -58,7 +58,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(6)_
 - `notifications/` — list, read _(11)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, import-file, liked, list, my-recipes, photos, refine, saved, taxonomy, trending _(51)_
+- `recipes/` — create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(57)_
 - `storage/` _(2)_
 - `store/` _(2)_
 - `timers/` _(7)_
@@ -84,7 +84,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, import, import-file, media, refine, taxonomy _(25)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(29)_
 - `storage/` _(6)_
 - `user-profile/` _(3)_
 
@@ -109,7 +109,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(64)_
+- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(67)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
@@ -117,7 +117,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` — small pure helpers _(10)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(98)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(100)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -150,4 +150,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 3a24c82a21890565 -->
+<!-- fingerprint: 84a3da93453db15f -->

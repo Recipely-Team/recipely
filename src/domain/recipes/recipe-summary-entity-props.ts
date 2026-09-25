@@ -14,6 +14,8 @@ export interface RecipeSummaryEntityProps {
   /** `null` when the source has no timing — the UI hides the chip rather than inventing one. */
   totalTimeMinutes: number | null;
   rating: number;
+  /** Whether the owner has put it out; the owner's grid badge reads this. */
+  isPublished: boolean;
   moderationStatus: string;
   likeCount: number;
   likedByMe: boolean;

@@ -52,6 +52,9 @@ export const RoutePaths = {
    */
   createRecipeFromRecipe: (recipeId: string): string =>
     `/create-recipe?fromRecipeId=${encodeURIComponent(recipeId)}`,
+  /** The editor, opened on a private recipe the user owns; saving goes through PATCH. */
+  editRecipe: (recipeId: string): string =>
+    `/create-recipe?editRecipeId=${encodeURIComponent(recipeId)}`,
   createRecipeWithPrompt: (prompt: string): string =>
     `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
   /** My Recipes opened on one of its tabs — saved, liked, created, drafts. */

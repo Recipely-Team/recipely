@@ -62,8 +62,10 @@ export const MediaGallery = ({
   const cap = isWeb() ? mediaSizes.heroImageHeightWeb : mediaSizes.heroImageHeightMax;
   const resolvedHeight = height ?? Math.min(Math.round(width / aspect), cap);
 
-  /** The id of the slide in view, absent for a photo that is only on the device. */
-  const activeMediaId = media[active]?.id;
+  // Clamped: removing the last slide while it is in view leaves `active` one
+  // past the end until the next scroll event, which never comes.
+  const current = Math.min(active, Math.max(media.length - ValueConstants.one, ValueConstants.zero));
+  const activeItem = media[current];
 
   const onLayout = (e: LayoutChangeEvent): void => {
     const next = Math.round(e.nativeEvent.layout.width);
@@ -87,8 +89,9 @@ export const MediaGallery = ({
   // Keep the active slide pinned when the measured width changes (e.g. web resize),
   // otherwise the FlatList would drift to a fractional offset between two photos.
   useEffect(() => {
-    listRef.current?.scrollToIndex({ index: active, animated: false });
-  }, [width, active]);
+    if (media.length === ValueConstants.zero) return;
+    listRef.current?.scrollToIndex({ index: current, animated: false });
+  }, [width, current, media.length]);
 
   const showArrows = isWeb() && media.length > 1;
 
@@ -122,14 +125,13 @@ export const MediaGallery = ({
           to one person. */}
       {owner !== undefined ? (
         <View style={[styles.ownerControls, { bottom: contentOverlap + spacing.md }]}>
-          {/* Only a photo that HAS a row can be removed — a picture still on
-              the device has nothing on the server to take down. */}
-          {activeMediaId !== undefined ? (
+          {/* Any slide, the cover included: the cover has its own request. */}
+          {activeItem !== undefined ? (
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={t().recipes.removePhoto}
               disabled={owner.isBusy}
-              onPress={() => owner.onRemove(activeMediaId)}
+              onPress={() => owner.onRemove(activeItem)}
               style={[styles.ownerButton, { backgroundColor: colors.overlay }]}
             >
               <Ionicons name="trash-outline" size={iconSizes.lg} color={colors.onOverlay} />
@@ -148,22 +150,22 @@ export const MediaGallery = ({
         </View>
       ) : null}
 
-      {showArrows && active > ValueConstants.zero ? (
+      {showArrows && current > ValueConstants.zero ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.previousPhoto}
-          onPress={() => goTo(active - ValueConstants.one)}
+          onPress={() => goTo(current - ValueConstants.one)}
           style={[styles.arrow, styles.arrowLeft, { backgroundColor: colors.overlay }]}
         >
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
       ) : null}
 
-      {showArrows && active < media.length - ValueConstants.one ? (
+      {showArrows && current < media.length - ValueConstants.one ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().recipes.nextPhoto}
-          onPress={() => goTo(active + ValueConstants.one)}
+          onPress={() => goTo(current + ValueConstants.one)}
           style={[styles.arrow, styles.arrowRight, { backgroundColor: colors.overlay }]}
         >
           <Ionicons name="chevron-forward" size={iconSizes.xl} color={colors.onOverlay} />
@@ -180,8 +182,8 @@ export const MediaGallery = ({
                   styles.dot,
                   {
                     backgroundColor:
-                      i === active ? colors.onOverlay : colors.onOverlay + colorAlphas.medium,
-                    width: i === active ? decorSizes.dotActiveWidth : controlSizes.progressBar,
+                      i === current ? colors.onOverlay : colors.onOverlay + colorAlphas.medium,
+                    width: i === current ? decorSizes.dotActiveWidth : controlSizes.progressBar,
                   },
                 ]}
               />
@@ -193,7 +195,7 @@ export const MediaGallery = ({
                 variant="caption"
                 style={[styles.counterText, { color: colors.onOverlay }]}
               >
-                {active + ValueConstants.one} / {media.length}
+                {current + ValueConstants.one} / {media.length}
               </ThemedText>
             </View>
           </View>

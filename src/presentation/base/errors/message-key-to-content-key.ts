@@ -49,6 +49,11 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.promptMeaningless]: 'promptMeaningless',
   [ErrorMessageKey.photoRejected]: 'photoRejected',
   [ErrorMessageKey.photoUnchecked]: 'photoUnchecked',
+  [ErrorMessageKey.publishRejected]: 'publishRejected',
+  [ErrorMessageKey.publishBlockedCopyright]: 'publishBlockedCopyright',
+  [ErrorMessageKey.editPublished]: 'editPublished',
+  [ErrorMessageKey.photoNotFound]: 'photoNotFound',
+  [ErrorMessageKey.nothingToEdit]: 'nothingToEdit',
 
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',

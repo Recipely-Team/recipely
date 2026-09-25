@@ -95,3 +95,12 @@ describe('buildCreateInput — ingredient groups', () => {
     ]);
   });
 });
+
+describe('buildCreateInput — save first, publish later', () => {
+  it('always saves privately; publishing is its own request', () => {
+    const input = buildCreateInput(withMedia([]), 'tr');
+
+    expect(input.visibility).toBe('private');
+    expect(input).not.toHaveProperty('isPublished');
+  });
+});

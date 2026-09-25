@@ -2,6 +2,7 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import { RecipeVisibility } from '@domain/recipes/publishing/recipe-visibility';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
@@ -32,6 +33,7 @@ const validDto: RecipeDto = {
   commentCount: 0,
   viewCount: 0,
   moderationStatus: 'approved',
+  isPublished: true,
   createdAt: '2026-05-11T12:00:00.000Z',
   updatedAt: '2026-05-11T12:00:00.000Z',
 };
@@ -49,7 +51,7 @@ const makeInput = (): CreateRecipeInput => ({
   cookTimeMinutes: 20,
   servings: 4,
   media: [],
-  isPublished: true,
+  visibility: RecipeVisibility.Private,
 });
 
 interface UploadCall {
@@ -92,6 +94,9 @@ describe('RecipeRepository.createRecipe', () => {
       // Regression guard: servings was previously dropped on create (present on
       // update only), which the backend rejected with a 400 on publish.
       expect(fields.get('servings')).toBe('4');
+      // Every save is private; publishing is its own request.
+      expect(fields.get('visibility')).toBe('private');
+      expect(fields.get('isPublished')).toBeUndefined();
       expect(fields.get('prepTimeMinutes')).toBe('15');
       expect(fields.get('cookTimeMinutes')).toBe('20');
       expect(fields.get('name')).toBe(JSON.stringify({ en: 'Spicy Pasta' }));

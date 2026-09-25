@@ -25,6 +25,7 @@ const recipe = RecipeSummaryEntity.create({
   totalTimeMinutes: 45,
   rating: 4.7,
   moderationStatus: 'approved',
+  isPublished: true,
   likeCount: 10,
   likedByMe: false,
   commentCount: 2,
