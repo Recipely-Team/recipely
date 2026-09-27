@@ -120,7 +120,7 @@ describe('ImportLink', () => {
     it.each(['https://x.com/a/status/1', 'https://twitter.com/a/status/1', 'https://mobile.twitter.com/a/status/1'])(
       'names %s as a site it cannot import from',
       (raw) => {
-        expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importNotInstagram);
+        expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importUnsupportedSource);
       },
     );
 

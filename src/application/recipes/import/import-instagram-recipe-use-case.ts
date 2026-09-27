@@ -14,7 +14,7 @@ import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
  * synchronous endpoint, which runs only Instagram. The link is judged by
  * {@link ImportLink} — the same rule the queue and the paste screen apply, so
  * there is no second allowlist here to drift — and anything it does not class
- * as an Instagram post fails as `errors.import.not_instagram` before the ~120 s
+ * as an Instagram post fails as `errors.import.unsupported_source` before the ~120 s
  * round trip. The returned recipe is a NON-persisted preview (same contract as
  * `generateRecipe`).
  */
@@ -30,7 +30,7 @@ export class ImportInstagramRecipeUseCase {
           new ValidationFailure(
             DiagnosticMessage.recipeImport.unsupportedSite(input.url.trim()),
             undefined,
-            ErrorMessageKey.importNotInstagram,
+            ErrorMessageKey.importUnsupportedSource,
           ),
         ),
       );

@@ -73,7 +73,7 @@ describe('usePasteImportLink', () => {
       vm().submit();
     });
 
-    expect(vm().failure?.messageKey).toBe(ErrorMessageKey.importNotInstagram);
+    expect(vm().failure?.messageKey).toBe(ErrorMessageKey.importUnsupportedSource);
     expect(vm().isEmpty).toBe(false);
   });
 
