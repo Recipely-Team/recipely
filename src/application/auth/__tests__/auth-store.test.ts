@@ -83,7 +83,11 @@ const neverLoadsFavorites = {
 
 const makeStore = (
   repo: FakeAuthRepository,
-  overrides: { savedRecipesStore?: BoundStore<SavedRecipesStoreState>; clearSessionCaches?: () => void } = {},
+  overrides: {
+    savedRecipesStore?: BoundStore<SavedRecipesStoreState>;
+    clearSessionCaches?: () => void;
+    onSessionRestored?: () => void;
+  } = {},
 ) => {
   const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
   return configureAuthStore({
@@ -105,6 +109,7 @@ const makeStore = (
     clearSessionCaches:
       overrides.clearSessionCaches ??
       (() => savedRecipesStore.getState().setSaved([])),
+    onSessionRestored: overrides.onSessionRestored ?? (() => undefined),
   });
 };
 
@@ -262,6 +267,37 @@ describe('auth-store', () => {
     await store.getState().hydrate();
 
     expect(store.getState().state.status).toBe('authenticated');
+  });
+
+  // Review finding: an interactive sign-in sends `device` in its body AND the
+  // status change fired a `POST /me/devices` — two upserts per login. The
+  // heartbeat now belongs to a restored session only.
+  it('sends the device heartbeat when hydrate restores a stored session', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ currentSessionResult: ok(buildSession()) }), { onSessionRestored });
+
+    await store.getState().hydrate();
+
+    expect(onSessionRestored).toHaveBeenCalledTimes(1);
+  });
+
+  it('an interactive sign-in recorded the device twice — it now sends no heartbeat of its own', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ signInResult: ok(buildSession()) }), { onSessionRestored });
+
+    await store.getState().signIn('emilys', 'emilyspass');
+
+    expect(store.getState().state.status).toBe('authenticated');
+    expect(onSessionRestored).not.toHaveBeenCalled();
+  });
+
+  it('sends no heartbeat when hydrate finds no session', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ currentSessionResult: ok(null) }), { onSessionRestored });
+
+    await store.getState().hydrate();
+
+    expect(onSessionRestored).not.toHaveBeenCalled();
   });
 
   it('hydrate returns unauthenticated when there is no session', async () => {

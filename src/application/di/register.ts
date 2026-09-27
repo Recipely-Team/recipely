@@ -86,7 +86,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
 import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
-import { recordDeviceOnSignIn } from '@application/device/record-device-on-sign-in';
+import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
 
 
 export const registerApplication = (container: Container): ApplicationStores => {
@@ -255,14 +255,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     // outlives a sign-out unless something closes it.
     assistantSessionStore.getState().reset();
   };
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
-  recordDeviceOnSignIn(
-    authStore,
+  const onSessionRestored = recordDeviceOnSessionRestore(
     new RecordDeviceUseCase(
       container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
       container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
     ),
   );
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches, onSessionRestored });
   return {
     assistantSessionStore,
     assistantActionRegistry,
