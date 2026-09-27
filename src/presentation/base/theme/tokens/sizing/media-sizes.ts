@@ -12,20 +12,14 @@ import { scale } from '@presentation/base/theme/tokens/scale';
 export const mediaSizes = {
   /** Recipe thumbnail in the share sheet. */
   shareThumb: scale(52),
-  /** Thumbnail strip cell under the web hero. */
-  webDetailThumbHeight: scale(64),
   /** Draft-card square cover. */
   draftThumb: scale(72),
   /** Brand logo mark on the auth hero. */
   heroLogo: scale(88),
-  /** Thumbnail strip cell width under the web hero. */
-  webDetailThumbWidth: scale(88),
   /** Square hero art on compact auth screens. */
   heroSquare: scale(96),
   /** Review / comment attachment strip. */
   reviewImageHeight: scale(160),
-  /** Recipe card cover in the feed. */
-  cardImageHeight: scale(180),
   /** Cap on the recipe-editor cover image. */
   coverMaxHeight: scale(200),
   /** Secondary hero card on the web home. */
@@ -36,7 +30,7 @@ export const mediaSizes = {
    * Cap on a ratio-sized hero. Without it a landscape phone or a tablet would
    * hand the hero a viewport-wide box and push everything below the fold.
    */
-  heroImageHeightMax: scale(360),
-  /** Recipe-detail hero image on the web shell. */
-  heroImageHeightWeb: scale(440),
+  heroImageHeightMax: scale(520),
+  /** Cap on the recipe-detail hero in its framed (wide-layout) form. */
+  heroImageHeightWeb: scale(560),
 } as const;

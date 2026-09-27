@@ -339,7 +339,7 @@ export const en = {
     photoRemoveFailed: 'That photo couldn\'t be removed.',
     photoPermissionDenied: 'Recipely needs permission to use your camera or photos.',
     removePhoto: 'Remove photo',
-    removePhotoConfirm: 'Remove this photo from your recipe?',
+    removePhotoConfirm: 'Remove this photo from the recipe?',
     // Provenance. `originAiA11y` and `originAiDetailLabel` hold the same English
     // sentence on purpose — one is a screen reader's name for a glyph, the other
     // is visible copy, and they are free to diverge in any language that needs
@@ -839,6 +839,19 @@ export const en = {
     setCover: 'Set cover',
     remove: 'Remove photo',
     more: 'Add more',
+    photos: 'Photos',
+    rejected: 'Some files were skipped (must be an image, under 25 MB).',
+  },
+  photoViewer: {
+    add: 'Add photo',
+    addFirst: 'Add the first photo',
+    remove: 'Remove',
+    removeA11y: 'Remove this photo',
+    cover: 'Cover',
+    position: 'Photo {i} of {n}',
+    counter: '{i} / {n}',
+    noPhotoShort: 'No photo',
+    editPhotos: 'Edit photos',
   },
   timer: {
     notificationChannel: 'Cooking timer (alarm)',

@@ -12,7 +12,7 @@ export interface RecipeDetailSheetsProps {
   onCancelUnsave: () => void;
   /** The photo the owner asked to remove, or null when nothing is pending. */
   photoPendingRemoval: MediaItem | null;
-  onConfirmRemovePhoto: (item: MediaItem) => void;
+  onConfirmRemovePhoto: () => void;
   onCancelRemovePhoto: () => void;
   /** A localized sentence when a photo could not be added or removed. */
   photoError: string | null;
@@ -57,13 +57,11 @@ export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.El
 
     <ConfirmSheet
       visible={props.photoPendingRemoval !== null}
-      title={t().recipes.removePhoto}
+      title={t().photoViewer.removeA11y}
       message={t().recipes.removePhotoConfirm}
-      confirmLabel={t().recipes.removePhoto}
-      onConfirm={() => {
-        const item = props.photoPendingRemoval;
-        if (item !== null) props.onConfirmRemovePhoto(item);
-      }}
+      confirmLabel={t().photoViewer.remove}
+      destructive
+      onConfirm={props.onConfirmRemovePhoto}
       onClose={props.onCancelRemovePhoto}
     />
 

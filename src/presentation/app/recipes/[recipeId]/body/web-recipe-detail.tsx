@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -18,7 +17,8 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
-import { WebRecipeDetailHero } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-hero';
+import { RecipePhotoViewer } from '@presentation/app/recipes/[recipeId]/items/media/recipe-photo-viewer';
+import { PhotoViewerVariant } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-variant';
 
 /**
  * Weight of the reading column against the side column beside it.
@@ -78,14 +78,13 @@ const stickyColumn = stickyBase as ViewStyle;
  * Two-column SaaS recipe-detail layout for the web shell. The mobile screen
  * renders its own single-column layout; this component is only mounted when
  * `useLayout().isExpanded` is true — the web shell and the iPad alike. Store loading and handlers are owned by the
- * parent screen and passed in — this component holds only the active-image
- * selection state.
+ * parent screen and passed in — this component holds no state of its own;
+ * the photo viewer keeps which photo is in view.
  */
 export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
   const { width } = useLayout();
-  const [activeImage, setActiveImage] = useState(ValueConstants.zero);
   const { recipe, media } = props;
   const twoColumn = width >= layoutSizes.webDetailTwoColMin;
 
@@ -120,12 +119,10 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
 
       <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>
         <View style={styles.mainColumn}>
-          <WebRecipeDetailHero
-            recipe={recipe}
+          <RecipePhotoViewer
             media={media}
-            activeImage={activeImage}
-            onSelectImage={setActiveImage}
-            {...(props.photos !== undefined ? { photos: props.photos } : {})}
+            variant={PhotoViewerVariant.Framed}
+            {...(props.photos !== undefined ? { owner: props.photos } : {})}
           />
 
           <View style={styles.section}>

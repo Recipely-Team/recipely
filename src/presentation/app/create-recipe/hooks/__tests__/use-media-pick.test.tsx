@@ -49,10 +49,10 @@ beforeEach(() => {
   mockShrink.mockResolvedValue(SHRUNK);
 });
 
-const pick = async (onAdd: jest.Mock): Promise<void> => {
+const pick = async (onAdd: jest.Mock, onSkip?: jest.Mock): Promise<void> => {
   let add!: () => Promise<void>;
   const Probe = (): null => {
-    add = useMediaPick(onAdd);
+    add = useMediaPick(onAdd, onSkip);
     return null;
   };
   renderComponent(<Probe />);
@@ -62,6 +62,22 @@ const pick = async (onAdd: jest.Mock): Promise<void> => {
 };
 
 describe('useMediaPick', () => {
+  it('skips a file over the size cap, keeps the rest, and says how many stayed out', async () => {
+    mockAsk.mockResolvedValue(PickSource.Library);
+    const huge = { uri: 'file://huge.jpg', width: 8000, height: 6000, fileSize: 40 * 1024 * 1024 };
+    const fine = { uri: 'file://fine.jpg', width: 4032, height: 3024, fileSize: 3 * 1024 * 1024 };
+    mockLaunchLibrary.mockResolvedValue({ canceled: false, assets: [huge, fine] });
+    const onAdd = jest.fn();
+    const onSkip = jest.fn();
+
+    await pick(onAdd, onSkip);
+
+    expect(mockShrink).toHaveBeenCalledTimes(1);
+    expect(mockShrink).toHaveBeenCalledWith({ uri: fine.uri, width: fine.width, height: fine.height });
+    expect(onAdd).toHaveBeenCalledWith([{ type: MediaType.Image, url: SHRUNK }]);
+    expect(onSkip).toHaveBeenCalledWith(1);
+  });
+
   it('lets the cook photograph the dish, and adds the shrunk capture', async () => {
     mockAsk.mockResolvedValue(PickSource.Camera);
     const onAdd = jest.fn();

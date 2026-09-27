@@ -2242,3 +2242,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* the phone's recipe detail printed difficulty as "EASY" while the web sidebar said "Easy", and on a 320pt phone the tile labels were cut to an ellipsis.
 *Why:* the mobile tile passed the raw `Difficulty` through where the web one went through `difficultyLabel`; each label was pinned to `numberOfLines={1}` inside a quarter of the card.
 *Guard:* `recipe-meta-card.test.tsx` asserts the translated label and that no stat label carries `numberOfLines`; the grid folds to two columns from the card's own measured width (`statGrid.narrowMaxWidth`). **A display vocabulary goes through its one label function on every platform** — two renderings of the same field is where one of them forgets.
+
+### A portrait photo cropped to a sliver in the detail hero
+
+*Symptom:* the detail hero cropped a portrait photo to a sliver (hands and pots) — a phone shot of a dish lost the dish and kept a band from its middle.
+*Why:* every photo was drawn `cover` into a 4:3 frame, whatever its own shape; a crop decision was made without knowing either ratio.
+*Guard:* `smart-photo.portrait.test.tsx` asserts a portrait source renders `contain` over a blurred `cover` copy and a landscape one stays cropped; the rule is one pure function (`isPortraitPhoto`) fed the photo's DECODED size and the frame's MEASURED one. **Decide how to fit a picture from measured ratios, never from the frame's nominal one** — a capped frame is wider than its ratio says.
