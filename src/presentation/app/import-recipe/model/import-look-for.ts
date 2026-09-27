@@ -17,14 +17,15 @@ const TWO_STOP_RING = [0, 1] as const;
  * Which colours the importing screen wears, decided by the link — never chosen.
  *
  * @remarks
- * - **A video wears Instagram's colours**, because the colours are the
- *   provenance cue on this screen. TikTok has no look of its own yet: its
- *   links are not importable while TikTok blocks the worker.
+ * - **Instagram and TikTok wear their own colours**, because the colours are
+ *   the provenance cue on this screen.
  * - **A web page wears the app's own palette.** There is no platform to credit,
  *   and borrowing a site's colours would credit one we never asked.
+ * - **Facebook and YouTube wear it too**, until the prototype draws them a look
+ *   of their own: falling through to Instagram's gradient credited the wrong
+ *   platform on every Facebook or YouTube import.
  */
 export const importLookFor = (platform: SourcePlatformType, colors: ThemeColors): ImportLook => {
-  if (platform === SourcePlatform.Web) return appImportLook(colors);
   if (platform === SourcePlatform.TikTok) {
     // A black pill: white text on TikTok's cyan would be unreadable.
     return {
@@ -35,6 +36,7 @@ export const importLookFor = (platform: SourcePlatformType, colors: ThemeColors)
       pillText: BrandColors.white,
     };
   }
+  if (platform !== SourcePlatform.Instagram) return appImportLook(colors);
   return {
     gradient: INSTAGRAM_GRADIENT,
     ringStops: INSTAGRAM_RING_STOPS,

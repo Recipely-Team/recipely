@@ -97,6 +97,22 @@ describe('a recipe carries its platform and its authorship separately', () => {
     expect(entity.aiWritten).toBe(true);
   });
 
+  // The backend sends both since its Facebook and YouTube importers shipped; an
+  // app that did not know the words dropped the platform and drew only the AI mark.
+  it.each(['FACEBOOK', 'YOUTUBE'])('passes the %s platform through with its handle and video', (platform) => {
+    const entity = mapped({
+      origin: 'IMPORT',
+      sourcePlatform: platform,
+      sourceHandle: 'Tasty',
+      sourceUrl: 'https://youtu.be/dQw4w9WgXcQ',
+      aiWritten: true,
+    });
+
+    expect(entity.sourcePlatform).toBe(platform);
+    expect(entity.sourceHandle).toBe('Tasty');
+    expect(entity.sourceUrl).toBe('https://youtu.be/dQw4w9WgXcQ');
+  });
+
   // A server that predates the columns sends neither. An import is still a
   // model's work, so `origin` answers rather than letting the row read as
   // something a person typed out.

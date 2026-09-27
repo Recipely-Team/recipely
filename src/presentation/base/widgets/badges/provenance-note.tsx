@@ -4,7 +4,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { instagramProfileUrl, tiktokProfileUrl } from '@presentation/base/constants';
-import { spacing, radii, fontSizes, fontWeights } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor } from '@presentation/base/theme';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
@@ -16,7 +16,6 @@ const HANDLE_SLOT = '{handle}';
 const HANDLE_PREFIX = '@';
 const WEB_SCHEME = 'https://';
 
-/** What the sentence says for each source, and where its one link goes. */
 /** The marks that name a source; the AI mark qualifies one and names none. */
 type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai>;
 
@@ -25,7 +24,8 @@ const SOURCE_WORDS: Record<SourceMarkType, {
   fallback: () => string;
   open: () => string;
   prefix: string;
-  href: (handle: string, sourceUrl: string | undefined) => string;
+  /** Where the name links, or `null` when there is nowhere honest to send it. */
+  href: (handle: string, sourceUrl: string | undefined) => string | null;
 }> = {
   [ProvenanceMark.Instagram]: {
     sentence: () => t().recipes.originInstagramDetailLabel,
@@ -40,6 +40,22 @@ const SOURCE_WORDS: Record<SourceMarkType, {
     open: () => t().recipes.originTiktokHandleA11y,
     prefix: HANDLE_PREFIX,
     href: (handle, sourceUrl) => sourceUrl ?? tiktokProfileUrl(handle),
+  },
+  // A page and a channel are named as their owners write them, without an `@`,
+  // and a display name builds no address: without the video, the name is plain text.
+  [ProvenanceMark.Facebook]: {
+    sentence: () => t().recipes.originFacebookDetailLabel,
+    fallback: () => t().recipes.originFacebookA11y,
+    open: () => t().recipes.originFacebookHandleA11y,
+    prefix: CharConstants.empty,
+    href: (_page, sourceUrl) => sourceUrl ?? null,
+  },
+  [ProvenanceMark.YouTube]: {
+    sentence: () => t().recipes.originYoutubeDetailLabel,
+    fallback: () => t().recipes.originYoutubeA11y,
+    open: () => t().recipes.originYoutubeHandleA11y,
+    prefix: CharConstants.empty,
+    href: (_channel, sourceUrl) => sourceUrl ?? null,
   },
   // A site is named as a site, and its link is the page the recipe came from.
   [ProvenanceMark.Web]: {
@@ -62,7 +78,7 @@ export interface ProvenanceNoteProps {
 
 /**
  * The detail screen's provenance line: the seal, and one sentence that tells
- * the whole truth — "Imported from @handle on TikTok, edited by AI".
+ * the whole truth — "Imported from @handle on TikTok, edited with AI".
  *
  * @remarks
  * - **Nothing for a hand-written recipe**, the same silence as the seal.
@@ -78,6 +94,10 @@ export interface ProvenanceNoteProps {
  * - **The link opens the video itself**, named by its account: the recipe came
  *   from that post, not from everything the account has made. The profile is
  *   the fallback only when the post's address is unknown.
+ * - **Facebook and YouTube name the page or channel**, as it calls itself —
+ *   "Imported from the Tasty channel on YouTube" — with no `@`, since a
+ *   display name is not a handle. Every import a model rewrote says "edited";
+ *   only a recipe a model wrote from a prompt says "written".
  * - **A web page is named by its site**, without an `@`, and the site links to
  *   the page itself — the one address that recipe actually came from.
  * - **An AI-only recipe has no platform to name**, so it is a chip — seal and
@@ -110,14 +130,15 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
   const [before, after] =
     sourceHandle === undefined ? [words.fallback(), ''] : words.sentence().split(HANDLE_SLOT);
   const shownHandle = `${words.prefix}${sourceHandle ?? ''}`;
-  const href = sourceHandle === undefined ? '' : words.href(sourceHandle, sourceUrl);
+  const href = sourceHandle === undefined ? null : words.href(sourceHandle, sourceUrl);
 
   return (
     <View style={[styles.row, style]}>
       {seal}
       <ThemedText style={[styles.sentence, { color: colors.text }]}>
         {before}
-        {sourceHandle !== undefined ? (
+        {sourceHandle !== undefined && href === null ? shownHandle : null}
+        {href !== null ? (
           <Text
             accessibilityRole="link"
             accessibilityLabel={words.open().replace(HANDLE_SLOT, shownHandle)}
@@ -149,6 +170,6 @@ const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   // No `numberOfLines`: the sentence is the point, so it wraps on a narrow
   // phone rather than truncating the fact it exists to state.
-  sentence: { fontSize: fontSizes.caption, flexShrink: 1 },
+  sentence: { fontSize: fontSizes.caption, lineHeight: lineHeightFor(fontSizes.caption), flexShrink: 1 },
   handle: { fontWeight: fontWeights.semibold, textDecorationLine: 'underline' },
 });

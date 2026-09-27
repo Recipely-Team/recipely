@@ -10,15 +10,29 @@ const INSTAGRAM_HOSTS: readonly string[] = ['instagram.com', 'instagr.am'];
 const TIKTOK_HOSTS: readonly string[] = ['tiktok.com'];
 /** TikTok's share-sheet short links; the backend's yt-dlp follows them. */
 const TIKTOK_SHORT_HOSTS: readonly string[] = ['vm.tiktok.com', 'vt.tiktok.com'];
-/** Sites with recipes on them that this import cannot read: video it has no pipeline for, or no page to read. */
-const UNSUPPORTED_HOSTS: readonly string[] = [
-  'youtube.com', 'youtu.be', 'facebook.com', 'fb.watch', 'x.com', 'twitter.com',
-];
+/** The backend's Facebook hosts, spelled out: `web.` is Facebook's own desktop mirror. */
+const FACEBOOK_HOSTS: readonly string[] = ['facebook.com', 'www.facebook.com', 'm.facebook.com', 'web.facebook.com'];
+const FACEBOOK_SHORT_HOST = 'fb.watch';
+/** The backend's YouTube hosts; `youtu.be/<id>` is the share sheet's form. */
+const YOUTUBE_HOSTS: readonly string[] = ['youtube.com', 'www.youtube.com', 'm.youtube.com'];
+const YOUTUBE_SHORT_HOST = 'youtu.be';
+/** Sites with recipes on them that this import cannot read: no video pipeline, no page to read. */
+const UNSUPPORTED_HOSTS: readonly string[] = ['x.com', 'twitter.com'];
+/** Any other subdomain of a video platform is that platform, not a web page, and holds no video we read. */
+const VIDEO_PLATFORM_DOMAINS: readonly string[] = ['facebook.com', 'youtube.com'];
 /** The four path shapes that address a single Instagram post: post, reel, reels, TV. */
 const INSTAGRAM_POST = /^\/(p|reel|reels|tv)\/([^/?#]+)/;
 /** A TikTok video page, `/@account/video/123`, or the `/t/abc` short form. */
 const TIKTOK_VIDEO = /^\/(?:@[^/]+\/video\/\d+|t\/[^/?#]+)/;
-const LEADING_SUBDOMAIN = /^(?:www|m)\./;
+/** A Facebook video: a reel, a share link, `/watch`, or a page's `/videos/<id>`. */
+const FACEBOOK_VIDEO = /^\/(?:reel\/\d+|share\/[vr]\/[^/?#]+|watch\/?$|(?:[^/]+\/)?videos\/(?:[^/]+\/)?\d+)/;
+/** `/shorts/<id>`, `/live/<id>`, `/embed/<id>` and `/v/<id>` name the video in the path, as the backend reads them. */
+const YOUTUBE_PATH_VIDEO = /^\/(?:shorts|live|embed|v)\/([A-Za-z0-9_-]{11})(?:[/?#]|$)/i;
+/** Every YouTube video id is eleven characters of this alphabet. */
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{11}$/;
+const YOUTUBE_WATCH_PATH = /^\/watch\/?$/;
+const WATCH_PARAM = 'v';
+const LEADING_SUBDOMAIN = /^(?:www|m|web)\./;
 const HTTP_PREFIX = /^https?:\/\//i;
 const WEB_PROTOCOLS: readonly string[] = ['http:', 'https:'];
 const IPV4_LITERAL = /^\d{1,3}(?:\.\d{1,3}){3}$/;
@@ -28,8 +42,8 @@ const SHORT_FORM_MAX = 48;
 const ELLIPSIS = '…';
 
 /**
- * A link an import can run against: an Instagram post, a TikTok video, or a
- * recipe web page — and which of the three it is.
+ * A link an import can run against: an Instagram post, a TikTok, Facebook or
+ * YouTube video, or a recipe web page — and which of them it is.
  *
  * @remarks
  * - **One rule, three callers.** The use case that queues the import, the
@@ -42,6 +56,9 @@ const ELLIPSIS = '…';
  * - **Instagram leaves here canonical** (`https://www.instagram.com/reel/x/`):
  *   the backend's allowlist names that host, and `instagr.am` would otherwise
  *   be read as a web page and fail as one.
+ * - **Facebook and YouTube take the backend's exact hosts** — `www.`, `m.` and
+ *   (Facebook) `web.`, plus `fb.watch` and `youtu.be` — and a path that names
+ *   one video: a page, a channel or a playlist is refused before the queue.
  * - **Any other public web page is a candidate**, because most recipe sites
  *   publish their recipe as markup the backend reads directly. The sites that
  *   are known NOT to work are refused by name, so the user hears "we can't
@@ -95,6 +112,19 @@ export class ImportLink extends BaseValueObject<string> {
     }
     // A profile is on tiktok.com and has no single video behind it.
     if (TIKTOK_HOSTS.includes(host)) return fail(ImportLink.invalid(trimmed));
+    if (FACEBOOK_HOSTS.includes(fullHost) || fullHost === FACEBOOK_SHORT_HOST) {
+      const isVideo = fullHost === FACEBOOK_SHORT_HOST
+        ? path.replace(TRAILING_SLASH, CharConstants.empty).length > ValueConstants.one
+        : FACEBOOK_VIDEO.test(path) && (!path.startsWith('/watch') || url.searchParams.has(WATCH_PARAM));
+      if (!isVideo) return fail(ImportLink.invalid(trimmed));
+      return ok(new ImportLink(url.toString(), SourcePlatform.Facebook, host, ImportLink.shorten(`${host}${path}`)));
+    }
+    if (YOUTUBE_HOSTS.includes(fullHost) || fullHost === YOUTUBE_SHORT_HOST) {
+      const id = ImportLink.youTubeVideoId(url, fullHost);
+      if (id === null) return fail(ImportLink.invalid(trimmed));
+      return ok(new ImportLink(url.toString(), SourcePlatform.YouTube, 'youtube.com', `youtube.com/watch?v=${id}`));
+    }
+    if (VIDEO_PLATFORM_DOMAINS.some((h) => host.endsWith(`.${h}`))) return fail(ImportLink.invalid(trimmed));
     if (UNSUPPORTED_HOSTS.some((h) => host === h || host.endsWith(`.${h}`))) {
       return fail(ImportLink.unsupported(trimmed));
     }
@@ -103,14 +133,28 @@ export class ImportLink extends BaseValueObject<string> {
     if (isAddressLiteral || !fullHost.includes('.') || url.username !== CharConstants.empty) {
       return fail(ImportLink.invalid(trimmed));
     }
-    const page = `${host}${path.replace(TRAILING_SLASH, CharConstants.empty)}`;
-    const shortForm = page.length > SHORT_FORM_MAX ? `${page.slice(0, SHORT_FORM_MAX)}${ELLIPSIS}` : page;
-    return ok(new ImportLink(url.toString(), SourcePlatform.Web, host, shortForm));
+    return ok(new ImportLink(url.toString(), SourcePlatform.Web, host, ImportLink.shorten(`${host}${path}`)));
   }
 
   /** True for a video post, which the backend runs through a model; false for a page it reads. */
   get isVideo(): boolean {
     return this.platform !== SourcePlatform.Web;
+  }
+
+  private static shorten(page: string): string {
+    const bare = page.replace(TRAILING_SLASH, CharConstants.empty);
+    return bare.length > SHORT_FORM_MAX ? `${bare.slice(0, SHORT_FORM_MAX)}${ELLIPSIS}` : bare;
+  }
+
+  /** The id a YouTube link names — the same forms the backend reads — or `null` for a channel or a playlist. */
+  private static youTubeVideoId(url: URL, fullHost: string): string | null {
+    const path = url.pathname;
+    const candidate = fullHost === YOUTUBE_SHORT_HOST
+      ? path.slice(ValueConstants.one).replace(TRAILING_SLASH, CharConstants.empty)
+      : YOUTUBE_WATCH_PATH.test(path)
+        ? url.searchParams.get(WATCH_PARAM)
+        : YOUTUBE_PATH_VIDEO.exec(path)?.[ValueConstants.one];
+    return candidate !== null && candidate !== undefined && YOUTUBE_ID.test(candidate) ? candidate : null;
   }
 
   /**

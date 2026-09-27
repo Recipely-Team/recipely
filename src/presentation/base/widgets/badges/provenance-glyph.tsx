@@ -17,6 +17,10 @@ const TIKTOK_OFFSET = 'translate(-0.6 1.6)';
 const TIKTOK_CYAN_ECHO = 'translate(-0.9 -0.9)';
 const TIKTOK_RED_ECHO = 'translate(0.9 0.9)';
 const WEB_STROKE = 2.1;
+const FACEBOOK_STEM = 'M13.3 20.9V10.2c0-1.9 1-2.9 2.9-2.9h.9';
+const FACEBOOK_BAR = 'M10.3 13.2h5.6';
+const YOUTUBE_PLAY = 'M10.2 9.1v5.8l5-2.9-5-2.9Z';
+const YOUTUBE_PLAY_STROKE = 1;
 const GLOBE_MERIDIAN = 'M12 3c2.4 2.5 3.6 5.5 3.6 9s-1.2 6.5-3.6 9c-2.4-2.5-3.6-5.5-3.6-9S9.6 5.5 12 3Z';
 const SPARKLE_LARGE =
   'M11 3.5c.5 3.9 2.6 6 6.5 6.5-3.9.5-6 2.6-6.5 6.5-.5-3.9-2.6-6-6.5-6.5 3.9-.5 6-2.6 6.5-6.5Z';
@@ -40,7 +44,9 @@ const AI_STOPS = [
  * @remarks
  * - **Outlines in the platform's own colours, never its gradient plate.** The
  *   seal is a passive fact about the recipe, not the import card's call to
- *   action, and every ink here is at least 3:1 on white.
+ *   action, and every ink here is at least 3:1 on white. Facebook's and
+ *   YouTube's marks are outlines too — an `f` in a ring, a play button — in
+ *   the one ink each brand owns.
  * - **A gradient id per instance.** SVG ids are document-global on web, so two
  *   seals sharing one id would both paint with whichever gradient came last.
  */
@@ -55,6 +61,32 @@ export const ProvenanceGlyph = ({ mark, size, tint }: ProvenanceGlyphProps): Rea
         <Circle cx="12" cy="12" r="9" {...line} />
         <Path d="M3 12h18" {...line} />
         <Path d={GLOBE_MERIDIAN} {...line} />
+      </Svg>
+    );
+  }
+
+  if (mark === ProvenanceMark.Facebook) {
+    const line = { fill: 'none', stroke: BrandColors.facebookInk, strokeWidth: STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
+    return (
+      <Svg width={size} height={size} viewBox={VIEW_BOX}>
+        <Circle cx="12" cy="12" r="9" {...line} />
+        <Path d={FACEBOOK_STEM} {...line} />
+        <Path d={FACEBOOK_BAR} {...line} />
+      </Svg>
+    );
+  }
+
+  if (mark === ProvenanceMark.YouTube) {
+    return (
+      <Svg width={size} height={size} viewBox={VIEW_BOX}>
+        <Rect x="2.6" y="5.4" width="18.8" height="13.2" rx="4.2" fill="none" stroke={BrandColors.youtubeInk} strokeWidth={STROKE} />
+        <Path
+          d={YOUTUBE_PLAY}
+          fill={BrandColors.youtubeInk}
+          stroke={BrandColors.youtubeInk}
+          strokeWidth={YOUTUBE_PLAY_STROKE}
+          strokeLinejoin="round"
+        />
       </Svg>
     );
   }

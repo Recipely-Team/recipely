@@ -1,16 +1,19 @@
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { spacing, radii, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface FormBannerProps {
   message: string;
   severity?: SeverityType;
   icon?: keyof typeof Ionicons.glyphMap;
+  /** Draws a close button at the trailing edge; without it the banner cannot be dismissed. */
+  onDismiss?: () => void;
 }
 
 /**
@@ -22,6 +25,7 @@ export const FormBanner = ({
   message,
   severity = 'danger',
   icon,
+  onDismiss,
 }: FormBannerProps): React.JSX.Element => {
   const surface = useSeveritySurfaces()[severity];
 
@@ -34,6 +38,17 @@ export const FormBanner = ({
       <ThemedText variant="caption" style={[styles.message, { color: surface.text }]}>
         {message}
       </ThemedText>
+      {onDismiss !== undefined ? (
+        <Pressable
+          onPress={onDismiss}
+          hitSlop={spacing.sm}
+          style={styles.dismiss}
+          accessibilityRole="button"
+          accessibilityLabel={t().errors.dismiss}
+        >
+          <Ionicons name="close" size={iconSizes.md} color={surface.text} />
+        </Pressable>
+      ) : null}
     </View>
   );
 };
@@ -51,5 +66,8 @@ const styles = StyleSheet.create({
   message: {
     flex: ValueConstants.one,
     fontWeight: fontWeights.semibold,
+  },
+  dismiss: {
+    opacity: opacities.pressedStrong,
   },
 });

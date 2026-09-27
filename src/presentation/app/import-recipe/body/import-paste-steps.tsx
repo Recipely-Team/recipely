@@ -14,7 +14,7 @@ import { ValueConstants } from '@core/constants';
 const STEP_KEYS = ['pasteStep0', 'pasteStep1', 'pasteStep2'] as const;
 
 /**
- * The three taps that get a link out of Instagram or a browser.
+ * The three taps that get a link out of a video's app or a browser.
  *
  * Not decoration: "Copy link" lives behind Instagram's ⋯ menu, and a user who
  * cannot find it cannot use the feature at all.
@@ -25,43 +25,49 @@ export const ImportPasteSteps = (): React.JSX.Element => {
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
-      <ThemedText variant="caption" style={[styles.label, { color: colors.textMuted }]}>
+      <ThemedText variant="label" style={[styles.label, { color: colors.textMuted }]}>
         {copy.pasteHowTo}
       </ThemedText>
-      {STEP_KEYS.map((key, index) => (
-        <View key={key} style={styles.step}>
-          <View style={[styles.number, { backgroundColor: colors.chipBackground }]}>
-            <ThemedText variant="caption" style={[styles.numberText, { color: colors.chipText }]}>
-              {index + ValueConstants.one}
+      <View style={styles.steps}>
+        {STEP_KEYS.map((key, index) => (
+          <View key={key} style={styles.step}>
+            <View style={[styles.number, { backgroundColor: colors.chipBackground }]}>
+              <ThemedText variant="caption" style={[styles.numberText, { color: colors.chipText }]}>
+                {index + ValueConstants.one}
+              </ThemedText>
+            </View>
+            <ThemedText variant="caption" style={styles.text}>
+              {copy[key]}
             </ThemedText>
           </View>
-          <ThemedText variant="caption" style={styles.text}>
-            {copy[key]}
-          </ThemedText>
-        </View>
-      ))}
+        ))}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   card: {
-    padding: spacing.md,
+    marginTop: spacing.lg2,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.lg,
     borderRadius: radii.xl,
     borderWidth: borderWidths.hairline,
-    gap: spacing.sm,
   },
   label: {
-    fontWeight: fontWeights.semibold,
+    marginBottom: spacing.sm2,
+  },
+  steps: {
+    gap: spacing.sm,
   },
   step: {
     flexDirection: 'row',
     alignItems: 'flex-start',
-    gap: spacing.sm,
+    gap: spacing.sm2,
   },
   number: {
-    width: decorSizes.notifBadge,
-    height: decorSizes.notifBadge,
+    width: decorSizes.stepDisc,
+    height: decorSizes.stepDisc,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',

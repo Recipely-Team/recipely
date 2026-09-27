@@ -14,10 +14,10 @@ export const provenanceSealMetrics = {
   webCardSize: 28,
   /** In the detail screen's provenance line. */
   pageSize: 22,
-  /** Beside the import screen's lead sentence: the three things it accepts. */
-  importLeadSize: 34,
-  /** On the create screen's import card. */
-  importEntrySize: 26,
+  /** Above the import screen's lead sentence: the five things it accepts. */
+  importLeadSize: 32,
+  /** Under the create screen's import card hint, the same five marks. */
+  importEntrySize: 24,
   /** Inside the paste field, once the link is recognised. */
   importFieldSize: 24,
   glyphShareOnPhoto: 0.54,
