@@ -6,4 +6,6 @@ export interface NutritionDto {
   carbs?: number;
   fat?: number;
   fiber?: number;
+  /** Weight of one serving in whole grams, 20–3000. */
+  servingWeightGrams?: number;
 }

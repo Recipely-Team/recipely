@@ -38,6 +38,8 @@ export const controlSizes = {
   selector: scale(34),
   /** The default round icon button (nav bar, card actions). */
   iconBtn: scale(36),
+  /** One option of an inline segmented switch (e.g. the nutrition basis). */
+  segmentOption: scale(36),
   /** Icon/action button in the web header. */
   webHeaderBtn: scale(38),
   /** Close button on a web modal. */
