@@ -117,7 +117,7 @@ export const id = {
       body: 'Tempel tautan lengkap video Instagram, TikTok, YouTube, atau Facebook, atau halaman resep, lalu coba lagi.',
       short: 'Tempel tautan yang valid',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'Kami tidak bisa mengimpor dari sana',
       body: 'Impor bisa dilakukan dari video Instagram, TikTok, YouTube, dan Facebook serta situs resep.',
       short: 'Tautan itu tidak didukung',
@@ -340,8 +340,8 @@ export const id = {
     originTiktokA11y: 'Diimpor dari TikTok',
     originInstagramDetailLabel: 'Diimpor dari {handle} di Instagram',
     originTiktokDetailLabel: 'Diimpor dari {handle} di TikTok',
-    originInstagramHandleA11y: 'Buka {handle} di Instagram',
-    originTiktokHandleA11y: 'Buka {handle} di TikTok',
+    originInstagramHandleA11y: 'Buka video dari {handle} di Instagram',
+    originTiktokHandleA11y: 'Buka video dari {handle} di TikTok',
     originFacebookA11y: 'Diimpor dari Facebook',
     originYoutubeA11y: 'Diimpor dari YouTube',
     originFacebookDetailLabel: 'Diimpor dari {handle} di Facebook',
@@ -1093,7 +1093,7 @@ export const id = {
       aiChipOne: 'Ayam',
       aiChipTwo: 'Lemon',
       aiChipThree: 'Bawang putih',
-      aiChipFour: 'Thyme',
+      aiChipFour: 'Timi',
       timerLabel: 'Panggang',
       stepOne: 'Panaskan oven',
       stepTwo: 'Marinasi ayam',

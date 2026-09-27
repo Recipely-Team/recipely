@@ -123,7 +123,7 @@ export const en = {
       body: 'Paste the full link to a video on Instagram, TikTok, YouTube or Facebook, or to a recipe page, and try again.',
       short: 'Paste a valid link',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'We can’t import from there',
       body: 'Imports work with Instagram, TikTok, YouTube and Facebook videos and with recipe websites.',
       short: 'That link isn’t supported',

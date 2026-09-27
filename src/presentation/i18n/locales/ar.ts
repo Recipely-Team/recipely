@@ -7,7 +7,7 @@ export const ar = {
     empty: "لا يوجد شيء هنا بعد.",
     search: "بحث",
     cancel: "إلغاء",
-    ok: "OK",
+    ok: "حسنًا",
     of: "من",
     clear: "مسح",
     apply: "تطبيق",
@@ -117,7 +117,7 @@ export const ar = {
       body: 'الصق الرابط الكامل لفيديو على Instagram أو TikTok أو YouTube أو Facebook، أو لصفحة وصفة، ثم حاول مجددًا.',
       short: 'الصق رابطًا صالحًا',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'لا يمكننا الاستيراد من هناك',
       body: 'يعمل الاستيراد مع فيديوهات Instagram وTikTok وYouTube وFacebook ومع مواقع الوصفات.',
       short: 'هذا الرابط غير مدعوم',
@@ -340,8 +340,8 @@ export const ar = {
     originTiktokA11y: 'مستوردة من TikTok',
     originInstagramDetailLabel: 'مستوردة من {handle} على Instagram',
     originTiktokDetailLabel: 'مستوردة من {handle} على TikTok',
-    originInstagramHandleA11y: 'فتح {handle} على Instagram',
-    originTiktokHandleA11y: 'فتح {handle} على TikTok',
+    originInstagramHandleA11y: 'فتح فيديو {handle} على Instagram',
+    originTiktokHandleA11y: 'فتح فيديو {handle} على TikTok',
     originFacebookA11y: 'مستوردة من Facebook',
     originYoutubeA11y: 'مستوردة من YouTube',
     originFacebookDetailLabel: 'مستوردة من صفحة {handle} على Facebook',
@@ -1050,7 +1050,7 @@ export const ar = {
     activityAi: "أنشأ 3 وصفات بالذكاء الاصطناعي",
     activityComments: "حصل على 7 تعليقات جديدة هذا الأسبوع",
     activityLikes: "وصل إلى 1,000 إعجاب إجمالًا",
-    activityBadge: "حصل على شارة \"Top Mediterranean\""
+    activityBadge: "حصل على شارة \"الأفضل في المطبخ المتوسطي\""
   },
   editProfile: {
     title: "تعديل الملف الشخصي",

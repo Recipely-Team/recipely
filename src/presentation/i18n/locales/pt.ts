@@ -117,7 +117,7 @@ export const pt = {
       body: 'Cole o link completo de um vídeo do Instagram, TikTok, YouTube ou Facebook, ou de uma página de receita, e tente de novo.',
       short: 'Cole um link válido',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'Não conseguimos importar daí',
       body: 'A importação funciona com vídeos do Instagram, TikTok, YouTube e Facebook e com sites de receitas.',
       short: 'Esse link não é compatível',
@@ -340,8 +340,8 @@ export const pt = {
     originTiktokA11y: 'Importada do TikTok',
     originInstagramDetailLabel: 'Importada de {handle} no Instagram',
     originTiktokDetailLabel: 'Importada de {handle} no TikTok',
-    originInstagramHandleA11y: 'Abrir {handle} no Instagram',
-    originTiktokHandleA11y: 'Abrir {handle} no TikTok',
+    originInstagramHandleA11y: 'Abrir o vídeo de {handle} no Instagram',
+    originTiktokHandleA11y: 'Abrir o vídeo de {handle} no TikTok',
     originFacebookA11y: 'Importada do Facebook',
     originYoutubeA11y: 'Importada do YouTube',
     originFacebookDetailLabel: 'Importada de {handle} no Facebook',

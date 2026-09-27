@@ -120,7 +120,7 @@ export const zh = {
       body: '请粘贴 Instagram、TikTok、YouTube 或 Facebook 视频，或食谱页面的完整链接，然后重试。',
       short: '请粘贴有效的链接',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: '无法从那里导入',
       body: '导入支持 Instagram、TikTok、YouTube 和 Facebook 视频以及食谱网站。',
       short: '不支持该链接',
@@ -343,8 +343,8 @@ export const zh = {
     originTiktokA11y: '从 TikTok 导入',
     originInstagramDetailLabel: '从 Instagram 的 {handle} 导入',
     originTiktokDetailLabel: '从 TikTok 的 {handle} 导入',
-    originInstagramHandleA11y: '在 Instagram 上打开 {handle}',
-    originTiktokHandleA11y: '在 TikTok 上打开 {handle}',
+    originInstagramHandleA11y: '在 Instagram 上打开 {handle} 的视频',
+    originTiktokHandleA11y: '在 TikTok 上打开 {handle} 的视频',
     originFacebookA11y: '从 Facebook 导入',
     originYoutubeA11y: '从 YouTube 导入',
     originFacebookDetailLabel: '从 Facebook 的 {handle} 导入',

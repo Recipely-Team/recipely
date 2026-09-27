@@ -7,7 +7,7 @@ export const ru = {
     empty: 'Здесь пока ничего нет.',
     search: 'Поиск',
     cancel: 'Отмена',
-    ok: 'OK',
+    ok: 'ОК',
     of: 'из',
     clear: 'Очистить',
     apply: 'Применить',
@@ -117,7 +117,7 @@ export const ru = {
       body: 'Вставьте полную ссылку на видео в Instagram, TikTok, YouTube или Facebook либо на страницу с рецептом и попробуйте снова.',
       short: 'Вставьте корректную ссылку',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'Отсюда импортировать нельзя',
       body: 'Импорт работает с видео из Instagram, TikTok, YouTube и Facebook и с сайтами рецептов.',
       short: 'Эта ссылка не поддерживается',
@@ -340,8 +340,8 @@ export const ru = {
     originTiktokA11y: 'Импортировано из TikTok',
     originInstagramDetailLabel: 'Импортировано из {handle} в Instagram',
     originTiktokDetailLabel: 'Импортировано из {handle} в TikTok',
-    originInstagramHandleA11y: 'Открыть {handle} в Instagram',
-    originTiktokHandleA11y: 'Открыть {handle} в TikTok',
+    originInstagramHandleA11y: 'Открыть видео {handle} в Instagram',
+    originTiktokHandleA11y: 'Открыть видео {handle} в TikTok',
     originFacebookA11y: 'Импортировано из Facebook',
     originYoutubeA11y: 'Импортировано из YouTube',
     originFacebookDetailLabel: 'Импортировано со страницы {handle} в Facebook',

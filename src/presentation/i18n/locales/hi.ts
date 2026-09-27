@@ -119,7 +119,7 @@ export const hi: Translations = {
       body: 'Instagram, TikTok, YouTube या Facebook के किसी वीडियो या रेसिपी पेज का पूरा लिंक पेस्ट करें और फिर से कोशिश करें।',
       short: 'कोई मान्य लिंक पेस्ट करें',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'वहाँ से इम्पोर्ट नहीं हो सकता',
       body: 'इंपोर्ट Instagram, TikTok, YouTube और Facebook वीडियो और रेसिपी वेबसाइटों के साथ काम करता है।',
       short: 'यह लिंक समर्थित नहीं है',
@@ -342,8 +342,8 @@ export const hi: Translations = {
     originTiktokA11y: 'TikTok से आयात की गई',
     originInstagramDetailLabel: 'Instagram पर {handle} से आयात की गई',
     originTiktokDetailLabel: 'TikTok पर {handle} से आयात की गई',
-    originInstagramHandleA11y: 'Instagram पर {handle} खोलें',
-    originTiktokHandleA11y: 'TikTok पर {handle} खोलें',
+    originInstagramHandleA11y: 'Instagram पर {handle} का वीडियो खोलें',
+    originTiktokHandleA11y: 'TikTok पर {handle} का वीडियो खोलें',
     originFacebookA11y: 'Facebook से आयात की गई',
     originYoutubeA11y: 'YouTube से आयात की गई',
     originFacebookDetailLabel: 'Facebook पर {handle} से आयात की गई',
