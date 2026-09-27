@@ -1017,6 +1017,7 @@ export const pt = {
     saved: 'salvou',
     aiDoneLabel: 'A IA terminou sua receita',
     importDoneLabel: 'Sua receita importada está pronta',
+    importFailedLabel: 'Sua importação não deu certo',
     genericLabel: 'Nova notificação',
     modOk: 'aprovou sua receita',
     modPending: 'revisão pendente para',

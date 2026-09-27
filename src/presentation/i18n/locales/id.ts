@@ -1017,6 +1017,7 @@ export const id = {
     saved: 'menyimpan',
     aiDoneLabel: 'AI selesai membuat resep kamu',
     importDoneLabel: 'Resep yang kamu impor sudah siap',
+    importFailedLabel: 'Impor kamu tidak berhasil',
     genericLabel: 'Notifikasi baru',
     modOk: 'menyetujui resep kamu',
     modPending: 'menunggu tinjauan untuk',

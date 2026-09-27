@@ -1017,6 +1017,7 @@ export const es = {
     saved: 'guardó',
     aiDoneLabel: 'La IA terminó tu receta',
     importDoneLabel: 'Tu receta importada está lista',
+    importFailedLabel: 'Tu importación no funcionó',
     genericLabel: 'Nueva notificación',
     modOk: 'aprobó tu receta',
     modPending: 'revisión pendiente de',

@@ -1021,6 +1021,7 @@ export const tr: Translations = {
     saved: 'tarifini kaydetti:',
     aiDoneLabel: 'Yapay zekâ tarifini tamamladı',
     importDoneLabel: 'İçe aktardığın tarif hazır',
+    importFailedLabel: 'İçe aktarma başarısız oldu',
     genericLabel: 'Yeni bildirim',
     modOk: 'tarifini onayladı:',
     modPending: 'tarifin inceleniyor:',

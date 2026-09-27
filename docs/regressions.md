@@ -2260,3 +2260,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* jumping from photo 1 to photo 5 with an arrow or a thumb flickered the counter through 2, 3 and 4.
 *Why:* `onScroll` fires during the pager's own animated `scrollToOffset` as well as during a drag, and every event was reported.
 *Guard:* the pager ignores scroll events while its own scroll is in flight and a drag cancels that; `photo-pager.test.tsx`. **A scroll handler must know whether the user or the code moved the list.**
+
+### A failure the server spelled as a success
+
+*Symptom:* after an import failed (a Facebook reel, a too-long TikTok), the inbox row read "Your imported recipe is ready" and did nothing when tapped.
+*Why:* the backend records a failed import as `import_done` with no draft and no recipe, and the row trusted the type.
+*Guard:* `toNotifItem` resolves that shape to `import_failed`, which has its own copy; `model/__tests__/to-notif-item.test.ts` and `notif-row-copy.test.tsx`. **A type that covers both outcomes is told apart by its payload, at the one place the kind is resolved.**

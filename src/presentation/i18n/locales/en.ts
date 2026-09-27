@@ -1029,6 +1029,7 @@ export const en = {
     aiDoneLabel: 'AI finished your recipe',
     genericLabel: 'New notification',
     importDoneLabel: 'Your imported recipe is ready',
+    importFailedLabel: "Your import didn't work",
     modOk: 'approved your recipe',
     modPending: 'review pending for',
     followed: 'followed you',

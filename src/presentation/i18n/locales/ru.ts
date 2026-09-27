@@ -1017,6 +1017,7 @@ export const ru = {
     saved: 'сохранил(а)',
     aiDoneLabel: 'ИИ закончил ваш рецепт',
     importDoneLabel: 'Импортированный рецепт готов',
+    importFailedLabel: 'Импорт не удался',
     genericLabel: 'Новое уведомление',
     modOk: 'одобрил(а) ваш рецепт',
     modPending: 'ожидает проверки для',

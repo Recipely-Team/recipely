@@ -1017,6 +1017,7 @@ export const de = {
     saved: 'speicherte',
     aiDoneLabel: 'KI hat dein Rezept fertiggestellt',
     importDoneLabel: 'Dein importiertes Rezept ist fertig',
+    importFailedLabel: 'Dein Import hat nicht geklappt',
     genericLabel: 'Neue Benachrichtigung',
     modOk: 'hat dein Rezept freigegeben',
     modPending: 'Prüfung ausstehend für',

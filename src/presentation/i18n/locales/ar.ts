@@ -1017,6 +1017,7 @@ export const ar = {
     saved: "حفظ",
     aiDoneLabel: "أنهى الذكاء الاصطناعي وصفتك",
     importDoneLabel: 'وصفتك المستوردة جاهزة',
+    importFailedLabel: 'تعذّر استيراد الوصفة',
     genericLabel: 'إشعار جديد',
     modOk: "وافق على وصفتك",
     modPending: "المراجعة معلّقة لـ",

@@ -5,6 +5,8 @@ export const NotifKind = {
   AiDone: 'ai_done',
   /** A queued Instagram import finished; the row opens the draft it produced. */
   ImportDone: 'import_done',
+  /** A queued import that produced nothing — the server sends it as `import_done` with no draft and no recipe. */
+  ImportFailed: 'import_failed',
   ModerationApproved: 'moderation_approved',
   ModerationPending: 'moderation_pending',
   Follow: 'follow',

@@ -1017,6 +1017,7 @@ export const ja = {
     saved: 'が保存しました：',
     aiDoneLabel: 'AIがレシピを完成させました',
     importDoneLabel: '取り込んだレシピの準備ができました',
+    importFailedLabel: '取り込みができませんでした',
     genericLabel: '新しい通知',
     modOk: 'があなたのレシピを承認しました',
     modPending: 'の審査待ち：',

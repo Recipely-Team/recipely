@@ -1017,6 +1017,7 @@ export const fr = {
     saved: 'a enregistré',
     aiDoneLabel: 'L’IA a terminé votre recette',
     importDoneLabel: 'Ta recette importée est prête',
+    importFailedLabel: "Ton import n'a pas fonctionné",
     genericLabel: 'Nouvelle notification',
     modOk: 'a approuvé votre recette',
     modPending: 'révision en attente pour',

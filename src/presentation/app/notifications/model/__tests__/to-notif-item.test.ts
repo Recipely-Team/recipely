@@ -1,0 +1,50 @@
+import { NotificationEntity } from '@domain/notifications/notification-entity';
+import type { NotificationEntityProps } from '@domain/notifications/notification-entity-props';
+import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
+
+/**
+ * A failed import read "Your imported recipe is ready" in the inbox. The
+ * server records a failure as `import_done` with no draft and no recipe (seen
+ * live on dev after a Facebook reel and a too-long TikTok failed), and the row
+ * took the type at its word — then went nowhere when tapped.
+ */
+const importRow = (overrides: Partial<NotificationEntityProps>): NotificationEntity => {
+  const created = NotificationEntity.create({
+    id: 'n1',
+    type: 'import_done',
+    senderId: null,
+    senderDisplayName: null,
+    senderPhotoUrl: null,
+    recipeId: null,
+    recipeTitle: null,
+    commentId: null,
+    draftId: null,
+    message: null,
+    read: false,
+    createdAt: new Date(),
+    ...overrides,
+  });
+  if (!created.ok) throw new Error('fixture notification invalid');
+  return created.value;
+};
+
+describe('toNotifItem', () => {
+  it('reads an import with no draft and no recipe as a failed import, not a ready one', () => {
+    const item = toNotifItem(importRow({}));
+
+    expect(item.kind).toBe(NotifKind.ImportFailed);
+  });
+
+  it('keeps an import that produced a draft as done', () => {
+    const item = toNotifItem(importRow({ draftId: 'draft-1', message: 'Trileçe' }));
+
+    expect(item.kind).toBe(NotifKind.ImportDone);
+  });
+
+  it('keeps an import whose draft was published as done', () => {
+    const item = toNotifItem(importRow({ recipeId: 'recipe-1' }));
+
+    expect(item.kind).toBe(NotifKind.ImportDone);
+  });
+});
