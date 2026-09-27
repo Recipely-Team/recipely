@@ -165,7 +165,7 @@ export class ImportLink extends BaseValueObject<string> {
     return new ValidationFailure(
       DiagnosticMessage.recipeImport.unsupportedSite(url),
       undefined,
-      ErrorMessageKey.importNotInstagram,
+      ErrorMessageKey.importUnsupportedSource,
     );
   }
 

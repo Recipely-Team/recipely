@@ -46,6 +46,7 @@ const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListIte
       difficulty={recipe.difficulty}
       rating={recipe.rating}
       provenance={recipe.provenanceMarks}
+      photoCount={recipe.photoCount}
       likeCount={likeState?.likeCount ?? recipe.likeCount}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       onPress={onPress}

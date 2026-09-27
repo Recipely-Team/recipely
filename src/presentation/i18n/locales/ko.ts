@@ -119,7 +119,7 @@ export const ko: Translations = {
       body: 'Instagram, TikTok, YouTube 또는 Facebook 동영상이나 레시피 페이지의 전체 링크를 붙여넣고 다시 시도하세요.',
       short: '올바른 링크를 붙여넣으세요',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: '거기서는 가져올 수 없어요',
       body: 'Instagram, TikTok, YouTube, Facebook 동영상과 레시피 사이트에서 가져올 수 있어요.',
       short: '지원하지 않는 링크예요',
@@ -342,8 +342,8 @@ export const ko: Translations = {
     originTiktokA11y: 'TikTok에서 가져옴',
     originInstagramDetailLabel: 'Instagram의 {handle}에서 가져옴',
     originTiktokDetailLabel: 'TikTok의 {handle}에서 가져옴',
-    originInstagramHandleA11y: 'Instagram에서 {handle} 열기',
-    originTiktokHandleA11y: 'TikTok에서 {handle} 열기',
+    originInstagramHandleA11y: 'Instagram에서 {handle}의 동영상 열기',
+    originTiktokHandleA11y: 'TikTok에서 {handle}의 동영상 열기',
     originFacebookA11y: 'Facebook에서 가져옴',
     originYoutubeA11y: 'YouTube에서 가져옴',
     originFacebookDetailLabel: 'Facebook의 {handle}에서 가져옴',

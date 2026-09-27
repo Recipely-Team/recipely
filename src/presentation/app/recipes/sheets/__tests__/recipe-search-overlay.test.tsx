@@ -40,6 +40,7 @@ jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
 
 const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name,
     image: '',

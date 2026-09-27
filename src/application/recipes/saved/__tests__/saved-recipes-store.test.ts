@@ -20,6 +20,7 @@ import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const makeSummary = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,

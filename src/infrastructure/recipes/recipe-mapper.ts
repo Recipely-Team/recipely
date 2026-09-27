@@ -108,5 +108,6 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     origin: toRecipeOrigin(dto.origin),
     sourcePlatform: toSourcePlatform(dto.sourcePlatform),
     aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
+    photoCount: dto.mediaCount ?? ValueConstants.zero,
   });
 };

@@ -120,7 +120,7 @@ export const tr: Translations = {
       body: 'Instagram, TikTok, YouTube ya da Facebook videosunun ya da tarif sayfasının tam bağlantısını yapıştır.',
       short: 'Geçerli bir bağlantı yapıştır',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'Buradan aktaramıyoruz',
       body: 'İçe aktarma Instagram, TikTok, YouTube ve Facebook videolarıyla ve tarif siteleriyle çalışır.',
       short: 'Bu bağlantı desteklenmiyor',

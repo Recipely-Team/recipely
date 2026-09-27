@@ -135,3 +135,23 @@ describe('failure-content resolver', () => {
     expect(failureIcon({ code: 'totally_new', message: 'x' } as unknown as Failure).length).toBeGreaterThan(0);
   });
 });
+
+describe('the unsupported-source import key after its rename', () => {
+  // `importNotInstagram` became `importUnsupportedSource`. Every deployed
+  // backend still answers an unreadable link with `errors.import.not_instagram`,
+  // so dropping that string would have shown the generic validation copy.
+  it('a backend that still sends the old key gets the unsupported-source copy', () => {
+    const legacy = new ValidationFailure('unsupported', undefined, 'errors.import.not_instagram');
+
+    expect(failureContent(legacy)).toEqual({
+      title: en.errors.importUnsupportedSource.title,
+      body: en.errors.importUnsupportedSource.body,
+    });
+  });
+
+  it('the new key reads the same copy', () => {
+    const renamed = new ValidationFailure('unsupported', undefined, ErrorMessageKey.importUnsupportedSource);
+
+    expect(failureToastMessage(renamed)).toBe(en.errors.importUnsupportedSource.short);
+  });
+});

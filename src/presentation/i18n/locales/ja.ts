@@ -117,7 +117,7 @@ export const ja = {
       body: 'Instagram、TikTok、YouTube、Facebookの動画、またはレシピページの完全なリンクを貼り付けて、もう一度お試しください。',
       short: '有効なリンクを貼り付けてください',
     },
-    importNotInstagram: {
+    importUnsupportedSource: {
       title: 'そこからはインポートできません',
       body: 'インポートできるのは、Instagram、TikTok、YouTube、Facebookの動画とレシピサイトです。',
       short: 'このリンクには対応していません',
@@ -340,8 +340,8 @@ export const ja = {
     originTiktokA11y: 'TikTok から取り込み',
     originInstagramDetailLabel: 'Instagram の {handle} から取り込み',
     originTiktokDetailLabel: 'TikTok の {handle} から取り込み',
-    originInstagramHandleA11y: 'Instagram で {handle} を開く',
-    originTiktokHandleA11y: 'TikTok で {handle} を開く',
+    originInstagramHandleA11y: 'Instagram で {handle} の動画を開く',
+    originTiktokHandleA11y: 'TikTok で {handle} の動画を開く',
     originFacebookA11y: 'Facebook から取り込み',
     originYoutubeA11y: 'YouTube から取り込み',
     originFacebookDetailLabel: 'Facebook の {handle} から取り込み',

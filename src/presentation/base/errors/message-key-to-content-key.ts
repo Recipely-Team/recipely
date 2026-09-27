@@ -32,7 +32,8 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.refineInstructionRequired]: 'refineInstructionRequired',
 
   [ErrorMessageKey.importInvalidUrl]: 'importInvalidUrl',
-  [ErrorMessageKey.importNotInstagram]: 'importNotInstagram',
+  [ErrorMessageKey.importUnsupportedSource]: 'importUnsupportedSource',
+  [ErrorMessageKey.importUnsupportedSourceLegacy]: 'importUnsupportedSource',
   [ErrorMessageKey.importFetchFailed]: 'importFetchFailed',
   [ErrorMessageKey.importDurationExceeded]: 'importDurationExceeded',
   [ErrorMessageKey.importNoRecipeFound]: 'importNoRecipeFound',

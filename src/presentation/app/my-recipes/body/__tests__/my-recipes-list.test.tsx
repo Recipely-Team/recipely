@@ -46,6 +46,7 @@ jest.mock('@presentation/base/widgets/cards/web-recipe-list-item', () => {
 
 const makeRecipe = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,

@@ -98,6 +98,12 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get media(): MediaItem[] {
     return this.props.media;
   }
+  /** How many photos the hero pages through: the gallery's images, or the cover alone when there are none. */
+  get photoCount(): number {
+    const images = this.props.media.filter((m) => m.type === MediaType.Image).length;
+    if (images > ValueConstants.zero) return images;
+    return this.props.image.length > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero;
+  }
   get rating(): number {
     return this.props.rating;
   }

@@ -22,6 +22,7 @@ const validProps = {
   origin: RecipeOrigin.User,
   sourcePlatform: null,
   aiWritten: false,
+  photoCount: 3,
 };
 
 describe('RecipeSummaryEntity.create', () => {

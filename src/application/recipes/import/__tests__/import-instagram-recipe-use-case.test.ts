@@ -71,7 +71,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(repo.importInstagramCallCount).toBe(0);
   });
 
-  it('returns ValidationFailure importNotInstagram for a site the import cannot read, without hitting the repo', async () => {
+  it('returns ValidationFailure importUnsupportedSource for a site the import cannot read, without hitting the repo', async () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
@@ -80,7 +80,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     expect(r.ok).toBe(false);
     if (!r.ok) {
       expect(r.failure).toBeInstanceOf(ValidationFailure);
-      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
+      expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importUnsupportedSource);
     }
     expect(repo.importInstagramCallCount).toBe(0);
   });
@@ -94,7 +94,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const r = await useCase.execute({ url: 'https://www.nefisyemektarifleri.com/menemen-tarifi/' });
 
     expect(r.ok).toBe(false);
-    if (!r.ok) expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importNotInstagram);
+    if (!r.ok) expect((r.failure as ValidationFailure).messageKey).toBe(ErrorMessageKey.importUnsupportedSource);
     expect(repo.importInstagramCallCount).toBe(0);
   });
 

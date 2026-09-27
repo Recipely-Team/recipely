@@ -34,6 +34,7 @@ jest.mock('@presentation/app/recipes/sheets/all-cuisines-sheet', () => ({ AllCui
 
 const makeRecipe = (): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: 'r1',
     name: 'Recipe r1',
     image: 'https://cdn.example.com/r1.webp',

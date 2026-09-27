@@ -59,6 +59,7 @@ const makeSummary = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
 ): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: "network-only",
     name: "Network Only Recipe",
     image: "https://cdn.example.com/network.webp",

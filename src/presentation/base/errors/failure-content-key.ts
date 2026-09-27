@@ -32,7 +32,7 @@ export type FailureContentKey =
   | 'refineInstructionRequired'
   // ── key-tier: link import ──────────────────────────────────────────────────
   | 'importInvalidUrl'
-  | 'importNotInstagram'
+  | 'importUnsupportedSource'
   | 'importFetchFailed'
   | 'importDurationExceeded'
   | 'importNoRecipeFound'

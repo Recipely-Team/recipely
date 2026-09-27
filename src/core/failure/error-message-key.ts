@@ -7,7 +7,7 @@
  *
  * Lives in `core` because `messageKey` is part of the `Failure` contract, and
  * both layers above need the same literals: `application` raises client-side
- * failures on this channel (a blank prompt, a non-Instagram URL — the guards
+ * failures on this channel (a blank prompt, an unsupported link — the guards
  * that short-circuit before the network), and `presentation` maps the keys to
  * copy. One catalogue, so a key can never drift between the raiser and the
  * reader.
@@ -32,7 +32,13 @@ export const ErrorMessageKey = {
 
   // Link import: Instagram videos and recipe web pages
   importInvalidUrl: 'errors.import.invalid_url',
-  importNotInstagram: 'errors.import.not_instagram',
+  /** A link from a source the import cannot read — any site, not only a non-Instagram one. */
+  importUnsupportedSource: 'errors.import.unsupported_source',
+  /**
+   * The same rejection under the name it had while Instagram was the only
+   * source. Every deployed backend still sends this one, so it stays readable.
+   */
+  importUnsupportedSourceLegacy: 'errors.import.not_instagram',
   importFetchFailed: 'errors.import.fetch_failed',
   importDurationExceeded: 'errors.import.duration_exceeded',
   importNoRecipeFound: 'errors.import.no_recipe_found',

@@ -50,7 +50,7 @@ export interface WebRecipeCardProps {
   likeCount?: number;
   /** The My Recipes "Created" tab: the recipe's status badge on the photo's bottom-left. */
   ownedByMe?: boolean;
-  /** How many photos the recipe has, when the caller knows; a chip on the cover's bottom-right shows it from two up. */
+  /** How many photos the recipe has; defaults to the list row's count. A chip on the cover's bottom-right shows it from two up. */
   photoCount?: number;
 }
 
@@ -62,7 +62,7 @@ export interface WebRecipeCardProps {
  * lifts slightly on hover. No author row (that would be an N+1 fetch).
  */
 export const WebRecipeCard = ({
-  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount = ValueConstants.zero,
+  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount = recipe.photoCount,
   likedByMe = recipe.likedByMe, likeCount = recipe.likeCount,
 }: WebRecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
