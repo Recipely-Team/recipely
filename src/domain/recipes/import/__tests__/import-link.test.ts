@@ -61,6 +61,47 @@ describe('ImportLink', () => {
     });
   });
 
+  // The backend imports both since its YouTube and Facebook importers shipped;
+  // the paste screen refused them as "we can't import from there".
+  describe('Facebook and YouTube links are accepted and map to their platform', () => {
+    it.each([
+      'https://www.facebook.com/reel/1234567890',
+      'https://facebook.com/tastyjapan/videos/987654321/',
+      'https://m.facebook.com/watch/?v=987654321',
+      'https://web.facebook.com/share/v/1AbCdEf/',
+      'https://www.facebook.com/share/r/1AbCdEf/',
+      'https://fb.watch/abcDEF123/',
+    ])('takes %s as a Facebook video', (raw) => {
+      const link = accepted(raw);
+      expect(link.platform).toBe(SourcePlatform.Facebook);
+      expect(link.isVideo).toBe(true);
+    });
+
+    it.each([
+      ['https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=12', 'dQw4w9WgXcQ'],
+      ['https://youtube.com/shorts/dQw4w9WgXcQ?si=abc', 'dQw4w9WgXcQ'],
+      ['https://m.youtube.com/watch?v=dQw4w9WgXcQ', 'dQw4w9WgXcQ'],
+      ['https://youtu.be/dQw4w9WgXcQ?si=abc', 'dQw4w9WgXcQ'],
+      ['youtube.com/shorts/dQw4w9WgXcQ', 'dQw4w9WgXcQ'],
+    ])('takes %s as a YouTube video', (raw, id) => {
+      const link = accepted(raw);
+      expect(link.platform).toBe(SourcePlatform.YouTube);
+      expect(link.shortForm).toBe(`youtube.com/watch?v=${id}`);
+    });
+
+    it.each([
+      'https://www.facebook.com/tastyjapan',
+      'https://www.facebook.com/watch/',
+      'https://fb.watch/',
+      'https://www.youtube.com/@tasty',
+      'https://www.youtube.com/watch?v=short',
+      'https://youtu.be/',
+      'https://music.youtube.com/watch?v=dQw4w9WgXcQ',
+    ])('refuses %s, which names no single video', (raw) => {
+      expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importInvalidUrl);
+    });
+  });
+
   describe('recipe web pages', () => {
     it('accepts any public page and names it by its site', () => {
       const link = accepted('https://www.nefisyemektarifleri.com/menemen-tarifi/');
@@ -76,7 +117,7 @@ describe('ImportLink', () => {
 
     // Recipes live on these, but the import cannot read them; saying so now
     // beats a minute of waiting for "no recipe on that page".
-    it.each(['https://www.youtube.com/watch?v=x', 'https://youtu.be/x', 'https://www.facebook.com/x/videos/1', 'https://x.com/a/status/1'])(
+    it.each(['https://x.com/a/status/1', 'https://twitter.com/a/status/1', 'https://mobile.twitter.com/a/status/1'])(
       'names %s as a site it cannot import from',
       (raw) => {
         expect(failureKeyOf(raw)).toBe(ErrorMessageKey.importNotInstagram);

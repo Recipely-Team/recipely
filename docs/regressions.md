@@ -2236,3 +2236,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* the mobile recipe detail read "Besin değerleri" twice — the screen's section header, then the nutrition card's own title under it.
 *Why:* the card was written as a self-contained section and later placed under a `SectionHeader`; neither side knew the other also titled it.
 *Guard:* the nutrition panel takes no title and the placing screen owns the one heading (`recipe-overview.nutrition-heading.test.tsx` counts it). A section body under `base/` or `items/` should not render a heading of its own.
+
+### A wire value and a clipped label on the phone's stat tiles
+
+*Symptom:* the phone's recipe detail printed difficulty as "EASY" while the web sidebar said "Easy", and on a 320pt phone the tile labels were cut to an ellipsis.
+*Why:* the mobile tile passed the raw `Difficulty` through where the web one went through `difficultyLabel`; each label was pinned to `numberOfLines={1}` inside a quarter of the card.
+*Guard:* `recipe-meta-card.test.tsx` asserts the translated label and that no stat label carries `numberOfLines`; the grid folds to two columns from the card's own measured width (`statGrid.narrowMaxWidth`). **A display vocabulary goes through its one label function on every platform** — two renderings of the same field is where one of them forgets.

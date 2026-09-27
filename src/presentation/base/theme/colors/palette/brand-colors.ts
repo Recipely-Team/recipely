@@ -41,6 +41,10 @@ export const BrandColors = {
   tiktokNote: '#121212',
   tiktokCyan: '#25F4EE',
   tiktokRed: '#FE2C55',
+  /** Facebook's blue as outline ink on the seal's white face, 5.0:1. */
+  facebookInk: '#0866FF',
+  /** YouTube's red as outline ink on the seal's white face, 4.0:1. */
+  youtubeInk: '#FF0000',
   /** A web page's globe: neutral slate rather than any site's colour, 10.4:1 on white. */
   webInk: '#334155',
   /** The AI sparkles' indigo-to-teal ink, both stops at least 3:1 on white. */

@@ -1,11 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { StatTileText } from '@presentation/app/recipes/[recipeId]/items/meta/stat-tile-text';
 import { ControlButton } from '@presentation/app/recipes/[recipeId]/items/control-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
 import { formatTimer } from '@presentation/base/utils/format-timer';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, iconSizes, decorSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
@@ -18,15 +18,14 @@ export interface TimeCardProps {
 }
 
 /**
- * A recipe has exactly one timer, on its cook time, so the id needs no slot to
- * disambiguate. Prep time renders as a plain stat — see `recipe-meta-card`.
- */
-
-/**
- * The recipe's cook-time countdown, rendered as one segment of the meta card.
+ * The recipe's cook-time countdown, rendered as one tile of the meta card.
  * The timer is backed by the persistent `timerStore`, so it keeps running
  * across screen navigation and app backgrounding, and surfaces in system
  * notifications. Prep time has no timer — see `recipe-meta-card`.
+ *
+ * @remarks
+ * - **The badge carries the timer's state**: the brand fill with a light ring
+ *   while it counts, the success tint and a check once it is done.
  */
 export const TimeCard = ({
   label,
@@ -43,8 +42,9 @@ export const TimeCard = ({
   });
 
   const { isActive, isPaused, isDone, remainingSeconds } = timer;
-  const iconBg = isDone ? colors.successLight : colors.chipBackground;
-  const iconTint = isDone ? colors.success : colors.primary;
+  const isCounting = isActive && !isDone;
+  const iconBg = isDone ? colors.successLight : isCounting ? colors.primary : colors.primaryLight;
+  const iconTint = isDone ? colors.success : isCounting ? colors.onOverlay : colors.primary;
 
   const valueText = isDone
     ? t().timer.done
@@ -94,18 +94,16 @@ export const TimeCard = ({
 
   return (
     <View style={styles.segment}>
-      <View style={[styles.iconWrap, { backgroundColor: iconBg }]}>
+      <View
+        style={[
+          styles.iconWrap,
+          { backgroundColor: iconBg },
+          isCounting ? [styles.ring, { borderColor: colors.primaryLight }] : null,
+        ]}
+      >
         <Ionicons name={isDone ? 'checkmark' : 'flame-outline'} size={iconSizes.lg} color={iconTint} />
       </View>
-      <ThemedText
-        style={[styles.value, { color: isDone ? colors.success : colors.text }]}
-        numberOfLines={ValueConstants.one}
-      >
-        {valueText}
-      </ThemedText>
-      <ThemedText variant="label" muted style={styles.segmentLabel} numberOfLines={ValueConstants.one}>
-        {label}
-      </ThemedText>
+      <StatTileText value={valueText} label={label} valueColor={isDone ? colors.success : undefined} />
       {controls}
     </View>
   );
@@ -113,30 +111,20 @@ export const TimeCard = ({
 
 const styles = StyleSheet.create({
   segment: {
-    flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
-  },
-  segmentLabel: {
-    fontSize: fontSizes.micro,
-    textAlign: 'center',
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xs2,
   },
   iconWrap: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
+    width: decorSizes.statBadge,
+    height: decorSizes.statBadge,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  value: {
-    fontSize: fontSizes.heading,
-    fontWeight: fontWeights.bold,
-    // WHY: kept static (never toggled to undefined) — React Native sends `null`
-    // to the native side when clearing fontVariant, and processFontVariant
-    // crashes on null. tabular-nums is harmless on non-digit text.
-    fontVariant: ['tabular-nums'],
+  ring: {
+    borderWidth: borderWidths.thick,
   },
   controls: {
     flexDirection: 'row',

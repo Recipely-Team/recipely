@@ -75,7 +75,7 @@ describe('ImportInstagramRecipeUseCase.execute', () => {
     const repo = new FakeRecipeRepository();
     const useCase = new ImportInstagramRecipeUseCase(repo);
 
-    const r = await useCase.execute({ url: 'https://www.youtube.com/watch?v=x' });
+    const r = await useCase.execute({ url: 'https://x.com/chef/status/1' });
 
     expect(r.ok).toBe(false);
     if (!r.ok) {

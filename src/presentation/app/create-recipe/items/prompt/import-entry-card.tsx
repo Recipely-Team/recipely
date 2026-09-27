@@ -1,17 +1,19 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
+import { ACCEPTED_IMPORT_MARKS } from '@presentation/base/widgets/badges/accepted-import-marks';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   spacing,
   radii,
   fontWeights,
   iconSizes,
-  controlSizes,
+  decorSizes,
+  fontSizes,
+  opacities,
   borderWidths,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -21,18 +23,17 @@ export interface ImportEntryCardProps {
   onPress: () => void;
 }
 
-const ACCEPTED_MARKS = [ProvenanceMark.Instagram, ProvenanceMark.TikTok, ProvenanceMark.Web] as const;
-
 /**
  * The way into the link import that does not depend on the OS share sheet.
  *
  * @remarks
  * - **Sharing works on the phone only, and never on the web** — so this card is
  *   how everyone else reaches the feature at all.
- * - **A neutral link tile, not a platform's plate.** The import takes an
- *   Instagram video or a recipe page; the capsule of glyphs says which, and no
- *   one platform's gradient claims the whole card. TikTok's glyph is left out
- *   while TikTok blocks the import worker.
+ * - **A neutral link tile, not a platform's plate.** The import takes a video
+ *   from four platforms or a recipe page; the capsule under the hint says
+ *   which, and no one platform's gradient claims the whole card.
+ * - **The capsule is decorative**: the hint above it names every source, and
+ *   the card's accessible name is its title.
  */
 export const ImportEntryCard = ({ onPress }: ImportEntryCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -44,24 +45,27 @@ export const ImportEntryCard = ({ onPress }: ImportEntryCardProps): React.JSX.El
       style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
       accessibilityRole="button"
       accessibilityLabel={copy.pasteEntry}
+      accessibilityHint={copy.pasteEntryHint}
     >
       <View style={[styles.tile, { backgroundColor: colors.chipBackground }]}>
         <Ionicons name="link" size={iconSizes.xl} color={colors.chipText} />
       </View>
       <View style={styles.body}>
-        <ThemedText variant="body" style={styles.title}>
+        <ThemedText variant="body" style={[styles.title, { color: colors.text }]}>
           {copy.pasteEntry}
         </ThemedText>
-        <ThemedText variant="caption" style={{ color: colors.textMuted }}>
+        <ThemedText variant="caption" style={[styles.hint, { color: colors.text }]}>
           {copy.pasteEntryHint}
         </ThemedText>
+        <View style={styles.marks}>
+          <ProvenanceSeal
+            marks={ACCEPTED_IMPORT_MARKS}
+            surface={SealSurface.Page}
+            size={provenanceSealMetrics.importEntrySize}
+            decorative
+          />
+        </View>
       </View>
-      <ProvenanceSeal
-        marks={ACCEPTED_MARKS}
-        surface={SealSurface.Page}
-        size={provenanceSealMetrics.importEntrySize}
-        label={copy.pasteEntryHint}
-      />
       <Ionicons name="chevron-forward" size={iconSizes.lg} color={colors.textMuted} />
     </Pressable>
   );
@@ -77,17 +81,25 @@ const styles = StyleSheet.create({
     borderWidth: borderWidths.hairline,
   },
   tile: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
+    width: decorSizes.statBadge,
+    height: decorSizes.statBadge,
     borderRadius: radii.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   body: {
     flex: ValueConstants.one,
+    minWidth: ValueConstants.zero,
     gap: spacing.xxs,
   },
   title: {
+    fontSize: fontSizes.medium,
     fontWeight: fontWeights.bold,
+  },
+  hint: {
+    opacity: opacities.secondaryInk,
+  },
+  marks: {
+    marginTop: spacing.xs,
   },
 });

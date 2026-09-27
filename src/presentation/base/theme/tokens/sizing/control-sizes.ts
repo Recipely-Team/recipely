@@ -40,6 +40,8 @@ export const controlSizes = {
   iconBtn: scale(36),
   /** One option of an inline segmented switch (e.g. the nutrition basis). */
   segmentOption: scale(36),
+  pasteBtn: scale(38),
+  pageCloseBtn: scale(38),
   /** Icon/action button in the web header. */
   webHeaderBtn: scale(38),
   /** Close button on a web modal. */

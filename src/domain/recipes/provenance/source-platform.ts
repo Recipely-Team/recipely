@@ -11,6 +11,10 @@
 export const SourcePlatform = {
   Instagram: 'INSTAGRAM',
   TikTok: 'TIKTOK',
+  /** A Facebook video or reel. The handle is the page's display name, never an `@`. */
+  Facebook: 'FACEBOOK',
+  /** A YouTube video or short. The handle is the channel's display name. */
+  YouTube: 'YOUTUBE',
   /** Any recipe web page, read from its own schema.org markup. The handle is the site. */
   Web: 'WEB',
 } as const;

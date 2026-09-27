@@ -58,6 +58,21 @@ describe('ProvenanceSeal', () => {
     expect(labelsOf(root)).toContain(`${t().recipes.originTiktokA11y}${t().recipes.originEditedByAiSuffix}`);
   });
 
+  it.each([ProvenanceMark.Facebook, ProvenanceMark.YouTube])('draws the %s mark and names it', (mark) => {
+    const { root } = renderComponent(<ProvenanceSeal marks={[mark, ProvenanceMark.Ai]} surface={SealSurface.Photo} size={SIZE} />);
+    expect(glyphsOf(root)).toEqual([mark, ProvenanceMark.Ai]);
+    const base = mark === ProvenanceMark.Facebook ? t().recipes.originFacebookA11y : t().recipes.originYoutubeA11y;
+    expect(labelsOf(root)).toContain(`${base}${t().recipes.originEditedByAiSuffix}`);
+  });
+
+  it('hides a decorative row of marks from assistive tech', () => {
+    const { root } = renderComponent(
+      <ProvenanceSeal marks={[ProvenanceMark.Instagram, ProvenanceMark.Web]} surface={SealSurface.Page} size={SIZE} decorative />,
+    );
+    expect(labelsOf(root)).toEqual([]);
+    expect(root.findAll((n) => n.props['importantForAccessibility'] === 'no-hide-descendants').length).toBeGreaterThan(0);
+  });
+
   it('names an AI-only recipe without inventing a platform', () => {
     const { root } = renderComponent(
       <ProvenanceSeal marks={[ProvenanceMark.Ai]} surface={SealSurface.Photo} size={SIZE} />,
@@ -99,6 +114,60 @@ describe('ProvenanceNote', () => {
     const { root } = renderComponent(<ProvenanceNote marks={[ProvenanceMark.Instagram]} />);
     expect(textOf(root)).toContain(t().recipes.originInstagramA11y);
     expect(textOf(root)).not.toContain('@');
+  });
+
+  // Facebook and YouTube imports had no words: the sentence fell through to
+  // nothing, and an import a model rewrote said "edited by" in one place and
+  // "written" in another. Every import says "edited"; only a prompt says "written".
+  describe('the note sentence for each platform, both created and edited', () => {
+    const VIDEO = 'https://example.com/video/1';
+    const words = (): Record<string, { mark: (typeof ProvenanceMark)[keyof typeof ProvenanceMark]; sentence: string; shown: string }> => ({
+      instagram: { mark: ProvenanceMark.Instagram, sentence: t().recipes.originInstagramDetailLabel, shown: `@${HANDLE}` },
+      tiktok: { mark: ProvenanceMark.TikTok, sentence: t().recipes.originTiktokDetailLabel, shown: `@${HANDLE}` },
+      facebook: { mark: ProvenanceMark.Facebook, sentence: t().recipes.originFacebookDetailLabel, shown: HANDLE },
+      youtube: { mark: ProvenanceMark.YouTube, sentence: t().recipes.originYoutubeDetailLabel, shown: HANDLE },
+      web: { mark: ProvenanceMark.Web, sentence: t().recipes.originWebDetailLabel, shown: HANDLE },
+    });
+
+    it.each(['instagram', 'tiktok', 'facebook', 'youtube', 'web'])('%s: imported, then edited with AI, and the name opens the video', (key) => {
+      const open = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+      const w = words()[key];
+      if (w === undefined) throw new Error(key);
+      const plain = w.sentence.replace('{handle}', w.shown);
+
+      const imported = renderComponent(<ProvenanceNote marks={[w.mark]} sourceHandle={HANDLE} sourceUrl={VIDEO} />);
+      expect(textOf(imported.root)).toContain(plain);
+      expect(textOf(imported.root)).not.toContain(t().recipes.originEditedByAiSuffix);
+
+      const edited = renderComponent(
+        <ProvenanceNote marks={[w.mark, ProvenanceMark.Ai]} sourceHandle={HANDLE} sourceUrl={VIDEO} />,
+      );
+      expect(textOf(edited.root)).toContain(`${plain}${t().recipes.originEditedByAiSuffix}`);
+      expect(glyphsOf(edited.root)).toEqual([w.mark, ProvenanceMark.Ai]);
+
+      const link = edited.root.findAll((n) => n.props['accessibilityRole'] === 'link' && typeof n.props['onPress'] === 'function')[0];
+      (link?.props['onPress'] as () => void)();
+      expect(open).toHaveBeenCalledWith(VIDEO);
+      open.mockRestore();
+    });
+
+    it('reads the English copy the prototype wrote', () => {
+      expect(t().recipes.originYoutubeDetailLabel).toBe('Imported from the {handle} channel on YouTube');
+      expect(t().recipes.originFacebookDetailLabel).toBe('Imported from {handle} on Facebook');
+      expect(t().recipes.originEditedByAiSuffix).toBe(', edited with AI');
+    });
+
+    it('calls a recipe a model wrote from a prompt "written", never "edited"', () => {
+      const { root } = renderComponent(<ProvenanceNote marks={[ProvenanceMark.Ai]} />);
+      expect(textOf(root)).toContain(t().recipes.originAiDetailLabel);
+      expect(textOf(root)).not.toContain(t().recipes.originEditedByAiSuffix);
+    });
+
+    it('names a channel without a link when the video address is unknown', () => {
+      const { root } = renderComponent(<ProvenanceNote marks={[ProvenanceMark.YouTube]} sourceHandle={HANDLE} />);
+      expect(textOf(root)).toContain(t().recipes.originYoutubeDetailLabel.replace('{handle}', HANDLE));
+      expect(root.findAll((n) => n.props['accessibilityRole'] === 'link')).toHaveLength(0);
+    });
   });
 
   it('draws nothing for a hand-written recipe', () => {

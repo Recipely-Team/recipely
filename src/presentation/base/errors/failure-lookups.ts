@@ -83,7 +83,7 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   refineInstructionRequired: 'chatbubble-ellipses-outline',
 
   importInvalidUrl: 'link-outline',
-  importNotInstagram: 'ban-outline',
+  importNotInstagram: 'link-outline',
   importFetchFailed: 'cloud-download-outline',
   importDurationExceeded: 'time-outline',
   importNoRecipeFound: 'search-outline',

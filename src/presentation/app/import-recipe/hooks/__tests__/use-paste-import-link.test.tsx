@@ -67,7 +67,7 @@ describe('usePasteImportLink', () => {
 
   it('explains a wrong link through the same failure the backend would have sent', () => {
     const vm = drive();
-    act(() => vm().onChangeValue('https://www.youtube.com/watch?v=abc'));
+    act(() => vm().onChangeValue('https://x.com/chef/status/1'));
 
     act(() => {
       vm().submit();

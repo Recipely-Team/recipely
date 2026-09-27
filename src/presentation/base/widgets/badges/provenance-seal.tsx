@@ -20,6 +20,11 @@ export interface ProvenanceSealProps {
    * paste field's "TikTok link", the import card's list of what it accepts.
    */
   label?: string;
+  /**
+   * A row that lists what an import accepts, beside copy that already says it:
+   * hidden from assistive tech and given no tooltip, so nothing is read twice.
+   */
+  decorative?: boolean;
 }
 
 /**
@@ -39,7 +44,7 @@ export interface ProvenanceSealProps {
  *   which on web shows the same phrase as a bubble — on a card the seal is the
  *   only place the fact lives.
  */
-export const ProvenanceSeal = ({ marks, surface, size, label: override }: ProvenanceSealProps): React.JSX.Element | null => {
+export const ProvenanceSeal = ({ marks, surface, size, label: override, decorative = false }: ProvenanceSealProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
@@ -48,31 +53,38 @@ export const ProvenanceSeal = ({ marks, surface, size, label: override }: Proven
   const pair = marks.length > ValueConstants.one;
   const label = override ?? provenanceLabel(marks);
 
+  const face = (
+    <View
+      accessibilityElementsHidden={decorative}
+      importantForAccessibility={decorative ? 'no-hide-descendants' : 'auto'}
+      style={[
+        styles.seal,
+        onPhoto ? shadows.md : shadows.sm,
+        {
+          height: size,
+          minWidth: size,
+          gap: Math.round(size * m.gapShare),
+          paddingHorizontal: pair ? Math.round(size * m.pairPaddingShare) : ValueConstants.zero,
+          borderWidth: onPhoto ? m.ringOnPhoto : m.ringOnPage,
+          borderColor: onPhoto ? BrandColors.sealRing : colors.cardBorder,
+        },
+      ]}
+    >
+      {marks.map((mark, i) => (
+        <Fragment key={mark}>
+          {i > ValueConstants.zero ? (
+            <View style={[styles.divider, { height: Math.round(size * m.dividerHeightShare) }]} />
+          ) : null}
+          <ProvenanceGlyph mark={mark} size={glyph} />
+        </Fragment>
+      ))}
+    </View>
+  );
+  if (decorative) return face;
+
   return (
     <HoverTooltip label={label} accessibilityLabel={label}>
-      <View
-        style={[
-          styles.seal,
-          onPhoto ? shadows.md : shadows.sm,
-          {
-            height: size,
-            minWidth: size,
-            gap: Math.round(size * m.gapShare),
-            paddingHorizontal: pair ? Math.round(size * m.pairPaddingShare) : ValueConstants.zero,
-            borderWidth: onPhoto ? m.ringOnPhoto : m.ringOnPage,
-            borderColor: onPhoto ? BrandColors.sealRing : colors.cardBorder,
-          },
-        ]}
-      >
-        {marks.map((mark, i) => (
-          <Fragment key={mark}>
-            {i > ValueConstants.zero ? (
-              <View style={[styles.divider, { height: Math.round(size * m.dividerHeightShare) }]} />
-            ) : null}
-            <ProvenanceGlyph mark={mark} size={glyph} />
-          </Fragment>
-        ))}
-      </View>
+      {face}
     </HoverTooltip>
   );
 };
