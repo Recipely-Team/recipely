@@ -18,4 +18,10 @@ export const ApiLimits = {
    * Matches `SCREEN_CONTEXT_MAX` in the backend's assistant validator.
    */
   assistantScreenContext: 800,
+  /**
+   * The install id sent with a login and the device heartbeat. Matches
+   * `DeviceContextBodySchema.deviceId` in the backend's auth validator; a stored
+   * id past it is replaced rather than sent to be refused.
+   */
+  deviceId: 128,
 } as const;

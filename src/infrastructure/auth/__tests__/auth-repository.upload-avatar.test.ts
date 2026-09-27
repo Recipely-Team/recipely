@@ -5,6 +5,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import { AVATAR_UPLOAD_URL } from '@infrastructure/constants/api/api-hosts';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
@@ -77,7 +78,7 @@ describe('AuthRepository.uploadAvatar', () => {
     const current = buildCurrentSession();
     const { http, calls } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(current));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -100,7 +101,7 @@ describe('AuthRepository.uploadAvatar', () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const { storage, saved } = makeStorage(ok(buildCurrentSession()));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -113,7 +114,7 @@ describe('AuthRepository.uploadAvatar', () => {
   it('returns UnauthorizedFailure when there is no current session and does not save', async () => {
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(null));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -126,7 +127,7 @@ describe('AuthRepository.uploadAvatar', () => {
     const failure = new UnknownFailure('Failed to read session');
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(fail(failure));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 

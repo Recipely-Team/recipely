@@ -2,6 +2,7 @@ import { NetworkFailure, UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
@@ -34,7 +35,7 @@ describe('AuthRepository.deleteAccount', () => {
   it('DELETEs /me and clears local storage on success', async () => {
     const { http, calls } = makeHttp(ok(undefined));
     const { storage, clear } = makeStorage();
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.deleteAccount();
 
@@ -47,7 +48,7 @@ describe('AuthRepository.deleteAccount', () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const { storage, clear } = makeStorage();
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.deleteAccount();
 
@@ -60,7 +61,7 @@ describe('AuthRepository.deleteAccount', () => {
     const failure = new UnknownFailure('Failed to clear session');
     const { http } = makeHttp(ok(undefined));
     const { storage } = makeStorage(fail(failure));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.deleteAccount();
 

@@ -41,6 +41,12 @@ import { LocaleService } from '@application/i18n/locale-service';
 import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
 import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
 
+import { randomUUID } from 'expo-crypto';
+import Constants from 'expo-constants';
+import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-identity';
+import { DeviceRepository } from '@infrastructure/device/device-repository';
+import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
+import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
@@ -60,6 +66,13 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   // Platform key-value store + local notification / alarm-audio services,
   // resolved by presentation/application consumers through their ports.
   container.register(TOKENS.KeyValueStore, () => kvStore);
+  const deviceIdentity = new StoredDeviceIdentity(
+    kvStore,
+    randomUUID,
+    currentDevicePlatform(),
+    Constants.expoConfig?.version ?? null,
+  );
+  container.register(TOKENS.DeviceIdentity, () => deviceIdentity);
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
@@ -122,8 +135,17 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
 
   container.register(TOKENS.AuthRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new AuthRepository(http, storage);
+    return new AuthRepository(
+      http,
+      storage,
+      container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
+    );
   });
+
+  container.register(
+    TOKENS.DeviceRepository,
+    () => new DeviceRepository(container.resolve<HttpClient>(TOKENS.HttpClient)),
+  );
 
   container.register(TOKENS.RecipeRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
