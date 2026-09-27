@@ -34,4 +34,6 @@ export interface RecipeSummaryEntityProps {
   sourcePlatform: SourcePlatformType | null;
   /** Whether a model produced the text. A card can show both marks at once. */
   aiWritten: boolean;
+  /** How many photos the recipe has; `0` from a server that does not send it, which hides the card chip. */
+  photoCount: number;
 }

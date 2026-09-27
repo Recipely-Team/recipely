@@ -9,6 +9,7 @@ import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const makeRecipe = (): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: 'r1',
     name: 'Stub Recipe',
     image: 'https://cdn.example.com/r1.webp',

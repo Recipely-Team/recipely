@@ -49,6 +49,7 @@ const fakeLoadFavorites: LoadFavoritesUseCase = {
 /** Minimal saved-recipe row — only its id matters to these tests. */
 const makeSummary = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: 'https://cdn.example.com/r.webp',

@@ -1,5 +1,8 @@
-import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
+import { toRecipe, toRecipeSummary } from '@infrastructure/recipes/recipe-mapper';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
+import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
+import { MediaType } from '@domain/recipes/media/media-type';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
@@ -95,5 +98,50 @@ describe('toRecipe — nutrition', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.nutritionFacts.servingWeightGrams).toBeUndefined();
+  });
+});
+
+describe('photo count — the card chip', () => {
+  const listDto: RecipeListItemDto = {
+    id: 'r1',
+    name: 'Classic Margherita Pizza',
+    image: 'https://cdn.recipely.io/recipe-images/1.webp',
+    cuisine: CuisineKey.Italian,
+    category: RecipeCategory.Dinner,
+    difficulty: Difficulty.Easy,
+    rating: 4.6,
+    moderationStatus: 'approved',
+    likeCount: 0,
+    likedByMe: false,
+    commentCount: 0,
+    viewCount: 0,
+  };
+
+  it('carries the list row mediaCount into the summary', () => {
+    const r = toRecipeSummary({ ...listDto, mediaCount: 4 });
+
+    expect(r.ok && r.value.photoCount).toBe(4);
+  });
+
+  it('reads an older server that sends no mediaCount as zero, which hides the chip', () => {
+    const r = toRecipeSummary(listDto);
+
+    expect(r.ok && r.value.photoCount).toBe(0);
+  });
+
+  it('counts a full recipe the way the detail hero does when it is patched into a list', () => {
+    const r = toRecipe({
+      ...fullDto,
+      media: [
+        { id: 'a', position: 0, type: MediaType.Image, url: 'https://cdn.recipely.io/a.webp' },
+        { id: 'b', position: 1, type: MediaType.Video, url: 'https://cdn.recipely.io/b.mp4' },
+        { id: 'c', position: 2, type: MediaType.Image, url: 'https://cdn.recipely.io/c.webp' },
+      ],
+    });
+    if (!r.ok) throw new Error('fixture recipe invalid');
+
+    const summary = recipeToSummary(r.value);
+
+    expect(summary.ok && summary.value.photoCount).toBe(2);
   });
 });

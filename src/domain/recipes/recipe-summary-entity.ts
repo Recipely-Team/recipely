@@ -88,6 +88,10 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   get aiWritten(): boolean {
     return this.props.aiWritten;
   }
+  /** The cover's photo-count chip; drawn only from two up. */
+  get photoCount(): number {
+    return this.props.photoCount;
+  }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
   get provenanceMarks(): readonly ProvenanceMarkType[] {
     return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);

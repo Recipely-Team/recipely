@@ -32,4 +32,6 @@ export interface RecipeListItemDto {
   sourcePlatform?: string | null;
   /** Whether a model produced the text — true for a generation AND an import. */
   aiWritten?: boolean;
+  /** The recipe's photos — gallery images, or 1 for a lone cover. Absent from a server that predates it. */
+  readonly mediaCount?: number;
 }

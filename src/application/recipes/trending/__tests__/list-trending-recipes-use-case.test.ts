@@ -12,6 +12,7 @@ const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
 ): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: 'r1',
     name: 'Stub Recipe',
     image: 'https://cdn.example.com/r1.webp',

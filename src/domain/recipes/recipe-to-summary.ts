@@ -33,5 +33,6 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     origin: recipe.origin,
     sourcePlatform: recipe.sourcePlatform,
     aiWritten: recipe.aiWritten,
+    photoCount: recipe.photoCount,
   });
 };

@@ -16,6 +16,7 @@ jest.mock('@expo/vector-icons', () => {
 });
 
 const recipe = RecipeSummaryEntity.create({
+  photoCount: 0,
   id: 'r1',
   name: 'Trending Trending Pasta',
   image: '',
