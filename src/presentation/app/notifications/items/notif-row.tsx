@@ -16,6 +16,7 @@ const actionText = (n: NotifItem): string => {
     case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
     case 'ai_done': return labels.aiDoneLabel;
     case 'import_done': return labels.importDoneLabel;
+    case 'import_failed': return labels.importFailedLabel;
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;

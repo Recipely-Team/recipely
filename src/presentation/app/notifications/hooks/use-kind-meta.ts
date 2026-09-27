@@ -10,6 +10,7 @@ export const useKindMeta = (kind: NotifKind): KindMeta => {
     favorite: { icon: 'bookmark', color: colors.primary },
     ai_done: { icon: 'sparkles-outline', color: colors.primary },
     import_done: { icon: 'logo-instagram', color: colors.primary },
+    import_failed: { icon: 'logo-instagram', color: colors.primary },
     moderation_approved: { icon: 'shield-checkmark-outline', color: colors.success },
     moderation_pending: { icon: 'alert-circle-outline', color: colors.warning },
     follow: { icon: 'person-add-outline', color: colors.primary },

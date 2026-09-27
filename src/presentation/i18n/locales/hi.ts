@@ -1013,6 +1013,7 @@ export const hi: Translations = {
     saved: 'ने सेव किया:',
     aiDoneLabel: 'AI ने आपकी रेसिपी पूरी कर दी',
     importDoneLabel: 'आपकी आयात की गई रेसिपी तैयार है',
+    importFailedLabel: 'आपका इम्पोर्ट नहीं हो सका',
     genericLabel: 'नई सूचना',
     modOk: 'ने आपकी रेसिपी मंज़ूर की:',
     modPending: 'यह रेसिपी समीक्षा में है:',

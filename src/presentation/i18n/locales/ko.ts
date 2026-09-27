@@ -1013,6 +1013,7 @@ export const ko: Translations = {
     saved: '저장했어요:',
     aiDoneLabel: 'AI가 레시피를 완성했어요',
     importDoneLabel: '가져온 레시피가 준비됐어요',
+    importFailedLabel: '가져오기에 실패했어요',
     genericLabel: '새 알림',
     modOk: '레시피를 승인했어요:',
     modPending: '검토 중인 레시피:',

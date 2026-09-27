@@ -1,6 +1,6 @@
 import type { NotificationEntity } from '@domain/notifications/notification-entity';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
-import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
+import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { TimeConstants, ValueConstants } from '@core/constants';
 
 /** The kinds this build knows how to draw; anything newer falls back to `generic`. */
@@ -10,6 +10,7 @@ const KNOWN_KINDS = new Set<NotifKind>([
   'favorite',
   'ai_done',
   'import_done',
+  'import_failed',
   'moderation_approved',
   'moderation_pending',
   'follow',
@@ -26,7 +27,7 @@ const SYSTEM_ACTOR = 'Recipely';
  */
 export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   id: notification.id,
-  kind: resolveKind(notification.type),
+  kind: resolveKind(notification),
   actor: notification.senderDisplayName ?? SYSTEM_ACTOR,
   recipeName: notification.recipeTitle ?? undefined,
   daysAgo: daysSince(notification.createdAt),
@@ -36,8 +37,15 @@ export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   target: notification.target,
 });
 
-function resolveKind(raw: string): NotifKind {
-  return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : 'generic';
+/**
+ * The server sends a failed import as `import_done` too, with neither a draft
+ * nor a recipe behind it; read as it came, the row told the user their recipe
+ * was ready and then went nowhere when tapped.
+ */
+function resolveKind(notification: NotificationEntity): NotifKind {
+  const raw = notification.type;
+  if (raw === NotifKind.ImportDone && notification.target === null) return NotifKind.ImportFailed;
+  return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : NotifKind.Generic;
 }
 
 /** Whole days, which is all the date grouping and the row's caption need. */

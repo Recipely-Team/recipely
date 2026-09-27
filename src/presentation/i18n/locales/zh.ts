@@ -1021,6 +1021,7 @@ export const zh = {
     saved: '收藏了',
     aiDoneLabel: 'AI 已完成你的食谱',
     importDoneLabel: '你导入的食谱已准备好',
+    importFailedLabel: '导入未成功',
     genericLabel: '新通知',
     modOk: '通过了你的食谱',
     modPending: '正在审核',
