@@ -15,11 +15,11 @@ stale, so it is never out of date. Reading it costs a fraction of rediscovering 
 For any non-trivial task in this repo, use the subagent team in `.claude/agents/`
 **without being asked** — the user should never have to say "use the agents." Each
 `*.md` file there is a Claude Code subagent (YAML frontmatter, auto-discovered); delegate
-with the matching `subagent_type` via the Agent tool. These agents also belong to the
-persistent team `recipely-team` (`~/.claude/teams/recipely-team/config.json`) — pass
-`team_name: "recipely-team"` when spawning or messaging so context persists across calls.
-Skip the team only for genuinely trivial one-liners (a typo, a version bump, a single-line
-config edit, a copy tweak). When in doubt, delegate.
+with the matching `subagent_type` via the Agent tool. (The team `recipely-team` in
+`~/.claude/teams/recipely-team/config.json` still exists, but current Claude Code ignores the
+Agent tool's `team_name`; use `SendMessage` to continue an agent.) Skip the team only for
+genuinely trivial one-liners (a typo, a version bump, a single-line config edit, a copy tweak).
+When in doubt, delegate.
 
 ### Token economy (mandatory — maximum work per token)
 
@@ -57,51 +57,43 @@ Every agent spawn starts cold and re-derives context; that is the expensive path
 - **Bug fix** → `ts-developer` or `rn-developer` (reproduce → minimal fix → regression test
   → guard + [`docs/regressions.md`](docs/regressions.md) row, per **rule 24**) → `code-reviewer`
 
-Both pipelines are subject to **Token economy** above: stages collapse into the lead or
-into a single implementer whenever the context is already in hand.
+Both pipelines are subject to **Token economy**: stages collapse into the lead or into a single
+implementer whenever the context is already in hand. `code-reviewer` blocks a behavioural fix that
+arrives without a test that fails without it. Match each agent's tools to the work (read-only for
+research/review); run agents in parallel when their files don't overlap.
 
-A bug fix is not finished at the fix. Rule 24 is what turns each one into something the
-gates catch on their own next time — `code-reviewer` blocks a behavioural fix that
-arrives without a test that fails without it.
+### Skills (`.claude/skills/`, loaded on demand)
 
-Match each agent's tool capabilities to the work: read-only agents for research/review,
-full-capability agents for implementation. Run agents in parallel when their files don't overlap.
+| Skill | Use when |
+|---|---|
+| `pr-flow` | committing, running the gates, opening a PR to `dev`, merging on green |
+| `bug-fix` | fixing reported wrong behaviour — the rule 24 steps |
+| `design-handoff` | anything with a visual surface — rule 28, prototype → spec → build → compare |
+| `new-screen` | adding, renaming or removing a route |
+| `i18n-copy` | adding or changing user-visible copy in the 14 locales |
+| `release` | `dev → main` release PR, backend cherry-pick promotion, dev APK/IPA markers |
+| `dev-db` | read-only dev Postgres queries and dev API logs over SSH |
+| `live-e2e` | the gated live specs in `recipely-tests` against dev |
+| `architecture-rules` | writing or reviewing `src/` code — which `architecture.md` section to read |
 
 ### End-to-end git flow (run the whole thing without asking)
 
 The user has authorized the full flow below **in this file**. Do not ask before branching,
 committing, pushing, opening a PR, or merging **to `dev`** — just execute and report. The
 only stops are explicit failures (lint / tsc / jest / check:structure red, `code-reviewer` requests
-changes, a merge conflict you can't safely resolve) and the Exceptions below.
+changes, a merge conflict you can't safely resolve) and the Exceptions below. Commands and
+details: the `pr-flow` skill.
 
 1. **Branch from `dev`**: `git checkout dev && git pull && git checkout -b <feat|fix|refactor|chore>/<name>`. Never edit `dev` or `main` directly.
 2. **Implement** via the agent pipeline above. Clear, atomic, conventional-commit messages (`feat(scope):`, `fix(scope):`, …).
 3. **Quality gate** — all must pass: `npm run lint`, `npx tsc --noEmit`, `npx jest` (at minimum the touched layer), `npm run check:structure`. Work is never "done" with a red gate.
 4. **`code-reviewer` must approve** before merge. If it requests changes, loop back to the developer agent; never merge over a blocked review.
 5. **Push and open a PR → `dev`**: `git push -u origin <branch>` then `gh pr create --base dev …`.
-6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull`.
+6. **Merge to `dev`**: `gh pr merge <pr> --squash --delete-branch`, then `git checkout dev && git pull` — only once CI is green.
 7. **Report** the PR # and the merged commit. Stop.
 
-### Dev mobile builds are opt-in
-
-A merge to `dev` does **not** ship an Android/iOS build. Lint, typecheck, tests and the
-dev web deploy (dev.recipely.net) still run on every dev push; the Gradle APK and the
-macOS IPA only run when explicitly asked for — the user gives the order, you never add
-the flag on your own initiative:
-
-- **Flag the merge commit**: a marker (both platforms / android-only / ios-only) in the
-  **subject line** of the squash-merge commit — i.e. the PR title. Only the first line is
-  scanned: the body used to be read too, and a commit whose body merely EXPLAINED what the
-  markers do asked for both builds and shipped an IPA nobody wanted. Writing about a
-  marker in the body is inert, which is what lets this paragraph exist.
-- **Or trigger by hand**: `gh workflow run ci.yml --ref dev -f android=true`. The
-  `ios` input defaults to **false** — an iOS dev IPA is only built when you pass
-  `-f ios=true` explicitly. It used to default to true, and an Android-only
-  dispatch shipped an IPA nobody asked for.
-
-`IOS_CI_ENABLED` (repo variable) remains the iOS kill switch — `0` pauses iOS builds even
-when one is requested. Production (`main`) distribution is unchanged: every push to `main`
-tags a version and ships to Play internal + TestFlight.
+**Dev mobile builds are opt-in**: never put a dev-build marker in a PR title or dispatch a dev
+APK/IPA unless the user asks for one (`release` skill).
 
 ### Exceptions (stop and ask)
 
@@ -111,19 +103,22 @@ tags a version and ships to Play internal + TestFlight.
 
 ## Commands
 
-- `npm start` / `npx expo start` — start the Expo dev server (Metro).
+- `npm start` / `npx expo start` — start the Expo dev server (Metro). `npm run start:dev` / `web:dev` use the dev variant.
 - `npm run ios` / `npm run android` / `npm run web` — launch on a specific target.
 - `npm run lint` — run `expo lint` (ESLint via `eslint-config-expo`).
 - `npx tsc --noEmit` — type-check the project.
 - `npx jest` — run all tests (Jest via `jest-expo`).
+- `npm run check:structure` — the structure gate (rule 16); `npm run map` — regenerate `PROJECT-MAP.md`.
+- `npm run build:web` — static web export plus its post-export assertions.
 
 ## Architecture
 
-Recipely is an Expo SDK 55 + React Native 0.83 + React 19.2 app using **DDD / Clean Architecture** with **expo-router** file-based routing. See `architecture.md` for the full structure and coding rules.
+Recipely is an Expo SDK 57 + React Native 0.86 + React 19.2 app using **DDD / Clean Architecture** with **expo-router** file-based routing. See `architecture.md` for the full structure and coding rules.
 
 TypeScript is strict. All five layers live under `src/`; the `@layer/*` aliases point at
 `src/<layer>/`, `@/*` maps to the repo root, and `@assets/*` maps to the root `assets/`
 folder (asset requires are centralised in `src/infrastructure/constants/assets.ts`).
+Entry point is `expo-router/entry` (set in `package.json` `main`). App config lives in `app.json`.
 
 ### Layers (top to bottom)
 
@@ -142,523 +137,138 @@ folder (asset requires are centralised in `src/infrastructure/constants/assets.t
 - `src/core/` — `Result<T,F>`, `Failure` hierarchy, `BaseEntity`, the DI `Container`. Building
   blocks only — the DI token list is composition knowledge and lives in `application/di/`.
 
-### Mandatory coding standards (see `architecture.md` §Coding Standards for full detail)
+The backend is the separate `recipely-backend` repo (`architecture.md` §Backend); a UI change that
+needs a new field, route or filter usually needs a backend PR first.
 
-These rules apply to every agent and every contributor. A `code-reviewer` agent must flag any violation as
-blocking.
+## Mandatory coding standards
 
-1. **One declaration per file** — one EXPORTED class, interface, type alias, or component per
-   `.ts`/`.tsx` file. The rule is about what a file publishes, so three things are exempt:
-   barrel `index.ts` files, a component's `Props` interface, and any **non-exported** type.
+Every agent and contributor; `code-reviewer` flags any violation as blocking. Each rule is stated
+here in short. **The full text — incidents, rationale, examples — is under the same number in
+[`architecture.md` → CLAUDE.md rule rationale](architecture.md#claudemd-rule-rationale)** (`### Rule N`);
+read it before changing code a rule guards. Rule numbers are cited by scripts, agents and docs: keep them stable.
 
-   A parameter shape only its own class or hook ever names is a private detail of that
-   declaration. Giving it a file of its own (`use-x-args.ts`, `x-store-deps.ts`,
-   `x-input.ts`) spread one unit of meaning across two or three files and made nothing
-   easier to find — you still had to open the consumer to learn what it was for. Declare it
-   unexported, directly above its consumer. Export it the moment a second file needs it, and
-   it earns its own file again.
-   A factory does NOT get an alias for its own return type — `BoundStore<AuthStoreState>`
-   says what the handle is without a name to look up, so a store module exports exactly one
-   thing: its factory.
-
-2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities.
-   Pure stateless data transformers (mappers, formatters) are plain exported functions.
-
-3. **Comments live at the head of the thing they describe** — a class, hook, component or module
-   gets ONE doc block; the body gets as close to none as the code allows.
-
-   The head block carries the reasoning, under `@remarks` bullets with a bolded label so a
-   reader can find the one that concerns them:
-
-   ```ts
-   /**
-    * Orchestrates the recipe-list screen.
-    *
-    * @remarks
-    * - **Pull-to-refresh** — `isPullRefreshing` tracks only a user-initiated pull. Setting
-    *   `RefreshControl.refreshing` programmatically calls `beginRefreshing` on iOS, which
-    *   animates the list down and back — a visible jump on a filter tap.
-    * - **Stale answers** — rows are handed over only while they answer the query being asked.
-    */
-   ```
-
-   Inline `//` is for the line a reader would otherwise change and break, and then it is ONE
-   short line — never a paragraph, never a restatement of the code. A `use-recipe-list.ts` at
-   400 lines carrying 81 lines of interleaved commentary is not documented, it is obscured:
-   the reader cannot see the shape of the hook through the prose.
-
-   Trivial pass-throughs need nothing. If the signature says it, do not say it again.
-
-4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers. Complex screens
-   are split into sub-components in the same feature folder. No nested classes, no deep nesting (> 2 levels).
-
-5. **No magic values** — hex codes, pixel numbers, and string keys are forbidden outside constants files:
-   - Named literals (`''`, `0`, `,`, shared regexes, locale codes) → `@core/constants`
-   - **Any design measurement** (spacing, radii, font/icon/control/media sizes, opacity, tracking,
-     z-order, border widths, aspect ratios) → `@presentation/base/theme` — one module per purpose,
-     see `architecture.md` §5a
-   - Cross-cutting UI values that are NOT measurements (animation driver ranges, route paths)
-     → `@presentation/base/constants`
-   - A value only one page reads → that page's `model/`; only one shared widget reads → a sibling
-     file next to the widget. **The test is reuse, not type** — a number is not "a constant"
-     because it is a number.
-   - API endpoints / limits → `src/infrastructure/constants/api.ts`
-   - Storage keys → `src/infrastructure/constants/storage.ts`
-   - Colours → `src/presentation/base/theme/colors/palette/themes.ts`
-
-   **A vocabulary is defined once and referenced everywhere else.** A word the app
-   discriminates on — a store status, an error code, a platform, a role, a notification
-   kind — gets ONE const-object definition and every other site points at it, including
-   the discriminated union that consumes it (`| { status: typeof StoreStatus.Loaded }`).
-   The test is whether the string appears twice: `'idle'` in eleven stores and
-   `Platform.OS === 'web'` in 33 files were each individually correct and could only ever
-   drift. Where the library already publishes the vocabulary (expo's `PermissionStatus`),
-   use theirs rather than re-spelling it. Sentences that populate `Failure.message` live in
-   `DiagnosticMessage` (`@core/failure`) — they are diagnostics, never user copy, but that
-   is not a licence to type them at the throw site. Narrowing questions about values the
-   app did not create go through `@core/guards/type-guards` rather than a hand-written
-   `typeof` — the `x !== null` half of `typeof x === 'object'` is the half a reader skims,
-   and `typeof null` is `'object'`. **Enforced mechanically** by `check:structure` (rule P).
-
-   **This applies to presentation too.** A screen's own vocabulary — which sheet is open,
-   which field has focus, which provider a button signs in with — is a const object in that
-   page's `model/`, not a literal compared against a `useState<string | null>`. That type
-   accepted any string, so a mistyped field name compiled and simply never highlighted
-   anything.
-
-   **`@core/constants` is the default for structural literals.** New code writes
-   `CharConstants.empty` instead of `''` and `ValueConstants.zero` instead of a standalone `0`
-   (`useState(CharConstants.empty)`, `items.length === ValueConstants.zero`, `arr[ValueConstants.zero]`).
-   A regex used by more than one file goes in `RegexConstants` rather than being re-declared.
-   **Raw number sequences (`[0, 500, 300]`, gradient stops, animation ranges) are forbidden in
-   components** — name the whole array in a constants file, never half-substitute it. UI values go
-   in `@presentation/base/constants`, not core; values needed by infrastructure go in
-   `src/infrastructure/constants/` (presentation is unreachable from there).
-   Full rules and the type-widening rationale: `architecture.md` §5.
-
-6. **StyleSheet.create() for static styles** — inline style objects are forbidden for static values.
-   Dynamic portions may be inline; combine with `[styles.base, { color: dynamic }]`.
-
-6b. **Responsive sizing** (full rules: `architecture.md` §5a) — blocking rules:
-   - `minHeight`, never `height`, on any box that contains text. A pinned height is for *shapes*
-     (circular buttons, avatars, media boxes) only.
-   - Never write an absolute `lineHeight`. RN scales `fontSize` by the OS font setting and does
-     NOT scale `lineHeight`, so a fixed one clips at large accessibility sizes. Use
-     `useTextLineHeight` (rendered text) or `lineHeightFor` (StyleSheet entries).
-   - Prefer `aspectRatio` over a pinned image height. **A max-height and a ratio cannot both
-     hold** — past `maxHeight x ratio` the ratio is what breaks, which turned the home hero into a
-     2.6:1 letterbox on a wide window. Cap the **width** (`maxWidth = maxHeight x ratio`) and let
-     the ratio derive the height. Express the bound as a share of the viewport
-     (`layoutSizes.heroViewportShare`), not a pixel count, whenever the box competes with the fold.
-   - **Divide by proportion; pin nothing.** A row declares its split in flex weights and its shape
-     in ONE ratio; every height follows. Two siblings that each carry a size will disagree — a
-     ratio-sized card beside `minHeight`-sized ones left the row ragged along the bottom.
-   - **Reading and browsing do not share a width cap.** A cap protects line length, so
-     `recipeDetail`/forms stay narrow while grids cap far wider; sharing one froze the feed at three
-     columns from 1200px to 4K. And the layout must apply the SAME cap the item maths assumes —
-     three constants that disagreed shipped a feed with no gutter at all.
-   - Multi-line fields use `AutoGrowTextInput` (`base/widgets/inputs/`) — a bare `multiline`
-     `TextInput` becomes a fixed-height `<textarea>` with a scrollbar on web.
-   - `maxFontSizeMultiplier` only where a shape genuinely cannot grow (digits in a badge); it
-     overrides an accessibility setting, so making the box flexible always comes first.
-
-6b2. **Name the capability, not the platform.** `isWebShell` answered two questions at once — *is
-   there room for the wide layout* and *is the browser chrome mounted* — and 38 files asked it. An
-   iPad answers yes to the first and no to the second, so the tablet shipped the phone layout
-   stretched across 13 inches. It is now `isExpanded` (pure width: grids, columns, content caps,
-   centred dialogs) beside `isWebShell` (browser chrome only: the sticky header, the absent TabBar
-   and safe-area insets). **Ask each call site which one it means** — the tablet keeps its native
-   chrome, so the TabBar, the app header and the safe-area paddings stay on `isWebShell`, and so do
-   the web header's search and sort fields, because moving those would have made sort unreachable
-   on iPad.
-
-   Because the breakpoint is pure width, a Split View pane drops back to the phone layout on its
-   own — a device check would not have managed that. **A boolean whose name describes a PLATFORM
-   will be asked questions about SIZE, and it answers them wrong on the first device that is one
-   without the other.**
-
-6c. **No `removeClippedSubviews`** — the prop detaches and re-attaches child views
-   directly in the native hierarchy, outside React's reconciliation. The New
-   Architecture does not tolerate that: the app died with
-   `IllegalStateException: addViewAt: failed to insert view [332] into parent [338]`
-   thrown from `ReactClippingViewManager.addView` — the class that exists to
-   implement this prop. It was set on the recipe feed, which is not even the
-   screen that crashed: it is the screen UNDERNEATH. A share intent pushes the
-   import over `/recipes`, so when the stack transition to the draft editor
-   finished, the feed re-laid-out, recalculated its clipping, and handed Fabric a
-   child it had already parented elsewhere. Opening the same draft from My
-   Recipes never crashed, because a different list sits under that route.
-
-   `FlatList`'s own windowing — `windowSize`, `maxToRenderPerBatch`,
-   `initialNumToRender` — is the supported way to bound how many rows stay
-   mounted, and it was already tuned on the one list that carried this.
-   **Enforced mechanically** by `check:structure` (rule R).
-
-7. **Component props interface** — every component's props typed as `ComponentNameProps`, exported,
-   placed above the component in the same file.
-
+1. **One declaration per file** — one EXPORTED class, interface, type alias or component per `.ts`/`.tsx`.
+   Exempt: barrel `index.ts`, a component's `Props` interface, non-exported types. A shape only its own
+   consumer names stays unexported above it; a factory gets no alias for its return type (a store module
+   exports only its factory, typed `BoundStore<XState>`). `check:structure` rule A.
+2. **Class vs. function** — classes for use cases, repositories, HTTP clients, storage, domain entities;
+   stateless mappers/formatters are plain exported functions.
+3. **Comments live at the head of the thing they describe** — ONE doc block per class/hook/component/module
+   with `@remarks` bullets and a bolded label; inline `//` only for the line a reader would otherwise break,
+   one short line. Trivial pass-throughs need nothing.
+4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers; split complex screens
+   into sub-components in the feature folder; no nested classes, no nesting > 2 levels.
+5. **No magic values** — named literals → `@core/constants` (`CharConstants.empty`, `ValueConstants.zero`,
+   `RegexConstants`); design measurements → `@presentation/base/theme`; other cross-cutting UI values →
+   `@presentation/base/constants`; one page's value → its `model/`; API → `src/infrastructure/constants/api.ts`;
+   storage keys → `src/infrastructure/constants/storage.ts`; colours → `src/presentation/base/theme/colors/palette/themes.ts`.
+   The test is reuse, not type. A vocabulary (status, error code, platform, role, a screen's own states) is ONE
+   const object referenced everywhere; `Failure.message` sentences live in `DiagnosticMessage` (`@core/failure`);
+   narrowing unknown values goes through `@core/guards/type-guards`; no raw number sequences in components.
+   `check:structure` rules P and Y.
+6. **StyleSheet.create() for static styles** — inline objects only for dynamic values: `[styles.base, { color: dynamic }]`.
+6b. **Responsive sizing** — `minHeight`, never `height`, on boxes with text; never an absolute `lineHeight`
+   (`useTextLineHeight` / `lineHeightFor`); `aspectRatio` over pinned image heights, capping **width** not
+   height; divide by flex proportion; reading and browsing caps differ; multi-line fields use
+   `AutoGrowTextInput`; `maxFontSizeMultiplier` only where a shape cannot grow. `check:structure` rule H.
+6b2. **Name the capability, not the platform** — `isExpanded` (pure width: grids, columns, caps, centred
+   dialogs) vs `isWebShell` (browser chrome only: sticky header, no TabBar, no safe-area insets, header
+   search/sort). Ask each call site which one it means.
+6c. **No `removeClippedSubviews`** — it re-parents views behind Fabric and crashed the app; bound mounted rows
+   with `FlatList`'s `windowSize` / `maxToRenderPerBatch` / `initialNumToRender`. `check:structure` rule R.
+7. **Component props interface** — `ComponentNameProps`, exported, above the component in the same file.
 8. **Custom hooks** — prefix `use`, one hook per file, no store state passed as props.
-
 9. **FlatList keyExtractor** — always stable, never the array index for mutable lists.
-
-10. **Accessibility** — every `Pressable` / `TouchableOpacity` must have `accessibilityRole` and
-    `accessibilityLabel` (when the visual label is not plain text).
-
-11. **i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`. Minimum en + tr in sync.
-
+10. **Accessibility** — every `Pressable` / `TouchableOpacity` has `accessibilityRole`, and
+    `accessibilityLabel` when the visual label is not plain text.
+11. **i18n** — all user-visible strings via `t()` from `src/presentation/i18n/`; every locale in sync
+    (`i18n-copy` skill).
 12. **Error handling** — `Result<T, Failure>` everywhere; no thrown exceptions in domain / application code.
-
-13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g., `kv-store`).
-    Shared types between the pair live in one separate file — never declared twice.
-
-14. **File placement** — a module lives where its CONSUMERS put it: read by one page → that page's
-    folder; read by two or more pages → `base/`. The root layout is NOT a page — global shell chrome
-    it mounts (tab bar, toast host, web header, timers bar, splash) stays in `base/widgets/`.
-    Each routed page owns `src/presentation/app/<segment>/` with its route component in
-    `index.tsx` and parts in `body/` / `items/` / `sheets/` / `hooks/` / `model/` / `__tests__/` subfolders
-    (co-located files MUST sit in one of those folders — `check:structure` enforces it); shared widgets live
-    in a `src/presentation/base/widgets/<category>/` folder (never loose at the widgets root); a widget used by
-    only one page lives in that page's folder. Types extracted from a page file go to that page's `model/`;
-    in `base/*` they become a sibling file. New routes are always `app/<segment>/index.tsx` — a flat
-    `app/<segment>.tsx` will NOT register.
-
-14b. **Feature folders below presentation** — `domain/` / `application/` / `infrastructure/` feature
-    folders are grouped **by capability**, not left flat and not grouped by kind: `recipes/create/`,
-    `recipes/list/`, `recipes/taxonomy/` — never `recipes/use-cases/` or `recipes/stores/`. Each
-    capability folder holds its use case + state + store + deps + DTOs and its own `__tests__/`.
-    What the aggregate root owns (the entity, its repository interface, the main mapper) stays at
-    the feature root. Capability names match across layers. No per-capability barrel — imports stay
-    explicit deep paths. Split a feature folder once it passes ~a dozen files. See `architecture.md` §13a.
-
-14c. **Folders stay scannable — the 10 / 15 rule** — counting only the files DIRECTLY in a folder
-    (subfolders are the fix, not part of the count): **≤10 fine**, **11–15 soft limit** (the gate
-    prints a warning; find a grouping before adding another file), **>15 blocking** — split it.
-    `__tests__/` / `__fixtures__/` / `__mocks__/` are exempt: they mirror the code they cover.
-    The soft tier exists because some flat lists are forced by another rule (rule 1 puts one
-    `Failure` subclass per file), so whether a split helps is a human judgement, not a file count.
-    **Split by what files are FOR, never by what they ARE**: `tokens/sizing|typography|effects`, not
-    `tokens/objects|functions`; `model/taxonomy|validation|drafting`, not `model/types|helpers`.
-    Same principle as 14b — capability, not kind. See `architecture.md` §4a.
-
-15. **Imports** — always the `@layer/...` alias (`@presentation/...`, `@domain/...`, …). Relative `./`
-    imports are allowed only inside barrel `index.ts` files. Layer line: presentation → application/domain/core,
-    never infrastructure (exceptions: `src/infrastructure/constants/*`, `src/presentation/bootstrap/`, `*/di/` wiring).
-
-15b. **Keep the map fresh** — `PROJECT-MAP.md` is generated. After moving, adding or deleting
-    files, run `npm run map`; `check:structure` rule J blocks on a stale map. Never hand-edit it.
-
-16. **Structure gate** — `npm run check:structure` enforces rules 1, 6b (absolute `lineHeight`, bare
-    `multiline`), 8 (one hook per file), 14 (co-location + categorized widget roots), 14c (folder
-    file count), 15 (alias imports + the layer line), 15b (map freshness), 18 (`.tsx` over 300
-    lines), 21 (entity naming AND `*Interface` port naming), 22 (unguarded `console.*`),
-    23 (hand-rolled bottom sheets), 23b (`Modal` without `statusBarTranslucent`),
-    23c (background-audio capability), 25 (a routed screen with no analytics
-    name), 24 (rule AB: a screen that registers a screen line but no reading, so
-    `readScreen` has nothing to say about it; rule AC: an overlay pinned to the bottom edge
-    that takes typing but never reads the keyboard), 27 (rule AD: a library package that
-    imports from the app or names it), and the one-definition-per-vocabulary half of rule 5 (rule P) mechanically and must be green before any commit/PR. Its
-    `KNOWN_DEBT` list only shrinks; never add to it without user approval. **New rules land
-    here from rule 24** — a bug that a mechanical check could have caught should leave one
-    behind.
-
-17. **Ports over direct infrastructure** — presentation/application consume infrastructure capabilities
-    (storage, notifications, audio, …) ONLY through port interfaces resolved via DI, following the
-    repository-interface pattern (Evans 2003 p.55: infrastructure serves upper layers as SERVICES behind
-    interfaces). A new direct `@infrastructure` import is always blocking — never "temporarily" via
-    `KNOWN_DEBT`; that list only shrinks and its target is zero.
-
-18. **Smart-UI guard (screen size)** — a routed `index.tsx` is composition/orchestration only: target
-    ≤ ~200 lines, zero business rules. Any `.tsx` over 300 lines is a blocking review finding (i18n
-    dictionaries exempt). A business rule discovered while editing UI moves down to application/domain
-    in the same PR — it never stays in the component (Evans 2003 p.57, Smart UI anti-pattern).
-
-19. **OOP & rich domain** — behavior lives with the data it belongs to: invariants and derivations are
-    entity / value-object methods (the `RecipeEntity.create()` pattern), not helper functions scattered in
-    stores or components. Encapsulation is mandatory: `private` constructor + static `create(): Result`,
-    `private readonly` fields, no public setters. Entities carry only identity-intrinsic state —
-    viewer-dependent flags belong in read models, not new entity props (Evans 2003 p.67). A primitive
-    that forms a "conceptual whole" and carries rules is promoted to a Value Object instead of being
-    re-validated in two places (Evans 2003 p.71).
-
-20. **Aggregate boundaries** — every domain entity is declared root-or-member in the Aggregates table in
-    `architecture.md`; a PR adding an entity must update that table. Cross-aggregate references are by
-    id only, never object references (Evans 2003 p.89-93).
-
-21. **Naming suffixes** — three conventions keep declarations self-describing:
-    - **Port interfaces** — a contract the domain declares and infrastructure implements is named
-      `*Interface` and lives in a `*-interface.ts` file (`RecipeRepositoryInterface` in
-      `recipe-repository-interface.ts`). The suffix goes at the END, spelled out: a leading `I`
-      is Hungarian notation that reads as noise at the point of use, and `i-` sorted every port
-      away from the thing it describes in a file listing. **Enforced mechanically** by
-      `check:structure` (rule O).
-    - **Entity props** — the shape an entity is built from is `<Entity>EntityProps` in a
-      `*-entity-props.ts` file (`RecipeEntityProps` in `recipe-entity-props.ts`). It is
-      exported (tests and mappers construct entities), so rule 1 gives it its own file;
-      `RecipeProps` next to `RecipeEntity` read as a different concept than it was.
-    - **Value objects** — a class wrapping a validated primitive extends `BaseValueObject`
-      (`@core/value-object`), which supplies value equality and `value`. It keeps its bare
-      name (`Email`, not `EmailValueObject`): the base class already says what it is, and
-      the suffix would repeat it at every use. Private constructor + static
-      `create(): Result`, same as an entity.
-    - **Entities** — a class extending `BaseEntity` is named `*Entity` and lives in a `*-entity.ts` file
-      (`RecipeEntity` in `recipe-entity.ts`). **Enforced mechanically** by `check:structure` (rule G).
-      Value objects (`Email`), DTOs and `*Props` interfaces are NOT entities and take no `Entity` suffix.
-    - **Bare type aliases** — a `type` alias that names a bare concept (a union/scalar shape with no
-      existing role word) ends with `Type`: `RecipeSortType`, `PhaseType`, `TabType`. This is **scoped, not
-      blanket** — do NOT suffix aliases that already carry a role word (`*Store`, `*State`, `*Status`,
-      `*Key`, `*Result`, `*Variant`, `*Callback`, …), names already ending in `Type` (`MediaType`), or core
-      primitives (`Result`, `Failure`). Because "bare concept" needs judgment, this half is enforced by
-      `code-reviewer`, not the structure gate. Mappers follow the `Mapper` / `RequestMapper` contracts
-      (architecture.md §Infrastructure), never a base class.
-
-22. **No unguarded `console.*`** — every `console.log/warn/error/info/debug` under `src/` must sit behind
-    `if (__DEV__)` (or an `enableLogging` option that is wired to `__DEV__`, as the HTTP client does).
-    **Enforced mechanically** by `check:structure` (rule K). Two reasons, both real:
-    - In a dev build an unguarded `console.error` / `console.warn` raises a **LogBox panel over the running
-      app**. A batch of leftover favorites tracing did exactly this and read as a production crash.
-    - In a **release** build the call still runs — it writes to logcat / Console.app instead of the screen —
-      so whatever you passed it leaks. The removed calls were logging user ids and saved-recipe ids.
-
-    Errors reach the user through `Result<T, Failure>` and the `failureContent` lookups (rule 12), never
-    through a log line. If a log is genuinely diagnostic, guard it; if it was scaffolding for a bug you
-    already fixed, delete it. Production error reporting is `recordCrash` (Crashlytics), not `console`.
-
-23. **Sheets and dialogs come from `base/widgets/`** — a modal is presented with
-    `BottomSheet` (or the `ConfirmSheet` / `FeedbackDialog` built on the same idea), never
-    with a hand-rolled `Modal`. That component is the single place that knows the
-    presentation is per shell: **a bottom sheet on mobile, a centred dialog on the web
-    shell**. A panel glued to the bottom edge of a desktop window has nothing to reach for
-    it, and its grabber promises a drag gesture a mouse never performs — so **there are no
-    modal bottom sheets on web**, and no screen re-decides that for itself.
-    **Enforced mechanically** by `check:structure` (rule L), which flags a `Modal` outside
-    `base/widgets/sheets/` that slides up or carries a top-only corner radius.
-
-23b. **Every `Modal` sets `statusBarTranslucent`** — without it an Android window in
-    edge-to-edge mode re-lays-out around the status bar as the modal opens, and the screen
-    underneath visibly jumps. `edgeToEdgeEnabled` is on, so this is not optional.
-    **Enforced mechanically** by `check:structure` (rule M). If you are writing a raw
-    `Modal` at all, re-read rule 23 first — the shared widgets already set it.
-
-23c. **No background-audio capability** — the app has no feature that plays audible
-    content while backgrounded, so `UIBackgroundModes: audio` must never reach the shipped
-    `Info.plist`. App Review rejected two builds over this (guideline 2.5.4). Deleting the
-    key from `app.json`'s `ios.infoPlist` does NOT achieve it: **`expo-audio`'s config
-    plugin defaults `enableBackgroundPlayback` to `true`** and re-adds the key on every
-    prebuild, so the config diff looks right while the artifact is unchanged. `expo-video`
-    does the same when `supportsBackgroundPlayback` / `supportsPictureInPicture` is on.
-    A timer finishing while the app is backgrounded is served by a scheduled local
-    notification, which is what Apple expects — not by holding an audio session open.
-    **Enforced twice**: `check:structure` (rule N) on the plugin options, and a CI step
-    that asserts on the *generated* Info.plist after `expo prebuild`. Config is not the
-    artifact; check the artifact.
-
-23c2. **HTTP verbs are methods, not strings** — call `http.get/post/put/patch/delete`;
-    `method: 'POST'` inside a config object made the verb a literal thirty-odd times over,
-    where a typo compiled and a wrong verb reached the backend. `request(config)` survives
-    for the rare call needing a full Axios config, and `RequestConfig` deliberately exposes
-    only `params` and `timeout` — a repository has no business swapping the adapter.
-
-23d. **A repository issues requests; it does not build them** — query parameters and
-    request bodies are named DTOs produced by a `RequestMapper`, never assembled inline
-    with a stack of `if`s. And **paging is a parameter, never a literal**: `page: 1`
-    written into a repository method meant the recipe feed fetched the first page for its
-    entire life and no type ever objected. A list endpoint takes the page from its caller,
-    returns the backend's envelope (`total` / `page` / `hasMore`), and its mapper is
-    covered by a test that asserts a requested page reaches the query — the test that was
-    missing when this shipped.
-
-23e. **An ad needs a screen with something on it** — a placement may only sit on
-    a screen showing content the user came to read. In this app that is the recipe
-    feed, and nothing else. Wait screens (the generate checklist, the import
-    queue), forms, auth and settings screens carry no publisher content, and an ad
-    on one is a policy violation rather than inventory — AdSense served notice on
-    recipely.net for exactly this. **The web shell never loads an ad script**:
-    `+html.tsx` wraps every route, so a loader there runs on `/login`,
-    `/settings` and `/verify-code` too, and since the site declares no unit of
-    its own, every ad it served was an Auto Ad on one of those pages. A web ad
-    is added to the page that earned it — the site now declares ONE AdSense
-    display unit and the feed is where it sits, with the loader fetched by
-    `mountAdsenseUnit` alongside the `<ins>` it serves so the script cannot
-    reach a page that has no ad on it. **Enforced mechanically** by
-    `check:structure` (rule T), whose placement allowlist is a one-line diff
-    someone has to justify.
-
-23f. **Every route is publisher content or is hidden from crawlers** — rule 23e
-    governs where an ad SITS; this governs what Google can reach, and the notice
-    is judged per site. The origin used to end its hosting config in a catch-all
-    rewrite, so every url on it — `/asdfqwer`, `/wp-admin`, `/login.php` —
-    answered **200** with the empty app shell: an unbounded supply of screens
-    with no content, which is the notice's own wording. So a route is in exactly
-    one of two states: listed in `public/sitemap.xml` (content), or `Disallow`ed
-    in `public/robots.txt` (a form, a wizard, an account page). Neither, or
-    both, fails the gate. A `[param]` route is content when its parent is listed
-    AND `firebase.json` rewrites it — a dynamic route with no rewrite answers
-    404 to a real visitor, the same mistake pointing the other way. Unknown
-    paths reach Firebase's `404.html`, which `emit-hosting-404.mjs` copies from
-    the app's own `+not-found` export. **Enforced mechanically** by
-    `assert-crawlable-surface.mjs`, in the `check:structure` chain.
-
-24. **A bug fix ships the test that would have caught it** — this is how the repo gets
-    harder to break instead of merely getting patched. Three steps, in order:
-
-    1. **Write the regression test.** It must fail against the unfixed code — a test that
-       passes either way documents nothing. Name it after the SYMPTOM the user saw
-       ("an ingredient row split 'yumurta' across the badge and the name"), not the
-       mechanism, and say in a comment what was wrong. The next reader is someone deciding
-       whether they may change that line.
-    2. **Ask whether a gate could have caught it.** Prefer, in this order: a
-       `check:structure` rule (mechanical, catches it in every future file — the exit
-       dialog's missing `statusBarTranslucent` is exactly this), a coding standard here, a
-       type that makes the state unrepresentable. Not everything qualifies; a race
-       condition does not become a lint rule.
-    3. **Record the CLASS, not the incident**, in [`docs/regressions.md`](docs/regressions.md)
-       — one line: symptom, root cause, what now prevents a recurrence. Git history already
-       holds the incident; that file holds the lesson, and it stays short enough to read in
-       one sitting.
-
-    Proportionality applies: a typo or a copy tweak needs none of this. A wrong behaviour a
-    user reported needs at least step 1. The goal is that the four gates — lint, `tsc`,
-    `jest`, `check:structure` — find the next one of these BEFORE anyone takes a build.
-
-25. **Every routed screen reports its own name to analytics** — a new
-    `app/<segment>/index.tsx` adds a row to `SCREEN_BY_PATH` in
-    `presentation/bootstrap/use-screen-tracking.ts`, named after the route's exported
-    component (`RecipeListScreen`), with the name itself in
-    `infrastructure/constants/analytics/analytics-screen.ts`. Skip it and the screen does
-    not go unnamed — it goes under the name the PLATFORM invents, which is one
-    `MainActivity` for all of Android and one shared `<title>` for the whole web export, so
-    it silently merges with every other unmapped screen. A screen name is a join key like
-    an event name: rename one only on purpose. Routes that render nothing but a `Redirect`
-    are excluded — a view logged for them counts an impression nobody had. The
-    two halves of the wrapper (`analytics-service.ts` / `.web.ts`) bind to
-    `AnalyticsServiceInterface`, because nothing else type-checks a platform pair
-    against itself: dropping a method from the web half compiled, linted and
-    passed every suite while the web build silently stopped reporting.
-    **Enforced mechanically** by `check:structure` (rule AA), which also holds
-    `firebase.json`'s automatic-screen-reporting switch off — with it on, Android
-    reports its one Activity alongside the real names.
-
-26. **Every file in the repo is written in English** — docs, plan boards, progress
-    notes, comments, doc blocks, test names, commit messages. The conversation
-    happens in Turkish and that is fine; the repository does not follow it. The
-    only Turkish in the tree is DATA, never prose: user-facing copy under
-    `src/presentation/i18n/locales/`, store metadata under `fastlane/metadata/tr/`,
-    and test fixtures whose purpose IS the non-ASCII behaviour — the envelope
-    parity vector exists precisely to fail a UTF-16 implementation, so replacing
-    its Turkish with ASCII would delete the test. The line is what the text is FOR:
-    a sentence explaining something is prose; a sentence being encoded is data.
-
-    This is not a style preference. `CLAUDE.md`, `architecture.md` and every
-    identifier in `src/` are English, so a Turkish document about them cannot be
-    grepped alongside the thing it describes — `docs/os-assistants-plan.md` spent
-    four phases describing `check:structure` rules that no search for "rule W"
-    would ever have turned up from it. A file that half the future readers of this
-    repo cannot read is a file that gets re-derived instead of read.
-
-    **A quotation is a citation, not prose.** An English sentence that quotes what
-    the user said (`"konuşurken beni dinlemiyor"`), the word the assistant hears
-    (`"beğen"`), or the copy a screen shows is doing its job — the evidence IS the
-    string, and paraphrasing it as "the Turkish word for like" would make the
-    comment worse. Do not "translate" those; a grep for Turkish characters finds
-    them and they are not what this rule is about.
-
-    **When editing a file that is still Turkish, convert the part you touch
-    rather than matching its language.** Remaining debt: the Turkish rows in
-    [`docs/regressions.md`](docs/regressions.md).
-
-27. **The assistant library is a separate repository** —
-    [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant),
-    published to npm as `@live-assistant/*`. This app is one of its consumers and
-    installs it like any other dependency: `core`, `gemini` and `audio`, because
-    it draws its own assistant UI and takes neither the widget nor the React
-    bindings.
-
-    **A change the library needs is a PR to that repository and a release**, the
-    same as the backend — the two repos ship independently, so never assume a
-    library export exists because the app wants it. Its own gates (lint,
-    typecheck, build, the suite, and a gate that packs every package and requires
-    what it packed) run there.
-
-    What belongs on each side is the line that made the split worth doing: the
-    library knows nothing of any app that installs it, and Recipely's specifics —
-    the backend's single `runAction` tool with an `action` word, its failure copy,
-    its token route — live in the app's ADAPTER under
-    `src/application/assistant/`, which is exactly the file every other
-    integrator writes. The first extraction shipped `runAction` inside the Gemini
-    adapter as if every consumer declared the same tool; a library that only fits
-    its first user is not a library.
-
-    `check:structure` rule AD stays, holding the same contract for any
-    `packages/` directory that reappears here: no `@layer/*` import, no relative
-    path out of its own folder, no file naming Recipely. It is inert while there
-    is none, which is the intended state.
-
-28. **Design happens in Claude Design first, and is checked back against it after** —
-    the prototype is the visual source of truth, not a document about it.
-
-    **The prototype:** [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html).
-    It carries the real screens (Onboarding, Login, Register, Reset, Recipes,
-    Detail, My Recipes, Create (AI + Manual), Profile, Notifs, Settings, IG paste
-    link, IG importing, Alarm, Search), and its TWEAKS panel switches platform
-    (Auto / Mobil / Web), mode (System / Light / Dark), language (English /
-    Türkçe) and the four theme palettes — so a design is reviewed in every
-    combination it will actually ship in, before a line of it is written.
-
-    Three steps, in this order, for anything with a visual surface — a new
-    screen, a new widget, a badge, a state nobody has drawn yet:
-
-    1. **Draw it in the prototype.** Not a description of it, not a token table:
-       the thing itself, on the screen it belongs to, in the prototype.
-    2. **Then write it down.** `src/presentation/design-spec.md` records the
-       tokens, the contrast measurements and the reasoning, so an implementer
-       does not have to re-derive them from pixels. The spec explains the
-       prototype; it does not replace it.
-    3. **Then build, and go back and compare.** Open the same screen in the
-       prototype beside the built one and check them against each other. "Tests
-       pass" is not the same claim as "it looks like the design."
-
-    **A written spec is not a design.** The provenance badge was specced into
-    `design-spec.md` and implemented from there without the prototype ever being
-    opened — a token table dressed up as a design decision. It may even have been
-    a good badge; it was not the designed one, and nobody could tell by looking at
-    the repo. If the prototype link is dead or missing, that is a reason to STOP
-    and ask for it, not a reason to substitute something else and call it the
-    design.
-
-    This is the mechanical half of a standing instruction that predates it —
-    *"designdan tasarımı al, kafana göre saçma tasarım yapma."* Inventing
-    measurements at the call site is the same fault whether it happens in a
-    component or in a markdown file.
+13. **Platform files** — `*.web.ts` / `*.ts` pairs use RN platform-extension resolution (e.g. `kv-store`);
+    types shared by the pair live in one separate file.
+14. **File placement** — a module lives where its CONSUMERS put it: one page → that page's folder
+    (`body/` `items/` `sheets/` `hooks/` `model/` `__tests__/`); two or more → `base/`. Root-layout shell
+    chrome stays in `base/widgets/`; shared widgets live in `base/widgets/<category>/`, never loose. New routes
+    are `app/<segment>/index.tsx` (`new-screen` skill). `check:structure` rules D and E.
+14b. **Feature folders below presentation** — grouped **by capability** (`recipes/create/`, `recipes/list/`),
+    never by kind; aggregate-root files stay at the feature root; no per-capability barrel; split past ~a dozen
+    files. `architecture.md` §13a.
+14c. **Folders stay scannable — the 10 / 15 rule** — direct files: ≤10 fine, 11–15 warning, >15 blocking
+    (`__tests__`/`__fixtures__`/`__mocks__` exempt). Split by what files are FOR, never what they ARE.
+    `check:structure` rule I; `architecture.md` §4a.
+15. **Imports** — always the `@layer/...` alias; `./` only inside barrel `index.ts`. Presentation → application/
+    domain/core, never infrastructure (except `src/infrastructure/constants/*`, `src/presentation/bootstrap/`,
+    `*/di/` wiring). `check:structure` rules B and C.
+15b. **Keep the map fresh** — after adding/moving/deleting files run `npm run map`; never hand-edit
+    `PROJECT-MAP.md`. `check:structure` rule J.
+16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It enforces rules 1,
+    6b, 8, 14, 14c, 15, 15b, 18, 21, 22, 23, 23b, 23c, 25, 24 (rules AB, AC and others), 27 (rule AD) and the
+    vocabulary half of rule 5 (rule P); the full letter list heads `scripts/check-structure.mjs`. `KNOWN_DEBT`
+    only shrinks; never add to it without user approval. New rules land here from rule 24.
+17. **Ports over direct infrastructure** — presentation/application reach infrastructure capabilities only
+    through port interfaces resolved via DI; a new direct `@infrastructure` import is always blocking, never
+    `KNOWN_DEBT`. (Evans 2003 p.55.)
+18. **Smart-UI guard (screen size)** — routed `index.tsx` is composition only (≤ ~200 lines, zero business
+    rules); any `.tsx` over 300 lines blocks (i18n dictionaries exempt); a business rule found in UI moves
+    down in the same PR. `check:structure` rule F.
+19. **OOP & rich domain** — invariants and derivations are entity / value-object methods; `private`
+    constructor + static `create(): Result`, `private readonly` fields, no public setters; viewer-dependent
+    flags go in read models; a rule-carrying primitive becomes a Value Object.
+20. **Aggregate boundaries** — every entity is root-or-member in the Aggregates table in `architecture.md`
+    (a PR adding one updates it); cross-aggregate references by id only.
+21. **Naming suffixes** — ports `*Interface` in `*-interface.ts` (rule O); entities `*Entity` in `*-entity.ts`
+    extending `BaseEntity` (rule G), built from `<Entity>EntityProps` in `*-entity-props.ts`; value objects
+    extend `BaseValueObject` and keep bare names (`Email`); bare-concept type aliases end in `Type`
+    (`RecipeSortType`, reviewer-enforced); mappers follow the `Mapper` / `RequestMapper` contracts.
+22. **No unguarded `console.*`** — every call under `src/` sits behind `if (__DEV__)` (or an `enableLogging`
+    wired to `__DEV__`); production errors go to `recordCrash`, users see `Result` + `failureContent`.
+    `check:structure` rule K.
+23. **Sheets and dialogs come from `base/widgets/`** — `BottomSheet` / `ConfirmSheet` / `FeedbackDialog`, never
+    a hand-rolled `Modal`: bottom sheet on mobile, centred dialog on the web shell, no modal bottom sheets on
+    web. `check:structure` rule L.
+23b. **Every `Modal` sets `statusBarTranslucent`** — edge-to-edge Android jumps otherwise. `check:structure` rule M.
+23c. **No background-audio capability** — `UIBackgroundModes: audio` must never reach the shipped `Info.plist`;
+    `expo-audio` defaults `enableBackgroundPlayback` to `true` (and `expo-video` similar), so set them off.
+    Enforced twice: `check:structure` rule N and a CI assertion on the generated Info.plist.
+23c2. **HTTP verbs are methods, not strings** — `http.get/post/put/patch/delete`; `request(config)` only for
+    the rare full config, and `RequestConfig` exposes only `params` and `timeout`.
+23d. **A repository issues requests; it does not build them** — query params and bodies are DTOs from a
+    `RequestMapper`; paging is a parameter, never a literal; list endpoints return the backend envelope
+    (`total` / `page` / `hasMore`) with a mapper test proving the requested page reaches the query.
+23e. **An ad needs a screen with something on it** — placements only on the recipe feed; the web shell
+    (`+html.tsx`) never loads an ad script; the one AdSense unit's loader comes via `mountAdsenseUnit`.
+    `check:structure` rule T (placement allowlist).
+23f. **Every route is publisher content or is hidden from crawlers** — each route is in `public/sitemap.xml`
+    or `Disallow`ed in `public/robots.txt`, never neither or both; a `[param]` route needs its parent listed
+    and a `firebase.json` rewrite. Enforced by `assert-crawlable-surface.mjs` in `check:structure`.
+24. **A bug fix ships the test that would have caught it** — a regression test that fails without the fix,
+    named after the symptom; a gate if one could catch the class; a class row in `docs/regressions.md`.
+    Proportional. `bug-fix` skill.
+25. **Every routed screen reports its own name to analytics** — a `SCREEN_BY_PATH` row in
+    `presentation/bootstrap/use-screen-tracking.ts`, named after the route's exported component, with the
+    name in `infrastructure/constants/analytics/analytics-screen.ts`; `Redirect`-only routes excluded; the
+    `analytics-service.ts` / `.web.ts` pair binds to `AnalyticsServiceInterface`. `check:structure` rule AA
+    (which also holds `firebase.json`'s automatic screen reporting off).
+26. **Every file in the repo is written in English** — Turkish only as DATA: `src/presentation/i18n/locales/`,
+    `fastlane/metadata/tr/`, and fixtures whose purpose is non-ASCII. Quotations are citations, not prose.
+    Convert the part you touch in a still-Turkish file.
+27. **The assistant library is a separate repository** — [Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant),
+    npm `@live-assistant/*` (`core`, `gemini`, `audio` here). A library change is a PR + release there; Recipely
+    specifics live in the adapter under `src/application/assistant/`. `check:structure` rule AD.
+28. **Design happens in Claude Design first, and is checked back against it after** — draw it in the
+    [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html),
+    then write `src/presentation/design-spec.md`, then build and compare. A written spec is not a design; a
+    dead or missing link means STOP and ask. `design-handoff` skill.
 
 ### Pre-commit quality gate
 
-Husky runs on every `git commit`:
-
-- **lint-staged** → `eslint --fix` on staged `.ts` / `.tsx` files (blocks on unfixed ESLint errors).
-- **tsc --noEmit** → full project type check (blocks on type errors).
-- **check:structure** → `scripts/check-structure.mjs` (blocks on declaration-per-file, layer, import-style,
-  widget-placement, and entity-naming violations — see `architecture.md` §Pre-Commit Quality Gate).
-
-Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
-
-### Backend
-
-`recipely-backend` — a separate repository (Node + Express + Prisma + PostgreSQL, deployed on
-Oracle Cloud), NOT a public sandbox. Two environments, chosen by the build variant:
-`https://api.recipely.net` for production and `https://dev-api.recipely.net` for the dev build.
-Every host, route, page size and timeout is in `src/infrastructure/constants/api.ts`; requests under
-`/api/v1` travel inside an AES-256-GCM envelope whose key must match the backend's.
-
-A frontend change that needs a new field, route or filter usually needs a backend PR first — the two
-repos ship independently, so never assume an endpoint exists because the UI wants it.
-
-Entry point is `expo-router/entry` (set in `package.json` `main`). App config lives in `app.json`.
+Husky runs on every `git commit`: **lint-staged** (`eslint --fix` on staged `.ts` / `.tsx`), **tsc --noEmit**,
+and **check:structure** (`scripts/check-structure.mjs` and its chain — `architecture.md` §Pre-Commit Quality
+Gate). Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
 
 ## Team & Workflow
 
-The agent team and the end-to-end git flow are defined once, at the top of this file —
-see **[Agent workflow (use by default)](#agent-workflow-use-by-default)**. That section is
-authoritative: use the agents by default without being asked, run the branch → implement →
-gate → review → PR-to-`dev` → merge flow without asking, and stop only on the listed
-Exceptions. The agent roster and per-agent rules also live in `.claude/agents/` (see
-`.claude/agents/INDEX.md`) and `WORKFLOW.md` elaborates the step-by-step.
+The agent team and the git flow are defined once, above — see
+**[Agent workflow (use by default)](#agent-workflow-use-by-default)**. That section is authoritative. The
+roster and per-agent rules also live in `.claude/agents/` (see `.claude/agents/INDEX.md`); step-by-step
+procedures live in the skills; `WORKFLOW.md` is an index of them.

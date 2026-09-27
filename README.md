@@ -7,8 +7,8 @@
 **One codebase. iOS, Android and the web.**
 A recipe app that puts the recipe first — and writes one for you when you only have a video.
 
-[![Expo SDK 55](https://img.shields.io/badge/Expo-SDK%2055-000020?logo=expo&logoColor=white)](https://expo.dev)
-[![React Native 0.83](https://img.shields.io/badge/React%20Native-0.83-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
+[![Expo SDK 57](https://img.shields.io/badge/Expo-SDK%2057-000020?logo=expo&logoColor=white)](https://expo.dev)
+[![React Native 0.86](https://img.shields.io/badge/React%20Native-0.86-61DAFB?logo=react&logoColor=black)](https://reactnative.dev)
 [![React 19.2](https://img.shields.io/badge/React-19.2-149ECA?logo=react&logoColor=white)](https://react.dev)
 [![TypeScript strict](https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![Tests](https://img.shields.io/badge/tests-1542%20in%20184%20suites-3FB950)](#testing)
@@ -146,8 +146,8 @@ a structured recipe you can edit and save.
 
 | Concern | Choice | Version / note |
 |---------|--------|----------------|
-| Framework | **Expo** | SDK 55 |
-| Runtime | **React Native** | 0.83 · New Architecture (Fabric) |
+| Framework | **Expo** | SDK 57 |
+| Runtime | **React Native** | 0.86 · New Architecture (Fabric) |
 | UI library | **React** | 19.2 |
 | Language | **TypeScript** | strict mode |
 | Routing | **expo-router** | file-based, with a custom route context |
