@@ -102,11 +102,21 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get media(): MediaItem[] {
     return this.props.media;
   }
-  /** How many photos the hero pages through: the gallery's images, or the cover alone when there are none. */
+  /**
+   * The photos the detail hero pages through: the gallery's images, or the cover
+   * alone (with its focus) when the gallery has none. A blank cover is no photo,
+   * so a recipe without one yields an empty list — the "add first photo" state.
+   */
+  get heroPhotos(): readonly MediaItem[] {
+    const images = this.props.media.filter((m) => m.type === MediaType.Image);
+    if (images.length > ValueConstants.zero) return images;
+    if (this.props.image.trim().length === ValueConstants.zero) return [];
+    const focus = this.props.imageFocus;
+    return [{ type: MediaType.Image, url: this.props.image, ...(focus !== undefined ? { focus } : {}) }];
+  }
+  /** How many photos the hero pages through; trims the cover like the backend's `Recipe.photoCount()`. */
   get photoCount(): number {
-    const images = this.props.media.filter((m) => m.type === MediaType.Image).length;
-    if (images > ValueConstants.zero) return images;
-    return this.props.image.length > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero;
+    return this.heroPhotos.length;
   }
   get rating(): number {
     return this.props.rating;

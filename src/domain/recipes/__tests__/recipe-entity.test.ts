@@ -3,6 +3,7 @@ import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { FocalPoint } from '@domain/recipes/media/focal-point';
 
 const validProps = {
   origin: RecipeOrigin.User,
@@ -111,5 +112,32 @@ describe('RecipeEntity publishing state', () => {
     const after = make({ image: cover.url, media: [cover] }).withCoverRemoved({ image: '', removedMediaIds: [] });
     expect(after.media).toEqual([]);
     expect(after.image).toBe('');
+  });
+});
+
+describe('RecipeEntity.heroPhotos / photoCount', () => {
+  const make = (overrides: Record<string, unknown>) => {
+    const r = RecipeEntity.create({ ...validProps, ...overrides } as typeof validProps);
+    if (!r.ok) throw new Error('invalid');
+    return r.value;
+  };
+
+  it('pages through the gallery images when there are any', () => {
+    const recipe = make({});
+    expect(recipe.heroPhotos.map((m) => m.url)).toEqual([validProps.image]);
+    expect(recipe.photoCount).toBe(1);
+  });
+
+  it('falls back to the cover, keeping its focus, when the gallery is empty', () => {
+    const focus = FocalPoint.create(0.2, 0.8);
+    if (!focus.ok) throw new Error('invalid focus');
+    const recipe = make({ media: [], imageFocus: focus.value });
+    expect(recipe.heroPhotos).toEqual([{ type: 'image', url: validProps.image, focus: focus.value }]);
+  });
+
+  it.each(['', '   '])('has no photo at all for a blank cover %p with an empty gallery', (image) => {
+    const recipe = make({ media: [], image });
+    expect(recipe.heroPhotos).toEqual([]);
+    expect(recipe.photoCount).toBe(0);
   });
 });
