@@ -13,10 +13,13 @@ import { aspectRatios, fontWeights, radii, spacing } from '@presentation/base/th
 import { t } from '@presentation/i18n';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 
 export interface RecipeCardCoverProps {
   name: string;
   image: string;
+  /** Where the dish sits in the cover; the crop centres on it. */
+  imageFocus?: FocalPoint;
   cuisine: string;
   difficulty: string;
   provenance: readonly ProvenanceMarkType[];
@@ -24,7 +27,7 @@ export interface RecipeCardCoverProps {
 }
 
 /**
- * A phone card's cover: the recipe's first photo at 16:10, cropped centred,
+ * A phone card's cover: the recipe's first photo at 16:10, cropped on its focal point,
  * with difficulty top-left, the seal and cuisine top-right, and — on the
  * Created tab — the status bottom-left, so the top corners stay uncovered.
  *
@@ -32,13 +35,13 @@ export interface RecipeCardCoverProps {
  * thumbnail, and a grid of letterboxed covers would stop reading as a grid.
  */
 export const RecipeCardCover = ({
-  name, image, cuisine, difficulty, provenance, ownerStatus,
+  name, image, imageFocus, cuisine, difficulty, provenance, ownerStatus,
 }: RecipeCardCoverProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
-      <RecipeImage uri={image} style={styles.image} accessibilityLabel={name} placeholderLabel={t().recipes.noPhoto} />
+      <RecipeImage uri={image} focus={imageFocus} style={styles.image} accessibilityLabel={name} placeholderLabel={t().recipes.noPhoto} />
       <LinearGradient
         pointerEvents="none"
         colors={[BrandColors.photoScrimClear, colors.overlay]}

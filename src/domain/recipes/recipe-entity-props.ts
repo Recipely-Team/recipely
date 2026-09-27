@@ -1,4 +1,5 @@
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
@@ -22,6 +23,8 @@ export interface RecipeEntityProps {
   caloriesPerServing: number;
   nutrition?: RecipeNutrition;
   image: string;
+  /** Where the dish sits in the cover; absent reads as a centred crop. */
+  imageFocus?: FocalPoint;
   media: MediaItem[];
   rating: number;
   tags: string[];

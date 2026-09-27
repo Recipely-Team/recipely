@@ -54,6 +54,7 @@ export const MediaPicker = ({ media, onAdd, onRemove, onSetCover }: MediaPickerP
                   <PhotoGridTile
                     key={`${item.url}:${String(i)}`}
                     url={item.url}
+                    focus={item.focus}
                     isCover={i === ValueConstants.zero}
                     size={i === ValueConstants.zero ? layout.cover : layout.tile}
                     x={cell?.x ?? ValueConstants.zero}

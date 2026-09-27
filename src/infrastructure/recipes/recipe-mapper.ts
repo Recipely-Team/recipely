@@ -13,6 +13,8 @@ import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { ModerationStatus } from '@domain/recipes/publishing/moderation-status';
 import { toPublishBlockers } from '@domain/recipes/publishing/to-publish-blockers';
 import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import { toFocalPoint } from '@infrastructure/recipes/media/to-focal-point';
 
 /**
  * A server that predates private saves sends no `isPublished`; every recipe it
@@ -27,6 +29,10 @@ const optionalBlockers = (raw: string[] | undefined): Pick<RecipeEntityProps, 'p
   return blockers === undefined ? {} : { publishBlockers: blockers };
 };
 
+/** Absent stays absent: a media item with no focus carries no `focus` key at all. */
+const withFocus = (focus: FocalPoint | undefined): { focus?: FocalPoint } =>
+  focus === undefined ? {} : { focus };
+
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
  * backend sends a `media[]` array it is used directly; otherwise the cover
@@ -36,11 +42,12 @@ const optionalBlockers = (raw: string[] | undefined): Pick<RecipeEntityProps, 'p
  * guard, so an empty cover maps to an empty gallery instead.
  */
 export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto) => {
+  const imageFocus = toFocalPoint(dto.imageFocus);
   const media: MediaItem[] =
     dto.media && dto.media.length > ValueConstants.zero
-      ? dto.media.map((m) => ({ id: m.id, type: m.type, url: m.url }))
+      ? dto.media.map((m) => ({ id: m.id, type: m.type, url: m.url, ...withFocus(toFocalPoint(m.focus)) }))
       : dto.image.trim().length > ValueConstants.zero
-        ? [{ type: MediaType.Image, url: dto.image }]
+        ? [{ type: MediaType.Image, url: dto.image, ...withFocus(imageFocus) }]
         : [];
 
   return RecipeEntity.create({
@@ -57,6 +64,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     caloriesPerServing: dto.caloriesPerServing ?? ValueConstants.zero,
     nutrition: dto.nutrition,
     image: dto.image,
+    ...(imageFocus !== undefined ? { imageFocus } : {}),
     media,
     rating: dto.rating,
     tags: dto.tags,
@@ -87,10 +95,12 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
 export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, ValidationFailure> = (
   dto,
 ) => {
+  const imageFocus = toFocalPoint(dto.imageFocus);
   return RecipeSummaryEntity.create({
     id: dto.id,
     name: dto.name,
     image: dto.image,
+    ...(imageFocus !== undefined ? { imageFocus } : {}),
     cuisine: dto.cuisine,
     category: dto.category,
     difficulty: dto.difficulty,

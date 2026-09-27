@@ -99,6 +99,7 @@ export const WebRecipeCard = ({
           <View style={styles.imageWrap}>
             <RecipeImage
               uri={recipe.image}
+              focus={recipe.imageFocus}
               style={styles.image}
               accessibilityLabel={recipe.name}
               placeholderLabel={t().recipes.noPhoto}

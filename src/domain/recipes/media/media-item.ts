@@ -1,4 +1,5 @@
 import type { MediaType } from '@domain/recipes/media/media-type';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 
 export interface MediaItem {
   /**
@@ -12,4 +13,6 @@ export interface MediaItem {
   id?: string;
   type: MediaType;
   url: string;
+  /** Where the dish sits in this photo; absent until the backend has found it, which reads as centred. */
+  focus?: FocalPoint;
 }

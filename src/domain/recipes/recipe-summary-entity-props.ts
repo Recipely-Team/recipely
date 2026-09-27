@@ -1,4 +1,5 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
@@ -6,6 +7,8 @@ export interface RecipeSummaryEntityProps {
   id: string;
   name: string;
   image: string;
+  /** Where the dish sits in the cover; absent reads as a centred crop. */
+  imageFocus?: FocalPoint;
   // Opaque taxonomy keys — see `RecipeEntityProps.cuisine` in `recipe.ts` for why
   // these stay `string` rather than the local curated enums.
   cuisine: string;

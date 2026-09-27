@@ -31,6 +31,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
     >
       <RecipeImage
         uri={recipe.image}
+        focus={recipe.imageFocus}
         style={styles.image}
         accessibilityLabel={recipe.name}
         placeholderLabel={t().recipes.noPhoto}

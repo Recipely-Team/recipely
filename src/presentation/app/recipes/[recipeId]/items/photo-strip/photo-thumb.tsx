@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -21,6 +22,8 @@ const RING_OFFSET = borderWidths.medium * ValueConstants.two;
 
 export interface PhotoThumbProps {
   url: string;
+  /** Where the dish sits in the photo; the thumb's crop centres on it. */
+  focus?: FocalPoint;
   index: number;
   total: number;
   selected: boolean;
@@ -31,7 +34,7 @@ export interface PhotoThumbProps {
 }
 
 /** One photo in the strip under the hero; a tab that brings it into view. */
-export const PhotoThumb = ({ url, index, total, selected, width, coverBand, onPress }: PhotoThumbProps): React.JSX.Element => {
+export const PhotoThumb = ({ url, focus, index, total, selected, width, coverBand, onPress }: PhotoThumbProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
@@ -50,7 +53,7 @@ export const PhotoThumb = ({ url, index, total, selected, width, coverBand, onPr
           selected ? styles.thumbSelected : null,
         ]}
       >
-        <RecipeImage uri={url} style={styles.image} placeholderCompact />
+        <RecipeImage uri={url} focus={focus} style={styles.image} placeholderCompact />
         {coverBand ? (
           <View style={[styles.band, { backgroundColor: colors.overlay }]}>
             <ThemedText style={[styles.bandText, { color: colors.onOverlay }]}>{t().photoViewer.cover}</ThemedText>

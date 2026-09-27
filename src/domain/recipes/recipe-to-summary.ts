@@ -15,6 +15,7 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     id: recipe.id,
     name: recipe.name,
     image: recipe.image,
+    ...(recipe.imageFocus !== undefined ? { imageFocus: recipe.imageFocus } : {}),
     cuisine: recipe.cuisine,
     category: recipe.category,
     difficulty: recipe.difficulty,

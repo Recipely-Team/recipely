@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -9,6 +10,8 @@ import { ValueConstants } from '@core/constants';
 
 export interface PhotoGridTileProps {
   url: string;
+  /** Where the dish sits in the photo; the tile's crop centres on it. */
+  focus?: FocalPoint;
   isCover: boolean;
   size: number;
   x: number;
@@ -24,14 +27,14 @@ export interface PhotoGridTileProps {
  * to confirm. Every photo but the cover offers to become the cover, which
  * moves it to the front and makes it the 2×2 tile.
  */
-export const PhotoGridTile = ({ url, isCover, size, x, y, onRemove, onSetCover }: PhotoGridTileProps): React.JSX.Element => {
+export const PhotoGridTile = ({ url, focus, isCover, size, x, y, onRemove, onSetCover }: PhotoGridTileProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
     <View style={[styles.cell, { width: size, height: size, left: x, top: y }]}>
       {isCover ? <View pointerEvents="none" style={[styles.coverRing, { borderColor: colors.primary }]} /> : null}
       <View style={[styles.tile, { backgroundColor: colors.skeleton, borderColor: colors.cardBorder }, isCover ? styles.tileCover : null]}>
-        <RecipeImage uri={url} style={styles.image} placeholderCompact />
+        <RecipeImage uri={url} focus={focus} style={styles.image} placeholderCompact />
         {isCover ? (
           <View style={[styles.coverLabel, { backgroundColor: colors.primary }]}>
             <ThemedText style={[styles.coverText, { color: colors.primaryText }]}>{t().mediaPicker.cover}</ThemedText>

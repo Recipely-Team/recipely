@@ -53,6 +53,7 @@ export const PhotoThumbStrip = ({ media, current, thumbWidth, variant, onSelect,
           <PhotoThumb
             key={`${item.url}:${String(index)}`}
             url={item.url}
+            focus={item.focus}
             index={index}
             total={media.length}
             selected={index === current}

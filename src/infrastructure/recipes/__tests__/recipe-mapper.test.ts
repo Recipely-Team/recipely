@@ -145,3 +145,56 @@ describe('photo count — the card chip', () => {
     expect(summary.ok && summary.value.photoCount).toBe(2);
   });
 });
+
+/**
+ * Cards and the hero crop each photo on the focal point the backend's sweep
+ * found. A photo it has not reached — or a server that predates the field —
+ * sends nothing and the crop stays centred; a point outside the frame is
+ * dropped rather than failing the recipe.
+ */
+describe('photo focus', () => {
+  const mediaRow = { id: 'm1', type: MediaType.Image, url: 'https://cdn.recipely.io/m1.jpg', position: 0 };
+
+  it('carries each gallery photo focus and the cover focus into the domain', () => {
+    const r = toRecipe({
+      ...fullDto,
+      imageFocus: { x: 0.3, y: 0.6 },
+      media: [{ ...mediaRow, focus: { x: 0.2, y: 0.8 } }, { ...mediaRow, id: 'm2' }],
+    });
+
+    if (!r.ok) throw new Error('expected a recipe');
+    expect([r.value.imageFocus?.x, r.value.imageFocus?.y]).toEqual([0.3, 0.6]);
+    expect([r.value.media[0]?.focus?.x, r.value.media[0]?.focus?.y]).toEqual([0.2, 0.8]);
+    expect(r.value.media[1]).not.toHaveProperty('focus');
+  });
+
+  it('gives a lone cover promoted into the gallery the cover focus', () => {
+    const r = toRecipe({ ...fullDto, imageFocus: { x: 0.1, y: 0.9 } });
+
+    expect(r.ok && r.value.media[0]?.focus?.x).toBe(0.1);
+  });
+
+  it('drops a focus outside the frame instead of failing the recipe', () => {
+    const r = toRecipe({ ...fullDto, imageFocus: { x: 1.2, y: 0.5 }, media: [{ ...mediaRow, focus: { x: 0.5, y: -0.1 } }] });
+
+    if (!r.ok) throw new Error('expected a recipe');
+    expect(r.value.imageFocus).toBeUndefined();
+    expect(r.value.media[0]?.focus).toBeUndefined();
+  });
+
+  it('carries the cover focus onto the summary a card is drawn from, by both roads', () => {
+    const listDto: RecipeListItemDto = {
+      id: 'r1', name: 'Pizza', image: 'https://cdn.recipely.io/1.webp', cuisine: CuisineKey.Italian,
+      category: RecipeCategory.Dinner, difficulty: Difficulty.Easy, rating: 4, moderationStatus: 'approved',
+      likeCount: 0, likedByMe: false, commentCount: 0, viewCount: 0, imageFocus: { x: 0.25, y: 0.75 },
+    };
+    const fromList = toRecipeSummary(listDto);
+    const full = toRecipe({ ...fullDto, imageFocus: { x: 0.25, y: 0.75 } });
+    if (!full.ok) throw new Error('expected a recipe');
+    const fromDetail = recipeToSummary(full.value);
+
+    expect(fromList.ok && fromList.value.imageFocus?.y).toBe(0.75);
+    expect(fromDetail.ok && fromDetail.value.imageFocus?.y).toBe(0.75);
+    expect(toRecipeSummary({ ...listDto, imageFocus: undefined }).ok).toBe(true);
+  });
+});

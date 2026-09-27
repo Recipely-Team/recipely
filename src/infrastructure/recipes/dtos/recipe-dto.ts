@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
+import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
 import type { NutritionDto } from '@infrastructure/recipes/dtos/nutrition-dto';
 
 // Wire shape returned by the Recipely backend for a single recipe.
@@ -18,6 +19,8 @@ export interface RecipeDto {
   caloriesPerServing: number;
   nutrition?: NutritionDto;
   image: string;
+  /** The cover's focal point; absent until the backend's focus sweep has found it. */
+  imageFocus?: FocusDto;
   rating: number;
   tags: string[];
   mealType: string[];
