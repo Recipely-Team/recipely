@@ -2248,3 +2248,15 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* the detail hero cropped a portrait photo to a sliver (hands and pots) — a phone shot of a dish lost the dish and kept a band from its middle.
 *Why:* every photo was drawn `cover` into a 4:3 frame, whatever its own shape; a crop decision was made without knowing either ratio.
 *Guard:* `smart-photo.portrait.test.tsx` asserts a portrait source renders `contain` over a blurred `cover` copy and a landscape one stays cropped; the rule is one pure function (`isPortraitPhoto`) fed the photo's DECODED size and the frame's MEASURED one. **Decide how to fit a picture from measured ratios, never from the frame's nominal one** — a capped frame is wider than its ratio says.
+
+### A photo-less recipe drew a blank frame instead of the empty hero
+
+*Symptom:* an owner's recipe with no photo showed a blank frame with a Remove button and an empty thumb instead of the "add first photo" state.
+*Why:* the detail hook built the hero list itself and always wrapped the cover — `''` included — as a one-photo gallery, so the viewer never saw an empty list.
+*Guard:* `RecipeEntity.heroPhotos` owns the rule (gallery images, else a non-blank cover with its focus) and `photoCount` derives from it; `use-recipe-detail.test.tsx` and `recipe-entity.test.ts` pin the blank-cover case. **A derivation over an entity's props lives on the entity** (rule 19) — a copy of it in a hook is where the edge case goes missing.
+
+### A pager's own animated scroll was reported as a swipe
+
+*Symptom:* jumping from photo 1 to photo 5 with an arrow or a thumb flickered the counter through 2, 3 and 4.
+*Why:* `onScroll` fires during the pager's own animated `scrollToOffset` as well as during a drag, and every event was reported.
+*Guard:* the pager ignores scroll events while its own scroll is in flight and a drag cancels that; `photo-pager.test.tsx`. **A scroll handler must know whether the user or the code moved the list.**

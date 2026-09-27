@@ -168,7 +168,7 @@ const makeRealCommentsStore = (
  * A loaded recipe whose server-side like state is caller-supplied, for the
  * single-source-of-truth tests below.
  */
-const buildRecipe = (likedByMe: boolean): RecipeEntity => {
+const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
   const result = RecipeEntity.create({
     origin: RecipeOrigin.User,
     id: RECIPE_ID,
@@ -182,7 +182,7 @@ const buildRecipe = (likedByMe: boolean): RecipeEntity => {
     cookTimeMinutes: 35,
     servings: 1,
     caloriesPerServing: 0,
-    image: 'https://cdn.example.com/baklava.webp',
+    image: cover,
     media: [],
     rating: 0,
     tags: [],
@@ -483,5 +483,32 @@ describe('useRecipeDetail — copying a recipe to drafts', () => {
     expect(mockRouterPush).not.toHaveBeenCalled();
     expect(latest().promptVisible).toBe(true);
     expect(latest().promptMessage).toBe(t().recipes.signInToCopy);
+  });
+});
+
+// ─── the hero's photos ───────────────────────────────────────────────────────
+
+/**
+ * The hook built `[{ type: image, url: recipe.image }]` whenever the gallery was
+ * empty — even for a cover of `''` — so the viewer never saw an empty list and
+ * never drew its "add first photo" state. The rule now lives on the entity
+ * (`RecipeEntity.heroPhotos`) and the hook only reads it.
+ */
+describe('useRecipeDetail — the hero photos', () => {
+  const loadedWithCover = (cover: string): StoreOverrides => ({
+    detailState: { status: 'loaded', recipe: buildRecipe(false, cover), fetchedAt: Date.now() },
+  });
+
+  it('an owner\'s recipe with no photo showed a blank frame with a Remove button instead of the add-first-photo state', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loadedWithCover(''));
+
+    expect(latest().media).toEqual([]);
+    expect(latest().firstImageUrl).toBe('');
+  });
+
+  it('a recipe with only a cover pages through that one photo', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loadedWithCover('https://cdn.example.com/c.webp'));
+
+    expect(latest().media.map((m) => m.url)).toEqual(['https://cdn.example.com/c.webp']);
   });
 });
