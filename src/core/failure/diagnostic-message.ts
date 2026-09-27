@@ -128,6 +128,7 @@ export const DiagnosticMessage = {
       nameRequired: 'Recipe name must be non-empty',
       servingsTooLow: 'Servings must be at least 1',
       caloriesNegative: 'Calories must be non-negative',
+      focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
     },
   },
   assistant: {
@@ -155,4 +156,5 @@ export const DiagnosticMessage = {
 export const FailureField = {
   token: 'token',
   email: 'email',
+  focus: 'focus',
 } as const;

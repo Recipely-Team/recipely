@@ -25,6 +25,7 @@ import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lif
 import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { RecipeCardCover } from '@presentation/base/widgets/cards/recipe-card-cover';
 import { PhotoCountChip } from '@presentation/base/widgets/badges/photo-count-chip';
 import { CardPhotoButton } from '@presentation/base/widgets/cards/card-photo-button';
@@ -38,6 +39,8 @@ const PRESS_OUT_MS = 150;
 export interface RecipeCardProps {
   name: string;
   image: string;
+  /** Where the dish sits in the cover; the crop centres on it. */
+  imageFocus?: FocalPoint;
   cuisine: string;
   difficulty: string;
   rating: number;
@@ -69,7 +72,7 @@ export interface RecipeCardProps {
  *   same 16:10 box instead.
  */
 export const RecipeCard = ({
-  name, image, cuisine, difficulty, rating, tags = [],
+  name, image, imageFocus, cuisine, difficulty, rating, tags = [],
   likeCount = ValueConstants.zero, likedByMe = false,
   onPress, onLike, hoverEffect = false, provenance = [], ownerStatus, photoCount = ValueConstants.zero, onEditPhotos,
 }: RecipeCardProps): React.JSX.Element => {
@@ -129,6 +132,7 @@ export const RecipeCard = ({
       <RecipeCardCover
         name={name}
         image={image}
+        imageFocus={imageFocus}
         cuisine={cuisine}
         difficulty={difficulty}
         provenance={provenance}

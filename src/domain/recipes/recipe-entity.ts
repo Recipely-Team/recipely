@@ -5,6 +5,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
@@ -94,6 +95,9 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get image(): string {
     return this.props.image;
+  }
+  get imageFocus(): FocalPoint | undefined {
+    return this.props.imageFocus;
   }
   get media(): MediaItem[] {
     return this.props.media;
@@ -190,7 +194,10 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
       kept.length === ValueConstants.zero && removal.image.length > ValueConstants.zero
         ? [{ type: MediaType.Image, url: removal.image }]
         : kept;
-    return new RecipeEntity({ ...this.props, image: removal.image, media });
+    // The old cover's focus describes a photo that is gone; the new cover keeps its own, if it has one.
+    const { imageFocus: _dropped, ...rest } = this.props;
+    const focus = kept.find((m) => m.url === removal.image)?.focus;
+    return new RecipeEntity({ ...rest, image: removal.image, media, ...(focus !== undefined ? { imageFocus: focus } : {}) });
   }
   get commentCount(): number {
     return this.props.commentCount;

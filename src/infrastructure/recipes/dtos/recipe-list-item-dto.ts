@@ -1,4 +1,5 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
+import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
 
 // Lean wire shape returned by the Recipely backend for list/my-recipes/trending
 // endpoints. Keep in sync with recipely-backend
@@ -8,6 +9,8 @@ export interface RecipeListItemDto {
   readonly id: string;
   readonly name: string;
   readonly image: string;
+  /** The cover's focal point; absent until the backend's focus sweep has found it. */
+  readonly imageFocus?: FocusDto;
   readonly cuisine: string;
   readonly category: string;
   readonly difficulty: Difficulty;

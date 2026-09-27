@@ -98,7 +98,7 @@ export const RecipePreviewEditor = ({
       contentContainerStyle={styles.scroll}
     >
       <View style={[styles.cover, { backgroundColor: colors.skeleton }]}>
-        <RecipeImage uri={cover?.url} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
+        <RecipeImage uri={cover?.url} focus={cover?.focus} style={styles.coverImage} placeholderLabel={t().recipes.noPhoto} />
         {onOpenPhotos !== null ? (
           <Pressable
             onPress={onOpenPhotos}

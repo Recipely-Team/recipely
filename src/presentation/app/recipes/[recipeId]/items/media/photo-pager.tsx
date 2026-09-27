@@ -68,7 +68,7 @@ export const PhotoPager = ({ media, width, height, current, onSwipe }: PhotoPage
           accessible
           accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)}
         >
-          <SmartPhoto url={item.url} accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)} />
+          <SmartPhoto url={item.url} focus={item.focus} accessibilityLabel={fillPhotoPosition(t().photoViewer.position, index, total)} />
         </View>
       )}
       getItemLayout={(_, index) => ({ length: width, offset: width * index, index })}

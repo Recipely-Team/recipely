@@ -212,6 +212,7 @@ export const MyRecipesList = ({
             <RecipeCard
               name={item.name}
               image={item.image}
+              imageFocus={item.imageFocus}
               cuisine={item.cuisine}
               difficulty={item.difficulty}
               rating={item.rating}

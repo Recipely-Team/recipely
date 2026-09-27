@@ -8,10 +8,17 @@ import { isPortraitPhoto } from '@presentation/app/recipes/[recipeId]/model/phot
 import { photoViewerSizes } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-sizes';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { toContentPosition } from '@presentation/base/widgets/media/to-content-position';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
+
+/** A photo shown whole has no crop to position. */
+const CENTRED = toContentPosition(undefined);
 
 export interface SmartPhotoProps {
   url: string;
   accessibilityLabel: string;
+  /** Where the dish sits in the photo; a cropped frame centres on it. */
+  focus?: FocalPoint;
 }
 
 /**
@@ -26,10 +33,12 @@ export interface SmartPhotoProps {
  * - **The blurred copy is decoration.** It overhangs the frame so its soft
  *   edge never shows, and is hidden from assistive tech; only the sharp photo
  *   carries the label.
- * - **Centred.** The prototype positions a crop at a focal point the data does
- *   not have, so every crop is centred — the spec's own fallback.
+ * - **Cropped on the focal point.** The backend finds where the dish sits in
+ *   each photo, and a `cover` crop is positioned there; a photo it has not
+ *   reached yet has no focus and stays centred — the spec's own fallback. A
+ *   portrait photo is shown whole, so its position does not matter.
  */
-export const SmartPhoto = ({ url, accessibilityLabel }: SmartPhotoProps): React.JSX.Element => {
+export const SmartPhoto = ({ url, accessibilityLabel, focus }: SmartPhotoProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const [frameRatio, setFrameRatio] = useState<number | null>(null);
   const [photoRatio, setPhotoRatio] = useState<number | null>(null);
@@ -72,7 +81,7 @@ export const SmartPhoto = ({ url, accessibilityLabel }: SmartPhotoProps): React.
           <Image
             source={{ uri: url }}
             contentFit={portrait ? 'contain' : 'cover'}
-            contentPosition="center"
+            contentPosition={portrait ? CENTRED : toContentPosition(focus)}
             cachePolicy="memory-disk"
             recyclingKey={url}
             transition={durations.imageFade}

@@ -8,6 +8,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
@@ -41,6 +42,9 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
   get image(): string {
     return this.props.image;
+  }
+  get imageFocus(): FocalPoint | undefined {
+    return this.props.imageFocus;
   }
   get cuisine(): string {
     return this.props.cuisine;

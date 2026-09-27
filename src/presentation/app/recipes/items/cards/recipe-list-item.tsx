@@ -42,6 +42,7 @@ const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListIte
     <RecipeCard
       name={recipe.name}
       image={recipe.image}
+      imageFocus={recipe.imageFocus}
       cuisine={cuisineLabel(recipe.cuisine).name}
       difficulty={recipe.difficulty}
       rating={recipe.rating}

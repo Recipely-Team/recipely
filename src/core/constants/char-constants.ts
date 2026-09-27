@@ -21,4 +21,5 @@ export const CharConstants = {
   /** Display placeholder for a value the backend never sent — NOT a zero. */
   emDash: '—' as string,
   newline: '\n' as string,
+  percent: '%' as string,
 } as const;
