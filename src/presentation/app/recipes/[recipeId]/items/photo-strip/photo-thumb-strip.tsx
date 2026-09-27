@@ -7,6 +7,7 @@ import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/
 import { borderWidths, spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import { photoKey } from '@presentation/app/recipes/[recipeId]/model/photos/photo-key';
 
 /** Room for the selection ring, which draws outside its thumb. */
 const RING_ROOM = borderWidths.medium * ValueConstants.two;
@@ -51,7 +52,7 @@ export const PhotoThumbStrip = ({ media, current, thumbWidth, variant, onSelect,
       >
         {media.map((item, index) => (
           <PhotoThumb
-            key={`${item.url}:${String(index)}`}
+            key={photoKey(item)}
             url={item.url}
             focus={item.focus}
             index={index}
