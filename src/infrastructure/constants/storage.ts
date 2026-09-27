@@ -33,3 +33,10 @@ export const TIMERS_BAR_COLLAPSED_STORAGE_KEY = 'recipely.timers.bar.collapsed.v
  * killed rather than backgrounded — see `crash-sentinel.ts`.
  */
 export const CRASH_SENTINEL_STORAGE_KEY = 'recipely.crash.sentinel.v1';
+
+/**
+ * This install's device id, minted once. Deliberately NOT cleared on sign-out:
+ * it names the install, not the session, so the next account signing in on
+ * the same phone is recorded against the same device.
+ */
+export const DEVICE_ID_STORAGE_KEY = 'recipely.device.id.v1';

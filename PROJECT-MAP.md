@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1182 source files.
+[architecture.md](architecture.md). 1192 source files.
 
 ## Layers
 
@@ -32,6 +32,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(7)_
 - `comments/` _(4)_
 - `common/` _(1)_
+- `device/` _(3)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -50,6 +51,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
+- `device/` _(2)_
 - `di/` _(3)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
@@ -73,7 +75,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `comments/` — dtos _(4)_
 - `constants/` — analytics, api _(21)_
 - `crypto/` _(3)_
-- `device/` _(3)_
+- `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
 - `drafts/` — dtos _(6)_
@@ -150,4 +152,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 25dcfa85a0e53061 -->
+<!-- fingerprint: 93634eee61c39bdf -->

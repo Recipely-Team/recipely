@@ -20,6 +20,7 @@ export const ApiRoutes = {
     likes: '/me/likes',
     recipes: '/me/recipes',
     deviceToken: '/me/device-token',
+    devices: '/me/devices',
     notifications: '/me/notifications',
     notificationsReadAll: '/me/notifications/read-all',
     notificationRead: (id: string): string =>

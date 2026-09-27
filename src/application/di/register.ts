@@ -83,6 +83,10 @@ import { configureUserProfileStore } from '@application/user-profile/user-profil
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { configureFeedbackStore } from '@application/feedback/feedback-store';
 import type { ApplicationStores } from '@application/di/application-stores';
+import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
+import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
+import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
+import { recordDeviceOnSignIn } from '@application/device/record-device-on-sign-in';
 
 
 export const registerApplication = (container: Container): ApplicationStores => {
@@ -252,6 +256,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     assistantSessionStore.getState().reset();
   };
   const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
+  recordDeviceOnSignIn(
+    authStore,
+    new RecordDeviceUseCase(
+      container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
+      container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
+    ),
+  );
   return {
     assistantSessionStore,
     assistantActionRegistry,
