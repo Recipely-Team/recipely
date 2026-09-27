@@ -216,7 +216,9 @@ export const MyRecipesList = ({
               difficulty={item.difficulty}
               rating={item.rating}
               onPress={() => onOpenRecipe(item.id)}
-              {...(tab === TabType.Created ? { ownerStatus: item.ownerStatus } : {})}
+              {...(tab === TabType.Created
+                ? { ownerStatus: item.ownerStatus, onEditPhotos: () => onOpenRecipe(item.id) }
+                : {})}
             />
           )}
         </View>

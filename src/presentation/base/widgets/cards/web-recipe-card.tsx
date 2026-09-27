@@ -29,6 +29,7 @@ import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-sea
 import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { RecipeStatusBadge } from '@presentation/base/widgets/badges/recipe-status-badge';
+import { PhotoCountChip } from '@presentation/base/widgets/badges/photo-count-chip';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -49,6 +50,8 @@ export interface WebRecipeCardProps {
   likeCount?: number;
   /** The My Recipes "Created" tab: the recipe's status badge on the photo's bottom-left. */
   ownedByMe?: boolean;
+  /** How many photos the recipe has, when the caller knows; a chip on the cover's bottom-right shows it from two up. */
+  photoCount?: number;
 }
 
 /**
@@ -59,7 +62,7 @@ export interface WebRecipeCardProps {
  * lifts slightly on hover. No author row (that would be an N+1 fetch).
  */
 export const WebRecipeCard = ({
-  recipe, saved, onOpen, onToggleSave, ownedByMe = false,
+  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount = ValueConstants.zero,
   likedByMe = recipe.likedByMe, likeCount = recipe.likeCount,
 }: WebRecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -115,6 +118,9 @@ export const WebRecipeCard = ({
               </View>
             </View>
             {ownedByMe ? <RecipeStatusBadge status={recipe.ownerStatus} /> : null}
+            <View style={styles.photoCount} pointerEvents="none">
+              <PhotoCountChip count={photoCount} />
+            </View>
           </View>
 
           <View style={styles.body}>
@@ -200,6 +206,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs2,
+  },
+  photoCount: {
+    position: 'absolute',
+    right: spacing.md,
+    bottom: spacing.md,
   },
   cuisineTag: {
     borderRadius: radii.round,

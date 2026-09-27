@@ -8,6 +8,11 @@ import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import { t } from '@presentation/i18n';
+import { photoPickLimits } from '@presentation/app/create-recipe/model/photos/photo-pick-limits';
+
+/** A picked file the editor takes: a size the picker could not report is given the benefit of the doubt. */
+const withinLimit = (asset: ImagePicker.ImagePickerAsset): boolean =>
+  asset.fileSize === undefined || asset.fileSize <= photoPickLimits.maxBytes;
 
 // No `quality` on purpose: `shrinkForUpload` owns the one re-encode.
 const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
@@ -43,8 +48,14 @@ const tellPermissionDenied = (): void => {
  *   unhandled rejection behind a button that did nothing.
  * - **One flight at a time.** A second tap while the sheet or the re-encode is
  *   in flight is ignored rather than stacking a second picker.
+ * - **A file over the size cap is skipped, not refused wholesale.** The rest of
+ *   the pick goes in, and `onSkip` is told how many stayed out so the grid can
+ *   say so; every completed pick reports, so a clean one clears the message.
  */
-export const useMediaPick = (onAdd: (items: MediaItem[]) => void): (() => Promise<void>) => {
+export const useMediaPick = (
+  onAdd: (items: MediaItem[]) => void,
+  onSkip?: (skipped: number) => void,
+): (() => Promise<void>) => {
   const busy = useRef(false);
 
   return useCallback(async (): Promise<void> => {
@@ -68,8 +79,10 @@ export const useMediaPick = (onAdd: (items: MediaItem[]) => void): (() => Promis
         : await ImagePicker.launchImageLibraryAsync(LIBRARY_OPTIONS);
       if (result.canceled) return;
 
+      const accepted = result.assets.filter(withinLimit);
+      onSkip?.(result.assets.length - accepted.length);
       const shrunk = await Promise.all(
-        result.assets.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
+        accepted.map((a) => shrinkForUpload({ uri: a.uri, width: a.width, height: a.height })),
       );
       if (shrunk.length > ValueConstants.zero) {
         onAdd(shrunk.map((url) => ({ type: MediaType.Image, url })));
@@ -79,5 +92,5 @@ export const useMediaPick = (onAdd: (items: MediaItem[]) => void): (() => Promis
     } finally {
       busy.current = false;
     }
-  }, [onAdd]);
+  }, [onAdd, onSkip]);
 };

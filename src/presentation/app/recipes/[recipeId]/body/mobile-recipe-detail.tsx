@@ -1,5 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import { MediaGallery, type MediaGalleryProps } from '@presentation/app/recipes/[recipeId]/items/media/media-gallery';
+import { RecipePhotoViewer, type RecipePhotoViewerProps } from '@presentation/app/recipes/[recipeId]/items/media/recipe-photo-viewer';
+import { PhotoViewerVariant } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-variant';
+import { showsPhotoStrip } from '@presentation/app/recipes/[recipeId]/model/photos/shows-photo-strip';
 import { mobileContentOverlap } from '@presentation/app/recipes/[recipeId]/model/mobile-content-overlap';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
@@ -47,7 +49,7 @@ export interface MobileRecipeDetailProps {
    * Passed down rather than derived from `isOwner` here: the screen owns the
    * picker, the confirmation and the busy flag, and this component composes.
    */
-  photos: MediaGalleryProps['owner'];
+  photos: RecipePhotoViewerProps['owner'];
 }
 
 /**
@@ -59,12 +61,22 @@ export interface MobileRecipeDetailProps {
 export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { recipe, recipeId, media, commentState } = props;
+  // The card tucks under the photo only when the photo is the hero's last edge;
+  // over a thumbnail strip it would bury the strip.
+  const overlap = showsPhotoStrip(media.length, props.photos !== undefined)
+    ? ValueConstants.zero
+    : mobileContentOverlap;
 
   return (
     <View>
-      <MediaGallery media={media} owner={props.photos} contentOverlap={mobileContentOverlap} />
+      <RecipePhotoViewer
+        media={media}
+        variant={PhotoViewerVariant.Bleed}
+        {...(props.photos !== undefined ? { owner: props.photos } : {})}
+        contentOverlap={overlap}
+      />
 
-      <View style={[styles.content, { backgroundColor: colors.background }]}>
+      <View style={[styles.content, { marginTop: -overlap, backgroundColor: colors.background }]}>
         <RecipeOverview
           recipe={recipe}
           recipeId={recipeId}
@@ -109,7 +121,6 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
 
 const styles = StyleSheet.create({
   content: {
-    marginTop: -mobileContentOverlap,
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,
     paddingHorizontal: spacing.lg,

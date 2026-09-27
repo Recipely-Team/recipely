@@ -129,13 +129,13 @@ describe('the web recipe detail offers its owner the photo controls', () => {
   it('shows the add-photo control to the owner', () => {
     const { root } = render(owner());
 
-    expect(labelsOf(root)).toContain(t().recipes.addPhoto);
+    expect(labelsOf(root)).toContain(t().photoViewer.add);
   });
 
   it('shows the remove control for the photo on screen', () => {
     const { root } = render(owner());
 
-    expect(labelsOf(root)).toContain(t().recipes.removePhoto);
+    expect(labelsOf(root)).toContain(t().photoViewer.removeA11y);
   });
 
   // Absent rather than disabled, the same call the mobile gallery makes: a
@@ -143,8 +143,8 @@ describe('the web recipe detail offers its owner the photo controls', () => {
   it('offers neither to someone who does not own the recipe', () => {
     const labels = labelsOf(render().root);
 
-    expect(labels).not.toContain(t().recipes.addPhoto);
-    expect(labels).not.toContain(t().recipes.removePhoto);
+    expect(labels).not.toContain(t().photoViewer.add);
+    expect(labels).not.toContain(t().photoViewer.removeA11y);
   });
 
   it('reaches the handler the screen passed in', () => {
@@ -152,7 +152,7 @@ describe('the web recipe detail offers its owner the photo controls', () => {
     const { root } = render(controls);
 
     const add = root.findAll(
-      (n) => n.props['accessibilityLabel'] === t().recipes.addPhoto && typeof n.props['onPress'] === 'function',
+      (n) => n.props['accessibilityLabel'] === t().photoViewer.add && typeof n.props['onPress'] === 'function',
     )[0];
     (add?.props['onPress'] as () => void)();
 

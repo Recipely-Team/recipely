@@ -12,8 +12,7 @@ import {
   spacing,
   radii,
   fontSizes,
-  fontWeights,
-  mediaSizes,
+  aspectRatios,
   opacities,
   iconSizes,
   durations,
@@ -21,17 +20,15 @@ import {
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { RECIPE_CARD_TAG_LIMIT } from '@presentation/base/widgets/cards/recipe-card-tag-limit';
-import { formatRating } from '@presentation/base/utils/format-rating';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
-import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
-import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
-import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
-import { RecipeStatusBadge } from '@presentation/base/widgets/badges/recipe-status-badge';
+import { RecipeCardCover } from '@presentation/base/widgets/cards/recipe-card-cover';
+import { PhotoCountChip } from '@presentation/base/widgets/badges/photo-count-chip';
+import { CardPhotoButton } from '@presentation/base/widgets/cards/card-photo-button';
+import { RecipeCardRating } from '@presentation/base/widgets/cards/recipe-card-rating';
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
@@ -56,13 +53,25 @@ export interface RecipeCardProps {
   provenance?: readonly ProvenanceMarkType[];
   /** The owner's view of the recipe (Created tab): a status badge on the photo's bottom-left. */
   ownerStatus?: OwnerStatusType;
+  /** How many photos the recipe has, when the caller knows; a chip shows it from two up. */
+  photoCount?: number;
+  /** The Created tab's camera on the cover, which takes the owner to the recipe's photos. */
+  onEditPhotos?: () => void;
 }
 
-/** Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count. */
+/**
+ * Animated pressable card showing recipe image, cuisine badge, rating stars, tags, and like count.
+ *
+ * @remarks
+ * - **The cover's bottom-right is a sibling of the card's press target.** The
+ *   Created tab's camera is a button of its own, and a button inside the
+ *   card's button is invalid markup on the web; the cluster is laid over the
+ *   same 16:10 box instead.
+ */
 export const RecipeCard = ({
   name, image, cuisine, difficulty, rating, tags = [],
   likeCount = ValueConstants.zero, likedByMe = false,
-  onPress, onLike, hoverEffect = false, provenance = [], ownerStatus,
+  onPress, onLike, hoverEffect = false, provenance = [], ownerStatus, photoCount = ValueConstants.zero, onEditPhotos,
 }: RecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scale = useSharedValue(ValueConstants.one);
@@ -91,9 +100,6 @@ export const RecipeCard = ({
     transform: [{ scale: heartScale.value }],
   }));
 
-  const fullStars = Math.floor(rating);
-  const hasHalf = rating - fullStars >= 0.5;
-
   const handleLike = () => {
     heartScale.value = withSpring(1.4, { damping: 4 }, () => {
       heartScale.value = withSpring(1);
@@ -120,29 +126,14 @@ export const RecipeCard = ({
         { backgroundColor: colors.cardBackground },
       ]}
     >
-      <View style={styles.imageContainer}>
-        <RecipeImage
-          uri={image}
-          style={styles.image}
-          accessibilityLabel={name}
-          placeholderLabel={t().recipes.noPhoto}
-        />
-        {/* The seal shares the cuisine tag's corner, so nothing had to move. */}
-        <View style={styles.topRight}>
-          <ProvenanceSeal marks={provenance} surface={SealSurface.Photo} size={provenanceSealMetrics.cardSize} />
-          <View style={[styles.cuisineBadge, { backgroundColor: colors.primary }]}>
-            <ThemedText variant="caption" style={{ color: colors.primaryText, fontWeight: fontWeights.semibold }}>
-              {cuisine}
-            </ThemedText>
-          </View>
-        </View>
-        <View style={[styles.difficultyChip, { backgroundColor: colors.overlay }]}>
-          <ThemedText variant="caption" style={{ color: colors.onOverlay, fontWeight: fontWeights.semibold }}>
-            {difficulty}
-          </ThemedText>
-        </View>
-        {ownerStatus !== undefined ? <RecipeStatusBadge status={ownerStatus} /> : null}
-      </View>
+      <RecipeCardCover
+        name={name}
+        image={image}
+        cuisine={cuisine}
+        difficulty={difficulty}
+        provenance={provenance}
+        {...(ownerStatus !== undefined ? { ownerStatus } : {})}
+      />
       <View style={styles.info}>
         <ThemedText variant="subtitle" numberOfLines={ValueConstants.one}>{name}</ThemedText>
         <View style={styles.bottomRow}>
@@ -158,22 +149,7 @@ export const RecipeCard = ({
               : null}
           </View>
           <View style={styles.metaRow}>
-            <View style={styles.ratingRow}>
-              {Array.from({ length: 5 }, (_, i) => {
-                const iconName = i < fullStars ? 'star' : i === fullStars && hasHalf ? 'star-half-full' : 'star-outline';
-                return (
-                  <MaterialCommunityIcons
-                    key={i}
-                    name={iconName}
-                    size={iconSizes.sm}
-                    color={i < fullStars || (i === fullStars && hasHalf) ? colors.starFilled : colors.starEmpty}
-                  />
-                );
-              })}
-              <ThemedText variant="caption" muted style={styles.ratingText}>
-                {formatRating(rating)}
-              </ThemedText>
-            </View>
+            <RecipeCardRating rating={rating} />
             {onLike !== undefined ? (
               <Pressable
                 onPress={handleLike}
@@ -200,6 +176,14 @@ export const RecipeCard = ({
         </View>
       </View>
     </Pressable>
+    <View style={styles.coverOverlay} pointerEvents="box-none">
+      <View style={[styles.coverCorner, onEditPhotos !== undefined ? styles.cornerCreated : null]} pointerEvents="box-none">
+        <View pointerEvents="none">
+          <PhotoCountChip count={photoCount} />
+        </View>
+        {onEditPhotos !== undefined ? <CardPhotoButton onPress={onEditPhotos} /> : null}
+      </View>
+    </View>
     </Animated.View>
   );
 };
@@ -209,35 +193,25 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     overflow: 'hidden',
   },
-  imageContainer: {
-    height: mediaSizes.cardImageHeight,
-    position: 'relative',
-  },
-  image: {
-    width: '100%',
-    height: '100%',
-    resizeMode: 'cover',
-  },
-  topRight: {
+  // The cover's own box, laid over it; see the doc block for why it is not inside.
+  coverOverlay: {
     position: 'absolute',
-    top: spacing.md,
-    right: spacing.md,
+    top: ValueConstants.zero,
+    left: ValueConstants.zero,
+    right: ValueConstants.zero,
+    aspectRatio: aspectRatios.heroWide,
+  },
+  coverCorner: {
+    position: 'absolute',
+    right: spacing.sm2,
+    bottom: spacing.sm2,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs2,
   },
-  cuisineBadge: {
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.sm2,
-    paddingVertical: spacing.xs,
-  },
-  difficultyChip: {
-    position: 'absolute',
-    top: spacing.md,
-    left: spacing.md,
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.sm2,
-    paddingVertical: spacing.xs,
+  cornerCreated: {
+    right: spacing.sm,
+    bottom: spacing.sm,
   },
   info: {
     padding: spacing.md,
@@ -262,13 +236,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  ratingText: {
-    marginLeft: spacing.xs,
   },
   likeBtn: {
     flexDirection: 'row',

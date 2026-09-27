@@ -827,7 +827,20 @@ export const ar = {
     cover: "الغلاف",
     setCover: "تعيين كغلاف",
     remove: "إزالة الصورة",
-    more: "إضافة المزيد"
+    more: "إضافة المزيد",
+    photos: 'الصور',
+    rejected: 'تم تخطي بعض الملفات (يجب أن تكون صورًا أقل من 25 ميغابايت).',
+  },
+  photoViewer: {
+    add: 'إضافة صورة',
+    addFirst: 'أضف الصورة الأولى',
+    remove: 'إزالة',
+    removeA11y: 'إزالة هذه الصورة',
+    cover: "الغلاف",
+    position: 'الصورة {i} من {n}',
+    counter: '{i} / {n}',
+    noPhotoShort: 'لا توجد صورة',
+    editPhotos: 'تعديل الصور',
   },
   timer: {
     notificationChannel: "مؤقت الطهي (منبه)",
