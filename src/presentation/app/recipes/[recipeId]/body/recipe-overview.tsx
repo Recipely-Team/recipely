@@ -4,14 +4,14 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card';
-import { NutritionCard } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-card';
+import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
@@ -153,16 +153,14 @@ export const RecipeOverview = ({
         recipeName={recipe.name}
       />
 
-      {/* Unconditional: the card itself says when a recipe has no figures.
-          Hiding the whole section on missing data made an absent backend value
-          look like a broken screen — see NutritionCard's docblock. */}
+      {/* Unconditional: the panel itself says when a recipe has no figures,
+          and it carries no title — this header is the section's one heading. */}
       <SectionHeader title={t().recipes.nutrition} />
-      <NutritionCard
-        caloriesPerServing={recipe.caloriesPerServing}
-        servings={recipe.servings}
-        nutrition={recipe.nutrition}
-        isCalculating={isNutritionCalculating}
-      />
+      <View
+        style={[styles.nutritionCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
+      >
+        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} />
+      </View>
 
       {recipe.tags.length > ValueConstants.zero ? (
         <View style={styles.tagsRow}>
@@ -181,6 +179,12 @@ export const RecipeOverview = ({
 
 const styles = StyleSheet.create({
   provenance: { marginTop: spacing.sm },
+  nutritionCard: {
+    ...shadows.sm,
+    borderRadius: radii.xl,
+    borderWidth: borderWidths.hairline,
+    padding: spacing.lg,
+  },
   captionRow: {
     flexDirection: 'row',
     alignItems: 'center',

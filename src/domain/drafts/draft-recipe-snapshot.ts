@@ -1,3 +1,5 @@
+import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
+
 /**
  * A partial, transient snapshot of the recipe a user is shaping inside the
  * AI create flow. Every field is optional because a draft can be saved at any
@@ -30,5 +32,5 @@ export interface DraftRecipeSnapshot {
   mealType?: string[];
   tips?: string[];
   caloriesPerServing?: number;
-  nutrition?: { protein?: number; carbs?: number; fat?: number; fiber?: number };
+  nutrition?: RecipeNutrition;
 }

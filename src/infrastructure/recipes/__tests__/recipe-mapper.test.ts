@@ -77,3 +77,23 @@ describe('toRecipe', () => {
     expect(r.ok).toBe(false);
   });
 });
+
+describe('toRecipe — nutrition', () => {
+  it('carries the serving weight through with the macros, unchanged', () => {
+    const nutrition = { protein: 24, carbs: 60, fat: 18, fiber: 6, servingWeightGrams: 380 };
+    const r = toRecipe({ ...fullDto, nutrition });
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.nutrition).toEqual(nutrition);
+      expect(r.value.nutritionFacts.servingWeightGrams).toBe(380);
+    }
+  });
+
+  it('leaves the serving weight absent when the backend sends none', () => {
+    const r = toRecipe({ ...fullDto, nutrition: { protein: 24 } });
+
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.nutritionFacts.servingWeightGrams).toBeUndefined();
+  });
+});

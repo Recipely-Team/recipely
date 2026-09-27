@@ -8,7 +8,6 @@ import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-g
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
-import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
@@ -267,7 +266,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // them absent. Nothing to wait for until a recipe has actually arrived.
   const isNutritionCalculating = useNutritionRecheck(
     recipeId,
-    recipe === null || hasReportedNutrition(recipe.caloriesPerServing, recipe.nutrition),
+    recipe === null || recipe.nutritionFacts.hasAny,
     load,
   );
 

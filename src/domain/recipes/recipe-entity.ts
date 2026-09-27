@@ -8,6 +8,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
+import { NutritionFacts } from '@domain/recipes/nutrition/nutrition-facts';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
@@ -82,6 +83,14 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get nutrition(): RecipeNutrition | undefined {
     return this.props.nutrition;
+  }
+  /** The nutrition figures with their basis conversion and daily-value rules. */
+  get nutritionFacts(): NutritionFacts {
+    return NutritionFacts.of({
+      caloriesPerServing: this.props.caloriesPerServing,
+      servings: this.props.servings,
+      nutrition: this.props.nutrition,
+    });
   }
   get image(): string {
     return this.props.image;

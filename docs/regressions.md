@@ -2230,3 +2230,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* `check:structure` passed locally and failed in CI with "PROJECT-MAP.md is stale".
 *Why:* the fingerprint listed empty folders, which exist on a laptop after a move but never in a git checkout, and sorted with locale-dependent `localeCompare`.
 *Guard:* `generate-map.mjs` derives folders from files and sorts by code point; an empty folder or a different locale no longer changes it.
+
+### A section heading printed twice
+
+*Symptom:* the mobile recipe detail read "Besin değerleri" twice — the screen's section header, then the nutrition card's own title under it.
+*Why:* the card was written as a self-contained section and later placed under a `SectionHeader`; neither side knew the other also titled it.
+*Guard:* the nutrition panel takes no title and the placing screen owns the one heading (`recipe-overview.nutrition-heading.test.tsx` counts it). A section body under `base/` or `items/` should not render a heading of its own.

@@ -53,4 +53,13 @@ export const BrandColors = {
   sealRing: 'rgba(15,23,42,0.62)',
   /** The hairline between two marks in one capsule. */
   sealDivider: 'rgba(15,23,42,0.18)',
+  /**
+   * The macro daily-value bars on the nutrition panel. Fixed across every
+   * theme and mode, as the prototype draws them: a macro keeps its colour so a
+   * reader who learned "blue is protein" never has to relearn it per palette.
+   */
+  nutritionProtein: '#3B82F6',
+  nutritionCarbs: '#F59E0B',
+  nutritionFat: '#EF4444',
+  nutritionFiber: '#10B981',
 } as const;
