@@ -65,7 +65,7 @@ export const RecipeFloatingActions = ({
       <Pressable
         onPress={onToggleSave}
         accessibilityRole="button"
-        accessibilityLabel={isSaved ? 'Remove from favorites' : 'Add to favorites'}
+        accessibilityLabel={isSaved ? t().recipes.saved : t().recipes.save}
         disabled={saveDisabled}
         style={[styles.floatingBtn, { opacity: saveDisabled ? opacities.disabled : opacities.full, backgroundColor: colors.overlayLight }]}
       >

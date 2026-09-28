@@ -34,6 +34,8 @@
  *   AA. Every routed screen has an analytics screen name — an unmapped route
  *      falls back to the platform's own name, which is one `MainActivity` for
  *      the whole app (CLAUDE.md §25).
+ *   AH. No accessibilityLabel spelled as a string literal — a screen reader
+ *      speaks it in English on every locale (CLAUDE.md §11).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -853,6 +855,33 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
     if (!SET_PROP.test(code)) continue;
     errors.push(`${file}: removeClippedSubviews — crashes Fabric mounting (CLAUDE.md §6c)`);
+  }
+}
+
+// --- AH: accessibility labels go through t() (CLAUDE.md §11) -----------------
+// The mobile recipe detail's bookmark button announced "Add to favorites" on a
+// Turkish screen: the label was typed into the component while its three
+// neighbours read `t()`. Nothing visible changed, so no screenshot or snapshot
+// could catch it — only a screen reader user would ever hear it. A label is
+// user-facing copy; a quoted word in one is copy that skipped the catalogue.
+//
+// Matches `accessibilityLabel="Word"` and a quoted word anywhere inside
+// `accessibilityLabel={…}` (the ternary is how this one slipped in). Template
+// literals are left alone: they compose `t()` output with data.
+{
+  const BRAND = new Set(['Recipely']);
+  const ATTR = /accessibilityLabel=(?:"([^"]*)"|\{([^}]*)\})/g;
+  const QUOTED_WORD = /(['"])([^'"]*[A-Za-z][^'"]*)\1/g;
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(ATTR)) {
+      const literals = m[1] !== undefined ? [m[1]] : [...m[2].matchAll(QUOTED_WORD)].map((q) => q[2]);
+      for (const text of literals) {
+        if (!/[A-Za-z]/.test(text) || BRAND.has(text)) continue;
+        errors.push(`${file}: accessibilityLabel "${text}" is a literal — use t() (CLAUDE.md §11)`);
+      }
+    }
   }
 }
 

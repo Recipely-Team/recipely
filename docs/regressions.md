@@ -2266,3 +2266,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* after an import failed (a Facebook reel, a too-long TikTok), the inbox row read "Your imported recipe is ready" and did nothing when tapped.
 *Why:* the backend records a failed import as `import_done` with no draft and no recipe, and the row trusted the type.
 *Guard:* `toNotifItem` resolves that shape to `import_failed`, which has its own copy; `model/__tests__/to-notif-item.test.ts` and `notif-row-copy.test.tsx`. **A type that covers both outcomes is told apart by its payload, at the one place the kind is resolved.**
+
+### A spoken label typed in English
+
+*Symptom:* on the mobile recipe detail in Turkish, the bookmark button announced "Add to favorites" while share, copy and like spoke Turkish.
+*Why:* the label was a string literal in `recipe-floating-actions.tsx`; nothing visible changes, so no screenshot or snapshot could see it.
+*Guard:* the label reads `t().recipes.save/saved`; `recipe-floating-actions.save-label.test.tsx`, and `check:structure` rule AH rejects any word-bearing string literal in an `accessibilityLabel`. **An accessibility label is copy; it goes through the catalogue like any other.**
