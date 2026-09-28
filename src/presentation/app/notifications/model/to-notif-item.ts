@@ -2,6 +2,7 @@ import type { NotificationEntity } from '@domain/notifications/notification-enti
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { TimeConstants, ValueConstants } from '@core/constants';
+import type { ImportSource } from '@presentation/app/notifications/model/import-source';
 
 /** The kinds this build knows how to draw; anything newer falls back to `generic`. */
 const KNOWN_KINDS = new Set<NotifKind>([
@@ -35,7 +36,16 @@ export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   // Surface free-text payload (e.g. the comment body) as the secondary line.
   body: notification.message ?? undefined,
   target: notification.target,
+  ...importSourceOf(notification),
 });
+
+/** The platform (and account) an import row names; nothing for a row the server wrote before it stored them. */
+function importSourceOf(notification: NotificationEntity): { source?: ImportSource } {
+  const platform = notification.sourcePlatform;
+  if (platform === null) return {};
+  const handle = notification.sourceHandle;
+  return { source: handle === null ? { platform } : { platform, handle } };
+}
 
 /**
  * The server sends a failed import as `import_done` too, with neither a draft

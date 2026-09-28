@@ -2278,3 +2278,26 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* a recipe saved right after "Generate recipe" published without its AI mark, and a ghost copy of its draft came back in My Recipes after the save.
 *Why:* the draft autosave is debounced 500ms. A save inside that window sent `fromDraftId` for a draft not yet written (the server reads the draft's prompt to know a model wrote it), and the timer then fired after the save had retired the draft.
 *Guard:* `useDraftAutosave` returns `flush` beside `cancel`; `useRecipeSave` flushes before the create and stops autosaving before retiring the draft. `use-draft-autosave.test.tsx` and `use-recipe-save.test.tsx` pin the order. **Every path that ends the draft's life must settle the pending autosave first** — discard already did, save did not.
+
+## Every import notification wore the Instagram logo
+
+**Symptom.** The in-app notifications list drew the Instagram logo on every
+import row — TikTok, YouTube, Facebook and web imports included — and no row
+said where the recipe came from, while the push for the same import did.
+
+**Cause.** The platform only ever lived in the push sentence. The backend's
+notification row stored the recipe title and nothing about the source, so the
+app had no field to render and `useKindMeta` hard-coded `logo-instagram` for
+both import kinds — a default from when Instagram was the only importer.
+
+**Now.** The backend stores `sourcePlatform` / `sourceHandle` on the row
+(backend PR #360) and the list DTO carries them through the entity to the row,
+which draws the shared `ProvenanceSeal` and the detail screen's
+`recipes.origin*` sentence. A row with no platform shows a neutral
+`download-outline` icon. Guard: `notif-row-provenance.test.tsx` (fails against
+the old row), `notification-repository.test.ts`, `to-notif-item.test.ts`.
+
+*The class:* **a fact that exists only inside a sentence cannot be drawn.** When
+a second surface (the feed) must show what the first (the push) says, store the
+fact, not just the wording — and never let a "default" icon name one specific
+source.

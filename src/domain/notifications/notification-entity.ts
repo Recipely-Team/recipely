@@ -7,6 +7,7 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
 import { ValueConstants } from '@core/constants';
+import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
 
 /**
@@ -56,6 +57,15 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
   /** Free-text payload (e.g. the comment body); null for types without text. */
   get message(): string | null {
     return this.props.message;
+  }
+
+  /** Where an import's recipe came from — the platform its push named. */
+  get sourcePlatform(): SourcePlatformType | null {
+    return this.props.sourcePlatform;
+  }
+
+  get sourceHandle(): string | null {
+    return this.props.sourceHandle;
   }
 
   get read(): boolean {

@@ -7,6 +7,8 @@ import type { NotificationRepositoryInterface } from '@domain/notifications/noti
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+import { toSourcePlatform } from '@domain/recipes/provenance/to-source-platform';
+import { isNonEmptyString } from '@core/guards/type-guards';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
 import type { NotificationsResponseDto } from '@infrastructure/notifications/dtos/notifications-response-dto';
 import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notifications/dtos/register-device-token-request-dto';
@@ -85,6 +87,8 @@ function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEnti
     commentId: dto.commentId ?? null,
     draftId: dto.draftId ?? null,
     message: dto.message ?? null,
+    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    sourceHandle: isNonEmptyString(dto.sourceHandle) ? dto.sourceHandle : null,
     read: dto.read,
     createdAt: new Date(dto.createdAt),
   });

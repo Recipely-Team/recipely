@@ -12,6 +12,8 @@ const makeProps = (overrides: Partial<NotificationEntityProps> = {}): Notificati
   commentId: null,
   draftId: null,
   message: null,
+  sourcePlatform: null,
+  sourceHandle: null,
   read: false,
   createdAt: new Date('2026-06-01T12:00:00.000Z'),
   ...overrides,

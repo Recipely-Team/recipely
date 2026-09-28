@@ -21,6 +21,8 @@ const importRow = (overrides: Partial<NotificationEntityProps>): NotificationEnt
     commentId: null,
     draftId: null,
     message: null,
+    sourcePlatform: null,
+    sourceHandle: null,
     read: false,
     createdAt: new Date(),
     ...overrides,
@@ -46,5 +48,21 @@ describe('toNotifItem', () => {
     const item = toNotifItem(importRow({ recipeId: 'recipe-1' }));
 
     expect(item.kind).toBe(NotifKind.ImportDone);
+  });
+});
+
+describe('toNotifItem — import provenance', () => {
+  it('carries the platform and account the server stored', () => {
+    const item = toNotifItem(importRow({ draftId: 'd1', sourcePlatform: 'TIKTOK', sourceHandle: 'chef.ayse' }));
+
+    expect(item.source).toEqual({ platform: 'TIKTOK', handle: 'chef.ayse' });
+  });
+
+  it('carries the platform alone when no account was stored', () => {
+    expect(toNotifItem(importRow({ sourcePlatform: 'YOUTUBE' })).source).toEqual({ platform: 'YOUTUBE' });
+  });
+
+  it('carries no source for a row the server wrote before it stored one', () => {
+    expect(toNotifItem(importRow({ draftId: 'd1' })).source).toBeUndefined();
   });
 });
