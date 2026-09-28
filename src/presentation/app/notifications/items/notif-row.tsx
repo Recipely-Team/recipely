@@ -7,6 +7,9 @@ import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import { importSourceLine } from '@presentation/app/notifications/model/import-source-line';
 
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
@@ -16,6 +19,7 @@ const actionText = (n: NotifItem): string => {
     case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
     case 'ai_done': return labels.aiDoneLabel;
     case 'import_done': return labels.importDoneLabel;
+    case 'import_failed': return labels.importFailedLabel;
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;
@@ -44,6 +48,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
   const tappable = item.target !== null || !item.read;
+  const sourceLine = item.source === undefined ? undefined : importSourceLine(item.source);
 
   return (
     <Pressable
@@ -59,21 +64,32 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
         },
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
-      accessibilityLabel={`${item.actor} ${actionText(item)}`}
+      accessibilityLabel={[item.actor, actionText(item), sourceLine].filter(Boolean).join(' ')}
       // A target-less unread row's only action is "mark read" — say so, since
       // the label alone gives assistive tech no cue what activating it does.
       accessibilityHint={
         item.target === null && !item.read ? t().notifications.markOneHint : undefined
       }
     >
-      <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
-        <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
-      </View>
+      {item.source !== undefined ? (
+        <View style={styles.seal}>
+          <ProvenanceSeal marks={[item.source.platform]} surface={SealSurface.Page} size={avatarSizes.md} decorative />
+        </View>
+      ) : (
+        <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
+          <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
+        </View>
+      )}
       <View style={styles.rowBody}>
         <ThemedText variant="body" style={styles.actionLine} numberOfLines={ValueConstants.two}>
           <ThemedText variant="body" style={{ fontWeight: fontWeights.bold }}>{item.actor}</ThemedText>
           {' '}{actionText(item)}
         </ThemedText>
+        {sourceLine !== undefined ? (
+          <ThemedText variant="caption" muted numberOfLines={ValueConstants.two} style={styles.bodyText}>
+            {sourceLine}
+          </ThemedText>
+        ) : null}
         {item.body !== undefined ? (
           <ThemedText variant="caption" muted numberOfLines={ValueConstants.two} style={styles.bodyText}>
             {item.body}
@@ -108,6 +124,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     flexShrink: ValueConstants.zero,
   },
+  seal: { flexShrink: ValueConstants.zero },
   rowBody: { flex: ValueConstants.one, gap: spacing.xxs },
   actionLine: { fontSize: fontSizes.body, lineHeight: lineHeightFor(fontSizes.body, lineHeights.snug) },
   bodyText: { lineHeight: lineHeightFor(fontSizes.caption) },

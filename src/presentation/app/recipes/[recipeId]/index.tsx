@@ -6,7 +6,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { DetailBackButton } from '@presentation/app/recipes/[recipeId]/items/detail-back-button';
 import { RecipeDetailSheets } from '@presentation/app/recipes/[recipeId]/sheets/recipe-detail-sheets';
-import { useRecipePhotoUpload } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-photo-upload';
+import { useRecipePhotoUpload } from '@presentation/app/recipes/[recipeId]/hooks/photos/use-recipe-photo-upload';
+import { usePhotoRemoval } from '@presentation/app/recipes/[recipeId]/hooks/photos/use-photo-removal';
 import { StateView } from '@presentation/app/recipes/[recipeId]/items/state-view';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
@@ -53,7 +54,17 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   // Adding and removing photos on a recipe the user owns. Removing asks first:
   // it is their own picture, but it may also be the only one the recipe has.
   const photos = useRecipePhotoUpload(vm.recipeId);
-  const [photoPendingRemoval, setPhotoPendingRemoval] = useState<string | null>(null);
+  const photoRemoval = usePhotoRemoval(photos.remove);
+  // Built once and handed to whichever layout renders. It used to be written
+  // out at each call site, and the web one was simply never written — the
+  // owner had no way to add a photo on that surface at all.
+  const ownerPhotoControls = vm.isOwner
+    ? {
+        onAdd: () => void photos.pickAndAdd(),
+        onRemove: photoRemoval.request,
+        isBusy: photos.isBusy,
+      }
+    : undefined;
   const scrollOffset = useRef(ValueConstants.zero);
   const scrollDetail = useCallback(
     (direction: AssistantScrollDirectionType): boolean =>
@@ -165,6 +176,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onToggleSave={vm.onToggleSave}
                   onCopyToDraft={vm.onCopyToDraft}
                   onDelete={vm.onOpenDelete}
+                  photos={ownerPhotoControls}
                   checkedIngredients={vm.checkedIngredients}
                   onToggleIngredient={vm.onToggleIngredient}
                   completedSteps={vm.completedSteps}
@@ -206,15 +218,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
                   onLoadMoreComments={vm.onLoadMoreComments}
                   onToggleCommentLike={vm.onToggleCommentLike}
                   onDeleteComment={vm.onDeleteComment}
-                  photos={
-                    vm.isOwner
-                      ? {
-                          onAdd: () => void photos.pickAndAdd(),
-                          onRemove: setPhotoPendingRemoval,
-                          isBusy: photos.isBusy,
-                        }
-                      : undefined
-                  }
+                  photos={ownerPhotoControls}
                   commentHighlight={commentHighlight}
                 />
               )
@@ -232,12 +236,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           vm.onToggleSave();
         }}
         onCancelUnsave={() => setUnsavePending(false)}
-        photoPendingRemoval={photoPendingRemoval}
-        onConfirmRemovePhoto={(mediaId) => {
-          setPhotoPendingRemoval(null);
-          void photos.remove(mediaId);
-        }}
-        onCancelRemovePhoto={() => setPhotoPendingRemoval(null)}
+        photoPendingRemoval={photoRemoval.pending}
+        onConfirmRemovePhoto={photoRemoval.confirm}
+        onCancelRemovePhoto={photoRemoval.cancel}
         photoError={photos.error}
         onDismissPhotoError={photos.onDismissError}
         showDeleteSheet={vm.showDeleteSheet}

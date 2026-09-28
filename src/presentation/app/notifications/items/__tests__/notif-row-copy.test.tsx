@@ -56,6 +56,7 @@ describe('NotifRow copy', () => {
     NotifKind.Favorite,
     NotifKind.AiDone,
     NotifKind.ImportDone,
+    NotifKind.ImportFailed,
     NotifKind.ModerationApproved,
     NotifKind.ModerationPending,
     NotifKind.Follow,
@@ -66,6 +67,10 @@ describe('NotifRow copy', () => {
     // The actor alone is not a sentence — there must be copy beyond it.
     const meaningful = lines.filter((l) => l.trim().length > 0 && l !== 'Recipely');
     expect(meaningful.length).toBeGreaterThan(0);
+  });
+
+  it('says an import failed rather than that it is ready', () => {
+    expect(linesOf(item({ kind: NotifKind.ImportFailed }))).toContain(t().notifications.importFailedLabel);
   });
 
   it('still says something for a type nobody has taught it yet', () => {

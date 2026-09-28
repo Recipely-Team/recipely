@@ -1,4 +1,4 @@
-import type { Router } from 'expo-router';
+import type { ImperativeRouter } from 'expo-router';
 import { enterApp } from '@presentation/navigation/enter-app';
 
 /**
@@ -8,12 +8,12 @@ import { enterApp } from '@presentation/navigation/enter-app';
  * guest who had just declined to sign in back on the screen asking them to.
  */
 
-const makeRouter = (canDismiss: boolean): Router =>
+const makeRouter = (canDismiss: boolean): ImperativeRouter =>
   ({
     canDismiss: jest.fn(() => canDismiss),
     dismissAll: jest.fn(),
     replace: jest.fn(),
-  }) as unknown as Router;
+  }) as unknown as ImperativeRouter;
 
 describe('enterApp', () => {
   it('pops the auth screens off before landing, so back cannot return to them', () => {
@@ -31,7 +31,7 @@ describe('enterApp', () => {
       canDismiss: () => true,
       dismissAll: () => calls.push('dismissAll'),
       replace: () => calls.push('replace'),
-    } as unknown as Router;
+    } as unknown as ImperativeRouter;
 
     enterApp(router, '/recipes');
 

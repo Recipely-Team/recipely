@@ -25,6 +25,11 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 import { CARD_HOVER_LIFT } from '@presentation/base/widgets/cards/card-hover-lift';
 import { formatRating } from '@presentation/base/utils/format-rating';
+import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
+import { provenanceSealMetrics } from '@presentation/base/widgets/badges/provenance-seal-metrics';
+import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
+import { RecipeStatusBadge } from '@presentation/base/widgets/badges/recipe-status-badge';
+import { PhotoCountChip } from '@presentation/base/widgets/badges/photo-count-chip';
 
 export interface WebRecipeCardProps {
   recipe: RecipeSummaryEntity;
@@ -43,8 +48,10 @@ export interface WebRecipeCardProps {
    */
   likedByMe?: boolean;
   likeCount?: number;
-  /** Optional "Yours" badge for the My Recipes "Created" tab. */
+  /** The My Recipes "Created" tab: the recipe's status badge on the photo's bottom-left. */
   ownedByMe?: boolean;
+  /** How many photos the recipe has; defaults to the list row's count. A chip on the cover's bottom-right shows it from two up. */
+  photoCount?: number;
 }
 
 /**
@@ -55,7 +62,7 @@ export interface WebRecipeCardProps {
  * lifts slightly on hover. No author row (that would be an N+1 fetch).
  */
 export const WebRecipeCard = ({
-  recipe, saved, onOpen, onToggleSave, ownedByMe = false,
+  recipe, saved, onOpen, onToggleSave, ownedByMe = false, photoCount = recipe.photoCount,
   likedByMe = recipe.likedByMe, likeCount = recipe.likeCount,
 }: WebRecipeCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -92,22 +99,29 @@ export const WebRecipeCard = ({
           <View style={styles.imageWrap}>
             <RecipeImage
               uri={recipe.image}
+              focus={recipe.imageFocus}
               style={styles.image}
               accessibilityLabel={recipe.name}
               placeholderLabel={t().recipes.noPhoto}
             />
-            <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
-              <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
-                {cuisineLabel(recipe.cuisine).name}
-              </ThemedText>
-            </View>
-            {ownedByMe ? (
-              <View style={[styles.ownedBadge, { backgroundColor: colors.primary }]}>
-                <ThemedText variant="caption" style={[styles.ownedText, { color: colors.primaryText }]}>
-                  {t().recipes.youPill}
+            {/* Top-left here: the save bookmark holds the top-right, so the
+                seal shares the cuisine tag's corner instead. */}
+            <View style={styles.topLeft}>
+              <ProvenanceSeal
+                marks={recipe.provenanceMarks}
+                surface={SealSurface.Photo}
+                size={provenanceSealMetrics.webCardSize}
+              />
+              <View style={[styles.cuisineTag, { backgroundColor: colors.overlay }]}>
+                <ThemedText variant="caption" style={[styles.cuisineText, { color: colors.onOverlay }]}>
+                  {cuisineLabel(recipe.cuisine).name}
                 </ThemedText>
               </View>
-            ) : null}
+            </View>
+            {ownedByMe ? <RecipeStatusBadge status={recipe.ownerStatus} /> : null}
+            <View style={styles.photoCount} pointerEvents="none">
+              <PhotoCountChip count={photoCount} />
+            </View>
           </View>
 
           <View style={styles.body}>
@@ -186,27 +200,26 @@ const styles = StyleSheet.create({
     height: '100%',
     resizeMode: 'cover',
   },
-  cuisineTag: {
+  topLeft: {
     position: 'absolute',
     top: spacing.md,
     left: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs2,
+  },
+  photoCount: {
+    position: 'absolute',
+    right: spacing.md,
+    bottom: spacing.md,
+  },
+  cuisineTag: {
     borderRadius: radii.round,
     paddingHorizontal: spacing.sm2,
     paddingVertical: spacing.xs,
   },
   cuisineText: {
     fontWeight: fontWeights.semibold,
-  },
-  ownedBadge: {
-    position: 'absolute',
-    bottom: spacing.md,
-    left: spacing.md,
-    borderRadius: radii.round,
-    paddingHorizontal: spacing.sm2,
-    paddingVertical: spacing.xs,
-  },
-  ownedText: {
-    fontWeight: fontWeights.bold,
   },
   saveBtn: {
     position: 'absolute',

@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1027 source files.
+[architecture.md](architecture.md). 1199 source files.
 
 ## Layers
 
@@ -32,6 +32,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(7)_
 - `comments/` _(4)_
 - `common/` _(1)_
+- `device/` _(3)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -39,7 +40,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(10)_
-- `recipes/` — create, import, ingredients, list, media, refine, taxonomy _(27)_
+- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(55)_
 - `storage/` _(1)_
 - `user-profile/` _(3)_
 
@@ -50,6 +51,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
+- `device/` _(2)_
 - `di/` _(3)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
@@ -58,7 +60,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(6)_
 - `notifications/` — list, read _(11)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, generate, import, liked, list, my-recipes, photos, refine, saved, taxonomy, trending _(47)_
+- `recipes/` — create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(57)_
 - `storage/` _(2)_
 - `store/` _(2)_
 - `timers/` _(7)_
@@ -73,7 +75,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `comments/` — dtos _(4)_
 - `constants/` — analytics, api _(21)_
 - `crypto/` _(3)_
-- `device/` _(3)_
+- `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
 - `drafts/` — dtos _(6)_
@@ -84,7 +86,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, import, media, refine, taxonomy _(23)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(31)_
 - `storage/` _(6)_
 - `user-profile/` _(3)_
 
@@ -105,19 +107,19 @@ locale list `application/i18n/locale-constants.ts`.
 
 ## `src/presentation/base/` — shared UI
 
-- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(7)_
+- `constants/` — cross-cutting UI values that are not measurements (animation drivers, route paths) _(9)_
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(65)_
+- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(67)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` — small pure helpers _(7)_
+- `utils/` — small pure helpers _(10)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, web-header) — shared components, grouped by category _(90)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(107)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -150,4 +152,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 69312a4337201f54 -->
+<!-- fingerprint: bec240dce3a8d6fa -->

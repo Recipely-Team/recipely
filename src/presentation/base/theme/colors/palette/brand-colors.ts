@@ -25,4 +25,57 @@ export const BrandColors = {
   instagramGradientWarm: '#EE583F',
   instagramGradientMid: '#EE2A7B',
   instagramGradientEnd: '#6228D7',
+  /**
+   * Instagram's colours as INK on the provenance seal's white face, not the
+   * import card's plate: each stop is at least 3:1 on white, which the plate's
+   * yellow is not.
+   */
+  instagramInkOrange: '#F56040',
+  instagramInkPink: '#E1306C',
+  instagramInkMagenta: '#C13584',
+  instagramInkPurple: '#833AB4',
+  /**
+   * TikTok's note. The near-black carries the shape (18:1 on white); the red
+   * echo is 3.9:1 and the cyan one is decoration only, as in TikTok's own mark.
+   */
+  tiktokNote: '#121212',
+  tiktokCyan: '#25F4EE',
+  tiktokRed: '#FE2C55',
+  /** Facebook's blue as outline ink on the seal's white face, 5.0:1. */
+  facebookInk: '#0866FF',
+  /** YouTube's red as outline ink on the seal's white face, 4.0:1. */
+  youtubeInk: '#FF0000',
+  /** A web page's globe: neutral slate rather than any site's colour, 10.4:1 on white. */
+  webInk: '#334155',
+  /** The AI sparkles' indigo-to-teal ink, both stops at least 3:1 on white. */
+  aiInkIndigo: '#4F46E5',
+  aiInkTeal: '#0E7490',
+  /**
+   * The seal's ring over a photo: slate at 62%, about #6A6F7B over white — 5.1:1
+   * against a white pixel, while the white face gives 21:1 against a black one.
+   */
+  sealRing: 'rgba(15,23,42,0.62)',
+  /** The hairline between two marks in one capsule. */
+  sealDivider: 'rgba(15,23,42,0.18)',
+  /**
+   * The light round controls drawn ON a photo — the hero's previous / next
+   * arrows and a Created card's camera button. Fixed in both modes: what they
+   * sit on is the picture, not the theme.
+   */
+  photoControl: 'rgba(255,255,255,0.94)',
+  /** Glyph on a {@link photoControl}. */
+  photoControlInk: '#1E293B',
+  /** Hairline round a white {@link photoControl} so it holds its edge on a white plate. */
+  photoControlBorder: 'rgba(15,23,42,0.14)',
+  /** The clear end of a scrim gradient over a photo — black at zero, so the fade never greys. */
+  photoScrimClear: 'rgba(0,0,0,0)',
+  /**
+   * The macro daily-value bars on the nutrition panel. Fixed across every
+   * theme and mode, as the prototype draws them: a macro keeps its colour so a
+   * reader who learned "blue is protein" never has to relearn it per palette.
+   */
+  nutritionProtein: '#3B82F6',
+  nutritionCarbs: '#F59E0B',
+  nutritionFat: '#EF4444',
+  nutritionFiber: '#10B981',
 } as const;

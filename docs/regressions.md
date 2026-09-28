@@ -2075,3 +2075,229 @@ Apple sees four — and fails the build when there are more than three, naming 9
 and the App Store — processing, validation, review — runs after CI has reported success,
 so a rule Apple enforces there has to be enforced here, on the artifact, before the upload.
 
+
+## A round trip where each half was reasonable and the pair lost the answer
+
+A sütlaç saved as a dessert, resumed from the drafts list and published, arrived as a
+main course.
+
+`snapshotToEditable` did not read `category`, on the stated grounds that "it only matters
+at publish time" — but publish reads it from the EDITOR, so a resumed draft always
+published `MAIN_COURSE`. Facing it, `editableToSnapshot` only ever re-wrote the CARRIED
+category, correctly, because the editor's own was always the default and writing it would
+have destroyed an imported draft's real one. So a generated draft, which carries nothing,
+stored no category at all, and an imported one stored a value nothing would ever read
+back. Neither half was wrong on its own; together they made the field write-only.
+
+*Guard:* the two halves ship together — the editor reads the stored category back
+(verbatim: the backend's catalogue has 32 and this app's enum mirrors 11) and writes its
+own — and a test follows one category through a save and a resume rather than through
+either mapper alone.
+
+*The class:* **when a value is written by one mapper and read by another, test the round
+trip.** A pair of unit tests can both pass over a field that never survives the journey.
+
+## One upload path learned the lesson; the one beside it never heard about it
+
+A profile photo over 1 MB was refused, for a picture the server renders at 256 square.
+
+The picker hands back the ORIGINAL capture — several megabytes at 4000px on a recent
+phone — and `useAvatarUpload` sent it untouched. The recipe media picker has shrunk its
+photos since the day the identical upload failed there, and the constants file it added
+even documents the reverse proxy's 1 MB default that does the refusing. None of it
+reached the avatar path, because the shrinker was written inside the create-recipe page
+folder where the only other screen that uploads photos could not see it.
+
+*Guard:* `shrinkForUpload` moved to `base/utils/` (two consumers, per rule 14), takes the
+bound as a parameter — an avatar's budget is not a recipe photo's — and a test drives the
+hook to assert the shrunk URI is what gets uploaded, name and MIME type derived from it
+rather than from the original.
+
+*The class:* **a fix that lives in a page folder is a fix one screen got.** When the same
+bug can arrive through two doors, the repair belongs where both can reach it — and the
+second door is worth opening at the time, because nobody goes looking for it later.
+
+*A second lesson, from the review of that same fix:* the shrink was inserted BEFORE
+`setIsUploading(true)`, because that is where the code that produces the file goes. But a
+re-encode of a 4000px capture is a real pass over the image, so it opened a window with no
+spinner, an enabled button, and a re-entrancy guard (`if (isUploading) return`) that could
+not fire — two taps started two flights and the later upload won the avatar. **A busy flag
+belongs around the work, not around the request.** Making an operation slower moves what
+has to be inside it.
+
+---
+
+## The app launched to a black screen on iOS 27
+
+*Symptom:* on the iPhone Duo (iOS 27.1) the app started, the process stayed alive, and the
+screen stayed black. On iOS 26.4 the same build was fine.
+
+*Root cause:* iOS 27 requires the scene life cycle. Declaring a complete
+`UIApplicationSceneManifest` stopped the launch assertion and changed nothing visible,
+because `AppDelegate` still created the `UIWindow` in `didFinishLaunchingWithOptions` and
+started React Native into it — a window UIKit never presents once the app is scene-based.
+Expo 57 ships the missing half (`ExpoAppSceneDelegate`), but its SDK 57 prebuild template
+still generates the app-life-cycle delegate; the template only adopts the scene delegate in
+SDK 58. `plugins/withIosSceneDelegate.js` applies the SDK 58 wiring to the SDK 57 template.
+
+*What now prevents a recurrence:* `plugins/__tests__/withIosSceneDelegate.test.js`, and the
+plugin throwing instead of skipping when the template stops matching.
+
+*The class:* **a process that is alive is not a screen that is drawn, and a config that
+reads right is not an artifact that works.** Two of the three parts of this fix produce no
+error on their own — the manifest without the delegate boots to black, the delegate without
+the manifest is never asked for — so only the running app is evidence. This is the same
+lesson as the `UIBackgroundModes` rejection (rule 23c): check the artifact, and where the
+artifact is a screen, look at the screen.
+
+*A second lesson, from the same upgrade:* `StyleSheet.absoluteFillObject` was **removed**
+in React Native 0.86, runtime included. Eight overlays would have read `undefined` and
+silently lost their fill — no crash, no warning, just layout that is wrong. `tsc` is what
+caught it, which is the argument for running the type gate against a dependency bump
+rather than only against hand-written changes.
+
+---
+
+## The owner's photo controls were drawn where nobody could press them
+
+*Symptom:* "webde fotoğraf ekleme butonu yok mobilde de gözükmüyor" — on the web the owner of a
+recipe could only delete it, and on the phone neither photo control was visible.
+
+*Root cause:* two different faults behind one report. On the web the controls genuinely did not
+exist: adding and removing live in `MediaGallery`, which only the mobile layout renders, and the
+web detail draws its own hero. On mobile both were rendered and both were unreachable —
+`MobileRecipeDetail` pulls its content card up over the hero by `spacing.xxl` (32) and that card
+is a LATER SIBLING, so it paints and hit-tests above it; the add button at `bottom: 12` standing
+32 tall had twenty of its points buried and its centred icon with them. The remove button was
+pinned to `top: 12` of a hero that runs edge to edge under the status bar, in the corner
+`RecipeFloatingActions` already occupies.
+
+*What now prevents a recurrence:* `media-gallery.owner-controls.test.tsx` asserts the cluster's
+offset clears the overlap AND tracks it, and `mobileContentOverlap` is one constant the card's
+margin and the controls' offset both spend.
+
+*The class:* **rendered is not reachable, and a presence test cannot tell the difference.** A test
+asking "is the button in the tree?" passed for the entire life of this bug. When a screen stacks
+siblings with a negative margin, the overlap is a real layout fact that has to be a named value
+both sides read — written twice it drifts, and the drift is invisible because the thing on top is
+opaque. Anything interactive inside that band is not merely hard to see; the press lands on the
+wrong view.
+
+---
+
+## The assistant "never asked" for the microphone
+
+*Symptom:* on the live iOS build the assistant did not ask for microphone permission, so voice
+never worked.
+
+*Root cause:* it did ask — once. **iOS presents that prompt exactly one time, ever.** After the
+first answer `AudioManager.requestRecordingPermissions()` returns `Denied` immediately and draws
+no dialog at all. The app turned that into a sentence on the panel — "Recipely needs the
+microphone to hear you." — and nothing else. Every later press repeated the sentence and asked
+nothing, which from the user's side is indistinguishable from an app that never asks. The plist
+key, the request call and the order (`ensureAccess` runs before any network work) were all
+correct; what was missing was the way out.
+
+*What now prevents a recurrence:* `assistant-panel.microphone-denied.test.tsx` — the denied
+notice offers Settings, and only for that reason.
+
+*The class:* **a permission the OS will only ask about once needs an answer for the second time
+the user asks.** Any one-shot system grant — microphone, camera, notifications, photos — has two
+states worth designing for, not one: not yet asked (the prompt does the work) and already
+refused (the prompt is gone and the only remaining door is Settings). A screen that states the
+requirement without offering that door is a dead end that looks like a bug in the request, and
+it sends everyone hunting the wrong layer — the plist, the native module, the call order — none
+of which is broken.
+
+*Second instance, same class:* the recipe editor's photo picker returned an empty list on a
+refused library permission — the "Add photos" button simply did nothing. It now says so and
+offers Settings (`use-media-pick.test.tsx`). The camera and the library are asked through one
+`askPickSource`, so the three photo flows cannot drift apart on which sources they offer.
+
+### A written section heading was read as an ingredient
+
+*Symptom:* a pasted trileçe (cake, caramel, milk syrup) showed as one undivided ingredient list.
+*Why:* only a leading `#` counted as a group heading; people and recipe sites write "Trileçenin karameli için:".
+*Guard:* `isIngredientGroup` also accepts a short colon-terminated line with no digits (`ingredient-group.test.ts`); the backend prompt keeps user sections as groups.
+
+---
+*Symptom:* after removing the last photo of a gallery while viewing it, the counter read "3 / 2" and the remove button vanished; the cover itself could never be removed.
+*Why:* the gallery's active index only moves on a scroll event, and removing a slide scrolls nothing; the cover of a cover-only recipe maps to an item with no id, and removal was keyed on the id.
+*Guard:* every read goes through an index clamped to the current list (`media-gallery.removal.test.tsx`); removal takes the `MediaItem` and `RecipeEntity.isCover` routes the cover to its own request (`recipe-detail-store-photos.test.ts`).
+
+### CI called a fresh project map stale
+
+*Symptom:* `check:structure` passed locally and failed in CI with "PROJECT-MAP.md is stale".
+*Why:* the fingerprint listed empty folders, which exist on a laptop after a move but never in a git checkout, and sorted with locale-dependent `localeCompare`.
+*Guard:* `generate-map.mjs` derives folders from files and sorts by code point; an empty folder or a different locale no longer changes it.
+
+### A section heading printed twice
+
+*Symptom:* the mobile recipe detail read "Besin değerleri" twice — the screen's section header, then the nutrition card's own title under it.
+*Why:* the card was written as a self-contained section and later placed under a `SectionHeader`; neither side knew the other also titled it.
+*Guard:* the nutrition panel takes no title and the placing screen owns the one heading (`recipe-overview.nutrition-heading.test.tsx` counts it). A section body under `base/` or `items/` should not render a heading of its own.
+
+### A wire value and a clipped label on the phone's stat tiles
+
+*Symptom:* the phone's recipe detail printed difficulty as "EASY" while the web sidebar said "Easy", and on a 320pt phone the tile labels were cut to an ellipsis.
+*Why:* the mobile tile passed the raw `Difficulty` through where the web one went through `difficultyLabel`; each label was pinned to `numberOfLines={1}` inside a quarter of the card.
+*Guard:* `recipe-meta-card.test.tsx` asserts the translated label and that no stat label carries `numberOfLines`; the grid folds to two columns from the card's own measured width (`statGrid.narrowMaxWidth`). **A display vocabulary goes through its one label function on every platform** — two renderings of the same field is where one of them forgets.
+
+### A portrait photo cropped to a sliver in the detail hero
+
+*Symptom:* the detail hero cropped a portrait photo to a sliver (hands and pots) — a phone shot of a dish lost the dish and kept a band from its middle.
+*Why:* every photo was drawn `cover` into a 4:3 frame, whatever its own shape; a crop decision was made without knowing either ratio.
+*Guard:* `smart-photo.portrait.test.tsx` asserts a portrait source renders `contain` over a blurred `cover` copy and a landscape one stays cropped; the rule is one pure function (`isPortraitPhoto`) fed the photo's DECODED size and the frame's MEASURED one. **Decide how to fit a picture from measured ratios, never from the frame's nominal one** — a capped frame is wider than its ratio says.
+
+### A photo-less recipe drew a blank frame instead of the empty hero
+
+*Symptom:* an owner's recipe with no photo showed a blank frame with a Remove button and an empty thumb instead of the "add first photo" state.
+*Why:* the detail hook built the hero list itself and always wrapped the cover — `''` included — as a one-photo gallery, so the viewer never saw an empty list.
+*Guard:* `RecipeEntity.heroPhotos` owns the rule (gallery images, else a non-blank cover with its focus) and `photoCount` derives from it; `use-recipe-detail.test.tsx` and `recipe-entity.test.ts` pin the blank-cover case. **A derivation over an entity's props lives on the entity** (rule 19) — a copy of it in a hook is where the edge case goes missing.
+
+### A pager's own animated scroll was reported as a swipe
+
+*Symptom:* jumping from photo 1 to photo 5 with an arrow or a thumb flickered the counter through 2, 3 and 4.
+*Why:* `onScroll` fires during the pager's own animated `scrollToOffset` as well as during a drag, and every event was reported.
+*Guard:* the pager ignores scroll events while its own scroll is in flight and a drag cancels that; `photo-pager.test.tsx`. **A scroll handler must know whether the user or the code moved the list.**
+
+### A failure the server spelled as a success
+
+*Symptom:* after an import failed (a Facebook reel, a too-long TikTok), the inbox row read "Your imported recipe is ready" and did nothing when tapped.
+*Why:* the backend records a failed import as `import_done` with no draft and no recipe, and the row trusted the type.
+*Guard:* `toNotifItem` resolves that shape to `import_failed`, which has its own copy; `model/__tests__/to-notif-item.test.ts` and `notif-row-copy.test.tsx`. **A type that covers both outcomes is told apart by its payload, at the one place the kind is resolved.**
+
+### A spoken label typed in English
+
+*Symptom:* on the mobile recipe detail in Turkish, the bookmark button announced "Add to favorites" while share, copy and like spoke Turkish.
+*Why:* the label was a string literal in `recipe-floating-actions.tsx`; nothing visible changes, so no screenshot or snapshot could see it.
+*Guard:* the label reads `t().recipes.save/saved`; `recipe-floating-actions.save-label.test.tsx`, and `check:structure` rule AH rejects any word-bearing string literal in an `accessibilityLabel`. **An accessibility label is copy; it goes through the catalogue like any other.**
+
+### A save that raced its own draft autosave
+
+*Symptom:* a recipe saved right after "Generate recipe" published without its AI mark, and a ghost copy of its draft came back in My Recipes after the save.
+*Why:* the draft autosave is debounced 500ms. A save inside that window sent `fromDraftId` for a draft not yet written (the server reads the draft's prompt to know a model wrote it), and the timer then fired after the save had retired the draft.
+*Guard:* `useDraftAutosave` returns `flush` beside `cancel`; `useRecipeSave` flushes before the create and stops autosaving before retiring the draft. `use-draft-autosave.test.tsx` and `use-recipe-save.test.tsx` pin the order. **Every path that ends the draft's life must settle the pending autosave first** — discard already did, save did not.
+
+## Every import notification wore the Instagram logo
+
+**Symptom.** The in-app notifications list drew the Instagram logo on every
+import row — TikTok, YouTube, Facebook and web imports included — and no row
+said where the recipe came from, while the push for the same import did.
+
+**Cause.** The platform only ever lived in the push sentence. The backend's
+notification row stored the recipe title and nothing about the source, so the
+app had no field to render and `useKindMeta` hard-coded `logo-instagram` for
+both import kinds — a default from when Instagram was the only importer.
+
+**Now.** The backend stores `sourcePlatform` / `sourceHandle` on the row
+(backend PR #360) and the list DTO carries them through the entity to the row,
+which draws the shared `ProvenanceSeal` and the detail screen's
+`recipes.origin*` sentence. A row with no platform shows a neutral
+`download-outline` icon. Guard: `notif-row-provenance.test.tsx` (fails against
+the old row), `notification-repository.test.ts`, `to-notif-item.test.ts`.
+
+*The class:* **a fact that exists only inside a sentence cannot be drawn.** When
+a second surface (the feed) must show what the first (the push) says, store the
+fact, not just the wording — and never let a "default" icon name one specific
+source.

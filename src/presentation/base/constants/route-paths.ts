@@ -1,3 +1,5 @@
+import { ImportSource } from '@presentation/base/constants/import-source';
+
 /**
  * Every in-app expo-router navigation target in one place, so route strings
  * are never hard-coded at call sites. Parameterised routes are builder
@@ -14,6 +16,8 @@ export const RoutePaths = {
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   importRecipe: '/import-recipe',
+  /** The import screen asking for photos or a PDF instead of a link. */
+  importRecipeFromFile: `/import-recipe?source=${ImportSource.File}`,
   myRecipes: '/my-recipes',
   /**
    * The feed's name in the root navigator's state (not a path) — expo-router
@@ -48,6 +52,9 @@ export const RoutePaths = {
    */
   createRecipeFromRecipe: (recipeId: string): string =>
     `/create-recipe?fromRecipeId=${encodeURIComponent(recipeId)}`,
+  /** The editor, opened on a private recipe the user owns; saving goes through PATCH. */
+  editRecipe: (recipeId: string): string =>
+    `/create-recipe?editRecipeId=${encodeURIComponent(recipeId)}`,
   createRecipeWithPrompt: (prompt: string): string =>
     `/create-recipe?prompt=${encodeURIComponent(prompt)}`,
   /** My Recipes opened on one of its tabs — saved, liked, created, drafts. */

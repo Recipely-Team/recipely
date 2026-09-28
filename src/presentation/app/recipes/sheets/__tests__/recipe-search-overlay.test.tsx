@@ -13,6 +13,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -39,6 +40,7 @@ jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
 
 const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name,
     image: '',
@@ -48,10 +50,14 @@ const buildRecipe = (id: string, name: string): RecipeSummaryEntity => {
     totalTimeMinutes: 20,
     rating: 4.2,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('fixture invalid');
   return result.value;

@@ -41,6 +41,10 @@ export const useRecipeTimer = ({
   // Once the end time has passed the displayed value can never change again,
   // so a finished timer drops off the clock instead of re-rendering forever.
   const isRunning = isActive && !isPaused;
+  // Reading the clock in render is the point: a timer that expired while the
+  // screen was away must come back already finished, and a value that only
+  // updates on the next tick cannot say so.
+  // eslint-disable-next-line react-hooks/purity
   const hasExpired = isRunning && endTimeMs <= Date.now();
   const nowMs = useTimerTick(isRunning && !hasExpired);
 

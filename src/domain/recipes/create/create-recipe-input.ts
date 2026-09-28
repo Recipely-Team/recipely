@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeMediaUpload } from '@domain/recipes/media/recipe-media-upload';
+import type { RecipeVisibilityType } from '@domain/recipes/publishing/recipe-visibility';
 
 export interface CreateRecipeInput {
   name: Record<string, string>;
@@ -30,7 +31,8 @@ export interface CreateRecipeInput {
   rating?: number;
   tags?: Record<string, string[]>;
   mealType?: Record<string, string[]>;
-  isPublished?: boolean;
+  /** The app always creates `private`; publishing is its own request. */
+  visibility?: RecipeVisibilityType;
   locale?: string;
   /**
    * The draft this recipe is being published from, when there is one.

@@ -7,8 +7,9 @@ import type { BoundStore } from '@application/store/bound-store';
  * surfaces as a `saveIssue` dialog state plus inline field errors; (2) the
  * dialog copy is always localized — the backend's raw (possibly English)
  * `message` must never reach the UI, and validation failures fire no toasts;
- * (3) a successful save surfaces a `saveSuccess` dialog state instead of
- * navigating away silently — navigation only happens from the dialog's actions.
+ * (3) save first, publish later: a save is always private, opens the recipe's
+ * page and says only the user can see it; editing a saved recipe goes through
+ * PATCH; the assistant's publish is save, then publish.
  *
  * Harness: same as use-recipe-generation.test.tsx — the hook is driven through
  * a probe component with the REAL Zustand stores wired to `FakeRecipeRepository`,
@@ -42,28 +43,39 @@ import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
+import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { en } from '@presentation/i18n/locales/en';
-import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
+import { configureRecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
+import { configureRecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store';
+import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
+import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
+import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
+import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
+import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
+import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showDangerToast: jest.fn(),
   showErrorToast: jest.fn(),
+  showSuccessToast: jest.fn(),
+  showWarningToast: jest.fn(),
 }));
 
 const mockReplace = jest.fn();
 const mockBack = jest.fn();
 const mockDismissTo = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack, dismissTo: mockDismissTo })),
+  useRouter: jest.fn(() => ({ replace: mockReplace, back: mockBack, dismissTo: mockDismissTo, canGoBack: () => true })),
 }));
 
 // ─── fixtures ────────────────────────────────────────────────────────────────
@@ -73,6 +85,7 @@ const COVER = { type: 'image', url: 'https://cdn.example.com/cover.webp' } as co
 
 const makeRecipe = (id: string): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id,
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,
@@ -94,7 +107,10 @@ const makeRecipe = (id: string): RecipeEntity => {
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;
@@ -119,8 +135,19 @@ const noopCacheStore = <T,>(): T =>
  * Real createdRecipesStore + draftsStore, with create/update wired through the
  * real use cases down to a `FakeRecipeRepository` reading `config`.
  */
-const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
-  const repo = new FakeRecipeRepository(config);
+const makeStores = (repo: FakeRecipeRepository): Stores => {
+  const recipeDetailStore = configureRecipeDetailStore({
+    getRecipe: new GetRecipeUseCase(repo),
+    addRecipePhoto: new AddRecipePhotoUseCase(repo),
+    removeRecipePhoto: new RemoveRecipePhotoUseCase(repo),
+    removeRecipeCover: new RemoveRecipeCoverUseCase(repo),
+  });
+  const recipePublishingStore = configureRecipePublishingStore({
+    publishRecipe: new PublishRecipeUseCase(repo),
+    unpublishRecipe: new UnpublishRecipeUseCase(repo),
+    editRecipe: new EditRecipeUseCase(repo),
+    recipeDetailStore,
+  });
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: new CreateRecipeUseCase(repo),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -129,7 +156,7 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     importInstagramRecipeUseCase: unusedUseCase<ImportInstagramRecipeUseCase>(),
     deleteRecipeUseCase: unusedUseCase<DeleteRecipeUseCase>(),
     recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
-    recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
+    recipeDetailStore,
   });
 
   const draftsStore = configureDraftsStore({
@@ -141,15 +168,19 @@ const makeStores = (config: FakeRecipeRepositoryConfig): Stores => {
     deleteDraftUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteDraftUseCase,
   });
 
-  return { createdRecipesStore, draftsStore } as unknown as Stores;
+  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as Stores;
 };
 
 type Save = ReturnType<typeof useRecipeSave>;
 
 interface HookDriver {
+  repo: FakeRecipeRepository;
+  /** What happened, in order: `flush` / `create-seen` / `stop`. */
+  events: string[];
   latest: () => Save;
   fieldErrors: () => CreateRecipeFieldErrors;
   save: () => Promise<void>;
+  saveAndPublish: () => Promise<void>;
 }
 
 /**
@@ -160,7 +191,16 @@ interface HookDriver {
 const driveHook = (
   config: FakeRecipeRepositoryConfig,
   recipe: EditableRecipe,
+  editRecipeId?: string,
 ): HookDriver => {
+  const repo = new FakeRecipeRepository(config);
+  const events: string[] = [];
+  const flushDraft = jest.fn(async () => {
+    events.push(repo.lastCreateInput === null ? 'flush' : 'flush-after-create');
+  });
+  const stopAutosave = jest.fn(() => {
+    events.push(repo.lastCreateInput === null ? 'stop-before-create' : 'stop');
+  });
   let latest!: Save;
   let fieldErrors: CreateRecipeFieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS;
 
@@ -171,24 +211,32 @@ const driveHook = (
       recipe,
       activeDraftId: 'draft-1',
       setFieldErrors: setErrors,
+      editRecipeId,
+      flushDraft,
+      stopAutosave,
     });
     return null;
   };
 
   renderComponent(
-    <StoresProvider value={makeStores(config)}>
+    <StoresProvider value={makeStores(repo)}>
       <Probe />
     </StoresProvider>,
   );
 
+  const flush = async (run: () => void): Promise<void> => {
+    await act(async () => {
+      run();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+  };
   return {
+    repo,
+    events,
     latest: () => latest,
     fieldErrors: () => fieldErrors,
-    save: async () => {
-      await act(async () => {
-        latest.onSave();
-      });
-    },
+    save: () => flush(() => latest.onSave()),
+    saveAndPublish: () => flush(() => latest.onSaveAndPublish()),
   };
 };
 
@@ -207,46 +255,65 @@ describe('useRecipeSave — pre-submit guards', () => {
     expect(driver.latest().saveIssue).toBe(en.createRecipe.missing);
     expect(driver.fieldErrors().fields.name).toBe(en.createRecipe.nameRequired);
     expect(driver.fieldErrors().fields.ingredients).toBe(en.createRecipe.ingredientsRequired);
-    expect(driver.latest().saveSuccess).toBeNull();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 });
 
 describe('useRecipeSave — publish', () => {
-  it('surfaces success as a dialog state instead of navigating away silently', async () => {
+  it('saves privately, opens the recipe and says only the user can see it', async () => {
     const driver = driveHook({ createRecipeResult: ok(makeRecipe(CREATED_ID)) }, publishable());
 
     await driver.save();
 
-    expect(driver.latest().saveSuccess).toEqual({ recipeId: CREATED_ID });
-    expect(mockReplace).not.toHaveBeenCalled();
-    expect(mockBack).not.toHaveBeenCalled();
-  });
-
-  it('deep-links to the new recipe from the success dialog primary action', async () => {
-    const driver = driveHook({ createRecipeResult: ok(makeRecipe(CREATED_ID)) }, publishable());
-
-    await driver.save();
-    act(() => driver.latest().onSuccessPrimary());
-
+    expect(driver.repo.lastCreateInput?.visibility).toBe('private');
     expect(mockReplace).toHaveBeenCalledWith(`/recipes/${CREATED_ID}`);
-    expect(driver.latest().saveSuccess).toBeNull();
+    expect(showSuccessToast).toHaveBeenCalledWith(en.createRecipe.savedPrivately);
   });
 
-  it('goes to My Recipes when the success dialog is dismissed', async () => {
+  // The symptom: a recipe saved straight after "Generate recipe" lost its AI
+  // mark, and a ghost copy of its draft reappeared in My Recipes. Save beat the
+  // 500ms draft autosave: the create named a draft that did not exist yet, and
+  // the autosave then fired after the draft had been retired.
+  it('writes the pending draft before creating, and stops autosaving before retiring it', async () => {
     const driver = driveHook({ createRecipeResult: ok(makeRecipe(CREATED_ID)) }, publishable());
 
     await driver.save();
-    act(() => driver.latest().onCloseSuccess());
 
-    // …on the "created" tab: a user who just published and is shown the saved
-    // tab instead reasonably concludes the recipe did not save. `dismissTo`
-    // returns to the My Recipes already under this screen rather than stacking
-    // a second copy of it.
-    expect(mockDismissTo).toHaveBeenCalledWith({
-      pathname: '/my-recipes',
-      params: { tab: 'created' },
+    expect(driver.events).toEqual(['flush', 'stop']);
+  });
+
+  it('labels the button Save, never Publish', () => {
+    const driver = driveHook({}, publishable());
+
+    expect(driver.latest().saveLabel).toBe(en.createRecipe.save);
+  });
+
+  it('saves an opened private recipe through PATCH instead of creating a new one', async () => {
+    const driver = driveHook({ updateRecipeResult: ok(makeRecipe('r-edit')) }, publishable(), 'r-edit');
+
+    await driver.save();
+
+    expect(driver.repo.lastUpdateCall?.id).toBe('r-edit');
+    expect(driver.repo.lastUpdateCall?.input.name).toEqual({ en: 'Garlic Pasta' });
+    expect(driver.repo.lastCreateInput).toBeNull();
+    // The recipe's page is still under the editor: go back to it, never stack a second copy.
+    expect(mockBack).toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalledWith('/recipes/r-edit');
+  });
+
+  it("the assistant's publish saves privately, then publishes", async () => {
+    const publish = jest.fn();
+    const driver = driveHook({ createRecipeResult: ok(makeRecipe(CREATED_ID)) }, publishable());
+    jest.spyOn(driver.repo, 'publishRecipe').mockImplementation((id) => {
+      publish(id);
+      return Promise.resolve(ok({ isPublished: false, moderationStatus: 'pending' }));
     });
-    expect(driver.latest().saveSuccess).toBeNull();
+
+    await driver.saveAndPublish();
+
+    expect(driver.repo.lastCreateInput?.visibility).toBe('private');
+    expect(publish).toHaveBeenCalledWith(CREATED_ID);
+    expect(showSuccessToast).toHaveBeenCalledWith(en.publishing.toastInReview);
   });
 
   it('routes a validation failure to the dialog + inline fields, never leaking raw copy', async () => {
@@ -264,7 +331,7 @@ describe('useRecipeSave — publish', () => {
     expect(driver.latest().saveIssue).not.toContain('Cover image');
     expect(showErrorToast).not.toHaveBeenCalled();
     expect(showDangerToast).not.toHaveBeenCalled();
-    expect(driver.latest().saveSuccess).toBeNull();
+    expect(mockReplace).not.toHaveBeenCalled();
   });
 
   it('prefers the dedicated key-tier copy when the failure carries a known messageKey', async () => {

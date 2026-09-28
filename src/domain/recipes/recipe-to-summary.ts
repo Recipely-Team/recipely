@@ -15,15 +15,25 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     id: recipe.id,
     name: recipe.name,
     image: recipe.image,
+    ...(recipe.imageFocus !== undefined ? { imageFocus: recipe.imageFocus } : {}),
     cuisine: recipe.cuisine,
     category: recipe.category,
     difficulty: recipe.difficulty,
     totalTimeMinutes: recipe.prepTimeMinutes + recipe.cookTimeMinutes,
     rating: recipe.rating,
+    isPublished: recipe.isPublished,
     moderationStatus: recipe.moderationStatus,
     likeCount: recipe.likeCount,
     likedByMe: recipe.likedByMe,
     commentCount: recipe.commentCount,
     viewCount: recipe.viewCount,
+    // Carried, not defaulted. This is the path a just-published recipe takes
+    // into the feed cache without a round-trip, so dropping it here would make
+    // the badge appear only after a refresh — present on the server, absent on
+    // the one screen that just created it.
+    origin: recipe.origin,
+    sourcePlatform: recipe.sourcePlatform,
+    aiWritten: recipe.aiWritten,
+    photoCount: recipe.photoCount,
   });
 };

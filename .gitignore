@@ -58,8 +58,11 @@ modules/*/android/.gradle/
 modules/*/android/.cxx/
 modules/*/ios/build/
 
-# Claude Code
-.claude/
+# Claude Code — local settings and worktrees stay private; the project's
+# subagents and skills are shared instructions and are committed.
+.claude/*
+!.claude/agents/
+!.claude/skills/
 
 # Local Claude Code agent memory (per-user, not project state).
 memory/

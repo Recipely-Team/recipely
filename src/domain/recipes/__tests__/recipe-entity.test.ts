@@ -2,8 +2,13 @@ import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { FocalPoint } from '@domain/recipes/media/focal-point';
 
 const validProps = {
+  origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
   id: 'r1',
   name: 'Margherita Pizza',
   cuisine: CuisineKey.Italian,
@@ -25,6 +30,7 @@ const validProps = {
   likedByMe: false,
   viewCount: 0,
   moderationStatus: 'approved',
+  isPublished: true,
   commentCount: 0,
 };
 
@@ -58,5 +64,80 @@ describe('Recipe.create', () => {
     const b = RecipeEntity.create({ ...validProps, name: 'Different' });
 
     if (a.ok && b.ok) expect(a.value.equals(b.value)).toBe(true);
+  });
+});
+
+describe('RecipeEntity publishing state', () => {
+  const privateProps = { ...validProps, isPublished: false, moderationStatus: 'unreviewed' };
+  const make = (overrides: Partial<typeof privateProps> & { publishBlockers?: readonly ('photo' | 'ingredients' | 'instructions')[] } = {}) => {
+    const r = RecipeEntity.create({ ...privateProps, ...overrides });
+    if (!r.ok) throw new Error('invalid');
+    return r.value;
+  };
+
+  it('a private recipe with nothing on its checklist can be published', () => {
+    expect(make().canPublish).toBe(true);
+  });
+
+  it('a website import with blockers cannot', () => {
+    const recipe = make({ publishBlockers: ['photo', 'ingredients'] });
+    expect(recipe.canPublish).toBe(false);
+    expect(recipe.publishBlockers).toEqual(['photo', 'ingredients']);
+  });
+
+  it('a rejected recipe can never be offered again', () => {
+    expect(make({ moderationStatus: 'rejected' }).canPublish).toBe(false);
+  });
+
+  it('carries a publish outcome into a new entity', () => {
+    const published = make().withPublishOutcome({ isPublished: true, moderationStatus: 'approved' });
+    expect(published.ownerStatus).toBe('published');
+  });
+
+  it('after the cover goes, the next photo is the cover and the old one is gone everywhere', () => {
+    const cover = { id: 'm1', type: 'image' as const, url: 'https://x.test/cover.jpg' };
+    const next = { id: 'm2', type: 'image' as const, url: 'https://x.test/next.jpg' };
+    const recipe = make({ image: cover.url, media: [cover, next] });
+
+    expect(recipe.isCover(cover)).toBe(true);
+    expect(recipe.isCover(next)).toBe(false);
+
+    const after = recipe.withCoverRemoved({ image: next.url, removedMediaIds: ['m1'] });
+    expect(after.image).toBe(next.url);
+    expect(after.media).toEqual([next]);
+  });
+
+  it('a cover-only recipe ends with no photos at all', () => {
+    const cover = { type: 'image' as const, url: 'https://x.test/cover.jpg' };
+    const after = make({ image: cover.url, media: [cover] }).withCoverRemoved({ image: '', removedMediaIds: [] });
+    expect(after.media).toEqual([]);
+    expect(after.image).toBe('');
+  });
+});
+
+describe('RecipeEntity.heroPhotos / photoCount', () => {
+  const make = (overrides: Record<string, unknown>) => {
+    const r = RecipeEntity.create({ ...validProps, ...overrides } as typeof validProps);
+    if (!r.ok) throw new Error('invalid');
+    return r.value;
+  };
+
+  it('pages through the gallery images when there are any', () => {
+    const recipe = make({});
+    expect(recipe.heroPhotos.map((m) => m.url)).toEqual([validProps.image]);
+    expect(recipe.photoCount).toBe(1);
+  });
+
+  it('falls back to the cover, keeping its focus, when the gallery is empty', () => {
+    const focus = FocalPoint.create(0.2, 0.8);
+    if (!focus.ok) throw new Error('invalid focus');
+    const recipe = make({ media: [], imageFocus: focus.value });
+    expect(recipe.heroPhotos).toEqual([{ type: 'image', url: validProps.image, focus: focus.value }]);
+  });
+
+  it.each(['', '   '])('has no photo at all for a blank cover %p with an empty gallery', (image) => {
+    const recipe = make({ media: [], image });
+    expect(recipe.heroPhotos).toEqual([]);
+    expect(recipe.photoCount).toBe(0);
   });
 });

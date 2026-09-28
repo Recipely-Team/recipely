@@ -5,6 +5,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
@@ -77,7 +78,7 @@ describe('AuthRepository.updateProfile', () => {
     const current = buildCurrentSession();
     const { http, calls } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(current));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.updateProfile({ displayName: 'New Name', bio: 'New bio' });
 
@@ -102,7 +103,7 @@ describe('AuthRepository.updateProfile', () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const { storage, saved } = makeStorage(ok(buildCurrentSession()));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.updateProfile({ displayName: 'New Name' });
 
@@ -115,7 +116,7 @@ describe('AuthRepository.updateProfile', () => {
   it('returns UnauthorizedFailure when there is no current session and does not save', async () => {
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(ok(null));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.updateProfile({ displayName: 'New Name' });
 
@@ -128,7 +129,7 @@ describe('AuthRepository.updateProfile', () => {
     const failure = new UnknownFailure('Failed to read session');
     const { http } = makeHttp(ok({ user: userDto }));
     const { storage, saved } = makeStorage(fail(failure));
-    const repo = new AuthRepository(http, storage);
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
 
     const result = await repo.updateProfile({ displayName: 'New Name' });
 

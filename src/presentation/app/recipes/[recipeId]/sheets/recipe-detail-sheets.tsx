@@ -4,14 +4,15 @@ import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dial
 import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
 import { t } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
+import type { MediaItem } from '@domain/recipes/media/media-item';
 
 export interface RecipeDetailSheetsProps {
   unsavePending: boolean;
   onConfirmUnsave: () => void;
   onCancelUnsave: () => void;
   /** The photo the owner asked to remove, or null when nothing is pending. */
-  photoPendingRemoval: string | null;
-  onConfirmRemovePhoto: (mediaId: string) => void;
+  photoPendingRemoval: MediaItem | null;
+  onConfirmRemovePhoto: () => void;
   onCancelRemovePhoto: () => void;
   /** A localized sentence when a photo could not be added or removed. */
   photoError: string | null;
@@ -56,13 +57,11 @@ export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.El
 
     <ConfirmSheet
       visible={props.photoPendingRemoval !== null}
-      title={t().recipes.removePhoto}
+      title={t().photoViewer.removeA11y}
       message={t().recipes.removePhotoConfirm}
-      confirmLabel={t().recipes.removePhoto}
-      onConfirm={() => {
-        const mediaId = props.photoPendingRemoval;
-        if (mediaId !== null) props.onConfirmRemovePhoto(mediaId);
-      }}
+      confirmLabel={t().photoViewer.remove}
+      destructive
+      onConfirm={props.onConfirmRemovePhoto}
       onClose={props.onCancelRemovePhoto}
     />
 

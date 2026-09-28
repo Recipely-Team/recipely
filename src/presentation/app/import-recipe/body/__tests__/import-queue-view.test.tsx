@@ -13,11 +13,13 @@
  * it.
  */
 
+import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { ScrollView } from 'react-native';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ImportQueueView } from '@presentation/app/import-recipe/body/import-queue-view';
 import { en } from '@presentation/i18n/locales/en';
+import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
 
 // The real slot renders null until consent and a loaded ad say otherwise, so it
 // cannot tell "no ad yet" from "no ad slot". A stand-in makes the screen's own
@@ -43,6 +45,8 @@ const shownText = (
       isDone={false}
       isQueueing={false}
       queuePosition={3}
+      platform={SourcePlatform.Instagram}
+      host="instagram.com"
       onPrimary={jest.fn()}
       {...overrides}
     />,
@@ -103,10 +107,63 @@ describe('the ad that used to be on the import screen', () => {
         isDone={false}
         isQueueing={false}
         queuePosition={null}
+        platform={SourcePlatform.Instagram}
+        host="instagram.com"
         onPrimary={jest.fn()}
       />,
     );
 
     expect(textContent(root.findByType(ScrollView))).not.toContain('ad-slot');
+  });
+});
+
+describe('a recipe web page, which is read rather than queued', () => {
+  const HOST = 'nefisyemektarifleri.com';
+  const web = { platform: SourcePlatform.Web, host: HOST };
+
+  it('names the site in the title instead of promising a video', () => {
+    const shown = shownText(web);
+
+    expect(shown).toContain(en.importRecipe.webTitle.replace(HOST_TOKEN, HOST));
+    expect(shown).not.toContain(en.importRecipe.title);
+  });
+
+  it('walks three stages, not the four a video takes', () => {
+    const shown = shownText(web);
+
+    expect(shown).toEqual(
+      expect.arrayContaining([en.importRecipe.webStage0, en.importRecipe.webStage1, en.importRecipe.webStage2]),
+    );
+    expect(shown).not.toContain(en.importRecipe.stage0);
+    expect(shown).not.toContain(en.importRecipe.stage3);
+  });
+
+  it('shows the site and a seconds estimate instead of a queue position', () => {
+    const shown = shownText(web);
+
+    expect(shown).toEqual(expect.arrayContaining([en.importRecipe.webSite, HOST, en.importRecipe.webEstimateValue]));
+    expect(shown).not.toContain(positionText(3));
+  });
+
+  it('offers Cancel, not "notify me", and drops the background note', () => {
+    const shown = shownText(web);
+
+    // The job runs on once the screen closes (the draft still lands, the push
+    // still comes), so the button says Close — never a Cancel it cannot keep.
+    expect(shown).toContain(en.common.close);
+    expect(shown).not.toContain(en.common.cancel);
+    expect(shown).not.toContain(en.importRecipe.notify);
+    expect(shown).not.toContain(en.importRecipe.background);
+  });
+
+  it('still offers the draft once it is ready', () => {
+    expect(shownText({ ...web, isDone: true })).toContain(en.importRecipe.openDraft);
+  });
+
+  it('keeps an Instagram video on its four stages and its notify button', () => {
+    const shown = shownText();
+
+    expect(shown).toContain(en.importRecipe.stage3);
+    expect(shown).toContain(en.importRecipe.notify);
   });
 });

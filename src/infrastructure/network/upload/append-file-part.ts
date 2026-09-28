@@ -22,7 +22,10 @@ export async function appendFilePart(
 ): Promise<void> {
   if (isWeb()) {
     const resp = await fetch(part.uri);
-    const blob = await resp.blob();
+    const fetched = await resp.blob();
+    // A picked HEIC comes back typeless from the browser; the backend decides by
+    // type, so the part carries the one the file was picked as.
+    const blob = fetched.type.length > 0 ? fetched : new Blob([fetched], { type: part.mimeType });
     formData.append(field, blob, part.fileName);
   } else {
     formData.append(field, {

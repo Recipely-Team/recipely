@@ -31,6 +31,8 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { GenerateRecipeUseCase } from '@application/recipes/generate/generate-recipe-use-case';
 import { ImportInstagramRecipeUseCase } from '@application/recipes/import/import-instagram-recipe-use-case';
 import { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
+import { ImportRecipeFromFilesUseCase } from '@application/recipes/import-file/import-recipe-from-files-use-case';
+import { configureFileImportStore } from '@application/recipes/import-file/file-import-store';
 import { GetImportJobUseCase } from '@application/recipes/import/get-import-job-use-case';
 import { RefineRecipeUseCase } from '@application/recipes/refine/refine-recipe-use-case';
 import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
@@ -43,6 +45,11 @@ import { configureImportJobStore } from '@application/recipes/import/import-job-
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
+import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
+import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
+import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
+import { configureRecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
@@ -76,6 +83,10 @@ import { configureUserProfileStore } from '@application/user-profile/user-profil
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { configureFeedbackStore } from '@application/feedback/feedback-store';
 import type { ApplicationStores } from '@application/di/application-stores';
+import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
+import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
+import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
+import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
 
 
 export const registerApplication = (container: Container): ApplicationStores => {
@@ -135,6 +146,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     getRecipe,
     addRecipePhoto: addRecipePhotoUseCase,
     removeRecipePhoto: removeRecipePhotoUseCase,
+    removeRecipeCover: new RemoveRecipeCoverUseCase(recipeRepo),
+  });
+  const recipePublishingStore = configureRecipePublishingStore({
+    publishRecipe: new PublishRecipeUseCase(recipeRepo),
+    unpublishRecipe: new UnpublishRecipeUseCase(recipeRepo),
+    editRecipe: new EditRecipeUseCase(recipeRepo),
+    recipeDetailStore,
   });
   const favoritesStore = configureFavoritesStore({
     addFavoriteUseCase,
@@ -154,6 +172,9 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const importJobStore = configureImportJobStore({
     enqueueInstagramImportUseCase,
     getImportJobUseCase,
+  });
+  const fileImportStore = configureFileImportStore({
+    importRecipeFromFilesUseCase: new ImportRecipeFromFilesUseCase(recipeRepo),
   });
   const draftsStore = configureDraftsStore({
     listDraftsUseCase,
@@ -228,12 +249,19 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
     importJobStore.getState().clear();
+    fileImportStore.getState().clear();
     userProfileStore.getState().reset();
     // The transcript is the previous user's conversation, and a live socket
     // outlives a sign-out unless something closes it.
     assistantSessionStore.getState().reset();
   };
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches });
+  const onSessionRestored = recordDeviceOnSessionRestore(
+    new RecordDeviceUseCase(
+      container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
+      container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
+    ),
+  );
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches, onSessionRestored });
   return {
     assistantSessionStore,
     assistantActionRegistry,
@@ -245,11 +273,13 @@ export const registerApplication = (container: Container): ApplicationStores => 
     recipeListStore,
     trendingRecipesStore,
     recipeDetailStore,
+    recipePublishingStore,
     savedRecipesStore,
     likedRecipesStore,
     createdRecipesStore,
     draftsStore,
     importJobStore,
+    fileImportStore,
     favoritesStore,
     commentsStore,
     likesStore,

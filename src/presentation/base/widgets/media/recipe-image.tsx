@@ -5,6 +5,8 @@ import type { ImageStyle, StyleProp } from 'react-native';
 import { RecipePlaceholder } from '@presentation/base/widgets/media/recipe-placeholder';
 import { ValueConstants } from '@core/constants';
 import { durations } from '@presentation/base/theme';
+import { toContentPosition } from '@presentation/base/widgets/media/to-content-position';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 
 export interface RecipeImageProps {
   /** Remote recipe / media URI. Empty, missing, or failed shows the placeholder. */
@@ -15,6 +17,8 @@ export interface RecipeImageProps {
   placeholderLabel?: string;
   /** Compact placeholder motif (no caption) for dense thumbnails. */
   placeholderCompact?: boolean;
+  /** Where the dish sits in the photo; the crop centres on it. Absent crops centred. */
+  focus?: FocalPoint;
 }
 
 /**
@@ -32,6 +36,8 @@ export interface RecipeImageProps {
  * - **`recyclingKey` is what makes reuse safe.** A FlatList row is recycled for
  *   a different recipe, and without it the previous photo stays on screen until
  *   the new one decodes — the wrong recipe under the right title.
+ * - **The crop sits on the photo's focal point** when the backend has found
+ *   one, so a card shows the dish rather than the hands or pot around it.
  * - **`transition` is deliberately short.** It hides the decode step; long
  *   enough to read as a fade, short enough not to feel like a delay.
  */
@@ -41,6 +47,7 @@ export const RecipeImage = ({
   accessibilityLabel,
   placeholderLabel,
   placeholderCompact,
+  focus,
 }: RecipeImageProps): React.JSX.Element => {
   const [failed, setFailed] = useState(false);
 
@@ -62,6 +69,7 @@ export const RecipeImage = ({
       style={style}
       accessibilityLabel={accessibilityLabel}
       contentFit="cover"
+      contentPosition={toContentPosition(focus)}
       cachePolicy="memory-disk"
       transition={durations.imageFade}
       recyclingKey={uri}

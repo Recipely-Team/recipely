@@ -1,9 +1,12 @@
-Asistanı kullanırken bildirilen hatalar ve tariflerinize ulaşmanın yeni bir yolu.
+Tarif getirebileceğiniz yeni kaynaklar, ne zaman yayınlanacağı üzerinde daha fazla kontrol ve içinde ne olduğuna daha net bir bakış.
 
-• Asistan artık göremediğiniz bir taslak yüzünden tarif oluşturmayı reddetmiyor. Ekranda olmayan bir taslağı ne yapacağını sorup duruyordu ve konuşmadan çıkış yoktu.
-• Bir taslağı düzenlerken yeni tarif istediğinizde önce taslağı ne yapacağını soruyor — saklamak mı, silmek mi — ve hangi cevabı verirseniz verin istediğiniz tarifi oluşturuyor.
-• iOS: açılışta uygulamanın üzerine üst üste çıkabilen geliştirici mesajı kaldırıldı.
-• Siri uygulamanın adını, nasıl telaffuz ederseniz edin, daha güvenilir tanıyor.
-• Kaydettiğiniz ve oluşturduğunuz tarifler artık telefonunuzun kendi aramasından bulunabiliyor ve doğrudan tarife açılıyor.
+• Instagram, TikTok, Facebook ve YouTube videolarından, Pinterest pinlerinden, herhangi bir tarif sitesinden ya da tarif sayfalarının fotoğraflarından ve PDF'lerden tarif alın.
+• Kaynak bağlantısı orijinal videoyu açıyor ve geldiği hesabı gösteriyor.
+• Tarifi önce gizli kaydedin, hazır olduğunuzda tarif sayfasından yayınlayın.
+• Bir siteden alınan tarif başkasının emeğidir: yayınlanmadan önce kendi fotoğrafınızı ekleyin, malzemeleri ve adımları kendi cümlelerinizle yazın.
+• Besin değerleri 100 g veya porsiyon başına gösteriliyor; ikisi arasında geçiş yapabilirsiniz.
+• Yeni fotoğraf görüntüleyici: tarifin fotoğrafları arasında kaydırın, her biri yemeğe odaklanarak kırpılıyor. Kartlar tarifin kaç fotoğrafı olduğunu gösteriyor.
+• İçe aktarma bildirimleri tarifin hangi platformdan geldiğini söylüyor; başarısız bir içe aktarma artık tamamlanmış gibi görünmüyor.
+• Çeviri düzeltmeleri; diğer dillerde hâlâ İngilizce kalan düğmeler dahil.
 
 Recipely ile pişirdiğiniz için teşekkürler!

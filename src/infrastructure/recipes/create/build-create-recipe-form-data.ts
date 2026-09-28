@@ -51,8 +51,8 @@ export const buildCreateRecipeFormData = async (
   if (input.mealType && Object.values(input.mealType).some((arr) => arr.length > ValueConstants.zero)) {
     formData.append('mealType', JSON.stringify(input.mealType));
   }
-  if (input.isPublished !== undefined) {
-    formData.append('isPublished', String(input.isPublished));
+  if (input.visibility !== undefined) {
+    formData.append('visibility', input.visibility);
   }
   // Travels as a field, not a file: it names the draft this publish came from
   // so the server can retire it and repoint its notifications at the recipe.

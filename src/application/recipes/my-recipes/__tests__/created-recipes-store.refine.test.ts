@@ -18,6 +18,7 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 
 
@@ -25,6 +26,7 @@ const snapshot: DraftRecipeSnapshot = { name: 'Spicy Pasta', ingredients: ['Past
 
 const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {}): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r1',
     name: 'Refined Recipe',
     cuisine: CuisineKey.Italian,
@@ -46,8 +48,11 @@ const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
     ...overrides,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;

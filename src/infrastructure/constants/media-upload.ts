@@ -24,3 +24,13 @@ export const MEDIA_UPLOAD_MAX_EDGE = 1600;
 
 /** JPEG quality applied after the resize. */
 export const MEDIA_UPLOAD_QUALITY = 0.7;
+
+/**
+ * The long edge an avatar is sent at.
+ *
+ * Smaller than a recipe photo's because the server renders avatars at 256
+ * square — anything above this is bytes nobody ever sees. The headroom over 256
+ * is deliberate: it survives the server choosing a larger rendering later
+ * without the app having to ship a change first.
+ */
+export const AVATAR_UPLOAD_MAX_EDGE = 512;

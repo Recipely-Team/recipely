@@ -53,6 +53,7 @@ import { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
@@ -111,6 +112,7 @@ const makeDeferred = (): Deferred => {
 
 const makeRecipe = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -120,10 +122,14 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
     totalTimeMinutes: 30,
     rating: 4.5,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

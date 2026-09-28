@@ -7,6 +7,7 @@
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { WebHeroFeaturedCard } from '@presentation/app/recipes/items/hero/web-hero-featured-card';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@expo/vector-icons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
@@ -15,6 +16,7 @@ jest.mock('@expo/vector-icons', () => {
 });
 
 const recipe = RecipeSummaryEntity.create({
+  photoCount: 0,
   id: 'r1',
   name: 'Trending Trending Pasta',
   image: '',
@@ -24,10 +26,14 @@ const recipe = RecipeSummaryEntity.create({
   totalTimeMinutes: 45,
   rating: 4.7,
   moderationStatus: 'approved',
+  isPublished: true,
   likeCount: 10,
   likedByMe: false,
   commentCount: 2,
   viewCount: 100,
+  origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
 });
 
 describe('WebHeroFeaturedCard — author row removed', () => {

@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react';
-import { NavigationContext } from '@react-navigation/native';
+import { NavigationContext } from 'expo-router/react-navigation';
 
 /**
  * Whether the screen this is rendered inside is the one the user is looking at.

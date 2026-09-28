@@ -23,9 +23,8 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
-  // Only the assistant's publish goes through here. A tap on Save is the user
-  // already looking at the button they pressed; a spoken "yayınla" is a word
-  // that may have been misheard, and publishing is not undoable.
+  // Only the assistant's publish goes through here: a spoken "yayınla" may have
+  // been misheard, so it is confirmed, then saved privately and published.
   const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
   // Every sheet below lives in the preview phase; the prompt, resuming and
   // generating phases return early and render none of them. A confirmation
@@ -90,7 +89,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     isPreview && assistantPublishOpen && !exitOrErrorOpen,
     () => {
       setAssistantPublishOpen(false);
-      vm.onSave();
+      vm.onSaveAndPublish();
     },
     () => setAssistantPublishOpen(false),
   );
@@ -117,6 +116,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
             onGenerate={vm.onGenerate}
             onStartBlank={vm.onStartBlank}
             onImportFromInstagram={vm.onImportFromInstagram}
+            onImportFromFile={vm.onImportFromFile}
             onClose={vm.onClose}
             latestDraft={vm.latestDraft}
             onResumeDraft={vm.onResumeDraft}
@@ -162,6 +162,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
       />
       <ExitSheet
         visible={vm.exitOpen}
+        editing={vm.isEditingSaved}
         onSaveDraft={vm.onSaveDraftAndExit}
         onDiscard={vm.onDiscardAndExit}
         onKeepEditing={vm.onKeepEditing}
@@ -173,7 +174,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         confirmLabel={t().assistant.publishConfirm}
         onConfirm={() => {
           setAssistantPublishOpen(false);
-          vm.onSave();
+          vm.onSaveAndPublish();
         }}
         onClose={() => setAssistantPublishOpen(false)}
       />
@@ -194,14 +195,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         primaryLabel={t().common.ok}
         onPrimary={vm.onCloseSaveIssue}
         onClose={vm.onCloseSaveIssue}
-      />
-      <FeedbackDialog
-        visible={vm.saveSuccess !== null}
-        title={t().createRecipe.successTitle}
-        message={t().createRecipe.successPublished}
-        primaryLabel={t().createRecipe.viewRecipe}
-        onPrimary={vm.onSuccessPrimary}
-        onClose={vm.onCloseSuccess}
       />
     </KeyboardAvoider>
   );

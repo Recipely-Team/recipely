@@ -1,5 +1,5 @@
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
-import { MediaPicker } from '@presentation/app/create-recipe/items/media-picker';
+import { MediaPicker } from '@presentation/app/create-recipe/items/photos/media-picker';
 import { t } from '@presentation/i18n';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 

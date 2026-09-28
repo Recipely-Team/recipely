@@ -29,21 +29,31 @@ import type { EmailOnlyRequestDto } from '@infrastructure/auth/dtos/email-only-r
 import type { ResetPasswordRequestDto } from '@infrastructure/auth/dtos/reset-password-request-dto';
 import type { SocialSignInRequestDto } from '@infrastructure/auth/dtos/social-sign-in-request-dto';
 import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-profile-request-dto';
+import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
+import type { DeviceContextDto } from '@infrastructure/device/device-context-dto';
+import { toDeviceContextDto } from '@infrastructure/device/to-device-context-dto';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
  * and Firebase Auth (Google / Apple social sign-in). Social sign-in flows
  * obtain a Firebase ID token then exchange it for a backend JWT via
  * `POST /auth/social`, keeping all user records on the backend.
+ *
+ * @remarks
+ * - **Every session-opening request names the device.** Login, registration
+ *   verify and social auth carry `device`, so the backend records the install
+ *   in the same round-trip. An unreadable identity sends none rather than
+ *   failing the sign-in over bookkeeping.
  */
 export class AuthRepository implements AuthRepositoryInterface {
   constructor(
     private readonly http: HttpClient,
     private readonly storage: SecureTokenStorage,
+    private readonly deviceIdentity: DeviceIdentityInterface,
   ) {}
 
   async signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.login, { email: email.trim(), password } satisfies SignInRequestDto);
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.login, { email: email.trim(), password, ...(await this.deviceField()) } satisfies SignInRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -66,7 +76,7 @@ export class AuthRepository implements AuthRepositoryInterface {
     email: string,
     code: string,
   ): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email: email.trim(), code: code.trim() } satisfies VerifyRegistrationRequestDto);
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email: email.trim(), code: code.trim(), ...(await this.deviceField()) } satisfies VerifyRegistrationRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -165,9 +175,15 @@ export class AuthRepository implements AuthRepositoryInterface {
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */
   private async exchangeFirebaseToken(idToken: string): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.social, { idToken } satisfies SocialSignInRequestDto);
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.social, { idToken, ...(await this.deviceField()) } satisfies SocialSignInRequestDto);
     if (!result.ok) return result;
     return this.persistSession(result.value);
+  }
+
+  /** The `device` field for a session-opening body, or nothing when the identity is unreadable. */
+  private async deviceField(): Promise<{ device?: DeviceContextDto }> {
+    const identity = await this.deviceIdentity.current();
+    return identity.ok ? { device: toDeviceContextDto(identity.value) } : {};
   }
 
   /** Maps a backend session DTO to an `AuthSessionEntity` and persists it to storage. */

@@ -203,7 +203,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  face: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  face: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   slash: {
     position: 'absolute',
     width: assistantMetrics.orb * 0.02,

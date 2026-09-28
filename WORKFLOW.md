@@ -2,117 +2,35 @@
 
 > **Use the agent team by default, without being asked.** For any non-trivial task, delegate
 > to the subagents in `.claude/agents/` (`ts-developer`, `rn-developer`, `test-developer`,
-> `ui-designer`, `code-reviewer`) — the user should never have to say "use the agents."
-> The user has authorized this whole flow **in these files**: branch → implement via agents →
-> gate → `code-reviewer` approval → push → PR to `dev` → merge to `dev`, all **without asking**.
-> Stop only on failures (lint/tsc/jest/check:structure red, review requests changes, unresolvable conflict) or
-> the release-only steps (promoting `dev → main`, production Firebase Hosting deploy), which are
-> **stop-and-ask**. The authoritative summary lives in root `CLAUDE.md` → "Agent workflow (use
-> by default)"; this file is the step-by-step.
+> `ui-designer`, `code-reviewer`). The user has authorized the whole flow — branch → implement →
+> gate → `code-reviewer` approval → push → PR to `dev` → merge to `dev` — **without asking**.
+> Stop only on failures (lint/tsc/jest/check:structure red, review requests changes, unresolvable
+> conflict) or the release-only steps (promoting `dev → main`, production Firebase Hosting deploy),
+> which are **stop-and-ask**. The authoritative summary is root `CLAUDE.md` → "Agent workflow (use
+> by default)".
 
-Apply this workflow sequentially for every task.
+The step-by-step procedures live as Claude Code skills in `.claude/skills/`, loaded on demand:
 
-## 1. Branch Creation
-
-```bash
-# Create branch from dev for new work
-git checkout dev
-git pull origin dev
-git checkout -b <branch-name>
-```
-
-Branch naming:
-- `feat/<short-description>` — new feature
-- `fix/<short-description>` — bug fix
-- `refactor/<short-description>` — refactoring
-- `chore/<short-description>` — other tasks
-
-## 2. Task Creation
-
-Create a task for each subtask using `TaskCreate` and assign an agent:
-
-| Task | Agent |
-|------|-------|
-| UI/widget development | `rn-developer` |
-| TypeScript / domain layer | `ts-developer` |
-| Test writing | `test-developer` |
-| Code review | `code-reviewer` |
-| Design decisions | `ui-designer` |
-
-## 3. Development
-
-1. Assign work to relevant agents via `TaskCreate`
-2. Agents complete their work
-3. Regularly run `git add` + `git commit`
-4. Keep commit messages clear and atomic
-
-## 4. Code Review (Before Merge)
-
-Before sending to dev, after finishing work:
-
-```bash
-# Call code-reviewer agent
-Agent(subagent_type: "code-reviewer", prompt: "...")
-```
-
-Code-reviewer will check:
-- DDD / Clean Architecture rules
-- TypeScript strictness
-- Cross-layer imports (dependency rule)
-- Structure gate: `npm run check:structure` (one-declaration-per-file, placement, import style) — any failure is blocking
-- Missing error handling
-- Duplicate code
-- Test coverage
-- **DDD guardrails** (`architecture.md` §DDD Guardrails, CLAUDE.md §17-20) — all blocking:
-  - new infrastructure access goes through a port interface + DI, never a direct `@infrastructure` import
-  - no `.tsx` over 300 lines; routed `index.tsx` is composition-only (≤ ~200 lines, no business rules)
-  - business rules live on entities/VOs (OOP), not in stores/components/utils; encapsulation intact
-    (private ctor + `create(): Result`, no public setters)
-  - new domain entity ⇒ a row in the Aggregates table; cross-aggregate references by id only
-
-### Feedback Loop
-- If agent finds issues → write to relevant task → have agent fix → send for review again
-- If no issues → proceed
-
-## 5. Push & Open PR (target `dev`)
-
-```bash
-# After code-reviewer approves and the gate is green, push and open a PR to dev
-git push -u origin <branch-name>
-gh pr create --base dev --title "<conventional title>" --body "<summary>"
-```
-
-`main` is release-only — never target it from a PR here.
-
-## 6. Merge to `dev`
-
-```bash
-# Squash-merge once CI/checks are green, then sync local dev
-gh pr merge <pr-number> --squash --delete-branch
-git checkout dev && git pull
-```
-
-The remote branch is deleted by `--delete-branch`; report the PR # and merged commit.
-
-## 7. Branch Cleanup
-
-```bash
-# If a stale local branch remains after the squash merge
-git branch -D <branch-name>
-```
-
----
+| Step | Skill |
+|---|---|
+| 1. Branch from `dev`: `feat/<short-description>`, `fix/<short-description>`, `refactor/<short-description>`, `chore/<short-description>` | [`pr-flow`](.claude/skills/pr-flow/SKILL.md) |
+| 2. Split the work across agents (UI → `rn-developer`, TS/domain → `ts-developer`, tests → `test-developer`, design → `ui-designer`, review → `code-reviewer`) | `CLAUDE.md` Roster + Token economy |
+| 3. Develop — atomic conventional commits | [`pr-flow`](.claude/skills/pr-flow/SKILL.md), [`architecture-rules`](.claude/skills/architecture-rules/SKILL.md) |
+| 4. Code review before merge — one diff-scoped `code-reviewer` pass; DDD guardrails (CLAUDE.md §17-20) are blocking | [`.claude/agents/code-reviewer.md`](.claude/agents/code-reviewer.md) |
+| 5. Push and open a PR to `dev` | [`pr-flow`](.claude/skills/pr-flow/SKILL.md) |
+| 6. Merge to `dev` on green, then sync; delete a stale local branch | [`pr-flow`](.claude/skills/pr-flow/SKILL.md) |
+| Bug fix — regression test, guard, `docs/regressions.md` row | [`bug-fix`](.claude/skills/bug-fix/SKILL.md) |
+| Anything visual — prototype first | [`design-handoff`](.claude/skills/design-handoff/SKILL.md) |
+| A new route | [`new-screen`](.claude/skills/new-screen/SKILL.md) |
+| Copy in the 14 locales | [`i18n-copy`](.claude/skills/i18n-copy/SKILL.md) |
+| Release `dev → main`, dev APK/IPA builds | [`release`](.claude/skills/release/SKILL.md) |
+| Dev database / logs (read-only) | [`dev-db`](.claude/skills/dev-db/SKILL.md) |
+| Live E2E against dev | [`live-e2e`](.claude/skills/live-e2e/SKILL.md) |
 
 ## Rules
 
-- **Dependency rule**: Layers import only downward, never upward
-- **Error handling**: Use `Result<T, Failure>`, never throw exceptions
-- **Tests**: For domain/infrastructure changes, write tests with `test-developer`
-- **Build**: After work is done, run local build (`npx expo export --platform web`)
-- **Lint**: `npm run lint` and `npx tsc --noEmit` must pass with no errors
-- **Structure**: `npm run check:structure` must pass — file/declaration layout, layer line, import style (see `architecture.md`). Work is not "done" while any gate is red.
-
-## Communication
-
-- `dev` is the base branch for all work
-- All PRs go to `dev`, `main` is only for releases
+- **Dependency rule**: layers import only inward, never upward.
+- **Error handling**: `Result<T, Failure>`, never thrown exceptions.
+- **Gates**: `npm run lint`, `npx tsc --noEmit`, `npx jest`, `npm run check:structure` must all be green
+  (after `npm run map` when files moved). Web-facing work also builds locally: `npx expo export --platform web`.
+- `dev` is the base branch for all work; all PRs go to `dev`; `main` is only for releases.

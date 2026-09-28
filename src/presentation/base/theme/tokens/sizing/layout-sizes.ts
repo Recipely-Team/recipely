@@ -80,4 +80,11 @@ export const layoutSizes = {
   homeRefreshOffsetAndroid: 92,
   /** Top padding that clears the hero art on the auth screens. */
   heroPaddingTop: 76,
+  /**
+   * Widest a hover tooltip's bubble gets before its text wraps.
+   *
+   * Not device-scaled, like the rest of this module: the bubble only exists on
+   * web, where the pointer that summons it implies a window, not a handset.
+   */
+  tooltipMaxWidth: 220,
 } as const;

@@ -1,11 +1,18 @@
 import { BaseEntity } from '@core/entity/base-entity';
+import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
+import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
+import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 import type { RecipeSummaryEntityProps } from '@domain/recipes/recipe-summary-entity-props';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
+import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
+import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
 
 
 /**
@@ -36,6 +43,9 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   get image(): string {
     return this.props.image;
   }
+  get imageFocus(): FocalPoint | undefined {
+    return this.props.imageFocus;
+  }
   get cuisine(): string {
     return this.props.cuisine;
   }
@@ -54,6 +64,13 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   get moderationStatus(): string {
     return this.props.moderationStatus;
   }
+  get isPublished(): boolean {
+    return this.props.isPublished;
+  }
+  /** How the recipe reads to its owner — the Created tab's badge. */
+  get ownerStatus(): OwnerStatusType {
+    return toOwnerStatus(this.props.isPublished, this.props.moderationStatus);
+  }
   get likeCount(): number {
     return this.props.likeCount;
   }
@@ -65,5 +82,22 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
   get viewCount(): number {
     return this.props.viewCount;
+  }
+  get origin(): RecipeOriginType {
+    return this.props.origin;
+  }
+  get sourcePlatform(): SourcePlatformType | null {
+    return this.props.sourcePlatform;
+  }
+  get aiWritten(): boolean {
+    return this.props.aiWritten;
+  }
+  /** The cover's photo-count chip; drawn only from two up. */
+  get photoCount(): number {
+    return this.props.photoCount;
+  }
+  /** What the provenance seal carries; empty when a person wrote the recipe. */
+  get provenanceMarks(): readonly ProvenanceMarkType[] {
+    return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);
   }
 }

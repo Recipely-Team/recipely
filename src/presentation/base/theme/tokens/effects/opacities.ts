@@ -45,6 +45,9 @@ export const opacities = {
   /** Not disabled but not yet reached — an unvisited step, an inactive dot. */
   inactive: 0.4 as number,
 
+  // ── Secondary copy in the body colour ──────────────────────────────────────
+  secondaryInk: 0.78 as number,
+
   // ── Foreground over imagery ───────────────────────────────────────────────
   /** Body text laid over a photo or gradient. */
   onMediaFaint: 0.92 as number,

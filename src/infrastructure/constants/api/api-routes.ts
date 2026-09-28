@@ -20,6 +20,7 @@ export const ApiRoutes = {
     likes: '/me/likes',
     recipes: '/me/recipes',
     deviceToken: '/me/device-token',
+    devices: '/me/devices',
     notifications: '/me/notifications',
     notificationsReadAll: '/me/notifications/read-all',
     notificationRead: (id: string): string =>
@@ -35,6 +36,8 @@ export const ApiRoutes = {
     /** Queues a background import and returns a job id, instead of waiting ~2 min. */
     importJobs: '/recipes/import/jobs',
     importJob: (id: string): string => `/recipes/import/jobs/${encodeURIComponent(id)}`,
+    /** Photos of a recipe's pages, or a PDF, read into a draft (multipart, synchronous). */
+    importFile: '/recipes/import/file',
     refine: '/recipes/refine',
     withMedia: '/recipes/with-media',
     drafts: '/recipes/drafts',
@@ -47,6 +50,12 @@ export const ApiRoutes = {
     media: (id: string): string => `/recipes/${encodeURIComponent(id)}/media`,
     mediaItem: (id: string, mediaId: string): string =>
       `/recipes/${encodeURIComponent(id)}/media/${encodeURIComponent(mediaId)}`,
+    /** The cover photo, removed everywhere it appears. */
+    cover: (id: string): string => `/recipes/${encodeURIComponent(id)}/cover`,
+    /** Owner: offer a private recipe for publishing. */
+    publish: (id: string): string => `/recipes/${encodeURIComponent(id)}/publish`,
+    /** Owner: take a recipe back to private. */
+    unpublish: (id: string): string => `/recipes/${encodeURIComponent(id)}/unpublish`,
     comments: (recipeId: string): string =>
       `/recipes/${encodeURIComponent(recipeId)}/comments`,
     comment: (recipeId: string, commentId: string): string =>

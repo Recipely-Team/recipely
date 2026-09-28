@@ -21,12 +21,28 @@ const draftCuisine = (text: string): string | null => {
   return trimmed.length > ValueConstants.zero ? trimmed : null;
 };
 
+/** A persisted category, or nothing when the draft never carried one. */
+const draftCategory = (text: string | undefined): string | undefined => {
+  const trimmed = text?.trim();
+  return trimmed !== undefined && trimmed.length > ValueConstants.zero ? trimmed : undefined;
+};
+
 /**
  * Rebuilds the editor from a saved draft.
  *
  * @remarks
- * - The snapshot's `category` is not read: it only matters at publish time, so
- *   a resumed draft takes the default rather than inventing one.
+ * - **`category` is read back, verbatim.** It was deliberately ignored here —
+ *   "it only matters at publish time" — but publish reads it from the EDITOR,
+ *   so ignoring it meant every resumed draft published as `MAIN_COURSE`. A
+ *   sütlaç saved as a dessert came back a main course, and the value was sitting
+ *   in the row the whole time: `editableToSnapshot` has always carried it
+ *   through. Kept verbatim for the reason `cuisine` is — the backend's catalogue
+ *   has 32 categories and this app's enum mirrors 11, so validating against the
+ *   local list would throw away a legitimate key. That is safe because every
+ *   value that can land here is one the backend's catalogue recognises: a
+ *   generated recipe's own category, this editor's default, or a pick from the
+ *   taxonomy sheet, which offers the local subset. There is no writer that can
+ *   invent one.
  * - **`image` is a cover the editor never saw.** An Instagram import stores its
  *   chosen frame there and leaves `media` empty, and this mapper only ever read
  *   `media` — so an imported draft opened in the editor said "no photo yet"
@@ -55,7 +71,7 @@ export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecip
   return {
     name: snapshot.name ?? base.name,
     cuisine: snapshot.cuisine !== undefined ? draftCuisine(snapshot.cuisine) : base.cuisine,
-    category: base.category,
+    category: draftCategory(snapshot.category) ?? base.category,
     difficulty: isDifficulty(snapshot.difficulty) ? snapshot.difficulty : base.difficulty,
     prepTimeMinutes: snapshot.prepTimeMinutes ?? base.prepTimeMinutes,
     cookTimeMinutes: snapshot.cookTimeMinutes ?? base.cookTimeMinutes,

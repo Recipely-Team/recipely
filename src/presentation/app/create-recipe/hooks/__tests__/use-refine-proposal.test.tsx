@@ -39,6 +39,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showSuccessToast: jest.fn(),
@@ -63,6 +64,7 @@ const original = (): EditableRecipe => ({
 /** The recipe the assistant would write: same dish, four servings, more garlic. */
 const refinedEntity = (): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r-refined',
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,
@@ -84,7 +86,10 @@ const refinedEntity = (): RecipeEntity => {
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeEntity fixture');
   return result.value;
@@ -294,6 +299,7 @@ describe('useRefineProposal — what reaches the backend', () => {
 describe('useRefineProposal — an answer with nothing in it', () => {
   it('offers no proposal when the assistant returns the recipe unchanged', async () => {
     const unchanged = RecipeEntity.create({
+    origin: RecipeOrigin.User,
       id: 'r-same',
       name: 'Garlic Pasta',
       cuisine: CuisineKey.Italian,
@@ -315,7 +321,10 @@ describe('useRefineProposal — an answer with nothing in it', () => {
       likedByMe: false,
       viewCount: 0,
       moderationStatus: 'approved',
+      isPublished: true,
       commentCount: 0,
+          sourcePlatform: null,
+      aiWritten: false,
     });
     if (!unchanged.ok) throw new Error('fixture');
     const repo = new FakeRecipeRepository({

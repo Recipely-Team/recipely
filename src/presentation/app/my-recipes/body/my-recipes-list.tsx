@@ -212,10 +212,15 @@ export const MyRecipesList = ({
             <RecipeCard
               name={item.name}
               image={item.image}
+              imageFocus={item.imageFocus}
               cuisine={item.cuisine}
               difficulty={item.difficulty}
               rating={item.rating}
+              photoCount={item.photoCount}
               onPress={() => onOpenRecipe(item.id)}
+              {...(tab === TabType.Created
+                ? { ownerStatus: item.ownerStatus, onEditPhotos: () => onOpenRecipe(item.id) }
+                : {})}
             />
           )}
         </View>

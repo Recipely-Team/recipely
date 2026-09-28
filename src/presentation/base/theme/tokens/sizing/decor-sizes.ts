@@ -25,6 +25,7 @@ export const decorSizes = {
 
   /** A title line in a card skeleton. */
   skeletonLineMd: scale(18),
+  stepDisc: scale(20),
   /** Rank medallion on the web leaderboard cards. */
   rankBadge: scale(26),
   /** Numbered step / count badge. */
@@ -33,6 +34,7 @@ export const decorSizes = {
   cardOverlap: scale(40),
   /** Same tile inside the hero band's side stack, where height is scarce. */
   aiBannerIconCompact: scale(40),
+  statBadge: scale(42),
   /** Circular icon plate on the AI banner. */
   aiBannerIcon: scale(52),
 

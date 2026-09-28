@@ -41,6 +41,11 @@ interface AuthStoreDeps {
    * account deletion, and session expiry.
    */
   clearSessionCaches: () => void;
+  /**
+   * Called once `hydrate` has restored a stored session — the device heartbeat.
+   * Never after an interactive sign-in: those send the device in their body.
+   */
+  onSessionRestored: () => void;
 }
 
 /**
@@ -87,6 +92,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return;
       }
       set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+      deps.onSessionRestored();
       // Background pre-load; nothing waits on it.
       try {
         const favResult = await deps.loadFavorites.execute();

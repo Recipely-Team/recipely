@@ -6,11 +6,13 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
 ): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: 'r1',
     name: 'Stub Recipe',
     image: 'https://cdn.example.com/r1.webp',
@@ -20,11 +22,15 @@ const makeRecipe = (
     totalTimeMinutes: 30,
     rating: 4.5,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
     ...overrides,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

@@ -1,4 +1,5 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
+import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
 
 // Lean wire shape returned by the Recipely backend for list/my-recipes/trending
 // endpoints. Keep in sync with recipely-backend
@@ -8,6 +9,8 @@ export interface RecipeListItemDto {
   readonly id: string;
   readonly name: string;
   readonly image: string;
+  /** The cover's focal point; absent until the backend's focus sweep has found it. */
+  readonly imageFocus?: FocusDto;
   readonly cuisine: string;
   readonly category: string;
   readonly difficulty: Difficulty;
@@ -19,9 +22,19 @@ export interface RecipeListItemDto {
    */
   readonly totalTimeMinutes?: number;
   readonly rating: number;
+  /** Absent from a server that predates private saves. */
+  readonly isPublished?: boolean;
   readonly moderationStatus: string;
   readonly likeCount: number;
   readonly likedByMe: boolean;
   readonly commentCount: number;
   readonly viewCount: number;
+  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  origin?: string;
+  /** Which platform an import came from: `INSTAGRAM`, `TIKTOK`, `FACEBOOK`, `YOUTUBE` or `WEB`. */
+  sourcePlatform?: string | null;
+  /** Whether a model produced the text — true for a generation AND an import. */
+  aiWritten?: boolean;
+  /** The recipe's photos — gallery images, or 1 for a lone cover. Absent from a server that predates it. */
+  readonly mediaCount?: number;
 }

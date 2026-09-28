@@ -1,16 +1,16 @@
 import { StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { StatTileText } from '@presentation/app/recipes/[recipeId]/items/meta/stat-tile-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
-import { ValueConstants } from '@core/constants';
+import { spacing, radii, iconSizes, decorSizes } from '@presentation/base/theme';
 
-interface InfoStatProps {
+export interface InfoStatProps {
   icon: keyof typeof Ionicons.glyphMap;
   value: string;
   label: string;
 }
 
+/** A stat tile that only states a fact: servings, difficulty, prep time. */
 export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
@@ -18,37 +18,23 @@ export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Eleme
       <View style={[styles.badge, { backgroundColor: colors.primaryLight }]}>
         <Ionicons name={icon} size={iconSizes.lg} color={colors.primary} />
       </View>
-      <ThemedText style={[styles.statValue, { color: colors.text }]} numberOfLines={ValueConstants.one}>
-        {value}
-      </ThemedText>
-      <ThemedText variant="label" muted style={styles.statLabel} numberOfLines={ValueConstants.one}>
-        {label}
-      </ThemedText>
+      <StatTileText value={value} label={label} />
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   stat: {
-    flex: ValueConstants.one,
     alignItems: 'center',
     gap: spacing.sm,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.lg,
+    paddingHorizontal: spacing.xs2,
   },
   badge: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
+    width: decorSizes.statBadge,
+    height: decorSizes.statBadge,
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  statValue: {
-    fontSize: fontSizes.heading,
-    fontWeight: fontWeights.bold,
-  },
-  statLabel: {
-    fontSize: fontSizes.micro,
-    textAlign: 'center',
   },
 });

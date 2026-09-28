@@ -34,6 +34,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // The three blocks are stood in for: this suite is about the row that holds
 // them, and the real cards pull images, gradients and the favourites store.
@@ -55,6 +56,7 @@ const THREE_COLUMN_WIDTH = BREAKPOINTS.wide;
 
 const makeRecipe = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: `https://cdn.example.com/${id}.webp`,
@@ -64,10 +66,14 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
     totalTimeMinutes: 30,
     rating: 4.5,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeSummaryEntity fixture');
   return result.value;

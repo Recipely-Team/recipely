@@ -123,7 +123,7 @@ export const AssistantOrbAura = ({ isSpeaking }: AssistantOrbAuraProps): React.J
 };
 
 const styles = StyleSheet.create({
-  layer: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'center' },
+  layer: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   // Pinned throughout: rings and points are shapes, not boxes with text.
   ring: {
     position: 'absolute',

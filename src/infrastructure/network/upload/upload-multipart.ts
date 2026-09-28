@@ -33,6 +33,7 @@ export const uploadMultipart = async <T>(
   url: string,
   formData: FormData,
   onProgress?: (event: UploadProgressEvent) => void,
+  timeoutMs: number = MULTIPART_UPLOAD_TIMEOUT_MS,
 ): Promise<Result<T, Failure>> => {
   const fullUrl = joinUrl(options.baseUrl, url);
   const commonHeaders = await buildCommonHeaders(options);
@@ -44,7 +45,7 @@ export const uploadMultipart = async <T>(
     }
     const xhr = new XMLHttpRequest();
     xhr.open(HttpMethod.Post, fullUrl, true);
-    xhr.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
+    xhr.timeout = timeoutMs;
     xhr.setRequestHeader(HttpHeader.accept, HttpMediaType.json);
     for (const [name, value] of Object.entries(commonHeaders)) {
       xhr.setRequestHeader(name, value);

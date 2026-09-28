@@ -14,6 +14,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
 import { assistantMetrics } from '@presentation/base/widgets/assistant/assistant-metrics';
 import { assistantNotice } from '@presentation/base/widgets/assistant/assistant-notice';
+import { AssistantNoticeBlock } from '@presentation/base/widgets/assistant/parts/assistant-notice-block';
 import { useAssistantSession } from '@presentation/base/hooks/assistant/use-assistant-session';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -22,6 +23,7 @@ import {
   controlSizes,
   fontWeights,
   iconSizes,
+  opacities,
   radii,
   spacing,
 } from '@presentation/base/theme';
@@ -178,24 +180,12 @@ export const AssistantPanel = ({
         </Pressable>
       </View>
 
-      {notice !== null ? (
-        noticeTone === SeverityType.Neutral ? (
-          <View style={[styles.notice, shadows.md, { backgroundColor: colors.cardBackground }]}>
-            <ThemedText variant="caption">{notice}</ThemedText>
-          </View>
-        ) : (
-          // A failure gets the app's own error surface rather than a caption on
-          // a card: on the dark panel the two were indistinguishable, and the
-          // one that mattered was the one nobody saw.
-          <View style={styles.notice}>
-            <FormBanner
-              message={notice}
-              severity={noticeTone}
-              icon={noticeTone === SeverityType.Danger ? 'alert-circle' : 'time-outline'}
-            />
-          </View>
-        )
-      ) : null}
+      <AssistantNoticeBlock
+        notice={notice}
+        noticeTone={noticeTone}
+        deniedReason={deniedReason}
+        hasError={error !== null}
+      />
 
       <View style={styles.gap} pointerEvents="none" />
 

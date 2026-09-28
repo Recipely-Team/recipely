@@ -8,7 +8,6 @@ import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-g
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
-import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
@@ -20,7 +19,6 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
-import { MediaType } from '@domain/recipes/media/media-type';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -254,10 +252,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const failure: Failure | undefined = current.status === StoreStatus.Error ? current.failure : undefined;
 
   const recipe = current.status === StoreStatus.Loaded ? current.recipe : null;
-  const images = recipe !== null ? recipe.media.filter((m) => m.type === MediaType.Image) : [];
-  const media: readonly MediaItem[] =
-    recipe === null ? [] : images.length > ValueConstants.zero ? images : [{ type: MediaType.Image, url: recipe.image }];
-  const firstImageUrl = recipe === null ? CharConstants.empty : images[ValueConstants.zero]?.url ?? recipe.image;
+  const media: readonly MediaItem[] = recipe?.heroPhotos ?? [];
+  const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
@@ -267,7 +263,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   // them absent. Nothing to wait for until a recipe has actually arrived.
   const isNutritionCalculating = useNutritionRecheck(
     recipeId,
-    recipe === null || hasReportedNutrition(recipe.caloriesPerServing, recipe.nutrition),
+    recipe === null || recipe.nutritionFacts.hasAny,
     load,
   );
 

@@ -9,4 +9,6 @@
  */
 export const KeyboardKey = {
   escape: 'Escape',
+  arrowLeft: 'ArrowLeft',
+  arrowRight: 'ArrowRight',
 } as const;

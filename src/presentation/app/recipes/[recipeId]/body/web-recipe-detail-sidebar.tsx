@@ -5,12 +5,12 @@ import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-gro
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import { CharConstants, ValueConstants } from '@core/constants';
-import { hasReportedNutrition } from '@presentation/app/recipes/[recipeId]/model/has-reported-nutrition';
+import { ValueConstants } from '@core/constants';
+import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
+import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
@@ -20,7 +20,7 @@ export interface WebRecipeDetailSidebarProps {
   isNutritionCalculating: boolean;
 }
 
-/** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and a nutrition tile grid. */
+/** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and the nutrition panel. */
 export const WebRecipeDetailSidebar = ({
   recipe,
   checkedIngredients,
@@ -31,19 +31,7 @@ export const WebRecipeDetailSidebar = ({
   const strings = t();
   const checkedCount = checkedIngredients.filter(Boolean).length;
 
-  const gram = (value: number | undefined): string =>
-    value !== undefined && value > ValueConstants.zero ? `${String(value)}${strings.nutrition.g}` : CharConstants.emDash;
-
-  const macros = [
-    {
-      label: strings.nutrition.calories,
-      value: recipe.caloriesPerServing > ValueConstants.zero ? String(recipe.caloriesPerServing) : CharConstants.emDash,
-    },
-    { label: strings.nutrition.protein, value: gram(recipe.nutrition?.protein) },
-    { label: strings.nutrition.carbs, value: gram(recipe.nutrition?.carbs) },
-    { label: strings.nutrition.fat, value: gram(recipe.nutrition?.fat) },
-  ];
-  const hasNutrition = hasReportedNutrition(recipe.caloriesPerServing, recipe.nutrition);
+  const headingLineHeight = useTextLineHeight(fontSizes.body, lineHeights.snug);
 
   const metaRows = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
@@ -141,23 +129,13 @@ export const WebRecipeDetailSidebar = ({
       {/* Always rendered, matching the mobile card: a recipe with no figures
           says so rather than dropping the section, which read as a bug. */}
       <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
-        <View style={styles.cardHeader}>
-          <ThemedText variant="subtitle">{strings.recipes.nutrition}</ThemedText>
-        </View>
-        {hasNutrition ? (
-          <View style={styles.tileGrid}>
-            {macros.map((macro) => (
-              <View key={macro.label} style={[styles.tile, { backgroundColor: colors.surface }]}>
-                <ThemedText style={[styles.tileValue, { color: colors.text }]}>{macro.value}</ThemedText>
-                <ThemedText style={[styles.tileLabel, { color: colors.textMuted }]}>{upperCase(macro.label)}</ThemedText>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <ThemedText variant="caption" muted>
-            {isNutritionCalculating ? strings.nutrition.calculating : strings.nutrition.unavailable}
-          </ThemedText>
-        )}
+        <ThemedText
+          accessibilityRole="header"
+          style={[styles.nutritionHeading, { lineHeight: headingLineHeight, color: colors.text }]}
+        >
+          {strings.recipes.nutrition}
+        </ThemedText>
+        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} compact />
       </View>
     </View>
   );
@@ -218,26 +196,9 @@ const styles = StyleSheet.create({
   metaValue: {
     fontWeight: fontWeights.semibold,
   },
-  tileGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm,
-  },
-  tile: {
-    flexGrow: ValueConstants.one,
-    flexBasis: '45%',
-    borderRadius: radii.lg,
-    paddingVertical: spacing.md,
-    paddingHorizontal: spacing.md,
-    gap: spacing.xxs,
-  },
-  tileValue: {
-    fontSize: fontSizes.title,
-    fontWeight: fontWeights.bold,
-  },
-  tileLabel: {
-    fontSize: fontSizes.micro,
-    fontWeight: fontWeights.semibold,
-    letterSpacing: letterSpacings.wide,
+  nutritionHeading: {
+    fontSize: fontSizes.body,
+    fontWeight: fontWeights.heavy,
+    marginBottom: spacing.md,
   },
 });

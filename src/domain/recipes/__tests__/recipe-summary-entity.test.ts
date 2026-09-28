@@ -2,6 +2,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const validProps = {
   id: 'r1',
@@ -13,10 +14,15 @@ const validProps = {
   totalTimeMinutes: 35,
   rating: 4.6,
   moderationStatus: 'approved',
+  isPublished: true,
   likeCount: 3,
   likedByMe: true,
   commentCount: 2,
   viewCount: 100,
+  origin: RecipeOrigin.User,
+  sourcePlatform: null,
+  aiWritten: false,
+  photoCount: 3,
 };
 
 describe('RecipeSummaryEntity.create', () => {

@@ -49,6 +49,7 @@ export const WebHeroFeaturedCard = ({
     <View style={styles.card}>
       <RecipeImage
         uri={recipe.image}
+        focus={recipe.imageFocus}
         style={styles.image}
         accessibilityLabel={recipe.name}
         placeholderLabel={t().recipes.noPhoto}
@@ -125,7 +126,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xxl2,
     overflow: 'hidden',
   },
-  openOverlay: StyleSheet.absoluteFillObject,
+  openOverlay: StyleSheet.absoluteFill,
   pressed: {
     opacity: opacities.onMediaFaint,
   },

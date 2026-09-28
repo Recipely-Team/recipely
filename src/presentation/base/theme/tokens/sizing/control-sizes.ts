@@ -26,8 +26,6 @@ export const controlSizes = {
   progressBar: scale(6),
   /** Compact consent checkbox. */
   checkboxSm: scale(22),
-  /** Circular remove/close button overlaid on a media tile. */
-  mediaRemoveBtn: scale(22),
   /** Standard checkbox. */
   checkbox: scale(24),
   /** Filter / selection chip. */
@@ -38,6 +36,10 @@ export const controlSizes = {
   selector: scale(34),
   /** The default round icon button (nav bar, card actions). */
   iconBtn: scale(36),
+  /** One option of an inline segmented switch (e.g. the nutrition basis). */
+  segmentOption: scale(36),
+  pasteBtn: scale(38),
+  pageCloseBtn: scale(38),
   /** Icon/action button in the web header. */
   webHeaderBtn: scale(38),
   /** Close button on a web modal. */
@@ -54,6 +56,11 @@ export const controlSizes = {
   searchBar: scale(44),
   /** Round channel chip in the share sheet. */
   channelChip: scale(44),
+  /**
+   * The smallest box a pressable pill or circle on a photo may have — the
+   * detail hero's "add the first photo" pill, a Created card's camera button.
+   */
+  touchTarget: scale(44),
   /** Compact single-line form input. */
   inputSm: scale(46),
   /** Secondary / sheet button. */

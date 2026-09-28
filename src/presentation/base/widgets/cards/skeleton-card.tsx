@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, mediaSizes, borderWidths, decorSizes } from '@presentation/base/theme';
+import { spacing, radii, aspectRatios, borderWidths, decorSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export const SkeletonCard = (): React.JSX.Element => {
@@ -14,7 +14,10 @@ export const SkeletonCard = (): React.JSX.Element => {
         { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
       ]}
     >
-      <SkeletonLoader width="100%" height={mediaSizes.cardImageHeight} borderRadius={ValueConstants.zero} />
+      {/* The same 16:10 box the card's cover takes, so nothing jumps when rows arrive. */}
+      <View style={styles.cover}>
+        <SkeletonLoader width="100%" height="100%" borderRadius={ValueConstants.zero} />
+      </View>
       <View style={styles.body}>
         <SkeletonLoader width="60%" height={decorSizes.skeletonLineMd} borderRadius={radii.sm} />
         <View style={styles.row}>
@@ -31,6 +34,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.xl,
     overflow: 'hidden',
     borderWidth: borderWidths.hairline,
+  },
+  cover: {
+    aspectRatio: aspectRatios.heroWide,
   },
   body: {
     padding: spacing.md,

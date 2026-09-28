@@ -21,8 +21,8 @@ export interface CreateRecipeHeaderProps {
 
 /**
  * Top bar for the recipe preview/editor phase: close button, centered title with
- * an optional AI badge, and the gradient save button. The save label reflects the
- * publish/update state and is resolved by the parent screen.
+ * an optional AI badge, and the gradient save button — a lock and "Save",
+ * because every save is private. The label is resolved by the parent screen.
  */
 export const CreateRecipeHeader = ({
   title,
@@ -82,6 +82,7 @@ export const CreateRecipeHeader = ({
           end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.saveInner}
         >
+          <Ionicons name="lock-closed" size={iconSizes.sm} color={colors.primaryText} />
           <ThemedText variant="caption" style={[styles.saveLabel, { color: colors.primaryText }]}>
             {saveLabel}
           </ThemedText>
@@ -135,6 +136,8 @@ const styles = StyleSheet.create({
   },
   saveInner: {
     flex: ValueConstants.one,
+    flexDirection: 'row',
+    gap: spacing.xs,
     paddingHorizontal: spacing.lg,
     alignItems: 'center',
     justifyContent: 'center',

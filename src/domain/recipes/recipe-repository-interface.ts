@@ -11,6 +11,11 @@ import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-batch';
+import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
+import type { EditRecipeInput } from '@domain/recipes/edit/edit-recipe-input';
+import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
+import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
 
 export interface RecipeRepositoryInterface {
   listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>>;
@@ -51,6 +56,14 @@ export interface RecipeRepositoryInterface {
    * result without one.
    */
   getImportJob(id: string): Promise<Result<ImportJob, Failure>>;
+
+  /**
+   * Reads photos of a recipe's pages, or a PDF, into a draft and returns its id.
+   *
+   * Synchronous, unlike the link import: a reading takes 10-30 s, so it holds
+   * the request open on its own timeout rather than going through the queue.
+   */
+  importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>>;
   /**
    * Refines an in-progress recipe against a free-text instruction and returns a
    * `RefinedRecipe` read model: the full preview `Recipe` plus the AI's
@@ -64,12 +77,8 @@ export interface RecipeRepositoryInterface {
     history: readonly ChatMessage[],
   ): Promise<Result<RefinedRecipe, Failure>>;
   /**
-   * Adds one photo to a recipe that is already published.
-   *
-   * The owner's only way back into their own gallery: editing a published
-   * recipe was removed, and a photo taken after the fact — the dish looking
-   * better than the picture that went out with it — had nowhere to go.
-   * The backend judges the photo before it stores it, so this can fail with a
+   * Adds one photo to a recipe the caller owns; it becomes the cover when the
+   * recipe has none. The backend judges the photo before it stores it, so this can fail with a
    * refusal about the picture rather than about the request.
    */
   addRecipePhoto(
@@ -81,6 +90,21 @@ export interface RecipeRepositoryInterface {
 
   /** Removes one photo from a recipe the caller owns. */
   removeRecipePhoto(recipeId: string, mediaId: string): Promise<Result<void, Failure>>;
+
+  /**
+   * Removes the cover photo everywhere it appears; the next gallery photo
+   * becomes the cover. The owner's way to take a website's photo back off.
+   */
+  removeRecipeCover(recipeId: string): Promise<Result<CoverRemoval, Failure>>;
+
+  /** Changes a PRIVATE recipe; a published one has to be taken back first. */
+  updateRecipe(id: string, input: EditRecipeInput): Promise<Result<RecipeEntity, Failure>>;
+
+  /** Offers a private recipe for publishing; the moderator's answer comes back. */
+  publishRecipe(id: string): Promise<Result<PublishOutcome, Failure>>;
+
+  /** Takes a published or in-review recipe back to private. */
+  unpublishRecipe(id: string): Promise<Result<PublishOutcome, Failure>>;
 
   deleteRecipe(id: string): Promise<Result<void, Failure>>;
 }

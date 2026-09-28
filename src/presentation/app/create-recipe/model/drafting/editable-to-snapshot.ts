@@ -24,8 +24,16 @@ import { CharConstants, ValueConstants } from '@core/constants';
  *   in memory, so publishing in the same session is unaffected. Dropping it
  *   here makes a resumed draft honest about having no photo, at the point where
  *   the user can just pick another one.
+ * - **`category` comes from the editor now, not from what was carried.** The
+ *   editor has always held one (publish reads it from there), but this mapper
+ *   only ever re-wrote the carried value — so a GENERATED draft, which carries
+ *   nothing, saved no category at all and came back a main course. Writing the
+ *   editor's own is safe only because `snapshotToEditable` now reads it back:
+ *   while it did not, the editor's value was always the default, and writing it
+ *   would have destroyed an imported draft's real one. The two halves ship
+ *   together.
  * - **What the editor does not model, it must not delete.** An imported draft
- *   arrives carrying `category`, `tags`, `mealType`, `tips`, `nutrition`,
+ *   arrives carrying `tags`, `mealType`, `tips`, `nutrition`,
  *   `caloriesPerServing` and a cover `image` — none of which this editor has a
  *   field for. Projecting the editor alone therefore did not merely omit them,
  *   it OVERWROTE them: autosave fires on open, so simply looking at an imported
@@ -56,8 +64,8 @@ export const editableToSnapshot = (
     ingredients: recipe.ingredients.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
     instructions: recipe.instructions.map((s) => s.trim()).filter((s) => s.length > ValueConstants.zero),
     media,
+    category: recipe.category,
     ...(cover !== undefined ? { image: cover } : {}),
-    ...(carried?.category !== undefined ? { category: carried.category } : {}),
     ...(carried?.tags !== undefined ? { tags: carried.tags } : {}),
     ...(carried?.mealType !== undefined ? { mealType: carried.mealType } : {}),
     ...(carried?.tips !== undefined ? { tips: carried.tips } : {}),

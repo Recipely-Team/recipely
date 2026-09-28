@@ -7,6 +7,31 @@ import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { ValueConstants } from '@core/constants';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { toRecipeOrigin } from '@domain/recipes/provenance/to-recipe-origin';
+import { toSourcePlatform } from '@domain/recipes/provenance/to-source-platform';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { ModerationStatus } from '@domain/recipes/publishing/moderation-status';
+import { toPublishBlockers } from '@domain/recipes/publishing/to-publish-blockers';
+import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
+import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import { toFocalPoint } from '@infrastructure/recipes/media/to-focal-point';
+
+/**
+ * A server that predates private saves sends no `isPublished`; every recipe it
+ * held was public once approved, so approval answers for it.
+ */
+const isPublishedOf = (isPublished: boolean | undefined, moderationStatus: string): boolean =>
+  isPublished ?? moderationStatus === ModerationStatus.Approved;
+
+/** Owner-only: absent stays absent, so "not told" never reads as "nothing missing". */
+const optionalBlockers = (raw: string[] | undefined): Pick<RecipeEntityProps, 'publishBlockers'> => {
+  const blockers = toPublishBlockers(raw);
+  return blockers === undefined ? {} : { publishBlockers: blockers };
+};
+
+/** Absent stays absent: a media item with no focus carries no `focus` key at all. */
+const withFocus = (focus: FocalPoint | undefined): { focus?: FocalPoint } =>
+  focus === undefined ? {} : { focus };
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -17,11 +42,12 @@ import { MediaType } from '@domain/recipes/media/media-type';
  * guard, so an empty cover maps to an empty gallery instead.
  */
 export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto) => {
+  const imageFocus = toFocalPoint(dto.imageFocus);
   const media: MediaItem[] =
     dto.media && dto.media.length > ValueConstants.zero
-      ? dto.media.map((m) => ({ id: m.id, type: m.type, url: m.url }))
+      ? dto.media.map((m) => ({ id: m.id, type: m.type, url: m.url, ...withFocus(toFocalPoint(m.focus)) }))
       : dto.image.trim().length > ValueConstants.zero
-        ? [{ type: MediaType.Image, url: dto.image }]
+        ? [{ type: MediaType.Image, url: dto.image, ...withFocus(imageFocus) }]
         : [];
 
   return RecipeEntity.create({
@@ -38,6 +64,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     caloriesPerServing: dto.caloriesPerServing ?? ValueConstants.zero,
     nutrition: dto.nutrition,
     image: dto.image,
+    ...(imageFocus !== undefined ? { imageFocus } : {}),
     media,
     rating: dto.rating,
     tags: dto.tags,
@@ -46,7 +73,17 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
     viewCount: dto.viewCount ?? ValueConstants.zero,
+    origin: toRecipeOrigin(dto.origin),
+    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    // A server that predates the column says nothing; an import is a model's
+    // work by definition, so `origin` answers for those rows rather than
+    // letting them read as hand-written.
+    aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
+    ...(dto.sourceUrl !== undefined ? { sourceUrl: dto.sourceUrl } : {}),
+    ...(dto.sourceHandle !== undefined ? { sourceHandle: dto.sourceHandle } : {}),
+    isPublished: isPublishedOf(dto.isPublished, dto.moderationStatus),
     moderationStatus: dto.moderationStatus,
+    ...optionalBlockers(dto.publishBlockers),
     commentCount: dto.commentCount ?? ValueConstants.zero,
   });
 };
@@ -58,19 +95,29 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
 export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, ValidationFailure> = (
   dto,
 ) => {
+  const imageFocus = toFocalPoint(dto.imageFocus);
   return RecipeSummaryEntity.create({
     id: dto.id,
     name: dto.name,
     image: dto.image,
+    ...(imageFocus !== undefined ? { imageFocus } : {}),
     cuisine: dto.cuisine,
     category: dto.category,
     difficulty: dto.difficulty,
     totalTimeMinutes: dto.totalTimeMinutes ?? null,
     rating: dto.rating,
+    isPublished: isPublishedOf(dto.isPublished, dto.moderationStatus),
     moderationStatus: dto.moderationStatus,
     likeCount: dto.likeCount ?? ValueConstants.zero,
     likedByMe: dto.likedByMe ?? false,
     commentCount: dto.commentCount ?? ValueConstants.zero,
     viewCount: dto.viewCount ?? ValueConstants.zero,
+    // A row saved before the column existed sends nothing; `toRecipeOrigin`
+    // answers `User` for that, which is the honest reading — we do not know of
+    // anything else that wrote it.
+    origin: toRecipeOrigin(dto.origin),
+    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
+    photoCount: dto.mediaCount ?? ValueConstants.zero,
   });
 };

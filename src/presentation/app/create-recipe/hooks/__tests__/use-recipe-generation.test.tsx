@@ -71,6 +71,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
@@ -109,6 +110,7 @@ const PROMPT = 'a quick garlic pasta';
 
 const makeRecipe = (): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: 'r-generated',
     name: 'Garlic Pasta',
     cuisine: CuisineKey.Italian,
@@ -130,7 +132,10 @@ const makeRecipe = (): RecipeEntity => {
     likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 0,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build Recipe fixture');
   return result.value;
@@ -306,6 +311,7 @@ const driveHook = (config: FakeRecipeRepositoryConfig, resume?: ResumeOptions): 
       setRecipe: setRecipeState,
       activeDraftId: resume?.draftId ?? 'draft-1',
       draftId: resume?.draftId,
+      editRecipeId: undefined,
     });
     return null;
   };

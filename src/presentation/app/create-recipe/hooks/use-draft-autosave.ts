@@ -34,6 +34,12 @@ interface UseDraftAutosaveArgs {
  * the draft straight back. Cancelling is a ref flip rather than a state change
  * on purpose: the caller deletes on the very next line, and a re-render is not
  * guaranteed to have happened by then.
+ *
+ * And a `flush` for Save: a save inside the debounce window sent `fromDraftId`
+ * for a draft not yet written — the server could not see its prompt, so a
+ * generated recipe lost its AI mark — and the timer then fired after the save
+ * had retired the draft, leaving a ghost copy. Save flushes first and cancels
+ * before retiring.
  */
 export const useDraftAutosave = ({
   enabled,
@@ -43,7 +49,7 @@ export const useDraftAutosave = ({
   carried,
   chatHistory,
   upsertDraft,
-}: UseDraftAutosaveArgs): (() => void) => {
+}: UseDraftAutosaveArgs): { cancel: () => void; flush: () => Promise<void> } => {
   // Keep the latest values in a ref so the timer always reads fresh data
   // without re-arming on every keystroke beyond the debounce window.
   const latest = useRef({ prompt, recipe, carried, chatHistory });
@@ -52,23 +58,40 @@ export const useDraftAutosave = ({
   const cancelled = useRef(false);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  useEffect(() => {
-    if (cancelled.current || !enabled || !editableHasContent(recipe)) return;
-    timer.current = setTimeout(() => {
-      void upsertDraft({
+  const write = useCallback(
+    (): Promise<unknown> =>
+      upsertDraft({
         id: draftId,
         prompt: latest.current.prompt,
         snapshot: editableToSnapshot(latest.current.recipe, latest.current.carried),
         chatHistory: latest.current.chatHistory,
-      });
+      }),
+    [draftId, upsertDraft],
+  );
+
+  useEffect(() => {
+    if (cancelled.current || !enabled || !editableHasContent(recipe)) return;
+    timer.current = setTimeout(() => {
+      timer.current = null;
+      void write();
     }, DEBOUNCE_MS);
     return () => {
       if (timer.current !== null) clearTimeout(timer.current);
     };
-  }, [enabled, draftId, recipe, chatHistory, upsertDraft]);
+  }, [enabled, recipe, chatHistory, write]);
 
-  return useCallback((): void => {
+  const cancel = useCallback((): void => {
     cancelled.current = true;
     if (timer.current !== null) clearTimeout(timer.current);
+    timer.current = null;
   }, []);
+
+  const flush = useCallback(async (): Promise<void> => {
+    if (timer.current === null || cancelled.current) return;
+    clearTimeout(timer.current);
+    timer.current = null;
+    await write();
+  }, [write]);
+
+  return { cancel, flush };
 };

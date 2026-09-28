@@ -54,6 +54,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { t } from '@presentation/i18n';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
@@ -167,8 +168,9 @@ const makeRealCommentsStore = (
  * A loaded recipe whose server-side like state is caller-supplied, for the
  * single-source-of-truth tests below.
  */
-const buildRecipe = (likedByMe: boolean): RecipeEntity => {
+const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: RECIPE_ID,
     name: 'Baklava',
     cuisine: 'TURKISH',
@@ -180,7 +182,7 @@ const buildRecipe = (likedByMe: boolean): RecipeEntity => {
     cookTimeMinutes: 35,
     servings: 1,
     caloriesPerServing: 0,
-    image: 'https://cdn.example.com/baklava.webp',
+    image: cover,
     media: [],
     rating: 0,
     tags: [],
@@ -190,7 +192,10 @@ const buildRecipe = (likedByMe: boolean): RecipeEntity => {
     likedByMe,
     viewCount: 60,
     moderationStatus: 'approved',
+    isPublished: true,
     commentCount: 1,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('failed to build RecipeEntity fixture');
   return result.value;
@@ -210,6 +215,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
     replace: jest.fn(),
+    put: jest.fn(),
     remove: jest.fn(),
     clear: jest.fn(),
     addPhoto: jest.fn(),
@@ -477,5 +483,32 @@ describe('useRecipeDetail — copying a recipe to drafts', () => {
     expect(mockRouterPush).not.toHaveBeenCalled();
     expect(latest().promptVisible).toBe(true);
     expect(latest().promptMessage).toBe(t().recipes.signInToCopy);
+  });
+});
+
+// ─── the hero's photos ───────────────────────────────────────────────────────
+
+/**
+ * The hook built `[{ type: image, url: recipe.image }]` whenever the gallery was
+ * empty — even for a cover of `''` — so the viewer never saw an empty list and
+ * never drew its "add first photo" state. The rule now lives on the entity
+ * (`RecipeEntity.heroPhotos`) and the hook only reads it.
+ */
+describe('useRecipeDetail — the hero photos', () => {
+  const loadedWithCover = (cover: string): StoreOverrides => ({
+    detailState: { status: 'loaded', recipe: buildRecipe(false, cover), fetchedAt: Date.now() },
+  });
+
+  it('an owner\'s recipe with no photo showed a blank frame with a Remove button instead of the add-first-photo state', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loadedWithCover(''));
+
+    expect(latest().media).toEqual([]);
+    expect(latest().firstImageUrl).toBe('');
+  });
+
+  it('a recipe with only a cover pages through that one photo', () => {
+    const { latest } = driveHook(makeRealCommentsStore(jest.fn()), loadedWithCover('https://cdn.example.com/c.webp'));
+
+    expect(latest().media.map((m) => m.url)).toEqual(['https://cdn.example.com/c.webp']);
   });
 });

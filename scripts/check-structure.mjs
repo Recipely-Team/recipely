@@ -34,6 +34,8 @@
  *   AA. Every routed screen has an analytics screen name — an unmapped route
  *      falls back to the platform's own name, which is one `MainActivity` for
  *      the whole app (CLAUDE.md §25).
+ *   AH. No accessibilityLabel spelled as a string literal — a screen reader
+ *      speaks it in English on every locale (CLAUDE.md §11).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -382,6 +384,28 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       if (entry === undefined) return null;
       return Array.isArray(entry) ? (entry[1] ?? {}) : {};
     };
+
+    // Rule AH — `withIosSceneDelegate` must be the FIRST plugin, because expo
+    // runs the LAST one first and this one has to run LAST.
+    //
+    // It removes the `factory.startReactNative(` call from AppDelegate.swift,
+    // and that call is the anchor `@react-native-firebase/app` inserts
+    // `FirebaseApp.configure()` above. Run it any earlier and Firebase finds no
+    // anchor, calls `WarningAggregator.addWarningIOS(... 'Skipping Firebase
+    // addition.')`, and returns the file unchanged — so the app ships with
+    // Auth, Analytics and Crashlytics silently dead, through a green lint,
+    // tsc, jest and check:structure and a build that succeeds.
+    //
+    // The plugin throws when the template stops matching it, but it cannot see
+    // THIS failure: from where it stands the AppDelegate looks exactly right.
+    // Ordering is decided in app.json, so app.json is where it is checked.
+    const SCENE_DELEGATE_PLUGIN = './plugins/withIosSceneDelegate';
+    const pluginNames = plugins.map((p) => (Array.isArray(p) ? p[0] : p));
+    if (pluginNames.includes(SCENE_DELEGATE_PLUGIN) && pluginNames[0] !== SCENE_DELEGATE_PLUGIN) {
+      errors.push(
+        `app.json: "${SCENE_DELEGATE_PLUGIN}" must be the FIRST plugin so it runs LAST — it removes the factory.startReactNative( call that @react-native-firebase/app anchors FirebaseApp.configure() on, and Firebase skips silently when the anchor is gone (CLAUDE.md rule 24)`,
+      );
+    }
 
     const audio = optionsFor('expo-audio');
     if (audio !== null && audio.enableBackgroundPlayback !== false) {
@@ -831,6 +855,33 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     const code = src.split('\n').filter((line) => !isComment(line)).join('\n');
     if (!SET_PROP.test(code)) continue;
     errors.push(`${file}: removeClippedSubviews — crashes Fabric mounting (CLAUDE.md §6c)`);
+  }
+}
+
+// --- AH: accessibility labels go through t() (CLAUDE.md §11) -----------------
+// The mobile recipe detail's bookmark button announced "Add to favorites" on a
+// Turkish screen: the label was typed into the component while its three
+// neighbours read `t()`. Nothing visible changed, so no screenshot or snapshot
+// could catch it — only a screen reader user would ever hear it. A label is
+// user-facing copy; a quoted word in one is copy that skipped the catalogue.
+//
+// Matches `accessibilityLabel="Word"` and a quoted word anywhere inside
+// `accessibilityLabel={…}` (the ternary is how this one slipped in). Template
+// literals are left alone: they compose `t()` output with data.
+{
+  const BRAND = new Set(['Recipely']);
+  const ATTR = /accessibilityLabel=(?:"([^"]*)"|\{([^}]*)\})/g;
+  const QUOTED_WORD = /(['"])([^'"]*[A-Za-z][^'"]*)\1/g;
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(ATTR)) {
+      const literals = m[1] !== undefined ? [m[1]] : [...m[2].matchAll(QUOTED_WORD)].map((q) => q[2]);
+      for (const text of literals) {
+        if (!/[A-Za-z]/.test(text) || BRAND.has(text)) continue;
+        errors.push(`${file}: accessibilityLabel "${text}" is a literal — use t() (CLAUDE.md §11)`);
+      }
+    }
   }
 }
 

@@ -15,6 +15,7 @@ const withContent = (): EditableRecipe => ({ ...emptyEditable(), name: 'Garlic P
 
 interface Driver {
   cancel: () => void;
+  flush: () => Promise<void>;
   upsert: jest.Mock;
 }
 
@@ -23,10 +24,10 @@ interface Driver {
 // leaves its async hydration unresolved past the end of the test.
 const drive = (recipe: EditableRecipe = withContent()): Driver => {
   const upsert = jest.fn().mockResolvedValue(undefined);
-  let cancel!: () => void;
+  let autosave!: ReturnType<typeof useDraftAutosave>;
 
   const Probe = (): null => {
-    cancel = useDraftAutosave({
+    autosave = useDraftAutosave({
       enabled: true,
       draftId: 'draft-1',
       prompt: 'a quick garlic pasta',
@@ -42,7 +43,7 @@ const drive = (recipe: EditableRecipe = withContent()): Driver => {
     renderer = create(<Probe />);
   });
 
-  return { cancel: () => cancel(), upsert };
+  return { cancel: () => autosave.cancel(), flush: () => autosave.flush(), upsert };
 };
 
 let renderer: ReactTestRenderer | null = null;
@@ -103,6 +104,36 @@ describe('useDraftAutosave', () => {
     // any re-render in between must not start saving again.
     act(() => {
       jest.runAllTimers();
+    });
+
+    expect(upsert).not.toHaveBeenCalled();
+  });
+
+  /**
+   * The Save race: tapping Save inside the 500ms window sent the create with
+   * `fromDraftId` pointing at a draft that did not exist yet, so the server
+   * could not tell a model wrote it (no AI mark); the timer then fired AFTER
+   * the save had retired the draft and put a ghost copy back in the list.
+   */
+  it('flush writes a pending save now, and only once', async () => {
+    const { flush, upsert } = drive();
+
+    await act(async () => {
+      await flush();
+    });
+    act(() => {
+      jest.runAllTimers();
+    });
+
+    expect(upsert).toHaveBeenCalledTimes(1);
+    expect(upsert).toHaveBeenCalledWith(expect.objectContaining({ id: 'draft-1', prompt: 'a quick garlic pasta' }));
+  });
+
+  it('flush does nothing when no save is pending', async () => {
+    const { flush, upsert } = drive(emptyEditable());
+
+    await act(async () => {
+      await flush();
     });
 
     expect(upsert).not.toHaveBeenCalled();

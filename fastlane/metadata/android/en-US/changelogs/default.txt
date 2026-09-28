@@ -1,7 +1,9 @@
-• The assistant no longer refuses to make a recipe because of a draft you cannot see.
-• Asked for a new recipe with a draft open, it asks what to do with the draft first — and makes the recipe either way.
-• iOS: a developer message that could appear over the app on launch is gone.
-• Siri recognises the app's name more reliably.
-• Recipes you saved can now be found from your phone's own search.
+• Import recipes from Instagram, TikTok, Facebook, YouTube, Pinterest and recipe websites, or from photos and PDFs.
+• Save a recipe privately and publish it later.
+• A website recipe needs your own photo and wording before it can be published.
+• Nutrition per 100 g or per serving.
+• A new photo viewer, cropped on the dish.
+• Notifications name where each recipe came from.
+• Translation fixes.
 
 Thanks for cooking with Recipely!

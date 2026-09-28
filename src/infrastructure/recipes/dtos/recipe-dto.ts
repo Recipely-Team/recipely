@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
+import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
 import type { NutritionDto } from '@infrastructure/recipes/dtos/nutrition-dto';
 
 // Wire shape returned by the Recipely backend for a single recipe.
@@ -18,6 +19,8 @@ export interface RecipeDto {
   caloriesPerServing: number;
   nutrition?: NutritionDto;
   image: string;
+  /** The cover's focal point; absent until the backend's focus sweep has found it. */
+  imageFocus?: FocusDto;
   rating: number;
   tags: string[];
   mealType: string[];
@@ -29,5 +32,19 @@ export interface RecipeDto {
   createdAt: string;
   updatedAt: string;
   viewCount: number;
+  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  origin?: string;
+  /** The post an import came from. */
+  sourceUrl?: string;
+  /** The account that posted it, without the '@'. */
+  sourceHandle?: string;
+  /** Which platform an import came from: `INSTAGRAM`, `TIKTOK`, `FACEBOOK`, `YOUTUBE` or `WEB`. */
+  sourcePlatform?: string | null;
+  /** Whether a model produced the text — true for a generation AND an import. */
+  aiWritten?: boolean;
+  /** Absent from a server that predates private saves. */
+  isPublished?: boolean;
   moderationStatus: string;
+  /** Owner only: what a website import still needs before it can be published. */
+  publishBlockers?: string[];
 }

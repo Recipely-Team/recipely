@@ -1,3 +1,4 @@
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { recipePageOf } from "@application/__fixtures__/recipe-page-of";
 import type { CreateRecipeUseCase } from "@application/recipes/create/create-recipe-use-case";
 import type { DeleteRecipeUseCase } from "@application/recipes/delete/delete-recipe-use-case";
@@ -22,6 +23,7 @@ const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeEntity.create>[0]> = {},
 ): RecipeEntity => {
   const result = RecipeEntity.create({
+    origin: RecipeOrigin.User,
     id: "r1",
     name: "My Recipe",
     cuisine: CuisineKey.Italian,
@@ -43,8 +45,11 @@ const makeRecipe = (
     likedByMe: false,
     viewCount: 0,
     moderationStatus: "approved",
+    isPublished: true,
     commentCount: 0,
     ...overrides,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error("failed to build Recipe fixture");
   return result.value;
@@ -54,6 +59,7 @@ const makeSummary = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
 ): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id: "network-only",
     name: "Network Only Recipe",
     image: "https://cdn.example.com/network.webp",
@@ -63,11 +69,15 @@ const makeSummary = (
     totalTimeMinutes: 30,
     rating: 4.0,
     moderationStatus: "approved",
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
     ...overrides,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok)
     throw new Error("failed to build RecipeSummaryEntity fixture");
@@ -137,6 +147,7 @@ const makeStore = (overrides: Partial<Deps> = {}) => {
     getState: () => ({
       replace: recipeDetailStoreReplace,
       remove: recipeDetailStoreRemove,
+      put: jest.fn(),
     }),
   } as unknown as BoundStore<RecipeDetailStoreState>;
 

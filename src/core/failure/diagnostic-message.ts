@@ -52,14 +52,21 @@ export const DiagnosticMessage = {
     uploadFailed: (status: number): string => `Network error (status ${status})`,
   },
   recipeImport: {
-    urlRequired: 'Instagram URL is required',
-    notAnInstagramUrl: (url: string): string => `Not an Instagram URL (${url})`,
-    /** Right host, wrong page — a profile or an explore link has no video behind it. */
-    notAPostUrl: (url: string): string => `Not a link to a post or reel (${url})`,
+    urlRequired: 'Import link is required',
+    /** A site known to hold recipes this import cannot read (YouTube, Facebook, X, Pinterest). */
+    unsupportedSite: (url: string): string => `Not a site imports can read (${url})`,
+    /** Not a link at all, or a video platform's page that is not one video (a profile). */
+    notImportable: (url: string): string => `Not an importable link (${url})`,
     /** The queued job came back `failed`; the reason rides on its `errorKey`. */
     jobFailed: 'Instagram import job failed',
     /** `done` with no draft to open — the backend writes one before reporting done. */
     doneWithoutDraft: 'Instagram import reported done with no draft id',
+  },
+  fileImport: {
+    noFile: 'File import has no file',
+    unsupportedFile: 'File import got a type it cannot read',
+    fileTooLarge: 'File import got a file over the size limit',
+    tooManyFiles: 'File import got more files than one import takes',
   },
   recipeCreate: {
     /** Publishing threw instead of returning a Result; the UI must not hang. */
@@ -121,6 +128,7 @@ export const DiagnosticMessage = {
       nameRequired: 'Recipe name must be non-empty',
       servingsTooLow: 'Servings must be at least 1',
       caloriesNegative: 'Calories must be non-negative',
+      focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
     },
   },
   assistant: {
@@ -148,4 +156,5 @@ export const DiagnosticMessage = {
 export const FailureField = {
   token: 'token',
   email: 'email',
+  focus: 'focus',
 } as const;

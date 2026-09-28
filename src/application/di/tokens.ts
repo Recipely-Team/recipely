@@ -40,6 +40,8 @@ export const TOKENS = {
   FeedbackRepository: Symbol.for('FeedbackRepository'),
   SubmitFeedbackUseCase: Symbol.for('SubmitFeedbackUseCase'),
   KeyValueStore: Symbol.for('KeyValueStore'),
+  DeviceIdentity: Symbol.for('DeviceIdentity'),
+  DeviceRepository: Symbol.for('DeviceRepository'),
   DeviceLocaleProvider: Symbol.for('DeviceLocaleProvider'),
   LocaleService: Symbol.for('LocaleService'),
   NotificationService: Symbol.for('NotificationService'),

@@ -14,7 +14,7 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
 import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
-import { AI_REQUEST_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
+import { AI_REQUEST_TIMEOUT_MS, FILE_IMPORT_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
 import type { MediaItem } from '@domain/recipes/media/media-item';
@@ -32,6 +32,16 @@ import type { ImportJob } from '@domain/recipes/import/import-job';
 import { toImportJob } from '@infrastructure/recipes/import/to-import-job';
 import type { RefineRecipeRequestDto } from '@infrastructure/recipes/refine/refine-recipe-request-dto';
 import type { ChatMessage } from '@domain/drafts/chat-message';
+import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-batch';
+import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
+import type { FileImportResponseDto } from '@infrastructure/recipes/import-file/file-import-response-dto';
+import { buildImportFileFormData } from '@infrastructure/recipes/import-file/build-import-file-form-data';
+import type { EditRecipeInput } from '@domain/recipes/edit/edit-recipe-input';
+import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
+import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
+import type { PublishOutcomeDto } from '@infrastructure/recipes/publishing/publish-outcome-dto';
+import type { CoverRemovalDto } from '@infrastructure/recipes/publishing/cover-removal-dto';
+import { toEditRecipeRequest } from '@infrastructure/recipes/edit/to-edit-recipe-request';
 
 /**
  * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
@@ -123,11 +133,52 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return ok({ id: result.value.id, type: result.value.type, url: result.value.url });
   }
 
+  /**
+   * Reads photos of a recipe's pages, or a PDF, into a draft.
+   *
+   * The XHR multipart path, like every upload here, on its own 70 s budget:
+   * the reading itself takes 10-30 s and the backend stops at 60.
+   */
+  async importRecipeFromFiles(batch: ImportFileBatch): Promise<Result<FileImportReceipt, Failure>> {
+    const formData = await buildImportFileFormData(batch);
+    const result = await this.http.uploadMultipart<FileImportResponseDto>(
+      ApiRoutes.recipes.importFile,
+      formData,
+      undefined,
+      FILE_IMPORT_TIMEOUT_MS,
+    );
+    if (!result.ok) return result;
+
+    return ok({ draftId: result.value.draftId });
+  }
+
   async removeRecipePhoto(recipeId: string, mediaId: string): Promise<Result<void, Failure>> {
     const result = await this.http.delete<unknown>(ApiRoutes.recipes.mediaItem(recipeId, mediaId));
     if (!result.ok) return result;
 
     return ok(undefined);
+  }
+
+  async removeRecipeCover(recipeId: string): Promise<Result<CoverRemoval, Failure>> {
+    const result = await this.http.delete<CoverRemovalDto>(ApiRoutes.recipes.cover(recipeId));
+    if (!result.ok) return result;
+
+    return ok({ image: result.value.image, removedMediaIds: result.value.removedMediaIds });
+  }
+
+  async updateRecipe(id: string, input: EditRecipeInput): Promise<Result<RecipeEntity, Failure>> {
+    const result = await this.http.patch<RecipeDto>(ApiRoutes.recipes.byId(id), toEditRecipeRequest(input));
+    if (!result.ok) return result;
+
+    return this.mapRecipe(result.value);
+  }
+
+  publishRecipe(id: string): Promise<Result<PublishOutcome, Failure>> {
+    return this.postOutcome(ApiRoutes.recipes.publish(id));
+  }
+
+  unpublishRecipe(id: string): Promise<Result<PublishOutcome, Failure>> {
+    return this.postOutcome(ApiRoutes.recipes.unpublish(id));
   }
 
   async deleteRecipe(id: string): Promise<Result<void, Failure>> {
@@ -211,6 +262,13 @@ export class RecipeRepository implements RecipeRepositoryInterface {
       summary: result.value.summary,
       suggestion: result.value.suggestion,
     });
+  }
+
+  private async postOutcome(url: string): Promise<Result<PublishOutcome, Failure>> {
+    const result = await this.http.post<PublishOutcomeDto>(url);
+    if (!result.ok) return result;
+
+    return ok({ isPublished: result.value.isPublished, moderationStatus: result.value.moderationStatus });
   }
 
   private mapRecipe(dto: RecipeDto): Result<RecipeEntity, Failure> {

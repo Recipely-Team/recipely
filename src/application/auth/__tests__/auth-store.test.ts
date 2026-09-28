@@ -24,6 +24,7 @@ import { Email } from '@domain/common/email';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -48,6 +49,7 @@ const fakeLoadFavorites: LoadFavoritesUseCase = {
 /** Minimal saved-recipe row — only its id matters to these tests. */
 const makeSummary = (id: string): RecipeSummaryEntity => {
   const result = RecipeSummaryEntity.create({
+    photoCount: 0,
     id,
     name: `Recipe ${id}`,
     image: 'https://cdn.example.com/r.webp',
@@ -57,10 +59,14 @@ const makeSummary = (id: string): RecipeSummaryEntity => {
     totalTimeMinutes: 30,
     rating: 0,
     moderationStatus: 'approved',
+    isPublished: true,
     likeCount: 0,
     likedByMe: false,
     commentCount: 0,
     viewCount: 0,
+      origin: RecipeOrigin.User,
+      sourcePlatform: null,
+    aiWritten: false,
   });
   if (!result.ok) throw new Error('fixture summary invalid');
   return result.value;
@@ -77,7 +83,11 @@ const neverLoadsFavorites = {
 
 const makeStore = (
   repo: FakeAuthRepository,
-  overrides: { savedRecipesStore?: BoundStore<SavedRecipesStoreState>; clearSessionCaches?: () => void } = {},
+  overrides: {
+    savedRecipesStore?: BoundStore<SavedRecipesStoreState>;
+    clearSessionCaches?: () => void;
+    onSessionRestored?: () => void;
+  } = {},
 ) => {
   const savedRecipesStore = overrides.savedRecipesStore ?? configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
   return configureAuthStore({
@@ -99,6 +109,7 @@ const makeStore = (
     clearSessionCaches:
       overrides.clearSessionCaches ??
       (() => savedRecipesStore.getState().setSaved([])),
+    onSessionRestored: overrides.onSessionRestored ?? (() => undefined),
   });
 };
 
@@ -256,6 +267,37 @@ describe('auth-store', () => {
     await store.getState().hydrate();
 
     expect(store.getState().state.status).toBe('authenticated');
+  });
+
+  // Review finding: an interactive sign-in sends `device` in its body AND the
+  // status change fired a `POST /me/devices` — two upserts per login. The
+  // heartbeat now belongs to a restored session only.
+  it('sends the device heartbeat when hydrate restores a stored session', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ currentSessionResult: ok(buildSession()) }), { onSessionRestored });
+
+    await store.getState().hydrate();
+
+    expect(onSessionRestored).toHaveBeenCalledTimes(1);
+  });
+
+  it('an interactive sign-in recorded the device twice — it now sends no heartbeat of its own', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ signInResult: ok(buildSession()) }), { onSessionRestored });
+
+    await store.getState().signIn('emilys', 'emilyspass');
+
+    expect(store.getState().state.status).toBe('authenticated');
+    expect(onSessionRestored).not.toHaveBeenCalled();
+  });
+
+  it('sends no heartbeat when hydrate finds no session', async () => {
+    const onSessionRestored = jest.fn();
+    const store = makeStore(new FakeAuthRepository({ currentSessionResult: ok(null) }), { onSessionRestored });
+
+    await store.getState().hydrate();
+
+    expect(onSessionRestored).not.toHaveBeenCalled();
   });
 
   it('hydrate returns unauthenticated when there is no session', async () => {
