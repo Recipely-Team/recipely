@@ -1,7 +1,9 @@
-• Asistan artık göremediğiniz bir taslak yüzünden tarif oluşturmayı reddetmiyor.
-• Taslak açıkken yeni tarif istediğinizde önce taslağı soruyor; hangi cevabı verirseniz verin tarifi oluşturuyor.
-• iOS: açılışta uygulamanın üzerine çıkabilen geliştirici mesajı kaldırıldı.
-• Siri uygulamanın adını daha güvenilir tanıyor.
-• Kaydettiğiniz tarifler telefonunuzun aramasından bulunabiliyor.
+• Instagram, TikTok, Facebook, YouTube, Pinterest ve tarif sitelerinden, ya da fotoğraf ve PDF'lerden tarif alın.
+• Tarifi gizli kaydedin, sonra yayınlayın.
+• Bir siteden alınan tarif, yayınlanmadan önce kendi fotoğrafınızı ve anlatımınızı ister.
+• 100 g veya porsiyon başına besin değerleri.
+• Yemeğe odaklanan yeni fotoğraf görüntüleyici.
+• Bildirimler tarifin nereden geldiğini söylüyor.
+• Çeviri düzeltmeleri.
 
 Recipely ile pişirdiğiniz için teşekkürler!
