@@ -24,7 +24,7 @@ Pattern from #447 and #449 (and #417, #420, #422, #426).
    - `fastlane/metadata/android/en-US/changelogs/default.txt`, `fastlane/metadata/android/tr-TR/changelogs/default.txt`
    - `fastlane/metadata/en-US/release_notes.txt`, `fastlane/metadata/tr/release_notes.txt`
 
-   In the same PR, run `npm run changelog`: it regenerates the developer-facing `CHANGELOG.md`
+   In the same PR, run `git fetch --tags && npm run changelog`: it regenerates the developer-facing `CHANGELOG.md`
    from the `v*` tags, listing everything since the last tag under the version CI will stamp
    (last tag patch-bumped, marked "unreleased"). Never hand-edit it.
 
