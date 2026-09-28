@@ -36,6 +36,9 @@
  *      the whole app (CLAUDE.md §25).
  *   AH. No accessibilityLabel spelled as a string literal — a screen reader
  *      speaks it in English on every locale (CLAUDE.md §11).
+ *   AI. No vocabulary value mapped to an English word in presentation — a
+ *      `[Difficulty.Medium]: 'Medium'` map shows "Medium" on every locale
+ *      (CLAUDE.md §11).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1435,6 +1438,28 @@ function openingTag(src, at) {
     errors.push(
       `${file}: calls the global alert() — user-facing words go through Alert.alert with t() copy or a shared sheet; a bare alert is a developer's dialog (CLAUDE.md §24)`,
     );
+  }
+}
+
+// --- AI: a vocabulary is labelled through t(), not an English map (§11) -----
+// The recipe editor's difficulty toggle read "Easy / Medium / Hard" on a
+// Turkish screen, and Save wrote the same English word into `tags`, which the
+// detail then printed beside the localised difficulty. Both came from a
+// `Record<Difficulty, string>` whose values were English words typed in.
+//
+// Matches an enum-keyed entry whose value is a capitalised word or phrase —
+// display copy. Icon names ('bookmark-outline') and catalogue keys
+// ('aiCooldown') are lowercase and pass. Language names are endonyms: each
+// language is named in itself on every locale, which is the point.
+{
+  const ENDONYMS = path.join('presentation', 'base', 'widgets', 'settings', 'language-names.ts');
+  const ENGLISH_LABEL = /\[[A-Z][A-Za-z]+\.[A-Za-z]+\]\s*:\s*(['"])([A-Z][a-z]+(?: [A-Za-z]+)*)\1/g;
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation') || file.includes(`${path.sep}i18n${path.sep}`) || file === ENDONYMS) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(ENGLISH_LABEL)) {
+      errors.push(`${file}: maps a vocabulary value to the English word "${m[2]}" — label it through t() (CLAUDE.md §11)`);
+    }
   }
 }
 

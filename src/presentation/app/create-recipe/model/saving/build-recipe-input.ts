@@ -3,7 +3,6 @@ import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { isHostedMedia } from '@presentation/app/create-recipe/model/saving/is-hosted-media';
 import { toMediaUpload } from '@presentation/app/create-recipe/model/saving/to-media-upload';
-import { DIFFICULTY_LABELS } from '@presentation/app/create-recipe/model/taxonomy/difficulty-tag-labels';
 import { MediaType } from '@domain/recipes/media/media-type';
 import { RecipeVisibility } from '@domain/recipes/publishing/recipe-visibility';
 
@@ -33,7 +32,6 @@ export const buildCreateInput = (
     servings: recipe.servings,
     media: uploads.map(toMediaUpload),
     ...(hosted !== undefined ? { imageUrl: hosted.url } : {}),
-    tags: { [locale]: [DIFFICULTY_LABELS[recipe.difficulty]] },
     mealType: { [locale]: [] },
     // Every save is private; publishing is a separate, deliberate step.
     visibility: RecipeVisibility.Private,

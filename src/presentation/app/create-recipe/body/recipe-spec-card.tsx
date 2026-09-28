@@ -5,7 +5,8 @@ import { DifficultyToggle } from '@presentation/app/create-recipe/items/difficul
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { radii, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { Difficulty } from '@domain/recipes/difficulty';
+import type { Difficulty } from '@domain/recipes/difficulty';
+import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
@@ -13,11 +14,6 @@ import { ValueConstants } from '@core/constants';
 const SERVINGS_MIN = 1;
 const SERVINGS_MAX = 50;
 const TIME_STEP = 5;
-const DIFFICULTY_LABELS: Record<Difficulty, string> = {
-  [Difficulty.Easy]: 'Easy',
-  [Difficulty.Medium]: 'Medium',
-  [Difficulty.Hard]: 'Hard',
-};
 
 const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
 
@@ -55,7 +51,7 @@ export const RecipeSpecCard = ({
       <SpecRow icon="speedometer" label={t().createRecipe.difficulty} error={fieldErrors.difficulty}>
         <DifficultyToggle
           value={recipe.difficulty}
-          label={(d) => DIFFICULTY_LABELS[d]}
+          label={difficultyLabel}
           onChange={onChangeDifficulty}
         />
       </SpecRow>
