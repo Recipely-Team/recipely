@@ -198,3 +198,17 @@ describe('photo focus', () => {
     expect(toRecipeSummary({ ...listDto, imageFocus: undefined }).ok).toBe(true);
   });
 });
+
+/**
+ * The symptom: 25 recipes on the server carry "Easy" or "Medium" in `tags`,
+ * written by an editor that saved the difficulty there in English. The detail
+ * screen printed it beside the localised difficulty — "Medium" on a Turkish
+ * screen. Those rows stay on the server, so the mapper drops them.
+ */
+describe('toRecipe — tags', () => {
+  it('shows no "Medium" chip for a recipe saved with its difficulty as a tag', () => {
+    const result = toRecipe({ ...fullDto, tags: ['Medium', 'Tatlı', 'easy ', 'HARD'] });
+
+    expect(result.ok && result.value.tags).toEqual(['Tatlı']);
+  });
+});

@@ -104,3 +104,17 @@ describe('buildCreateInput — save first, publish later', () => {
     expect(input).not.toHaveProperty('isPublished');
   });
 });
+
+/**
+ * The symptom: a recipe saved from the editor showed an English "Medium" chip
+ * under its nutrition card on a Turkish phone. Save wrote the difficulty into
+ * `tags` as a fixed English word, where nothing could ever translate it; the
+ * difficulty already travels in its own field.
+ */
+describe('buildCreateInput — tags', () => {
+  it('does not save the difficulty as an untranslatable English tag', () => {
+    const input = buildCreateInput(withMedia([]), 'tr');
+
+    expect(input.tags).toBeUndefined();
+  });
+});

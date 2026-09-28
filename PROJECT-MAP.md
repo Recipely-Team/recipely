@@ -86,7 +86,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(31)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(32)_
 - `storage/` _(6)_
 - `user-profile/` _(3)_
 
@@ -152,4 +152,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: bec240dce3a8d6fa -->
+<!-- fingerprint: 4a2a515b20a52ffe -->
