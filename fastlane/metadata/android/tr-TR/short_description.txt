@@ -1,1 +1,1 @@
-Yapay zekâ tarif üretici, makro takibi ve adım adım pişirme tek uygulamada.
+AI şefle konuş, her videodan ve siteden tarif al, adım adım pişir.
