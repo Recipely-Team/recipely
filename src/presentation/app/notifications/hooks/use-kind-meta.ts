@@ -9,8 +9,10 @@ export const useKindMeta = (kind: NotifKind): KindMeta => {
     like: { icon: 'heart', color: colors.danger },
     favorite: { icon: 'bookmark', color: colors.primary },
     ai_done: { icon: 'sparkles-outline', color: colors.primary },
-    import_done: { icon: 'logo-instagram', color: colors.primary },
-    import_failed: { icon: 'logo-instagram', color: colors.primary },
+    // Neutral on purpose: an import row with a known platform draws that
+    // platform's seal instead, and one without must not claim Instagram.
+    import_done: { icon: 'download-outline', color: colors.primary },
+    import_failed: { icon: 'download-outline', color: colors.primary },
     moderation_approved: { icon: 'shield-checkmark-outline', color: colors.success },
     moderation_pending: { icon: 'alert-circle-outline', color: colors.warning },
     follow: { icon: 'person-add-outline', color: colors.primary },

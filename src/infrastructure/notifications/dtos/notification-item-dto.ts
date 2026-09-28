@@ -21,6 +21,10 @@ export interface NotificationItemDto {
    *  notification with no destination rather than break the list. */
   draftId?: string | null;
   message: string | null;
+  /** Where an import's recipe came from. Optional like `draftId`: an older server omits it. */
+  sourcePlatform?: string | null;
+  /** The account or site an import came from, when the importer reported one. */
+  sourceHandle?: string | null;
   read: boolean;
   createdAt: string;
 }
