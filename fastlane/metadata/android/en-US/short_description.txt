@@ -1,1 +1,1 @@
-AI recipe generator, macro tracking & step-by-step cooking in one app.
+Talk to an AI chef, import recipes from any video or site, cook step by step.

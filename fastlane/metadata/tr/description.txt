@@ -1,25 +1,27 @@
-Recipely, iPhone için yapay zekâ destekli mutfak asistanınız — "bu akşam ne pişirsem?" sorusuna en hızlı cevap.
+Recipely, yapay zekâ destekli mutfak asistanınız — "şu çok iyi görünüyordu"dan sofraya en kısa yol.
+
+UYGULAMAYI SİZİN YERİNİZE KULLANAN SESLİ ASİSTAN
+Şefe dokunun ve konuşun. Tavuklu tarifleri aramasını, vejetaryen filtresi eklemesini, kaydettiklerinizi açmasını ya da mercimek çorbası tarifi oluşturmasını isteyin — siz izlerken ekranda yapar ve sesli cevap verir. Yazmayı mı tercih edersiniz? Yazarak da anlatabilirsiniz.
+
+HER YERDEN TARİF EKLE
+Instagram, TikTok, YouTube ya da Facebook'taki yemek videosunu, bir Pinterest pinini, herhangi bir tarif sitesini paylaşın — ya da yemek kitabının sayfasını fotoğraflayın veya bir PDF seçin. Recipely bunu düzgün bir tarife dönüştürür: malzemeler, porsiyonlar ve sıralı adımlar; orijinaline bağlantıyla.
 
 YAPAY ZEKÂ İLE TARİF OLUŞTURMA
-Canınızın çektiğini yazın, AI şefimiz anında eksiksiz bir tarif yazsın: malzemeler, porsiyonlar ve adım adım talimatlar. Yoğun akşamlar ve boş buzdolabı anları için birebir.
+Canınızın çektiğini anlatın ya da elinizdeki malzemeleri yazın; yapay zekâ tarifin tamamını hazırlasın. Sonra konuşarak değiştirin: vejetaryen yap, porsiyonu ikiye katla, şu malzemeyi çıkar.
 
-ADIM ADIM PİŞİRME
-İşaretlenebilir görevler hazırlıktan servise sizi yolda tutar — sıranızı bir daha aramayın.
+ÖNCE GİZLİ KAYDET, HAZIR OLUNCA YAYINLA
+Her tarif önce gizli kaydedilir. Hazır olduğunuzda tarif sayfasından yayınlayın.
 
-MAKRO VE KALORİ TAKİBİ
-Her tarif porsiyon başına kalori, protein, karbonhidrat ve yağ gösterir; hedeflerinize göre pişirin.
+100 G VEYA PORSİYON BAŞINA BESİN DEĞERLERİ
+Kalori, protein, karbonhidrat, yağ ve lif; 100 g ile porsiyon arasında geçiş yapabilirsiniz.
 
-KAYDET VE DÜZENLE
-Favorileri kaydedin; kaydettikleriniz ve oluşturduklarınız Tariflerim'de düzenli kalsın.
+BİLDİRİMLİ ADIM SAYAÇLARI
+Herhangi bir pişirme adımından sayaç başlatın. Arka planda çalışmaya devam eder; süre bitince bildirim gelir.
 
-KOYU VE AÇIK TEMALAR
-Tam koyu ve açık modla şık temalar, İngilizce ya da Türkçe.
+KENDİ YEMEK KİTABINIZ
+Kaydettikleriniz, oluşturduklarınız ve taslaklar Tariflerim'de düzenli kalır.
 
-NEDEN RECIPELY
-• Damak zevkinize göre AI tarifleri
-• Adım adım pişirme rehberi
-• Makro ve besin takibi
-• Tarif kaydet, oluştur, düzenle
-• Zarif koyu ve açık tasarım
+TEMALAR VE 14 DİL
+Koyu ve açık modda dört renk teması, 14 dilde.
 
-Recipely'yi indirin, kendi AI şefinizle daha akıllı pişirin.
+Recipely'yi indirin; videodan tabağa daha akıllı pişirin.
