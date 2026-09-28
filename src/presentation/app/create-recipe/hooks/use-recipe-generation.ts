@@ -244,7 +244,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     return () => clearInterval(id);
   }, [phase]);
 
-  const cancelAutosave = useDraftAutosave({
+  const { cancel: cancelAutosave, flush: flushDraft } = useDraftAutosave({
     carried: carried.current,
     enabled: phase === PhaseType.Preview && editRecipeId === undefined,
     draftId: activeDraftId,
@@ -461,6 +461,8 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [cancelAutosave, draftsStore, activeDraftId, editRecipeId, leave]);
 
   return {
+    flushDraft,
+    stopAutosave: cancelAutosave,
     phase,
     genStep,
     refining,

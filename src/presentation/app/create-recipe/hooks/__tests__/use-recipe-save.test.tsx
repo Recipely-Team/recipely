@@ -175,6 +175,8 @@ type Save = ReturnType<typeof useRecipeSave>;
 
 interface HookDriver {
   repo: FakeRecipeRepository;
+  /** What happened, in order: `flush` / `create-seen` / `stop`. */
+  events: string[];
   latest: () => Save;
   fieldErrors: () => CreateRecipeFieldErrors;
   save: () => Promise<void>;
@@ -192,6 +194,13 @@ const driveHook = (
   editRecipeId?: string,
 ): HookDriver => {
   const repo = new FakeRecipeRepository(config);
+  const events: string[] = [];
+  const flushDraft = jest.fn(async () => {
+    events.push(repo.lastCreateInput === null ? 'flush' : 'flush-after-create');
+  });
+  const stopAutosave = jest.fn(() => {
+    events.push(repo.lastCreateInput === null ? 'stop-before-create' : 'stop');
+  });
   let latest!: Save;
   let fieldErrors: CreateRecipeFieldErrors = NO_CREATE_RECIPE_FIELD_ERRORS;
 
@@ -203,6 +212,8 @@ const driveHook = (
       activeDraftId: 'draft-1',
       setFieldErrors: setErrors,
       editRecipeId,
+      flushDraft,
+      stopAutosave,
     });
     return null;
   };
@@ -221,6 +232,7 @@ const driveHook = (
   };
   return {
     repo,
+    events,
     latest: () => latest,
     fieldErrors: () => fieldErrors,
     save: () => flush(() => latest.onSave()),
@@ -256,6 +268,18 @@ describe('useRecipeSave — publish', () => {
     expect(driver.repo.lastCreateInput?.visibility).toBe('private');
     expect(mockReplace).toHaveBeenCalledWith(`/recipes/${CREATED_ID}`);
     expect(showSuccessToast).toHaveBeenCalledWith(en.createRecipe.savedPrivately);
+  });
+
+  // The symptom: a recipe saved straight after "Generate recipe" lost its AI
+  // mark, and a ghost copy of its draft reappeared in My Recipes. Save beat the
+  // 500ms draft autosave: the create named a draft that did not exist yet, and
+  // the autosave then fired after the draft had been retired.
+  it('writes the pending draft before creating, and stops autosaving before retiring it', async () => {
+    const driver = driveHook({ createRecipeResult: ok(makeRecipe(CREATED_ID)) }, publishable());
+
+    await driver.save();
+
+    expect(driver.events).toEqual(['flush', 'stop']);
   });
 
   it('labels the button Save, never Publish', () => {

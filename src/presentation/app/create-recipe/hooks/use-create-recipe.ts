@@ -41,6 +41,8 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     activeDraftId,
     setFieldErrors: editable.setFieldErrors,
     editRecipeId,
+    flushDraft: generation.flushDraft,
+    stopAutosave: generation.stopAutosave,
   });
 
   return {

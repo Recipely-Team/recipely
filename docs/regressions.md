@@ -2272,3 +2272,9 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Symptom:* on the mobile recipe detail in Turkish, the bookmark button announced "Add to favorites" while share, copy and like spoke Turkish.
 *Why:* the label was a string literal in `recipe-floating-actions.tsx`; nothing visible changes, so no screenshot or snapshot could see it.
 *Guard:* the label reads `t().recipes.save/saved`; `recipe-floating-actions.save-label.test.tsx`, and `check:structure` rule AH rejects any word-bearing string literal in an `accessibilityLabel`. **An accessibility label is copy; it goes through the catalogue like any other.**
+
+### A save that raced its own draft autosave
+
+*Symptom:* a recipe saved right after "Generate recipe" published without its AI mark, and a ghost copy of its draft came back in My Recipes after the save.
+*Why:* the draft autosave is debounced 500ms. A save inside that window sent `fromDraftId` for a draft not yet written (the server reads the draft's prompt to know a model wrote it), and the timer then fired after the save had retired the draft.
+*Guard:* `useDraftAutosave` returns `flush` beside `cancel`; `useRecipeSave` flushes before the create and stops autosaving before retiring the draft. `use-draft-autosave.test.tsx` and `use-recipe-save.test.tsx` pin the order. **Every path that ends the draft's life must settle the pending autosave first** — discard already did, save did not.
