@@ -27,6 +27,10 @@ interface UseRecipeSaveArgs {
   setFieldErrors: (errors: CreateRecipeFieldErrors) => void;
   /** Set when the editor was opened on a private recipe: saving goes through PATCH. */
   editRecipeId: string | undefined;
+  /** Writes a pending draft autosave now, so `fromDraftId` names a draft that exists. */
+  flushDraft: () => Promise<void>;
+  /** Stops autosaving for good; called before the saved draft is retired. */
+  stopAutosave: () => void;
 }
 
 /**
@@ -49,6 +53,8 @@ export const useRecipeSave = ({
   activeDraftId,
   setFieldErrors,
   editRecipeId,
+  flushDraft,
+  stopAutosave,
 }: UseRecipeSaveArgs) => {
   const router = useRouter();
   const { createdRecipesStore, draftsStore, recipePublishingStore } = useStores();
@@ -122,6 +128,8 @@ export const useRecipeSave = ({
       }
       return editRecipeId;
     }
+    // The server reads the draft behind `fromDraftId` for provenance; it has to exist first.
+    await flushDraft();
     // A photo is not required: a recipe written out in full saves without one.
     await createdRecipesStore
       .getState()
@@ -129,6 +137,7 @@ export const useRecipeSave = ({
     const state = createdRecipesStore.getState().createState;
     if (state.status === StoreStatus.Success) {
       const newRecipeId = state.recipe.id;
+      stopAutosave();
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
       // The server retires the draft itself (`fromDraftId`); this delete is the
@@ -142,7 +151,7 @@ export const useRecipeSave = ({
     }
     return null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recipe, createdRecipesStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure]);
+  }, [recipe, createdRecipesStore, draftsStore, recipePublishingStore, activeDraftId, editRecipeId, surfaceSaveFailure, flushDraft, stopAutosave]);
 
   const openSaved = useCallback(
     (recipeId: string): void => {
