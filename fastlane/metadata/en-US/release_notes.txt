@@ -7,6 +7,6 @@ More places to bring a recipe in from, more control over when it goes public, an
 • Nutrition is shown per 100 g or per serving, with a switch between the two.
 • A new photo viewer: swipe through a recipe's photos, and each one is cropped on the dish. Cards show how many photos a recipe has.
 • Import notifications say which platform a recipe came from, and a failed import no longer reads as a finished one.
-• Translation fixes, including buttons that still spoke English in other languages.
+• Translation fixes, including buttons and difficulty levels that still spoke English in other languages.
 
 Thanks for cooking with Recipely!

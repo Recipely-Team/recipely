@@ -1,25 +1,27 @@
-Meet Recipely — your AI-powered culinary assistant that turns "what's for dinner?" into a delicious answer in seconds.
+Meet Recipely — the AI kitchen assistant that turns a food video, a craving or a half-empty fridge into a recipe you can actually cook.
+
+🎙 A VOICE ASSISTANT THAT USES THE APP FOR YOU
+Tap the chef and just talk. Ask it to find chicken recipes, add a vegetarian filter, open your saved recipes or create a lentil soup — it does it on screen while you watch, and answers out loud. Prefer typing? Write to it instead.
+
+📲 IMPORT FROM ANYWHERE
+Share a cooking video from Instagram, TikTok, YouTube or Facebook, a Pinterest pin, any recipe website — or photograph a cookbook page or pick a PDF. Recipely writes it out as a proper recipe: ingredients, portions and ordered steps, with a link back to the original and the account it came from.
 
 🤖 AI RECIPE GENERATION
-Just describe a craving — "a 30-minute creamy lemon garlic shrimp pasta" — and our AI chef writes a complete recipe: ingredients, portions and clear steps. Cook with what you have and never run out of ideas.
+Type what you want to cook, or list what you have at home. The AI writes a recipe made for you, with clear quantities and instructions — then change it by chatting: vegetarian, for six, no oven.
 
-👩‍🍳 STEP-BY-STEP COOKING
-Follow guided, checkable cooking tasks so you never lose your place — from prep to plate, stress-free.
+🔒 SAVE PRIVATELY, PUBLISH WHEN READY
+Every recipe is saved privately first. Publish it from the recipe page when it is ready for everyone.
 
-📊 MACRO & CALORIE TRACKING
-See calories, protein, carbs and fat per serving and cook toward your health goals with confidence.
+📊 NUTRITION PER 100 G OR PER SERVING
+Calories, protein, carbs, fat and fibre, with a switch between per 100 g and per serving, and each macro's share of your day.
 
-🔖 SAVE & ORGANIZE
-Bookmark every favorite and keep your saved and created recipes neatly sorted in My Recipes — your cookbook, always in your pocket.
+⏱ STEP TIMERS THAT KEEP RUNNING
+Start a timer inside any step. It keeps running in the background and notifies you when it's done.
 
-🎨 DARK & LIGHT THEMES
-Personalize Recipely with beautiful themes and full dark and light mode. Cook in English or Turkish and switch anytime.
+🔖 YOUR OWN COOKBOOK
+Saved, created and draft recipes stay sorted in My Recipes.
 
-WHY RECIPELY
-• AI recipes tailored to your cravings
-• Clear step-by-step guidance
-• Macro & nutrition tracking
-• Save, create & organize recipes
-• Gorgeous dark & light design
+🎨 THEMES AND 14 LANGUAGES
+Four colour themes in dark and light mode, in 14 languages.
 
-Download Recipely today and cook smarter with your very own AI chef. 🍳
+Download Recipely and cook smarter, from video to plate. 🍳

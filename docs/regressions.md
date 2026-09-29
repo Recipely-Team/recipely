@@ -2273,6 +2273,12 @@ offers Settings (`use-media-pick.test.tsx`). The camera and the library are aske
 *Why:* the label was a string literal in `recipe-floating-actions.tsx`; nothing visible changes, so no screenshot or snapshot could see it.
 *Guard:* the label reads `t().recipes.save/saved`; `recipe-floating-actions.save-label.test.tsx`, and `check:structure` rule AH rejects any word-bearing string literal in an `accessibilityLabel`. **An accessibility label is copy; it goes through the catalogue like any other.**
 
+### A difficulty saved as an English word
+
+*Symptom:* on a Turkish phone the recipe detail showed an English "Medium" chip under the nutrition card, beside a difficulty that correctly read "Orta"; the editor's difficulty toggle read "Easy / Medium / Hard".
+*Why:* two `Record<Difficulty, string>` maps of English words. One labelled the toggle; the other was written into `tags` on every save, where it became stored data nothing could translate — 25 production recipes carry it.
+*Guard:* the toggle uses `difficultyLabel`, Save sends no tags, and `withoutDifficultyTags` drops the legacy rows in the mapper; `recipe-spec-card.difficulty-label.test.tsx`, `build-recipe-input.test.ts`, `recipe-mapper.test.ts`. `check:structure` rule AI rejects an enum-keyed map to a capitalised English word in presentation. **A vocabulary is labelled at render time; never store its label.**
+
 ### A save that raced its own draft autosave
 
 *Symptom:* a recipe saved right after "Generate recipe" published without its AI mark, and a ghost copy of its draft came back in My Recipes after the save.

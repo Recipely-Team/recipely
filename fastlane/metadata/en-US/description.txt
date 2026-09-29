@@ -1,25 +1,27 @@
-Recipely is your AI-powered culinary assistant for iPhone — the fastest way to answer "what should I cook tonight?"
+Recipely is your AI kitchen assistant — the fastest way from "that looked good" to dinner on the table.
+
+A VOICE ASSISTANT THAT USES THE APP FOR YOU
+Tap the chef and just talk. Ask it to find chicken recipes, add a vegetarian filter, open your saved recipes or create a lentil soup — it does it on screen while you watch, and answers out loud. Prefer typing? Write to it instead.
+
+IMPORT FROM ANYWHERE
+Share a cooking video from Instagram, TikTok, YouTube or Facebook, a Pinterest pin, any recipe website — or photograph a cookbook page or pick a PDF. Recipely writes it out as a proper recipe: ingredients, portions and ordered steps, with a link back to the original.
 
 AI RECIPE GENERATION
-Describe what you're craving and our AI chef instantly writes a complete recipe: ingredients, portions and step-by-step instructions. Perfect for busy weeknights and empty-fridge moments.
+Describe what you feel like cooking, or list the ingredients you already have, and the AI drafts the whole recipe for you. Then change it by chatting: make it vegetarian, double the portions, skip an ingredient.
 
-STEP-BY-STEP COOKING
-Guided, checkable tasks keep you on track from prep to plate — no more scrolling back to find your place.
+SAVE PRIVATELY, PUBLISH WHEN READY
+Every recipe is saved privately first. Publish it from the recipe page when you are ready.
 
-MACRO & CALORIE TRACKING
-Every recipe shows calories, protein, carbs and fat per serving so you can cook toward your goals.
+NUTRITION PER 100 G OR PER SERVING
+Calories, protein, carbs, fat and fibre, with a switch between per 100 g and per serving.
 
-SAVE & ORGANIZE
-Bookmark favorites and keep saved and created recipes sorted in My Recipes.
+STEP TIMERS WITH NOTIFICATIONS
+Start a timer from any cooking step. It keeps running in the background and notifies you when the time is up.
 
-DARK & LIGHT THEMES
-Beautiful themes with full dark and light mode, in English or Turkish.
+YOUR OWN COOKBOOK
+Saved, created and draft recipes stay organised in My Recipes.
 
-WHY RECIPELY
-• AI recipes made for your cravings
-• Step-by-step cooking guidance
-• Macro & nutrition tracking
-• Save, create & organize recipes
-• Elegant dark & light design
+THEMES AND 14 LANGUAGES
+Four colour themes with full dark and light mode, in 14 languages.
 
-Download Recipely and cook smarter with your own AI chef.
+Download Recipely and cook smarter, from video to plate.

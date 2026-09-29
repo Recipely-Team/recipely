@@ -15,6 +15,7 @@ import { toPublishBlockers } from '@domain/recipes/publishing/to-publish-blocker
 import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { toFocalPoint } from '@infrastructure/recipes/media/to-focal-point';
+import { withoutDifficultyTags } from '@infrastructure/recipes/without-difficulty-tags';
 
 /**
  * A server that predates private saves sends no `isPublished`; every recipe it
@@ -67,7 +68,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     ...(imageFocus !== undefined ? { imageFocus } : {}),
     media,
     rating: dto.rating,
-    tags: dto.tags,
+    tags: withoutDifficultyTags(dto.tags),
     mealType: dto.mealType,
     ownerId: dto.ownerId,
     likeCount: dto.likeCount ?? ValueConstants.zero,

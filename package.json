@@ -23,6 +23,7 @@
     "release:minor": "npm version minor -m 'chore(release): v%s' && git push --follow-tags",
     "release:major": "npm version major -m 'chore(release): v%s' && git push --follow-tags",
     "map": "node scripts/generate-map.mjs",
+    "changelog": "node scripts/generate-changelog.mjs",
     "shortcuts": "node scripts/generate-app-shortcuts.mjs",
     "shortcuts:android": "node scripts/generate-android-shortcuts.mjs",
     "verify:envelope": "bash scripts/verify-swift-envelope.sh",
