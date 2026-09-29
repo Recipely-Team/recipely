@@ -42,7 +42,8 @@ The Listing Hub exports everything at the right size. Filenames come out as
 
 | Asset | Size | Where it goes |
 |---|---|---|
-| App Store screenshots (6) | 1320 × 2868 | `fastlane/screenshots/<locale>/` |
+| App Store screenshots, iPhone (6) | 1320 × 2868 | `fastlane/screenshots/<locale>/` |
+| App Store screenshots, iPad (6) | 2064 × 2752 | `fastlane/screenshots/<locale>/` |
 | Play screenshots (6) | 1080 × 1920 | Play Console (not read by `supply` here) |
 | App icon — App Store | 1024 × 1024 | App Store Connect |
 | App icon — Play | 512 × 512 | Play Console |
@@ -61,10 +62,8 @@ Four things cost a failed upload each before they were written down:
   The frames drew `9:41` + `5G` + a battery in the app's webfont, missing the signal and wifi
   glyphs and ordering the rest the way no iOS device does, straight over the app's own buttons.
   The Hub now renders that band as an empty spacer; keep it that way and let a real capture
-  carry real chrome. The PNGs in `screenshots/` are the ones that got rejected — they predate
-  the Hub (exported before #301) and still carry both the fake bar and the star-rating /
-  testimonial cards the Hub has since dropped. **They must be re-exported before the next
-  submission, not re-uploaded.**
+  carry real chrome. The PNGs in `screenshots/` were re-exported from the Hub for 1.1.13
+  (iPhone 6.9" and iPad 13", EN + TR) with no drawn status bar and no social proof.
 
 - **No emoji in `description.txt`.** The App Store rejects the whole field:
   `Description can't contain the following character(s): 🔖, 🤖, …`. Play accepts
