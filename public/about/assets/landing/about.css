@@ -43,7 +43,7 @@ section[id]{scroll-margin-top:70px}
 
 /* blue band (hero + final CTA) — same panorama system as the store screenshots */
 .band{position:relative;overflow:hidden;color:#fff;isolation:isolate;
- background:url("panorama-lines.svg") 0 0/auto 100% repeat-x,radial-gradient(900px 600px at 20% -10%,rgba(255,255,255,.18),transparent 62%),radial-gradient(900px 700px at 70% 120%,rgba(6,20,66,.45),transparent 64%),linear-gradient(100deg,var(--band1) 0%,var(--band2) 100%);transition:background .4s}
+ background:url("panorama-lines.svg?v=3") 0 0/auto 100% repeat-x,radial-gradient(900px 600px at 20% -10%,rgba(255,255,255,.18),transparent 62%),radial-gradient(900px 700px at 70% 120%,rgba(6,20,66,.45),transparent 64%),linear-gradient(100deg,var(--band1) 0%,var(--band2) 100%);transition:background .4s}
 .band .hl{color:var(--hl)}
 .eyebrow{display:inline-flex;align-items:center;gap:9px;padding:7px 14px;border-radius:999px;font:700 12.5px/1 var(--font);letter-spacing:.9px;text-transform:uppercase}
 .band .eyebrow{background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#EAF2FF}

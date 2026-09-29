@@ -50,7 +50,7 @@ function applyLang(l,save){
   $$('[data-i18n-html]').forEach(e=>e.innerHTML=S[e.dataset.i18nHtml]);
   $$('[data-i18n-aria]').forEach(e=>e.setAttribute('aria-label',S[e.dataset.i18nAria]));
   $$('[data-i18n-alt]').forEach(e=>e.alt=S[e.dataset.i18nAlt]);
-  $$('img[data-shot]').forEach(e=>e.src=`/about/assets/landing/${l}/${e.dataset.shot}.jpg`);
+  $$('img[data-shot]').forEach(e=>e.src=`/about/assets/landing/${l}/${e.dataset.shot}.jpg?v=3`);
   document.title=S['meta.title'];const md=$('meta[name="description"]');if(md)md.content=S['meta.desc'];
   $$('[data-lang]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.lang===l));
   applyTheme();renderFaq();renderImpFrom();renderRf();renderPub();renderNu();renderCk();
@@ -63,7 +63,7 @@ const RP=$('#rp'),log=$('.rp-log',RP),cardsEl=$('.rp-cards',RP),qEl=$('.rp-q',RP
 const RECIPES=[{k:'biryani',img:'photo-biryani.jpg',c:'c.ind',d:'d.med',t:75,ch:1},{k:'pizza',img:'photo-pizza.jpg',c:'c.ita',d:'d.easy',t:35},{k:'bowl',img:'photo-bowl.jpg',c:'c.med',d:'d.easy',t:25,ch:1},{k:'chicken',img:'photo-chicken.jpg',c:'c.tur',d:'d.med',t:90,ch:1}];
 let run=0,cur=0,st={q:'',f:false};
 function renderList(){
-  cardsEl.innerHTML=RECIPES.map(r=>`<div class="rp-card" data-k="${r.k}"><div class="ph" style="background-image:url(/about/assets/landing/${r.img})"><span class="d">${S[r.d]}</span><span class="c">${S[r.c]}</span></div><div class="bd"><b>${S['r.'+r.k]}</b><span>${r.t} ${S['scr.min']}</span></div></div>`).join('');
+  cardsEl.innerHTML=RECIPES.map(r=>`<div class="rp-card" data-k="${r.k}"><div class="ph" style="background-image:url(/about/assets/landing/${r.img}?v=3)"><span class="d">${S[r.d]}</span><span class="c">${S[r.c]}</span></div><div class="bd"><b>${S['r.'+r.k]}</b><span>${r.t} ${S['scr.min']}</span></div></div>`).join('');
   applyList();
 }
 function applyList(){
@@ -76,7 +76,7 @@ function setSt(s){RP.dataset.st=s;$('.rp-stt',RP).textContent=S['a.'+s]}
 function msg(kind,text){const d=document.createElement('div');d.className='rp-m '+kind;d.textContent=text;log.appendChild(d);return d}
 function act(label,detail){const d=document.createElement('div');d.className='rp-a';d.innerHTML=ico('i-spark')+`<span>${S[label]}</span>`+(detail?`<em>· ${detail}</em>`:'');log.appendChild(d)}
 function recipeView(){
-  $('[data-v="recipe"]',RP).innerHTML=`<div class="rp-hero" style="background-image:url(/about/assets/landing/photo-pizza.jpg)"></div><div class="rp-h">${S['r.pizza']}</div><div class="rp-meta"><span>${S['c.ita']}</span><span>${S['d.easy']}</span><span>35 ${S['scr.min']}</span><span class="sv">${S['scr.saved']}</span></div><div class="rp-lab">${S['scr.ingredients']} · ${fmt(S['scr.serves'],{n:4})}</div><ul class="rp-ing">${S['pizza.ing'].map(x=>`<li>${x}</li>`).join('')}</ul>`;
+  $('[data-v="recipe"]',RP).innerHTML=`<div class="rp-hero" style="background-image:url(/about/assets/landing/photo-pizza.jpg?v=3)"></div><div class="rp-h">${S['r.pizza']}</div><div class="rp-meta"><span>${S['c.ita']}</span><span>${S['d.easy']}</span><span>35 ${S['scr.min']}</span><span class="sv">${S['scr.saved']}</span></div><div class="rp-lab">${S['scr.ingredients']} · ${fmt(S['scr.serves'],{n:4})}</div><ul class="rp-ing">${S['pizza.ing'].map(x=>`<li>${x}</li>`).join('')}</ul>`;
 }
 function draftView(){
   $('[data-v="draft"]',RP).innerHTML=`<div class="rp-dhead"><b>${S['scr.create']}</b><span class="rp-badge">${S['scr.draft']}</span></div><div class="rp-field"><small>${S['scr.name']}</small><div class="rp-dn"></div></div><div class="rp-lab">${S['scr.ingredients']}</div><ul class="rp-ing rp-di"></ul>`;
@@ -118,8 +118,8 @@ function detect(u){const s=u.toLowerCase();if(s.includes('tiktok'))return'tiktok
 function renderImpFrom(){
   impGo.textContent=S[impState==='done'?'imp.again':'imp.btn'];
   if(impState!=='done'){impOut.innerHTML='';return}
-  const s=SRC[impSrc],from=impSrc==='web'?fmt(S['imp.from.web'],{host:impHost}):S['imp.from.'+impSrc];
-  impOut.innerHTML=`<div class="imp-res"><div class="ph" role="img" aria-label="${S['alt.bowl']}" style="background-image:url(/about/assets/landing/photo-bowl.jpg)"><span>${ico('i-lock')}${S['imp.private']}</span></div><div class="bd"><h3>${S['imp.recipe']}</h3><div class="tags"><span>${S['c.med']}</span><span>${S['d.easy']}</span><span>30 ${S['scr.min']}</span><span>${S['imp.ing']}</span></div><div class="prov"><i style="background:${s.bg}">${ico(s.ico)}</i><span>${from}</span><span class="o">${S['imp.orig']}${ico('i-ext')}</span></div></div></div>`;
+  const s=SRC[impSrc],from=impSrc==='web'?fmt(S['imp.from.web'],{host:esc(impHost)}):S['imp.from.'+impSrc];
+  impOut.innerHTML=`<div class="imp-res"><div class="ph" role="img" aria-label="${S['alt.bowl']}" style="background-image:url(/about/assets/landing/photo-bowl.jpg?v=3)"><span>${ico('i-lock')}${S['imp.private']}</span></div><div class="bd"><h3>${S['imp.recipe']}</h3><div class="tags"><span>${S['c.med']}</span><span>${S['d.easy']}</span><span>30 ${S['scr.min']}</span><span>${S['imp.ing']}</span></div><div class="prov"><i style="background:${s.bg}">${ico(s.ico)}</i><span>${from}</span><span class="o">${S['imp.orig']}${ico('i-ext')}</span></div></div></div>`;
 }
 $$('.src-b',imp).forEach(b=>b.addEventListener('click',()=>{$$('.src-b',imp).forEach(x=>x.setAttribute('aria-pressed',x===b));impUrl.value=SRC[b.dataset.src].url;resetImp()}));
 impUrl.addEventListener('input',()=>{$$('.src-b',imp).forEach(x=>x.setAttribute('aria-pressed',detect(impUrl.value)===x.dataset.src));if(impState==='done')resetImp()});
