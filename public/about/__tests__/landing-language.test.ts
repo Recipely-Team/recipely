@@ -3,50 +3,61 @@
  */
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { TextDecoder, TextEncoder } from 'util';
 
 /**
  * Guards the landing page's first-load language.
  *
  * The bug: a Turkish visitor opening recipely.net/about for the first time got
- * the English page. The script defaulted to `var startLang = 'en'` and only ever
- * looked at localStorage, so the browser's own language was never consulted —
- * and the switch in the header was the only way to find the Turkish copy.
+ * the English page. The script defaulted to English and only ever looked at
+ * localStorage, so the browser's own language was never consulted — and the
+ * switch in the header was the only way to find the Turkish copy.
  *
- * The page is a plain IIFE loaded by a `<script>` tag, so it is exercised the
- * same way the browser does: build the DOM it expects, then evaluate the file.
+ * The page is plain scripts loaded by `<script>` tags, so it is exercised the
+ * same way the browser does: load the real markup, then evaluate the strings
+ * file and the page script in order.
  */
-const LANDING_JS = readFileSync(join(__dirname, '..', 'assets', 'landing.js'), 'utf8');
+const ABOUT = join(__dirname, '..');
+const HTML = readFileSync(join(ABOUT, 'index.html'), 'utf8');
+const STRINGS_JS = readFileSync(join(ABOUT, 'assets', 'landing', 'about-i18n.js'), 'utf8');
+const ABOUT_JS = readFileSync(join(ABOUT, 'assets', 'landing', 'about.js'), 'utf8');
 
-const STORAGE_KEY = 'recipely-landing-lang';
+const STORAGE_KEY = 'rcp.lang';
 
-/** The parts of the page this script's language pass touches. */
-const MARKUP = `
-  <div class="seg" data-lang-seg aria-label="Language">
-    <button data-lang="en" class="on">EN</button>
-    <button data-lang="tr">TR</button>
-  </div>
-  <h1 data-en="All your recipes in one place." data-tr="Tüm tarifler tek bir yerde.">All your recipes in one place.</h1>
-`;
+/** jsdom lacks matchMedia; the page only asks whether motion is reduced and the scheme is dark. */
+const stubBrowserApis = (): void => {
+  // jest-expo's URL polyfill needs these; jsdom does not provide them.
+  Object.assign(globalThis, { TextEncoder, TextDecoder });
+  window.matchMedia = ((query: string) => ({
+    matches: query.includes('reduced-motion'),
+    media: query,
+    addEventListener: () => undefined,
+    removeEventListener: () => undefined,
+  })) as unknown as typeof window.matchMedia;
+};
 
-const runLanding = (languages: readonly string[], stored?: string): void => {
-  document.documentElement.removeAttribute('lang');
-  document.body.innerHTML = MARKUP;
+const runLanding = (languages: readonly string[], stored?: string, search = ''): void => {
+  document.documentElement.innerHTML = HTML.replace(/^[\s\S]*?<html[^>]*>/i, '').replace(/<\/html>\s*$/i, '');
+  document.documentElement.setAttribute('lang', 'en');
   localStorage.clear();
   if (stored !== undefined) localStorage.setItem(STORAGE_KEY, stored);
+  window.history.replaceState(null, '', `/about${search}`);
   Object.defineProperty(window.navigator, 'languages', { value: languages, configurable: true });
   Object.defineProperty(window.navigator, 'language', { value: languages[0], configurable: true });
-  new Function(LANDING_JS)();
+  stubBrowserApis();
+  new Function(STRINGS_JS)();
+  new Function(ABOUT_JS)();
 };
 
 const activeLang = (): string | null =>
-  document.querySelector('[data-lang-seg] button.on')?.getAttribute('data-lang') ?? null;
+  document.querySelector('[data-lang][aria-pressed="true"]')?.getAttribute('data-lang') ?? null;
 
-const heading = (): string => document.querySelector('h1')?.textContent ?? '';
+const heroSub = (): string => document.querySelector('[data-i18n="hero.sub"]')?.textContent ?? '';
 
 describe('landing page first-load language', () => {
   beforeEach(() => {
-    // The AI typing demo chains setTimeout; without fake timers it keeps firing
-    // after the test finishes and logs into a torn-down environment.
+    // The demos chain setTimeout; without fake timers they keep firing after
+    // the test finishes and log into a torn-down environment.
     jest.useFakeTimers();
   });
 
@@ -60,14 +71,14 @@ describe('landing page first-load language', () => {
 
     expect(activeLang()).toBe('tr');
     expect(document.documentElement.lang).toBe('tr');
-    expect(heading()).toBe('Tüm tarifler tek bir yerde.');
+    expect(heroSub()).toMatch(/^Konuş ya da yaz\./);
   });
 
   it('opens in English for any language the page does not speak', () => {
     runLanding(['de-DE', 'fr-FR']);
 
     expect(activeLang()).toBe('en');
-    expect(heading()).toBe('All your recipes in one place.');
+    expect(heroSub()).toMatch(/^Talk or type\./);
   });
 
   it('respects the browser preference order rather than hunting for Turkish', () => {
@@ -82,6 +93,12 @@ describe('landing page first-load language', () => {
     expect(activeLang()).toBe('en');
   });
 
+  it('lets ?lang= in a shared link outrank everything', () => {
+    runLanding(['en-US'], 'en', '?lang=tr');
+
+    expect(activeLang()).toBe('tr');
+  });
+
   it('does not persist the detected language, so a browser change is re-read', () => {
     runLanding(['tr-TR']);
 
@@ -90,9 +107,17 @@ describe('landing page first-load language', () => {
 
   it('persists the language the visitor picks', () => {
     runLanding(['tr-TR']);
-    document.querySelector<HTMLButtonElement>('[data-lang-seg] button[data-lang="en"]')?.click();
+    document.querySelector<HTMLButtonElement>('[data-lang="en"]')?.click();
 
     expect(activeLang()).toBe('en');
     expect(localStorage.getItem(STORAGE_KEY)).toBe('en');
+  });
+
+  it('shows the Turkish screenshots on a Turkish page', () => {
+    runLanding(['tr-TR']);
+
+    const shots = [...document.querySelectorAll<HTMLImageElement>('img[data-shot]')].map((img) => img.getAttribute('src'));
+    expect(shots.length).toBeGreaterThan(0);
+    expect(shots.every((src) => src?.startsWith('/about/assets/landing/tr/'))).toBe(true);
   });
 });
