@@ -7,6 +7,6 @@ Tarif getirebileceğiniz yeni kaynaklar, ne zaman yayınlanacağı üzerinde dah
 • Besin değerleri 100 g veya porsiyon başına gösteriliyor; ikisi arasında geçiş yapabilirsiniz.
 • Yeni fotoğraf görüntüleyici: tarifin fotoğrafları arasında kaydırın, her biri yemeğe odaklanarak kırpılıyor. Kartlar tarifin kaç fotoğrafı olduğunu gösteriyor.
 • İçe aktarma bildirimleri tarifin hangi platformdan geldiğini söylüyor; başarısız bir içe aktarma artık tamamlanmış gibi görünmüyor.
-• Çeviri düzeltmeleri; diğer dillerde hâlâ İngilizce kalan düğmeler dahil.
+• Çeviri düzeltmeleri; diğer dillerde hâlâ İngilizce kalan düğmeler ve zorluk seviyeleri dahil.
 
 Recipely ile pişirdiğiniz için teşekkürler!
