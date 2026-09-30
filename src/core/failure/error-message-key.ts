@@ -78,6 +78,15 @@ export const ErrorMessageKey = {
   /** An edit that changes nothing. */
   nothingToEdit: 'errors.validation.nothing_to_edit',
 
+  // Food diary
+  /** The entry is gone — deleted on another device, or never this user's. */
+  diaryEntryNotFound: 'errors.not_found.diary_entry',
+  diaryFoodNameRequired: 'errors.validation.food_name_required',
+  diaryFoodNameTooLong: 'errors.validation.food_name_too_long',
+  /** Calories or grams past the plausibility cap (a mistyped extra zero). */
+  diaryNutrientInvalid: 'errors.validation.nutrient_invalid',
+  diaryGoalInvalid: 'errors.validation.goal_invalid',
+
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',
   codeInvalid: 'errors.validation.code_invalid',

@@ -96,6 +96,14 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   get photoCount(): number {
     return this.props.photoCount;
   }
+  /** Kcal per serving; 0 when the recipe has no calorie figure. */
+  get caloriesPerServing(): number {
+    return this.props.caloriesPerServing ?? ValueConstants.zero;
+  }
+  /** Whether the recipe carries calories — the food diary can log only those (design spec → Food Diary §1). */
+  get hasCalories(): boolean {
+    return this.caloriesPerServing > ValueConstants.zero;
+  }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
   get provenanceMarks(): readonly ProvenanceMarkType[] {
     return toProvenanceMarks(this.props.origin, this.props.sourcePlatform, this.props.aiWritten);

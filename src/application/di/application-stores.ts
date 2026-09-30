@@ -6,6 +6,8 @@ import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
+import type { DiaryStoreState } from '@application/diary/diary-store-state';
+import type { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
 import type { FileImportStoreState } from '@application/recipes/import-file/file-import-store-state';
@@ -52,5 +54,9 @@ export interface ApplicationStores {
   userProfileStore: BoundStore<UserProfileStoreState>;
   taxonomyStore: BoundStore<TaxonomyStoreState>;
   feedbackStore: BoundStore<FeedbackStoreState>;
+  /** The food diary: days, months, recent foods, goals. User-scoped. */
+  diaryStore: BoundStore<DiaryStoreState>;
+  /** Recipe → one serving the Add food sheet can log; synchronous, no I/O. */
+  buildLoggableFoodFromRecipe: BuildLoggableFoodFromRecipeUseCase;
   loadFavoritesUseCase: LoadFavoritesUseCase;
 }

@@ -160,6 +160,8 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
         <Stack.Screen name="my-recipes/index" options={TAB_SCREEN_OPTIONS} />
+        <Stack.Screen name="diary/index" options={TAB_SCREEN_OPTIONS} />
+        <Stack.Screen name="diary/calendar/index" options={{ headerShown: false }} />
         <Stack.Screen name="create-recipe/index" options={{ headerShown: false }} />
         <Stack.Screen name="import-recipe/index" options={{ headerShown: false }} />
         <Stack.Screen name="settings/index" options={{ headerShown: false }} />

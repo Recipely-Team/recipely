@@ -3230,3 +3230,155 @@ light/dark — the numbers above are the floor, not a suggestion. The `pearl-whi
 (`contrastRatio(colors.textMuted, colors.surface) >= 3.0`, currently failing) — file it as
 expected-to-fail or `.skip` with a comment pointing at this section until `ts-developer` fixes it,
 per item 7 above; do not silently drop it.
+
+---
+
+## Food Diary / Günlük (Sep 2026)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(files `src/diary-data.js`, `src/diary.jsx`, `src/diary-sheets.jsx`; Tweaks → Starting screen →
+`Diary · filled / first day / over goal / month / add food / goals`). This section is the RN spec
+the prototype wrote (`food-diary-rn-spec.md` in the design project), trimmed of the palette table
+that already lives in `themes.ts`. **v1 scope cut:** the prototype's generic "Foods" catalogue
+(`DIARY_FOODS`, units piece/glass/cup/bowl/g) has no backend source yet — v1 ships Recipes, Recent
+and Quick add only, and every entry's unit is `serving`.
+
+### 1. Navigation
+
+| | Mobile | Web |
+|---|---|---|
+| Entry | bottom tab between **My Recipes** and **Profile** | header nav item after **My Recipes** |
+| Label | `Diary` / `Günlük` | same |
+| Icon | calendar (22 px) | same icon, 16 px |
+
+Recipe Detail gets **Add to diary / Günlüğe ekle** directly under the Nutrition card, only when
+`caloriesPerServing > 0`; it opens the Add food sheet on its detail step with the recipe selected.
+- Mobile: full width, 48 h, radius 12, `chipBackground` fill, `chipText` label 15/700, calendar icon 18.
+- Web: inside the Nutrition card, full width, 44 h, radius 12, `primary` fill, `primaryText` label 14/700.
+
+### 2. Tokens
+
+Existing theme only, except the status tones in 2.1.
+- Spacing `xs 4 · sm 8 · md 12 · lg 16 · xl 24`; gutter 16 mobile, 24 web.
+- Radii: cards 16, rows/inputs/buttons 12, day cells 10–12, pills round.
+- Card: `cardBackground`, 1 px `cardBorder`, `shadow.sm`. Tracks (ring, bars, water pills): `skeleton`.
+- Type: title 24/700, card heading 16/700, row name 14.5/600, meta 12.5 `textMuted`, macro line 12
+  `textMuted`, big number 28/800 (mobile ring), 32/800 (web ring), 36/800 (sheet total).
+- Ring, macro bars, water pills, selected date, primary buttons, active segments: `primary` / `primaryText`.
+
+#### 2.1 Status tones (`DIARY_TONES`, new)
+
+Fixed hues (not per palette) so "over" never collides with Crimson's red primary; light/dark only.
+`fg` on `bg` ≥ 7:1; `solid` ≥ 3:1 on `cardBackground` / `surface` in all 8 palette/mode combos.
+
+| status | eaten ÷ goal | light bg / fg / solid | dark bg / fg / solid | marker |
+|---|---|---|---|---|
+| none | no entries | transparent, 1 px `cardBorder` | same | none |
+| under | < 0.90 | #DCE7F5 / #1E3A5F / #2F62A8 | #1E3350 / #D6E6FB / #8AB8F2 | hollow circle |
+| on | 0.90 – 1.10 | #CFEFD9 / #14532D / #15803D | #163A26 / #BDEFCD / #6BD394 | check |
+| over | 1.10 – 1.25 | #FDE2C4 / #7C2D12 / #C2410C | #4A2A10 / #FFD7AE / #FB923C | filled up-triangle |
+| far | > 1.25 | #F8CFCB / #7F1D1D / #B91C1C | #4F1818 / #FFC8C2 / #F87171 | double up-chevron |
+
+Never colour alone: each cell has a 10 px shape marker and an `accessibilityLabel`
+(`"27 Eylül Pazar: 2.269 kcal, Hedefin üstünde"`); the legend repeats marker + text. Cell border is
+`fg` at 15% alpha.
+
+### 3. Data rules
+
+- Goal defaults: `2000 kcal · 120 g protein · 230 g carbs · 65 g fat · 30 g fiber`, water 8 glasses.
+- Recipe nutrition = `caloriesPerServing` + `nutrition.{protein,carbs,fat,fiber}`; calories without
+  macros → macros `null`, the entry counts toward kcal and the UI shows "calories only".
+- Entry values are a snapshot at log time. Totals = Σ values, ignoring nulls; round only for display.
+- Water: glasses of 250 ml, range 0–12. Numbers via `Intl` per locale (TR `1.429`, `1,5`).
+- Default meal from the clock: <11 breakfast, <16 lunch, <21 dinner, else snacks.
+
+### 4. Day view (tab root)
+
+**Mobile (390 × 844):**
+1. TopAppBar "Günlük / Diary"; right: 40 × 40 round buttons (`surface`, 1 px `cardBorder`):
+   calendar → Month view, target → Daily goals, bell (existing).
+2. Date strip (no card, gutter 16): header row with long date 15/700, a `Today` pill (26 h, chip
+   colours) when on today or a `Today` ghost button (32 h) otherwise, prev/next week 36 × 36 round.
+   7-column Monday-first grid, gap 6, cell 62 h radius 12: weekday 11/600 muted, day 16/800, 4 px dot
+   when the day has entries. Selected: `primary` fill, `primaryText`. Future days disabled at 40%.
+   Next-week disabled past the current week. Horizontal swipe > 40 px shifts ±1 week.
+3. Summary card (padding 16): ring 128, stroke 12, round caps, track `skeleton`, from 12 o'clock,
+   fill `primary`; at over/far the ring is full in `tone.solid`. Centre: remaining kcal 28/800 +
+   "kcal left" 12/600; when over `+269` in `tone.solid` + "kcal over". Right column (min 140):
+   Eaten, Goal, divider, Remaining/Over 16/700. Status strip (on/over/far only): 8 × 12 padding,
+   radius 12, `tone.bg` + `tone.fg` 13/700, 12 px marker — "Within 10% of your goal" /
+   "269 kcal over your goal". Macros 2 × 2 grid, gap 14/18: label 13/600, `value / goal g` 12.5
+   (value bold, wraps under long labels), bar 6 h radius 3; P/C/F past goal use `over.solid`; fiber
+   never over.
+4. Water row (card, padding 12 12 12 16): 36 px droplet disc (chip colours), "Water" 15/700 +
+   "5 / 8 glasses · 1.3 L" 12.5 muted, 8 pills 18 × 6; 44 × 44 round minus (outlined, disabled at 0)
+   and plus (`primary`).
+5. Meal cards ×4 (gap 14): header name 16/700 + kcal total 13 muted; "+ Add" pill (32 h, 44 hit,
+   chip colours) only when the meal has items. Item row (min 64 h, padding 10 × 16, separators):
+   44 px thumb radius 10 (recipe photo, or chip tile with a bolt icon for quick adds), name 14.5/600
+   one line, portion line `"2 servings · Recipe"`, macro line `"P 20 g · C 76 g · F 10 g"` (omitted
+   when null), kcal 15/700 + "kcal" 11.5 on the right. Tap → Add food sheet in edit mode. Empty meal:
+   dashed button (min 52 h, 1.5 px dashed `border`, radius 12), "Nothing logged yet" muted left,
+   "+ Add" `primary` 13.5/700 right. Bottom padding 120.
+
+**Web (≥ 1020 px):** container max 1200, padding 28 24 64, H1 28/800, "Daily goals" ghost button
+(40 h, target icon). Two columns `1fr 380px`, gap 24. Left: date strip in a card, summary as one row
+(ring 156 / stroke 14, stats, 4 stacked bars), water row, meals in a 2-column grid (1 below 1180).
+Right rail: month calendar (cells 44 h, gap 4), stats tiles, legend; no calendar header button;
+tapping a day updates the left column. Below 1020 px the rail stacks under the main column.
+
+### 5. Month view
+
+Mobile: pushed inside the Diary tab (tab bar stays), header with back button and "Calendar" 24/700.
+Order: stats → month card → legend.
+- Stats: 3 tiles (gap 8, radius 16, padding 12 × 14): label 12 muted (2-line min), value 20/800 —
+  daily average (logged days of the month before today), days on target `on / logged`, logging
+  streak (consecutive logged days ending today, or yesterday if today is empty). Footnote 12 muted:
+  "Logged days this month. Today isn't counted until it's over."
+- Month card: `"September 2026"` 17/800 + prev/next 36 px (next disabled after the current month).
+  Weekday header 11/600, Monday first; grid gap 6, cell 52 h radius 10: day 13.5/700 in `tone.fg`,
+  10 px marker beneath. Today underlined 2 px; selected 2 px `text` outline; future disabled 45%.
+  Tap → set date and return to Day view (web: in place).
+- Legend: "CALORIES VS GOAL" (11 uppercase muted), auto-fill grid (min 150) of 22 px swatches + 12.5 text.
+
+### 6. Add food sheet
+
+Shared `BottomSheet` (mobile) / centred dialog (web, max-width 520). Payload `{ date, meal?, recipe?, entry? }`.
+- **Pick step** (skipped with a recipe or entry): search 44 h; typing shows one "Results" list.
+  Segmented tabs 38 h: **Recipes** (groups: My recipes · Saved · From Recipely; row 60 min, 44 thumb,
+  `"350 kcal · per serving"`, 32 px "+"), **Recent** (last distinct items, `"460 kcal · 2 servings ·
+  29 Sep"`, tap pre-fills the last quantity; empty: "Foods you log will show up here."),
+  **Quick add** (name, calories with "kcal" suffix, optional P/C/F grams, hint "Macros add up to ≈ X
+  kcal" at 4/4/9, meal picker; submit disabled until name and kcal > 0).
+- **Detail step**: back button (only after the pick step), 52 px thumb, name 16/700,
+  `"300 kcal · per serving · 30 September · Today"`. Total box (`surface`, radius 16, 16 × 14):
+  kcal 36/800 + 4 macro columns (15/700, label 11.5) or "calories only". Servings stepper: 44 px
+  round −/+, step 0.5, min 0.5, value "1.5 servings", `accessibilityLiveRegion="polite"`. Meal picker
+  4 segments. Footer: add mode "Add to diary · 460 kcal"; edit mode `Remove` (danger) + `Save changes`.
+- Result: close + success toast "Added to diary · Lunch"; from outside the diary the toast has a
+  "Diary" action to the tab.
+
+### 7. Daily goals sheet
+
+Max-width 480 on web; header action "Defaults" resets. Calories: −50/+50 round buttons (44) around a
+52 h input (22/800, "kcal"). Macro rows (min 52, `surface`, radius 12): label 15/600, share of
+calories for P/C/F, 104 px numeric input with "g". Hint "Protein, carbs and fat add up to ≈ 1,985
+kcal"; > 10% off the calorie goal adds a warning (triangle marker + text). Footer "Save goals" →
+toast "Goals updated"; everything recomputes immediately.
+
+### 8. States
+
+| State | What shows |
+|---|---|
+| First day / empty | welcome card (44 px calendar tile, title 19/800, body 14.5, starting-goal note, 48 h buttons "Log your first meal" / "Set my goals"); summary 0 / 2,000; all meals empty; stats "—", streak 0; card gone after the first entry |
+| Filled day | ring + macros, some meals filled |
+| On target | green strip "Within 10% of your goal" + check |
+| Over / far over | ring full in the tone, centre `+269 kcal over`, strip with marker |
+| Past day | fully editable; "Today" returns |
+| Future day | disabled |
+| Recipe without macros | kcal counted; macro line hidden |
+
+### 9. Accessibility
+
+Hit areas ≥ 44. Segmented controls `accessibilityRole="tab"` + selected. Date and calendar cells
+expose selected and a spoken label with kcal and status. Status = text + shape + colour.

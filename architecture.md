@@ -120,6 +120,7 @@ references are **by id only**.
 | `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. |
 | `AuthSessionEntity` | Root (token lifecycle). |
 | `NotificationEntity` | Own root; references related entities by id. |
+| `FoodLogEntryEntity` | Own root (the food diary); references its recipe by `recipeId`. `DiaryDay` / `DiaryMonth` are read models over a user's entries, water and `NutritionGoals`; `Nutrients`, `NutritionGoals`, `Servings`, `CalendarDate`, `CalendarMonth` are value objects; `LoggableFood` is a transient one-serving view. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.

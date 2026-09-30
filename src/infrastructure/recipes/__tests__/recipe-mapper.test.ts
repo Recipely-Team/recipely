@@ -123,6 +123,20 @@ describe('photo count — the card chip', () => {
     expect(r.ok && r.value.photoCount).toBe(4);
   });
 
+  it('carries the list row caloriesPerServing, so the diary can offer and label the recipe', () => {
+    const r = toRecipeSummary({ ...listDto, caloriesPerServing: 350 });
+
+    expect(r.ok && r.value.caloriesPerServing).toBe(350);
+    expect(r.ok && r.value.hasCalories).toBe(true);
+  });
+
+  it('reads a list row without caloriesPerServing (an older or cached response) as unknown', () => {
+    const r = toRecipeSummary(listDto);
+
+    expect(r.ok && r.value.caloriesPerServing).toBe(0);
+    expect(r.ok && r.value.hasCalories).toBe(false);
+  });
+
   it('reads an older server that sends no mediaCount as zero, which hides the chip', () => {
     const r = toRecipeSummary(listDto);
 
@@ -143,6 +157,7 @@ describe('photo count — the card chip', () => {
     const summary = recipeToSummary(r.value);
 
     expect(summary.ok && summary.value.photoCount).toBe(2);
+    expect(summary.ok && summary.value.caloriesPerServing).toBe(r.value.caloriesPerServing);
   });
 });
 

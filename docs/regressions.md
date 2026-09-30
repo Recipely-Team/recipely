@@ -2307,3 +2307,19 @@ the old row), `notification-repository.test.ts`, `to-notif-item.test.ts`.
 a second surface (the feed) must show what the first (the push) says, store the
 fact, not just the wording — and never let a "default" icon name one specific
 source.
+
+## An accessibility prop on a drawing, rendered as a DOM attribute
+
+The food diary's status marker hid itself from screen readers with
+`accessibilityElementsHidden` and `importantForAccessibility` set directly on its
+react-native-svg `<Svg>`. Native ignores those there; on the web react-native-svg
+passes every prop it does not know straight to the DOM `<svg>`, so React logged an
+unknown-prop error for every date cell on the calendar.
+
+*Now:* the hiding props sit on a `View` wrapping the `<Svg>` (the cell around it is
+the accessible element and speaks the status). Rule AJ refuses any `accessib*` or
+`importantForAccessibility` prop on an `<Svg>` opening tag.
+
+*The class:* **a cross-platform library is only cross-platform for the props it
+declares.** Anything else falls through to the host element, and on the web the
+host element is HTML. Put behaviour props on a React Native view you own.

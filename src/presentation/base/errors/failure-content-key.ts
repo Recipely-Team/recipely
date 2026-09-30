@@ -56,6 +56,11 @@ export type FailureContentKey =
   | 'editPublished'
   | 'photoNotFound'
   | 'nothingToEdit'
+  // ── key-tier: food diary ───────────────────────────────────────────────────
+  | 'diaryEntryNotFound'
+  | 'diaryFoodNameTooLong'
+  | 'diaryNutrientInvalid'
+  | 'diaryGoalInvalid'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'
