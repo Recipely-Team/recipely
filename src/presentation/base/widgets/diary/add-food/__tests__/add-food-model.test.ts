@@ -10,7 +10,6 @@ import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
 import { initialAddFoodState } from '@presentation/base/widgets/diary/add-food/state/initial-add-food-state';
-import { entryChanges } from '@presentation/base/widgets/diary/add-food/state/entry-changes';
 import { buildRecipeFoodGroups } from '@presentation/base/widgets/diary/add-food/search/build-recipe-food-groups';
 import { matchesFoodQuery } from '@presentation/base/widgets/diary/add-food/search/matches-food-query';
 
@@ -51,17 +50,6 @@ describe('initialAddFoodState', () => {
     expect(state.date.value).toBe('2026-09-27');
     expect(state.meal).toBe(MealSlot.Dinner);
     expect(state.servings.value).toBe(1.5);
-  });
-});
-
-describe('entryChanges', () => {
-  const entry = foodLogEntryOf({ servings: 1, meal: MealSlot.Lunch });
-  it('is null when nothing changed, so Save just closes', () => {
-    expect(entryChanges(entry, 1, MealSlot.Lunch)).toBeNull();
-  });
-  it('carries only the changed fields', () => {
-    expect(entryChanges(entry, 2, MealSlot.Lunch)).toEqual({ servings: 2 });
-    expect(entryChanges(entry, 1, MealSlot.Dinner)).toEqual({ meal: MealSlot.Dinner });
   });
 });
 

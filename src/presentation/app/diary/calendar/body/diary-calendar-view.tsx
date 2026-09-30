@@ -15,6 +15,7 @@ import { MonthCard } from '@presentation/app/diary/shared/items/month-card';
 import { MonthStatsTiles } from '@presentation/app/diary/shared/items/month-stats-tiles';
 import { StatusLegend } from '@presentation/app/diary/shared/items/status-legend';
 import { useDiaryMonth } from '@presentation/app/diary/shared/hooks/use-diary-month';
+import { RoutePaths } from '@presentation/base/constants';
 import { t } from '@presentation/i18n';
 
 /**
@@ -33,15 +34,21 @@ export const DiaryCalendarView = (): React.JSX.Element => {
   const today = CalendarDate.today();
   const strings = t().diary;
 
+  // Opened cold (a link, a reload on the web) there is nothing to go back to; the Day view is where this page lives.
+  const leave = (): void => {
+    if (router.canGoBack()) router.back();
+    else router.replace(RoutePaths.diary);
+  };
+
   const pick = (date: CalendarDate): void => {
     void diaryStore.getState().selectDate(date);
-    router.back();
+    leave();
   };
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: insets.top }]}>
       <View style={styles.header}>
-        <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={() => router.back()} size={controlSizes.floatingBtn} />
+        <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={leave} size={controlSizes.floatingBtn} />
         <ThemedText variant="title" accessibilityRole="header">
           {strings.calendarTitle}
         </ThemedText>

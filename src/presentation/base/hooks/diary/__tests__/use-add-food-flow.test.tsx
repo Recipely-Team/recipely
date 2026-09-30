@@ -82,6 +82,16 @@ describe('useAddFoodFlow', () => {
     expect(second.actions.updateEntry).toHaveBeenCalledWith(entry, { meal: MealSlot.Snacks });
   });
 
+  it('counts every stepper tap, even two inside one render', () => {
+    const { get } = setup({ kind: AddFoodRequestKind.Food, date, meal: null, food });
+    const flow = get();
+    act(() => {
+      flow.increment();
+      flow.increment();
+    });
+    expect(get().servings.value).toBe(2);
+  });
+
   it('removes an edited entry', async () => {
     const entry = foodLogEntryOf();
     const { actions, onClose, get } = setup({ kind: AddFoodRequestKind.Edit, entry });

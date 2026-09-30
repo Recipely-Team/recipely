@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
+import { DiaryConcern } from '@application/diary/diary-concern';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
@@ -18,6 +19,9 @@ const DAYS_PER_WEEK = 7;
  * @remarks
  * - **Loads on focus, not on mount.** The tab stays mounted, and an entry
  *   logged from a recipe page must be there when the user comes back.
+ * - **Past midnight** a user who was looking at "today" is moved to the new
+ *   today on the next focus; a user looking at another day stays there.
+ * - **A failed refresh keeps the cached day** and shows the failure as a toast.
  * - **Selecting a day is the store's `selectDate`**, which also loads it; the
  *   focus effect therefore does not depend on the selection, or every tap
  *   would load the day twice.
@@ -29,11 +33,27 @@ export const useDiaryDay = (): UseDiaryDayResult => {
   const failure = diaryStore((s) => s.errors.day);
   const [isRefreshing, setRefreshing] = useState(false);
   const today = CalendarDate.today();
-  useReportFailure(day === undefined ? failure : null, 'DiaryScreen');
+  const hasDay = day !== undefined;
+  useReportFailure(hasDay ? null : failure, 'DiaryScreen');
 
+  // A refresh that fails over a day already on screen keeps the day and says so here, once.
+  useEffect(() => {
+    if (failure === null || !hasDay) return;
+    showErrorToast(failure);
+    diaryStore.getState().clearError(DiaryConcern.Day);
+  }, [diaryStore, failure, hasDay]);
+
+  // The "today" this screen last saw, so a tab left open overnight moves to the new today.
+  const lastToday = useRef(today.value);
   useFocusEffect(
     useCallback(() => {
-      void diaryStore.getState().loadDay();
+      const state = diaryStore.getState();
+      const now = CalendarDate.today();
+      const wasOnToday = state.selectedDate.value === lastToday.current;
+      const dayChanged = now.value !== lastToday.current;
+      lastToday.current = now.value;
+      if (wasOnToday && dayChanged) void state.selectDate(now);
+      else void state.loadDay();
     }, [diaryStore]),
   );
 

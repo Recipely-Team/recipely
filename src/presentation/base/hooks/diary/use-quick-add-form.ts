@@ -14,8 +14,8 @@ import type { QuickAddForm } from '@presentation/base/widgets/diary/add-food/sta
  * - **Validation is the domain's.** The figures go through `Nutrients.create`
  *   and the name through `LoggableFood.quickAdd`; the form only reads whether
  *   they accepted it, so the submit button can never disagree with the server.
- * - **Zero kcal is not a food.** The spec keeps submit disabled until the kcal
- *   are above zero, even though a zero is a valid nutrient value.
+ * - **Zero kcal is not a food** — `quickAdd` refuses it, which keeps submit
+ *   disabled until the kcal are above zero (design spec §6).
  */
 export const useQuickAddForm = (initialMeal: MealSlotType): QuickAddForm => {
   const [name, setName] = useState(CharConstants.empty);
@@ -28,7 +28,7 @@ export const useQuickAddForm = (initialMeal: MealSlotType): QuickAddForm => {
   const kcal = parseDecimalInput(calories);
   const macros = { protein: parseDecimalInput(protein), carbs: parseDecimalInput(carbs), fat: parseDecimalInput(fat) };
   const perServing = Nutrients.create({ calories: kcal ?? ValueConstants.zero, ...macros, fiber: null });
-  const built = perServing.ok && kcal !== null && kcal > ValueConstants.zero ? LoggableFood.quickAdd(name, perServing.value) : null;
+  const built = perServing.ok && kcal !== null ? LoggableFood.quickAdd(name, perServing.value) : null;
 
   return {
     name,

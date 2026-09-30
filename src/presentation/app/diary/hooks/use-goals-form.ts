@@ -5,7 +5,6 @@ import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { parseDecimalInput } from '@presentation/base/utils/diary/parse-decimal-input';
-import { GOAL_CALORIE_STEP } from '@presentation/app/diary/model/goal-calorie-step';
 import type { GoalField } from '@presentation/app/diary/model/goal-field';
 import type { GoalsForm } from '@presentation/app/diary/model/goals-form';
 import { t } from '@presentation/i18n';
@@ -58,8 +57,7 @@ export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm =
   const stepCalories = useCallback((direction: number) => {
     setValues((v) => {
       const current = parseDecimalInput(v.calories) ?? DiaryLimits.GoalCaloriesMin;
-      const next = Math.min(DiaryLimits.GoalCaloriesMax, Math.max(DiaryLimits.GoalCaloriesMin, current + direction * GOAL_CALORIE_STEP));
-      return { ...v, calories: String(Math.round(next)) };
+      return { ...v, calories: String(Math.round(NutritionGoals.stepCalories(current, direction))) };
     });
   }, []);
 

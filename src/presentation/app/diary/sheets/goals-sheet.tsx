@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { DiaryLimits } from '@domain/diary/diary-limits';
+import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
@@ -59,7 +59,7 @@ export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Ele
             accessibilityLabel={strings.fewerCalories}
             onPress={() => form.stepCalories(ValueConstants.minusOne)}
             size={controlSizes.touchTarget}
-            disabled={calories <= DiaryLimits.GoalCaloriesMin}
+            disabled={!NutritionGoals.canStepCalories(calories, ValueConstants.minusOne)}
           />
           <SuffixField
             value={form.values.calories}
@@ -75,7 +75,7 @@ export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Ele
             accessibilityLabel={strings.moreCalories}
             onPress={() => form.stepCalories(ValueConstants.one)}
             size={controlSizes.touchTarget}
-            disabled={calories >= DiaryLimits.GoalCaloriesMax}
+            disabled={!NutritionGoals.canStepCalories(calories, ValueConstants.one)}
           />
         </View>
         <GoalMacroRow label={nutrition.protein} value={form.values.protein} onChange={(v) => form.setField('protein', v)} share={share('protein')} />

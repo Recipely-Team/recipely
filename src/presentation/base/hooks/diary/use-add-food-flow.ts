@@ -11,7 +11,6 @@ import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/r
 import type { AddFoodFlow } from '@presentation/base/widgets/diary/add-food/state/add-food-flow';
 import type { AddFoodState } from '@presentation/base/widgets/diary/add-food/state/add-food-state';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
-import { entryChanges } from '@presentation/base/widgets/diary/add-food/state/entry-changes';
 import { initialAddFoodState } from '@presentation/base/widgets/diary/add-food/state/initial-add-food-state';
 import { t } from '@presentation/i18n';
 
@@ -69,7 +68,7 @@ export const useAddFoodFlow = (
   const submit = useCallback(async (): Promise<void> => {
     if (request === null || state === null || state.food === null) return;
     if (request.kind !== AddFoodRequestKind.Edit) return add(state.food, state.meal, state.servings);
-    const changes = entryChanges(request.entry, state.servings.value, state.meal);
+    const changes = request.entry.changesTo(state.servings.value, state.meal);
     if (changes === null) return onClose();
     setSubmitting(true);
     const result = await diaryStore.getState().updateEntry(request.entry, changes);
@@ -96,8 +95,9 @@ export const useAddFoodFlow = (
     isSubmitting,
     choose: (food) => patch({ step: AddFoodStep.Detail, food, servings: Servings.one(), canGoBack: true }),
     back: () => patch({ step: AddFoodStep.Pick, food: null, canGoBack: false }),
-    increment: () => patch({ servings: current.servings.increment() }),
-    decrement: () => patch({ servings: current.servings.decrement() }),
+    // Functional updates: two quick taps inside one render must both count.
+    increment: () => setState((s) => (s === null ? s : { ...s, servings: s.servings.increment() })),
+    decrement: () => setState((s) => (s === null ? s : { ...s, servings: s.servings.decrement() })),
     setMeal: (meal) => patch({ meal }),
     submit,
     submitQuickAdd: (food, meal) => add(food, meal, Servings.one()),
