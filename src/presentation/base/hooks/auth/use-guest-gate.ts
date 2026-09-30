@@ -1,8 +1,8 @@
 import { useCallback, useState } from 'react';
-import type { UseGuestGateResult } from '@presentation/app/recipes/shared/model/use-guest-gate-result';
+import type { UseGuestGateResult } from '@presentation/base/hooks/auth/use-guest-gate-result';
 
 /**
- * Gates a guest-blocked interaction (like, save, comment, ...) behind
+ * Gates a guest-blocked interaction (like, save, comment, follow, ...) behind
  * authentication. Replaces the previous pattern of each handler silently
  * early-returning on `!userId` with a visible "sign in to continue" prompt:
  * call sites wrap the press handler as `onPress={() => requestGate(() => doThing())}`

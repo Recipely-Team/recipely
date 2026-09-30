@@ -6,8 +6,8 @@
 
 import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
-import type { UseGuestGateResult } from '@presentation/app/recipes/shared/model/use-guest-gate-result';
+import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
+import type { UseGuestGateResult } from '@presentation/base/hooks/auth/use-guest-gate-result';
 
 const driveHook = (
   userId: string | null,

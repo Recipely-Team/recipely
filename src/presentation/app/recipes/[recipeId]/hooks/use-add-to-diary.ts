@@ -8,7 +8,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
-import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import type { UseAddToDiaryResult } from '@presentation/app/recipes/[recipeId]/model/use-add-to-diary-result';
 import { t } from '@presentation/i18n';
 

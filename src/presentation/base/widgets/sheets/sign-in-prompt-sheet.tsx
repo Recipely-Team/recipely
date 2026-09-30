@@ -15,7 +15,7 @@ export interface SignInPromptSheetProps {
 
 /**
  * "Sign in to continue" CTA shown when a guest attempts a gated interaction
- * (like, save, comment). Built on the generic {@link BottomSheet} — cancel is
+ * (like, save, comment, follow). Built on the generic {@link BottomSheet} — cancel is
  * handled by the sheet's own grabber (tap/drag) and backdrop tap, so this
  * only adds the message and a primary "Sign In" action.
  */

@@ -5,7 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { AddFoodSheet } from '@presentation/base/widgets/diary/add-food/add-food-sheet';
 import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
+import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useAddToDiary } from '@presentation/app/recipes/[recipeId]/hooks/use-add-to-diary';
 import { t } from '@presentation/i18n';
 
