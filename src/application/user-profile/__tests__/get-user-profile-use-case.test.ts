@@ -3,7 +3,10 @@ import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
+import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
+import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
+import type { CreatorPage } from '@domain/creators/creator-page';
 
 const buildProfile = (): UserProfileEntity => {
   const result = UserProfileEntity.create({
@@ -15,6 +18,7 @@ const buildProfile = (): UserProfileEntity => {
     totalLikes: 3400,
     totalViews: 91000,
     joinedAt: new Date('2026-04-01T12:00:00.000Z'),
+    creator: null,
   });
   if (!result.ok) throw new Error('fixture profile failed validation');
   return result.value;
@@ -26,6 +30,21 @@ class StubRepository implements UserProfileRepositoryInterface {
   getById(userId: string): Promise<Result<UserProfileEntity, Failure>> {
     this.calls.push(userId);
     return Promise.resolve(this.result);
+  }
+  getViewedProfile(): Promise<Result<ViewedUserProfile, Failure>> {
+    return Promise.resolve(fail(new NetworkFailure('not under test')));
+  }
+  listUserRecipes(): Promise<Result<RecipePage, Failure>> {
+    return Promise.resolve(fail(new NetworkFailure('not under test')));
+  }
+  follow(): Promise<Result<void, Failure>> {
+    return Promise.resolve(fail(new NetworkFailure('not under test')));
+  }
+  unfollow(): Promise<Result<void, Failure>> {
+    return Promise.resolve(fail(new NetworkFailure('not under test')));
+  }
+  listCreators(): Promise<Result<CreatorPage, Failure>> {
+    return Promise.resolve(fail(new NetworkFailure('not under test')));
   }
 }
 

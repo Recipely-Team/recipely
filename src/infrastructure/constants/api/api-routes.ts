@@ -19,6 +19,8 @@ export const ApiRoutes = {
     favorites: '/me/favorites',
     likes: '/me/likes',
     recipes: '/me/recipes',
+    /** The signed-in user's creator claim: PUT to request, DELETE to clear. */
+    creator: '/me/creator',
     deviceToken: '/me/device-token',
     devices: '/me/devices',
     notifications: '/me/notifications',
@@ -64,7 +66,13 @@ export const ApiRoutes = {
       `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
   },
   users: {
+    /** Approved creators with a published recipe; the backend registers it before `/users/:id`. */
+    creators: '/users/creators',
     byId: (userId: string): string => `/users/${encodeURIComponent(userId)}`,
+    /** A user's published recipes; open to guests. */
+    recipes: (userId: string): string => `/users/${encodeURIComponent(userId)}/recipes`,
+    /** POST to follow, DELETE to stop following (auth). */
+    follow: (userId: string): string => `/users/${encodeURIComponent(userId)}/follow`,
   },
   feedback: '/feedback',
   /** The signed-in user's food diary; every route is scoped to the session's user. */

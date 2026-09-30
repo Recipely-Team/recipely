@@ -30,6 +30,11 @@ already typed past.
 only the newest may write. Covered in `recipe-list-store.test.ts` with a deferred
 promise per request. **Any store that loads from a user-driven, debounced input needs
 this** — the pattern is not specific to search.
+The same shape without a debounce: Edit Profile's focus refresh of the creator claim
+could start before a send and answer after it, putting the old claim back over the
+new one. *Guard:* `configureAuthStore` counts claim writes and drops a refresh one
+overtook ("a focus refresh that started before a request does not put the old claim
+back", `auth-store.test.ts`).
 
 **Rows were rendered as an answer to whatever question happened to be current.**
 Search is a backend filter, so on the first keystroke the store still held the
@@ -110,6 +115,15 @@ ingredients — indistinguishable from a unit — lost their amount badge entire
 longer-named rows beside them kept theirs. Nothing looked broken; it looked
 inconsistent.
 *Guard:* it falls back to the amount alone. **An early return is a product decision.**
+
+**A "lenient" reader that threw on a missing field.**
+`readCreatorClaim` / `readCreatorTag` promised that an unreadable creator object reads
+as "none", but the TypeScript DTO type is only a claim about the wire: a `creator`
+without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `toUser`
+(sign-in) and `loadSession` (cold start). *Guard:* both readers check each field with
+`isString` from `@core/guards/type-guards` before calling the domain; the malformed
+cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
+is not a check** — a reader that promises leniency narrows the shape itself.
 
 ## Integration
 
@@ -358,6 +372,17 @@ about — and "the user signed out" is the version of that question with teeth, 
 the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) — a new
 user-scoped store must be registered in `clearSessionCaches`, and now also needs this
 guard.
+
+**The same class, one layer down: the claim written into the next user's session.**
+A creator-claim request / remove / refresh (and a profile or avatar save) rewrites the
+session user in secure storage once it answers. Checking only "is someone signed in"
+let an answer for user A that landed after A signed out and B signed in put A's claim
+on B's persisted session and on screen. *Guard:* the issuing user id is read when the
+call starts and compared when it lands — `replaceSessionUser(storage, issuerId, …)`
+refuses a different user, and `configureAuthStore`'s `applyClaimResult` drops the
+answer. Covered by "does not write the first user's claim into the next user's
+session" (`auth-repository.creator.test.ts`) and "a claim answer for the previous
+user does not land in the next user's session" (`auth-store.test.ts`).
 
 ---
 

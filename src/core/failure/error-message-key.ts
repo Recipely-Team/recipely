@@ -87,6 +87,14 @@ export const ErrorMessageKey = {
   diaryNutrientInvalid: 'errors.validation.nutrient_invalid',
   diaryGoalInvalid: 'errors.validation.goal_invalid',
 
+  // Creator tag
+  /** The handle breaks the contract's rules: charset, per-platform length, dots. */
+  creatorHandleInvalid: 'errors.validation.creator_handle',
+  /** Another approved creator already holds the same platform + handle. */
+  creatorHandleTaken: 'errors.conflict.creator_handle_taken',
+  /** An approve or reject of a claim that is no longer pending (the admin path). */
+  creatorNotPending: 'errors.conflict.creator_not_pending',
+
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',
   codeInvalid: 'errors.validation.code_invalid',

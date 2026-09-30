@@ -93,6 +93,7 @@ export const DiagnosticMessage = {
   auth: {
     invalidEmail: 'Invalid email format',
     noActiveSession: 'No active session to update',
+    sessionUserChanged: 'The signed-in user changed before the answer arrived',
     appleUnavailableInBuild: 'Apple Sign-In is not available in this build',
     googleUnavailableInBuild: 'Google Sign-In is not available in this build',
   },
@@ -113,6 +114,10 @@ export const DiagnosticMessage = {
     userProfile: {
       idRequired: 'UserProfile id must be non-empty',
       displayNameRequired: 'UserProfile displayName must be non-empty',
+    },
+    creatorSummary: {
+      idRequired: 'CreatorSummary id must be non-empty',
+      displayNameRequired: 'CreatorSummary displayName must be non-empty',
     },
     comment: {
       idRequired: 'Comment id must be non-empty',
@@ -135,6 +140,11 @@ export const DiagnosticMessage = {
       caloriesNegative: 'Calories must be non-negative',
       focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
     },
+  },
+  creator: {
+    handleInvalid: (platform: string): string => `Not a valid ${platform} handle`,
+    platformInvalid: (raw: string): string => `Not a creator platform: ${raw}`,
+    claimStatusInvalid: (raw: string): string => `Not a creator claim status: ${raw}`,
   },
   diary: {
     dateInvalid: (raw: string): string => `Not a calendar date (YYYY-MM-DD): ${raw}`,
@@ -175,4 +185,6 @@ export const FailureField = {
   token: 'token',
   email: 'email',
   focus: 'focus',
+  creatorHandle: 'handle',
+  creatorPlatform: 'platform',
 } as const;

@@ -64,5 +64,9 @@ export const TERMS_OF_USE_URL: string = `${PROD_WEB_APP_BASE_URL}/terms`;
 export const recipeWebUrl = (recipeId: string): string =>
   `${WEB_APP_BASE_URL}/recipes/${recipeId}`;
 
+/** Shareable canonical URL for a creator — opens the app's creators/[userId] route. */
+export const creatorWebUrl = (userId: string): string =>
+  `${WEB_APP_BASE_URL}/creators/${userId}`;
+
 /** Used only when the response omits both `expiresAt` and `expiresInSeconds`. */
 export const DEFAULT_CODE_TTL_SECONDS = 180;

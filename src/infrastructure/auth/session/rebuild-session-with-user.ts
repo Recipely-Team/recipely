@@ -1,44 +1,28 @@
-import { fail, ok } from '@core/result/result-helpers';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { type Failure, UnauthorizedFailure } from '@core/failure';
-import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import type { Failure } from '@core/failure';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
 import { toUser } from '@infrastructure/auth/user-info-mapper';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
 
 /**
  * Rebuilds and persists the current session with a freshly-updated user.
  *
  * The avatar and profile endpoints return only the updated user (no token), so
  * the current session's token/expiry/id are reused to keep the user signed in.
- * Fails with `UnauthorizedFailure` when there is no active session to update.
+ * Fails with `UnauthorizedFailure` when there is no active session to update,
+ * or when it belongs to someone other than the answer's user.
+ * A user answer without a `creator` field (a backend older than creator tags)
+ * keeps the stored claim: editing a bio must not clear it.
  */
-export const rebuildSessionWithUser = async (
+export const rebuildSessionWithUser = (
   storage: SecureTokenStorage,
   userDto: RecipelyUserDto,
-): Promise<Result<AuthSessionEntity, Failure>> => {
-  const sessionResult = await storage.loadSession();
-  if (!sessionResult.ok) {
-    return fail(sessionResult.failure);
-  }
-  const current = sessionResult.value;
-  if (current === null) {
-    return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noActiveSession));
-  }
-
-  const userResult = toUser(userDto);
-  if (!userResult.ok) return userResult;
-
-  const updatedResult = AuthSessionEntity.create({
-    id: current.id,
-    accessToken: current.accessToken,
-    expiresAt: current.expiresAt,
-    user: userResult.value,
+): Promise<Result<AuthSessionEntity, Failure>> =>
+  replaceSessionUser(storage, userDto.id, (current) => {
+    const user = toUser(userDto);
+    if (!user.ok || userDto.creator !== undefined) return user;
+    return ok(user.value.withCreatorClaim(current.creatorClaim));
   });
-  if (!updatedResult.ok) return updatedResult;
-
-  const saveResult = await storage.saveSession(updatedResult.value);
-  if (!saveResult.ok) return fail(saveResult.failure);
-  return ok(updatedResult.value);
-};

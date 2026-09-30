@@ -1,7 +1,7 @@
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { DeleteRecipeSheet } from '@presentation/app/recipes/[recipeId]/sheets/delete-recipe-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { SignInPromptSheet } from '@presentation/app/recipes/shared/sheets/sign-in-prompt-sheet';
+import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { t } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';

@@ -3382,3 +3382,69 @@ toast "Goals updated"; everything recomputes immediately.
 
 Hit areas ≥ 44. Segmented controls `accessibilityRole="tab"` + selected. Date and calendar cells
 expose selected and a spoken label with kcal and status. Status = text + shape + colour.
+
+## Creators (Sept 2026)
+
+**Source of truth:** the Claude Design canvas **Recipely Creators**
+(<https://claude.ai/artifact/K5HupwQzSYHUuzX9PNpnnq>), boards `Main` (Explore, phone, light),
+`StripDark`, `WebExplore`, `CreatorsList` (/creators), `CreatorProfile` (/creators/[userId]) and
+`CreatorAccount` (Edit Profile, four states). Contract: `docs/creator-tag-contract.md`.
+
+### 1. Surfaces
+
+| Surface | Where | Notes |
+|---|---|---|
+| Creators strip | phone feed list header, under the cuisine strip, right above the recipes | heading 18/700 + subtitle 12 `textSubtle`, "See all" 14/700 `primary`; row of 72-wide items, gap 12, padding 16 |
+| Creators row | expanded feed, after the cuisine rail, above the recipe grid | heading 22/700, subtitle 13 + "See all" on the right; ONE row of up to six wide cards, gap 16 |
+| /creators | phone and web | back 44 round + title 20/700; intro 13 `textSubtle`; card grid, 2 columns on a phone, up to 6 (`creatorGridColumns`, min card 150) |
+| /creators/[userId] | phone and web (cap 980) | back + share; 112 ring avatar; name 24/800; verified chip; bio 14 `textSubtle` (max 320); stats card; Follow pill 48; "Recipes" 18/700 + count; recipe grid 2 (phone) / 3 (expanded) |
+| Creator account | Edit Profile, under the name/bio card | surface card, radius 16, padding 16, gap 12 |
+| Verified chip | creator page and the owner's own Profile | 32 min height, round, `surface` + 1px `border`, mark 24, `@handle` 13/600, check 14 `primary`; opens the account on its platform |
+
+Strip and row are hidden before the first answer, on an empty list and on a failed first load.
+
+### 2. Tokens
+
+- **New colour `textSubtle`** (ThemeColors): handles, captions, counts, intro and bio. `textMuted` mixed
+  towards `text` in 5% steps until it reaches 4.5:1 on BOTH `background` and `surface`
+  (`readableMuted` in `themes.ts`). Used in the creators UI only.
+- **New avatar sizes:** `avatarSizes.creatorStrip` 64, `avatarSizes.creatorCard` 72; the wide card uses
+  `xl` 80, the profile `frame` 112 / `frameInner` 106 with a 3px page-coloured gap.
+- Platform mark plates (`creatorMarkGeometry`): strip 22, card 24, wide card 26, chip 24, claim row 28,
+  radio 20; glyph 55% of the plate; a 2px ring in the colour it is cut out of. The glyph is
+  `ProvenanceGlyph`'s Instagram / TikTok outline painted white (`ink`), on `BrandColors.instagramGradient*`
+  or `BrandColors.tiktokNote`. The profile ring: Instagram gradient, TikTok `tiktokCyan`→`tiktokRed`.
+- Spacing / radii / type from the existing ladders: gaps 2/4/6/8/12/16, card radius `xl` 16, option
+  radius `lg` 12, pills `round`; `PillButton` (new, `base/widgets/buttons`) 48 primary / 44 outline.
+- Status pills: `useSeveritySurfaces()` warning / success / danger (`bg` + `text`), 28 min height, 12/700.
+  Withdraw / Remove labels use the danger surface's `text`, not `colors.danger`.
+
+### 3. Contrast (measured, `creator-contrast.test.ts`)
+
+`textMuted` on Pearl White light `background` is **4.12:1** — why `textSubtle` exists.
+
+| Palette | Variant | `textSubtle` | on `background` | on `surface` |
+|---|---|---|---|---|
+| Pearl White | light | `#5C6B81` | 4.69 | 5.09 |
+| Pearl White | dark | `#95A1B2` | 6.64 | 4.57 |
+| Crimson Ember | light | `#636A76` | 4.59 | 5.04 |
+| Crimson Ember | dark | `#AB9090` | 6.71 | 4.60 |
+| Emerald Garden | light | `#636B76` | 4.53 | 4.99 |
+| Emerald Garden | dark | `#8FB7A9` | 5.93 | 4.62 |
+| Royal Purple | light | `#64627C` | 4.56 | 5.26 |
+| Royal Purple | dark | `#B197BE` | 6.21 | 4.63 |
+
+Status pill label on its fill (severity surfaces are fixed per variant, so every palette measures the
+same): light — in review 6.39, approved 4.76, not approved 5.72; dark — 11.88, 10.26, 9.08.
+
+### 4. Where the build departs from the canvas
+
+- `textSubtle` on Pearl White light is `#5C6B81` (4.69:1), a touch lighter than the canvas's `#55657D`:
+  the token is the least change from `textMuted` that clears AA on both grounds in every palette.
+- Avatars without a photo use the app's `AvatarImage` fallback (primary gradient, `primaryText`
+  initials) rather than the canvas's `primaryLight` disc with `primary` initials, so a creator reads the
+  same here as everywhere else in the app. The canvas's 2px surface ring round the strip avatar is not drawn.
+- The claim form, when opened on an existing claim (Change, Edit and resend), adds a Cancel outline pill
+  under Send for review — the canvas only draws the empty form, which has nothing to go back to.
+- The follow button turns into an outline "Following" pill once followed; the canvas draws only "Follow".
+- The Instagram plate is the three-stop gradient the canvas draws (`instagramGradientStart/Mid/End`).

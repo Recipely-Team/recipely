@@ -15,4 +15,7 @@ export interface FakeAuthRepositoryConfig {
   uploadAvatarResult?: Result<AuthSessionEntity, Failure>;
   updateProfileResult?: Result<AuthSessionEntity, Failure>;
   deleteAccountResult?: Result<void, Failure>;
+  requestCreatorTagResult?: Result<AuthSessionEntity, Failure>;
+  removeCreatorTagResult?: Result<AuthSessionEntity, Failure>;
+  refreshCreatorClaimResult?: Result<AuthSessionEntity, Failure>;
 }

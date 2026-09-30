@@ -42,6 +42,11 @@ jest.mock('@presentation/app/edit-profile/hooks/use-assistant-profile-actions', 
   useAssistantProfileActions: (): void => {},
 }));
 
+// The creator section reads the auth store and has its own suite.
+jest.mock('@presentation/app/edit-profile/body/creator/creator-account-section', () => ({
+  CreatorAccountSection: (): null => null,
+}));
+
 jest.mock('@presentation/app/edit-profile/hooks/use-edit-profile', () => ({
   useEditProfile: (): UseEditProfileResult => mockVm,
 }));

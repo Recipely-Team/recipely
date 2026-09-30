@@ -59,6 +59,7 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   resetLinkExpired: SeverityType.Warning,
   resetLinkUsed: SeverityType.Warning,
   codeExpired: SeverityType.Warning,
+  creatorNotPending: SeverityType.Neutral,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
@@ -96,6 +97,10 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   importNoRecipeInFile: 'search-outline',
   importUnreadableFile: 'document-outline',
   recipeExists: 'copy-outline',
+
+  creatorHandleInvalid: 'at-outline',
+  creatorHandleTaken: 'person-circle-outline',
+  creatorNotPending: 'refresh-outline',
 
   emailExists: 'mail-outline',
   codeInvalid: 'keypad-outline',

@@ -12,6 +12,7 @@ import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
 import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-profile-avatar';
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
+import { CreatorAccountSection } from '@presentation/app/edit-profile/body/creator/creator-account-section';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export const EditProfileScreen = (): React.JSX.Element => {
@@ -66,6 +67,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
               onChangeBio={vm.onChangeBio}
               bioAtLimit={vm.bioAtLimit}
             />
+            <CreatorAccountSection />
           </ResponsiveContainer>
         </ScrollView>
       </KeyboardAvoider>

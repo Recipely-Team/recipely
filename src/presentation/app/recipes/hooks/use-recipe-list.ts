@@ -19,7 +19,7 @@ import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
-import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';

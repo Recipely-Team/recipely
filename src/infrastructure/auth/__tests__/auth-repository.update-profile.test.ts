@@ -26,7 +26,7 @@ const buildCurrentSession = (): AuthSessionEntity => {
   const email = Email.create('old@example.com');
   if (!email.ok) throw new Error();
   const user = UserEntity.create({
-    id: 'session-user',
+    id: 'backend-user-1',
     email: email.value,
     displayName: 'Old Name',
     bio: 'Old bio',

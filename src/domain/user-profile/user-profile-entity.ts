@@ -5,6 +5,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
+import type { CreatorTag } from '@domain/creators/creator-tag';
 
 
 /**
@@ -52,5 +53,13 @@ export class UserProfileEntity extends BaseEntity<UserProfileEntityProps> {
 
   get joinedAt(): Date {
     return this.props.joinedAt;
+  }
+
+  get creator(): CreatorTag | null {
+    return this.props.creator;
+  }
+
+  get isCreator(): boolean {
+    return this.props.creator !== null;
   }
 }

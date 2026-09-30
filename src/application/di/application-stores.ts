@@ -24,6 +24,8 @@ import type { OsAssistantInterface } from '@domain/assistant/os/os-assistant-int
 import type { TaxonomyStoreState } from '@application/recipes/taxonomy/taxonomy-store-state';
 import type { TrendingRecipesStoreState } from '@application/recipes/trending/trending-recipes-store-state';
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
+import type { CreatorsStoreState } from '@application/creators/creators-store-state';
+import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
@@ -54,6 +56,10 @@ export interface ApplicationStores {
   userProfileStore: BoundStore<UserProfileStoreState>;
   taxonomyStore: BoundStore<TaxonomyStoreState>;
   feedbackStore: BoundStore<FeedbackStoreState>;
+  /** The Explore creators strip. Public, so it survives sign-out. */
+  creatorsStore: BoundStore<CreatorsStoreState>;
+  /** One creator's page: profile, recipes, follow. Viewer-scoped, cleared on sign-out. */
+  creatorProfileStore: BoundStore<CreatorProfileStoreState>;
   /** The food diary: days, months, recent foods, goals. User-scoped. */
   diaryStore: BoundStore<DiaryStoreState>;
   /** Recipe → one serving the Add food sheet can log; synchronous, no I/O. */

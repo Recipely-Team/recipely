@@ -4,7 +4,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
+import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';

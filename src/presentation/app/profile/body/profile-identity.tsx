@@ -7,6 +7,8 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import type { CreatorTag } from '@domain/creators/creator-tag';
+import { CreatorTagChip } from '@presentation/base/widgets/creators/creator-tag-chip';
 
 const AVATAR_FRAME = avatarSizes.frame;
 const AVATAR_INNER = avatarSizes.frameInner;
@@ -21,9 +23,11 @@ export interface ProfileIdentityProps {
   isUploading: boolean;
   onPickAvatar: () => void;
   onAddBio: () => void;
+  /** The approved creator tag, shown as the verified chip under the name; null otherwise. */
+  creatorTag: CreatorTag | null;
 }
 
-/** Avatar (with upload overlay + camera button), display name, handle and bio. */
+/** Avatar (with upload overlay + camera button), display name, verified creator chip, handle and bio. */
 export const ProfileIdentity = ({
   displayName,
   handle,
@@ -32,6 +36,7 @@ export const ProfileIdentity = ({
   isUploading,
   onPickAvatar,
   onAddBio,
+  creatorTag,
 }: ProfileIdentityProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -71,6 +76,11 @@ export const ProfileIdentity = ({
       <ThemedText variant="title" style={styles.displayName}>
         {displayName}
       </ThemedText>
+      {creatorTag !== null ? (
+        <View style={styles.creatorTag}>
+          <CreatorTagChip tag={creatorTag} />
+        </View>
+      ) : null}
       {handle.length > ValueConstants.zero ? (
         <ThemedText variant="caption" muted style={styles.handle}>
           @{handle}
@@ -141,6 +151,9 @@ const styles = StyleSheet.create({
     fontWeight: fontWeights.bold,
     marginTop: spacing.md,
     textAlign: 'center',
+  },
+  creatorTag: {
+    marginTop: spacing.xs2,
   },
   handle: {
     marginTop: spacing.xxs,

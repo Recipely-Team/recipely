@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1396 source files.
+[architecture.md](architecture.md). 1487 source files.
 
 ## Layers
 
@@ -16,9 +16,9 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `create-recipe` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
+`ai-generate` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
 
-Nested detail pages: `recipes/[…]`.
+Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
 it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 `[param]` register as routes.
@@ -32,6 +32,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(7)_
 - `comments/` _(4)_
 - `common/` _(1)_
+- `creators/` _(9)_
 - `device/` _(3)_
 - `diary/` — calendar, day, entry, month, nutrition _(25)_
 - `drafts/` _(7)_
@@ -43,7 +44,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` _(10)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(55)_
 - `storage/` _(1)_
-- `user-profile/` _(3)_
+- `user-profile/` _(5)_
 
 ## `src/application/` — use cases, stores, DI
 
@@ -52,6 +53,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
+- `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` _(3)_
 - `diary/` — day, entries, goals, month _(14)_
@@ -66,16 +68,17 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `storage/` _(2)_
 - `store/` _(2)_
 - `timers/` _(7)_
-- `user-profile/` _(5)_
+- `user-profile/` — follow, recipes _(11)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
 - `ads/` _(2)_
 - `assistant/` — message, os, token _(10)_
 - `audio/` _(2)_
-- `auth/` — dtos, registration, session, social _(23)_
+- `auth/` — dtos, registration, session, social _(25)_
 - `comments/` — dtos _(4)_
 - `constants/` — analytics, api _(21)_
+- `creators/` — dtos _(13)_
 - `crypto/` _(3)_
 - `device/` _(8)_
 - `di/` _(1)_
@@ -91,7 +94,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(32)_
 - `storage/` _(6)_
-- `user-profile/` _(3)_
+- `user-profile/` _(4)_
 
 ## `src/core/` — building blocks only
 
@@ -114,15 +117,15 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(91)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(93)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
-- `test-support/` — render harness for component tests _(3)_
+- `test-support/` — render harness for component tests _(4)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(49)_
 - `timers/` — timer control helpers _(7)_
 - `utils/` (diary) — small pure helpers _(17)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(140)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(153)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -155,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: bff245e4523a02f8 -->
+<!-- fingerprint: f6f805a69f57e136 -->

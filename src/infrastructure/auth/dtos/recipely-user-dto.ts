@@ -1,3 +1,5 @@
+import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
+
 // Wire shape returned by the Recipely backend /auth/login and /auth/register.
 // Matches recipely-backend `application/auth/dtos/auth.dto.ts`.
 
@@ -9,4 +11,6 @@ export interface RecipelyUserDto {
   bio?: string | null;
   createdAt: string;
   role?: string;
+  /** The user's own claim; `null` for status `none`, absent from a backend older than creator tags. */
+  creator?: CreatorClaimDto | null;
 }

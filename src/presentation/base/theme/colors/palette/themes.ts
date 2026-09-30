@@ -5,6 +5,7 @@ import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/
 import type { Palette } from '@presentation/base/theme/colors/palette/palette';
 import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
 import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { contrastRatio } from '@presentation/base/theme/colors/contrast/contrast';
 
 /** Offsets of the R, G and B pairs inside `#RRGGBB` — index 0 is the '#'. */
 const R_START = 1;
@@ -34,6 +35,29 @@ const mixHex = (a: string, b: string, t: number): string => {
   const [ar, ag, ab] = parseRgb(a);
   const [br, bg, bb] = parseRgb(b);
   return `#${toHex2(ar + (br - ar) * t)}${toHex2(ag + (bg - ag) * t)}${toHex2(ab + (bb - ab) * t)}`;
+};
+
+/** WCAG AA for body text — what `textSubtle` must reach on the page and on a card. */
+const TEXT_SUBTLE_MIN_CONTRAST = 4.5;
+/** How far each try moves `textMuted` towards `text`. */
+const TEXT_SUBTLE_STEP = 0.05;
+
+/**
+ * The least-changed mix of `textMuted` towards `text` that reads at AA on both
+ * surfaces, so the grey stays as quiet as the palette allows. `text` itself is
+ * the ceiling, which every palette's contrast test already holds at AA.
+ */
+const readableMuted = (palette: Palette, surface: string): string => {
+  for (let share = ValueConstants.zero; share < ValueConstants.one; share += TEXT_SUBTLE_STEP) {
+    const candidate = mixHex(palette.textMuted, palette.text, share);
+    if (
+      contrastRatio(candidate, palette.background) >= TEXT_SUBTLE_MIN_CONTRAST &&
+      contrastRatio(candidate, surface) >= TEXT_SUBTLE_MIN_CONTRAST
+    ) {
+      return candidate;
+    }
+  }
+  return palette.text;
 };
 
 const DARK_NEUTRAL_BG = '#0B0B0D';
@@ -80,6 +104,7 @@ const makeColors = (palette: Palette, semantics: VariantSemantics, surface: stri
   surface,
   text: palette.text,
   textMuted: palette.textMuted,
+  textSubtle: readableMuted(palette, surface),
   primary: palette.primary,
   primaryText: palette.primaryText,
   primaryLight: palette.primaryLight,

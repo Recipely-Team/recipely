@@ -1,3 +1,5 @@
+import type { CreatorTag } from '@domain/creators/creator-tag';
+
 export interface UserProfileEntityProps {
   id: string;
   displayName: string;
@@ -7,4 +9,6 @@ export interface UserProfileEntityProps {
   totalLikes: number;
   totalViews: number;
   joinedAt: Date;
+  /** The approved creator tag; `null` for everyone else, and while a claim is under review. */
+  creator: CreatorTag | null;
 }

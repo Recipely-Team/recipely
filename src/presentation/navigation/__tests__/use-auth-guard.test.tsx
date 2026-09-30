@@ -73,6 +73,24 @@ describe('useAuthGuard', () => {
     expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fabc123%2Fedit');
   });
 
+  it.each(['/creators', '/creators/u-1'])('does not redirect a guest on the public creators page %s', (pathname) => {
+    mockPathname = pathname;
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
+  it('redirects a guest on a path nested under a creator page', () => {
+    mockPathname = '/creators/u-1/edit';
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).toHaveBeenCalledWith('/login?redirect=%2Fcreators%2Fu-1%2Fedit');
+  });
+
   it('does not redirect a guest on the recipe list route (public, no trailing segment)', () => {
     mockPathname = '/recipes';
     mockStatus = 'unauthenticated';

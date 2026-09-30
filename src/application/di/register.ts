@@ -98,6 +98,17 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
 import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
+import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
+import { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
+import { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
+import { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
+import { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
+import { configureCreatorsStore } from '@application/creators/creators-store';
+import { configureCreatorProfileStore } from '@application/creators/profile/creator-profile-store';
+import { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
+import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
+import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-use-case';
+import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
 import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
 
 
@@ -247,6 +258,18 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // Public, like the strip it feeds: not in `clearSessionCaches`.
+  const userProfileRepo = container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository);
+  const creatorsStore = configureCreatorsStore({
+    listCreators: new ListCreatorsUseCase(userProfileRepo),
+  });
+  // Viewer-dependent (the follow standing), so it IS cleared on sign-out.
+  const creatorProfileStore = configureCreatorProfileStore({
+    getViewedProfile: new GetViewedUserProfileUseCase(userProfileRepo),
+    listUserRecipes: new ListUserRecipesUseCase(userProfileRepo),
+    follow: new FollowUserUseCase(userProfileRepo),
+    unfollow: new UnfollowUserUseCase(userProfileRepo),
+  });
   // The registry is created here and handed to the presentation layer, because
   // half of what the assistant does — navigate, focus a field, open the photo
   // picker — only a screen can perform. Screens register those on mount.
@@ -276,6 +299,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     importJobStore.getState().clear();
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
+    creatorProfileStore.getState().clear();
     // The transcript is the previous user's conversation, and a live socket
     // outlives a sign-out unless something closes it.
     assistantSessionStore.getState().reset();
@@ -286,7 +310,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
       container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
     ),
   );
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches, onSessionRestored });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, requestCreatorTag: new RequestCreatorTagUseCase(authRepo), removeCreatorTag: new RemoveCreatorTagUseCase(authRepo), refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo), clearSessionCaches, onSessionRestored });
   return {
     assistantSessionStore,
     assistantActionRegistry,
@@ -312,6 +336,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     userProfileStore,
     taxonomyStore,
     feedbackStore,
+    creatorsStore,
+    creatorProfileStore,
     diaryStore,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,

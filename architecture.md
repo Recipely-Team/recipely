@@ -116,8 +116,8 @@ references are **by id only**.
 |---|---|
 | `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
 | `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
-| `UserEntity` | Root (auth identity). |
-| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. |
+| `UserEntity` | Root (auth identity). Holds the user's own `CreatorClaim` (value object: `CreatorTag` + review status). |
+| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. `CreatorSummaryEntity` (the Explore creators strip) is a read model of it, not a separate aggregate; `CreatorTag` / `CreatorHandle` are value objects. |
 | `AuthSessionEntity` | Root (token lifecycle). |
 | `NotificationEntity` | Own root; references related entities by id. |
 | `FoodLogEntryEntity` | Own root (the food diary); references its recipe by `recipeId`. `DiaryDay` / `DiaryMonth` are read models over a user's entries, water and `NutritionGoals`; `Nutrients`, `NutritionGoals`, `Servings`, `CalendarDate`, `CalendarMonth` are value objects; `LoggableFood` is a transient one-serving view. |
