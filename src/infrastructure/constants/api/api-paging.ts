@@ -27,3 +27,6 @@ export const COMMENTS_PAGE_SIZE = 20;
 
 /** Backend caps `limit` at 1–30. */
 export const TRENDING_RECIPES_LIMIT = 10;
+
+/** The Add food sheet's Recent tab; the backend caps `limit` at 1–50. */
+export const DIARY_RECENT_LIMIT = 20;

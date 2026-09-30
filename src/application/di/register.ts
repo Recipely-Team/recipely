@@ -41,6 +41,18 @@ import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
 import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
+import type { FoodDiaryRepositoryInterface } from '@domain/diary/food-diary-repository-interface';
+import { configureDiaryStore } from '@application/diary/diary-store';
+import { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
+import { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
+import { LoadDiaryMonthUseCase } from '@application/diary/month/load-diary-month-use-case';
+import { AddFoodLogEntryUseCase } from '@application/diary/entries/add-food-log-entry-use-case';
+import { UpdateFoodLogEntryUseCase } from '@application/diary/entries/update-food-log-entry-use-case';
+import { DeleteFoodLogEntryUseCase } from '@application/diary/entries/delete-food-log-entry-use-case';
+import { LoadRecentFoodsUseCase } from '@application/diary/entries/load-recent-foods-use-case';
+import { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
+import { LoadNutritionGoalsUseCase } from '@application/diary/goals/load-nutrition-goals-use-case';
+import { SaveNutritionGoalsUseCase } from '@application/diary/goals/save-nutrition-goals-use-case';
 import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -183,6 +195,18 @@ export const registerApplication = (container: Container): ApplicationStores => 
     upsertDraftUseCase,
     deleteDraftUseCase,
   });
+  const diaryRepo = container.resolve<FoodDiaryRepositoryInterface>(TOKENS.FoodDiaryRepository);
+  const diaryStore = configureDiaryStore({
+    loadDay: new LoadDiaryDayUseCase(diaryRepo),
+    loadMonth: new LoadDiaryMonthUseCase(diaryRepo),
+    loadRecent: new LoadRecentFoodsUseCase(diaryRepo),
+    addEntry: new AddFoodLogEntryUseCase(diaryRepo),
+    updateEntry: new UpdateFoodLogEntryUseCase(diaryRepo),
+    deleteEntry: new DeleteFoodLogEntryUseCase(diaryRepo),
+    setWater: new SetDayWaterUseCase(diaryRepo),
+    loadGoals: new LoadNutritionGoalsUseCase(diaryRepo),
+    saveGoals: new SaveNutritionGoalsUseCase(diaryRepo),
+  });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,
     addComment: addCommentUseCase,
@@ -248,6 +272,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     notificationsStore.getState().clear();
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
+    diaryStore.getState().clear();
     importJobStore.getState().clear();
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
@@ -287,6 +312,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     userProfileStore,
     taxonomyStore,
     feedbackStore,
+    diaryStore,
+    buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,
   };
 };

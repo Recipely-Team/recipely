@@ -123,6 +123,11 @@ export const DiagnosticMessage = {
     notification: {
       idRequired: 'Notification id must be non-empty',
     },
+    diaryEntry: {
+      idRequired: 'Diary entry id must be non-empty',
+      nameRequired: 'Diary entry name must be non-empty',
+      servingsInvalid: 'Servings must be a positive number no larger than the diary limit',
+    },
     recipe: {
       idRequired: 'Recipe id must be non-empty',
       nameRequired: 'Recipe name must be non-empty',
@@ -130,6 +135,16 @@ export const DiagnosticMessage = {
       caloriesNegative: 'Calories must be non-negative',
       focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
     },
+  },
+  diary: {
+    dateInvalid: (raw: string): string => `Not a calendar date (YYYY-MM-DD): ${raw}`,
+    monthInvalid: (raw: string): string => `Not a calendar month (YYYY-MM): ${raw}`,
+    mealInvalid: (raw: string): string => `Not a meal slot: ${raw}`,
+    nutrientInvalid: (field: string): string => `Nutrient ${field} must be a finite, non-negative number`,
+    goalInvalid: (field: string): string => `Nutrition goal ${field} is outside its allowed range`,
+    waterInvalid: (glasses: number): string => `Water must be whole glasses within the daily range, got ${glasses}`,
+    servingsOffStep: 'Servings must be a multiple of the serving step within its range',
+    recipeWithoutCalories: 'A recipe without calories per serving cannot be logged',
   },
   assistant: {
     microphoneDenied: 'Microphone permission was refused',

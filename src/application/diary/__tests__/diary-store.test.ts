@@ -1,0 +1,170 @@
+import { ServerFailure, type Failure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
+import { DiaryDay } from '@domain/diary/day/diary-day';
+import { DiaryMonth } from '@domain/diary/month/diary-month';
+import type { FoodDiaryRepositoryInterface } from '@domain/diary/food-diary-repository-interface';
+import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
+import { MealSlot } from '@domain/diary/meal-slot';
+import { Servings } from '@domain/diary/entry/servings';
+import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
+import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
+import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
+import { configureDiaryStore } from '@application/diary/diary-store';
+import { DiaryConcern } from '@application/diary/diary-concern';
+import { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
+import { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
+import { LoadDiaryMonthUseCase } from '@application/diary/month/load-diary-month-use-case';
+import { AddFoodLogEntryUseCase } from '@application/diary/entries/add-food-log-entry-use-case';
+import { UpdateFoodLogEntryUseCase } from '@application/diary/entries/update-food-log-entry-use-case';
+import { DeleteFoodLogEntryUseCase } from '@application/diary/entries/delete-food-log-entry-use-case';
+import { LoadRecentFoodsUseCase } from '@application/diary/entries/load-recent-foods-use-case';
+import { LoadNutritionGoalsUseCase } from '@application/diary/goals/load-nutrition-goals-use-case';
+import { SaveNutritionGoalsUseCase } from '@application/diary/goals/save-nutrition-goals-use-case';
+
+const today = CalendarDate.of(2026, 9, 30);
+const goals = NutritionGoals.defaults();
+const entry = foodLogEntryOf({ id: 'e1', date: today });
+const dayOf = (entries: FoodLogEntryEntity[], waterGlasses = 2) => DiaryDay.of({ date: today, entries, waterGlasses, goals });
+const monthOf = (calories: number) =>
+  DiaryMonth.of({ month: CalendarMonth.of(today), goals, days: [{ date: today, nutrients: nutrientsOf({ calories }), entryCount: 1 }] });
+
+const makeRepo = (overrides: Partial<FoodDiaryRepositoryInterface> = {}): jest.Mocked<FoodDiaryRepositoryInterface> => ({
+  getDay: jest.fn().mockResolvedValue(ok(dayOf([entry]))),
+  getMonth: jest.fn().mockResolvedValue(ok(monthOf(300))),
+  listRecent: jest.fn().mockResolvedValue(ok([entry.food])),
+  addEntry: jest.fn().mockResolvedValue(ok(entry)),
+  updateEntry: jest.fn().mockResolvedValue(ok(entry)),
+  deleteEntry: jest.fn().mockResolvedValue(ok(undefined)),
+  setWater: jest.fn().mockImplementation((_d: CalendarDate, glasses: number) => Promise.resolve(ok(glasses))),
+  getGoals: jest.fn().mockResolvedValue(ok(goals)),
+  saveGoals: jest.fn().mockImplementation((g: NutritionGoals) => Promise.resolve(ok(g))),
+  ...overrides,
+}) as jest.Mocked<FoodDiaryRepositoryInterface>;
+
+const makeStore = (repo: FoodDiaryRepositoryInterface) =>
+  configureDiaryStore({
+    loadDay: new LoadDiaryDayUseCase(repo),
+    loadMonth: new LoadDiaryMonthUseCase(repo),
+    loadRecent: new LoadRecentFoodsUseCase(repo),
+    addEntry: new AddFoodLogEntryUseCase(repo),
+    updateEntry: new UpdateFoodLogEntryUseCase(repo),
+    deleteEntry: new DeleteFoodLogEntryUseCase(repo),
+    setWater: new SetDayWaterUseCase(repo),
+    loadGoals: new LoadNutritionGoalsUseCase(repo),
+    saveGoals: new SaveNutritionGoalsUseCase(repo),
+    today: () => today,
+  });
+
+const failure: Failure = new ServerFailure('boom');
+
+describe('diary store', () => {
+  it('starts on today with default goals and nothing cached', () => {
+    const s = makeStore(makeRepo()).getState();
+    expect(s.selectedDate.value).toBe('2026-09-30');
+    expect(s.days).toEqual({});
+    expect(s.goals.equals(goals)).toBe(true);
+  });
+
+  it('caches a loaded day under its date', async () => {
+    const store = makeStore(makeRepo());
+    await store.getState().selectDate(today);
+    expect(store.getState().days['2026-09-30']?.entries).toHaveLength(1);
+    expect(store.getState().loading.day).toBe(false);
+    expect(store.getState().errors.day).toBeNull();
+  });
+
+  it('records a day failure under its own concern and keeps the cache', async () => {
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    repo.getDay.mockResolvedValueOnce(fail(failure));
+    await store.getState().loadDay();
+    expect(store.getState().errors.day).toBe(failure);
+    expect(store.getState().errors.month).toBeNull();
+    expect(store.getState().days['2026-09-30']).toBeDefined();
+  });
+
+  it('refreshes the day, its cached month and the recent list after adding', async () => {
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    await store.getState().loadMonth(CalendarMonth.of(today));
+    repo.getMonth.mockResolvedValueOnce(ok(monthOf(600)));
+    const r = await store.getState().addEntry(entry.food.entryFor(today, MealSlot.Lunch, Servings.one()));
+    expect(r.ok).toBe(true);
+    expect(repo.getDay).toHaveBeenCalledWith(today);
+    expect(store.getState().months['2026-09']?.caloriesOn(today)).toBe(600);
+    expect(store.getState().recent).toHaveLength(1);
+  });
+
+  it('refreshes both days when an update moves the entry', async () => {
+    const tomorrow = today.addDays(1);
+    const repo = makeRepo({ updateEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf({ id: 'e1', date: tomorrow }))) });
+    await makeStore(repo).getState().updateEntry(entry, { date: tomorrow });
+    expect(repo.getDay.mock.calls.map(([d]) => d.value)).toEqual(['2026-09-30', '2026-10-01']);
+  });
+
+  it('removes a deleted entry at once, and puts it back when the server refuses', async () => {
+    let settle: (r: Result<void, Failure>) => void = () => undefined;
+    const repo = makeRepo({ deleteEntry: jest.fn(() => new Promise<Result<void, Failure>>((resolve) => { settle = resolve; })) });
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    const pending = store.getState().deleteEntry(entry);
+    expect(store.getState().days['2026-09-30']?.entries).toHaveLength(0);
+    settle(fail(failure));
+    const r = await pending;
+    expect(r.ok).toBe(false);
+    expect(store.getState().errors.save).toBe(failure);
+    expect(store.getState().days['2026-09-30']?.entries).toHaveLength(1);
+  });
+
+  it('sets water at once and rolls back on failure', async () => {
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    await store.getState().setWater(today, 3);
+    expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(3);
+    repo.setWater.mockResolvedValueOnce(fail(failure));
+    const r = await store.getState().setWater(today, 4);
+    expect(r.ok).toBe(false);
+    expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(3);
+  });
+
+  it('refuses water outside 0–12 without a request', async () => {
+    const repo = makeRepo();
+    const r = await makeStore(repo).getState().setWater(today, 13);
+    expect(r.ok).toBe(false);
+    expect(repo.setWater).not.toHaveBeenCalled();
+  });
+
+  it('re-derives cached days against saved goals', async () => {
+    const store = makeStore(makeRepo());
+    await store.getState().loadDay();
+    const created = NutritionGoals.create({ ...goals.value, calories: 1000 });
+    if (!created.ok) throw new Error('goals');
+    await store.getState().saveGoals(created.value);
+    expect(store.getState().goals.calories).toBe(1000);
+    expect(store.getState().days['2026-09-30']?.remainingCalories).toBe(700);
+  });
+
+  it('drops a response that lands after clear()', async () => {
+    let settle: (r: Result<DiaryDay, Failure>) => void = () => undefined;
+    const repo = makeRepo({ getDay: jest.fn(() => new Promise<Result<DiaryDay, Failure>>((resolve) => { settle = resolve; })) });
+    const store = makeStore(repo);
+    const pending = store.getState().loadDay();
+    store.getState().clear();
+    settle(ok(dayOf([entry])));
+    await pending;
+    expect(store.getState().days).toEqual({});
+  });
+
+  it('clears one concern error on request', async () => {
+    const store = makeStore(makeRepo({ getGoals: jest.fn().mockResolvedValue(fail(failure)) }));
+    await store.getState().loadGoals();
+    expect(store.getState().errors.goals).toBe(failure);
+    store.getState().clearError(DiaryConcern.Goals);
+    expect(store.getState().errors.goals).toBeNull();
+  });
+});
