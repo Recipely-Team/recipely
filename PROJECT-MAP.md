@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1428 source files.
+[architecture.md](architecture.md). 1441 source files.
 
 ## Layers
 
@@ -44,7 +44,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` _(10)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(55)_
 - `storage/` _(1)_
-- `user-profile/` _(3)_
+- `user-profile/` _(5)_
 
 ## `src/application/` — use cases, stores, DI
 
@@ -53,7 +53,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
-- `creators/` — claim, list _(9)_
+- `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` _(3)_
 - `diary/` — day, entries, goals, month _(14)_
@@ -68,7 +68,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `storage/` _(2)_
 - `store/` _(2)_
 - `timers/` _(7)_
-- `user-profile/` _(5)_
+- `user-profile/` — follow, recipes _(11)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
@@ -94,7 +94,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(32)_
 - `storage/` _(6)_
-- `user-profile/` _(3)_
+- `user-profile/` _(4)_
 
 ## `src/core/` — building blocks only
 
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: ab5ab11894f7d522 -->
+<!-- fingerprint: 180a8ce525a5b543 -->

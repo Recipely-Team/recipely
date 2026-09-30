@@ -37,6 +37,12 @@ describe('CreatorClaim', () => {
     expect(claimOf(CreatorStatus.Pending).isApproved).toBe(false);
   });
 
+  it('offers its tag as the badge only once approved', () => {
+    expect(claimOf(CreatorStatus.Approved).approvedTag?.handle).toBe('chef');
+    expect(claimOf(CreatorStatus.Pending).approvedTag).toBeNull();
+    expect(claimOf(CreatorStatus.Rejected).approvedTag).toBeNull();
+  });
+
   describe('keepsApprovalFor', () => {
     it('is true for the same platform and handle on an approved claim', () => {
       expect(claimOf(CreatorStatus.Approved).keepsApprovalFor(tagOf('instagram', '@Chef'))).toBe(true);

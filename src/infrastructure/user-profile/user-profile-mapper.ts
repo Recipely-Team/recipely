@@ -6,8 +6,8 @@ import { readCreatorTag } from '@infrastructure/creators/read-creator-tag';
 
 /**
  * Maps a `UserProfileDto` from the API into a domain `UserProfileEntity` entity.
- * The wire `joinedAt` ISO string is parsed into a `Date`; follow-related
- * fields on the DTO are intentionally dropped (not part of the domain model).
+ * The wire `joinedAt` ISO string is parsed into a `Date`; the follow fields
+ * are not the entity's — `toViewedUserProfile` reads them.
  * A missing or unreadable `creator` maps to `null` rather than failing the profile.
  */
 export const toUserProfile: Mapper<UserProfileDto, UserProfileEntity, ValidationFailure> = (

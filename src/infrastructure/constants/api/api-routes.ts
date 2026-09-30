@@ -69,6 +69,10 @@ export const ApiRoutes = {
     /** Approved creators with a published recipe; the backend registers it before `/users/:id`. */
     creators: '/users/creators',
     byId: (userId: string): string => `/users/${encodeURIComponent(userId)}`,
+    /** A user's published recipes; open to guests. */
+    recipes: (userId: string): string => `/users/${encodeURIComponent(userId)}/recipes`,
+    /** POST to follow, DELETE to stop following (auth). */
+    follow: (userId: string): string => `/users/${encodeURIComponent(userId)}/follow`,
   },
   feedback: '/feedback',
   /** The signed-in user's food diary; every route is scoped to the session's user. */

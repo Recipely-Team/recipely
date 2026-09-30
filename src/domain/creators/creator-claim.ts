@@ -62,6 +62,11 @@ export class CreatorClaim extends BaseValueObject<CreatorClaimValue> {
     return this._value.status === CreatorStatus.Rejected;
   }
 
+  /** The tag, while an admin has approved it — what the badge shows; `null` under review or refused. */
+  get approvedTag(): CreatorTag | null {
+    return this.isApproved ? this._value.tag : null;
+  }
+
   /** True when requesting `tag` leaves this claim approved; false when it goes back to review. */
   keepsApprovalFor(tag: CreatorTag): boolean {
     return this.isApproved && this._value.tag.equals(tag);
