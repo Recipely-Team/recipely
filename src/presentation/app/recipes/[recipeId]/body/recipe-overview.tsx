@@ -5,6 +5,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card';
 import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
+import { AddToDiaryButton } from '@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button';
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
@@ -161,6 +162,7 @@ export const RecipeOverview = ({
       >
         <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} />
       </View>
+      <AddToDiaryButton recipe={recipe} inCard={false} />
 
       {recipe.tags.length > ValueConstants.zero ? (
         <View style={styles.tagsRow}>

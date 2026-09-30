@@ -37,4 +37,6 @@ export interface RecipeListItemDto {
   aiWritten?: boolean;
   /** The recipe's photos — gallery images, or 1 for a lone cover. Absent from a server that predates it. */
   readonly mediaCount?: number;
+  /** Whole kcal per serving; 0 when unknown. Absent from a server (or cached response) that predates recipely-backend #364. */
+  readonly caloriesPerServing?: number;
 }

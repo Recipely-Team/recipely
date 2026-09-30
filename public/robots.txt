@@ -20,6 +20,8 @@ Disallow: /profile
 Disallow: /edit-profile
 Disallow: /notifications
 Disallow: /my-recipes
+Disallow: /diary
+Disallow: /diary/calendar
 
 # Authoring flows: wait screens and wizards.
 Disallow: /create-recipe

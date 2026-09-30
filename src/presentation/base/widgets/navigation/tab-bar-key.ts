@@ -1,6 +1,7 @@
 export const TabBarKey = {
   Recipes: 'recipes',
   MyRecipes: 'myRecipes',
+  Diary: 'diary',
   Profile: 'profile',
 } as const;
 

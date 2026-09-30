@@ -39,4 +39,9 @@ export interface RecipeSummaryEntityProps {
   aiWritten: boolean;
   /** How many photos the recipe has; `0` from a server that does not send it, which hides the card chip. */
   photoCount: number;
+  /**
+   * Kcal per serving; 0 (or absent, from a server that predates it) means
+   * unknown. Optional so a summary built before the field existed still is one.
+   */
+  caloriesPerServing?: number;
 }

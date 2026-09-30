@@ -29,6 +29,7 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
   const tabs: TabItem<TabBarKey>[] = [
     { key: 'recipes', label: t().navigation.recipes, icon: 'restaurant-outline' },
     { key: 'myRecipes', label: t().navigation.myRecipes, icon: 'bookmark-outline' },
+    { key: 'diary', label: t().navigation.diary, icon: 'calendar-outline' },
     { key: 'profile', label: t().navigation.profile, icon: 'person-outline' },
   ];
 

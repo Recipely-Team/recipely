@@ -21,6 +21,7 @@ export const TOKENS = {
   LoadTaxonomyUseCase: Symbol.for('LoadTaxonomyUseCase'),
   RecipeDraftRepository: Symbol.for('RecipeDraftRepository'),
   FavoritesRepository: Symbol.for('FavoritesRepository'),
+  FoodDiaryRepository: Symbol.for('FoodDiaryRepository'),
   AddFavoriteUseCase: Symbol.for('AddFavoriteUseCase'),
   RemoveFavoriteUseCase: Symbol.for('RemoveFavoriteUseCase'),
   LoadFavoritesUseCase: Symbol.for('LoadFavoritesUseCase'),

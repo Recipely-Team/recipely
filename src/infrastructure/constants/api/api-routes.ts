@@ -67,6 +67,16 @@ export const ApiRoutes = {
     byId: (userId: string): string => `/users/${encodeURIComponent(userId)}`,
   },
   feedback: '/feedback',
+  /** The signed-in user's food diary; every route is scoped to the session's user. */
+  diary: {
+    day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,
+    dayWater: (date: string): string => `/diary/days/${encodeURIComponent(date)}/water`,
+    month: (month: string): string => `/diary/months/${encodeURIComponent(month)}`,
+    recent: '/diary/recent',
+    entries: '/diary/entries',
+    entry: (id: string): string => `/diary/entries/${encodeURIComponent(id)}`,
+    goals: '/diary/goals',
+  },
   assistant: {
     session: '/assistant/session',
     heartbeat: '/assistant/heartbeat',

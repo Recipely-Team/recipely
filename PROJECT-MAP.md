@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1199 source files.
+[architecture.md](architecture.md). 1396 source files.
 
 ## Layers
 
@@ -16,7 +16,7 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `create-recipe` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
+`ai-generate` · `create-recipe` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
 
 Nested detail pages: `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
@@ -33,6 +33,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `comments/` _(4)_
 - `common/` _(1)_
 - `device/` _(3)_
+- `diary/` — calendar, day, entry, month, nutrition _(25)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -53,6 +54,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `comments/` — add, delete, like, list _(15)_
 - `device/` _(2)_
 - `di/` _(3)_
+- `diary/` — day, entries, goals, month _(14)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
@@ -78,6 +80,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
+- `diary/` — dtos, read, write _(27)_
 - `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
@@ -111,20 +114,20 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(67)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(91)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(3)_
-- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(45)_
+- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(49)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` — small pure helpers _(10)_
+- `utils/` (diary) — small pure helpers _(17)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(107)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(140)_
 
 ### Design tokens — `base/theme/tokens/`
 
   - `effects/` — color-alphas, durations, opacities, shadows, z-indices
-  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, control-sizes, decor-sizes, icon-sizes, layout-sizes, media-sizes, radii, spacing
+  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, control-sizes, decor-sizes, diary-sizes, icon-sizes, layout-sizes, media-sizes, radii, spacing
   - `typography/` — font-sizes, font-weights, letter-spacings, line-height-for, line-heights, max-font-scales, use-text-line-height
 
 Consumed through the `@presentation/base/theme` barrel. `colors/` holds
@@ -152,4 +155,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 4a2a515b20a52ffe -->
+<!-- fingerprint: bff245e4523a02f8 -->

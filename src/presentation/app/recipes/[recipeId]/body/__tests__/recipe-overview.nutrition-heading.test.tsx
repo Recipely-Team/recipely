@@ -8,6 +8,11 @@
 
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
+// "Add to diary" carries its own sheet and reads the auth and diary stores; not under test here.
+jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
+  AddToDiaryButton: () => null,
+}));
+
 // The meta card starts cook timers through the timer store, and the caption
 // row words the cuisine through the taxonomy store; neither is under test.
 jest.mock('@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card', () => ({

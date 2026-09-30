@@ -35,5 +35,6 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     sourcePlatform: recipe.sourcePlatform,
     aiWritten: recipe.aiWritten,
     photoCount: recipe.photoCount,
+    caloriesPerServing: recipe.caloriesPerServing,
   });
 };
