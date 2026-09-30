@@ -31,10 +31,23 @@ only the newest may write. Covered in `recipe-list-store.test.ts` with a deferre
 promise per request. **Any store that loads from a user-driven, debounced input needs
 this** — the pattern is not specific to search.
 The same shape without a debounce: Edit Profile's focus refresh of the creator claim
-could start before a send and answer after it, putting the old claim back over the
-new one. *Guard:* `configureAuthStore` counts claim writes and drops a refresh one
-overtook ("a focus refresh that started before a request does not put the old claim
-back", `auth-store.test.ts`).
+could read the claim before a send changed it and answer after, putting the old claim
+back — on screen, and on disk, since the repository saved the session before the store
+decided to drop the answer, so a cold start restored it. *Guard:* on screen,
+`configureAuthStore` drops a refresh when a request / remove was in flight as it
+started or started while it ran ("a focus refresh that started before a request…" and
+"…started while a request was in flight…", `auth-store.test.ts`); on disk,
+`AuthRepository.refreshCreatorClaim` writes only if the stored claim is still the one
+it read before the GET ("a cold start after the race restores the request's claim",
+`auth-repository.creator.test.ts`). **Dropping an answer in the store does not undo a
+write the layer below already made.**
+The same shape with the wrong key: the creator page's follow answer was matched to the
+page by user id, so after `clear()` and a reopen of the same creator an old refusal
+rolled back a new tap. *Guard:* `configureCreatorProfileStore` matches it to a counter
+bumped whenever the page is replaced, not by a same-user re-read ("a refused follow
+from before clear() does not undo a new tap on the same creator reopened",
+`creator-profile-store.test.ts`). **Key a stale-answer guard on the thing that
+changed, not on a value that can come back.**
 
 **Rows were rendered as an answer to whatever question happened to be current.**
 Search is a backend filter, so on the first keystroke the store still held the
@@ -381,8 +394,10 @@ on B's persisted session and on screen. *Guard:* the issuing user id is read whe
 call starts and compared when it lands — `replaceSessionUser(storage, issuerId, …)`
 refuses a different user, and `configureAuthStore`'s `applyClaimResult` drops the
 answer. Covered by "does not write the first user's claim into the next user's
-session" (`auth-repository.creator.test.ts`) and "a claim answer for the previous
-user does not land in the next user's session" (`auth-store.test.ts`).
+session" (`auth-repository.creator.test.ts`), "does not put the previous user into the
+session of whoever is signed in now" (`auth-repository.update-profile.test.ts`,
+`auth-repository.upload-avatar.test.ts`) and "a claim answer for the previous user does
+not land in the next user's session" (`auth-store.test.ts`).
 
 ---
 

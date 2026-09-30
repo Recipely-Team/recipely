@@ -215,3 +215,61 @@ describe('AuthRepository.updateProfile — creator claim', () => {
     expect(r.ok && r.value.user.creatorClaim).toBeNull();
   });
 });
+
+/**
+ * One stored session shared by every call, and an HTTP double that holds each
+ * answer until the test releases it — so a refresh and a request can
+ * interleave the way a focus refresh and a send do on Edit Profile.
+ */
+const racingRepo = (): {
+  repo: AuthRepository;
+  stored: () => AuthSessionEntity | null;
+  answer: (method: string, body: unknown) => void;
+} => {
+  let stored: AuthSessionEntity | null = buildSession(approvedClaim());
+  const pending = new Map<string, (r: Result<unknown, unknown>) => void>();
+  const http = withHttpVerbs((config: RequestCall) =>
+    new Promise((resolve) => {
+      pending.set(config.method ?? '', resolve);
+    }),
+  ) as HttpClient;
+  const storage = {
+    loadSession: jest.fn(() => Promise.resolve(ok(stored))),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      stored = session;
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return {
+    repo: new AuthRepository(http, storage, new FixedDeviceIdentity()),
+    stored: () => stored,
+    answer: (method, body) => pending.get(method)?.(ok(body)),
+  };
+};
+
+const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+describe('AuthRepository.refreshCreatorClaim — overtaken by a request', () => {
+  // A refresh read the claim before the request changed it, and saved that
+  // old claim over the request's even when the store then dropped the answer:
+  // the next cold start brought the old claim back from disk.
+  it.each([
+    ['refresh started first', ['refresh', 'request']],
+    ['request already in flight', ['request', 'refresh']],
+  ])('a cold start after the race restores the request\'s claim, not the old one (%s)', async (_name, order) => {
+    const { repo, stored, answer } = racingRepo();
+    const calls: Promise<unknown>[] = [];
+    for (const call of order) {
+      calls.push(call === 'refresh' ? repo.refreshCreatorClaim() : repo.requestCreatorTag(tagOf('tiktok', 'new.handle')));
+      await flush();
+    }
+
+    answer('PUT', { platform: 'tiktok', handle: 'new.handle', status: 'pending' });
+    await flush();
+    answer('GET', { id: 'u-1', creator: { platform: 'instagram', handle: 'old.handle', status: 'approved' } });
+    await Promise.all(calls);
+
+    expect(stored()?.user.creatorStatus).toBe(CreatorStatus.Pending);
+    expect(stored()?.user.creatorClaim?.tag.handle).toBe('new.handle');
+  });
+});

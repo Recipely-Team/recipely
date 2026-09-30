@@ -80,12 +80,15 @@ interface AuthStoreDeps {
  *   refresh each answer with the rebuilt session; it is applied only while the
  *   user who started the call is still the one signed in, so an answer landing
  *   after sign-out cannot sign anyone back in, nor put one user's claim on the
- *   next user's session. A refresh overtaken by a request or remove is
- *   dropped: it read the claim from before the change.
+ *   next user's session. A refresh is dropped when a request or remove was
+ *   still in flight as it started or started while it ran: it read the claim
+ *   from before the change.
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   // Bumped by each request / remove, so a refresh can tell it was overtaken.
   let claimWrites = ValueConstants.zero;
+  // Requests / removes not answered yet: a refresh started under one read the claim from before it.
+  let claimWritesInFlight = ValueConstants.zero;
 
   return create<AuthStoreState>((set, get) => {
     /** The signed-in user's id, or `null` — read when a claim call starts. */
@@ -111,6 +114,17 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       if (!result.ok) return result.failure;
       set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
+    };
+
+    /** Runs a request / remove, counted from its start until its answer is handled. */
+    const writeClaim = async (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
+      claimWrites += ValueConstants.one;
+      claimWritesInFlight += ValueConstants.one;
+      try {
+        return await applyClaimResult(call);
+      } finally {
+        claimWritesInFlight -= ValueConstants.one;
+      }
     };
 
     return {
@@ -274,19 +288,17 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return null;
       },
 
-      requestCreatorTag: (input) => {
-        claimWrites += ValueConstants.one;
-        return applyClaimResult(() => deps.requestCreatorTag.execute(input));
-      },
+      requestCreatorTag: (input) => writeClaim(() => deps.requestCreatorTag.execute(input)),
 
-      removeCreatorTag: () => {
-        claimWrites += ValueConstants.one;
-        return applyClaimResult(() => deps.removeCreatorTag.execute());
-      },
+      removeCreatorTag: () => writeClaim(() => deps.removeCreatorTag.execute()),
 
       refreshCreatorClaim: () => {
         const startedAfter = claimWrites;
-        return applyClaimResult(() => deps.refreshCreatorClaim.execute(), () => claimWrites === startedAfter);
+        const startedIdle = claimWritesInFlight === ValueConstants.zero;
+        return applyClaimResult(
+          () => deps.refreshCreatorClaim.execute(),
+          () => startedIdle && claimWrites === startedAfter,
+        );
       },
     };
   });

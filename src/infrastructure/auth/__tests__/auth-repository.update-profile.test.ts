@@ -125,6 +125,20 @@ describe('AuthRepository.updateProfile', () => {
     expect(saved).toHaveLength(0);
   });
 
+  // An answer landing after a sign-out and a sign-in as someone else must not
+  // write the first user over the second user's session.
+  it('does not put the previous user into the session of whoever is signed in now', async () => {
+    const { http } = makeHttp(ok({ user: { ...userDto, id: 'someone-else' } }));
+    const { storage, saved } = makeStorage(ok(buildCurrentSession()));
+    const repo = new AuthRepository(http, storage, new FixedDeviceIdentity());
+
+    const result = await repo.updateProfile({ displayName: 'New Name' });
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure).toBeInstanceOf(UnauthorizedFailure);
+    expect(saved).toHaveLength(0);
+  });
+
   it('propagates a storage load failure and does not save', async () => {
     const failure = new UnknownFailure('Failed to read session');
     const { http } = makeHttp(ok({ user: userDto }));

@@ -28,12 +28,15 @@ interface CreatorProfileStoreDeps {
  * - **The newest `open` wins.** `generation` is bumped by each one, and any
  *   answer — profile, recipes, next page — from an older one is dropped, so a
  *   slow page for the previous creator never lands on this one. A follow
- *   answer is kept while the same user is still open.
+ *   answer is kept only while the page it was tapped on is still shown: a
+ *   same-user re-read keeps that page, `clear` or another user replaces it.
  * - **Follow is optimistic.** The button flips at once through `withFollowing`
  *   and flips back if the server refuses; the refusal is returned for a toast.
  */
 export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): BoundStore<CreatorProfileStoreState> => {
   let generation = ValueConstants.zero;
+  // Bumped only when the page is replaced (another user, or clear): a same-user re-read keeps it.
+  let pageShown = ValueConstants.zero;
 
   return create<CreatorProfileStoreState>((set, get) => {
     const loadProfile = async (userId: string, requested: number): Promise<void> => {
@@ -61,6 +64,7 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
       generation += ValueConstants.one;
       const requested = generation;
       if (get().userId !== userId) {
+        pageShown += ValueConstants.one;
         set({
           userId,
           profileState: { status: StoreStatus.Loading },
@@ -113,9 +117,10 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
         const following = !before.isFollowedByMe;
         set({ isFollowPending: true, profileState: { status: StoreStatus.Loaded, viewed: withFollowing(before, following) } });
         const input = { userId: before.profile.id };
+        const tappedOn = pageShown;
         const result = following ? await deps.follow.execute(input) : await deps.unfollow.execute(input);
-        // Another page (or none, after sign-out) is on screen now: nothing here is this answer's.
-        if (get().userId !== input.userId) return result.ok ? null : result.failure;
+        // The page was cleared or replaced since the tap: nothing here is this answer's.
+        if (pageShown !== tappedOn) return result.ok ? null : result.failure;
         if (result.ok) {
           set({ isFollowPending: false });
           return null;
@@ -132,6 +137,7 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
       },
       clear: () => {
         generation += ValueConstants.one;
+        pageShown += ValueConstants.one;
         set({
           userId: null,
           profileState: { status: StoreStatus.Idle },

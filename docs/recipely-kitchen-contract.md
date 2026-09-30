@@ -22,7 +22,8 @@ sites and AI-generated photos are **never** used.
 **Nutrition**
 - Every ingredient has an FDC id and a gram weight.
 - Per-serving values are computed from the FDC values; nothing is estimated.
-- The energy check: kcal ≈ 4·protein + 4·carbs + 9·fat (+2·fiber) within 12%.
+- The energy check: kcal ≈ 4·protein + 4·(carbs − fiber) + 9·fat + 2·fiber, within 12%
+  (FDC carbohydrate is by difference and already includes fiber).
 - A per-serving kcal outside the dish category's plausible band goes to review:
   soup 60–350, main 200–900, side 80–500, dessert 150–700, breakfast 100–700, drink 0–350.
 
