@@ -111,6 +111,15 @@ longer-named rows beside them kept theirs. Nothing looked broken; it looked
 inconsistent.
 *Guard:* it falls back to the amount alone. **An early return is a product decision.**
 
+**A "lenient" reader that threw on a missing field.**
+`readCreatorClaim` / `readCreatorTag` promised that an unreadable creator object reads
+as "none", but the TypeScript DTO type is only a claim about the wire: a `creator`
+without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `toUser`
+(sign-in) and `loadSession` (cold start). *Guard:* both readers check each field with
+`isString` from `@core/guards/type-guards` before calling the domain; the malformed
+cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
+is not a check** — a reader that promises leniency narrows the shape itself.
+
 ## Integration
 
 **A URL the server gave us is not a file we can upload.**

@@ -88,4 +88,20 @@ describe('SecureTokenStorage — creator claim', () => {
     expect(loaded.ok).toBe(true);
     if (loaded.ok) expect(loaded.value?.user.creatorClaim).toBeNull();
   });
+
+  it('restores a session whose stored claim has no handle, without a claim instead of throwing', async () => {
+    mockStore.set(
+      SESSION_STORAGE_KEY,
+      JSON.stringify({
+        id: 's-1',
+        accessToken: 'token',
+        expiresAt: '2030-01-01T00:00:00.000Z',
+        user: { id: 'u-1', email: 'cook@recipely.net', displayName: 'Cook', creator: { platform: 'instagram', status: 'approved' } },
+      }),
+    );
+    const loaded = await new SecureTokenStorage().loadSession();
+
+    expect(loaded.ok).toBe(true);
+    if (loaded.ok) expect(loaded.value?.user.creatorClaim).toBeNull();
+  });
 });
