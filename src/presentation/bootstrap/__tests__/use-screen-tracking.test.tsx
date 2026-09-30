@@ -89,6 +89,11 @@ describe('useScreenTracking', () => {
     expect(mockLogScreen).toHaveBeenCalledWith(AnalyticsScreen.recipeDetail);
   });
 
+  it('reports one creator page for every creator, never the id', () => {
+    renderAt('/creators/u-1');
+    expect(mockLogScreen).toHaveBeenCalledWith(AnalyticsScreen.creatorProfile);
+  });
+
   // `/` and `/ai-generate` render a Redirect and nothing else. A view logged
   // for them would count a screen that was never on the display.
   it.each(['/', '/ai-generate', '/_sitemap'])('reports nothing for %s', (pathname) => {
