@@ -104,6 +104,12 @@ export class NutritionGoals extends BaseValueObject<NutritionGoalValues> {
     return (this.protein + this.carbs) * KCAL_PER_GRAM_PROTEIN_OR_CARBS + this.fat * KCAL_PER_GRAM_FAT;
   }
 
+  /** Share of the calorie goal (0–1, may exceed 1) one macro's gram goal accounts for, at 4 / 4 / 9 kcal per gram. */
+  calorieShare(macro: 'protein' | 'carbs' | 'fat'): number {
+    const kcalPerGram = macro === 'fat' ? KCAL_PER_GRAM_FAT : KCAL_PER_GRAM_PROTEIN_OR_CARBS;
+    return (this._value[macro] * kcalPerGram) / this.calories;
+  }
+
   /** True when the macro goals miss the calorie goal by more than 10 % — the sheet's warning. */
   get macrosDisagreeWithCalories(): boolean {
     return Math.abs(this.macroCalories - this.calories) / this.calories > MACRO_DRIFT_TOLERANCE;

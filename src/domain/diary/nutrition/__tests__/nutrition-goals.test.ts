@@ -39,6 +39,12 @@ describe('NutritionGoals', () => {
     expect(NutritionGoals.create(base).ok).toBe(true);
   });
 
+  it('gives each macro its share of the calorie goal at 4 / 4 / 9', () => {
+    expect(goals.calorieShare('protein')).toBeCloseTo(0.24);
+    expect(goals.calorieShare('carbs')).toBeCloseTo(0.46);
+    expect(goals.calorieShare('fat')).toBeCloseTo(0.2925);
+  });
+
   it('warns only when the macros miss the calorie goal by more than 10 %', () => {
     expect(goals.macrosDisagreeWithCalories).toBe(false);
     const created = NutritionGoals.create({ ...goals.value, fat: 120 });
