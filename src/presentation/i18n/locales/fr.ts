@@ -247,6 +247,16 @@ export const fr = {
       body: "L'un de vos objectifs est en dehors de la plage autorisée. Ajustez-le et enregistrez à nouveau.",
       short: "Objectif hors limites",
     },
+    creatorHandleInvalid: {
+      title: "Vérifie l'identifiant",
+      body: "Utilise uniquement des lettres, des chiffres, des points et des tirets bas. Instagram accepte de 1 à 30 caractères, TikTok de 2 à 24. Un identifiant ne peut ni commencer ni finir par un point, ni contenir deux points à la suite.",
+      short: "Cet identifiant n'est pas valide",
+    },
+    creatorHandleTaken: {
+      title: "Identifiant déjà revendiqué",
+      body: "Un autre créateur sur Recipely détient déjà ce compte. Vérifie la plateforme et l'identifiant.",
+      short: "Cet identifiant est déjà revendiqué",
+    },
     emailExists: {
       title: 'Cette adresse e-mail est déjà utilisée',
       body: 'Un compte utilise déjà cette adresse e-mail. Connectez-vous ou réinitialisez votre mot de passe.',

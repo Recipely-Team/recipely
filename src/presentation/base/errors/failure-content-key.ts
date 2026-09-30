@@ -61,6 +61,9 @@ export type FailureContentKey =
   | 'diaryFoodNameTooLong'
   | 'diaryNutrientInvalid'
   | 'diaryGoalInvalid'
+  // ── key-tier: creator tag ──────────────────────────────────────────────────
+  | 'creatorHandleInvalid'
+  | 'creatorHandleTaken'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

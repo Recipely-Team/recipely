@@ -97,6 +97,9 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   importUnreadableFile: 'document-outline',
   recipeExists: 'copy-outline',
 
+  creatorHandleInvalid: 'at-outline',
+  creatorHandleTaken: 'person-circle-outline',
+
   emailExists: 'mail-outline',
   codeInvalid: 'keypad-outline',
   codeExpired: 'time-outline',

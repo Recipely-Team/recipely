@@ -253,6 +253,16 @@ export const en = {
       body: "One of your goals is outside the allowed range. Adjust it and save again.",
       short: "Goal out of range",
     },
+    creatorHandleInvalid: {
+      title: "Check the handle",
+      body: "Use only letters, numbers, dots and underscores. Instagram allows 1 to 30 characters, TikTok 2 to 24. A handle can't start or end with a dot or have two dots in a row.",
+      short: "That handle isn't valid",
+    },
+    creatorHandleTaken: {
+      title: "Handle already claimed",
+      body: "Another creator on Recipely already holds this account. Check the platform and the handle.",
+      short: "That handle is already claimed",
+    },
     emailExists: {
       title: 'That email is taken',
       body: 'An account already uses this email. Sign in instead, or reset your password.',

@@ -247,6 +247,16 @@ export const pt = {
       body: "Uma das suas metas está fora do intervalo permitido. Ajuste e salve de novo.",
       short: "Meta fora do intervalo",
     },
+    creatorHandleInvalid: {
+      title: "Confira o nome de usuário",
+      body: "Use apenas letras, números, pontos e sublinhados. O Instagram aceita de 1 a 30 caracteres, o TikTok de 2 a 24. O nome de usuário não pode começar nem terminar com ponto nem ter dois pontos seguidos.",
+      short: "Esse nome de usuário não é válido",
+    },
+    creatorHandleTaken: {
+      title: "Nome de usuário já reivindicado",
+      body: "Outro criador no Recipely já tem essa conta. Confira a plataforma e o nome de usuário.",
+      short: "Esse nome de usuário já foi reivindicado",
+    },
     emailExists: {
       title: 'Esse e-mail já está em uso',
       body: 'Já existe uma conta com este e-mail. Entre nela ou redefina sua senha.',

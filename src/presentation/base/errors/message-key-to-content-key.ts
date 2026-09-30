@@ -61,6 +61,9 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.diaryNutrientInvalid]: 'diaryNutrientInvalid',
   [ErrorMessageKey.diaryGoalInvalid]: 'diaryGoalInvalid',
 
+  [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
+  [ErrorMessageKey.creatorHandleTaken]: 'creatorHandleTaken',
+
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',
   [ErrorMessageKey.codeExpired]: 'codeExpired',

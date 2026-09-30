@@ -247,6 +247,16 @@ export const id = {
       body: "Salah satu target kamu di luar rentang yang diizinkan. Sesuaikan lalu simpan lagi.",
       short: "Target di luar rentang",
     },
+    creatorHandleInvalid: {
+      title: "Periksa nama pengguna",
+      body: "Gunakan hanya huruf, angka, titik, dan garis bawah. Instagram menerima 1 sampai 30 karakter, TikTok 2 sampai 24. Nama pengguna tidak boleh diawali atau diakhiri titik, atau berisi dua titik berturut-turut.",
+      short: "Nama pengguna itu tidak valid",
+    },
+    creatorHandleTaken: {
+      title: "Nama pengguna sudah diklaim",
+      body: "Kreator lain di Recipely sudah memegang akun ini. Periksa platform dan nama penggunanya.",
+      short: "Nama pengguna itu sudah diklaim",
+    },
     emailExists: {
       title: 'Email itu sudah digunakan',
       body: 'Sudah ada akun yang menggunakan email ini. Masuk atau atur ulang kata sandi.',

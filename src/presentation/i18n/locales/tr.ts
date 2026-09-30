@@ -250,6 +250,16 @@ export const tr: Translations = {
       body: "Hedeflerinden biri izin verilen aralığın dışında. Düzeltip yeniden kaydet.",
       short: "Hedef aralık dışında",
     },
+    creatorHandleInvalid: {
+      title: "Kullanıcı adını kontrol et",
+      body: "Yalnızca harf, rakam, nokta ve alt çizgi kullan. Instagram 1 ile 30, TikTok 2 ile 24 karakter arası kabul eder. Kullanıcı adı noktayla başlayıp bitemez, art arda iki nokta içeremez.",
+      short: "Bu kullanıcı adı geçersiz",
+    },
+    creatorHandleTaken: {
+      title: "Bu hesap zaten alınmış",
+      body: "Bu hesap Recipely'de başka bir içerik üreticisine ait. Platformu ve kullanıcı adını kontrol et.",
+      short: "Bu kullanıcı adı zaten alınmış",
+    },
     emailExists: {
       title: 'Bu e-posta zaten kayıtlı',
       body: 'Bu e-postayla açılmış bir hesap zaten var. Giriş yap ya da şifreni sıfırla.',

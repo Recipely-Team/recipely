@@ -247,6 +247,16 @@ export const de = {
       body: "Eines deiner Ziele liegt außerhalb des erlaubten Bereichs. Passe es an und speichere erneut.",
       short: "Ziel ungültig",
     },
+    creatorHandleInvalid: {
+      title: "Prüfe den Nutzernamen",
+      body: "Verwende nur Buchstaben, Zahlen, Punkte und Unterstriche. Instagram erlaubt 1 bis 30 Zeichen, TikTok 2 bis 24. Ein Nutzername darf nicht mit einem Punkt beginnen oder enden und keine zwei Punkte hintereinander enthalten.",
+      short: "Dieser Nutzername ist ungültig",
+    },
+    creatorHandleTaken: {
+      title: "Nutzername bereits vergeben",
+      body: "Ein anderer Creator auf Recipely hat dieses Konto bereits beansprucht. Prüfe Plattform und Nutzernamen.",
+      short: "Dieser Nutzername ist bereits vergeben",
+    },
     emailExists: {
       title: 'Diese E-Mail-Adresse ist vergeben',
       body: 'Für diese E-Mail-Adresse gibt es bereits ein Konto. Melde dich an oder setze dein Passwort zurück.',

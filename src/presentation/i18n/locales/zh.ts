@@ -250,6 +250,16 @@ export const zh = {
       body: "你的某个目标超出了允许范围。请调整后重新保存。",
       short: "目标超出范围",
     },
+    creatorHandleInvalid: {
+      title: "请检查用户名",
+      body: "只能使用字母、数字、句点和下划线。Instagram 允许 1 到 30 个字符，TikTok 允许 2 到 24 个字符。用户名不能以句点开头或结尾，也不能包含连续两个句点。",
+      short: "该用户名无效",
+    },
+    creatorHandleTaken: {
+      title: "用户名已被认领",
+      body: "Recipely 上的另一位创作者已认领此账号。请检查平台和用户名。",
+      short: "该用户名已被认领",
+    },
     emailExists: {
       title: '这个邮箱已经被使用',
       body: '已有账户使用这个邮箱。请直接登录，或重置密码。',

@@ -249,6 +249,16 @@ export const ko: Translations = {
       body: "목표 중 하나가 허용 범위를 벗어났어요. 조정한 뒤 다시 저장해 주세요.",
       short: "목표 범위 초과",
     },
+    creatorHandleInvalid: {
+      title: "사용자 이름을 확인하세요",
+      body: "영문자, 숫자, 마침표, 밑줄만 사용할 수 있어요. Instagram은 1~30자, TikTok은 2~24자예요. 마침표로 시작하거나 끝날 수 없고, 마침표를 두 번 연속 쓸 수도 없어요.",
+      short: "사용할 수 없는 사용자 이름이에요",
+    },
+    creatorHandleTaken: {
+      title: "이미 등록된 사용자 이름",
+      body: "Recipely의 다른 크리에이터가 이미 이 계정을 등록했어요. 플랫폼과 사용자 이름을 확인하세요.",
+      short: "이미 등록된 사용자 이름이에요",
+    },
     emailExists: {
       title: '이미 사용 중인 이메일이에요',
       body: '이 이메일로 만든 계정이 이미 있어요. 로그인하거나 비밀번호를 재설정해 주세요.',

@@ -247,6 +247,16 @@ export const es = {
       body: "Uno de tus objetivos está fuera del rango permitido. Ajústalo y guarda de nuevo.",
       short: "Objetivo fuera de rango",
     },
+    creatorHandleInvalid: {
+      title: "Revisa el usuario",
+      body: "Usa solo letras, números, puntos y guiones bajos. Instagram admite de 1 a 30 caracteres y TikTok de 2 a 24. Un usuario no puede empezar ni terminar con punto ni tener dos puntos seguidos.",
+      short: "Ese usuario no es válido",
+    },
+    creatorHandleTaken: {
+      title: "Usuario ya reclamado",
+      body: "Otro creador de Recipely ya tiene esta cuenta. Revisa la plataforma y el usuario.",
+      short: "Ese usuario ya está reclamado",
+    },
     emailExists: {
       title: 'Ese correo ya está en uso',
       body: 'Ya existe una cuenta con este correo. Inicia sesión o restablece tu contraseña.',
