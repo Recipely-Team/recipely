@@ -40,4 +40,9 @@ describe('LoggableFood.quickAdd', () => {
     expect(!huge.ok && huge.failure.messageKey).toBe('errors.validation.nutrient_invalid');
     expect(LoggableFood.quickAdd('x'.repeat(120), serving).ok).toBe(true);
   });
+
+  it('refuses a quick add without calories', () => {
+    const r = LoggableFood.quickAdd('Water', nutrientsOf({ calories: 0 }));
+    expect(!r.ok && r.failure.messageKey).toBe('errors.validation.nutrient_invalid');
+  });
 });

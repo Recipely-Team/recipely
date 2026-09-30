@@ -45,6 +45,16 @@ describe('NutritionGoals', () => {
     expect(goals.calorieShare('fat')).toBeCloseTo(0.2925);
   });
 
+  it('steps the calorie goal by 50 and stops at 500 and 6000', () => {
+    expect(NutritionGoals.stepCalories(2000, 1)).toBe(2050);
+    expect(NutritionGoals.stepCalories(2000, -1)).toBe(1950);
+    expect(NutritionGoals.stepCalories(520, -1)).toBe(500);
+    expect(NutritionGoals.stepCalories(5980, 1)).toBe(6000);
+    expect(NutritionGoals.canStepCalories(500, -1)).toBe(false);
+    expect(NutritionGoals.canStepCalories(500, 1)).toBe(true);
+    expect(NutritionGoals.canStepCalories(6000, 1)).toBe(false);
+  });
+
   it('warns only when the macros miss the calorie goal by more than 10 %', () => {
     expect(goals.macrosDisagreeWithCalories).toBe(false);
     const created = NutritionGoals.create({ ...goals.value, fat: 120 });

@@ -60,6 +60,21 @@ export class NutritionGoals extends BaseValueObject<NutritionGoalValues> {
     return ok(new NutritionGoals(values));
   }
 
+  /**
+   * The calorie goal one −/+ press away from `current`, in 50 kcal steps,
+   * clamped to 500–6000. `direction` is read by its sign. Static because the
+   * sheet steps a draft value that is not yet a valid `NutritionGoals`.
+   */
+  static stepCalories(current: number, direction: number): number {
+    const next = current + Math.sign(direction) * DiaryLimits.GoalCaloriesStep;
+    return Math.min(DiaryLimits.GoalCaloriesMax, Math.max(DiaryLimits.GoalCaloriesMin, next));
+  }
+
+  /** Whether a −/+ press from `current` would change anything — the button's enabled state. */
+  static canStepCalories(current: number, direction: number): boolean {
+    return NutritionGoals.stepCalories(current, direction) !== current;
+  }
+
   get calories(): number {
     return this._value.calories;
   }

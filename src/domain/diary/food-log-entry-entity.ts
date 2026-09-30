@@ -10,6 +10,7 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { FoodLogEntryEntityProps } from '@domain/diary/food-log-entry-entity-props';
+import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-changes';
 
 /**
  * One food the user logged on a day, in a meal — the food diary's aggregate
@@ -69,6 +70,21 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
 
   get isQuickAdd(): boolean {
     return this.props.recipeId === null;
+  }
+
+  /**
+   * Only what an edit to `servings` and `meal` actually changes, or `null`
+   * when nothing does — the server refuses an empty edit
+   * (`errors.validation.nothing_to_edit`), so an untouched "Save" just closes.
+   */
+  changesTo(servings: number, meal: MealSlotType): FoodLogEntryChanges | null {
+    const servingsChanged = servings !== this.props.servings;
+    const mealChanged = meal !== this.props.meal;
+    if (!servingsChanged && !mealChanged) return null;
+    return {
+      ...(servingsChanged ? { servings } : {}),
+      ...(mealChanged ? { meal } : {}),
+    };
   }
 
   /** This entry as one serving of a food — what the edit sheet's stepper multiplies. */

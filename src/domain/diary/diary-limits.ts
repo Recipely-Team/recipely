@@ -24,4 +24,8 @@ export const DiaryLimits = {
   GoalCaloriesMax: 6000,
   GoalMacroMax: 600,
   GoalWaterMin: 1,
+  /** The goals sheet's −/+ buttons move the calorie goal by this much. */
+  GoalCaloriesStep: 50,
+  /** How many foods the Add food sheet's Recent tab asks for; the backend caps it at 50. */
+  RecentFoods: 20,
 } as const;

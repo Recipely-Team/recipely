@@ -16,7 +16,7 @@ import type { DiaryDayProps } from '@domain/diary/day/diary-day-props';
  * @remarks
  * - **Totals are derived from the entries**, not taken from the server's
  *   `totals`, so an optimistic `withoutEntry` stays consistent with itself.
- * - **Copies, never mutation.** `withWater` / `withoutEntry` / `withGoals`
+ * - **Copies, never mutation.** `withWater` / `withoutEntry` / `withEntry` / `withGoals`
  *   return a new day; the store swaps it into its cache.
  * - Water is clamped to 0–12 glasses on the way in.
  */
@@ -100,6 +100,27 @@ export class DiaryDay {
 
   withoutEntry(id: string): DiaryDay {
     return new DiaryDay({ ...this.props, entries: this.props.entries.filter((entry) => entry.id !== id) });
+  }
+
+  /**
+   * The day with `entry` back in it — a failed delete's undo.
+   *
+   * `order` is the ids in the order the server listed them; the entry goes in
+   * before the first present entry that the order puts after it, so undoing
+   * two overlapping deletes in either order restores the original sequence.
+   * Without `order` (or with an entry it does not name) it joins the end.
+   * Already present means no change, so a double undo cannot duplicate a row.
+   */
+  withEntry(entry: FoodLogEntryEntity, order: readonly string[] = []): DiaryDay {
+    if (this.props.entries.some((existing) => existing.id === entry.id)) return this;
+    const rank = order.indexOf(entry.id);
+    const before =
+      rank === ValueConstants.minusOne
+        ? ValueConstants.minusOne
+        : this.props.entries.findIndex((existing) => order.indexOf(existing.id) > rank);
+    const entries = [...this.props.entries];
+    entries.splice(before === ValueConstants.minusOne ? entries.length : before, ValueConstants.zero, entry);
+    return new DiaryDay({ ...this.props, entries });
   }
 
   withGoals(goals: NutritionGoals): DiaryDay {

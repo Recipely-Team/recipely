@@ -30,7 +30,8 @@ export class LoggableFood {
 
   /**
    * A food typed in by hand — the Quick add tab. The name is trimmed and must
-   * fit 1–120 characters; one serving must be within the entry caps. Failures
+   * fit 1–120 characters; one serving must have calories (> 0) and stay within
+   * the entry caps. Failures
    * carry the backend's `messageKey`, so the form shows the same copy the
    * server would have caused.
    */
@@ -42,7 +43,7 @@ export class LoggableFood {
     if (trimmed.length > DiaryLimits.NameMaxLength) {
       return fail(new ValidationFailure(DiagnosticMessage.diary.foodNameTooLong, 'name', ErrorMessageKey.diaryFoodNameTooLong));
     }
-    if (!perServing.isWithinEntryCaps) {
+    if (perServing.calories <= ValueConstants.zero || !perServing.isWithinEntryCaps) {
       return fail(new ValidationFailure(DiagnosticMessage.diary.nutrientTooHigh('calories'), 'calories', ErrorMessageKey.diaryNutrientInvalid));
     }
     return ok(new LoggableFood({ name: trimmed, perServing, recipeId: null, imageUrl: null }));

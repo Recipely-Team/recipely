@@ -5,10 +5,12 @@ import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
+import type { DiaryDay } from '@domain/diary/day/diary-day';
+import { DiaryLimits } from '@domain/diary/diary-limits';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
-import { DIARY_RECENT_LIMIT } from '@infrastructure/constants/api/api-paging';
 import { DiaryConcern, type DiaryConcernType } from '@application/diary/diary-concern';
 import type { DiaryStoreState } from '@application/diary/diary-store-state';
+import { WaterTapLedger } from '@application/diary/day/water-tap-ledger';
 import type { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
 import type { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
 import type { LoadDiaryMonthUseCase } from '@application/diary/month/load-diary-month-use-case';
@@ -33,8 +35,13 @@ interface DiaryStoreDeps {
   today?: () => CalendarDate;
 }
 
-const flags = <T>(value: T): Record<DiaryConcernType, T> =>
-  Object.fromEntries(Object.values(DiaryConcern).map((concern) => [concern, value])) as Record<DiaryConcernType, T>;
+const flags = <T>(value: T): Record<DiaryConcernType, T> => ({
+  [DiaryConcern.Day]: value,
+  [DiaryConcern.Month]: value,
+  [DiaryConcern.Recent]: value,
+  [DiaryConcern.Goals]: value,
+  [DiaryConcern.Save]: value,
+});
 
 /**
  * The Food Diary's state: the selected day, caches of loaded days and months,
@@ -43,21 +50,35 @@ const flags = <T>(value: T): Record<DiaryConcernType, T> =>
  * @remarks
  * - **Caches, not a single "current" slot.** Paging the week strip or the
  *   calendar back to a day already seen shows it at once while it refreshes.
- * - **Optimistic where cheap**: water and delete change the cached day first
- *   and roll back on failure. Add and update wait for the server, then refresh
- *   the affected day(s) and any cached month, because the server owns the
- *   rescaled values and the month sums.
- * - **Session guard** — `clear()` bumps `session`; a response that started
- *   under an earlier session is dropped, so a sign-out mid-request cannot put
- *   the previous account's diary back.
+ * - **Optimistic where cheap, and undone precisely.** A failed delete puts back
+ *   that one entry (`DiaryDay.withEntry`), never a whole-day snapshot that
+ *   would also undo a concurrent delete; a failed water tap returns to the
+ *   last count the server confirmed (`WaterTapLedger`), and only while it is
+ *   still the latest tap.
+ * - **Writes return as soon as the server answers.** The day / month / recent
+ *   refreshes that follow run in the background.
+ * - **Races.** The day's loading flag and error belong to the selected date
+ *   only; a load that started before a goals save does not overwrite the
+ *   saved goals; `clear()` bumps `session` so nothing started under a previous
+ *   account publishes.
  */
 export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStoreState> => {
   const today = deps.today ?? (() => CalendarDate.today());
+  const water = new WaterTapLedger();
   let session = ValueConstants.zero;
+  let goalsSaves = ValueConstants.zero;
+  /** Entry ids per date in the order the server last listed them — where a failed delete goes back. */
+  const serverOrder = new Map<string, readonly string[]>();
 
   return create<DiaryStoreState>((set, get) => {
     const mark = (concern: DiaryConcernType, loading: boolean, failure: Failure | null = null): void =>
       set((s) => ({ loading: { ...s.loading, [concern]: loading }, errors: { ...s.errors, [concern]: failure } }));
+
+    const updateDay = (key: string, change: (day: DiaryDay) => DiaryDay): void =>
+      set((s) => {
+        const day = s.days[key];
+        return day === undefined ? {} : { days: { ...s.days, [key]: change(day) } };
+      });
 
     const refreshMonthOf = (date: CalendarDate): Promise<void> => {
       const month = CalendarMonth.of(date);
@@ -83,29 +104,44 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
 
       loadDay: async (date) => {
         const requested = session;
+        const goalsAt = goalsSaves;
         const day = date ?? get().selectedDate;
-        mark(DiaryConcern.Day, true);
+        const key = day.value;
+        const isSelected = (): boolean => key === get().selectedDate.value;
+        if (isSelected()) mark(DiaryConcern.Day, true);
         const result = await deps.loadDay.execute(day);
         if (requested !== session) return;
-        if (!result.ok) return mark(DiaryConcern.Day, false, result.failure);
-        set((s) => ({ days: { ...s.days, [day.value]: result.value }, goals: result.value.goals }));
-        mark(DiaryConcern.Day, false);
+        if (!result.ok) {
+          if (isSelected()) mark(DiaryConcern.Day, false, result.failure);
+          return;
+        }
+        const fresh = goalsAt === goalsSaves;
+        let loaded = fresh ? result.value : result.value.withGoals(get().goals);
+        water.confirmFromLoad(key, loaded.waterGlasses);
+        const cached = get().days[key];
+        if (water.hasTaps(key) && cached !== undefined) loaded = loaded.withWater(cached.waterGlasses);
+        serverOrder.set(key, loaded.entries.map((entry) => entry.id));
+        set((s) => ({ days: { ...s.days, [key]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
+        if (isSelected()) mark(DiaryConcern.Day, false);
       },
 
       loadMonth: async (month) => {
         const requested = session;
+        const goalsAt = goalsSaves;
         mark(DiaryConcern.Month, true);
         const result = await deps.loadMonth.execute(month);
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Month, false, result.failure);
-        set((s) => ({ months: { ...s.months, [month.value]: result.value }, goals: result.value.goals }));
+        const fresh = goalsAt === goalsSaves;
+        const loaded = fresh ? result.value : result.value.withGoals(get().goals);
+        set((s) => ({ months: { ...s.months, [month.value]: loaded }, ...(fresh ? { goals: loaded.goals } : {}) }));
         mark(DiaryConcern.Month, false);
       },
 
       loadRecent: async () => {
         const requested = session;
         mark(DiaryConcern.Recent, true);
-        const result = await deps.loadRecent.execute(DIARY_RECENT_LIMIT);
+        const result = await deps.loadRecent.execute(DiaryLimits.RecentFoods);
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Recent, false, result.failure);
         set({ recent: result.value });
@@ -114,16 +150,18 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
 
       loadGoals: async () => {
         const requested = session;
+        const goalsAt = goalsSaves;
         mark(DiaryConcern.Goals, true);
         const result = await deps.loadGoals.execute();
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Goals, false, result.failure);
-        set({ goals: result.value });
+        if (goalsAt === goalsSaves) set({ goals: result.value });
         mark(DiaryConcern.Goals, false);
       },
 
       saveGoals: async (goals) => {
         const requested = session;
+        goalsSaves += ValueConstants.one;
         mark(DiaryConcern.Save, true);
         const result = await deps.saveGoals.execute(goals);
         if (requested !== session) return result;
@@ -147,9 +185,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
         const result = await deps.addEntry.execute(entry);
         if (requested !== session) return result;
         mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
-        if (result.ok) {
-          await Promise.all([refreshAround([entry.date]), get().loadRecent()]);
-        }
+        if (result.ok) void Promise.all([refreshAround([entry.date]), get().loadRecent()]);
         return result;
       },
 
@@ -161,7 +197,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
         mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
         if (result.ok) {
           const moved = !result.value.date.equals(entry.date);
-          await refreshAround(moved ? [entry.date, result.value.date] : [entry.date]);
+          void refreshAround(moved ? [entry.date, result.value.date] : [entry.date]);
         }
         return result;
       },
@@ -169,44 +205,47 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
       deleteEntry: async (entry) => {
         const requested = session;
         const key = entry.date.value;
-        const before = get().days[key];
-        if (before !== undefined) set((s) => ({ days: { ...s.days, [key]: before.withoutEntry(entry.id) } }));
+        updateDay(key, (day) => day.withoutEntry(entry.id));
         mark(DiaryConcern.Save, true);
         const result = await deps.deleteEntry.execute(entry.id);
         if (requested !== session) return result;
         mark(DiaryConcern.Save, false, result.ok ? null : result.failure);
         if (!result.ok) {
-          if (before !== undefined) set((s) => ({ days: { ...s.days, [key]: before } }));
-          await get().loadDay(entry.date);
+          updateDay(key, (day) => day.withEntry(entry, serverOrder.get(key)));
           return result;
         }
-        await refreshMonthOf(entry.date);
+        void refreshMonthOf(entry.date);
         return result;
       },
 
       setWater: async (date, glasses) => {
         const requested = session;
         const key = date.value;
-        const before = get().days[key];
-        if (before !== undefined) set((s) => ({ days: { ...s.days, [key]: before.withWater(glasses) } }));
+        const tap = water.begin(key);
+        const cached = get().days[key];
+        if (cached !== undefined && water.confirmed(key) === undefined) water.confirm(key, cached.waterGlasses);
+        updateDay(key, (day) => day.withWater(glasses));
         const result = await deps.setWater.execute(date, glasses);
         if (requested !== session) return result.ok ? ok(undefined) : result;
-        if (!result.ok) {
-          // Roll back only while this tap is still the latest: a later tap owns the value now.
-          const current = get().days[key];
-          if (before !== undefined && current?.waterGlasses === glasses) {
-            set((s) => ({ days: { ...s.days, [key]: current.withWater(before.waterGlasses) } }));
-          }
-          mark(DiaryConcern.Save, false, result.failure);
-          return result;
+        const latest = water.isLatest(key, tap);
+        water.settle(key, tap);
+        if (result.ok) {
+          water.confirm(key, result.value);
+          if (latest) updateDay(key, (day) => day.withWater(result.value));
+          return ok(undefined);
         }
-        return ok(undefined);
+        const confirmed = water.confirmed(key);
+        if (latest && confirmed !== undefined) updateDay(key, (day) => day.withWater(confirmed));
+        mark(DiaryConcern.Save, false, result.failure);
+        return result;
       },
 
       clearError: (concern) => set((s) => ({ errors: { ...s.errors, [concern]: null } })),
 
       clear: () => {
         session += ValueConstants.one;
+        water.clear();
+        serverOrder.clear();
         set({
           selectedDate: today(),
           days: {},

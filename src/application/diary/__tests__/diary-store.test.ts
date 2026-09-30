@@ -60,6 +60,18 @@ const makeStore = (repo: FoodDiaryRepositoryInterface) =>
 
 const failure: Failure = new ServerFailure('boom');
 
+/** Lets the background refreshes a write starts run to completion. */
+const flush = () => new Promise((resolve) => setImmediate(resolve));
+
+/** A promise the test settles by hand, to hold a request in flight. */
+const deferred = <T>() => {
+  let settle: (value: T) => void = () => undefined;
+  const promise = new Promise<T>((resolve) => {
+    settle = resolve;
+  });
+  return { promise, settle: (value: T) => settle(value) };
+};
+
 describe('diary store', () => {
   it('starts on today with default goals and nothing cached', () => {
     const s = makeStore(makeRepo()).getState();
@@ -94,6 +106,7 @@ describe('diary store', () => {
     repo.getMonth.mockResolvedValueOnce(ok(monthOf(600)));
     const r = await store.getState().addEntry(entry.food.entryFor(today, MealSlot.Lunch, Servings.one()));
     expect(r.ok).toBe(true);
+    await flush();
     expect(repo.getDay).toHaveBeenCalledWith(today);
     expect(store.getState().months['2026-09']?.caloriesOn(today)).toBe(600);
     expect(store.getState().recent).toHaveLength(1);
@@ -115,6 +128,7 @@ describe('diary store', () => {
     expect(store.getState().days['2026-09-30']?.entries).toHaveLength(0);
     settle(fail(failure));
     const r = await pending;
+    await flush();
     expect(r.ok).toBe(false);
     expect(store.getState().errors.save).toBe(failure);
     expect(store.getState().days['2026-09-30']?.entries).toHaveLength(1);
@@ -138,6 +152,90 @@ describe('diary store', () => {
     const r = await makeStore(repo).getState().addEntry({ ...huge, nutrients: nutrientsOf({ calories: 20001 }) });
     expect(!r.ok && r.failure.messageKey).toBe('errors.validation.nutrient_invalid');
     expect(repo.addEntry).not.toHaveBeenCalled();
+  });
+
+  it('two failed water taps return to the saved count', async () => {
+    const tap1 = deferred<Result<number, Failure>>();
+    const tap2 = deferred<Result<number, Failure>>();
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    repo.setWater.mockImplementationOnce(() => tap1.promise).mockImplementationOnce(() => tap2.promise);
+    const first = store.getState().setWater(today, 3);
+    const second = store.getState().setWater(today, 4);
+    expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(4);
+    tap1.settle(fail(failure));
+    tap2.settle(fail(failure));
+    await Promise.all([first, second]);
+    expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(2);
+  });
+
+  it('keeps the newer tap on screen when an older one fails late, and shows what the server stored', async () => {
+    const tap1 = deferred<Result<number, Failure>>();
+    const tap2 = deferred<Result<number, Failure>>();
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    repo.setWater.mockImplementationOnce(() => tap1.promise).mockImplementationOnce(() => tap2.promise);
+    const first = store.getState().setWater(today, 3);
+    const second = store.getState().setWater(today, 4);
+    tap2.settle(ok(4));
+    tap1.settle(fail(failure));
+    await Promise.all([first, second]);
+    expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(4);
+  });
+
+  it('two failed deletes both come back, in their places', async () => {
+    const e1 = foodLogEntryOf({ id: 'e1', date: today });
+    const e2 = foodLogEntryOf({ id: 'e2', date: today });
+    const delete1 = deferred<Result<void, Failure>>();
+    const delete2 = deferred<Result<void, Failure>>();
+    const repo = makeRepo({ getDay: jest.fn().mockResolvedValue(ok(dayOf([e1, e2]))) });
+    const store = makeStore(repo);
+    await store.getState().loadDay();
+    repo.getDay.mockResolvedValue(fail(failure));
+    repo.deleteEntry.mockImplementationOnce(() => delete1.promise).mockImplementationOnce(() => delete2.promise);
+    const first = store.getState().deleteEntry(e1);
+    const second = store.getState().deleteEntry(e2);
+    expect(store.getState().days['2026-09-30']?.entries).toHaveLength(0);
+    delete1.settle(fail(failure));
+    delete2.settle(fail(failure));
+    await Promise.all([first, second]);
+    await flush();
+    expect(store.getState().days['2026-09-30']?.entries.map((e) => e.id)).toEqual(['e1', 'e2']);
+  });
+
+  it('keeps a failed load of another day out of the selected day\'s error', async () => {
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    repo.getDay.mockResolvedValueOnce(fail(failure));
+    await store.getState().loadDay(today.addDays(-3));
+    expect(store.getState().errors.day).toBeNull();
+    expect(store.getState().loading.day).toBe(false);
+  });
+
+  it('does not let a load that started before a goals save overwrite the saved goals', async () => {
+    const slowDay = deferred<Result<DiaryDay, Failure>>();
+    const repo = makeRepo();
+    const store = makeStore(repo);
+    repo.getDay.mockImplementationOnce(() => slowDay.promise);
+    const load = store.getState().loadDay();
+    const created = NutritionGoals.create({ ...goals.value, calories: 1500 });
+    if (!created.ok) throw new Error('goals');
+    await store.getState().saveGoals(created.value);
+    slowDay.settle(ok(dayOf([entry])));
+    await load;
+    expect(store.getState().goals.calories).toBe(1500);
+    expect(store.getState().days['2026-09-30']?.goals.calories).toBe(1500);
+  });
+
+  it('resolves an add before its refreshes finish', async () => {
+    const slowDay = deferred<Result<DiaryDay, Failure>>();
+    const repo = makeRepo({ getDay: jest.fn(() => slowDay.promise) });
+    const r = await makeStore(repo).getState().addEntry(entry.food.entryFor(today, MealSlot.Lunch, Servings.one()));
+    expect(r.ok).toBe(true);
+    expect(repo.getDay).toHaveBeenCalled();
+    slowDay.settle(ok(dayOf([entry])));
   });
 
   it('refuses water outside 0–12 without a request', async () => {

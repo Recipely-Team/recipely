@@ -25,20 +25,20 @@ export interface DiaryStoreState {
   errors: Readonly<Record<DiaryConcernType, Failure | null>>;
   /** Selects a day and loads it. */
   selectDate: (date: CalendarDate) => Promise<void>;
-  /** Loads (or refreshes) a day; defaults to the selected one. A cached day stays on screen meanwhile. */
+  /** Loads (or refreshes) a day; defaults to the selected one. A cached day stays on screen meanwhile; `loading.day` / `errors.day` track the selected day only. */
   loadDay: (date?: CalendarDate) => Promise<void>;
   loadMonth: (month: CalendarMonth) => Promise<void>;
   loadRecent: () => Promise<void>;
   loadGoals: () => Promise<void>;
   /** Saves, then re-derives every cached day and month against the new goals. */
   saveGoals: (goals: NutritionGoals) => Promise<Result<NutritionGoals, Failure>>;
-  /** Adds, then refreshes that day, its month (when cached) and the recent list. */
+  /** Adds; resolves once the server answers, then refreshes that day, its month (when cached) and the recent list in the background. */
   addEntry: (entry: NewFoodLogEntry) => Promise<Result<FoodLogEntryEntity, Failure>>;
-  /** Updates, then refreshes the entry's old day and — when moved — its new day, plus their months. */
+  /** Updates; resolves once the server answers, then refreshes the old day and — when moved — the new one, plus their months, in the background. */
   updateEntry: (entry: FoodLogEntryEntity, changes: FoodLogEntryChanges) => Promise<Result<FoodLogEntryEntity, Failure>>;
-  /** Removes the row at once; puts it back and reloads the day when the server refuses. */
+  /** Removes the row at once; puts that one entry back, in its place, when the server refuses. */
   deleteEntry: (entry: FoodLogEntryEntity) => Promise<Result<void, Failure>>;
-  /** Sets the day's glasses at once; rolls back when the server refuses. */
+  /** Sets the day's glasses at once; on refusal returns to the last server-confirmed count, if this is still the latest tap. */
   setWater: (date: CalendarDate, glasses: number) => Promise<Result<void, Failure>>;
   clearError: (concern: DiaryConcernType) => void;
   /** Drops the signed-in user's diary. Called when the session ends. */

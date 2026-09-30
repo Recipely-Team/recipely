@@ -51,3 +51,22 @@ describe('DiaryDay', () => {
     expect(day.totals.calories).toBe(1000);
   });
 });
+
+describe('DiaryDay.withEntry', () => {
+  const [a, b, c] = ['a', 'b', 'c'].map((id) => foodLogEntryOf({ id }));
+  const order = ['a', 'b', 'c'];
+  const day = DiaryDay.of({ date, goals, waterGlasses: 0, entries: [a, b, c].flatMap((e) => (e === undefined ? [] : [e])) });
+
+  it('puts an entry back in its server place, whatever order the undos land in', () => {
+    const empty = day.withoutEntry('a').withoutEntry('c');
+    if (a === undefined || c === undefined) throw new Error('fixture');
+    expect(empty.withEntry(c, order).withEntry(a, order).entries.map((e) => e.id)).toEqual(order);
+    expect(empty.withEntry(a, order).withEntry(c, order).entries.map((e) => e.id)).toEqual(order);
+  });
+
+  it('appends without an order, and never duplicates', () => {
+    if (a === undefined) throw new Error('fixture');
+    expect(day.withoutEntry('a').withEntry(a).entries.map((e) => e.id)).toEqual(['b', 'c', 'a']);
+    expect(day.withEntry(a).entries).toHaveLength(3);
+  });
+});
