@@ -38,6 +38,7 @@ export { durations } from '@presentation/base/theme/tokens/effects/durations';
 export { colorAlphas } from '@presentation/base/theme/tokens/effects/color-alphas';
 export { zIndices } from '@presentation/base/theme/tokens/effects/z-indices';
 export { maxFontScales } from '@presentation/base/theme/tokens/typography/max-font-scales';
+export { diarySizes } from '@presentation/base/theme/tokens/sizing/diary-sizes';
 export { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 export { SCALE_FACTOR, scale, scaleFont } from '@presentation/base/theme/tokens/scale';
 

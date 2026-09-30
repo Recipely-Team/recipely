@@ -32,6 +32,8 @@ export interface BottomSheetProps {
    * position goes here; supporting content stays in `children`.
    */
   footer?: ReactNode;
+  /** The centred dialog's width cap on an expanded viewport; defaults to `layoutSizes.dialogMaxWidth`. */
+  dialogMaxWidth?: number;
   children: ReactNode;
 }
 
@@ -62,6 +64,7 @@ export const BottomSheet = ({
   showCloseButton = false,
   rightAction,
   footer,
+  dialogMaxWidth,
   children,
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -96,6 +99,7 @@ export const BottomSheet = ({
           style={[
             styles.sheet,
             isExpanded ? styles.dialog : null,
+            isExpanded && dialogMaxWidth !== undefined ? { maxWidth: dialogMaxWidth } : null,
             {
               backgroundColor: colors.background,
               paddingBottom: isExpanded ? spacing.lg : Math.max(insets.bottom, spacing.lg),
