@@ -59,6 +59,12 @@ export class UserEntity extends BaseEntity<UserEntityProps> {
     return this.props.creatorClaim?.status ?? CreatorStatus.None;
   }
 
+  /** Whether this user holds exactly `claim` — same tag and status, or both without one. */
+  holdsCreatorClaim(claim: CreatorClaim | null): boolean {
+    const own = this.creatorClaim;
+    return own === null || claim === null ? own === claim : own.equals(claim);
+  }
+
   /** The same user holding `claim` instead (`null` clears it). */
   withCreatorClaim(claim: CreatorClaim | null): UserEntity {
     return new UserEntity({ ...this.props, creatorClaim: claim });

@@ -40,6 +40,7 @@ import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
 import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
 import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
 import { signedInUserId } from '@infrastructure/auth/session/signed-in-user-id';
+import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
@@ -200,14 +201,17 @@ export class AuthRepository implements AuthRepositoryInterface {
     return replaceSessionUser(this.storage, issuer.value, (user) => ok(user.withCreatorClaim(null)));
   }
 
+  // Writes only if the stored claim is still the one read before the GET: a
+  // request / remove saved in between is newer than this answer.
   async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
-    const issuer = await signedInUserId(this.storage);
+    const issuer = await signedInUser(this.storage);
     if (!issuer.ok) return issuer;
+    const readBefore = issuer.value.creatorClaim;
     const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
     if (!result.ok) return result;
     const { creator } = result.value;
-    return replaceSessionUser(this.storage, issuer.value, (user) =>
-      ok(creator === undefined ? user : user.withCreatorClaim(readCreatorClaim(creator))),
+    return replaceSessionUser(this.storage, issuer.value.id, (user) =>
+      ok(creator === undefined || !user.holdsCreatorClaim(readBefore) ? user : user.withCreatorClaim(readCreatorClaim(creator))),
     );
   }
 

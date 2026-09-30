@@ -47,4 +47,15 @@ describe('UserEntity — creator claim', () => {
     expect(claimed.equals(original)).toBe(true);
     expect(claimed.withCreatorClaim(null).creatorClaim).toBeNull();
   });
+
+  it('holdsCreatorClaim compares by value, with no claim equal only to no claim', () => {
+    const approved = CreatorClaim.create(pendingClaim().tag, CreatorStatus.Approved);
+    if (!approved.ok) throw new Error('fixture claim');
+
+    expect(userWith(pendingClaim()).holdsCreatorClaim(pendingClaim())).toBe(true);
+    expect(userWith(pendingClaim()).holdsCreatorClaim(approved.value)).toBe(false);
+    expect(userWith(pendingClaim()).holdsCreatorClaim(null)).toBe(false);
+    expect(userWith().holdsCreatorClaim(pendingClaim())).toBe(false);
+    expect(userWith().holdsCreatorClaim(null)).toBe(true);
+  });
 });

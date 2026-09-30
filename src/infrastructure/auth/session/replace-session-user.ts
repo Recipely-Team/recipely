@@ -19,6 +19,8 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
  * - **Fails with `UnauthorizedFailure` when another user is signed in now.**
  *   `issuerId` is the user the request was sent for; an answer that lands
  *   after a sign-out and a sign-in as someone else is not theirs to keep.
+ * - **An `update` that hands back the current user unchanged writes nothing**
+ *   and answers with the stored session as it is.
  */
 export const replaceSessionUser = async (
   storage: SecureTokenStorage,
@@ -39,6 +41,7 @@ export const replaceSessionUser = async (
 
   const userResult = update(current.user);
   if (!userResult.ok) return userResult;
+  if (userResult.value === current.user) return ok(current);
 
   const updatedResult = AuthSessionEntity.create({
     id: current.id,

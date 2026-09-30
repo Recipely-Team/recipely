@@ -1,8 +1,8 @@
-import { fail, ok } from '@core/result/result-helpers';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { type Failure, UnauthorizedFailure } from '@core/failure';
+import type { Failure } from '@core/failure';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
 
 /**
  * The id of the user signed in right now, read before a request that rewrites
@@ -10,8 +10,6 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
  * lands for someone else. `UnauthorizedFailure` when nobody is signed in.
  */
 export const signedInUserId = async (storage: SecureTokenStorage): Promise<Result<string, Failure>> => {
-  const session = await storage.loadSession();
-  if (!session.ok) return fail(session.failure);
-  if (session.value === null) return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noActiveSession));
-  return ok(session.value.user.id);
+  const user = await signedInUser(storage);
+  return user.ok ? ok(user.value.id) : user;
 };
