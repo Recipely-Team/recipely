@@ -18,6 +18,14 @@ const tagOf = (platform: string, handle: string): CreatorTag => {
   return tag.value;
 };
 
+// AppThemeProvider hydrates its preference asynchronously; let it settle inside act.
+afterEach(async () => {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+});
+
 describe('CreatorTagChip', () => {
   it('shows the @handle and opens the Instagram account', () => {
     const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);

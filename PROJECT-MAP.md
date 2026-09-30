@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1457 source files.
+[architecture.md](architecture.md). 1477 source files.
 
 ## Layers
 
@@ -16,9 +16,9 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `create-recipe` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
+`ai-generate` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
 
-Nested detail pages: `recipes/[…]`.
+Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
 it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 `[param]` register as routes.
@@ -120,7 +120,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(93)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
-- `test-support/` — render harness for component tests _(3)_
+- `test-support/` — render harness for component tests _(4)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(49)_
 - `timers/` — timer control helpers _(7)_
 - `utils/` (diary) — small pure helpers _(17)_
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 2212d5f27501ad0f -->
+<!-- fingerprint: 2ada716a1ad42dfd -->

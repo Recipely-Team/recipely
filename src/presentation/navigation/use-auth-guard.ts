@@ -27,6 +27,7 @@ const PUBLIC_PATHS = new Set<string>([
   '/forgot-password',
   '/reset-password',
   '/recipes',
+  '/creators',
 ]);
 
 /**
@@ -38,8 +39,14 @@ const PUBLIC_PATHS = new Set<string>([
  */
 const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
 
+/**
+ * A creator's page (`/creators/:userId`) is public too — `GET /users/:id` and
+ * its recipes answer guests; following is gated on the page itself.
+ */
+const CREATOR_PROFILE_PATH = /^\/creators\/[^/]+$/;
+
 const isPublicPath = (pathname: string): boolean =>
-  PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname);
+  PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname) || CREATOR_PROFILE_PATH.test(pathname);
 
 /**
  * Rebuilds the path the user was actually on, query string included.

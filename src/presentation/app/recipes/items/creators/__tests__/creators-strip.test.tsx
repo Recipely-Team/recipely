@@ -37,6 +37,14 @@ const loaded: CreatorsListState = { status: StoreStatus.Loaded, page: 1, hasMore
 const buttonNamed = (root: ReactTestInstance, label: string): ReactTestInstance =>
   root.find((node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label && typeof node.props.onPress === 'function');
 
+// AppThemeProvider hydrates its preference asynchronously; let it settle inside act.
+afterEach(async () => {
+  await act(async () => {
+    await Promise.resolve();
+    await Promise.resolve();
+  });
+});
+
 describe('CreatorsStrip', () => {
   beforeEach(() => mockPush.mockClear());
 
