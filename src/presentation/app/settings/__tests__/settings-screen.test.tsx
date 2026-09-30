@@ -93,6 +93,9 @@ const makeAuthStore = (deleteAccount: jest.Mock) =>
     uploadAvatar: jest.fn(),
     updateProfile: jest.fn(),
     deleteAccount,
+    requestCreatorTag: jest.fn(),
+    removeCreatorTag: jest.fn(),
+    refreshCreatorClaim: jest.fn(),
   }));
 
 /**

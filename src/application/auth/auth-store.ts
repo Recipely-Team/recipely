@@ -17,6 +17,12 @@ import type { UpdateProfileUseCase } from '@application/auth/profile/update-prof
 import type { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
+import type { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
+import type { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
+import type { Failure } from '@core/failure';
+import type { Result } from '@core/result/result';
+import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 
 interface AuthStoreDeps {
   signIn: SignInUseCase;
@@ -34,6 +40,9 @@ interface AuthStoreDeps {
   uploadAvatar: UploadAvatarUseCase;
   updateProfile: UpdateProfileUseCase;
   deleteAccount: DeleteAccountUseCase;
+  requestCreatorTag: RequestCreatorTagUseCase;
+  removeCreatorTag: RemoveCreatorTagUseCase;
+  refreshCreatorClaim: RefreshCreatorClaimUseCase;
   /**
    * Clears every session-scoped cache (comments, likes, recipe details,
    * notifications, saved/created recipes, viewed profile) so nothing from the
@@ -66,167 +75,188 @@ interface AuthStoreDeps {
  *   persisted session on cold start is simply "logged out", and the background
  *   favorites pre-load leaves the saved overlay empty until something else
  *   loads it. Neither has a screen to report to.
+ * - **The creator claim lives on the session user.** Request, remove and
+ *   refresh each answer with the rebuilt session; it is applied only while the
+ *   store is still authenticated, so an answer landing after sign-out cannot
+ *   sign the user back in.
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
-  return create<AuthStoreState>((set, get) => ({
-    state: { status: StoreStatus.Idle },
+  return create<AuthStoreState>((set, get) => {
+    /** Applies a claim action's session, if the user is still signed in; `null` on success. */
+    const applyClaimResult = (result: Result<AuthSessionEntity, Failure>): Failure | null => {
+      if (!result.ok) return result.failure;
+      if (get().state.status === StoreStatus.Authenticated) {
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+      }
+      return null;
+    };
 
-    expireSession: async () => {
-      if (get().state.status !== StoreStatus.Authenticated) {
-        return;
-      }
-      await deps.signOut.execute();
-      set({ state: { status: StoreStatus.Unauthenticated } });
-      deps.clearSessionCaches();
-    },
+    return {
+      state: { status: StoreStatus.Idle },
 
-    hydrate: async () => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.getSession.execute();
-      if (!result.ok) {
-        set({ state: { status: StoreStatus.Unauthenticated } });
-        return;
-      }
-      if (result.value === null || result.value.isExpired()) {
-        set({ state: { status: StoreStatus.Unauthenticated } });
-        return;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      deps.onSessionRestored();
-      // Background pre-load; nothing waits on it.
-      try {
-        const favResult = await deps.loadFavorites.execute();
-        if (favResult.ok) {
-          deps.savedRecipesStore.getState().setSaved(favResult.value);
+      expireSession: async () => {
+        if (get().state.status !== StoreStatus.Authenticated) {
+          return;
         }
-      } catch {
-        // Ignored: nothing is listening.
-      }
-    },
-
-    signIn: async (email: string, password: string) => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.signIn.execute(email, password);
-      if (!result.ok) {
+        await deps.signOut.execute();
         set({ state: { status: StoreStatus.Unauthenticated } });
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
+        deps.clearSessionCaches();
+      },
 
-    register: async (email: string, password: string, displayName: string) => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.requestRegistration.execute(email, password, displayName);
-      // Account is not created yet — the user must confirm the emailed code.
-      // On failure the Result carries the failure back to the screen; either
-      // way the session stays unauthenticated.
-      set({ state: { status: StoreStatus.Unauthenticated } });
-      return result;
-    },
+      hydrate: async () => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.getSession.execute();
+        if (!result.ok) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return;
+        }
+        if (result.value === null || result.value.isExpired()) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        deps.onSessionRestored();
+        // Background pre-load; nothing waits on it.
+        try {
+          const favResult = await deps.loadFavorites.execute();
+          if (favResult.ok) {
+            deps.savedRecipesStore.getState().setSaved(favResult.value);
+          }
+        } catch {
+          // Ignored: nothing is listening.
+        }
+      },
 
-    verifyRegistration: async (email: string, code: string) => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.verifyRegistration.execute(email, code);
-      if (!result.ok) {
+      signIn: async (email: string, password: string) => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.signIn.execute(email, password);
+        if (!result.ok) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
+
+      register: async (email: string, password: string, displayName: string) => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.requestRegistration.execute(email, password, displayName);
+        // Account is not created yet — the user must confirm the emailed code.
+        // On failure the Result carries the failure back to the screen; either
+        // way the session stays unauthenticated.
         set({ state: { status: StoreStatus.Unauthenticated } });
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
+        return result;
+      },
 
-    resendRegistrationCode: async (email: string) => {
-      // No global state change — the verify-code screen stays put; the Result
-      // carries either the refreshed challenge or the failure back to it.
-      return deps.resendRegistrationCode.execute(email);
-    },
+      verifyRegistration: async (email: string, code: string) => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.verifyRegistration.execute(email, code);
+        if (!result.ok) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
 
-    signOut: async () => {
-      // No `loading` transition: it would clobber the authenticated session,
-      // and on failure we want to leave the user signed in. Mirrors
-      // deleteAccount — the screen shows the returned failure and can retry.
-      const result = await deps.signOut.execute();
-      if (!result.ok) {
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Unauthenticated } });
-      deps.clearSessionCaches();
-      return null;
-    },
+      resendRegistrationCode: async (email: string) => {
+        // No global state change — the verify-code screen stays put; the Result
+        // carries either the refreshed challenge or the failure back to it.
+        return deps.resendRegistrationCode.execute(email);
+      },
 
-    signInWithGoogle: async () => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.signInWithGoogle.execute();
-      if (!result.ok) {
+      signOut: async () => {
+        // No `loading` transition: it would clobber the authenticated session,
+        // and on failure we want to leave the user signed in. Mirrors
+        // deleteAccount — the screen shows the returned failure and can retry.
+        const result = await deps.signOut.execute();
+        if (!result.ok) {
+          return result.failure;
+        }
         set({ state: { status: StoreStatus.Unauthenticated } });
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
+        deps.clearSessionCaches();
+        return null;
+      },
 
-    signInWithApple: async () => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.signInWithApple.execute();
-      if (!result.ok) {
+      signInWithGoogle: async () => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.signInWithGoogle.execute();
+        if (!result.ok) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
+
+      signInWithApple: async () => {
+        set({ state: { status: StoreStatus.Loading } });
+        const result = await deps.signInWithApple.execute();
+        if (!result.ok) {
+          set({ state: { status: StoreStatus.Unauthenticated } });
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
+
+      requestPasswordReset: async (email: string) => {
+        const result = await deps.requestPasswordReset.execute(email);
+        if (!result.ok) {
+          return result.failure;
+        }
+        return null;
+      },
+
+      resetPassword: async (token: string, newPassword: string) => {
+        const result = await deps.resetPassword.execute(token, newPassword);
+        if (!result.ok) {
+          // The reset screen owns its own error (page-scoped) — return the
+          // failure without touching the global session state.
+          return result.failure;
+        }
+        return null;
+      },
+
+      uploadAvatar: async (fileUri: string, fileName: string, mimeType: string) => {
+        const result = await deps.uploadAvatar.execute(fileUri, fileName, mimeType);
+        if (!result.ok) {
+          // The user is still authenticated — surface the failure to the screen
+          // without clobbering the session state.
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
+
+      updateProfile: async (input: { displayName?: string; bio?: string }) => {
+        const result = await deps.updateProfile.execute(input);
+        if (!result.ok) {
+          // The user is still authenticated — surface the failure to the screen
+          // without clobbering the session state.
+          return result.failure;
+        }
+        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+        return null;
+      },
+
+      deleteAccount: async () => {
+        const result = await deps.deleteAccount.execute();
+        if (!result.ok) {
+          // The account was not deleted — keep the user signed in and surface the
+          // failure to the screen without clobbering the session state.
+          return result.failure;
+        }
         set({ state: { status: StoreStatus.Unauthenticated } });
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
+        deps.clearSessionCaches();
+        return null;
+      },
 
-    requestPasswordReset: async (email: string) => {
-      const result = await deps.requestPasswordReset.execute(email);
-      if (!result.ok) {
-        return result.failure;
-      }
-      return null;
-    },
+      requestCreatorTag: async (input) => applyClaimResult(await deps.requestCreatorTag.execute(input)),
 
-    resetPassword: async (token: string, newPassword: string) => {
-      const result = await deps.resetPassword.execute(token, newPassword);
-      if (!result.ok) {
-        // The reset screen owns its own error (page-scoped) — return the
-        // failure without touching the global session state.
-        return result.failure;
-      }
-      return null;
-    },
+      removeCreatorTag: async () => applyClaimResult(await deps.removeCreatorTag.execute()),
 
-    uploadAvatar: async (fileUri: string, fileName: string, mimeType: string) => {
-      const result = await deps.uploadAvatar.execute(fileUri, fileName, mimeType);
-      if (!result.ok) {
-        // The user is still authenticated — surface the failure to the screen
-        // without clobbering the session state.
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
-
-    updateProfile: async (input: { displayName?: string; bio?: string }) => {
-      const result = await deps.updateProfile.execute(input);
-      if (!result.ok) {
-        // The user is still authenticated — surface the failure to the screen
-        // without clobbering the session state.
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      return null;
-    },
-
-    deleteAccount: async () => {
-      const result = await deps.deleteAccount.execute();
-      if (!result.ok) {
-        // The account was not deleted — keep the user signed in and surface the
-        // failure to the screen without clobbering the session state.
-        return result.failure;
-      }
-      set({ state: { status: StoreStatus.Unauthenticated } });
-      deps.clearSessionCaches();
-      return null;
-    },
-  }));
+      refreshCreatorClaim: async () => applyClaimResult(await deps.refreshCreatorClaim.execute()),
+    };
+  });
 };

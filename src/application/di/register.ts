@@ -98,6 +98,12 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
 import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
+import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
+import { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
+import { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
+import { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
+import { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
+import { configureCreatorsStore } from '@application/creators/creators-store';
 import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
 
 
@@ -247,6 +253,12 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // Public, like the strip it feeds: not in `clearSessionCaches`.
+  const creatorsStore = configureCreatorsStore({
+    listCreators: new ListCreatorsUseCase(
+      container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository),
+    ),
+  });
   // The registry is created here and handed to the presentation layer, because
   // half of what the assistant does — navigate, focus a field, open the photo
   // picker — only a screen can perform. Screens register those on mount.
@@ -286,7 +298,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
       container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
     ),
   );
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches, onSessionRestored });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, requestCreatorTag: new RequestCreatorTagUseCase(authRepo), removeCreatorTag: new RemoveCreatorTagUseCase(authRepo), refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo), clearSessionCaches, onSessionRestored });
   return {
     assistantSessionStore,
     assistantActionRegistry,
@@ -312,6 +324,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     userProfileStore,
     taxonomyStore,
     feedbackStore,
+    creatorsStore,
     diaryStore,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,
