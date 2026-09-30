@@ -24,7 +24,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
-import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__tests__/recipe-summary-of';
+import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__fixtures__/recipe-summary-of';
 import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
 import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-diary-sheets-result';
 

@@ -14,7 +14,7 @@ import { parseEntryTargetArg } from '@presentation/base/hooks/assistant/args/dia
 import { parseGoalsArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-goals-arg';
 import { parseWaterArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-water-arg';
 import { parseMealArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-meal-arg';
-import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__tests__/recipe-summary-of';
+import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__fixtures__/recipe-summary-of';
 
 const today = CalendarDate.of(2026, 9, 30);
 
