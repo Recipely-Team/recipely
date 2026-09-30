@@ -30,6 +30,11 @@ already typed past.
 only the newest may write. Covered in `recipe-list-store.test.ts` with a deferred
 promise per request. **Any store that loads from a user-driven, debounced input needs
 this** — the pattern is not specific to search.
+The same shape without a debounce: Edit Profile's focus refresh of the creator claim
+could start before a send and answer after it, putting the old claim back over the
+new one. *Guard:* `configureAuthStore` counts claim writes and drops a refresh one
+overtook ("a focus refresh that started before a request does not put the old claim
+back", `auth-store.test.ts`).
 
 **Rows were rendered as an answer to whatever question happened to be current.**
 Search is a backend filter, so on the first keystroke the store still held the

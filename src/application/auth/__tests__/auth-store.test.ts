@@ -689,6 +689,26 @@ describe('auth store — creator claim', () => {
     expect(s.status === 'authenticated' && s.session).toBe(next);
   });
 
+  it('a focus refresh that started before a request does not put the old claim back', async () => {
+    let release: (session: AuthSessionEntity) => void = () => undefined;
+    const repo = new (class extends FakeAuthRepository {
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          release = (session) => resolve(ok(session));
+        });
+      }
+    })({ signInResult: ok(claimedSession('approved')), requestCreatorTagResult: ok(claimedSession('pending')) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const refreshing = store.getState().refreshCreatorClaim();
+    expect(await store.getState().requestCreatorTag({ platform: 'instagram', handle: 'chef.ada' })).toBeNull();
+    release(claimedSession('approved'));
+    await refreshing;
+
+    expect(userOf(store)?.creatorStatus).toBe(CreatorStatus.Pending);
+  });
+
   it('an answer landing after sign-out does not sign the user back in', async () => {
     let release: (session: AuthSessionEntity) => void = () => undefined;
     const repo = new (class extends FakeAuthRepository {

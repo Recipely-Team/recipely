@@ -1,6 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
+import { ValueConstants } from '@core/constants';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import type { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
@@ -79,9 +80,13 @@ interface AuthStoreDeps {
  *   refresh each answer with the rebuilt session; it is applied only while the
  *   user who started the call is still the one signed in, so an answer landing
  *   after sign-out cannot sign anyone back in, nor put one user's claim on the
- *   next user's session.
+ *   next user's session. A refresh overtaken by a request or remove is
+ *   dropped: it read the claim from before the change.
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
+  // Bumped by each request / remove, so a refresh can tell it was overtaken.
+  let claimWrites = ValueConstants.zero;
+
   return create<AuthStoreState>((set, get) => {
     /** The signed-in user's id, or `null` — read when a claim call starts. */
     const sessionUserId = (): string | null => {
@@ -91,14 +96,18 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
 
     /**
      * Runs a claim action for the user signed in now and applies its session
-     * only if that user still is; `null` on success. An answer for a user who
-     * has signed out since is nobody's: dropped, failure and all.
+     * only if that user still is and `isCurrent()` still holds; `null` on
+     * success. An answer for a user who has signed out since is nobody's:
+     * dropped, failure and all.
      */
-    const applyClaimResult = async (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
+    const applyClaimResult = async (
+      call: () => Promise<Result<AuthSessionEntity, Failure>>,
+      isCurrent: () => boolean = () => true,
+    ): Promise<Failure | null> => {
       const issuer = sessionUserId();
       const result = await call();
       if (issuer === null) return result.ok ? null : result.failure;
-      if (sessionUserId() !== issuer) return null;
+      if (sessionUserId() !== issuer || !isCurrent()) return null;
       if (!result.ok) return result.failure;
       set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
@@ -265,11 +274,20 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return null;
       },
 
-      requestCreatorTag: (input) => applyClaimResult(() => deps.requestCreatorTag.execute(input)),
+      requestCreatorTag: (input) => {
+        claimWrites += ValueConstants.one;
+        return applyClaimResult(() => deps.requestCreatorTag.execute(input));
+      },
 
-      removeCreatorTag: () => applyClaimResult(() => deps.removeCreatorTag.execute()),
+      removeCreatorTag: () => {
+        claimWrites += ValueConstants.one;
+        return applyClaimResult(() => deps.removeCreatorTag.execute());
+      },
 
-      refreshCreatorClaim: () => applyClaimResult(() => deps.refreshCreatorClaim.execute()),
+      refreshCreatorClaim: () => {
+        const startedAfter = claimWrites;
+        return applyClaimResult(() => deps.refreshCreatorClaim.execute(), () => claimWrites === startedAfter);
+      },
     };
   });
 };

@@ -96,6 +96,20 @@ describe('CreatorAccountSection', () => {
       expect(actions.requestCreatorTag).toHaveBeenCalledWith({ platform: 'tiktok', handle: 'sef.kerem' });
     });
 
+    it('a double tap on send sends one claim', async () => {
+      const { root, actions } = renderSection(null, { requestCreatorTag: jest.fn(() => new Promise<null>(() => undefined)) });
+      type(root, 'aysemutfakta');
+
+      const send = button(root, copy().submit).props.onPress as () => void;
+      await act(async () => {
+        send();
+        send();
+        await Promise.resolve();
+      });
+
+      expect(actions.requestCreatorTag).toHaveBeenCalledTimes(1);
+    });
+
     it('shows the refusal copy under the field when the claim is refused', async () => {
       const refusal = new ValidationFailure('bad handle', 'handle', ErrorMessageKey.creatorHandleInvalid);
       const { root } = renderSection(null, { requestCreatorTag: jest.fn(async () => refusal) });

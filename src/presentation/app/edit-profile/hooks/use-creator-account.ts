@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
@@ -20,7 +20,11 @@ import type { UseCreatorAccountResult } from '@presentation/app/edit-profile/mod
  *   or refused claim is its card — until Change or Edit and resend opens the
  *   form on it, prefilled.
  * - **Re-reads the claim on every focus**, so an admin's decision shows the
- *   next time the user opens this page, without signing in again.
+ *   next time the user opens this page, without signing in again — but not
+ *   while a send or remove is in flight; the auth store drops a refresh that
+ *   one overtook.
+ * - **One action at a time**, guarded by a ref: `isBusy` is render state and
+ *   a second tap in the same frame still sees `false`.
  * - **Sends the handle normalised** (`CreatorHandle.normalize`: no `@`, lower
  *   case), and a refusal is shown under the field in the words its key has.
  */
@@ -36,20 +40,24 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
   const [handle, setHandle] = useState<string>(CharConstants.empty);
   const [error, setError] = useState<string | null>(null);
   const [isBusy, setBusy] = useState(false);
+  // The guard itself: render state lags a second tap in the same frame.
+  const busyRef = useRef(false);
 
   useFocusEffect(
     useCallback(() => {
-      void refreshCreatorClaim();
+      if (!busyRef.current) void refreshCreatorClaim();
     }, [refreshCreatorClaim]),
   );
 
   const run = async (action: () => Promise<Failure | null>, onFailure: (failure: Failure) => void): Promise<boolean> => {
+    busyRef.current = true;
     setBusy(true);
     try {
       const failure = await action();
       if (failure !== null) onFailure(failure);
       return failure === null;
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   };
@@ -75,7 +83,7 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       setError(null);
     },
     onSubmit: () => {
-      if (isBusy) return;
+      if (busyRef.current) return;
       const input = { platform, handle: CreatorHandle.normalize(handle) };
       void run(
         () => requestCreatorTag(input),
@@ -96,7 +104,7 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       setError(null);
     },
     onRemove: () => {
-      if (isBusy) return;
+      if (busyRef.current) return;
       void run(removeCreatorTag, (failure) => void showErrorToast(failure));
     },
   };
