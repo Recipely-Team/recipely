@@ -32,6 +32,13 @@ import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-p
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceContextDto } from '@infrastructure/device/device-context-dto';
 import { toDeviceContextDto } from '@infrastructure/device/to-device-context-dto';
+import type { CreatorTag } from '@domain/creators/creator-tag';
+import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
+import type { MeCreatorDto } from '@infrastructure/creators/dtos/me-creator-dto';
+import { toCreatorClaim } from '@infrastructure/creators/to-creator-claim';
+import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
+import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
+import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
@@ -171,6 +178,29 @@ export class AuthRepository implements AuthRepositoryInterface {
       return fail(clearResult.failure);
     }
     return ok(undefined);
+  }
+
+  async requestCreatorTag(tag: CreatorTag): Promise<Result<AuthSessionEntity, Failure>> {
+    const result = await this.http.put<CreatorClaimDto>(ApiRoutes.me.creator, toCreatorTagRequest(tag));
+    if (!result.ok) return result;
+    const claim = toCreatorClaim(result.value);
+    if (!claim.ok) return claim;
+    return replaceSessionUser(this.storage, (user) => ok(user.withCreatorClaim(claim.value)));
+  }
+
+  async removeCreatorTag(): Promise<Result<AuthSessionEntity, Failure>> {
+    const result = await this.http.delete<void>(ApiRoutes.me.creator);
+    if (!result.ok) return result;
+    return replaceSessionUser(this.storage, (user) => ok(user.withCreatorClaim(null)));
+  }
+
+  async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
+    const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
+    if (!result.ok) return result;
+    const { creator } = result.value;
+    return replaceSessionUser(this.storage, (user) =>
+      ok(creator === undefined ? user : user.withCreatorClaim(readCreatorClaim(creator))),
+    );
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

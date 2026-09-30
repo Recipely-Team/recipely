@@ -63,3 +63,35 @@ describe('toUserProfile', () => {
     if (!r.ok) expect(r.failure.field).toBe('displayName');
   });
 });
+
+describe('toUserProfile — creator tag', () => {
+  it('maps an approved creator tag', () => {
+    const r = toUserProfile({ ...fullDto, creator: { platform: 'tiktok', handle: 'ada.cooks' } });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.creator?.platform).toBe('tiktok');
+      expect(r.value.creator?.displayHandle).toBe('@ada.cooks');
+      expect(r.value.isCreator).toBe(true);
+    }
+  });
+
+  it('reads a null creator as no tag', () => {
+    const r = toUserProfile({ ...fullDto, creator: null });
+    expect(r.ok && r.value.creator).toBeNull();
+  });
+
+  it('reads a creator field missing from an older backend as no tag', () => {
+    const r = toUserProfile(fullDto);
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.creator).toBeNull();
+      expect(r.value.isCreator).toBe(false);
+    }
+  });
+
+  it('still opens the profile when the tag names an unknown platform', () => {
+    const r = toUserProfile({ ...fullDto, creator: { platform: 'youtube', handle: 'ada' } });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.creator).toBeNull();
+  });
+});

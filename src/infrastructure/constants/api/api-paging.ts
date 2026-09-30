@@ -25,5 +25,8 @@ export const LIKED_RECIPES_PAGE_SIZE = 100;
 
 export const COMMENTS_PAGE_SIZE = 20;
 
+/** The Explore creators strip; the backend defaults to 20 and caps at 50. */
+export const CREATORS_PAGE_SIZE = 20;
+
 /** Backend caps `limit` at 1–30. */
 export const TRENDING_RECIPES_LIMIT = 10;

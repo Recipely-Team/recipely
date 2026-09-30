@@ -6,11 +6,18 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Email } from '@domain/common/email';
 import { ValueConstants } from '@core/constants';
+import type { CreatorClaim } from '@domain/creators/creator-claim';
+import { CreatorStatus } from '@domain/creators/creator-status';
 
 
 /**
  * Domain entity representing an authenticated application user. Validates that
  * `id` and `displayName` are non-empty before construction.
+ *
+ * @remarks
+ * - **The creator claim is the user's own view.** Pending and rejected claims
+ *   live only here; everyone else sees a tag on the public profile once it is
+ *   approved. `withCreatorClaim` returns a new user rather than mutating.
  */
 export class UserEntity extends BaseEntity<UserEntityProps> {
   private constructor(props: UserEntityProps) {
@@ -41,5 +48,19 @@ export class UserEntity extends BaseEntity<UserEntityProps> {
 
   get bio(): string | undefined {
     return this.props.bio;
+  }
+
+  get creatorClaim(): CreatorClaim | null {
+    return this.props.creatorClaim ?? null;
+  }
+
+  /** `none` when the user has not claimed an account. */
+  get creatorStatus(): CreatorStatus {
+    return this.props.creatorClaim?.status ?? CreatorStatus.None;
+  }
+
+  /** The same user holding `claim` instead (`null` clears it). */
+  withCreatorClaim(claim: CreatorClaim | null): UserEntity {
+    return new UserEntity({ ...this.props, creatorClaim: claim });
   }
 }

@@ -1,3 +1,5 @@
+import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
+
 // The persisted half of a session's user. Split out of `SerializedSession`
 // rather than nested inline: it is a stored shape in its own right, and the
 // migration risk of a storage format lives in the fields, so they deserve a
@@ -7,4 +9,6 @@ export interface SerializedSessionUser {
   email: string;
   displayName: string;
   photoUrl?: string;
+  /** Absent in sessions stored before creator tags, and when there is no claim. */
+  creator?: CreatorClaimDto;
 }
