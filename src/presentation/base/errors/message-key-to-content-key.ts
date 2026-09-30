@@ -56,6 +56,11 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.photoNotFound]: 'photoNotFound',
   [ErrorMessageKey.nothingToEdit]: 'nothingToEdit',
 
+  [ErrorMessageKey.diaryEntryNotFound]: 'diaryEntryNotFound',
+  [ErrorMessageKey.diaryFoodNameTooLong]: 'diaryFoodNameTooLong',
+  [ErrorMessageKey.diaryNutrientInvalid]: 'diaryNutrientInvalid',
+  [ErrorMessageKey.diaryGoalInvalid]: 'diaryGoalInvalid',
+
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',
   [ErrorMessageKey.codeExpired]: 'codeExpired',

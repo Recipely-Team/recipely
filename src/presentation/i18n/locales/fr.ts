@@ -227,6 +227,26 @@ export const fr = {
       body: "Il n'y a encore rien de nouveau à enregistrer.",
       short: "Rien à enregistrer",
     },
+    diaryEntryNotFound: {
+      title: "Entrée introuvable",
+      body: "Cet aliment n'est plus dans votre journal. Il a peut-être été supprimé sur un autre appareil.",
+      short: "Entrée introuvable",
+    },
+    diaryFoodNameTooLong: {
+      title: "Nom trop long",
+      body: "Le nom de l'aliment est trop long. Raccourcissez-le et réessayez.",
+      short: "Nom trop long",
+    },
+    diaryNutrientInvalid: {
+      title: "Vérifiez les valeurs",
+      body: "Les calories ou les grammes semblent trop élevés. Vérifiez-les et réessayez.",
+      short: "Vérifiez les valeurs",
+    },
+    diaryGoalInvalid: {
+      title: "Objectif hors limites",
+      body: "L'un de vos objectifs est en dehors de la plage autorisée. Ajustez-le et enregistrez à nouveau.",
+      short: "Objectif hors limites",
+    },
     emailExists: {
       title: 'Cette adresse e-mail est déjà utilisée',
       body: 'Un compte utilise déjà cette adresse e-mail. Connectez-vous ou réinitialisez votre mot de passe.',

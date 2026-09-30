@@ -1,6 +1,6 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, ValidationFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { ValueConstants } from '@core/constants';
 import { BaseValueObject } from '@core/value-object/base-value-object';
@@ -34,7 +34,7 @@ const inRange = (value: number, min: number, max: number): boolean =>
  * @remarks
  * - **Defaults** are 2000 kcal · 120 P · 230 C · 65 F · 30 fiber · 8 glasses
  *   (design spec §3) — what a user who never saved goals sees.
- * - **Ranges mirror the backend**: whole kcal 800–6000, grams 0–600, whole
+ * - **Ranges mirror the backend**: whole kcal 500–6000, grams 0–600, whole
  *   glasses 1–12.
  * - **`calorieStatus`** is the one place the 90 / 110 / 125 % thresholds live.
  */
@@ -48,7 +48,7 @@ export class NutritionGoals extends BaseValueObject<NutritionGoalValues> {
   }
 
   static create(values: NutritionGoalValues): Result<NutritionGoals, ValidationFailure> {
-    const invalid = (field: string) => fail(new ValidationFailure(DiagnosticMessage.diary.goalInvalid(field), field));
+    const invalid = (field: string) => fail(new ValidationFailure(DiagnosticMessage.diary.goalInvalid(field), field, ErrorMessageKey.diaryGoalInvalid));
     if (!Number.isInteger(values.calories) || !inRange(values.calories, DiaryLimits.GoalCaloriesMin, DiaryLimits.GoalCaloriesMax)) {
       return invalid('calories');
     }

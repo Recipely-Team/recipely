@@ -144,6 +144,9 @@ export const DiagnosticMessage = {
     goalInvalid: (field: string): string => `Nutrition goal ${field} is outside its allowed range`,
     waterInvalid: (glasses: number): string => `Water must be whole glasses within the daily range, got ${glasses}`,
     servingsOffStep: 'Servings must be a multiple of the serving step within its range',
+    foodNameRequired: 'Food name must be non-empty',
+    foodNameTooLong: 'Food name is longer than the diary allows',
+    nutrientTooHigh: (field: string): string => `Nutrient ${field} is past the diary's plausibility cap`,
     recipeWithoutCalories: 'A recipe without calories per serving cannot be logged',
   },
   assistant: {

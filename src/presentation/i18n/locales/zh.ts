@@ -230,6 +230,26 @@ export const zh = {
       body: "目前没有新的内容需要保存。",
       short: "无内容可保存",
     },
+    diaryEntryNotFound: {
+      title: "找不到该记录",
+      body: "这项食物已不在你的日记中，可能已在其他设备上删除。",
+      short: "找不到该记录",
+    },
+    diaryFoodNameTooLong: {
+      title: "名称太长",
+      body: "食物名称太长。请缩短后重试。",
+      short: "名称太长",
+    },
+    diaryNutrientInvalid: {
+      title: "请检查数值",
+      body: "卡路里或克数似乎过高。请检查后重试。",
+      short: "请检查数值",
+    },
+    diaryGoalInvalid: {
+      title: "目标超出范围",
+      body: "你的某个目标超出了允许范围。请调整后重新保存。",
+      short: "目标超出范围",
+    },
     emailExists: {
       title: '这个邮箱已经被使用',
       body: '已有账户使用这个邮箱。请直接登录，或重置密码。',

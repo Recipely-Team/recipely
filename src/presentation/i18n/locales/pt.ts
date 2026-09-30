@@ -227,6 +227,26 @@ export const pt = {
       body: "Ainda não há nada novo para salvar.",
       short: "Nada para salvar",
     },
+    diaryEntryNotFound: {
+      title: "Registro não encontrado",
+      body: "Esse alimento não está mais no seu diário. Ele pode ter sido removido em outro dispositivo.",
+      short: "Registro não encontrado",
+    },
+    diaryFoodNameTooLong: {
+      title: "Nome muito longo",
+      body: "O nome do alimento é muito longo. Encurte-o e tente de novo.",
+      short: "Nome muito longo",
+    },
+    diaryNutrientInvalid: {
+      title: "Confira os valores",
+      body: "As calorias ou os gramas parecem altos demais. Confira e tente de novo.",
+      short: "Confira os valores",
+    },
+    diaryGoalInvalid: {
+      title: "Meta fora do intervalo",
+      body: "Uma das suas metas está fora do intervalo permitido. Ajuste e salve de novo.",
+      short: "Meta fora do intervalo",
+    },
     emailExists: {
       title: 'Esse e-mail já está em uso',
       body: 'Já existe uma conta com este e-mail. Entre nela ou redefina sua senha.',

@@ -132,6 +132,14 @@ describe('diary store', () => {
     expect(store.getState().days['2026-09-30']?.waterGlasses).toBe(3);
   });
 
+  it('refuses an entry past the caps without a request', async () => {
+    const repo = makeRepo();
+    const huge = entry.food.entryFor(today, MealSlot.Lunch, Servings.nearest(20));
+    const r = await makeStore(repo).getState().addEntry({ ...huge, nutrients: nutrientsOf({ calories: 20001 }) });
+    expect(!r.ok && r.failure.messageKey).toBe('errors.validation.nutrient_invalid');
+    expect(repo.addEntry).not.toHaveBeenCalled();
+  });
+
   it('refuses water outside 0–12 without a request', async () => {
     const repo = makeRepo();
     const r = await makeStore(repo).getState().setWater(today, 13);

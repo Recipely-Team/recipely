@@ -16,7 +16,11 @@ export const DiaryLimits = {
   WaterGlassesMax: 12,
   WaterGlassMilliliters: 250,
   MillilitersPerLiter: 1000,
-  GoalCaloriesMin: 800,
+  NameMaxLength: 120,
+  /** Entry caps are plausibility, not advice: they keep a mistyped extra zero out of a month. */
+  EntryCaloriesMax: 20000,
+  EntryMacroMax: 2000,
+  GoalCaloriesMin: 500,
   GoalCaloriesMax: 6000,
   GoalMacroMax: 600,
   GoalWaterMin: 1,

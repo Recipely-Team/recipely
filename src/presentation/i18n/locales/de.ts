@@ -227,6 +227,26 @@ export const de = {
       body: "Es gibt noch nichts Neues zu speichern.",
       short: "Nichts zu speichern",
     },
+    diaryEntryNotFound: {
+      title: "Eintrag nicht gefunden",
+      body: "Dieses Lebensmittel ist nicht mehr in deinem Tagebuch. Vielleicht wurde es auf einem anderen Gerät entfernt.",
+      short: "Eintrag nicht gefunden",
+    },
+    diaryFoodNameTooLong: {
+      title: "Name zu lang",
+      body: "Der Name ist zu lang. Kürze ihn und versuche es erneut.",
+      short: "Name zu lang",
+    },
+    diaryNutrientInvalid: {
+      title: "Werte prüfen",
+      body: "Die Kalorien oder Gramm wirken zu hoch. Prüfe sie und versuche es erneut.",
+      short: "Werte prüfen",
+    },
+    diaryGoalInvalid: {
+      title: "Ziel außerhalb des Bereichs",
+      body: "Eines deiner Ziele liegt außerhalb des erlaubten Bereichs. Passe es an und speichere erneut.",
+      short: "Ziel ungültig",
+    },
     emailExists: {
       title: 'Diese E-Mail-Adresse ist vergeben',
       body: 'Für diese E-Mail-Adresse gibt es bereits ein Konto. Melde dich an oder setze dein Passwort zurück.',

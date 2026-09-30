@@ -21,3 +21,23 @@ describe('LoggableFood', () => {
     expect(entry.food.perServing.carbs).toBe(20);
   });
 });
+
+describe('LoggableFood.quickAdd', () => {
+  const serving = nutrientsOf({ calories: 250 });
+
+  it('trims the name and has no recipe behind it', () => {
+    const r = LoggableFood.quickAdd('  Simit ', serving);
+    expect(r.ok && r.value.name).toBe('Simit');
+    expect(r.ok && r.value.isQuickAdd).toBe(true);
+  });
+
+  it('refuses a blank or over-long name, and an implausible serving, with the backend keys', () => {
+    const blank = LoggableFood.quickAdd('   ', serving);
+    const long = LoggableFood.quickAdd('x'.repeat(121), serving);
+    const huge = LoggableFood.quickAdd('Simit', nutrientsOf({ calories: 20001 }));
+    expect(!blank.ok && blank.failure.messageKey).toBe('errors.validation.food_name_required');
+    expect(!long.ok && long.failure.messageKey).toBe('errors.validation.food_name_too_long');
+    expect(!huge.ok && huge.failure.messageKey).toBe('errors.validation.nutrient_invalid');
+    expect(LoggableFood.quickAdd('x'.repeat(120), serving).ok).toBe(true);
+  });
+});

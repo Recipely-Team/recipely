@@ -1,10 +1,11 @@
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { ValidationFailure } from '@core/failure';
+import { ErrorMessageKey, ValidationFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { ValueConstants } from '@core/constants';
 import { BaseValueObject } from '@core/value-object/base-value-object';
 import type { NutrientValues } from '@domain/diary/nutrition/nutrient-values';
+import { DiaryLimits } from '@domain/diary/diary-limits';
 
 const KCAL_PER_GRAM_PROTEIN = 4;
 const KCAL_PER_GRAM_CARBS = 4;
@@ -37,7 +38,7 @@ export class Nutrients extends BaseValueObject<NutrientValues> {
     for (const field of FIELDS) {
       const value = values[field];
       if (value !== null && (!Number.isFinite(value) || value < ValueConstants.zero)) {
-        return fail(new ValidationFailure(DiagnosticMessage.diary.nutrientInvalid(field), field));
+        return fail(new ValidationFailure(DiagnosticMessage.diary.nutrientInvalid(field), field, ErrorMessageKey.diaryNutrientInvalid));
       }
     }
     return ok(new Nutrients(values));
@@ -75,6 +76,12 @@ export class Nutrients extends BaseValueObject<NutrientValues> {
   /** Whether any of protein, carbs or fat is known — the UI's "calories only" test. */
   get hasMacros(): boolean {
     return this.protein !== null || this.carbs !== null || this.fat !== null;
+  }
+
+  /** Whether every figure is within one entry's plausibility caps (20 000 kcal, 2 000 g). */
+  get isWithinEntryCaps(): boolean {
+    const grams = [this.protein, this.carbs, this.fat, this.fiber];
+    return this.calories <= DiaryLimits.EntryCaloriesMax && grams.every((g) => g === null || g <= DiaryLimits.EntryMacroMax);
   }
 
   /** Kcal the known macros account for, at 4 / 4 / 9 kcal per gram. */

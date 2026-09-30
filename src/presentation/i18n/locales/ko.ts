@@ -229,6 +229,26 @@ export const ko: Translations = {
       body: "아직 저장할 새로운 내용이 없어요.",
       short: "저장할 내용 없음",
     },
+    diaryEntryNotFound: {
+      title: "기록을 찾을 수 없어요",
+      body: "이 음식은 더 이상 다이어리에 없어요. 다른 기기에서 삭제되었을 수 있어요.",
+      short: "기록 없음",
+    },
+    diaryFoodNameTooLong: {
+      title: "이름이 너무 길어요",
+      body: "음식 이름이 너무 길어요. 줄여서 다시 시도해 주세요.",
+      short: "이름이 너무 길어요",
+    },
+    diaryNutrientInvalid: {
+      title: "값을 확인해 주세요",
+      body: "칼로리나 그램 값이 너무 높아 보여요. 확인하고 다시 시도해 주세요.",
+      short: "값을 확인해 주세요",
+    },
+    diaryGoalInvalid: {
+      title: "목표가 범위를 벗어났어요",
+      body: "목표 중 하나가 허용 범위를 벗어났어요. 조정한 뒤 다시 저장해 주세요.",
+      short: "목표 범위 초과",
+    },
     emailExists: {
       title: '이미 사용 중인 이메일이에요',
       body: '이 이메일로 만든 계정이 이미 있어요. 로그인하거나 비밀번호를 재설정해 주세요.',

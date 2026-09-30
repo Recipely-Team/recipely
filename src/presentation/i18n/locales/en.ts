@@ -233,6 +233,26 @@ export const en = {
       body: "There's nothing new to save yet.",
       short: "Nothing to save",
     },
+    diaryEntryNotFound: {
+      title: "Entry not found",
+      body: "That food is no longer in your diary. It may have been removed on another device.",
+      short: "Entry not found",
+    },
+    diaryFoodNameTooLong: {
+      title: "Name too long",
+      body: "That food name is too long. Shorten it and try again.",
+      short: "Name too long",
+    },
+    diaryNutrientInvalid: {
+      title: "Check the numbers",
+      body: "The calories or grams look too high. Check them and try again.",
+      short: "Check the numbers",
+    },
+    diaryGoalInvalid: {
+      title: "Goal out of range",
+      body: "One of your goals is outside the allowed range. Adjust it and save again.",
+      short: "Goal out of range",
+    },
     emailExists: {
       title: 'That email is taken',
       body: 'An account already uses this email. Sign in instead, or reset your password.',

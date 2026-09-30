@@ -30,11 +30,12 @@ describe('NutritionGoals', () => {
 
   it('refuses values outside the backend ranges', () => {
     const base = goals.value;
-    expect(NutritionGoals.create({ ...base, calories: 799 }).ok).toBe(false);
+    expect(NutritionGoals.create({ ...base, calories: 499 }).ok).toBe(false);
     expect(NutritionGoals.create({ ...base, calories: 2000.5 }).ok).toBe(false);
     expect(NutritionGoals.create({ ...base, fiber: 601 }).ok).toBe(false);
     expect(NutritionGoals.create({ ...base, waterGlasses: 0 }).ok).toBe(false);
     expect(NutritionGoals.create({ ...base, waterGlasses: 13 }).ok).toBe(false);
+    expect(NutritionGoals.create({ ...base, calories: 500 }).ok).toBe(true);
     expect(NutritionGoals.create(base).ok).toBe(true);
   });
 

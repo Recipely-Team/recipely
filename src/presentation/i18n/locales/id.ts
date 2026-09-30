@@ -227,6 +227,26 @@ export const id = {
       body: "Belum ada yang baru untuk disimpan.",
       short: "Tidak ada yang disimpan",
     },
+    diaryEntryNotFound: {
+      title: "Catatan tidak ditemukan",
+      body: "Makanan itu sudah tidak ada di diari kamu. Mungkin sudah dihapus di perangkat lain.",
+      short: "Catatan tidak ditemukan",
+    },
+    diaryFoodNameTooLong: {
+      title: "Nama terlalu panjang",
+      body: "Nama makanan terlalu panjang. Persingkat lalu coba lagi.",
+      short: "Nama terlalu panjang",
+    },
+    diaryNutrientInvalid: {
+      title: "Periksa angkanya",
+      body: "Kalori atau gramnya terlihat terlalu tinggi. Periksa lalu coba lagi.",
+      short: "Periksa angkanya",
+    },
+    diaryGoalInvalid: {
+      title: "Target di luar rentang",
+      body: "Salah satu target kamu di luar rentang yang diizinkan. Sesuaikan lalu simpan lagi.",
+      short: "Target di luar rentang",
+    },
     emailExists: {
       title: 'Email itu sudah digunakan',
       body: 'Sudah ada akun yang menggunakan email ini. Masuk atau atur ulang kata sandi.',

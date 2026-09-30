@@ -230,6 +230,26 @@ export const tr: Translations = {
       body: "Kaydedilecek yeni bir şey yok.",
       short: "Kaydedilecek bir şey yok",
     },
+    diaryEntryNotFound: {
+      title: "Kayıt bulunamadı",
+      body: "Bu yiyecek artık günlüğünde değil. Başka bir cihazdan silinmiş olabilir.",
+      short: "Kayıt bulunamadı",
+    },
+    diaryFoodNameTooLong: {
+      title: "Ad çok uzun",
+      body: "Yiyecek adı çok uzun. Kısaltıp tekrar dene.",
+      short: "Ad çok uzun",
+    },
+    diaryNutrientInvalid: {
+      title: "Değerleri kontrol et",
+      body: "Kalori ya da gram değerleri çok yüksek görünüyor. Kontrol edip tekrar dene.",
+      short: "Değerleri kontrol et",
+    },
+    diaryGoalInvalid: {
+      title: "Hedef aralık dışında",
+      body: "Hedeflerinden biri izin verilen aralığın dışında. Düzeltip yeniden kaydet.",
+      short: "Hedef aralık dışında",
+    },
     emailExists: {
       title: 'Bu e-posta zaten kayıtlı',
       body: 'Bu e-postayla açılmış bir hesap zaten var. Giriş yap ya da şifreni sıfırla.',
