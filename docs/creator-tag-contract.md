@@ -110,6 +110,6 @@ uses the same shape but carries the owner view above instead.
   It shows pending, approved or rejected, and has a remove action.
 - **Explore:** a horizontal "Creators" strip above the feed, showing avatar, name and
   platform badge. It is hidden when there are no creators.
-- **Creator profile page** (`/users/[userId]`): header with badge and handle, follow
+- **Creator profile page** (`/creators/[userId]`): header with badge and handle, follow
   button, their recipes. Public, so it goes in the sitemap (rule 23f) and analytics (rule 25).
 - **Badge:** a small platform mark next to the name, on the profile and in the strip.
