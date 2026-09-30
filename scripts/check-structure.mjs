@@ -39,6 +39,9 @@
  *   AI. No vocabulary value mapped to an English word in presentation — a
  *      `[Difficulty.Medium]: 'Medium'` map shows "Medium" on every locale
  *      (CLAUDE.md §11).
+ *   AJ. No accessibility prop directly on a react-native-svg `<Svg>` — on the
+ *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
+ *      attributes (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1226,6 +1229,30 @@ function openingTag(src, at) {
   };
 
   if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
+// --- AJ: no accessibility props on a react-native-svg <Svg> (CLAUDE.md §24) --
+// The diary's status marker hid itself from screen readers with
+// `accessibilityElementsHidden` / `importantForAccessibility` on its `<Svg>`.
+// Native ignores them; on the web react-native-svg hands every unknown prop to
+// the DOM `<svg>`, and React logged "React does not recognize the
+// `accessibilityElementsHidden` prop on a DOM element" for every date cell. The
+// accessible thing is the View around the drawing — put the prop there.
+{
+  const SVG_OPEN = /<Svg\b/g;
+  const A11Y_PROP = /\s(accessib\w*|importantForAccessibility)\b/;
+
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation/') || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(SVG_OPEN)) {
+      const found = A11Y_PROP.exec(openingTag(src, m.index));
+      if (found === null) continue;
+      errors.push(
+        `${file}: \`${found[1]}\` on <Svg> — react-native-svg forwards it to the DOM on web; put it on the wrapping View (CLAUDE.md §24)`,
+      );
+    }
+  }
 }
 
 // --- AA: every routed screen reports its own name to analytics (CLAUDE.md §25)
