@@ -150,6 +150,86 @@ describe('creator profile store', () => {
     expect(store.getState().isFollowPending).toBe(false);
   });
 
+  it('the follow button and count flip before the server answers', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const answer = deferred<void>();
+    repo.followAnswer = answer.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+
+    const toggling = store.getState().toggleFollow();
+
+    const shown = store.getState().profileState;
+    expect(shown.status === StoreStatus.Loaded && shown.viewed.isFollowedByMe).toBe(true);
+    expect(shown.status === StoreStatus.Loaded && shown.viewed.followerCount).toBe(11);
+    expect(store.getState().isFollowPending).toBe(true);
+    answer.resolve(ok(undefined));
+    expect(await toggling).toBeNull();
+  });
+
+  it('a double tap while the follow is in flight sends one request', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const answer = deferred<void>();
+    repo.followAnswer = answer.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+
+    const first = store.getState().toggleFollow();
+    const second = store.getState().toggleFollow();
+    answer.resolve(ok(undefined));
+    await Promise.all([first, second]);
+
+    expect(repo.followCalls.length).toBe(1);
+    expect(repo.unfollowCalls).toEqual([]);
+    const state = store.getState().profileState;
+    expect(state.status === StoreStatus.Loaded && state.viewed.followerCount).toBe(11);
+  });
+
+  it('a refused follow for the previous creator does not roll back the page now open', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const answer = deferred<void>();
+    repo.followAnswer = answer.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+
+    const toggling = store.getState().toggleFollow();
+    repo.viewedAnswers = [ok(viewedProfileOf('u-2', { followerCount: 5, isFollowedByMe: true }))];
+    repo.recipeAnswers = [ok(recipePageOf([recipeSummaryOf('r-2')]))];
+    await store.getState().open('u-2');
+    const refusal = new ConflictFailure('nope');
+    answer.resolve(fail(refusal));
+
+    expect(await toggling).toBe(refusal);
+    const state = store.getState().profileState;
+    expect(state.status === StoreStatus.Loaded && state.viewed.profile.id).toBe('u-2');
+    expect(state.status === StoreStatus.Loaded && state.viewed.isFollowedByMe).toBe(true);
+    expect(state.status === StoreStatus.Loaded && state.viewed.followerCount).toBe(5);
+  });
+
+  it('a follow answer from before clear() does not release the next page\'s pending follow', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const stale = deferred<void>();
+    repo.followAnswer = stale.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+    const oldToggle = store.getState().toggleFollow();
+    store.getState().clear();
+    repo.viewedAnswers = [ok(viewedProfileOf('u-2', { followerCount: 5, isFollowedByMe: false }))];
+    repo.recipeAnswers = [ok(recipePageOf([recipeSummaryOf('r-2')]))];
+    await store.getState().open('u-2');
+    const current = deferred<void>();
+    repo.followAnswer = current.promise;
+    const newToggle = store.getState().toggleFollow();
+
+    stale.resolve(ok(undefined));
+    await oldToggle;
+
+    expect(store.getState().isFollowPending).toBe(true);
+    current.resolve(ok(undefined));
+    await newToggle;
+    expect(store.getState().isFollowPending).toBe(false);
+  });
+
   it('clear forgets the page', async () => {
     const store = storeOver(loadedRepo());
     await store.getState().open('u-1');
