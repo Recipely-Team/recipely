@@ -33,23 +33,25 @@ export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps
   return (
     <View>
       <CreatorProfileHero profile={profile} />
-      <CreatorProfileStats
-        recipeCount={profile.recipeCount}
-        followerCount={viewed.followerCount}
-        likeCount={profile.totalLikes}
-        formatCount={vm.formatCount}
-      />
-      {vm.isOwnProfile ? null : (
-        <View style={styles.follow}>
-          <PillButton
-            label={followLabel}
-            accessibilityLabel={`${followLabel}, ${profile.displayName}`}
-            tone={viewed.isFollowedByMe ? PillButtonTone.Outline : PillButtonTone.Primary}
-            disabled={vm.isFollowPending}
-            onPress={vm.onToggleFollow}
-          />
-        </View>
-      )}
+      <View style={styles.capped}>
+        <CreatorProfileStats
+          recipeCount={profile.recipeCount}
+          followerCount={viewed.followerCount}
+          likeCount={profile.totalLikes}
+          formatCount={vm.formatCount}
+        />
+        {vm.isOwnProfile ? null : (
+          <View style={styles.follow}>
+            <PillButton
+              label={followLabel}
+              accessibilityLabel={`${followLabel}, ${profile.displayName}`}
+              tone={viewed.isFollowedByMe ? PillButtonTone.Outline : PillButtonTone.Primary}
+              disabled={vm.isFollowPending}
+              onPress={vm.onToggleFollow}
+            />
+          </View>
+        )}
+      </View>
       <View style={styles.heading}>
         <SizedText size={fontSizes.subtitle} weight={fontWeights.bold} accessibilityRole="header">
           {t().creators.recipesTitle}
@@ -63,6 +65,11 @@ export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps
 };
 
 const styles = StyleSheet.create({
+  capped: {
+    width: '100%',
+    maxWidth: CreatorProfileMetrics.summaryMaxWidth,
+    alignSelf: 'center',
+  },
   follow: {
     paddingTop: spacing.lg,
     paddingBottom: spacing.sm,
