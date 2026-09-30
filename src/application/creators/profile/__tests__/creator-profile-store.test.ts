@@ -230,6 +230,53 @@ describe('creator profile store', () => {
     expect(store.getState().isFollowPending).toBe(false);
   });
 
+  // The guard compared user ids, so after clear() and a reopen of the SAME
+  // creator the old answer passed it: it released the new tap's pending state
+  // and rolled its flip back.
+  it('a refused follow from before clear() does not undo a new tap on the same creator reopened', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const stale = deferred<void>();
+    repo.followAnswer = stale.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+    const oldToggle = store.getState().toggleFollow();
+    store.getState().clear();
+    repo.viewedAnswers = [ok(viewedProfileOf('u-1', { followerCount: 10, isFollowedByMe: false }))];
+    repo.recipeAnswers = [ok(recipePageOf([recipeSummaryOf('r-1')]))];
+    await store.getState().open('u-1');
+    const current = deferred<void>();
+    repo.followAnswer = current.promise;
+    const newToggle = store.getState().toggleFollow();
+
+    stale.resolve(fail(new ConflictFailure('nope')));
+    await oldToggle;
+
+    expect(store.getState().isFollowPending).toBe(true);
+    const shown = store.getState().profileState;
+    expect(shown.status === StoreStatus.Loaded && shown.viewed.isFollowedByMe).toBe(true);
+    expect(shown.status === StoreStatus.Loaded && shown.viewed.followerCount).toBe(11);
+    current.resolve(ok(undefined));
+    expect(await newToggle).toBeNull();
+    expect(store.getState().isFollowPending).toBe(false);
+  });
+
+  it('a pull-to-refresh of the same creator still lets the pending follow answer', async () => {
+    const repo = loadedRepo({ followerCount: 10, isFollowedByMe: false });
+    const answer = deferred<void>();
+    repo.followAnswer = answer.promise;
+    const store = storeOver(repo);
+    await store.getState().open('u-1');
+    const toggling = store.getState().toggleFollow();
+    repo.viewedAnswers = [ok(viewedProfileOf('u-1', { followerCount: 11, isFollowedByMe: true }))];
+    repo.recipeAnswers = [ok(recipePageOf([recipeSummaryOf('r-1')]))];
+    await store.getState().refresh();
+
+    answer.resolve(ok(undefined));
+    expect(await toggling).toBeNull();
+
+    expect(store.getState().isFollowPending).toBe(false);
+  });
+
   it('clear forgets the page', async () => {
     const store = storeOver(loadedRepo());
     await store.getState().open('u-1');
