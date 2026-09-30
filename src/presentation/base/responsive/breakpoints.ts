@@ -31,6 +31,7 @@ export const WEB_CONTENT_MAX_WIDTH = {
   importRecipe: 560,
   recipeDetail: 980,
   notifications: 720,
+  diary: 1200,
   settings: 720,
   forms: 480,
 } as const;

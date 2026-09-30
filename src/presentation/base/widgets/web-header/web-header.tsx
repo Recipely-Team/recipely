@@ -26,6 +26,7 @@ const resolveActiveTab = (pathname: string): WebHeaderTabKey | null => {
     return 'myRecipes';
   }
   if (pathname.startsWith('/recipes')) return 'recipes';
+  if (pathname.startsWith(RoutePaths.diary)) return 'diary';
   return null;
 };
 
@@ -61,6 +62,11 @@ export const WebHeader = (): React.JSX.Element => {
       label: t().myRecipes.title,
       icon: 'bookmark-outline' as const,
     },
+    {
+      key: 'diary' as const,
+      label: t().navigation.diary,
+      icon: 'calendar-outline' as const,
+    },
   ];
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
@@ -72,6 +78,7 @@ export const WebHeader = (): React.JSX.Element => {
   const goRecipes = (): void => router.replace(RoutePaths.recipes);
   const goTab = (key: WebHeaderTabKey): void => {
     if (key === WebHeaderTabKey.Recipes) router.replace(RoutePaths.recipes);
+    else if (key === WebHeaderTabKey.Diary) router.replace(RoutePaths.diary);
     else router.replace(RoutePaths.myRecipes);
   };
   const goCreate = (): void => router.push(RoutePaths.createRecipe);

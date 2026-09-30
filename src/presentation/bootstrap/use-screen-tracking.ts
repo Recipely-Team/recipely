@@ -15,6 +15,8 @@ import { RoutePaths } from '@presentation/base/constants';
 const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.recipes, AnalyticsScreen.recipeList],
   [RoutePaths.myRecipes, AnalyticsScreen.myRecipes],
+  [RoutePaths.diary, AnalyticsScreen.diary],
+  [RoutePaths.diaryCalendar, AnalyticsScreen.diaryCalendar],
   [RoutePaths.createRecipe, AnalyticsScreen.createRecipe],
   [RoutePaths.importRecipe, AnalyticsScreen.importRecipe],
   [RoutePaths.notifications, AnalyticsScreen.notifications],

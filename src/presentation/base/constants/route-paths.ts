@@ -19,6 +19,9 @@ export const RoutePaths = {
   /** The import screen asking for photos or a PDF instead of a link. */
   importRecipeFromFile: `/import-recipe?source=${ImportSource.File}`,
   myRecipes: '/my-recipes',
+  diary: '/diary',
+  /** The Diary tab's month page — a phone layout only; an expanded viewport shows the month in the Day view's rail. */
+  diaryCalendar: '/diary/calendar',
   /**
    * The feed's name in the root navigator's state (not a path) — expo-router
    * registers folder pages as `<segment>/index`. Used to tell where a back
