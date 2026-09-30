@@ -257,6 +257,11 @@ export const it = {
       body: "Un altro creator su Recipely ha già questo account. Controlla la piattaforma e il nome utente.",
       short: "Questo nome utente è già rivendicato",
     },
+    creatorNotPending: {
+      title: "Non in revisione",
+      body: "Questa richiesta da creator non è più in attesa di revisione. Aggiorna per vedere a che punto è.",
+      short: "Questa richiesta non è in revisione",
+    },
     emailExists: {
       title: 'Questa e-mail è già in uso',
       body: 'Esiste già un account con questa e-mail. Accedi oppure reimposta la password.',

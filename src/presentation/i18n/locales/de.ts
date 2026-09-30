@@ -257,6 +257,11 @@ export const de = {
       body: "Ein anderer Creator auf Recipely hat dieses Konto bereits beansprucht. Prüfe Plattform und Nutzernamen.",
       short: "Dieser Nutzername ist bereits vergeben",
     },
+    creatorNotPending: {
+      title: "Nicht in Prüfung",
+      body: "Dieser Creator-Antrag wartet nicht mehr auf eine Prüfung. Aktualisiere, um den aktuellen Stand zu sehen.",
+      short: "Dieser Antrag wartet nicht auf Prüfung",
+    },
     emailExists: {
       title: 'Diese E-Mail-Adresse ist vergeben',
       body: 'Für diese E-Mail-Adresse gibt es bereits ein Konto. Melde dich an oder setze dein Passwort zurück.',

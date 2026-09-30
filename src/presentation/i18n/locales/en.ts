@@ -263,6 +263,11 @@ export const en = {
       body: "Another creator on Recipely already holds this account. Check the platform and the handle.",
       short: "That handle is already claimed",
     },
+    creatorNotPending: {
+      title: "Not awaiting review",
+      body: "This creator claim is no longer waiting for review. Refresh to see where it stands.",
+      short: "This claim isn't awaiting review",
+    },
     emailExists: {
       title: 'That email is taken',
       body: 'An account already uses this email. Sign in instead, or reset your password.',

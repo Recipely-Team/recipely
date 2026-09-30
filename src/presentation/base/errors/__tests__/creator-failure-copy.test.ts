@@ -18,13 +18,15 @@ import { ru } from '@presentation/i18n/locales/ru';
 import { zh } from '@presentation/i18n/locales/zh';
 
 /**
- * The creator tag's two backend keys each resolve to their own copy: a handle
- * the user can fix, and one another creator already holds. Every catalogue
+ * The creator tag's backend keys each resolve to their own copy: a handle the
+ * user can fix, one another creator already holds, and a claim that has left
+ * review (the admin path). Every catalogue
  * carries the words, since the Edit Profile form shows them in any locale.
  */
 const CASES = [
   [new ValidationFailure('bad handle', 'handle', ErrorMessageKey.creatorHandleInvalid), 'creatorHandleInvalid'],
   [new ConflictFailure('taken', 'handle', ErrorMessageKey.creatorHandleTaken), 'creatorHandleTaken'],
+  [new ConflictFailure('moved on', undefined, ErrorMessageKey.creatorNotPending), 'creatorNotPending'],
 ] as const;
 
 const CATALOGUES = { en, tr, ar, de, es, fr, hi, id, it: itLocale, ja, ko, pt, ru, zh };

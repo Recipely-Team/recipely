@@ -24,19 +24,27 @@ Change them in both, in the same release.
 
 Error keys (backend `failureToHttp` → app `failureContent`):
 `errors.validation.creator_handle` (bad handle), `errors.conflict.creator_handle_taken`
-(another approved user holds the same platform + handle).
+(another approved user holds the same platform + handle), `errors.conflict.creator_not_pending`
+(an admin approve or reject of a claim that is no longer pending).
+
+An unknown `platform` is refused by request validation with the generic `400` validation
+error, not a creator key; only a bad handle answers `errors.validation.creator_handle`.
 
 ## Endpoints
 
-### `GET /me` (existing)
+### The owner's claim: `UserDto` and `GET /me`
 
-`UserDto` gains:
+The owner's view of the claim, status included:
 
 ```ts
 creator: { platform: CreatorPlatform; handle: string; status: 'pending' | 'approved' | 'rejected' } | null
 ```
 
-`null` when the status is `none`.
+`null` when the status is `none`. It is carried by:
+
+- `UserDto` — the user in the login, social login, `PATCH /me/profile` and avatar upload answers.
+- `GET /me` (existing), which answers the **profile shape** (`UserProfileDto`, as it always has),
+  not `UserDto`; its `creator` is this owner view, with status.
 
 ### `PUT /me/creator` (new, auth)
 
@@ -46,6 +54,7 @@ Body `{ platform: CreatorPlatform, handle: string }`. It sets the claim to `pend
 - The same platform + handle as an already-approved claim → a no-op that stays `approved`.
 - Any change to an approved claim → back to `pending`: the tag disappears until an admin approves it again.
 - Invalid handle → `400 errors.validation.creator_handle`.
+- Unknown platform → the generic `400` validation error.
 - The content moderator checks the handle like it checks a bio.
 
 ### `DELETE /me/creator` (new, auth)
@@ -75,7 +84,8 @@ PageResult<{
 
 Guests can open a creator's page. For a guest, `isFollowedByMe` is `false`.
 `UserProfileDto` gains `creator: { platform: CreatorPlatform; handle: string } | null`,
-which is set only when the claim is approved.
+which is set only when the claim is approved (the public view: no status). `GET /me`
+uses the same shape but carries the owner view above instead.
 
 ## Admin (AdminJS, User resource)
 
@@ -85,6 +95,7 @@ which is set only when the claim is approved.
   status is `pending`.
 - Approve sets `approved` and `creatorReviewedAt`. It fails with `creator_handle_taken`
   when another approved user holds the same platform + handle.
+- Approve or reject of a claim that is not pending fails with `creator_not_pending`.
 - Reject sets `rejected` and `creatorReviewedAt`.
 
 ## Data

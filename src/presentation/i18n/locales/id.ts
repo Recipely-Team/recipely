@@ -257,6 +257,11 @@ export const id = {
       body: "Kreator lain di Recipely sudah memegang akun ini. Periksa platform dan nama penggunanya.",
       short: "Nama pengguna itu sudah diklaim",
     },
+    creatorNotPending: {
+      title: "Tidak sedang ditinjau",
+      body: "Klaim kreator ini tidak lagi menunggu peninjauan. Muat ulang untuk melihat statusnya.",
+      short: "Klaim ini tidak sedang ditinjau",
+    },
     emailExists: {
       title: 'Email itu sudah digunakan',
       body: 'Sudah ada akun yang menggunakan email ini. Masuk atau atur ulang kata sandi.',

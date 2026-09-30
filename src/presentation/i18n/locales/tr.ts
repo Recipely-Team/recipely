@@ -260,6 +260,11 @@ export const tr: Translations = {
       body: "Bu hesap Recipely'de başka bir içerik üreticisine ait. Platformu ve kullanıcı adını kontrol et.",
       short: "Bu kullanıcı adı zaten alınmış",
     },
+    creatorNotPending: {
+      title: "İncelemede değil",
+      body: "Bu içerik üreticisi başvurusu artık incelemeyi beklemiyor. Güncel durumunu görmek için yenile.",
+      short: "Bu başvuru incelemede değil",
+    },
     emailExists: {
       title: 'Bu e-posta zaten kayıtlı',
       body: 'Bu e-postayla açılmış bir hesap zaten var. Giriş yap ya da şifreni sıfırla.',

@@ -63,6 +63,7 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
 
   [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
   [ErrorMessageKey.creatorHandleTaken]: 'creatorHandleTaken',
+  [ErrorMessageKey.creatorNotPending]: 'creatorNotPending',
 
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',

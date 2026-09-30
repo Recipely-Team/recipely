@@ -257,6 +257,11 @@ export const fr = {
       body: "Un autre créateur sur Recipely détient déjà ce compte. Vérifie la plateforme et l'identifiant.",
       short: "Cet identifiant est déjà revendiqué",
     },
+    creatorNotPending: {
+      title: "Pas en attente d'examen",
+      body: "Cette demande de créateur n'attend plus d'examen. Actualise pour voir où elle en est.",
+      short: "Cette demande n'attend pas d'examen",
+    },
     emailExists: {
       title: 'Cette adresse e-mail est déjà utilisée',
       body: 'Un compte utilise déjà cette adresse e-mail. Connectez-vous ou réinitialisez votre mot de passe.',

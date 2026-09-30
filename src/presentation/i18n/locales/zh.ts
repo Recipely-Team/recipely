@@ -260,6 +260,11 @@ export const zh = {
       body: "Recipely 上的另一位创作者已认领此账号。请检查平台和用户名。",
       short: "该用户名已被认领",
     },
+    creatorNotPending: {
+      title: "不在审核中",
+      body: "此创作者申请已不再等待审核。请刷新查看当前状态。",
+      short: "此申请不在审核中",
+    },
     emailExists: {
       title: '这个邮箱已经被使用',
       body: '已有账户使用这个邮箱。请直接登录，或重置密码。',

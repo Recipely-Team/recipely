@@ -64,6 +64,7 @@ export type FailureContentKey =
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'
+  | 'creatorNotPending'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'
