@@ -1222,6 +1222,8 @@ export const id = {
     statLikes: 'Suka',
     follow: 'Ikuti',
     following: 'Mengikuti',
+    followName: 'Ikuti {name}',
+    followingName: 'Mengikuti {name}',
     signInToFollow: 'Masuk untuk mengikuti kreator.',
     recipesTitle: 'Resepnya',
     noRecipes: 'Belum ada resep.',

@@ -1218,6 +1218,8 @@ export const hi: Translations = {
     statLikes: 'लाइक',
     follow: 'फ़ॉलो करें',
     following: 'फ़ॉलो कर रहे हैं',
+    followName: '{name} को फ़ॉलो करें',
+    followingName: 'आप {name} को फ़ॉलो कर रहे हैं',
     signInToFollow: 'क्रिएटर्स को फ़ॉलो करने के लिए साइन इन करें।',
     recipesTitle: 'इनकी रेसिपी',
     noRecipes: 'अभी कोई रेसिपी नहीं है।',

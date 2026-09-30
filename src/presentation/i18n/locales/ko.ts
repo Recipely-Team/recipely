@@ -1218,6 +1218,8 @@ export const ko: Translations = {
     statLikes: '좋아요',
     follow: '팔로우',
     following: '팔로잉',
+    followName: '{name} 님 팔로우',
+    followingName: '{name} 님 팔로잉',
     signInToFollow: '크리에이터를 팔로우하려면 로그인하세요.',
     recipesTitle: '레시피',
     noRecipes: '아직 레시피가 없어요.',

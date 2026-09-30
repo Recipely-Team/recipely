@@ -1222,6 +1222,8 @@ export const ru = {
     statLikes: 'Лайки',
     follow: 'Подписаться',
     following: 'Вы подписаны',
+    followName: 'Подписаться на {name}',
+    followingName: 'Вы подписаны на {name}',
     signInToFollow: 'Войдите, чтобы подписываться на авторов.',
     recipesTitle: 'Рецепты автора',
     noRecipes: 'Рецептов пока нет.',

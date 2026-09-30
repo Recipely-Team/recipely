@@ -1222,6 +1222,8 @@ export const de = {
     statLikes: 'Likes',
     follow: 'Folgen',
     following: 'Folge ich',
+    followName: '{name} folgen',
+    followingName: 'Du folgst {name}',
     signInToFollow: 'Melde dich an, um Creatorn zu folgen.',
     recipesTitle: 'Rezepte',
     noRecipes: 'Noch keine Rezepte.',

@@ -1226,6 +1226,8 @@ export const tr: Translations = {
     statLikes: 'Beğeni',
     follow: 'Takip et',
     following: 'Takip ediliyor',
+    followName: 'Takip et: {name}',
+    followingName: 'Takip ediliyor: {name}',
     signInToFollow: 'Üreticileri takip etmek için giriş yap.',
     recipesTitle: 'Tarifleri',
     noRecipes: 'Henüz tarif yok.',

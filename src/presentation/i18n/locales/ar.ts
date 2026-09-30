@@ -1222,6 +1222,8 @@ export const ar = {
     statLikes: 'الإعجابات',
     follow: 'متابعة',
     following: 'تتابعه',
+    followName: 'متابعة {name}',
+    followingName: 'تتابع {name}',
     signInToFollow: 'سجّل الدخول لمتابعة صنّاع المحتوى.',
     recipesTitle: 'وصفاته',
     noRecipes: 'لا توجد وصفات بعد.',

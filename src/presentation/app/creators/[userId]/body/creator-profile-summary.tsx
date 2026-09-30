@@ -23,12 +23,17 @@ export interface CreatorProfileSummaryProps {
  * @remarks
  * - **Follow is the primary pill; Following the outline one**, so the state
  *   reads at a glance and unfollowing is the quieter action.
- * - **The button names the creator for assistive tech** ("Follow, Ayşe").
+ * - **The button names the creator for assistive tech** ("Follow Ayşe"), through
+ *   a `{name}` template so each language places the name itself.
  */
 export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { profile } = viewed;
   const followLabel = viewed.isFollowedByMe ? t().creators.following : t().creators.follow;
+  const followA11yLabel = (viewed.isFollowedByMe ? t().creators.followingName : t().creators.followName).replace(
+    '{name}',
+    profile.displayName,
+  );
 
   return (
     <View>
@@ -44,7 +49,7 @@ export const CreatorProfileSummary = ({ viewed, vm }: CreatorProfileSummaryProps
           <View style={styles.follow}>
             <PillButton
               label={followLabel}
-              accessibilityLabel={`${followLabel}, ${profile.displayName}`}
+              accessibilityLabel={followA11yLabel}
               tone={viewed.isFollowedByMe ? PillButtonTone.Outline : PillButtonTone.Primary}
               disabled={vm.isFollowPending}
               onPress={vm.onToggleFollow}

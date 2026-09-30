@@ -1226,6 +1226,8 @@ export const zh = {
     statLikes: '点赞',
     follow: '关注',
     following: '已关注',
+    followName: '关注{name}',
+    followingName: '已关注{name}',
     signInToFollow: '登录后即可关注创作者。',
     recipesTitle: 'TA 的食谱',
     noRecipes: '还没有食谱。',

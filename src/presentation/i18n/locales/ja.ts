@@ -1222,6 +1222,8 @@ export const ja = {
     statLikes: 'いいね',
     follow: 'フォローする',
     following: 'フォロー中',
+    followName: '{name}さんをフォローする',
+    followingName: '{name}さんをフォロー中',
     signInToFollow: 'クリエイターをフォローするにはサインインしてください。',
     recipesTitle: 'レシピ',
     noRecipes: 'まだレシピはありません。',

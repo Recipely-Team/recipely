@@ -1222,6 +1222,8 @@ export const it = {
     statLikes: 'Mi piace',
     follow: 'Segui',
     following: 'Segui già',
+    followName: 'Segui {name}',
+    followingName: 'Segui già {name}',
     signInToFollow: 'Accedi per seguire i creator.',
     recipesTitle: 'Le sue ricette',
     noRecipes: 'Ancora nessuna ricetta.',

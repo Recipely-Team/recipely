@@ -63,7 +63,7 @@ const followButton = (root: ReactTestInstance): ReactTestInstance =>
     (node) =>
       node.props.accessibilityRole === 'button' &&
       typeof node.props.accessibilityLabel === 'string' &&
-      (node.props.accessibilityLabel.startsWith(t().creators.follow) || node.props.accessibilityLabel.startsWith(t().creators.following)) &&
+      [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props.accessibilityLabel) &&
       typeof node.props.onPress === 'function',
   );
 
@@ -92,6 +92,14 @@ describe('CreatorProfileScreen — follow', () => {
     expect(repo.followCalls).toEqual(['u-1']);
     expect(textContent(root)).toContain(t().creators.following);
     expect(textContent(root)).toContain('13');
+  });
+
+  it('names the creator in the follow button\'s label, in both states', async () => {
+    const { root } = await renderScreen(userOf('viewer'), { followerCount: 12, isFollowedByMe: false });
+
+    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followName.replace('{name}', 'Creator u-1'));
+    await press(followButton(root));
+    expect(followButton(root).props.accessibilityLabel).toBe(t().creators.followingName.replace('{name}', 'Creator u-1'));
   });
 
   it('unfollows a creator the viewer already follows', async () => {

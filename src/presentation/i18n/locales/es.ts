@@ -1222,6 +1222,8 @@ export const es = {
     statLikes: 'Me gusta',
     follow: 'Seguir',
     following: 'Siguiendo',
+    followName: 'Seguir a {name}',
+    followingName: 'Sigues a {name}',
     signInToFollow: 'Inicia sesión para seguir a creadores.',
     recipesTitle: 'Sus recetas',
     noRecipes: 'Aún no hay recetas.',

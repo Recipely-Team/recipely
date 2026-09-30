@@ -1222,6 +1222,8 @@ export const pt = {
     statLikes: 'Curtidas',
     follow: 'Seguir',
     following: 'Seguindo',
+    followName: 'Seguir {name}',
+    followingName: 'Seguindo {name}',
     signInToFollow: 'Entre para seguir criadores.',
     recipesTitle: 'Receitas',
     noRecipes: 'Ainda não há receitas.',

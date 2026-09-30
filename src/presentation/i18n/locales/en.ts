@@ -1233,6 +1233,8 @@ export const en = {
     statLikes: 'Likes',
     follow: 'Follow',
     following: 'Following',
+    followName: 'Follow {name}',
+    followingName: 'Following {name}',
     signInToFollow: 'Sign in to follow creators.',
     recipesTitle: 'Recipes',
     noRecipes: 'No recipes yet.',
