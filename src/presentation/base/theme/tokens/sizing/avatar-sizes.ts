@@ -14,7 +14,11 @@ export const avatarSizes = {
   md: scale(40),
   /** Sheet header avatar. */
   lg: scale(56),
-  /** Feature avatar. */
+  /** Explore creators strip avatar. */
+  creatorStrip: scale(64),
+  /** Creator card avatar on the phone's /creators grid. */
+  creatorCard: scale(72),
+  /** Feature avatar; the creator card on an expanded viewport. */
   xl: scale(80),
   /** Profile screen ring frame. */
   frame: scale(112),

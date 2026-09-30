@@ -3,6 +3,13 @@ export interface ThemeColors {
   surface: string;
   text: string;
   textMuted: string;
+  /**
+   * Secondary copy that must read as body text: handles, captions, counts.
+   * `textMuted` pulled towards `text` just far enough to reach 4.5:1 on BOTH
+   * `background` and `surface` — `textMuted` alone is 4.12:1 on Pearl White's
+   * light background. Derived per palette and variant in `themes.ts`.
+   */
+  textSubtle: string;
   primary: string;
   primaryText: string;
   primaryLight: string;
