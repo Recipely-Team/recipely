@@ -25,10 +25,10 @@ const approvedClaim = (): CreatorClaim => {
   return r.value;
 };
 
-const buildSession = (claim: CreatorClaim | null = null): AuthSessionEntity => {
+const buildSession = (claim: CreatorClaim | null = null, userId = 'u-1'): AuthSessionEntity => {
   const email = Email.create('cook@example.com');
   if (!email.ok) throw new Error();
-  const user = UserEntity.create({ id: 'u-1', email: email.value, displayName: 'Cook', creatorClaim: claim });
+  const user = UserEntity.create({ id: userId, email: email.value, displayName: 'Cook', creatorClaim: claim });
   if (!user.ok) throw new Error();
   const session = AuthSessionEntity.create({
     id: 'session-1',
@@ -65,6 +65,48 @@ const makeRepo = (
   } as unknown as SecureTokenStorage;
   return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), calls, saved };
 };
+
+/**
+ * A repository whose stored session becomes `next` while the request is in
+ * flight — the user signed out and someone else signed in before it answered.
+ */
+const repoSwitchingUserMidRequest = (
+  httpResult: Result<unknown, unknown>,
+  next: AuthSessionEntity,
+): { repo: AuthRepository; saved: AuthSessionEntity[] } => {
+  let stored = buildSession(approvedClaim());
+  const http = withHttpVerbs(jest.fn(() => {
+    stored = next;
+    return Promise.resolve(httpResult);
+  })) as HttpClient;
+  const saved: AuthSessionEntity[] = [];
+  const storage = {
+    loadSession: jest.fn(() => Promise.resolve(ok(stored))),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      saved.push(session);
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), saved };
+};
+
+describe('AuthRepository — a claim answer for a user who has since signed out', () => {
+  const otherUser = (): AuthSessionEntity => buildSession(null, 'u-2');
+
+  it.each([
+    ['requestCreatorTag', (repo: AuthRepository) => repo.requestCreatorTag(tagOf('instagram', 'chef')), ok({ platform: 'instagram', handle: 'chef', status: 'pending' })],
+    ['removeCreatorTag', (repo: AuthRepository) => repo.removeCreatorTag(), ok(undefined)],
+    ['refreshCreatorClaim', (repo: AuthRepository) => repo.refreshCreatorClaim(), ok({ creator: { platform: 'tiktok', handle: 'a', status: 'approved' } })],
+  ])('%s does not write the first user\'s claim into the next user\'s session', async (_name, call, answer) => {
+    const { repo, saved } = repoSwitchingUserMidRequest(answer, otherUser());
+
+    const r = await call(repo);
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBeInstanceOf(UnauthorizedFailure);
+    expect(saved).toHaveLength(0);
+  });
+});
 
 describe('AuthRepository.requestCreatorTag', () => {
   it('PUTs the normalised tag to /me/creator and persists the pending claim on the session user', async () => {

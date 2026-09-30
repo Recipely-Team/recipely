@@ -77,17 +77,30 @@ interface AuthStoreDeps {
  *   loads it. Neither has a screen to report to.
  * - **The creator claim lives on the session user.** Request, remove and
  *   refresh each answer with the rebuilt session; it is applied only while the
- *   store is still authenticated, so an answer landing after sign-out cannot
- *   sign the user back in.
+ *   user who started the call is still the one signed in, so an answer landing
+ *   after sign-out cannot sign anyone back in, nor put one user's claim on the
+ *   next user's session.
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   return create<AuthStoreState>((set, get) => {
-    /** Applies a claim action's session, if the user is still signed in; `null` on success. */
-    const applyClaimResult = (result: Result<AuthSessionEntity, Failure>): Failure | null => {
+    /** The signed-in user's id, or `null` — read when a claim call starts. */
+    const sessionUserId = (): string | null => {
+      const { state } = get();
+      return state.status === StoreStatus.Authenticated ? state.session.user.id : null;
+    };
+
+    /**
+     * Runs a claim action for the user signed in now and applies its session
+     * only if that user still is; `null` on success. An answer for a user who
+     * has signed out since is nobody's: dropped, failure and all.
+     */
+    const applyClaimResult = async (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
+      const issuer = sessionUserId();
+      const result = await call();
+      if (issuer === null) return result.ok ? null : result.failure;
+      if (sessionUserId() !== issuer) return null;
       if (!result.ok) return result.failure;
-      if (get().state.status === StoreStatus.Authenticated) {
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-      }
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
     };
 
@@ -252,11 +265,11 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return null;
       },
 
-      requestCreatorTag: async (input) => applyClaimResult(await deps.requestCreatorTag.execute(input)),
+      requestCreatorTag: (input) => applyClaimResult(() => deps.requestCreatorTag.execute(input)),
 
-      removeCreatorTag: async () => applyClaimResult(await deps.removeCreatorTag.execute()),
+      removeCreatorTag: () => applyClaimResult(() => deps.removeCreatorTag.execute()),
 
-      refreshCreatorClaim: async () => applyClaimResult(await deps.refreshCreatorClaim.execute()),
+      refreshCreatorClaim: () => applyClaimResult(() => deps.refreshCreatorClaim.execute()),
     };
   });
 };

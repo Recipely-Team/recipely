@@ -39,6 +39,7 @@ import { toCreatorClaim } from '@infrastructure/creators/to-creator-claim';
 import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
 import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
 import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
+import { signedInUserId } from '@infrastructure/auth/session/signed-in-user-id';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
@@ -180,25 +181,32 @@ export class AuthRepository implements AuthRepositoryInterface {
     return ok(undefined);
   }
 
+  // The claim calls read the issuing user first: see `replaceSessionUser`.
   async requestCreatorTag(tag: CreatorTag): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUserId(this.storage);
+    if (!issuer.ok) return issuer;
     const result = await this.http.put<CreatorClaimDto>(ApiRoutes.me.creator, toCreatorTagRequest(tag));
     if (!result.ok) return result;
     const claim = toCreatorClaim(result.value);
     if (!claim.ok) return claim;
-    return replaceSessionUser(this.storage, (user) => ok(user.withCreatorClaim(claim.value)));
+    return replaceSessionUser(this.storage, issuer.value, (user) => ok(user.withCreatorClaim(claim.value)));
   }
 
   async removeCreatorTag(): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUserId(this.storage);
+    if (!issuer.ok) return issuer;
     const result = await this.http.delete<void>(ApiRoutes.me.creator);
     if (!result.ok) return result;
-    return replaceSessionUser(this.storage, (user) => ok(user.withCreatorClaim(null)));
+    return replaceSessionUser(this.storage, issuer.value, (user) => ok(user.withCreatorClaim(null)));
   }
 
   async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUserId(this.storage);
+    if (!issuer.ok) return issuer;
     const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
     if (!result.ok) return result;
     const { creator } = result.value;
-    return replaceSessionUser(this.storage, (user) =>
+    return replaceSessionUser(this.storage, issuer.value, (user) =>
       ok(creator === undefined ? user : user.withCreatorClaim(readCreatorClaim(creator))),
     );
   }

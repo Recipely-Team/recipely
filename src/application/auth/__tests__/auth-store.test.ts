@@ -653,6 +653,42 @@ describe('auth store — creator claim', () => {
     expect(userOf(store)?.creatorStatus).toBe(CreatorStatus.Pending);
   });
 
+  it('a claim answer for the previous user does not land in the next user\'s session', async () => {
+    const next = (() => {
+      const email = Email.create('b@example.com');
+      if (!email.ok) throw new Error();
+      const user = UserEntity.create({ id: 'u2', email: email.value, displayName: 'B' });
+      if (!user.ok) throw new Error();
+      const session = AuthSessionEntity.create({ id: 's2', accessToken: 'tok2', expiresAt: new Date(Date.now() + 60_000), user: user.value });
+      if (!session.ok) throw new Error();
+      return session.value;
+    })();
+    let release: (session: AuthSessionEntity) => void = () => undefined;
+    const signIns = [buildSession(), next];
+    const repo = new (class extends FakeAuthRepository {
+      override signIn() {
+        const session = signIns.shift();
+        return Promise.resolve(session === undefined ? fail(new NetworkFailure('none')) : ok(session));
+      }
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          release = (session) => resolve(ok(session));
+        });
+      }
+    })();
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+    const refreshing = store.getState().refreshCreatorClaim();
+    await store.getState().signOut();
+    await store.getState().signIn('b@b.co', 'pw');
+
+    release(claimedSession('approved'));
+    await refreshing;
+
+    const s = store.getState().state;
+    expect(s.status === 'authenticated' && s.session).toBe(next);
+  });
+
   it('an answer landing after sign-out does not sign the user back in', async () => {
     let release: (session: AuthSessionEntity) => void = () => undefined;
     const repo = new (class extends FakeAuthRepository {

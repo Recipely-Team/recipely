@@ -8,16 +8,21 @@ import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-st
 
 /**
  * Swaps the stored session's user for `update(current user)` and persists it,
- * keeping the token, expiry and id.
+ * keeping the token, expiry and id — only while `issuerId` is still the one
+ * signed in.
  *
  * @remarks
  * - **For endpoints that answer without a token** — profile, avatar, creator
  *   claim. Each changes the user; none issues a new session.
  * - **Fails with `UnauthorizedFailure` when there is no stored session**, so a
  *   response that lands after sign-out cannot bring the session back.
+ * - **Fails with `UnauthorizedFailure` when another user is signed in now.**
+ *   `issuerId` is the user the request was sent for; an answer that lands
+ *   after a sign-out and a sign-in as someone else is not theirs to keep.
  */
 export const replaceSessionUser = async (
   storage: SecureTokenStorage,
+  issuerId: string,
   update: (current: UserEntity) => Result<UserEntity, Failure>,
 ): Promise<Result<AuthSessionEntity, Failure>> => {
   const sessionResult = await storage.loadSession();
@@ -27,6 +32,9 @@ export const replaceSessionUser = async (
   const current = sessionResult.value;
   if (current === null) {
     return fail(new UnauthorizedFailure(DiagnosticMessage.auth.noActiveSession));
+  }
+  if (current.user.id !== issuerId) {
+    return fail(new UnauthorizedFailure(DiagnosticMessage.auth.sessionUserChanged));
   }
 
   const userResult = update(current.user);

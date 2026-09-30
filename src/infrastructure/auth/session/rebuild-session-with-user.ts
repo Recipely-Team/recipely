@@ -12,7 +12,8 @@ import { replaceSessionUser } from '@infrastructure/auth/session/replace-session
  *
  * The avatar and profile endpoints return only the updated user (no token), so
  * the current session's token/expiry/id are reused to keep the user signed in.
- * Fails with `UnauthorizedFailure` when there is no active session to update.
+ * Fails with `UnauthorizedFailure` when there is no active session to update,
+ * or when it belongs to someone other than the answer's user.
  * A user answer without a `creator` field (a backend older than creator tags)
  * keeps the stored claim: editing a bio must not clear it.
  */
@@ -20,7 +21,7 @@ export const rebuildSessionWithUser = (
   storage: SecureTokenStorage,
   userDto: RecipelyUserDto,
 ): Promise<Result<AuthSessionEntity, Failure>> =>
-  replaceSessionUser(storage, (current) => {
+  replaceSessionUser(storage, userDto.id, (current) => {
     const user = toUser(userDto);
     if (!user.ok || userDto.creator !== undefined) return user;
     return ok(user.value.withCreatorClaim(current.creatorClaim));

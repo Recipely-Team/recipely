@@ -359,6 +359,17 @@ the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) �
 user-scoped store must be registered in `clearSessionCaches`, and now also needs this
 guard.
 
+**The same class, one layer down: the claim written into the next user's session.**
+A creator-claim request / remove / refresh (and a profile or avatar save) rewrites the
+session user in secure storage once it answers. Checking only "is someone signed in"
+let an answer for user A that landed after A signed out and B signed in put A's claim
+on B's persisted session and on screen. *Guard:* the issuing user id is read when the
+call starts and compared when it lands — `replaceSessionUser(storage, issuerId, …)`
+refuses a different user, and `configureAuthStore`'s `applyClaimResult` drops the
+answer. Covered by "does not write the first user's claim into the next user's
+session" (`auth-repository.creator.test.ts`) and "a claim answer for the previous
+user does not land in the next user's session" (`auth-store.test.ts`).
+
 ---
 
 ## Two timers, one effect, and a checklist that never moved
