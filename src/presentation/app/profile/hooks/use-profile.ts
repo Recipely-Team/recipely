@@ -7,12 +7,15 @@ import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upl
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import type { CreatorTag } from '@domain/creators/creator-tag';
 
 /** View model returned by {@link useProfile} for the profile screen. */
 interface UseProfileResult {
   displayName: string;
   handle: string;
   bio: string;
+  /** The approved creator tag for the verified chip; null without one or while under review. */
+  creatorTag: CreatorTag | null;
   photoUri: string | undefined;
   isUploading: boolean;
   onPickAvatar: () => void;
@@ -46,6 +49,7 @@ export const useProfile = (): UseProfileResult => {
   const photoUri = user?.photoUrl ?? undefined;
   const handle = email.split('@')[ValueConstants.zero];
   const bio = user?.bio?.trim() ?? CharConstants.empty;
+  const creatorTag = user?.creatorClaim?.approvedTag ?? null;
 
   useEffect(() => {
     if (userId !== undefined && profileState.status === StoreStatus.Idle) {
@@ -84,6 +88,7 @@ export const useProfile = (): UseProfileResult => {
     displayName,
     handle,
     bio,
+    creatorTag,
     photoUri,
     isUploading,
     onPickAvatar: () => void pickAndUpload(),
