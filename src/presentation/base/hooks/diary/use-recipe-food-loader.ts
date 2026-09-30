@@ -10,8 +10,8 @@ import { t } from '@presentation/i18n';
  * Resolves a recipe row of the Add food sheet into one loggable serving.
  *
  * @remarks
- * - **Why a fetch.** List rows are summaries and carry no nutrition, so the
- *   full recipe is read through the recipe-detail cache — the same entry the
+ * - **Why a fetch.** List rows carry kcal but no macros, so the full recipe
+ *   is read through the recipe-detail cache — the same entry the
  *   detail page would use, so opening it later costs nothing.
  * - **"Can it be logged?" is the use case's answer**, never a check here: a
  *   recipe without calories is refused by `buildLoggableFoodFromRecipe` and
@@ -19,18 +19,7 @@ import { t } from '@presentation/i18n';
  */
 export const useRecipeFoodLoader = (): RecipeFoodLoader => {
   const { recipeDetailStore, buildLoggableFoodFromRecipe } = useStores();
-  const cached = recipeDetailStore((s) => s.byId);
   const [loadingId, setLoadingId] = useState<string | null>(null);
-
-  const caloriesFor = useCallback(
-    (recipeId: string): number | null => {
-      const entry = cached[recipeId];
-      if (entry?.status !== StoreStatus.Loaded) return null;
-      const food = buildLoggableFoodFromRecipe.execute(entry.recipe);
-      return food.ok ? food.value.perServing.calories : null;
-    },
-    [buildLoggableFoodFromRecipe, cached],
-  );
 
   const open = useCallback(
     async (recipeId: string): Promise<LoggableFood | null> => {
@@ -51,5 +40,5 @@ export const useRecipeFoodLoader = (): RecipeFoodLoader => {
     [buildLoggableFoodFromRecipe, recipeDetailStore],
   );
 
-  return { loadingId, caloriesFor, open };
+  return { loadingId, open };
 };

@@ -17,11 +17,11 @@ const date = CalendarDate.of(2026, 9, 30);
 const at = (hour: number): Date => new Date(2026, 8, 30, hour);
 const food = LoggableFood.of({ name: 'Menemen', perServing: nutrientsOf({ calories: 300 }), recipeId: 'r1', imageUrl: null });
 
-const summary = (id: string, name: string): RecipeSummaryEntity => {
+const summary = (id: string, name: string, caloriesPerServing = 350): RecipeSummaryEntity => {
   const props: RecipeSummaryEntityProps = {
     id, name, image: '', cuisine: '', category: '', difficulty: Difficulty.Easy,
     totalTimeMinutes: null, rating: 0, isPublished: true, moderationStatus: 'approved', likeCount: 0, likedByMe: false,
-    commentCount: 0, viewCount: 0, origin: RecipeOrigin.User, sourcePlatform: null, aiWritten: false, photoCount: 0,
+    commentCount: 0, viewCount: 0, origin: RecipeOrigin.User, sourcePlatform: null, aiWritten: false, photoCount: 0, caloriesPerServing,
   };
   const created = RecipeSummaryEntity.create(props);
   if (!created.ok) throw new Error(created.failure.message);
@@ -67,6 +67,11 @@ describe('recipe search', () => {
       ['mine', ['a']],
       ['saved', ['b']],
     ]);
+  });
+
+  it('offers only recipes with calories — nothing else can be logged', () => {
+    const groups = buildRecipeFoodGroups({ mine: [summary('a', 'Menemen', 0)], saved: [summary('b', 'Pilav')], feed: [] }, '', 'en');
+    expect(groups.flatMap((g) => g.recipes.map((r) => r.id))).toEqual(['b']);
   });
 
   it('filters every group by the search', () => {

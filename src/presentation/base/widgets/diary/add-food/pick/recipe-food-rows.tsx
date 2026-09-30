@@ -11,7 +11,10 @@ export interface RecipeFoodRowsProps {
   onChoose: (food: LoggableFood) => void;
 }
 
-/** Recipe rows of the pick step; tapping one fetches the recipe and moves to the detail step. */
+/**
+ * Recipe rows of the pick step, kcal from the list itself. Tapping one still
+ * fetches the full recipe, whose macros the logged entry snapshots.
+ */
 export const RecipeFoodRows = ({ recipes, loader, onChoose }: RecipeFoodRowsProps): React.JSX.Element => {
   const locale = useLocale();
   const choose = async (recipeId: string): Promise<void> => {
@@ -21,12 +24,11 @@ export const RecipeFoodRows = ({ recipes, loader, onChoose }: RecipeFoodRowsProp
   return (
     <>
       {recipes.map((recipe) => {
-        const kcal = loader.caloriesFor(recipe.id);
         return (
           <FoodPickRow
             key={recipe.id}
             name={recipe.name}
-            meta={kcal === null ? null : t().diary.perServingMeta.replace('{k}', formatWholeNumber(kcal, locale))}
+            meta={t().diary.perServingMeta.replace('{k}', formatWholeNumber(recipe.caloriesPerServing, locale))}
             imageUrl={recipe.image}
             isQuickAdd={false}
             isLoading={loader.loadingId === recipe.id}

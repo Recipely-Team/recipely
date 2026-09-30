@@ -12,6 +12,8 @@ import type { RecipeFoodSources } from '@presentation/base/widgets/diary/add-foo
  * @remarks
  * - **A recipe appears once**, in the first group that holds it: your own
  *   recipe you also saved is listed under "My recipes" only.
+ * - **Only recipes with calories are offered** — nothing else can be logged
+ *   (`RecipeSummaryEntity.hasCalories`, from the list's `caloriesPerServing`).
  * - The feed is whatever the Recipes tab has loaded; nothing is fetched here.
  */
 export const buildRecipeFoodGroups = (sources: RecipeFoodSources, query: string, locale: string): RecipeFoodGroup[] => {
@@ -19,7 +21,7 @@ export const buildRecipeFoodGroups = (sources: RecipeFoodSources, query: string,
   const seen = new Set<string>();
   const take = (recipes: readonly RecipeSummaryEntity[]): RecipeSummaryEntity[] =>
     recipes.filter((recipe) => {
-      if (seen.has(recipe.id) || !matchesFoodQuery(recipe.name, query, locale)) return false;
+      if (seen.has(recipe.id) || !recipe.hasCalories || !matchesFoodQuery(recipe.name, query, locale)) return false;
       seen.add(recipe.id);
       return true;
     });
