@@ -29,6 +29,7 @@ jest.mock('@presentation/base/widgets/ads/web-banner-ad', () => ({
 
 jest.mock('@presentation/app/recipes/body/web-hero-section', () => ({ WebHeroSection: () => null }));
 jest.mock('@presentation/app/recipes/body/web-cuisine-rail', () => ({ WebCuisineRail: () => null }));
+jest.mock('@presentation/app/recipes/items/creators/web-creators-grid', () => ({ WebCreatorsGrid: () => null }));
 jest.mock('@presentation/app/recipes/body/web-recipe-grid', () => ({ WebRecipeGrid: () => null }));
 jest.mock('@presentation/app/recipes/sheets/all-cuisines-sheet', () => ({ AllCuisinesSheet: () => null }));
 

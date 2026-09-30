@@ -49,6 +49,9 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: Icon, MaterialCommunityIcons: Icon };
 });
 
+// The creators strip reads its own store and has its own suite.
+jest.mock('@presentation/app/recipes/items/creators/creators-strip', () => ({ CreatorsStrip: () => null }));
+
 jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   return { RecipeListItem: (): React.JSX.Element => <Text>recipe-list-item</Text> };

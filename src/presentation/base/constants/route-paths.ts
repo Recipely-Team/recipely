@@ -36,7 +36,11 @@ export const RoutePaths = {
   profile: '/profile',
   editProfile: '/edit-profile',
   settings: '/settings',
+  /** Every approved creator, as cards; the Explore strip's "See all". */
+  creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /** One creator's public page; open to guests. */
+  creatorProfile: (userId: string): string => `/creators/${encodeURIComponent(userId)}`,
   /**
    * The feed, arriving with the search box already filled.
    *
