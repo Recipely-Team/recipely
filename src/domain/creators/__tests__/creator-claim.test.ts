@@ -43,22 +43,6 @@ describe('CreatorClaim', () => {
     expect(claimOf(CreatorStatus.Rejected).approvedTag).toBeNull();
   });
 
-  describe('keepsApprovalFor', () => {
-    it('is true for the same platform and handle on an approved claim', () => {
-      expect(claimOf(CreatorStatus.Approved).keepsApprovalFor(tagOf('instagram', '@Chef'))).toBe(true);
-    });
-
-    it('is false for any change to an approved claim', () => {
-      const approved = claimOf(CreatorStatus.Approved);
-      expect(approved.keepsApprovalFor(tagOf('instagram', 'chef2'))).toBe(false);
-      expect(approved.keepsApprovalFor(tagOf('tiktok', 'chef'))).toBe(false);
-    });
-
-    it('is false for a claim that is not approved yet', () => {
-      expect(claimOf(CreatorStatus.Pending).keepsApprovalFor(tagOf('instagram', 'chef'))).toBe(false);
-    });
-  });
-
   it('compares tag and status', () => {
     expect(claimOf(CreatorStatus.Pending).equals(claimOf(CreatorStatus.Pending))).toBe(true);
     expect(claimOf(CreatorStatus.Pending).equals(claimOf(CreatorStatus.Approved))).toBe(false);

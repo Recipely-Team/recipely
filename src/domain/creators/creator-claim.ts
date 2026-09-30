@@ -26,9 +26,6 @@ const isClaimStatus = (raw: string): raw is CreatorStatus => CLAIM_STATUSES.has(
  * @remarks
  * - **There is no `none` claim.** Status `none` is the absence of a claim, so
  *   the user holds `null` instead and `create` refuses `none`.
- * - **The re-review rule lives here** (`keepsApprovalFor`): asking again for
- *   the approved platform + handle is a no-op on the server; any other request
- *   sends the claim back to pending and hides the tag until an admin approves.
  */
 export class CreatorClaim extends BaseValueObject<CreatorClaimValue> {
   private constructor(value: CreatorClaimValue) {
@@ -65,11 +62,6 @@ export class CreatorClaim extends BaseValueObject<CreatorClaimValue> {
   /** The tag, while an admin has approved it — what the badge shows; `null` under review or refused. */
   get approvedTag(): CreatorTag | null {
     return this.isApproved ? this._value.tag : null;
-  }
-
-  /** True when requesting `tag` leaves this claim approved; false when it goes back to review. */
-  keepsApprovalFor(tag: CreatorTag): boolean {
-    return this.isApproved && this._value.tag.equals(tag);
   }
 
   override equals(other: BaseValueObject<CreatorClaimValue>): boolean {
