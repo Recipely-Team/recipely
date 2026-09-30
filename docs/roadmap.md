@@ -180,6 +180,65 @@ anywhere — it has to be read off the AI Studio dashboard. Phase 0 is a throwaw
 spike that measures real tokens per minute and confirms the model id is actually
 callable before any UI is written.
 
+## 7. Diary: log a meal by describing it or photographing it
+
+**Status:** `idea` · **Extends:** the Food Diary's Quick add (PR #494)
+
+Quick add today asks for a name and numbers. Most people know what they ate,
+not its calories. The user writes "a plate of menemen and two slices of bread"
+or sends a photo of the plate, and an AI returns a short **list of candidate
+foods with portions and estimated calories/macros**. The user ticks what is
+right, adjusts servings, and logs it.
+
+- Text is cheap: one model call returning structured candidates.
+- A photo needs a vision model and a per-user budget (same cost concerns as
+  the import pipeline's vision step).
+- The candidates are estimates, so the UI must say so and let every number be
+  edited before it is saved.
+
+**Open:** do we estimate from a nutrition database (accurate, needs a source)
+or from the model alone (fast, drifts)? Does the photo go through the backend
+(key stays server-side), and what is the daily cap?
+
+## 8. Diary: height, weight and computed daily goals
+
+**Status:** `idea` · **Extends:** Daily goals
+
+Goals are typed by hand today. With **height, weight, age, sex, activity level
+and aim** (lose / keep / gain) the app can propose goals (e.g. Mifflin-St Jeor
+for energy, protein per kg of body weight). Every field is **optional**: the
+calculation uses what it has and falls back to the defaults for the rest.
+
+- These are health data: stored per user, removed with the account (like the
+  diary rows), never shown publicly.
+- The proposal is a suggestion the user accepts or edits, never a silent
+  overwrite of goals they set themselves.
+- The voice assistant can already compute goals from what the user tells it;
+  stored body data lets it do so without asking every time.
+
+**Open:** where the fields live (profile vs diary goals sheet), and whether a
+weight log over time is wanted (it turns a setting into a chart).
+
+## 9. Comment-to-DM recipe delivery for creators
+
+**Status:** `idea` · **Next after:** the diary voice assistant
+
+Food creators get hundreds of "recipe?" comments per Reel and pay ~$100/month
+for ManyChat-style tools that DM a link when a follower comments a keyword.
+Recipely can deliver the **recipe itself** (imported from that Reel) instead
+of a blog link.
+
+**Open:** needs Meta's Instagram Messaging API (business account, app review,
+24-hour messaging window rules). Scope that before any code.
+
+## 10. Creator storefront
+
+**Status:** `idea` · **After:** comment-to-DM
+
+A public `recipely.net/@handle` page listing a creator's recipes, with follow
+and a "new recipe" notification to followers. Creators verify their account
+and imported recipes from their own Reels are attributed to them.
+
 ## Adding to this file
 
 Keep the shape: **what**, **why**, **what it depends on**, **what is still
