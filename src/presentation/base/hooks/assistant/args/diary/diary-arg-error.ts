@@ -16,4 +16,7 @@ export const DiaryArgError = {
   InvalidNumber: 'not_a_number',
   NothingToSet: 'nothing_to_set',
   UnknownFood: 'unknown_food_estimate_per_serving_nutrition_and_call_again_with_calories',
+  RecipeNotLoaded: 'recipe_could_not_be_loaded',
+  AmbiguousEntry: 'ambiguous_ask_which',
+  NothingToChange: 'nothing_to_change',
 } as const;

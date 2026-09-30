@@ -4,7 +4,6 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
-import { StoreStatus } from '@application/store/store-status';
 import { CharConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
@@ -54,7 +53,6 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
   const { diaryStore } = useStores();
   const locale = useLocale();
   const sources = useRecipeFoodSources();
-  const day = view.status === StoreStatus.Loaded ? view.day : null;
 
   useAssistantScreenContent(() => diaryScreenLine(view, selected, today));
   useAssistantScreenReading(() => diaryDayReading(view, selected, today, locale));
@@ -71,7 +69,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
       [diaryStore, select],
     ),
   });
-  useAssistantDiaryEntryActions(day);
+  useAssistantDiaryEntryActions();
 
   useAssistantAction(
     AssistantAction.SelectDate,
@@ -114,13 +112,18 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
       async (arg?: string): Promise<AssistantActionResultType> => {
         const glasses = parseWaterArg(arg);
         if (!glasses.ok) return { ok: false, error: glasses.error };
+        // The store's day, not the render's: a queued `selectDate` may not have re-rendered yet.
+        const state = diaryStore.getState();
+        const day = state.days[state.selectedDate.value] ?? null;
         if (day === null) return { ok: false, error: AssistantActionError.NotReady };
         const next = day.withWater(day.waterGlasses + glasses.value);
         const result = await diaryStore.getState().setWater(day.date, next.waterGlasses);
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
-        return { ok: true, title: `water ${next.waterGlasses}/${next.goals.waterGlasses} glasses on ${day.date.value}` };
+        // Clamped: say so, or the model reports the amount it asked for.
+        const capped = next.waterGlasses !== day.waterGlasses + glasses.value ? ` (capped at ${next.waterGlasses})` : CharConstants.empty;
+        return { ok: true, title: `water ${next.waterGlasses}/${next.goals.waterGlasses} glasses on ${day.date.value}${capped}` };
       },
-      [day, diaryStore],
+      [diaryStore],
     ),
   );
 

@@ -21,6 +21,7 @@ import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import { StoreStatus } from '@application/store/store-status';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
@@ -31,16 +32,20 @@ import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-dia
 const menemenRecipe = recipeSummaryOf('r1', 'Menemen', 300);
 const menemenFood = LoggableFood.of({ name: 'Menemen', perServing: nutrientsOf({ calories: 300, protein: 20 }), recipeId: 'r1', imageUrl: null });
 const apple = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
-const mockSources = { mine: [menemenRecipe], saved: [], feed: [] };
+const mockSources: { mine: RecipeSummaryEntity[]; saved: RecipeSummaryEntity[]; feed: RecipeSummaryEntity[] } = { mine: [menemenRecipe], saved: [], feed: [] };
 const mockLoader = { loadingId: null, open: jest.fn(async () => menemenFood) };
 
 const today = CalendarDate.today();
 const yesterday = today.addDays(-1);
 
-const harness = (entries = [foodLogEntryOf({ id: 'e1', name: 'Menemen', date: today, meal: MealSlot.Breakfast, servings: 1 })]) => {
+const harness = (
+  entries = [foodLogEntryOf({ id: 'e1', name: 'Menemen', date: today, meal: MealSlot.Breakfast, servings: 1 })],
+  otherDays: DiaryDay[] = [],
+) => {
   const day = DiaryDay.of({ date: today, entries: entries.map((e) => e), waterGlasses: 5, goals: NutritionGoals.defaults() });
   const diaryStore = create(() => ({
     selectedDate: today,
+    days: Object.fromEntries([day, ...otherDays].map((d) => [d.date.value, d])),
     goals: NutritionGoals.defaults(),
     recent: [apple],
     addEntry: jest.fn(async (entry: NewFoodLogEntry) => ok(foodLogEntryOf({ name: entry.name, servings: entry.servings }))),
@@ -73,7 +78,7 @@ const harness = (entries = [foodLogEntryOf({ id: 'e1', name: 'Menemen', date: to
     });
     return result;
   };
-  return { registry, store: diaryStore.getState(), select, sheets, run };
+  return { registry, diaryStore, store: diaryStore.getState(), select, sheets, run };
 };
 
 describe('useAssistantDiaryActions', () => {
@@ -109,6 +114,33 @@ describe('useAssistantDiaryActions', () => {
     expect([quick?.name, quick?.recipeId, quick?.nutrients.carbs]).toEqual(['Simit', null, 50]);
   });
 
+  // "bread" with the model's own estimate once logged the feed's "Banana Bread" at its calories.
+  it('logFood keeps the model estimate when only a loose name match exists', async () => {
+    const saved = mockSources.feed;
+    mockSources.feed = [recipeSummaryOf('r2', 'Banana Bread', 420)];
+    try {
+      const h = harness();
+      await expect(h.run(AssistantAction.LogFood, JSON.stringify({ name: 'bread', calories: 80 }))).resolves.toMatchObject({ ok: true });
+      const entry = h.store.addEntry.mock.calls[0]?.[0];
+      expect([entry?.name, entry?.recipeId, entry?.nutrients.calories]).toEqual(['bread', null, 80]);
+      expect(mockLoader.open).not.toHaveBeenCalled();
+    } finally {
+      mockSources.feed = saved;
+    }
+  });
+
+  // "Go to yesterday and remove the menemen": removeFood runs before the screen re-renders.
+  it('removeFood and addWater act on the day the store has selected, not the last render', async () => {
+    const yesterdayEntry = foodLogEntryOf({ id: 'y1', name: 'Menemen', date: yesterday, meal: MealSlot.Breakfast, servings: 1 });
+    const other = DiaryDay.of({ date: yesterday, entries: [yesterdayEntry], waterGlasses: 1, goals: NutritionGoals.defaults() });
+    const h = harness(undefined, [other]);
+    h.diaryStore.setState({ selectedDate: yesterday });
+    await h.run(AssistantAction.RemoveFood, 'menemen');
+    expect(h.store.deleteEntry).toHaveBeenCalledWith(yesterdayEntry);
+    await h.run(AssistantAction.AddWater, '1');
+    expect(h.store.setWater).toHaveBeenCalledWith(yesterday, 2);
+  });
+
   it('logFood refuses servings off the 0.5 step', async () => {
     const h = harness();
     await expect(h.run(AssistantAction.LogFood, '{"name":"apple","servings":1.3}')).resolves.toMatchObject({ ok: false, error: DiaryArgError.InvalidServings });
@@ -132,7 +164,7 @@ describe('useAssistantDiaryActions', () => {
       foodLogEntryOf({ id: 'b', name: 'Menemen', meal: MealSlot.Dinner }),
     ]);
     const result = await two.run(AssistantAction.RemoveFood, 'menemen');
-    expect(result).toMatchObject({ ok: false, error: 'ambiguous_ask_which' });
+    expect(result).toMatchObject({ ok: false, error: DiaryArgError.AmbiguousEntry });
     expect(result.title).toContain('dinner');
     expect(two.store.deleteEntry).not.toHaveBeenCalled();
   });
@@ -141,7 +173,7 @@ describe('useAssistantDiaryActions', () => {
     const h = harness();
     await expect(h.run(AssistantAction.ChangeFood, '{"name":"menemen","servings":2,"toMeal":"lunch"}')).resolves.toMatchObject({ ok: true });
     expect(h.store.updateEntry).toHaveBeenCalledWith(expect.anything(), { servings: 2, meal: MealSlot.Lunch });
-    await expect(h.run(AssistantAction.ChangeFood, '{"name":"menemen","servings":1}')).resolves.toMatchObject({ ok: false, error: 'nothing_to_change' });
+    await expect(h.run(AssistantAction.ChangeFood, '{"name":"menemen","servings":1}')).resolves.toMatchObject({ ok: false, error: DiaryArgError.NothingToChange });
   });
 
   it('addWater adds to the day and clamps at the daily maximum', async () => {

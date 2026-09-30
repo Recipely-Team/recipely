@@ -16,6 +16,7 @@ import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/dia
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
+import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/fold-for-match';
 import { resolveDiaryDate } from '@presentation/base/hooks/assistant/args/diary/resolve-diary-date';
 import { parseLogFoodArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-log-food-arg';
 import type { LogFoodArgs } from '@presentation/base/hooks/assistant/args/diary/parsing/log-food-args';
@@ -41,6 +42,9 @@ interface AssistantLogFoodOptions {
  *   loaded feed and recent foods are ranked by name; the best one's own
  *   nutrition is used. Only when nothing matches do the model's numbers make a
  *   quick-add food — and with no numbers the call is sent back asking for them.
+ * - **The model's numbers beat a loose match.** When it sent calories it was
+ *   estimating a generic food, so only an exact name may override them —
+ *   "bread" must not log the feed's "Banana Bread".
  * - **Every value goes through the domain** (`Servings.create`,
  *   `Nutrients.create`, `LoggableFood.quickAdd`, `CalendarDate`), so the model
  *   is refused exactly what the Add food sheet would refuse.
@@ -52,18 +56,20 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
 
   const resolveFood = useCallback(
     async (args: LogFoodArgs): Promise<LoggableFood | string> => {
-      if (args.name === null) return openRecipeFood ?? DiaryArgError.MissingName;
-      const candidates = buildFoodCandidates(sources, diaryStore.getState().recent);
-      const open = openRecipeFood === null ? [] : [{ name: openRecipeFood.name, food: openRecipeFood }];
-      const [openMatch] = rankByName(open, (c) => c.name, args.name);
+      const name = args.name;
+      if (name === null) return openRecipeFood ?? DiaryArgError.MissingName;
+      const exactOnly = args.perServing !== null;
+      const pick = <T extends { name: string }>(items: readonly T[]): T | undefined =>
+        rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
+      const openMatch = pick(openRecipeFood === null ? [] : [{ name: openRecipeFood.name, food: openRecipeFood }]);
       if (openMatch !== undefined) return openMatch.food;
-      const [best] = rankByName(candidates, (c) => c.name, args.name);
+      const best = pick(buildFoodCandidates(sources, diaryStore.getState().recent));
       if (best?.kind === 'food') return best.food;
-      if (best?.kind === 'recipe') return (await loader.open(best.recipe.id)) ?? 'recipe_could_not_be_loaded';
+      if (best?.kind === 'recipe') return (await loader.open(best.recipe.id)) ?? DiaryArgError.RecipeNotLoaded;
       if (args.perServing === null) return DiaryArgError.UnknownFood;
       const nutrients = Nutrients.create(args.perServing);
       if (!nutrients.ok) return failureReason(nutrients.failure);
-      const quick = LoggableFood.quickAdd(args.name, nutrients.value);
+      const quick = LoggableFood.quickAdd(name, nutrients.value);
       return quick.ok ? quick.value : failureReason(quick.failure);
     },
     [diaryStore, loader, openRecipeFood, sources],

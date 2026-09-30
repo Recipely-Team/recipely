@@ -26,29 +26,36 @@ const findTarget = (day: DiaryDay | null, parsed: ArgParse<EntryTargetArgs>): Ta
   if (matches.length === ValueConstants.one && matches[0] !== undefined) return { ok: true, entry: matches[0], args: parsed.value };
   // Several: name them so the model asks "which one?". None: name the day's entries so it can retry with the right word.
   return matches.length > ValueConstants.one
-    ? { ok: false, result: { ok: false, error: 'ambiguous_ask_which', title: entryListLine(matches) } }
+    ? { ok: false, result: { ok: false, error: DiaryArgError.AmbiguousEntry, title: entryListLine(matches) } }
     : { ok: false, result: { ok: false, error: 'not_found', title: day.entries.length === 0 ? 'no entries on this day' : entryListLine(day.entries) } };
 };
 
 /**
- * `removeFood` and `changeFood` on the selected day. The entry is found by
- * name (and meal, when given); the write goes through the store the edit
+ * `removeFood` and `changeFood` on the selected day — read from the store when
+ * the call runs, not from the last render: "go to yesterday and remove the
+ * menemen" queues `removeFood` right behind `selectDate`.
+ *
+ * The entry is found by name (and meal, when given); the write goes through the store the edit
  * sheet uses, and the change itself is the entity's own `changesTo`.
  */
-export const useAssistantDiaryEntryActions = (day: DiaryDay | null): void => {
+export const useAssistantDiaryEntryActions = (): void => {
   const { diaryStore } = useStores();
+  const selectedDay = useCallback((): DiaryDay | null => {
+    const state = diaryStore.getState();
+    return state.days[state.selectedDate.value] ?? null;
+  }, [diaryStore]);
 
   useAssistantAction(
     AssistantAction.RemoveFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const target = findTarget(day, parseEntryTargetArg(arg));
+        const target = findTarget(selectedDay(), parseEntryTargetArg(arg));
         if (!target.ok) return target.result;
         const result = await diaryStore.getState().deleteEntry(target.entry);
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
         return { ok: true, title: `removed ${target.entry.name} from ${target.entry.meal} on ${target.entry.date.value}` };
       },
-      [day, diaryStore],
+      [diaryStore, selectedDay],
     ),
   );
 
@@ -56,13 +63,13 @@ export const useAssistantDiaryEntryActions = (day: DiaryDay | null): void => {
     AssistantAction.ChangeFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const target = findTarget(day, parseEntryTargetArg(arg));
+        const target = findTarget(selectedDay(), parseEntryTargetArg(arg));
         if (!target.ok) return target.result;
         const { entry, args } = target;
         const servings = args.servings === null ? null : Servings.create(args.servings);
         if (servings !== null && !servings.ok) return { ok: false, error: DiaryArgError.InvalidServings };
         const changes = entry.changesTo(servings?.value.value ?? entry.servings, args.toMeal ?? entry.meal);
-        if (changes === null) return { ok: false, error: 'nothing_to_change' };
+        if (changes === null) return { ok: false, error: DiaryArgError.NothingToChange };
         const result = await diaryStore.getState().updateEntry(entry, changes);
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
         const updated = result.value;
@@ -71,7 +78,7 @@ export const useAssistantDiaryEntryActions = (day: DiaryDay | null): void => {
           title: `${updated.name} is now ${updated.servings} serving(s) in ${updated.meal}, ${Math.round(updated.nutrients.calories)} kcal`,
         };
       },
-      [day, diaryStore],
+      [diaryStore, selectedDay],
     ),
   );
 };
