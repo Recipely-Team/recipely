@@ -16,6 +16,7 @@ import { MonthStatsTiles } from '@presentation/app/diary/shared/items/month-stat
 import { StatusLegend } from '@presentation/app/diary/shared/items/status-legend';
 import { useDiaryMonth } from '@presentation/app/diary/shared/hooks/use-diary-month';
 import { RoutePaths } from '@presentation/base/constants';
+import { useAssistantCalendarActions } from '@presentation/app/diary/calendar/hooks/use-assistant-calendar-actions';
 import { t } from '@presentation/i18n';
 
 /**
@@ -33,6 +34,7 @@ export const DiaryCalendarView = (): React.JSX.Element => {
   const scrollable = useAssistantScrollable();
   const today = CalendarDate.today();
   const strings = t().diary;
+  useAssistantCalendarActions({ month, diaryMonth, selected, today, showMonth: setMonth });
 
   // Opened cold (a link, a reload on the web) there is nothing to go back to; the Day view is where this page lives.
   const leave = (): void => {

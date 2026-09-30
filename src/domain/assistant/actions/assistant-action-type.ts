@@ -100,6 +100,21 @@ export const AssistantAction = {
   ReportProblem: 'reportProblem',
   Scroll: 'scroll',
   Stop: 'stop',
+  // Food diary (docs/diary-assistant-contract.md — the backend's enum lists the same words).
+  /** Selects a day of the diary: `YYYY-MM-DD`, `today` or `yesterday`. */
+  SelectDate: 'selectDate',
+  /** Logs a food by name (or the open recipe), with optional meal, servings, date and per-serving nutrition. */
+  LogFood: 'logFood',
+  /** Opens Add food with a search and answers the top matches. */
+  SearchFood: 'searchFood',
+  RemoveFood: 'removeFood',
+  /** Changes a logged food's servings and/or moves it to another meal. */
+  ChangeFood: 'changeFood',
+  /** Adds (negative: removes) glasses of water on the selected day. */
+  AddWater: 'addWater',
+  SetGoals: 'setGoals',
+  OpenGoals: 'openGoals',
+  OpenAddFood: 'openAddFood',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];

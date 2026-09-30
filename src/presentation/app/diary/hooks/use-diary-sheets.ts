@@ -14,6 +14,10 @@ export const useDiarySheets = (selected: CalendarDate): UseDiarySheetsResult => 
     addRequest,
     goalsOpen,
     openAdd: useCallback((meal: MealSlotType | null) => setAddRequest({ kind: AddFoodRequestKind.Pick, date: selected, meal }), [selected]),
+    openSearch: useCallback(
+      (query: string) => setAddRequest({ kind: AddFoodRequestKind.Pick, date: selected, meal: null, query }),
+      [selected],
+    ),
     openEdit: useCallback((entry: FoodLogEntryEntity) => setAddRequest({ kind: AddFoodRequestKind.Edit, entry }), []),
     closeAdd: useCallback(() => setAddRequest(null), []),
     openGoals: useCallback(() => setGoalsOpen(true), []),

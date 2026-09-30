@@ -4,6 +4,8 @@ import { AddFoodPickStep } from '@presentation/base/widgets/diary/add-food/pick/
 import { AddFoodDetailStep } from '@presentation/base/widgets/diary/add-food/detail/add-food-detail-step';
 import { AddFoodFooter } from '@presentation/base/widgets/diary/add-food/add-food-footer';
 import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
+import { CharConstants } from '@core/constants';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
 import { diarySizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -50,6 +52,7 @@ export const AddFoodSheet = ({ request, onClose, onOpenDiary }: AddFoodSheetProp
     >
       {food === null ? (
         <AddFoodPickStep
+          initialQuery={request?.kind === AddFoodRequestKind.Pick ? (request.query ?? CharConstants.empty) : CharConstants.empty}
           meal={flow.meal}
           isSubmitting={flow.isSubmitting}
           onChoose={flow.choose}

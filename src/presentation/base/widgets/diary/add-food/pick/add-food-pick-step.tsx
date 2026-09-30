@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { MealSlotType } from '@domain/diary/meal-slot';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useRecipeFoodSources } from '@presentation/base/hooks/diary/use-recipe-food-sources';
 import { useRecipeFoodLoader } from '@presentation/base/hooks/diary/use-recipe-food-loader';
@@ -20,6 +20,8 @@ import { fontSizes, spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 
 export interface AddFoodPickStepProps {
+  /** What the search field opens with; a new value replaces what was typed. */
+  initialQuery: string;
   meal: MealSlotType;
   isSubmitting: boolean;
   onChoose: (food: LoggableFood) => void;
@@ -31,14 +33,19 @@ export interface AddFoodPickStepProps {
  * (design spec → Food Diary §6). Typing replaces the tabs with one "Results"
  * list over recipes and recent foods alike.
  */
-export const AddFoodPickStep = ({ meal, isSubmitting, onChoose, onQuickAdd }: AddFoodPickStepProps): React.JSX.Element => {
+export const AddFoodPickStep = ({ initialQuery, meal, isSubmitting, onChoose, onQuickAdd }: AddFoodPickStepProps): React.JSX.Element => {
   const locale = useLocale();
   const strings = t().diary;
   const { diaryStore } = useStores();
   const recent = diaryStore((s) => s.recent);
   const sources = useRecipeFoodSources();
   const loader = useRecipeFoodLoader();
-  const [query, setQuery] = useState(CharConstants.empty);
+  const [query, setQuery] = useState(initialQuery);
+  const [seenQuery, setSeenQuery] = useState(initialQuery);
+  if (initialQuery !== seenQuery) {
+    setSeenQuery(initialQuery);
+    setQuery(initialQuery);
+  }
   const [tab, setTab] = useState<FoodSourceTabType>(FoodSourceTab.Recipes);
 
   useEffect(() => {

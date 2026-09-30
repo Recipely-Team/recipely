@@ -8,6 +8,8 @@ export interface UseDiarySheetsResult {
   goalsOpen: boolean;
   /** Opens Add food on the pick step; `null` meal defaults from the clock. */
   openAdd: (meal: MealSlotType | null) => void;
+  /** Opens Add food on the pick step with its search already filled. */
+  openSearch: (query: string) => void;
   openEdit: (entry: FoodLogEntryEntity) => void;
   closeAdd: () => void;
   openGoals: () => void;

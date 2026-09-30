@@ -21,6 +21,7 @@ import { useDiaryDay } from '@presentation/app/diary/hooks/use-diary-day';
 import { useWeekLooks } from '@presentation/app/diary/hooks/use-week-looks';
 import { useDiarySheets } from '@presentation/app/diary/hooks/use-diary-sheets';
 import { useFirstDay } from '@presentation/app/diary/hooks/use-first-day';
+import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -47,6 +48,7 @@ export const DiaryScreen = (): React.JSX.Element => {
   const sheets = useDiarySheets(vm.selected);
   const isFirstDay = useFirstDay(vm.view.status === StoreStatus.Loaded ? vm.view.day : null);
   const scrollable = useAssistantScrollable();
+  useAssistantDiaryActions({ view: vm.view, selected: vm.selected, today: vm.today, select: vm.select, sheets });
   const hasRailBeside = isExpanded && width >= diarySizes.webColumnsMin;
   const mealColumns = isExpanded && width >= diarySizes.webMealColumnsMin ? ValueConstants.two : ValueConstants.one;
 

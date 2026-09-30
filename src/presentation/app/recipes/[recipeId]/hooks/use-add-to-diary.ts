@@ -7,9 +7,15 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
 import { useGuestGate } from '@presentation/app/recipes/shared/hooks/use-guest-gate';
 import type { UseAddToDiaryResult } from '@presentation/app/recipes/[recipeId]/model/use-add-to-diary-result';
 import { t } from '@presentation/i18n';
+
+/** Recipe Detail does not move anywhere when the assistant logs from it. */
+const noop = (): void => undefined;
+/** Logged from a recipe without a day named, a food goes to today — as the button does. */
+const today = (): CalendarDate => CalendarDate.today();
 
 /**
  * "Add to diary" on a recipe (design spec → Food Diary §1).
@@ -34,6 +40,9 @@ export const useAddToDiary = (recipe: RecipeEntity): UseAddToDiaryResult => {
     const built = buildLoggableFoodFromRecipe.execute(recipe);
     return built.ok ? built.value : null;
   }, [buildLoggableFoodFromRecipe, recipe]);
+
+  // "Log this" on a recipe means this recipe; a named food is resolved like on the diary.
+  useAssistantLogFood({ openRecipeFood: food, defaultDate: today, onLogged: noop, signedIn: userId !== null });
 
   const open = useCallback(() => {
     if (food === null) return;
