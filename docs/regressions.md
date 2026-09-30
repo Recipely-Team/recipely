@@ -2316,8 +2316,8 @@ react-native-svg `<Svg>`. Native ignores those there; on the web react-native-sv
 passes every prop it does not know straight to the DOM `<svg>`, so React logged an
 unknown-prop error for every date cell on the calendar.
 
-*Now:* the marker carries no accessibility props (the cell around it is the
-accessible element and speaks the status). Rule AJ refuses any `accessib*` or
+*Now:* the hiding props sit on a `View` wrapping the `<Svg>` (the cell around it is
+the accessible element and speaks the status). Rule AJ refuses any `accessib*` or
 `importantForAccessibility` prop on an `<Svg>` opening tag.
 
 *The class:* **a cross-platform library is only cross-platform for the props it
