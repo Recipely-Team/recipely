@@ -12,6 +12,10 @@ export interface UseCreatorProfileResult {
   isFollowPending: boolean;
   isPullRefreshing: boolean;
   gridColumns: number;
+  /** Whether a recipe is in the viewer's saved set — the web card's bookmark. */
+  isSaved: (id: string) => boolean;
+  /** Saves / unsaves a recipe; a guest gets the sign-in prompt instead. */
+  onToggleSave: (id: string) => void;
   /** Counts in the locale's compact notation ("12,4 B"). */
   formatCount: (value: number) => string;
   onRefresh: () => void;

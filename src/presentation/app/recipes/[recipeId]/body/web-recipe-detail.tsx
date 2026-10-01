@@ -17,6 +17,7 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
+import { PhotoCreditLine } from '@presentation/app/recipes/[recipeId]/items/media/photo-credit-line';
 import { RecipePhotoViewer } from '@presentation/app/recipes/[recipeId]/items/media/recipe-photo-viewer';
 import { PhotoViewerVariant } from '@presentation/app/recipes/[recipeId]/model/photos/photo-viewer-variant';
 
@@ -119,11 +120,14 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
 
       <View style={[styles.grid, twoColumn ? styles.gridRow : styles.gridColumn]}>
         <View style={styles.mainColumn}>
-          <RecipePhotoViewer
-            media={media}
-            variant={PhotoViewerVariant.Framed}
-            {...(props.photos !== undefined ? { owner: props.photos } : {})}
-          />
+          <View style={styles.cover}>
+            <RecipePhotoViewer
+              media={media}
+              variant={PhotoViewerVariant.Framed}
+              {...(props.photos !== undefined ? { owner: props.photos } : {})}
+            />
+            <PhotoCreditLine credit={recipe.imageCredit} framed />
+          </View>
 
           <View style={styles.section}>
             <ThemedText style={[styles.heading, { color: colors.text }]}>
@@ -204,6 +208,9 @@ const styles = StyleSheet.create({
   sideColumn: {
     flex: ValueConstants.one,
     minWidth: ValueConstants.zero,
+  },
+  cover: {
+    gap: spacing.sm,
   },
   section: {
     gap: spacing.md,

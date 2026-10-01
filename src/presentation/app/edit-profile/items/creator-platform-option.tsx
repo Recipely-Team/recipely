@@ -14,7 +14,11 @@ export interface CreatorPlatformOptionProps {
   onPick: (platform: CreatorPlatformType) => void;
 }
 
-/** One radio of the claim form's platform choice: the mark and the platform's name. */
+/**
+ * One radio of the claim form's platform choice, 48 high: the platform seal
+ * and its name. Selected is `chipBackground` with a 1.5 `primary` border and
+ * `chipText`; unselected the page `background` with a 1.5 `cardBorder`.
+ */
 export const CreatorPlatformOption = ({ platform, selected, onPick }: CreatorPlatformOptionProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
@@ -26,17 +30,13 @@ export const CreatorPlatformOption = ({ platform, selected, onPick }: CreatorPla
       style={({ pressed }) => [
         styles.option,
         selected
-          ? { borderWidth: borderWidths.medium, borderColor: colors.primary, backgroundColor: colors.primaryLight }
-          : { borderWidth: borderWidths.hairline, borderColor: colors.border, backgroundColor: colors.surface },
+          ? { borderColor: colors.primary, backgroundColor: colors.chipBackground }
+          : { borderColor: colors.cardBorder, backgroundColor: colors.background },
         { opacity: pressed ? opacities.pressed : opacities.full },
       ]}
     >
       <CreatorPlatformMark platform={platform} size={creatorMarkGeometry.option} />
-      <SizedText
-        size={fontSizes.medium}
-        weight={selected ? fontWeights.bold : fontWeights.semibold}
-        color={selected ? colors.primary : colors.text}
-      >
+      <SizedText size={fontSizes.medium} weight={fontWeights.bold} color={selected ? colors.chipText : colors.text}>
         {creatorPlatformName(platform)}
       </SizedText>
     </Pressable>
@@ -50,7 +50,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
-    minHeight: controlSizes.touchTarget,
+    minHeight: controlSizes.buttonSm,
     borderRadius: radii.lg,
+    borderWidth: borderWidths.thin,
   },
 });

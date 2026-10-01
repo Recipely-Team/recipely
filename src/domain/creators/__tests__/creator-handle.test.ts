@@ -104,3 +104,19 @@ describe('CreatorHandle', () => {
     expect(a.value.equals(b.value)).toBe(true);
   });
 });
+
+describe('CreatorHandle.sanitizeInput', () => {
+  it('drops a leading @ and every space, keeping case for normalize', () => {
+    expect(CreatorHandle.sanitizeInput('@Ayse Mutfakta')).toBe('AyseMutfakta');
+    expect(CreatorHandle.sanitizeInput(' sef.kerem ')).toBe('sef.kerem');
+  });
+});
+
+describe('CreatorHandle.meetsMinimum', () => {
+  it("reads each platform's minimum length", () => {
+    expect(CreatorHandle.meetsMinimum('a', CreatorPlatform.Instagram)).toBe(true);
+    expect(CreatorHandle.meetsMinimum('a', CreatorPlatform.TikTok)).toBe(false);
+    expect(CreatorHandle.meetsMinimum('@ab', CreatorPlatform.TikTok)).toBe(true);
+    expect(CreatorHandle.meetsMinimum('', CreatorPlatform.Instagram)).toBe(false);
+  });
+});

@@ -11,6 +11,8 @@ import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
  * - **References, not re-spellings.** A platform IS its mark, so a platform
  *   maps to one without a lookup table — and a new `SourcePlatform` with no
  *   mark here fails to compile in `toProvenanceMarks`.
+ * - **`Curated` stands alone.** Recipely Kitchen is its own source; it never
+ *   shares the capsule with a platform or the AI mark.
  */
 export const ProvenanceMark = {
   Instagram: SourcePlatform.Instagram,
@@ -19,6 +21,7 @@ export const ProvenanceMark = {
   YouTube: SourcePlatform.YouTube,
   Web: SourcePlatform.Web,
   Ai: RecipeOrigin.Ai,
+  Curated: RecipeOrigin.Curated,
 } as const;
 
 export type ProvenanceMarkType = (typeof ProvenanceMark)[keyof typeof ProvenanceMark];

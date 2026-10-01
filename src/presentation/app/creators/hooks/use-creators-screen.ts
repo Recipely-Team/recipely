@@ -5,9 +5,8 @@ import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useLayout } from '@presentation/base/responsive/use-layout';
+import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { CreatorCardSize } from '@presentation/base/widgets/creators/creator-card-size';
-import { creatorGridColumns } from '@presentation/base/widgets/creators/creator-grid-columns';
 import { useCreatorsBack } from '@presentation/app/creators/shared/hooks/use-creators-back';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
@@ -19,8 +18,8 @@ import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/u
  * @remarks
  * - **Shares the strip's store**, so arriving from "See all" shows the rows
  *   already loaded at once, and scrolling here pages the strip too.
- * - **Columns come from the content width** (two on a phone, up to six), and
- *   the expanded viewport draws the wide card, as on Explore.
+ * - **Two columns on a phone; on an expanded viewport as many 180-wide
+ *   cards as fit**, the prototype's `auto-fill, minmax(180, 1fr)`.
  */
 export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const router = useRouter();
@@ -38,9 +37,12 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
     void load();
   }, [load]);
 
-  const { gap, gutter } = CreatorsGridMetrics;
+  const { gutter, minCardWidthExpanded, phoneColumns } = CreatorsGridMetrics;
+  const gap = isExpanded ? CreatorsGridMetrics.gapExpanded : CreatorsGridMetrics.gap;
   const contentWidth = Math.min(width, WEB_CONTENT_MAX_WIDTH.creators) - gutter * ValueConstants.two;
-  const columns = creatorGridColumns(contentWidth, gap);
+  const columns = isExpanded
+    ? autoFillColumns(contentWidth, minCardWidthExpanded, gap, phoneColumns)
+    : phoneColumns;
 
   const onRefresh = useCallback(() => {
     setPullRefreshing(true);
@@ -56,8 +58,8 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
     creators,
     listState,
     columns,
+    gap,
     cellWidth: (contentWidth - gap * (columns - ValueConstants.one)) / columns,
-    cardSize: isExpanded ? CreatorCardSize.Wide : CreatorCardSize.Compact,
     isPullRefreshing,
     isLoadingMore: listState.status === StoreStatus.Loaded && listState.isLoadingMore === true,
     onRefresh,

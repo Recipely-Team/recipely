@@ -1,17 +1,20 @@
 import { useCallback, useState } from 'react';
 import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useLayout } from '@presentation/base/responsive/use-layout';
+import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';
+import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
+import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { getLocale, t } from '@presentation/i18n';
 import { useCreatorsBack } from '@presentation/app/creators/shared/hooks/use-creators-back';
 import { useShareCreator } from '@presentation/app/creators/[userId]/hooks/use-share-creator';
-import { formatCompactCount } from '@presentation/app/creators/[userId]/model/format-compact-count';
+import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';
 import type { UseCreatorProfileResult } from '@presentation/app/creators/[userId]/model/use-creator-profile-result';
 
@@ -26,13 +29,16 @@ import type { UseCreatorProfileResult } from '@presentation/app/creators/[userId
  * - **A guest's Follow opens the sign-in prompt**, which returns here after
  *   sign-in through the login redirect.
  * - **No follow button on one's own page**; the server refuses a self-follow.
+ * - **Two tiles across on a phone; on an expanded viewport as many 270-wide
+ *   web cards as fit**, each with its save toggle (guests are asked to sign in).
  */
 export const useCreatorProfile = (): UseCreatorProfileResult => {
   const router = useRouter();
   const pathname = usePathname();
   const onBack = useCreatorsBack();
   const share = useShareCreator();
-  const { isExpanded } = useLayout();
+  const { isExpanded, width } = useLayout();
+  const { isSaved, toggleSave } = useSaveRecipe();
   const params = useLocalSearchParams<{ userId: string }>();
   const userId = isString(params.userId) ? params.userId : CharConstants.empty;
 
@@ -55,6 +61,12 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
     }, [open, userId]),
   );
 
+  const { gutter, gapExpanded, minCardWidthExpanded, phoneColumns } = CreatorProfileMetrics;
+  const contentWidth = Math.min(width, WEB_CONTENT_MAX_WIDTH.creatorProfile) - gutter * ValueConstants.two;
+  const gridColumns = isExpanded
+    ? autoFillColumns(contentWidth, minCardWidthExpanded, gapExpanded, phoneColumns)
+    : phoneColumns;
+
   const follow = (): void => {
     void toggleFollow().then((failure) => {
       if (failure !== null) showErrorToast(failure);
@@ -68,7 +80,9 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
     isOwnProfile: viewerId !== null && viewerId === userId,
     isFollowPending,
     isPullRefreshing,
-    gridColumns: isExpanded ? CreatorProfileMetrics.expandedColumns : CreatorProfileMetrics.phoneColumns,
+    gridColumns,
+    isSaved,
+    onToggleSave: (id) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     formatCount: (value) => formatCompactCount(value, getLocale()),
     onRefresh: () => {
       setPullRefreshing(true);

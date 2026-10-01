@@ -64,3 +64,12 @@ describe('RecipeSummaryEntity.create', () => {
     if (a.ok && b.ok) expect(a.value.equals(b.value)).toBe(true);
   });
 });
+
+describe('RecipeSummaryEntity.isCurated', () => {
+  it('is true only for a Recipely Kitchen recipe', () => {
+    const curated = RecipeSummaryEntity.create({ ...validProps, origin: RecipeOrigin.Curated });
+    const user = RecipeSummaryEntity.create(validProps);
+    expect(curated.ok && curated.value.isCurated).toBe(true);
+    expect(user.ok && user.value.isCurated).toBe(false);
+  });
+});

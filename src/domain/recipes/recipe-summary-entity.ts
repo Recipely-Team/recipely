@@ -1,5 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
-import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -9,6 +9,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
@@ -45,6 +47,14 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
   get imageFocus(): FocalPoint | undefined {
     return this.props.imageFocus;
+  }
+  /** The cover photo's credit line; `null` when the photo needs none. */
+  get imageCredit(): ImageCredit | null {
+    return this.props.imageCredit ?? null;
+  }
+  /** Where the nutrition figures were looked up; `null` when they were estimated. */
+  get nutritionSource(): NutritionSourceType | null {
+    return this.props.nutritionSource ?? null;
   }
   get cuisine(): string {
     return this.props.cuisine;
@@ -103,6 +113,10 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   /** Whether the recipe carries calories — the food diary can log only those (design spec → Food Diary §1). */
   get hasCalories(): boolean {
     return this.caloriesPerServing > ValueConstants.zero;
+  }
+  /** A Recipely Kitchen recipe: credited to the Kitchen, not to the account that holds it. */
+  get isCurated(): boolean {
+    return this.props.origin === RecipeOrigin.Curated;
   }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
   get provenanceMarks(): readonly ProvenanceMarkType[] {

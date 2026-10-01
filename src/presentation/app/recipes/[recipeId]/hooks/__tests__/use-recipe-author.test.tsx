@@ -147,4 +147,16 @@ describe('useRecipeAuthor', () => {
     expect(latest().status).toBe('unavailable');
     expect(execute).not.toHaveBeenCalled();
   });
+
+  it('credits a Recipely Kitchen recipe to the Kitchen without looking the account up', () => {
+    const { latest, execute } = driveHook(
+      { ownerId: 'kitchen-account', owner: null, isOwner: false, isKitchen: true },
+      () => Promise.resolve(ok(makeProfile())),
+    );
+
+    const state = latest();
+    expect(state.status).toBe('resolved');
+    if (state.status === 'resolved') expect(state.author.isKitchen).toBe(true);
+    expect(execute).not.toHaveBeenCalled();
+  });
 });

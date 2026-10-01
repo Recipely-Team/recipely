@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1488 source files.
+[architecture.md](architecture.md). 1502 source files.
 
 ## Layers
 
@@ -42,7 +42,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(10)_
-- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(55)_
+- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(58)_
 - `storage/` _(1)_
 - `user-profile/` _(5)_
 
@@ -92,7 +92,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(2)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(25)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(32)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(34)_
 - `storage/` _(6)_
 - `user-profile/` _(4)_
 
@@ -123,7 +123,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `test-support/` — render harness for component tests _(4)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(49)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` (diary) — small pure helpers _(17)_
+- `utils/` (diary) — small pure helpers _(18)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(153)_
 
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 9a2a44ee705f4b4e -->
+<!-- fingerprint: dc7ce659e10e209c -->

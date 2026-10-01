@@ -33,4 +33,10 @@ describe('toProvenanceMarks', () => {
   it('says only what it knows about an import from a platform it cannot name', () => {
     expect(toProvenanceMarks(RecipeOrigin.Import, null, true)).toEqual([ProvenanceMark.Ai]);
   });
+
+  // Recipely Kitchen vouches for the whole recipe; no platform or AI mark joins it.
+  it('marks a curated recipe with the Recipely Kitchen mark alone', () => {
+    expect(toProvenanceMarks(RecipeOrigin.Curated, null, false)).toEqual([ProvenanceMark.Curated]);
+    expect(toProvenanceMarks(RecipeOrigin.Curated, SourcePlatform.Web, true)).toEqual([ProvenanceMark.Curated]);
+  });
 });

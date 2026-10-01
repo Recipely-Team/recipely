@@ -20,8 +20,8 @@ export interface PillButtonProps {
  * A fully rounded button, as the creators surfaces draw their actions.
  *
  * @remarks
- * - **Primary is 48 tall, outline actions 44** — the lead action is the
- *   bigger target, as in the prototype, and both clear the 44pt minimum.
+ * - **Primary and ghost are 48 tall, outline actions 44** — the lead action is
+ *   the bigger target, as in the prototype, and all clear the 44pt minimum.
  * - **The danger label is the severity palette's danger text**, not
  *   `colors.danger`: that one is a fill colour and falls under 4.5:1 as text
  *   on a light card.
@@ -37,6 +37,7 @@ export const PillButton = ({
   const colors = useTheme().colors;
   const severity = useSeveritySurfaces();
   const primary = tone === PillButtonTone.Primary;
+  const ghost = tone === PillButtonTone.Ghost;
   const ink = primary ? colors.primaryText : tone === PillButtonTone.Danger ? severity.danger.text : colors.text;
   const inactive = loading || disabled;
 
@@ -49,7 +50,11 @@ export const PillButton = ({
       accessibilityState={{ disabled: inactive, busy: loading }}
       style={({ pressed }) => [
         styles.button,
-        primary ? [styles.primary, { backgroundColor: colors.primary }] : [styles.outline, { borderColor: colors.border }],
+        primary
+          ? [styles.primary, { backgroundColor: colors.primary }]
+          : ghost
+            ? styles.primary
+            : [styles.outline, { borderColor: colors.border }],
         { opacity: disabled ? opacities.disabled : pressed ? opacities.pressedSubtle : opacities.full },
       ]}
     >

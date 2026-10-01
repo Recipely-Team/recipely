@@ -80,3 +80,14 @@ describe('RecipeAuthorCard — not interactive', () => {
     expect(labelled.props.accessible).toBe(true);
   });
 });
+
+describe('RecipeAuthorCard — Recipely Kitchen', () => {
+  it('reads Recipely Kitchen, verified, instead of the account behind it', () => {
+    const { root } = renderCard({ authorName: '', isKitchen: true });
+
+    const texts = textContent(root);
+    expect(texts).toContain(t().recipes.originCuratedDetailLabel);
+    expect(texts).not.toContain(t().recipes.recipeCount.replace('{count}', '12'));
+    expect(root.findAll((n) => typeof n.props.accessibilityLabel === 'string' && n.props.accessibilityLabel.includes(t().creators.verified)).length).toBeGreaterThan(0);
+  });
+});

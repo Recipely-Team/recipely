@@ -14,12 +14,15 @@ import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provena
  *   name still says a model wrote it, and says nothing about where.
  * - **`origin === Ai` is AI even without the flag**, so a row written before
  *   `aiWritten` existed cannot lose its mark.
+ * - **A curated recipe carries the Recipely Kitchen mark alone**, whatever the
+ *   other two fields say: the team vouches for it as a whole.
  */
 export const toProvenanceMarks = (
   origin: RecipeOriginType,
   sourcePlatform: SourcePlatformType | null,
   aiWritten: boolean,
 ): readonly ProvenanceMarkType[] => {
+  if (origin === RecipeOrigin.Curated) return [ProvenanceMark.Curated];
   const byModel = aiWritten || origin === RecipeOrigin.Ai;
   const marks: ProvenanceMarkType[] = sourcePlatform === null ? [] : [sourcePlatform];
   if (byModel) marks.push(ProvenanceMark.Ai);

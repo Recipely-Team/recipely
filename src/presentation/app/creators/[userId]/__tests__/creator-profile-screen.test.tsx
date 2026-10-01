@@ -21,6 +21,17 @@ import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { CreatorProfileScreen } from '@presentation/app/creators/[userId]';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
+import { create } from 'zustand';
+import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
+import type { Stores } from '@presentation/bootstrap/stores';
+
+/** The saved set the web cards' bookmarks read; empty, since these tests are about following. */
+const savedStores = (): Partial<Stores> =>
+  ({
+    savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
+    favoritesStore: create(() => ({ isLoading: false, error: null })),
+  }) as unknown as Partial<Stores>;
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -50,7 +61,7 @@ const renderScreen = async (viewer: UserEntity | null, standing: { followerCount
     follow: new FollowUserUseCase(repo),
     unfollow: new UnfollowUserUseCase(repo),
   });
-  const rendered = renderComponent(<CreatorProfileScreen />, { creatorProfileStore, authStore: authStoreOf(viewer) });
+  const rendered = renderComponent(<CreatorProfileScreen />, { ...savedStores(), creatorProfileStore, authStore: authStoreOf(viewer) });
   await act(async () => {
     await Promise.resolve();
     await Promise.resolve();
@@ -61,7 +72,7 @@ const renderScreen = async (viewer: UserEntity | null, standing: { followerCount
 const followButton = (root: ReactTestInstance): ReactTestInstance =>
   root.find(
     (node) =>
-      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityRole === 'togglebutton' &&
       typeof node.props.accessibilityLabel === 'string' &&
       [t().creators.followName, t().creators.followingName].some((label) => label.replace('{name}', 'Creator u-1') === node.props.accessibilityLabel) &&
       typeof node.props.onPress === 'function',
@@ -81,7 +92,7 @@ describe('CreatorProfileScreen — follow', () => {
   it('shows the creator, the verified handle and the numbers', async () => {
     const { root } = await renderScreen(userOf('viewer'), { followerCount: 12, isFollowedByMe: false });
 
-    expect(textContent(root)).toEqual(expect.arrayContaining(['Creator u-1', '@chef_u_1', t().creators.statFollowers]));
+    expect(textContent(root)).toEqual(expect.arrayContaining(['Creator u-1', '@chef_u_1', upperCase(t().creators.statFollowers)]));
   });
 
   it('follows for a signed-in viewer and counts them in', async () => {

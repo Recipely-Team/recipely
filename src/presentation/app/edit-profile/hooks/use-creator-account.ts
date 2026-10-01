@@ -17,8 +17,8 @@ import type { UseCreatorAccountResult } from '@presentation/app/edit-profile/mod
  *
  * @remarks
  * - **The claim decides the face.** No claim is the form; a pending, approved
- *   or refused claim is its card — until Change or Edit and resend opens the
- *   form on it, prefilled.
+ *   or rejected claim is its card — until Try again opens the form on it,
+ *   prefilled.
  * - **Re-reads the claim on every focus**, so an admin's decision shows the
  *   next time the user opens this page, without signing in again — but not
  *   while a send or remove is in flight; the auth store drops a refresh that
@@ -79,7 +79,7 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       setError(null);
     },
     onChangeHandle: (value) => {
-      setHandle(value);
+      setHandle(CreatorHandle.sanitizeInput(value));
       setError(null);
     },
     onSubmit: () => {

@@ -80,7 +80,13 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
           isOwner: true,
         }
       : null;
-  const authorState = useRecipeAuthor({ ownerId: recipeOwnerId, owner, isOwner });
+  const isCurated = localRecipe?.isCurated ?? (networkState?.status === StoreStatus.Loaded && networkState.recipe.isCurated);
+  const authorState = useRecipeAuthor({
+    ownerId: recipeOwnerId,
+    owner,
+    isOwner,
+    isKitchen: isCurated,
+  });
 
   useEffect(() => {
     if (isOwner && userId !== null && ownProfileState.status === StoreStatus.Idle) {

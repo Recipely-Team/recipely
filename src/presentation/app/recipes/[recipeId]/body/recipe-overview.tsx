@@ -128,6 +128,7 @@ export const RecipeOverview = ({
           authorPhotoUrl={authorState.author.authorPhotoUrl}
           recipeCount={authorState.author.recipeCount}
           isOwner={authorState.author.isOwner}
+          isKitchen={authorState.author.isKitchen}
         />
       ) : null}
 
@@ -160,7 +161,7 @@ export const RecipeOverview = ({
       <View
         style={[styles.nutritionCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}
       >
-        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} />
+        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} source={recipe.nutritionSource} />
       </View>
       <AddToDiaryButton recipe={recipe} inCard={false} />
 
@@ -180,7 +181,7 @@ export const RecipeOverview = ({
 };
 
 const styles = StyleSheet.create({
-  provenance: { marginTop: spacing.sm },
+  provenance: { marginTop: spacing.sm2 },
   nutritionCard: {
     ...shadows.sm,
     borderRadius: radii.xl,

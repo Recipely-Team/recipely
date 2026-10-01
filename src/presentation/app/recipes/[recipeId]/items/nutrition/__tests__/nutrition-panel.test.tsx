@@ -1,6 +1,7 @@
 import { act } from 'react-test-renderer';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { NutritionFacts } from '@domain/recipes/nutrition/nutrition-facts';
+import { NutritionSource } from '@domain/recipes/nutrition/nutrition-source';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
@@ -86,5 +87,25 @@ describe('NutritionPanel — absent figures', () => {
     expect(texts).toContain(t().nutrition.protein);
     expect(texts).not.toContain(t().nutrition.fat);
     expect(texts).not.toContain('0');
+  });
+});
+
+describe('NutritionPanel — source', () => {
+  const nutrition = { protein: 24, servingWeightGrams: 400 };
+
+  it('credits USDA FoodData Central in its last row', () => {
+    const { root } = renderComponent(
+      <NutritionPanel facts={factsOf(520, nutrition)} isCalculating={false} source={NutritionSource.Usda} />,
+    );
+
+    const texts = textContent(root);
+    expect(texts).toEqual(expect.arrayContaining([t().nutrition.usdaTag, t().nutrition.usdaSource]));
+    expect(texts[texts.length - 1]).toBe(t().nutrition.usdaSource);
+  });
+
+  it('names no source for estimated figures', () => {
+    const { root } = renderComponent(<NutritionPanel facts={factsOf(520, nutrition)} isCalculating={false} />);
+
+    expect(textContent(root)).not.toContain(t().nutrition.usdaSource);
   });
 });
