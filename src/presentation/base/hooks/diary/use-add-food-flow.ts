@@ -44,8 +44,13 @@ export const useAddFoodFlow = (request: AddFoodRequest | null, onClose: () => vo
   const ready = product?.status === StoreStatus.Loaded ? product : null;
   const current = state ?? CLOSED;
   const update = useCallback((change: (s: AddFoodState) => AddFoodState) => setState((s) => (s === null ? s : change(s))), []);
+  // A stored quantity in another unit than the one shown (the variant changed) is stale: step what is on screen.
   const amount = (change: 'increment' | 'decrement') =>
-    update((s) => (s.step === AddFoodStep.Product && ready !== null ? { ...s, quantity: (s.quantity ?? ready.quantity)[change]() } : s));
+    update((s) => {
+      if (s.step !== AddFoodStep.Product || ready === null) return s;
+      const current = s.quantity !== null && s.quantity.unit.key === ready.quantity.unit.key ? s.quantity : ready.quantity;
+      return { ...s, quantity: current[change]() };
+    });
   const servings = (change: 'increment' | 'decrement') =>
     update((s) => (s.step === AddFoodStep.Detail ? { ...s, servings: s.servings[change]() } : s));
 
@@ -97,7 +102,12 @@ export const useAddFoodFlow = (request: AddFoodRequest | null, onClose: () => vo
     increment: () => servings('increment'),
     decrement: () => servings('decrement'),
     setMeal: (meal) => update((s) => ({ ...s, meal })),
-    setVariant: (index) => update((s) => (s.step === AddFoodStep.Product ? { ...s, variantIndex: index } : s)),
+    setVariant: (index) =>
+      update((s) => {
+        if (s.step !== AddFoodStep.Product) return s;
+        const keeps = s.quantity !== null && (ready?.variants[index]?.unitKeys.includes(s.quantity.unit.key) ?? false);
+        return { ...s, variantIndex: index, quantity: keeps ? s.quantity : null };
+      }),
     setUnit: (unit) =>
       update((s) => (s.step === AddFoodStep.Product && ready !== null ? { ...s, quantity: ready.quantity.inUnit(unit) } : s)),
     incrementAmount: () => amount('increment'),

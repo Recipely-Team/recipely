@@ -37,7 +37,12 @@ export const resolveProductStep = (
   const unit = quantity === null ? undefined : product.units.find((u) => u.key === quantity.unit.key);
   const variants =
     food.variants.length > ValueConstants.one
-      ? food.variants.map((variant, i) => ({ key: variant.foodVariantId ?? String(i), name: variant.name ?? food.name, per100: variant.per100 }))
+      ? food.variants.map((variant, i) => ({
+          key: variant.foodVariantId ?? String(i),
+          name: variant.name ?? food.name,
+          per100: variant.per100,
+          unitKeys: food.productAt(i).units.map((u) => u.key),
+        }))
       : [];
   return {
     status: StoreStatus.Loaded,

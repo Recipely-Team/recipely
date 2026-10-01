@@ -41,7 +41,7 @@ const ayranDetail = () =>
     ],
   });
 
-const setup = (request: AddFoodRequest, onOpenDiary?: () => void) => {
+const setup = (request: AddFoodRequest, onOpenDiary?: () => void, detail = ayranDetail()) => {
   const actions = {
     addEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
     updateEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
@@ -49,7 +49,7 @@ const setup = (request: AddFoodRequest, onOpenDiary?: () => void) => {
   };
   const diaryStore = { getState: () => actions };
   const repo = fakeFoodCatalogRepository();
-  repo.getProduct.mockResolvedValue(ayranDetail());
+  repo.getProduct.mockResolvedValue(detail);
   const foodCatalogStore = configureFoodCatalogStore({
     listCategories: new ListFoodCategoriesUseCase(repo),
     listProducts: new ListFoodProductsUseCase(repo),
@@ -136,6 +136,29 @@ describe('useAddFoodFlow', () => {
     const entry = actions.addEntry.mock.calls[0][0];
     expect([entry.name, entry.servings, entry.recipeId]).toEqual(['Ayran · Klasik', 300, null]);
     expect(entry.product).toEqual({ source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'ml', unitAmount: 1 });
+  });
+
+  // The stepper went dead: a quantity in a unit the new variant lacks was kept and stepped, while the screen showed the default.
+  it('restarts the amount when the new variant lacks the chosen unit, and the stepper keeps working', async () => {
+    const tea = FoodDetail.create({
+      source: 'curated', foodId: 'f2', offBarcode: null, kind: 'drink', category: 'drinks', name: 'Tea', brand: null, packSize: null,
+      unit: 'ml', imageUrl: null,
+      variants: [
+        { foodVariantId: 't1', name: 'Black', per100: nutrientsOf({ calories: 1 }), servingUnits: [{ key: 'teaGlass', amount: 100 }] },
+        { foodVariantId: 't2', name: 'With sugar', per100: nutrientsOf({ calories: 20 }), servingUnits: [] },
+      ],
+    });
+    const { get } = setup({ kind: AddFoodRequestKind.Pick, date, meal: MealSlot.Lunch }, undefined, tea);
+    await act(async () => get().chooseProduct(productOf({ foodId: 'f2', foodVariantId: 't1' })));
+    act(() => get().incrementAmount());
+    act(() => get().setVariant(1));
+    const amountOf = (): [string, number] | null => {
+      const model = get().product;
+      return model?.status === StoreStatus.Loaded ? [model.quantity.unit.key, model.quantity.value] : null;
+    };
+    expect(amountOf()).toEqual(['ml', 100]);
+    act(() => get().incrementAmount());
+    expect(amountOf()).toEqual(['ml', 150]);
   });
 
   it('edits a product entry by its quantity, which the server rescales', async () => {
