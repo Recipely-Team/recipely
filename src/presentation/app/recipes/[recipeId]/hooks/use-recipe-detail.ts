@@ -6,7 +6,6 @@ import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-ro
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
-import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
@@ -81,12 +80,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
           isOwner: true,
         }
       : null;
-  const recipeOrigin = localRecipe?.origin ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe.origin : null);
+  const isCurated = localRecipe?.isCurated ?? (networkState?.status === StoreStatus.Loaded && networkState.recipe.isCurated);
   const authorState = useRecipeAuthor({
     ownerId: recipeOwnerId,
     owner,
     isOwner,
-    isKitchen: recipeOrigin === RecipeOrigin.Curated,
+    isKitchen: isCurated,
   });
 
   useEffect(() => {

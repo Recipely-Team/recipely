@@ -1,5 +1,5 @@
 import { BaseEntity } from '@core/entity/base-entity';
-import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -113,6 +113,10 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   /** Whether the recipe carries calories — the food diary can log only those (design spec → Food Diary §1). */
   get hasCalories(): boolean {
     return this.caloriesPerServing > ValueConstants.zero;
+  }
+  /** A Recipely Kitchen recipe: credited to the Kitchen, not to the account that holds it. */
+  get isCurated(): boolean {
+    return this.props.origin === RecipeOrigin.Curated;
   }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
   get provenanceMarks(): readonly ProvenanceMarkType[] {

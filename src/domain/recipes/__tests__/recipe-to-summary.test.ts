@@ -73,6 +73,14 @@ describe('recipeToSummary', () => {
     if (result.ok) expect(result.value.totalTimeMinutes).toBe(30);
   });
 
+  it('keeps a Recipely Kitchen recipe curated on both shapes', () => {
+    const recipe = makeRecipe({ origin: RecipeOrigin.Curated });
+    const result = recipeToSummary(recipe);
+    expect(recipe.isCurated).toBe(true);
+    expect(result.ok && result.value.isCurated).toBe(true);
+    expect(makeRecipe().isCurated).toBe(false);
+  });
+
   // A just-published Kitchen recipe reaches the feed cache this way; dropping the
   // credit would hide it until a refresh.
   it('carries the photo credit and nutrition source', () => {

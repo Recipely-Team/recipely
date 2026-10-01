@@ -18,7 +18,6 @@ export interface CreatorRecipeTileProps {
 }
 
 const STAR = '★';
-const META_SEPARATOR = ' · ';
 
 /**
  * One of the creator's recipes on a phone: a square photo with the provenance
@@ -32,7 +31,7 @@ const CreatorRecipeTileComponent = ({ recipe, onOpen }: CreatorRecipeTileProps):
     recipe.totalTimeMinutes === null ? null : t().recipes.heroTotalMin.replace('{n}', String(recipe.totalTimeMinutes)),
   ]
     .filter((part): part is string => part !== null)
-    .join(META_SEPARATOR);
+    .join(CharConstants.middotSpaced);
 
   return (
     <Pressable
