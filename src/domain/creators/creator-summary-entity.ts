@@ -6,6 +6,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { ValueConstants } from '@core/constants';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import type { CreatorSummaryEntityProps } from '@domain/creators/creator-summary-entity-props';
+import { hasOnePerPlatform } from '@domain/creators/has-one-per-platform';
 
 /**
  * One card of the Chefs tab: an approved creator with at least one published
@@ -16,7 +17,8 @@ import type { CreatorSummaryEntityProps } from '@domain/creators/creator-summary
  *   (architecture.md, Aggregates): its id IS the user id, and opening it loads
  *   the `UserProfileEntity`.
  * - Validates that `id` and `displayName` are non-empty, like the profile, and
- *   that there is a tag — a listed creator without one would be nobody's account.
+ *   that there is a tag — a listed creator without one would be nobody's account —
+ *   and at most one per platform.
  */
 export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> {
   private constructor(props: CreatorSummaryEntityProps) {
@@ -32,6 +34,9 @@ export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> 
     }
     if (props.creatorTags.length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.creator.tagsRequired, 'creatorTags'));
+    }
+    if (!hasOnePerPlatform(props.creatorTags)) {
+      return fail(new ValidationFailure(DiagnosticMessage.creator.duplicateTag, 'creatorTags'));
     }
     return ok(new CreatorSummaryEntity(props));
   }

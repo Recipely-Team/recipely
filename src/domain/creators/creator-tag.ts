@@ -4,7 +4,8 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { DiagnosticMessage, FailureField } from '@core/failure/diagnostic-message';
 import { CharConstants } from '@core/constants';
-import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
+import { toCreatorPlatform } from '@domain/creators/to-creator-platform';
 import { CreatorHandle } from '@domain/creators/creator-handle';
 
 interface CreatorTagValue {
@@ -12,7 +13,6 @@ interface CreatorTagValue {
   readonly handle: CreatorHandle;
 }
 
-const PLATFORMS: ReadonlySet<string> = new Set(Object.values(CreatorPlatform));
 
 /**
  * One claimed account: a platform and a handle valid for it.
@@ -31,14 +31,15 @@ export class CreatorTag extends BaseValueObject<CreatorTagValue> {
   }
 
   static create(platform: string, handle: string): Result<CreatorTag, ValidationFailure> {
-    if (!CreatorTag.isPlatform(platform)) {
+    const known = toCreatorPlatform(platform);
+    if (known === null) {
       return fail(
         new ValidationFailure(DiagnosticMessage.creator.platformInvalid(platform), FailureField.creatorPlatform),
       );
     }
-    const parsed = CreatorHandle.create(handle, platform);
+    const parsed = CreatorHandle.create(handle, known);
     if (!parsed.ok) return parsed;
-    return ok(new CreatorTag({ platform, handle: parsed.value }));
+    return ok(new CreatorTag({ platform: known, handle: parsed.value }));
   }
 
   get platform(): CreatorPlatformType {
@@ -66,7 +67,4 @@ export class CreatorTag extends BaseValueObject<CreatorTagValue> {
     return `${this._value.platform}${CharConstants.colon}${this._value.handle.value}`;
   }
 
-  private static isPlatform(raw: string): raw is CreatorPlatformType {
-    return PLATFORMS.has(raw);
-  }
 }

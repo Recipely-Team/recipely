@@ -148,6 +148,7 @@ export const DiagnosticMessage = {
     claimStatusInvalid: (raw: string): string => `Not a creator claim status: ${raw}`,
     duplicatePlatform: (platform: string): string => `More than one creator claim for ${platform}`,
     tagsRequired: 'A listed creator needs at least one approved tag',
+    duplicateTag: 'A creator has at most one tag per platform',
   },
   diary: {
     dateInvalid: (raw: string): string => `Not a calendar date (YYYY-MM-DD): ${raw}`,

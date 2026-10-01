@@ -1,3 +1,5 @@
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
+import { comparePlatforms } from '@domain/creators/compare-platforms';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import { orderCreatorTags } from '@domain/creators/order-creator-tags';
 import { toCreatorPlatform } from '@domain/creators/to-creator-platform';
@@ -21,5 +23,12 @@ describe('toCreatorPlatform', () => {
     expect(toCreatorPlatform('tiktok')).toBe('tiktok');
     expect(toCreatorPlatform('INSTAGRAM')).toBeNull();
     expect(toCreatorPlatform(null)).toBeNull();
+  });
+});
+
+describe('comparePlatforms', () => {
+  it('sorts Instagram before TikTok', () => {
+    const platforms: CreatorPlatformType[] = ['tiktok', 'instagram'];
+    expect(platforms.sort(comparePlatforms)).toEqual(['instagram', 'tiktok']);
   });
 });

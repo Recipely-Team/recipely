@@ -1,3 +1,4 @@
+import { CreatorTag } from '@domain/creators/creator-tag';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { UserProfileEntityProps } from '@domain/user-profile/user-profile-entity-props';
 
@@ -61,5 +62,22 @@ describe('UserProfileEntity.create', () => {
       expect(result.failure.code).toBe('validation');
       expect(result.failure.field).toBe('displayName');
     }
+  });
+});
+
+describe('UserProfileEntity — creator tags', () => {
+  const tagOf = (platform: string, handle: string): CreatorTag => {
+    const tag = CreatorTag.create(platform, handle);
+    if (!tag.ok) throw new Error('fixture tag');
+    return tag.value;
+  };
+
+  it('holds one tag per platform', () => {
+    const r = UserProfileEntity.create(makeProps({ creatorTags: [tagOf('instagram', 'a'), tagOf('tiktok', 'ab')] }));
+    expect(r.ok && r.value.isCreator).toBe(true);
+  });
+
+  it('refuses two tags for one platform', () => {
+    expect(UserProfileEntity.create(makeProps({ creatorTags: [tagOf('tiktok', 'ab'), tagOf('tiktok', 'cd')] })).ok).toBe(false);
   });
 });

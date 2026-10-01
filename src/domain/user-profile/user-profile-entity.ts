@@ -6,6 +6,7 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import type { CreatorTag } from '@domain/creators/creator-tag';
+import { hasOnePerPlatform } from '@domain/creators/has-one-per-platform';
 
 
 /**
@@ -23,6 +24,9 @@ export class UserProfileEntity extends BaseEntity<UserProfileEntityProps> {
     }
     if (props.displayName.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.userProfile.displayNameRequired, 'displayName'));
+    }
+    if (!hasOnePerPlatform(props.creatorTags)) {
+      return fail(new ValidationFailure(DiagnosticMessage.creator.duplicateTag, 'creatorTags'));
     }
     return ok(new UserProfileEntity(props));
   }

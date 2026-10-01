@@ -33,6 +33,12 @@ describe('CreatorSummaryEntity', () => {
   });
 
   // A listed creator is someone's verified account; with none there is nothing to show.
+  it('refuses two tags for one platform', () => {
+    const second = CreatorTag.create('instagram', 'other');
+    if (!second.ok) throw new Error('fixture');
+    expect(CreatorSummaryEntity.create({ ...props, creatorTags: [...props.creatorTags, second.value] }).ok).toBe(false);
+  });
+
   it('refuses a summary with no approved tag', () => {
     expect(CreatorSummaryEntity.create({ ...props, creatorTags: [] }).ok).toBe(false);
   });

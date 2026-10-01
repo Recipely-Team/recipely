@@ -4,15 +4,13 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { ValueConstants } from '@core/constants';
-import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
+import { comparePlatforms } from '@domain/creators/compare-platforms';
 import type { CreatorClaim } from '@domain/creators/creator-claim';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 
-/** Instagram first, then TikTok — the wire's order and the screen's. */
-const PLATFORM_ORDER: readonly CreatorPlatformType[] = Object.values(CreatorPlatform);
-
 const ordered = (claims: readonly CreatorClaim[]): readonly CreatorClaim[] =>
-  [...claims].sort((a, b) => PLATFORM_ORDER.indexOf(a.tag.platform) - PLATFORM_ORDER.indexOf(b.tag.platform));
+  [...claims].sort((a, b) => comparePlatforms(a.tag.platform, b.tag.platform));
 
 /**
  * The signed-in user's creator claims — at most one per platform, each
