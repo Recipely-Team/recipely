@@ -3448,3 +3448,60 @@ same): light — in review 6.39, approved 4.76, not approved 5.72; dark — 11.8
   under Send for review — the canvas only draws the empty form, which has nothing to go back to.
 - The follow button turns into an outline "Following" pill once followed; the canvas draws only "Follow".
 - The Instagram plate is the three-stop gradient the canvas draws (`instagramGradientStart/Mid/End`).
+
+## Creators + Recipely Kitchen (Oct 2026 — supersedes "Creators (Sept 2026)" where they differ)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(`src/social.jsx`, `src/widgets.jsx`, `src/photos.jsx`, `src/theme.js`); Tweaks → Starting screen *Detail · Kitchen,
+Creators, Creator profile, Creator · form / in review / approved / rejected*. Spacing `xs 4 · sm 8 · md 12 · lg 16 ·
+xl 24 · xxl 32`; radii `lg 12 · xl 16 · round`.
+
+### 1. Tokens and contrast
+
+- `textSubtle` (unchanged, `readableMuted`): `textMuted` mixed toward `text` in 5 % steps until ≥ 4.5:1 on both
+  `background` and `surface`. Values and ratios as in the Sept table (Pearl light `#5C6B81` 4.69 / 5.09 … Purple dark
+  `#B197BE` 6.21 / 4.63). Used for handles, captions, stat labels, the photo credit, the USDA note and the `@username`
+  under the Profile name and in the recipe author card.
+- `primaryText` on `primary` ≥ 5.68:1 and `chipText` on `chipBackground` ≥ 4.52:1 in every palette — the approved
+  badge, Follow and the selected platform radio rely on them. `success` / `danger` are icon ink only.
+- New type steps: `fontSizes.largeTitle` 30 (web creator name), `fontSizes.pageHeading` 36 (web /creators h1).
+  Half-point sizes in the prototype (10.5, 11.5, 12.5, 13.5) round to the nearest step (11, 11, 12, 13).
+
+### 2. Creators
+
+| Piece | Measurements |
+|---|---|
+| Platform seal (`CreatorPlatformMark`) | the provenance seal on the page: white face, 1px `cardBorder`, brand-ink glyph 60 %; 22 on a 64 avatar (`max(20, round(avatar × 0.34))`), offset −2/−2, 2px `background` halo; 22 in chips, 24 in the claim radios |
+| Platform badge (`CreatorTagChip`) | 32 high, round, `surface`, 1px `cardBorder`, padding 0 10 0 4, gap 6; seal 22 · `@handle` 13/600 `text` · `checkmark-circle` 14 `primary`; links to the account; a11y "Verified {platform} account: {handle}" |
+| Approved badge (`CreatorBadge`) | `primary` disc, `primaryText` check at 62 %; 22 phone Profile, 20 web Profile, 18 in the Approved card; a11y "Approved creator" |
+| Creator card | `cardBackground`, 1px `cardBorder`, radius 16, padding 20 12 16; avatar 64; name 15/700 mt 10; `@handle` 13 `textSubtle`; "N recipes · N followers" 12 `textSubtle` mt 6; shadow sm, web hover md + 2 up |
+| Strip (phone) | heading 15/700; "See all ›" 13/700 `primary` + chevron 14, min 44; items 76 wide, gap 12, padding 2 16 8; name 12/700, handle 11 `textSubtle` |
+| Row (web) | h2 22/800; "See all" 14/700, 36 high; six columns, three below an 860 viewport; gap 16 |
+| /creators | phone: back 44 + title 24/700, subtitle 13 `textSubtle`, 2 columns gap 12; web: "Back to recipes" 14/600 `textMuted`, h1 36/800, subtitle 15, `auto-fill minmax(180)` gap 20 |
+| Creator profile | ring avatar 104 / 128 (2px `primaryGradient` 135°, 2px `background` gap); name 24/800 / 30/800 mt 12; badge mt 8; bio 14/1.45 `text`, max 340, mt 8; stats card mt 16 (`surface`, `cardBorder`, radius 16, padding 12 0, value 18/800, label 11/600 upper-case +0.5 `textSubtle`, 1px `border` dividers); Follow mt 12, 48 high, round, 15/700 + icon 16, full width on a phone, stats + Follow capped at 460 expanded; heading 18/800 (22/800 web) + count 14 `textSubtle`; phone tiles 2 columns gap 16/12 (square photo radius 16, seal 24 at 8/8, name 13/700 two lines, "★ 4.7 · 25 min" 12 `textSubtle`), web `WebRecipeCard` `auto-fill minmax(270)` gap 24 with the save toggle |
+| Edit profile → Creator account | `SectionHeader` + one card (`surface`, `cardBorder`, radius 16, padding 16, gap 12). Form: intro 13 `text`; PLATFORM radios 48, radius 12, gap 8 (selected `chipBackground` + 1.5 `primary` + `chipText`; unselected `background` + 1.5 `cardBorder`); HANDLE field 48, radius 12, `@` prefix `textSubtle`, a typed `@` and spaces dropped; Submit primary 48, disabled until the platform's minimum length. In review: 40 tile + `hourglass` `primary`, title 16/800, neutral handle chip, Withdraw (ghost 48). Approved: `checkmark-circle` `success`, title + badge 18, platform badge, Unlink account (ghost). Rejected: `alert-circle` `danger`, neutral chip, Try again (primary → form prefilled). Result states are `role="status"` |
+| Profile tab | approved badge right of the name, gap 8; `@username` in `textSubtle` |
+
+### 3. Recipely Kitchen
+
+- `origin: CURATED` → the provenance mark `Curated`, alone: the full-colour Recipely logo in the white seal, label
+  "Recipely Kitchen" / "Recipely Mutfağı". Same seal slot and sizes as AI/import (card 27, web card 28, creator tile 24).
+- Detail: the AI-style chip (`chipBackground`, `chipText` 12/600, padding 2 12 2 2, seal 22); mobile under the author
+  card (mt 10), web under the title meta row (12 gap + 2). Author card / web byline read "Recipely Kitchen" with the logo
+  avatar and a `primary` `checkmark-circle`, no recipe count.
+- Photo credit: "Photo: {author} · {license}", 12/1.3 `textSubtle`, author underlined, the whole line one link to the
+  credit url (`accessibilityRole="link"`). Mobile directly under the cover, min-height 44, −12 below; web under the
+  framed viewer, gap 8, min-height 28. Only `http(s)` links are accepted (`ImageCredit`).
+- USDA: last row of the nutrition block when `nutritionSource === 'USDA_FDC'` — tag "USDA" 10/800 +0.5, padding 2 6,
+  radius 4, 1px `border`, `textSubtle`; text 12 `textSubtle`; gap 8.
+
+### 4. Where the build departs from the prototype
+
+- The Explore strip and row keep their current place on the recipes page (that page is not a prototype target); only
+  their own measurements follow the prototype.
+- The claim hint and review bodies keep the admin-review wording: the prototype's "add recipely.app/@{username} to your
+  bio" and "up to 2 days" describe a bio check and a turnaround the backend does not do.
+- Submit enables at the platform's minimum handle length (`CreatorHandleRules`, Instagram 1, TikTok 2), not a fixed 2.
+- The form opened from Try again keeps a Cancel outline pill, so a user can back out to the rejected card.
+- The /creators subtitle carries no count: the list is paged and the total is not known up front.
+- The 140 ms hover transition on creator cards is not animated; the lift is immediate.
