@@ -12,4 +12,6 @@ export interface RecipeAuthorInput {
   owner: ResolvedAuthor | null;
   /** True when the recipe is owned by the signed-in user. */
   isOwner: boolean;
+  /** True for a Recipely Kitchen recipe, which is credited to the Kitchen rather than an account. */
+  isKitchen?: boolean;
 }

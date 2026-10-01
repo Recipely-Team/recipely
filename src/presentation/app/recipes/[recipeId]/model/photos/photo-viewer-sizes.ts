@@ -21,4 +21,6 @@ export const photoViewerSizes = {
   emptyLogoFramed: scale(84),
   addFirstOffset: scale(22),
   addFirstOffsetFramed: scale(28),
+  /** The web credit line's height under the framed viewer; mobile uses the 44 touch target. */
+  creditLineFramed: scale(28),
 } as const;

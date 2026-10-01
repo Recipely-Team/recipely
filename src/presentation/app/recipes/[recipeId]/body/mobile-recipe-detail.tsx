@@ -5,6 +5,7 @@ import { showsPhotoStrip } from '@presentation/app/recipes/[recipeId]/model/phot
 import { mobileContentOverlap } from '@presentation/app/recipes/[recipeId]/model/mobile-content-overlap';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
+import { PhotoCreditLine } from '@presentation/app/recipes/[recipeId]/items/media/photo-credit-line';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
@@ -77,6 +78,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
       />
 
       <View style={[styles.content, { marginTop: -overlap, backgroundColor: colors.background }]}>
+        <PhotoCreditLine credit={recipe.imageCredit} style={styles.credit} />
         <RecipeOverview
           recipe={recipe}
           recipeId={recipeId}
@@ -120,6 +122,8 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
 };
 
 const styles = StyleSheet.create({
+  // Directly under the cover, then tight above the title (design spec §9.2).
+  credit: { marginTop: -spacing.xl, marginBottom: -spacing.md },
   content: {
     borderTopLeftRadius: radii.xxl,
     borderTopRightRadius: radii.xxl,

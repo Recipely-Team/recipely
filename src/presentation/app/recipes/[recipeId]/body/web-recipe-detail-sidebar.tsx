@@ -136,7 +136,12 @@ export const WebRecipeDetailSidebar = ({
         >
           {strings.recipes.nutrition}
         </ThemedText>
-        <NutritionPanel facts={recipe.nutritionFacts} isCalculating={isNutritionCalculating} compact />
+        <NutritionPanel
+          facts={recipe.nutritionFacts}
+          isCalculating={isNutritionCalculating}
+          source={recipe.nutritionSource}
+          compact
+        />
         <AddToDiaryButton recipe={recipe} inCard />
       </View>
     </View>

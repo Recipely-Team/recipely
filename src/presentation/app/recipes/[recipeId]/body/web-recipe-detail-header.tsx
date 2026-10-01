@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
+import { WebAuthorByline } from '@presentation/app/recipes/[recipeId]/items/meta/web-author-byline';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -82,18 +82,7 @@ export const WebRecipeDetailHeader = ({
         <ThemedText style={[styles.title, { color: colors.text }]}>{recipe.name}</ThemedText>
 
         <View style={styles.statsRow}>
-          {author !== null ? (
-            <View style={styles.statItem}>
-              <AvatarImage
-                uri={author.authorPhotoUrl}
-                name={author.authorName}
-                size={avatarSizes.xs}
-              />
-              <ThemedText variant="body" style={styles.authorName}>
-                {author.authorName}
-              </ThemedText>
-            </View>
-          ) : null}
+          {author !== null ? <WebAuthorByline author={author} /> : null}
           {recipe.rating > ValueConstants.zero ? (
             <View style={styles.statItem}>
               <Ionicons name="star" size={iconSizes.md} color={colors.starFilled} />
@@ -206,7 +195,7 @@ export const WebRecipeDetailHeader = ({
 };
 
 const styles = StyleSheet.create({
-  provenance: { marginTop: spacing.xs2 },
+  provenance: { marginTop: spacing.xxs },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -248,9 +237,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-  },
-  authorName: {
-    fontWeight: fontWeights.semibold,
   },
   statText: {
     fontWeight: fontWeights.semibold,

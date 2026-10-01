@@ -1,7 +1,7 @@
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { t } from '@presentation/i18n';
 
-type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai>;
+type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai | typeof ProvenanceMark.Curated>;
 
 const PLATFORM_A11Y: Record<SourceMarkType, () => string> = {
   [ProvenanceMark.Instagram]: () => t().recipes.originInstagramA11y,
@@ -19,8 +19,11 @@ const PLATFORM_A11Y: Record<SourceMarkType, () => string> = {
  * the other: the capsule is one object, so a screen reader meets it once.
  */
 export const provenanceLabel = (marks: readonly ProvenanceMarkType[]): string => {
+  if (marks.includes(ProvenanceMark.Curated)) return t().recipes.originCuratedA11y;
   const byModel = marks.includes(ProvenanceMark.Ai);
-  const platform = marks.find((mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai);
+  const platform = marks.find(
+    (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
+  );
   const base = platform === undefined ? null : PLATFORM_A11Y[platform]();
   if (base === null) return byModel ? t().recipes.originAiA11y : '';
   return byModel ? `${base}${t().recipes.originEditedByAiSuffix}` : base;

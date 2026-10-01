@@ -2,6 +2,7 @@ import { useId } from 'react';
 import Svg, { Circle, Defs, G, LinearGradient, Path, Rect, Stop } from 'react-native-svg';
 import { ProvenanceMark, type ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { BrandColors } from '@presentation/base/theme';
+import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 
 export interface ProvenanceGlyphProps {
   mark: ProvenanceMarkType;
@@ -53,12 +54,16 @@ const AI_STOPS = [
  *   action, and every ink here is at least 3:1 on white. Facebook's and
  *   YouTube's marks are outlines too — an `f` in a ring, a play button — in
  *   the one ink each brand owns.
+ * - **Recipely Kitchen wears the full-colour Recipely logo**, the one mark
+ *   that is ours rather than a platform's.
  * - **A gradient id per instance.** SVG ids are document-global on web, so two
  *   seals sharing one id would both paint with whichever gradient came last.
  */
 export const ProvenanceGlyph = ({ mark, size, tint, ink: plateInk }: ProvenanceGlyphProps): React.JSX.Element => {
   const inkId = `provenance-ink-${useId().replace(/[^a-zA-Z0-9]/g, '')}`;
   const ink = mark === ProvenanceMark.Instagram && plateInk !== undefined ? plateInk : `url(#${inkId})`;
+
+  if (mark === ProvenanceMark.Curated) return <RecipelyLogo size={size} />;
 
   if (mark === ProvenanceMark.Web) {
     const line = { fill: 'none', stroke: tint ?? BrandColors.webInk, strokeWidth: WEB_STROKE, strokeLinecap: 'round', strokeLinejoin: 'round' } as const;
