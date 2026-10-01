@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1566 source files.
+[architecture.md](architecture.md). 1582 source files.
 
 ## Layers
 
@@ -56,7 +56,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` _(3)_
-- `diary/` — day, entries, goals, month _(14)_
+- `diary/` — day, entries, foods, goals, month _(30)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: a77da58823902025 -->
+<!-- fingerprint: 7fc62ac773f86267 -->

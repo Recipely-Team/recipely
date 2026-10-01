@@ -1,6 +1,7 @@
 import { CharConstants } from '@core/constants';
 import { FoodSource } from '@domain/diary/foods/food-source';
 import { LoggableProduct } from '@domain/diary/foods/loggable-product';
+import { FoodDetail } from '@domain/diary/foods/product/food-detail';
 import { foodDisplayName } from '@domain/diary/foods/product/food-display-name';
 import { withBaseUnit } from '@domain/diary/foods/product/with-base-unit';
 import type { FoodProductProps } from '@domain/diary/foods/product/food-product-props';
@@ -69,6 +70,31 @@ export class FoodProduct {
 
   get imageUrl(): string | null {
     return this.props.imageUrl;
+  }
+
+  /** This row as a one-variant detail — for a row with neither a food id nor a barcode to look up. */
+  get asDetail(): FoodDetail | null {
+    const detail = FoodDetail.create({
+      source: this.props.source,
+      foodId: this.props.foodId,
+      offBarcode: this.props.offBarcode,
+      kind: this.props.kind,
+      category: this.props.category,
+      name: this.props.name,
+      brand: this.props.brand,
+      packSize: this.props.packSize,
+      unit: this.props.unit,
+      imageUrl: this.props.imageUrl,
+      variants: [
+        {
+          foodVariantId: this.props.foodVariantId,
+          name: this.props.variantName,
+          per100: this.props.per100,
+          servingUnits: this.props.servingUnits,
+        },
+      ],
+    });
+    return detail.ok ? detail.value : null;
   }
 
   /** This row as it stands, loggable without the detail request (the assistant logs from it). */
