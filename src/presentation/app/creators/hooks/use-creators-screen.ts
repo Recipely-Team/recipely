@@ -5,6 +5,7 @@ import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useLayout } from '@presentation/base/responsive/use-layout';
+import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { useCreatorsBack } from '@presentation/app/creators/shared/hooks/use-creators-back';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
@@ -40,7 +41,7 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const gap = isExpanded ? CreatorsGridMetrics.gapExpanded : CreatorsGridMetrics.gap;
   const contentWidth = Math.min(width, WEB_CONTENT_MAX_WIDTH.creators) - gutter * ValueConstants.two;
   const columns = isExpanded
-    ? Math.max(phoneColumns, Math.floor((contentWidth + gap) / (minCardWidthExpanded + gap)))
+    ? autoFillColumns(contentWidth, minCardWidthExpanded, gap, phoneColumns)
     : phoneColumns;
 
   const onRefresh = useCallback(() => {

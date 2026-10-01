@@ -6,6 +6,7 @@ import { isString } from '@core/guards/type-guards';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { useLayout } from '@presentation/base/responsive/use-layout';
+import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
@@ -63,7 +64,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
   const { gutter, gapExpanded, minCardWidthExpanded, phoneColumns } = CreatorProfileMetrics;
   const contentWidth = Math.min(width, WEB_CONTENT_MAX_WIDTH.creatorProfile) - gutter * ValueConstants.two;
   const gridColumns = isExpanded
-    ? Math.max(phoneColumns, Math.floor((contentWidth + gapExpanded) / (minCardWidthExpanded + gapExpanded)))
+    ? autoFillColumns(contentWidth, minCardWidthExpanded, gapExpanded, phoneColumns)
     : phoneColumns;
 
   const follow = (): void => {
