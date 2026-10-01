@@ -15,8 +15,8 @@ const KNOWN_KINDS = new Set<NotifKind>([
   'moderation_approved',
   'moderation_pending',
   'follow',
-  'creator_approved',
-  'creator_rejected',
+  NotifKind.CreatorApproved,
+  NotifKind.CreatorRejected,
 ]);
 
 /** What a notification with no sender is attributed to. */

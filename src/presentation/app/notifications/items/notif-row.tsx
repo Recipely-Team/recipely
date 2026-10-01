@@ -5,6 +5,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
+import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
@@ -25,8 +26,8 @@ const actionText = (n: NotifItem): string => {
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;
-    case 'creator_approved': return creatorLine(labels.creatorApproved, n);
-    case 'creator_rejected': return creatorLine(labels.creatorRejected, n);
+    case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
+    case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
     // NEVER empty. An unknown type degrades to `generic`, and this used to
     // return '' for anything with no recipe behind it — which is how an
     // `import_done` the app did not know about rendered as a blank row.

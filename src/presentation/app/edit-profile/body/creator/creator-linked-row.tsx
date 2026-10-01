@@ -54,7 +54,11 @@ export const CreatorLinkedRow = ({ claim, isBusy, onRemove, onTryAgain }: Creato
             {approved ? (
               <Text
                 accessibilityRole="link"
-                onPress={() => void Linking.openURL(creatorProfileUrl(tag)).catch(() => undefined)}
+                onPress={() =>
+                  void Linking.openURL(creatorProfileUrl(tag)).catch((err: unknown) => {
+                    if (__DEV__) console.warn('[CreatorLinkedRow] could not open the account', err);
+                  })
+                }
                 style={styles.link}
               >
                 {tag.displayHandle}
