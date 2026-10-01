@@ -8,7 +8,7 @@ import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
 import type { RecentFood } from '@domain/diary/foods/search/recent-food';
 import type { RecentFoodDto } from '@infrastructure/diary/dtos/recent-food-dto';
 import { toLoggableFood } from '@infrastructure/diary/read/to-loggable-food';
-import { toNutrients } from '@infrastructure/diary/read/to-nutrients';
+import { toKcalNutrients } from '@infrastructure/diary/foods/read/to-kcal-nutrients';
 import { toFoodLogProduct } from '@infrastructure/diary/read/to-food-log-product';
 
 /**
@@ -23,7 +23,7 @@ export const toRecentFood: Mapper<RecentFoodDto, RecentFood, ValidationFailure> 
   }
   const ref = toFoodLogProduct(dto.product);
   if (!ref.ok) return ref;
-  const perUnit = toNutrients(dto.product.perUnit);
+  const perUnit = toKcalNutrients(dto.product.perUnit);
   if (!perUnit.ok) return perUnit;
   const product = LoggableProduct.fromLogged(dto.name, ref.value, perUnit.value);
   const unit = product.units[ValueConstants.zero] ?? { key: ref.value.unitKey, amount: ref.value.unitAmount };

@@ -33,6 +33,17 @@ deleted, so there is nothing local left to filter. Covered in
 *The class:* **a list that answers "what exists" must come from the source of truth,
 paged — never from a snapshot another screen happened to load.**
 
+**A DTO and its test fixture written from the client's types instead of the wire.**
+`RecentFoodProductDto.perUnit` was typed `{ calories, … }` like the entry DTOs, and the
+repository test built its fixture from that same type — so the test agreed with the bug.
+The server sends `{ kcal, … }`; every recent product row failed mapping and was skipped.
+*Guard:* `foods-wire-contract.test.ts` parses JSON text copied from the wire contract
+(`infrastructure/diary/foods/__fixtures__/foods-wire-samples.ts`) through the
+repository, so a DTO that disagrees with the server drops a row the test counts.
+
+*The class:* **a fixture typed by the DTO it tests can only confirm the DTO.** Fixtures
+for a wire shape are the contract's JSON, parsed as `unknown`.
+
 ---
 
 ## Async UI

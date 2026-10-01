@@ -6,7 +6,7 @@ import type { FoodProductDto } from '@infrastructure/diary/foods/dtos/food-produ
 import { toFoodSource } from '@infrastructure/diary/foods/read/vocabulary/to-food-source';
 import { toFoodKind } from '@infrastructure/diary/foods/read/vocabulary/to-food-kind';
 import { toFoodBaseUnit } from '@infrastructure/diary/foods/read/vocabulary/to-food-base-unit';
-import { toPerHundred } from '@infrastructure/diary/foods/read/to-per-hundred';
+import { toKcalNutrients } from '@infrastructure/diary/foods/read/to-kcal-nutrients';
 import { toFoodUnits } from '@infrastructure/diary/foods/read/to-food-units';
 
 /** A product row → `FoodProduct`, validating its source, kind, unit and figures. */
@@ -17,7 +17,7 @@ export const toFoodProduct: Mapper<FoodProductDto, FoodProduct, ValidationFailur
   if (!kind.ok) return kind;
   const unit = toFoodBaseUnit(dto.unit);
   if (!unit.ok) return unit;
-  const per100 = toPerHundred(dto.per100);
+  const per100 = toKcalNutrients(dto.per100);
   if (!per100.ok) return per100;
   return ok(
     FoodProduct.of({

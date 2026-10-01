@@ -100,7 +100,7 @@ describe('FoodCatalogRepository', () => {
 
   it('reads a recent product at its own unit and quantity, and a recipe as one serving', async () => {
     const product = { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200, foodId: 'f1',
-      perUnit: { calories: 52, protein: 3, carbs: 4, fat: 2, fiber: null } };
+      perUnit: { kcal: 52, protein: 3, carbs: 4, fat: 2, fiber: null } };
     const base = { calories: 78, protein: 4.5, carbs: 6, fat: 3, fiber: null, recipeId: null, recipeImageUrl: null };
     const { http } = makeHttp(ok(envelope([{ ...base, name: 'Ayran · Az yağlı', servings: 1.5, product }, { ...base, name: 'Menemen', servings: 1, recipeId: 'r1', product: null }])));
     const r = await new FoodCatalogRepository(http).listRecent(1, 20);
