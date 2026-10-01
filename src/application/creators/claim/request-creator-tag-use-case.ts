@@ -7,7 +7,8 @@ import type { RequestCreatorTagInput } from '@application/creators/claim/request
 
 /**
  * Claims an Instagram or TikTok account for the signed-in user and returns the
- * session holding the new claim.
+ * session holding the new claim for that platform; each platform is reviewed
+ * on its own.
  *
  * @remarks
  * - **Validates before sending.** A handle that breaks the rules fails here

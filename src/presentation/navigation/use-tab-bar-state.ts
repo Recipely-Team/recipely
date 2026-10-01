@@ -12,6 +12,7 @@ import { RoutePaths } from '@presentation/base/constants';
 const TAB_BY_PATH = new Map<string, TabBarKey>([
   ['/recipes', 'recipes'],
   ['/my-recipes', 'myRecipes'],
+  [RoutePaths.creators, 'chefs'],
   ['/diary', 'diary'],
   // The month page is pushed inside the Diary tab, so the bar stays and keeps Diary lit.
   ['/diary/calendar', 'diary'],
@@ -22,6 +23,7 @@ const TAB_BY_PATH = new Map<string, TabBarKey>([
 const PATH_BY_TAB: Readonly<Record<TabBarKey, Href>> = {
   recipes: RoutePaths.recipes,
   myRecipes: RoutePaths.myRecipes,
+  chefs: RoutePaths.creators,
   diary: RoutePaths.diary,
   profile: RoutePaths.profile,
 };

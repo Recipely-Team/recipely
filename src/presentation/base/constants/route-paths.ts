@@ -1,4 +1,5 @@
 import { ImportSource } from '@presentation/base/constants/import-source';
+import { EditProfileSection } from '@presentation/base/constants/edit-profile-section';
 
 /**
  * Every in-app expo-router navigation target in one place, so route strings
@@ -35,8 +36,10 @@ export const RoutePaths = {
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',
+  /** Edit Profile scrolled to its creator account section — where a claim decision is acted on. */
+  editProfileCreatorAccount: `/edit-profile?section=${EditProfileSection.CreatorAccount}`,
   settings: '/settings',
-  /** Every approved creator, as cards; the Explore strip's "See all". */
+  /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
   /** One creator's public page; open to guests. */

@@ -64,34 +64,45 @@ describe('toUserProfile', () => {
   });
 });
 
-describe('toUserProfile — creator tag', () => {
-  it('maps an approved creator tag', () => {
-    const r = toUserProfile({ ...fullDto, creator: { platform: 'tiktok', handle: 'ada.cooks' } });
+describe('toUserProfile — creator tags', () => {
+  it('maps every approved account, Instagram first', () => {
+    const r = toUserProfile({
+      ...fullDto,
+      creatorTags: [
+        { platform: 'tiktok', handle: 'ada.cooks' },
+        { platform: 'instagram', handle: 'adacooks' },
+      ],
+    });
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value.creator?.platform).toBe('tiktok');
-      expect(r.value.creator?.displayHandle).toBe('@ada.cooks');
+      expect(r.value.creatorTags.map((tag) => tag.displayHandle)).toEqual(['@adacooks', '@ada.cooks']);
       expect(r.value.isCreator).toBe(true);
     }
   });
 
-  it('reads a null creator as no tag', () => {
-    const r = toUserProfile({ ...fullDto, creator: null });
-    expect(r.ok && r.value.creator).toBeNull();
+  it('reads an empty list as not a creator', () => {
+    const r = toUserProfile({ ...fullDto, creatorTags: [] });
+    expect(r.ok && r.value.isCreator).toBe(false);
   });
 
-  it('reads a creator field missing from an older backend as no tag', () => {
+  it('reads a field missing from an older backend as no tags', () => {
     const r = toUserProfile(fullDto);
     expect(r.ok).toBe(true);
     if (r.ok) {
-      expect(r.value.creator).toBeNull();
+      expect(r.value.creatorTags).toEqual([]);
       expect(r.value.isCreator).toBe(false);
     }
   });
 
-  it('still opens the profile when the tag names an unknown platform', () => {
-    const r = toUserProfile({ ...fullDto, creator: { platform: 'youtube', handle: 'ada' } });
+  it('still opens the profile when a tag names an unknown platform, keeping the rest', () => {
+    const r = toUserProfile({
+      ...fullDto,
+      creatorTags: [
+        { platform: 'youtube', handle: 'ada' },
+        { platform: 'instagram', handle: 'ada' },
+      ],
+    });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.creator).toBeNull();
+    if (r.ok) expect(r.value.creatorTags.map((tag) => tag.platform)).toEqual(['instagram']);
   });
 });

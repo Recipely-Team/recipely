@@ -93,7 +93,7 @@ describe('UserProfileRepository.listCreators', () => {
         id: 'u-7',
         displayName: 'Ada',
         photoUrl: null,
-        creator: { platform: 'instagram', handle: 'ada.cooks' },
+        creatorTags: [{ platform: 'instagram', handle: 'ada.cooks' }],
         recipeCount: 5,
         followerCount: 900,
       },

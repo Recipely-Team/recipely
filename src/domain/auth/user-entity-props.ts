@@ -1,5 +1,5 @@
 import type { Email } from '@domain/common/email';
-import type { CreatorClaim } from '@domain/creators/creator-claim';
+import type { CreatorClaims } from '@domain/creators/creator-claims';
 
 export interface UserEntityProps {
   id: string;
@@ -7,6 +7,6 @@ export interface UserEntityProps {
   displayName: string;
   photoUrl?: string;
   bio?: string;
-  /** The user's own creator claim; absent or `null` when there is none. */
-  creatorClaim?: CreatorClaim | null;
+  /** The user's own creator claims, one per platform; absent when there are none. */
+  creatorClaims?: CreatorClaims;
 }

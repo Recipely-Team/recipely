@@ -9,6 +9,6 @@ export interface UserProfileEntityProps {
   totalLikes: number;
   totalViews: number;
   joinedAt: Date;
-  /** The approved creator tag; `null` for everyone else, and while a claim is under review. */
-  creator: CreatorTag | null;
+  /** The approved creator tags, one per platform, Instagram first; empty for everyone else. */
+  creatorTags: readonly CreatorTag[];
 }

@@ -82,13 +82,16 @@ interface AuthStoreDeps {
  *   after sign-out cannot sign anyone back in, nor put one user's claim on the
  *   next user's session. A refresh is dropped when a request or remove was
  *   still in flight as it started or started while it ran: it read the claim
- *   from before the change.
+ *   from before the change. Writes run one at a time, in order, so writing
+ *   both platforms together cannot lose one.
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
   // Bumped by each request / remove, so a refresh can tell it was overtaken.
   let claimWrites = ValueConstants.zero;
   // Requests / removes not answered yet: a refresh started under one read the claim from before it.
   let claimWritesInFlight = ValueConstants.zero;
+  // The tail of the claim-write queue; each write starts when the one before it has settled.
+  let claimQueue: Promise<void> = Promise.resolve();
 
   return create<AuthStoreState>((set, get) => {
     /** The signed-in user's id, or `null` — read when a claim call starts. */
@@ -117,14 +120,24 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
     };
 
     /** Runs a request / remove, counted from its start until its answer is handled. */
-    const writeClaim = async (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
+    /**
+     * Runs claim writes one at a time, in the order they were asked for: two
+     * platforms written together would otherwise each answer with a session
+     * built before the other's write, and the later answer would drop one.
+     * Counted as in flight from the moment it is queued, so a refresh started
+     * meanwhile knows it was overtaken.
+     */
+    const writeClaim = (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
       claimWrites += ValueConstants.one;
       claimWritesInFlight += ValueConstants.one;
-      try {
-        return await applyClaimResult(call);
-      } finally {
+      const run = claimQueue.then(() => applyClaimResult(call)).finally(() => {
         claimWritesInFlight -= ValueConstants.one;
-      }
+      });
+      claimQueue = run.then(
+        () => undefined,
+        () => undefined,
+      );
+      return run;
     };
 
     return {
@@ -290,7 +303,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
 
       requestCreatorTag: (input) => writeClaim(() => deps.requestCreatorTag.execute(input)),
 
-      removeCreatorTag: () => writeClaim(() => deps.removeCreatorTag.execute()),
+      removeCreatorTag: (platform) => writeClaim(() => deps.removeCreatorTag.execute(platform)),
 
       refreshCreatorClaim: () => {
         const startedAfter = claimWrites;

@@ -18,7 +18,7 @@ export const viewedProfileOf = (
     totalLikes: 31000,
     totalViews: 0,
     joinedAt: new Date('2026-01-01T00:00:00.000Z'),
-    creator: tag.value,
+    creatorTags: [tag.value],
   });
   if (!profile.ok) throw new Error('fixture profile invalid');
   return {

@@ -11,6 +11,6 @@ export interface RecipelyUserDto {
   bio?: string | null;
   createdAt: string;
   role?: string;
-  /** The user's own claim; `null` for status `none`, absent from a backend older than creator tags. */
-  creator?: CreatorClaimDto | null;
+  /** The user's own claims, one per platform, Instagram first; absent from a backend older than per-platform tags. */
+  creatorTags?: CreatorClaimDto[];
 }

@@ -6,7 +6,7 @@ const item = (id: string, overrides: Partial<CreatorSummaryDto> = {}): CreatorSu
   id,
   displayName: `Creator ${id}`,
   photoUrl: null,
-  creator: { platform: 'instagram', handle: `chef_${id}` },
+  creatorTags: [{ platform: 'instagram', handle: `chef_${id}` }],
   recipeCount: 3,
   followerCount: 40,
   ...overrides,
@@ -26,7 +26,7 @@ describe('toCreatorPage', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value.items.map((c) => c.id)).toEqual(['1', '2']);
-    expect(r.value.items[0].creator.displayHandle).toBe('@chef_1');
+    expect(r.value.items[0].creatorTags[0]?.displayHandle).toBe('@chef_1');
     expect(r.value.items[0].followerCount).toBe(40);
     expect(r.value.total).toBe(45);
     expect(r.value.page).toBe(2);
@@ -40,11 +40,25 @@ describe('toCreatorPage', () => {
     expect(last.ok && last.value.hasMore).toBe(false);
   });
 
-  it('skips an item it cannot read instead of emptying the strip', () => {
+  it('skips an item it cannot read instead of emptying the grid', () => {
     const r = toCreatorPage(
-      page([item('1'), item('2', { creator: { platform: 'youtube', handle: 'x' } }), item('3', { displayName: '' })]),
+      page([item('1'), item('2', { creatorTags: [{ platform: 'youtube', handle: 'x' }] }), item('3', { displayName: '' })]),
     );
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value.items.map((c) => c.id)).toEqual(['1']);
+  });
+
+  it('keeps both accounts of a two-platform creator, Instagram first', () => {
+    const r = toCreatorPage(
+      page([
+        item('1', {
+          creatorTags: [
+            { platform: 'tiktok', handle: 'mert.mutfakta' },
+            { platform: 'instagram', handle: 'mertmutfakta' },
+          ],
+        }),
+      ]),
+    );
+    expect(r.ok && r.value.items[0]?.creatorTags.map((tag) => tag.displayHandle)).toEqual(['@mertmutfakta', '@mert.mutfakta']);
   });
 });

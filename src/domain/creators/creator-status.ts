@@ -1,15 +1,14 @@
 /**
- * Where a user's creator claim stands. Mirrors `recipely-backend`'s
- * `CreatorStatus` (docs/creator-tag-contract.md).
+ * Where one platform's creator claim stands. Mirrors `recipely-backend`'s
+ * claim status (docs/creator-tag-contract.md).
  *
  * @remarks
- * - **`None` never travels.** The wire sends `creator: null` for it; a
- *   `CreatorClaim` only ever holds one of the other three.
+ * - **There is no "none".** A platform without a claim has no entry in
+ *   `CreatorClaims`; a `CreatorClaim` always holds one of these three.
  * - **Only `Approved` shows a tag.** A pending or rejected claim is visible to
  *   its owner alone, on Edit Profile.
  */
 export const CreatorStatus = {
-  None: 'none',
   Pending: 'pending',
   Approved: 'approved',
   Rejected: 'rejected',

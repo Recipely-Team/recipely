@@ -5,11 +5,14 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
+import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { ProvenanceSeal } from '@presentation/base/widgets/badges/provenance-seal';
 import { SealSurface } from '@presentation/base/widgets/badges/seal-surface';
 import { importSourceLine } from '@presentation/app/notifications/model/import-source-line';
+import { CreatorHandleRules } from '@domain/creators/creator-handle-rules';
+import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
 
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
@@ -23,12 +26,19 @@ const actionText = (n: NotifItem): string => {
     case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
     case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
     case 'follow': return labels.followed;
+    case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
+    case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
     // NEVER empty. An unknown type degrades to `generic`, and this used to
     // return '' for anything with no recipe behind it — which is how an
     // `import_done` the app did not know about rendered as a blank row.
     case 'generic': return n.recipeName ?? labels.genericLabel;
   }
 };
+
+/** "verified your Instagram account" — the platform named; the handle goes on the line under it. */
+const creatorLine = (template: string, n: NotifItem): string =>
+  // A platform this build cannot name: the row still says something, never blank.
+  n.creator === undefined ? t().notifications.genericLabel : template.replace('{platform}', creatorPlatformName(n.creator.platform));
 
 interface NotifRowProps {
   item: NotifItem;
@@ -48,7 +58,12 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
   const tappable = item.target !== null || !item.read;
-  const sourceLine = item.source === undefined ? undefined : importSourceLine(item.source);
+  const sourceLine =
+    item.source !== undefined
+      ? importSourceLine(item.source)
+      : item.creator !== undefined && item.creator.handle !== null
+        ? `${CreatorHandleRules.Prefix}${item.creator.handle}`
+        : undefined;
 
   return (
     <Pressable

@@ -49,6 +49,7 @@ describe('useTabBarState', () => {
   it.each([
     ['/recipes', 'recipes'],
     ['/my-recipes', 'myRecipes'],
+    ['/creators', 'chefs'],
     ['/profile', 'profile'],
     ['/settings', 'profile'],
   ] as [string, TabBarKey][])('shows the bar on %s with %s active', (pathname, active) => {
@@ -61,6 +62,8 @@ describe('useTabBarState', () => {
     ['/'],
     ['/login'],
     ['/recipes/42'],
+    // A creator's page is pushed from the Chefs tab and shows no bar.
+    ['/creators/u-1'],
     ['/create-recipe'],
     ['/edit-profile'],
     ['/notifications'],
@@ -91,5 +94,10 @@ describe('useTabBarState', () => {
     const state = renderAt('/settings');
     state?.onChange('profile');
     expect(mockReplace).toHaveBeenCalledWith('/profile');
+  });
+
+  it('opens the Chefs tab at /creators', () => {
+    renderAt('/recipes')?.onChange('chefs');
+    expect(mockReplace).toHaveBeenCalledWith('/creators');
   });
 });

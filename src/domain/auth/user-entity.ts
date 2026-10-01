@@ -6,8 +6,10 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Email } from '@domain/common/email';
 import { ValueConstants } from '@core/constants';
-import type { CreatorClaim } from '@domain/creators/creator-claim';
-import { CreatorStatus } from '@domain/creators/creator-status';
+import { CreatorClaims } from '@domain/creators/creator-claims';
+
+/** One shared empty collection, so a user without claims answers the same reference each read. */
+const NO_CLAIMS = CreatorClaims.empty();
 
 
 /**
@@ -15,9 +17,10 @@ import { CreatorStatus } from '@domain/creators/creator-status';
  * `id` and `displayName` are non-empty before construction.
  *
  * @remarks
- * - **The creator claim is the user's own view.** Pending and rejected claims
- *   live only here; everyone else sees a tag on the public profile once it is
- *   approved. `withCreatorClaim` returns a new user rather than mutating.
+ * - **The creator claims are the user's own view**, one per platform. Pending
+ *   and rejected claims live only here; everyone else sees a platform's tag on
+ *   the public profile once it is approved. `withCreatorClaims` returns a new
+ *   user rather than mutating.
  */
 export class UserEntity extends BaseEntity<UserEntityProps> {
   private constructor(props: UserEntityProps) {
@@ -50,23 +53,18 @@ export class UserEntity extends BaseEntity<UserEntityProps> {
     return this.props.bio;
   }
 
-  get creatorClaim(): CreatorClaim | null {
-    return this.props.creatorClaim ?? null;
+  /** The user's claims, one per platform; empty when there are none. */
+  get creatorClaims(): CreatorClaims {
+    return this.props.creatorClaims ?? NO_CLAIMS;
   }
 
-  /** `none` when the user has not claimed an account. */
-  get creatorStatus(): CreatorStatus {
-    return this.props.creatorClaim?.status ?? CreatorStatus.None;
+  /** Whether this user holds exactly `claims` — the same claim on every platform. */
+  holdsCreatorClaims(claims: CreatorClaims): boolean {
+    return this.creatorClaims.equals(claims);
   }
 
-  /** Whether this user holds exactly `claim` — same tag and status, or both without one. */
-  holdsCreatorClaim(claim: CreatorClaim | null): boolean {
-    const own = this.creatorClaim;
-    return own === null || claim === null ? own === claim : own.equals(claim);
-  }
-
-  /** The same user holding `claim` instead (`null` clears it). */
-  withCreatorClaim(claim: CreatorClaim | null): UserEntity {
-    return new UserEntity({ ...this.props, creatorClaim: claim });
+  /** The same user holding `claims` instead. */
+  withCreatorClaims(claims: CreatorClaims): UserEntity {
+    return new UserEntity({ ...this.props, creatorClaims: claims });
   }
 }

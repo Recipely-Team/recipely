@@ -23,7 +23,7 @@ describe('CreatorClaim', () => {
   );
 
   it('refuses none, which is the absence of a claim', () => {
-    expect(CreatorClaim.create(tagOf('instagram', 'chef'), CreatorStatus.None).ok).toBe(false);
+    expect(CreatorClaim.create(tagOf('instagram', 'chef'), 'none').ok).toBe(false);
   });
 
   it('refuses a status it does not know', () => {

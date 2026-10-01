@@ -11,7 +11,7 @@ import { ListState } from '@presentation/base/hooks/assistant/args/describing/li
 import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { useCreatorsScreen } from '@presentation/app/creators/hooks/use-creators-screen';
-import { CreatorsPageHeader } from '@presentation/app/creators/shared/body/creators-page-header';
+import { ChefsHeading } from '@presentation/app/creators/body/chefs-heading';
 import { CreatorsGrid } from '@presentation/app/creators/body/creators-grid';
 import { t } from '@presentation/i18n';
 
@@ -19,8 +19,8 @@ import { t } from '@presentation/i18n';
 const ROSTER_LABEL = 'creators';
 
 /**
- * /creators — every approved creator as a card grid, from the Explore strip's
- * "See all". Public: guests browse it too.
+ * /creators — the Chefs root tab: every approved creator as a card grid, with
+ * the tab bar below on a phone and no back button. Public: guests browse it too.
  */
 export const CreatorsScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -41,7 +41,7 @@ export const CreatorsScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <PageTitle subject={t().creators.title} />
       <ResponsiveContainer route="creators" gutter={false} fill>
-        <CreatorsPageHeader onBack={vm.onBack} title={t().creators.title} backLabel={t().creators.backToRecipes} />
+        <ChefsHeading />
         <CreatorsGrid vm={vm} scrollable={scrollable} />
       </ResponsiveContainer>
     </View>

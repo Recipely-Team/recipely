@@ -1,4 +1,6 @@
 import { ok } from '@core/result/result-helpers';
+import { CreatorNotificationType } from '@domain/notifications/creator-notification-type';
+import { toCreatorPlatform } from '@domain/creators/to-creator-platform';
 import type { DevicePlatform } from '@domain/notifications/device-platform';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
@@ -75,6 +77,9 @@ export class NotificationRepository implements NotificationRepositoryInterface {
   }
 }
 
+const CREATOR_DECISIONS: ReadonlySet<string> = new Set(Object.values(CreatorNotificationType));
+const isCreatorDecision = (type: string): boolean => CREATOR_DECISIONS.has(type);
+
 function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEntity, Failure> {
   return NotificationEntity.create({
     id: dto.id,
@@ -87,7 +92,9 @@ function mapDtoToNotification(dto: NotificationItemDto): Result<NotificationEnti
     commentId: dto.commentId ?? null,
     draftId: dto.draftId ?? null,
     message: dto.message ?? null,
-    sourcePlatform: toSourcePlatform(dto.sourcePlatform),
+    // A creator decision names a lower-case creator platform; an import an upper-case source one.
+    sourcePlatform: isCreatorDecision(dto.type) ? null : toSourcePlatform(dto.sourcePlatform),
+    creatorPlatform: isCreatorDecision(dto.type) ? toCreatorPlatform(dto.sourcePlatform) : null,
     sourceHandle: isNonEmptyString(dto.sourceHandle) ? dto.sourceHandle : null,
     read: dto.read,
     createdAt: new Date(dto.createdAt),

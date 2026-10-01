@@ -7,6 +7,7 @@ import { spacing } from '@presentation/base/theme';
 import { useAssistantProfileActions } from '@presentation/app/edit-profile/hooks/use-assistant-profile-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
+import { useSectionScroll } from '@presentation/app/edit-profile/hooks/use-section-scroll';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
@@ -20,6 +21,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
   const insets = useSafeAreaInsets();
   const vm = useEditProfile();
   const scrollable = useAssistantScrollable();
+  const { ref: scrollRef, onCreatorSectionLayout } = useSectionScroll(scrollable.ref);
 
   // Registered by the screen that owns the form, so the assistant can fill in
   // a name or a bio — and press Save — here and nowhere else.
@@ -48,6 +50,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
       <KeyboardAvoider style={styles.flex}>
         <ScrollView
           {...scrollable}
+          ref={scrollRef}
           contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xxl }}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
@@ -67,7 +70,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
               onChangeBio={vm.onChangeBio}
               bioAtLimit={vm.bioAtLimit}
             />
-            <CreatorAccountSection />
+            <CreatorAccountSection onLayout={onCreatorSectionLayout} />
           </ResponsiveContainer>
         </ScrollView>
       </KeyboardAvoider>

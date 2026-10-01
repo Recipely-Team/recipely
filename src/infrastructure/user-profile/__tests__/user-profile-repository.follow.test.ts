@@ -22,7 +22,7 @@ const profileDto: UserProfileDto = {
   followingCount: 3,
   isFollowedByMe: true,
   joinedAt: '2026-04-01T12:00:00.000Z',
-  creator: { platform: 'instagram', handle: 'ada.cooks' },
+  creatorTags: [{ platform: 'instagram', handle: 'ada.cooks' }],
 };
 
 const recipeDto: RecipeListItemDto = {
@@ -70,7 +70,7 @@ describe('UserProfileRepository.getViewedProfile', () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value.profile.displayName).toBe('Ada Lovelace');
-      expect(r.value.profile.creator?.displayHandle).toBe('@ada.cooks');
+      expect(r.value.profile.creatorTags[0]?.displayHandle).toBe('@ada.cooks');
       expect(r.value.followerCount).toBe(12400);
       expect(r.value.isFollowedByMe).toBe(true);
     }

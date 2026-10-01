@@ -12,7 +12,7 @@ import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe'
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { getLocale, t } from '@presentation/i18n';
-import { useCreatorsBack } from '@presentation/app/creators/shared/hooks/use-creators-back';
+import { useCreatorsBack } from '@presentation/app/creators/[userId]/hooks/use-creators-back';
 import { useShareCreator } from '@presentation/app/creators/[userId]/hooks/use-share-creator';
 import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 import { CreatorProfileMetrics } from '@presentation/app/creators/[userId]/model/creator-profile-metrics';

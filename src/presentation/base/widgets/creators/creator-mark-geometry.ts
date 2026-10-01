@@ -7,20 +7,22 @@ import { scale } from '@presentation/base/theme';
 export const creatorMarkGeometry = {
   /** The platform glyph's share of its white face, as on the provenance seal. */
   glyphShare: 0.6,
-  /** On a 64 avatar (strip and card): max(20, round(64 × 0.34)). */
+  /** On a card's 64 avatar: max(20, round(64 × 0.34)). */
   avatar: scale(22),
   /** Inside the verified platform badge and the neutral handle chip. */
   chip: scale(22),
-  /** Inside a platform option of the claim form. */
-  option: scale(24),
-  /** One strip item: the 64 avatar and a little air for its name. */
-  stripItemWidth: scale(76),
+  /** How far a second seal sits from the primary, as a share of a seal: 13 at 22. */
+  overlapShare: 0.6,
+  /** Beside each handle line on a creator card. */
+  cardLine: scale(18),
+  /** At the head of an Edit Profile platform row and its Link row. */
+  row: scale(36),
+  /** Beside the title of the Edit Profile link form. */
+  form: scale(28),
   /** The approved-creator badge beside the name on the phone's Profile. */
   badgeProfile: scale(22),
   /** The same badge beside the web Profile's heading. */
   badgeProfileWeb: scale(20),
-  /** The same badge beside the Approved status title on Edit Profile. */
-  badgeStatus: scale(18),
   /** The badge's check as a share of the badge. */
   badgeCheckShare: 0.62,
 } as const;

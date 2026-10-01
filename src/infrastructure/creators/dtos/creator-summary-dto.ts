@@ -5,7 +5,8 @@ export interface CreatorSummaryDto {
   id: string;
   displayName: string;
   photoUrl: string | null;
-  creator: CreatorTagDto;
+  /** Approved tags, Instagram first; never empty. */
+  creatorTags: CreatorTagDto[];
   /** Published and approved recipes. */
   recipeCount: number;
   followerCount: number;

@@ -1,3 +1,5 @@
+import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
+import { readCreatorTags } from '@infrastructure/creators/read-creator-tags';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import { toCreatorTag } from '@infrastructure/creators/to-creator-tag';
@@ -78,5 +80,39 @@ describe('toCreatorTagRequest', () => {
     const tag = CreatorTag.create('instagram', '  @Chef.Ada ');
     if (!tag.ok) throw new Error('fixture');
     expect(toCreatorTagRequest(tag.value)).toEqual({ platform: 'instagram', handle: 'chef.ada' });
+  });
+});
+
+describe('readCreatorClaims', () => {
+  it('reads one claim per platform, Instagram first, skipping what it cannot read', () => {
+    const claims = readCreatorClaims([
+      { platform: 'tiktok', handle: 'mert.mutfakta', status: 'pending' },
+      { platform: 'instagram', handle: 'mertmutfakta', status: 'approved' },
+      { platform: 'youtube', handle: 'mert', status: 'approved' },
+      { platform: 'tiktok', handle: 'second', status: 'approved' },
+    ]);
+
+    expect(claims.all.map((claim) => [claim.tag.platform, claim.tag.handle, claim.status])).toEqual([
+      ['instagram', 'mertmutfakta', 'approved'],
+      ['tiktok', 'mert.mutfakta', 'pending'],
+    ]);
+  });
+
+  it('reads missing or a non-list as no claims', () => {
+    expect(readCreatorClaims(undefined).isEmpty).toBe(true);
+    expect(readCreatorClaims(null).isEmpty).toBe(true);
+  });
+});
+
+describe('readCreatorTags', () => {
+  it('reads public tags Instagram first and drops unreadable ones', () => {
+    const tags = readCreatorTags([
+      { platform: 'tiktok', handle: 'mert.mutfakta' },
+      { platform: 'instagram', handle: 'mertmutfakta' },
+      { platform: 'threads', handle: 'mert' },
+    ]);
+
+    expect(tags.map((tag) => tag.displayHandle)).toEqual(['@mertmutfakta', '@mert.mutfakta']);
+    expect(readCreatorTags(undefined)).toEqual([]);
   });
 });

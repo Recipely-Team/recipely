@@ -7,7 +7,6 @@ import { BREAKPOINTS, WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsiv
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WebHeroSection } from '@presentation/app/recipes/body/web-hero-section';
 import { WebCuisineRail } from '@presentation/app/recipes/body/web-cuisine-rail';
-import { WebCreatorsGrid } from '@presentation/app/recipes/items/creators/web-creators-grid';
 import { AllCuisinesSheet } from '@presentation/app/recipes/sheets/all-cuisines-sheet';
 import { feedGutter } from '@presentation/app/recipes/model/feed-content-width';
 import { WebRecipeGrid } from '@presentation/app/recipes/body/web-recipe-grid';
@@ -21,8 +20,8 @@ export interface WebRecipeFeedProps {
 }
 
 /**
- * The whole feed on an expanded viewport: the hero row, the cuisine rail, the
- * creators row (when there are creators), and the recipe grid, in one scroll
+ * The whole feed on an expanded viewport: the hero row, the cuisine rail and
+ * the recipe grid, in one scroll
  * view and one content column.
  *
  * Split out of `RecipeListBody` because that file carried two entirely separate
@@ -60,7 +59,6 @@ export const WebRecipeFeed = ({ vm }: WebRecipeFeedProps): React.JSX.Element => 
           onOpenAll={() => setAllCuisinesOpen(true)}
           showTitle={showRailTitle}
         />
-        <WebCreatorsGrid />
         {/* Between the rail and the grid, which is the only place on this page
             with finished content both above and below it. Not above the hero
             (the ad would BE the page on arrival) and not inside the grid, where

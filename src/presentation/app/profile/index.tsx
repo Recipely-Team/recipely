@@ -52,7 +52,7 @@ export const ProfileScreen = (): React.JSX.Element => {
             isUploading={vm.isUploading}
             onPickAvatar={vm.onPickAvatar}
             onAddBio={vm.onEditProfile}
-            creatorTag={vm.creatorTag}
+            isCreator={vm.isCreator}
           />
 
           <ProfileStats stats={vm.stats} />

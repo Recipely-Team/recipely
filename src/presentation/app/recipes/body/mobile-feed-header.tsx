@@ -2,7 +2,6 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AiBannerCard } from '@presentation/app/recipes/items/banners/ai-banner-card';
 import { CuisineStrip } from '@presentation/app/recipes/body/cuisine-strip';
-import { CreatorsStrip } from '@presentation/app/recipes/items/creators/creators-strip';
 import { ActiveFilterChips } from '@presentation/app/recipes/items/filters/active-filter-chips';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -25,7 +24,7 @@ export interface MobileFeedHeaderProps {
 
 /**
  * Mobile feed list header (scrolls away with the rows): AI promo, cuisine strip,
- * the creators strip (when there are creators), result-count + Clear-all row,
+ * result-count + Clear-all row,
  * and the active-filter chips. Negative horizontal
  * margin cancels the list's `spacing.lg` inset so the banner/strip/chips are
  * full-bleed while the recipe rows keep their padding.
@@ -47,7 +46,6 @@ export const MobileFeedHeader = ({
     <View style={styles.mobileHeaderBleed}>
       <AiBannerCard onPress={onOpenCreate} />
       <CuisineStrip selectedCuisines={filters.cuisines} onToggle={onToggleCuisine} />
-      <CreatorsStrip />
       <View style={styles.countRow}>
         <ThemedText variant="caption" muted>
           {resultCount} {t().recipes.results}

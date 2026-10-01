@@ -19,8 +19,10 @@ export const ApiRoutes = {
     favorites: '/me/favorites',
     likes: '/me/likes',
     recipes: '/me/recipes',
-    /** The signed-in user's creator claim: PUT to request, DELETE to clear. */
+    /** The signed-in user's creator claims: PUT `{ platform, handle }` to request one. */
     creator: '/me/creator',
+    /** DELETE clears one platform's claim, whatever its status. */
+    creatorPlatform: (platform: string): string => `/me/creator/${encodeURIComponent(platform)}`,
     deviceToken: '/me/device-token',
     devices: '/me/devices',
     notifications: '/me/notifications',

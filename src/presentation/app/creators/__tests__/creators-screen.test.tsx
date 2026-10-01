@@ -46,6 +46,24 @@ describe('CreatorsScreen', () => {
     );
   });
 
+  // The Chefs tab is a root tab: the tab bar takes the user elsewhere, so there is no back button.
+  it('has no back button', () => {
+    const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([creatorSummaryOf('1')]) });
+
+    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.back && typeof n.props.onPress === 'function')).toHaveLength(0);
+  });
+
+  // The Chefs grid pages as it scrolls: reaching the end asks the store for the next page.
+  it('asks the store for the next page when the grid reaches its end', () => {
+    const creatorsStore = storeOf([creatorSummaryOf('1'), creatorSummaryOf('2')]);
+    const { root } = renderComponent(<CreatorsScreen />, { creatorsStore });
+
+    const list = root.find((n) => typeof n.props.onEndReached === 'function' && n.props.numColumns !== undefined);
+    act(() => (list.props.onEndReached as () => void)());
+
+    expect(creatorsStore.getState().loadMore).toHaveBeenCalledTimes(1);
+  });
+
   it('says there are none yet when the list is empty', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([]) });
 

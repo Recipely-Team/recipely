@@ -36,7 +36,8 @@ import type { CreatorTag } from '@domain/creators/creator-tag';
 import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
 import type { MeCreatorDto } from '@infrastructure/creators/dtos/me-creator-dto';
 import { toCreatorClaim } from '@infrastructure/creators/to-creator-claim';
-import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
+import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
 import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
 import { signedInUserId } from '@infrastructure/auth/session/signed-in-user-id';
@@ -190,15 +191,19 @@ export class AuthRepository implements AuthRepositoryInterface {
     if (!result.ok) return result;
     const claim = toCreatorClaim(result.value);
     if (!claim.ok) return claim;
-    return replaceSessionUser(this.storage, issuer.value, (user) => ok(user.withCreatorClaim(claim.value)));
+    return replaceSessionUser(this.storage, issuer.value, (user) =>
+      ok(user.withCreatorClaims(user.creatorClaims.with(claim.value))),
+    );
   }
 
-  async removeCreatorTag(): Promise<Result<AuthSessionEntity, Failure>> {
+  async removeCreatorTag(platform: CreatorPlatformType): Promise<Result<AuthSessionEntity, Failure>> {
     const issuer = await signedInUserId(this.storage);
     if (!issuer.ok) return issuer;
-    const result = await this.http.delete<void>(ApiRoutes.me.creator);
+    const result = await this.http.delete<void>(ApiRoutes.me.creatorPlatform(platform));
     if (!result.ok) return result;
-    return replaceSessionUser(this.storage, issuer.value, (user) => ok(user.withCreatorClaim(null)));
+    return replaceSessionUser(this.storage, issuer.value, (user) =>
+      ok(user.withCreatorClaims(user.creatorClaims.without(platform))),
+    );
   }
 
   // Writes only if the stored claim is still the one read before the GET: a
@@ -206,12 +211,16 @@ export class AuthRepository implements AuthRepositoryInterface {
   async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
     const issuer = await signedInUser(this.storage);
     if (!issuer.ok) return issuer;
-    const readBefore = issuer.value.creatorClaim;
+    const readBefore = issuer.value.creatorClaims;
     const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
     if (!result.ok) return result;
-    const { creator } = result.value;
+    const { creatorTags } = result.value;
     return replaceSessionUser(this.storage, issuer.value.id, (user) =>
-      ok(creator === undefined || !user.holdsCreatorClaim(readBefore) ? user : user.withCreatorClaim(readCreatorClaim(creator))),
+      ok(
+        creatorTags === undefined || !user.holdsCreatorClaims(readBefore)
+          ? user
+          : user.withCreatorClaims(readCreatorClaims(creatorTags)),
+      ),
     );
   }
 

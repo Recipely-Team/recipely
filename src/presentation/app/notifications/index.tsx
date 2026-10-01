@@ -78,6 +78,11 @@ export const NotificationsScreen = (): React.JSX.Element => {
       router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
       return;
     }
+    // A decision on a creator claim: the user acts on it where the claim lives.
+    if (target.kind === NotificationTargetKind.CreatorAccount) {
+      router.push(RoutePaths.editProfileCreatorAccount as Href);
+      return;
+    }
     const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
     router.push(
       (target.kind === NotificationTargetKind.Comment

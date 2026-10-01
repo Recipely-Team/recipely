@@ -6,7 +6,8 @@ export interface CreatorSummaryEntityProps {
   displayName: string;
   photoUrl: string | null;
   /** Always an approved tag: the list only carries approved creators. */
-  creator: CreatorTag;
+  /** Approved accounts, one per platform, Instagram first; never empty. */
+  creatorTags: readonly CreatorTag[];
   /** Published and approved recipes. */
   recipeCount: number;
   followerCount: number;

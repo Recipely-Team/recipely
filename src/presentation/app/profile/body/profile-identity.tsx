@@ -7,7 +7,6 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
-import type { CreatorTag } from '@domain/creators/creator-tag';
 import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -25,8 +24,8 @@ export interface ProfileIdentityProps {
   isUploading: boolean;
   onPickAvatar: () => void;
   onAddBio: () => void;
-  /** The approved creator tag — the approved badge beside the name; null otherwise. */
-  creatorTag: CreatorTag | null;
+  /** At least one platform approved: the one approved badge beside the name. */
+  isCreator: boolean;
 }
 
 /**
@@ -42,7 +41,7 @@ export const ProfileIdentity = ({
   isUploading,
   onPickAvatar,
   onAddBio,
-  creatorTag,
+  isCreator,
 }: ProfileIdentityProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
@@ -84,7 +83,7 @@ export const ProfileIdentity = ({
         <ThemedText variant="title" style={styles.displayName}>
           {displayName}
         </ThemedText>
-        {creatorTag !== null ? (
+        {isCreator ? (
           <CreatorBadge size={isWebShell ? creatorMarkGeometry.badgeProfileWeb : creatorMarkGeometry.badgeProfile} />
         ) : null}
       </View>

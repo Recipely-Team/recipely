@@ -1,6 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { spacing, fontSizes, controlSizes, iconSizes, fontWeights } from '@presentation/base/theme';
@@ -8,7 +7,9 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { ValueConstants } from '@core/constants';
+import { TabIcon } from '@presentation/base/widgets/navigation/tab-icon';
+import { TabIconFamily } from '@presentation/base/widgets/navigation/tab-icon-family';
 
 export interface TabBarProps {
   active: TabBarKey;
@@ -16,8 +17,10 @@ export interface TabBarProps {
 }
 
 /**
- * Bottom navigation bar with icon-and-label tabs for the main app sections.
- * Returns null on the web shell breakpoint — the WebHeader replaces it there.
+ * Bottom navigation bar with icon-and-label tabs for the five main sections —
+ * Recipes, My Recipes, Chefs, Diary, Profile (design spec → Chefs tab §5).
+ * Each tab shares the width equally and its label stays on one line with an
+ * ellipsis. Returns null on the web shell — the WebHeader replaces it there.
  */
 export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
@@ -27,10 +30,11 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
   if (isWebShell) return null;
 
   const tabs: TabItem<TabBarKey>[] = [
-    { key: 'recipes', label: t().navigation.recipes, icon: 'restaurant-outline' },
-    { key: 'myRecipes', label: t().navigation.myRecipes, icon: 'bookmark-outline' },
-    { key: 'diary', label: t().navigation.diary, icon: 'calendar-outline' },
-    { key: 'profile', label: t().navigation.profile, icon: 'person-outline' },
+    { key: 'recipes', label: t().navigation.recipes, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
+    { key: 'myRecipes', label: t().navigation.myRecipes, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
+    { key: 'chefs', label: t().navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
+    { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
+    { key: 'profile', label: t().navigation.profile, icon: { family: TabIconFamily.Ionicons, name: 'person-outline' } },
   ];
 
   return (
@@ -48,18 +52,19 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
       {tabs.map((tab) => {
         const isActive = active === tab.key;
         const tint = isActive ? colors.tabBarActive : colors.tabBarInactive;
-        const filledIcon = (tab.icon.replace('-outline', CharConstants.empty) as keyof typeof Ionicons.glyphMap);
         return (
           <Pressable
             key={tab.key}
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
+            accessibilityLabel={tab.label}
             onPress={() => onChange(tab.key)}
             style={styles.tab}
           >
-            <Ionicons name={isActive ? filledIcon : tab.icon} size={iconSizes.xxl} color={tint} />
+            <TabIcon icon={tab.icon} active={isActive} size={iconSizes.xxl} color={tint} />
             <ThemedText
               variant="caption"
+              numberOfLines={ValueConstants.one}
               style={[
                 styles.label,
                 {
@@ -84,12 +89,16 @@ const styles = StyleSheet.create({
   },
   tab: {
     flex: ValueConstants.one,
+    flexBasis: ValueConstants.zero,
+    minWidth: ValueConstants.zero,
+    paddingHorizontal: spacing.xxs,
     alignItems: 'center',
     justifyContent: 'center',
     paddingTop: spacing.sm,
     gap: spacing.xxs,
   },
   label: {
-    fontSize: fontSizes.micro,
+    fontSize: fontSizes.tiny,
+    maxWidth: '100%',
   },
 });

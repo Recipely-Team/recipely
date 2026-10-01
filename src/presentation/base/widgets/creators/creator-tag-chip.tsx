@@ -1,9 +1,8 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { ValueConstants } from '@core/constants';
-import { CreatorPlatform } from '@domain/creators/creator-platform';
 import type { CreatorTag } from '@domain/creators/creator-tag';
-import { instagramProfileUrl, tiktokProfileUrl } from '@presentation/base/constants';
+import { creatorProfileUrl } from '@presentation/base/widgets/creators/creator-profile-url';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   borderWidths,
@@ -26,9 +25,6 @@ export interface CreatorTagChipProps {
   tag: CreatorTag;
 }
 
-const profileUrlOf = (tag: CreatorTag): string =>
-  tag.platform === CreatorPlatform.TikTok ? tiktokProfileUrl(tag.handle) : instagramProfileUrl(tag.handle);
-
 /**
  * The verified platform badge: platform seal, `@handle` and a check, as one
  * 32-high pill that opens the account on its platform (design spec →
@@ -49,7 +45,7 @@ export const CreatorTagChip = ({ tag }: CreatorTagChipProps): React.JSX.Element 
 
   return (
     <Pressable
-      onPress={() => void Linking.openURL(profileUrlOf(tag)).catch(() => undefined)}
+      onPress={() => void Linking.openURL(creatorProfileUrl(tag)).catch(() => undefined)}
       accessibilityRole="link"
       accessibilityLabel={label}
       style={({ pressed }) => [

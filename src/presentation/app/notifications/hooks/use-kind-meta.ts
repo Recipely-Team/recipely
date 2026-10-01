@@ -1,5 +1,5 @@
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import type { NotifKind } from '@presentation/app/notifications/model/notif-kind';
+import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import type { KindMeta } from '@presentation/app/notifications/model/kind-meta';
 
 export const useKindMeta = (kind: NotifKind): KindMeta => {
@@ -16,6 +16,8 @@ export const useKindMeta = (kind: NotifKind): KindMeta => {
     moderation_approved: { icon: 'shield-checkmark-outline', color: colors.success },
     moderation_pending: { icon: 'alert-circle-outline', color: colors.warning },
     follow: { icon: 'person-add-outline', color: colors.primary },
+    [NotifKind.CreatorApproved]: { icon: 'checkmark-circle-outline', color: colors.success },
+    [NotifKind.CreatorRejected]: { icon: 'alert-circle-outline', color: colors.danger },
     generic: { icon: 'notifications-outline', color: colors.primary },
   };
   return map[kind];

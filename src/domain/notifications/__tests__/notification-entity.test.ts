@@ -105,3 +105,12 @@ describe('NotificationEntity.target — a draft that became a recipe', () => {
     });
   });
 });
+
+describe('NotificationEntity.target — a creator decision', () => {
+  it.each(['creator_approved', 'creator_rejected'])('%s opens the creator account settings for its platform', (type) => {
+    expect(build({ type, creatorPlatform: 'tiktok', sourceHandle: 'mert.mutfakta' }).target).toEqual({
+      kind: 'creator_account',
+      platform: 'tiktok',
+    });
+  });
+});

@@ -50,8 +50,7 @@ describe('device scaling', () => {
     expect(avatarSizes.xs).toBeLessThan(avatarSizes.sm);
     expect(avatarSizes.sm).toBeLessThan(avatarSizes.md);
     expect(avatarSizes.md).toBeLessThan(avatarSizes.lg);
-    expect(avatarSizes.lg).toBeLessThan(avatarSizes.creatorStrip);
-    expect(avatarSizes.creatorStrip).toBeLessThan(avatarSizes.creatorCard);
+    expect(avatarSizes.lg).toBeLessThan(avatarSizes.creatorCard);
     expect(avatarSizes.creatorCard).toBeLessThan(avatarSizes.xl);
     // A frame narrower than its avatar would clip the ring away entirely.
     expect(avatarSizes.frame).toBeGreaterThan(avatarSizes.frameInner);
