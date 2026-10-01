@@ -1,18 +1,19 @@
 import { ok } from '@core/result/result-helpers';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
+import { toPage } from '@infrastructure/network/paging/to-page';
 import type { Result } from '@core/result/result';
 import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
-import type { PagedDrafts } from '@domain/drafts/paged-drafts';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
-import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
 import { toUpsertDraftRequest } from '@infrastructure/drafts/to-upsert-draft-request';
+import type { Page } from '@domain/common/page';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 /**
  * Implements `RecipeDraftRepositoryInterface` against the Recipely backend draft
@@ -25,20 +26,14 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
   async listDrafts(
     page: number,
     pageSize: number = DRAFTS_PAGE_SIZE,
-  ): Promise<Result<PagedDrafts, Failure>> {
-    const result = await this.http.get<DraftsListDto>(ApiRoutes.recipes.drafts, {
+  ): Promise<Result<Page<RecipeDraft>, Failure>> {
+    const result = await this.http.get<PageDto<RecipeDraftDto>>(ApiRoutes.recipes.drafts, {
       params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {
       return result;
     }
-    const { items, total, page: resPage, pageSize: resPageSize } = result.value;
-    return ok({
-      items: items.map(toRecipeDraft),
-      total,
-      page: resPage,
-      pageSize: resPageSize,
-    });
+    return ok(toPage(result.value, (dto) => ok(toRecipeDraft(dto))));
   }
 
   /**

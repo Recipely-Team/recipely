@@ -2,9 +2,10 @@ import { FakeRecipeDraftRepository } from '@application/__fixtures__/fake-recipe
 import { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import { UnknownFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
-import type { PagedDrafts } from '@domain/drafts/paged-drafts';
+import type { Page } from '@domain/common/page';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 
-const emptyPage: PagedDrafts = { items: [], total: 0, page: 1, pageSize: 20 };
+const emptyPage: Page<RecipeDraft> = { items: [], total: 0, page: 1, pageSize: 20, hasMore: false };
 
 describe('ListDraftsUseCase.execute', () => {
   it('forwards page and pageSize to the repository and returns its page', async () => {

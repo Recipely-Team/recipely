@@ -1,11 +1,12 @@
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { CreatorPage } from '@domain/creators/creator-page';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
 import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 
 const NOT_UNDER_TEST = 'not under test';
 
@@ -22,7 +23,7 @@ export class FakeUserProfileRepository implements UserProfileRepositoryInterface
   readonly followCalls: string[] = [];
   readonly unfollowCalls: string[] = [];
   viewedAnswers: Answer<ViewedUserProfile>[] = [];
-  recipeAnswers: Answer<RecipePage>[] = [];
+  recipeAnswers: Answer<Page<RecipeSummaryEntity>>[] = [];
   followAnswer: Answer<void> = ok(undefined);
   unfollowAnswer: Answer<void> = ok(undefined);
 
@@ -35,7 +36,7 @@ export class FakeUserProfileRepository implements UserProfileRepositoryInterface
     return Promise.resolve(this.viewedAnswers.shift() ?? fail(new NetworkFailure(NOT_UNDER_TEST)));
   }
 
-  listUserRecipes(userId: string, page: number, pageSize: number): Promise<Result<RecipePage, Failure>> {
+  listUserRecipes(userId: string, page: number, pageSize: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     this.recipeCalls.push([userId, page, pageSize]);
     return Promise.resolve(this.recipeAnswers.shift() ?? fail(new NetworkFailure(NOT_UNDER_TEST)));
   }
@@ -50,7 +51,7 @@ export class FakeUserProfileRepository implements UserProfileRepositoryInterface
     return Promise.resolve(this.unfollowAnswer);
   }
 
-  listCreators(): Promise<Result<CreatorPage, Failure>> {
+  listCreators(): Promise<Result<Page<CreatorSummaryEntity>, Failure>> {
     return Promise.resolve(fail(new NetworkFailure(NOT_UNDER_TEST)));
   }
 }

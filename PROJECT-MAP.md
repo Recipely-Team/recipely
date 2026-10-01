@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1613 source files.
+[architecture.md](architecture.md). 1603 source files.
 
 ## Layers
 
@@ -30,19 +30,19 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `assistant/` — actions, os, session _(24)_
 - `audio/` _(1)_
 - `auth/` _(7)_
-- `comments/` _(4)_
+- `comments/` _(3)_
 - `common/` _(2)_
-- `creators/` _(14)_
+- `creators/` _(13)_
 - `device/` _(3)_
 - `diary/` — calendar, day, entry, foods, month, nutrition _(50)_
-- `drafts/` _(7)_
+- `drafts/` _(6)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
 - `i18n/` _(1)_
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(11)_
-- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(58)_
+- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(57)_
 - `storage/` _(1)_
 - `user-profile/` _(5)_
 
@@ -76,23 +76,23 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `assistant/` — message, os, token _(10)_
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(26)_
-- `comments/` — dtos _(4)_
+- `comments/` — dtos _(3)_
 - `constants/` — analytics, api _(21)_
-- `creators/` — dtos _(15)_
+- `creators/` — dtos _(14)_
 - `crypto/` _(3)_
 - `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
 - `diary/` — dtos, foods, read, write _(55)_
-- `drafts/` — dtos _(6)_
-- `favorites/` _(2)_
+- `drafts/` — dtos _(5)_
+- `favorites/` _(1)_
 - `feedback/` _(3)_
 - `firebase/` _(7)_
 - `i18n/` _(1)_
-- `likes/` _(2)_
+- `likes/` _(1)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(27)_
 - `notifications/` — dtos _(8)_
-- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(34)_
+- `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `storage/` _(6)_
 - `user-profile/` _(4)_
 
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 67f414f11ced2b20 -->
+<!-- fingerprint: 4bd8a758543a3dd6 -->

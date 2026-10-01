@@ -9,8 +9,8 @@ import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import type { Page } from '@domain/common/page';
 
 const makeRecipe = (
   overrides: Partial<Parameters<typeof RecipeSummaryEntity.create>[0]> = {},
@@ -41,11 +41,11 @@ const makeRecipe = (
 };
 
 const makeDeferred = (): {
-  promise: Promise<Result<RecipePage, Failure>>;
-  resolve: (r: Result<RecipePage, Failure>) => void;
+  promise: Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
+  resolve: (r: Result<Page<RecipeSummaryEntity>, Failure>) => void;
 } => {
-  let resolve: (r: Result<RecipePage, Failure>) => void = () => {};
-  const promise = new Promise<Result<RecipePage, Failure>>((r) => {
+  let resolve: (r: Result<Page<RecipeSummaryEntity>, Failure>) => void = () => {};
+  const promise = new Promise<Result<Page<RecipeSummaryEntity>, Failure>>((r) => {
     resolve = r;
   });
   return { promise, resolve };

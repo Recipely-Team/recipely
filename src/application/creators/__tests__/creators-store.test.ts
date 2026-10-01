@@ -1,7 +1,6 @@
 import { NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { CreatorPage } from '@domain/creators/creator-page';
 import { StoreStatus } from '@application/store/store-status';
 import { configureCreatorsStore } from '@application/creators/creators-store';
 import type { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
@@ -9,8 +8,10 @@ import type { ListCreatorsInput } from '@application/creators/list/list-creators
 import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
 import { CREATORS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import type { Page } from '@domain/common/page';
+import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 
-type Answer = Result<CreatorPage, Failure>;
+type Answer = Result<Page<CreatorSummaryEntity>, Failure>;
 
 /** A list use case whose answers the test releases one by one. */
 const deferredList = () => {

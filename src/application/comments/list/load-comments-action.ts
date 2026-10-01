@@ -37,7 +37,7 @@ export const createLoadCommentsAction = (
       }
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({
-          items: result.value.items,
+          items: [...result.value.items],
           total: result.value.total,
           page: FIRST_PAGE,
           isLoading: false,

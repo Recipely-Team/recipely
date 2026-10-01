@@ -4,9 +4,10 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
-import type { CreatorPage } from '@domain/creators/creator-page';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 
 const buildProfile = (): UserProfileEntity => {
   const result = UserProfileEntity.create({
@@ -34,7 +35,7 @@ class StubRepository implements UserProfileRepositoryInterface {
   getViewedProfile(): Promise<Result<ViewedUserProfile, Failure>> {
     return Promise.resolve(fail(new NetworkFailure('not under test')));
   }
-  listUserRecipes(): Promise<Result<RecipePage, Failure>> {
+  listUserRecipes(): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     return Promise.resolve(fail(new NetworkFailure('not under test')));
   }
   follow(): Promise<Result<void, Failure>> {
@@ -43,7 +44,7 @@ class StubRepository implements UserProfileRepositoryInterface {
   unfollow(): Promise<Result<void, Failure>> {
     return Promise.resolve(fail(new NetworkFailure('not under test')));
   }
-  listCreators(): Promise<Result<CreatorPage, Failure>> {
+  listCreators(): Promise<Result<Page<CreatorSummaryEntity>, Failure>> {
     return Promise.resolve(fail(new NetworkFailure('not under test')));
   }
 }

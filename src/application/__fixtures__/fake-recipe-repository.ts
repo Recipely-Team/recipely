@@ -14,7 +14,6 @@ import type { CreateRecipeInput } from "@domain/recipes/create/create-recipe-inp
 import type { CreateRecipeProgressCallback } from "@domain/recipes/create/create-recipe-progress-callback";
 import type { ImportJob } from "@domain/recipes/import/import-job";
 import type { RecipeFilters } from "@domain/recipes/list/recipe-filters";
-import type { RecipePage } from "@domain/recipes/list/recipe-page";
 import type { RecipeEntity } from "@domain/recipes/recipe-entity";
 import type { RecipeRepositoryInterface } from "@domain/recipes/recipe-repository-interface";
 import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
@@ -24,6 +23,7 @@ import type { FileImportReceipt } from "@domain/recipes/import-file/file-import-
 import type { EditRecipeInput } from "@domain/recipes/edit/edit-recipe-input";
 import type { PublishOutcome } from "@domain/recipes/publishing/publish-outcome";
 import type { CoverRemoval } from "@domain/recipes/publishing/cover-removal";
+import type { Page } from '@domain/common/page';
 
 /**
  * In-memory test double for `RecipeRepositoryInterface`. Returns pre-configured
@@ -44,7 +44,7 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
 
   listActiveRecipes(
     _filters?: RecipeFilters,
-  ): Promise<Result<RecipePage, Failure>> {
+  ): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     return Promise.resolve(
       this.config.listActiveRecipesResult ??
         fail(new UnknownFailure("not configured")),
@@ -60,7 +60,7 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     );
   }
 
-  listMyRecipes(_page?: number): Promise<Result<RecipePage, Failure>> {
+  listMyRecipes(_page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     return Promise.resolve(
       this.config.listMyRecipesResult ??
         fail(new UnknownFailure("not configured")),

@@ -4,18 +4,20 @@ import { ok } from '@core/result/result-helpers';
 import type { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
 import type { ViewedUserProfile } from '@domain/user-profile/viewed-user-profile';
-import type { CreatorPage } from '@domain/creators/creator-page';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { UserProfileDto } from '@infrastructure/user-profile/user-profile-dto';
 import { toUserProfile } from '@infrastructure/user-profile/user-profile-mapper';
 import { toViewedUserProfile } from '@infrastructure/user-profile/to-viewed-user-profile';
-import type { CreatorsPageDto } from '@infrastructure/creators/dtos/creators-page-dto';
 import { toCreatorPage } from '@infrastructure/creators/to-creator-page';
-import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
+import type { CreatorSummaryDto } from '@infrastructure/creators/dtos/creator-summary-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 
 /**
  * Implements `UserProfileRepositoryInterface` against the Recipely backend.
@@ -46,8 +48,8 @@ export class UserProfileRepository implements UserProfileRepositoryInterface {
     return toViewedUserProfile(result.value);
   }
 
-  async listUserRecipes(userId: string, page: number, pageSize: number): Promise<Result<RecipePage, Failure>> {
-    const result = await this.http.get<RecipesListDto>(ApiRoutes.users.recipes(userId), {
+  async listUserRecipes(userId: string, page: number, pageSize: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.users.recipes(userId), {
       params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {
@@ -68,8 +70,8 @@ export class UserProfileRepository implements UserProfileRepositoryInterface {
     return ok(undefined);
   }
 
-  async listCreators(page: number, pageSize: number): Promise<Result<CreatorPage, Failure>> {
-    const result = await this.http.get<CreatorsPageDto>(ApiRoutes.users.creators, {
+  async listCreators(page: number, pageSize: number): Promise<Result<Page<CreatorSummaryEntity>, Failure>> {
+    const result = await this.http.get<PageDto<CreatorSummaryDto>>(ApiRoutes.users.creators, {
       params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {

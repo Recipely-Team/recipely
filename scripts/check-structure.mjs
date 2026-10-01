@@ -42,6 +42,8 @@
  *   AJ. No accessibility prop directly on a react-native-svg `<Svg>` — on the
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
+ *   AK. One page shape (CLAUDE.md §23d): no exported `*Page` / `*PageDto`
+ *      list envelope besides the generic `Page<T>` / `PageDto<T>`.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -832,6 +834,32 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
     }
     for (const m of src.matchAll(/new (\w*Failure)\(\s*['"`]([^'"`]{4,})/g)) {
       errors.push(`${file}: ${m[1]} built from an inline message "${m[2].slice(0, 32)}…" — add it to DiagnosticMessage (CLAUDE.md §5)`);
+    }
+  }
+}
+
+// --- AK: one page shape (CLAUDE.md §23d) ----------------------------------------
+// Every paged list used to bring its own envelope — RecipePage, CreatorPage,
+// CommentPage, PagedDrafts, four DTO twins — and they drifted: two carried
+// `hasMore`, two left every caller to recompute it from `total`, and one
+// repository asked for a page size nobody passed. `Page<T>` (domain),
+// `PageDto<T>` (wire) and `toPage(dto, mapItem)` are now the only shapes.
+//
+// A declaration counts as an envelope when its name ends in `Page` / `PageDto`
+// AND its body names `pageSize` or `hasMore` — so `FilePage` (one picked page
+// of a document) is not mistaken for one.
+{
+  const GENERIC = new Set(['Page', 'PageDto']);
+  const DECL = /^export\s+(?:interface|type)\s+(\w+(?:Page|PageDto))\b[^\n]*$/gm;
+  for (const file of files) {
+    if (isTest(file) || file.includes('__fixtures__')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const match of src.matchAll(DECL)) {
+      const name = match[1];
+      if (GENERIC.has(name)) continue;
+      const body = src.slice(match.index, src.indexOf('\n}', match.index) + 2);
+      if (!/\b(pageSize|hasMore)\b/.test(body)) continue;
+      errors.push(`${file}: '${name}' is a hand-written page envelope — use Page<T> / PageDto<T> and toPage (CLAUDE.md §23d)`);
     }
   }
 }

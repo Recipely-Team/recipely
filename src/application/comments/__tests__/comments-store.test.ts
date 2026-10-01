@@ -9,7 +9,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { CommentEntity } from '@domain/comments/comment-entity';
 import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
-import type { CommentPage } from '@domain/comments/comment-page';
+import type { Page } from '@domain/common/page';
 
 const RECIPE_ID = 'recipe-3';
 
@@ -45,11 +45,12 @@ const makeStore = (config: StubConfig) => {
   const likeCalls: LikeCall[] = [];
   const unlikeCalls: LikeCall[] = [];
 
-  const page: CommentPage = {
+  const page: Page<CommentEntity> = {
     items: config.seed,
     total: config.seed.length,
     page: 1,
     pageSize: 20,
+    hasMore: false,
   };
 
   const listComments = {

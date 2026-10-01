@@ -3,7 +3,8 @@ import type { Failure } from '@core/failure';
 
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 /**
  * Fetches the paginated list of publicly active recipes for the discovery feed.
@@ -12,7 +13,7 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 export class ListRecipesUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
-  execute(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
+  execute(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     return this.repo.listActiveRecipes(filters);
   }
 }

@@ -2,7 +2,8 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 /**
  * Fetches the list of recipes created by the currently authenticated user.
@@ -10,7 +11,7 @@ import type { RecipePage } from '@domain/recipes/list/recipe-page';
 export class ListMyRecipesUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
-  execute(): Promise<Result<RecipePage, Failure>> {
+  execute(): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
     return this.repo.listMyRecipes();
   }
 }
