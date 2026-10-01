@@ -1302,8 +1302,9 @@ it. Page sizes are named constants in `infrastructure/constants/api/api-paging.t
 **Every list screen pages on scroll** (`FlatList onEndReached`) through its store's
 paging — `PagedList<T>` + `PagedListLoader` (`application/diary/foods/paging/`) where
 the list fits it — never by loading one big page. **Enforced mechanically** by
-`check:structure` rule AK: an exported `*Page` / `*PageDto` declaring `pageSize` or
-`hasMore`, other than the generic two, fails the gate.
+`check:structure` rule AK, judged by the body rather than the name (half the old
+envelopes were `*ListDto` / `*Response`): an exported interface or type whose own body
+names `total` and `pageSize` or `hasMore`, other than the generic two, fails the gate.
 
 ### Rule 23e
 
