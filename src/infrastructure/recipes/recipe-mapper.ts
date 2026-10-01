@@ -15,6 +15,10 @@ import { toPublishBlockers } from '@domain/recipes/publishing/to-publish-blocker
 import type { RecipeEntityProps } from '@domain/recipes/recipe-entity-props';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
 import { toFocalPoint } from '@infrastructure/recipes/media/to-focal-point';
+import { toImageCredit } from '@infrastructure/recipes/media/to-image-credit';
+import { toNutritionSource } from '@domain/recipes/nutrition/to-nutrition-source';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import { withoutDifficultyTags } from '@infrastructure/recipes/without-difficulty-tags';
 
 /**
@@ -33,6 +37,18 @@ const optionalBlockers = (raw: string[] | undefined): Pick<RecipeEntityProps, 'p
 /** Absent stays absent: a media item with no focus carries no `focus` key at all. */
 const withFocus = (focus: FocalPoint | undefined): { focus?: FocalPoint } =>
   focus === undefined ? {} : { focus };
+
+/** Absent stays absent: a recipe with no credit or nutrition source carries neither key. */
+const withSources = (
+  dto: Pick<RecipeDto, 'imageCredit' | 'nutritionSource'>,
+): { imageCredit?: ImageCredit; nutritionSource?: NutritionSourceType } => {
+  const imageCredit = toImageCredit(dto.imageCredit);
+  const nutritionSource = toNutritionSource(dto.nutritionSource);
+  return {
+    ...(imageCredit !== undefined ? { imageCredit } : {}),
+    ...(nutritionSource !== null ? { nutritionSource } : {}),
+  };
+};
 
 /**
  * Maps a `RecipeDto` from the API into a domain `Recipe` entity. When the
@@ -66,6 +82,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     nutrition: dto.nutrition,
     image: dto.image,
     ...(imageFocus !== undefined ? { imageFocus } : {}),
+    ...withSources(dto),
     media,
     rating: dto.rating,
     tags: withoutDifficultyTags(dto.tags),
@@ -102,6 +119,7 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     name: dto.name,
     image: dto.image,
     ...(imageFocus !== undefined ? { imageFocus } : {}),
+    ...withSources(dto),
     cuisine: dto.cuisine,
     category: dto.category,
     difficulty: dto.difficulty,

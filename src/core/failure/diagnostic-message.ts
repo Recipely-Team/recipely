@@ -139,6 +139,7 @@ export const DiagnosticMessage = {
       servingsTooLow: 'Servings must be at least 1',
       caloriesNegative: 'Calories must be non-negative',
       focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
+      imageCreditIncomplete: 'Image credit needs an author, a licence and an http(s) link',
     },
   },
   creator: {
@@ -185,6 +186,7 @@ export const FailureField = {
   token: 'token',
   email: 'email',
   focus: 'focus',
+  imageCredit: 'imageCredit',
   creatorHandle: 'handle',
   creatorPlatform: 'platform',
 } as const;

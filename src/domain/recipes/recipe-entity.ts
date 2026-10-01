@@ -6,6 +6,8 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
@@ -98,6 +100,14 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get imageFocus(): FocalPoint | undefined {
     return this.props.imageFocus;
+  }
+  /** The cover photo's credit line; `null` when the photo needs none. */
+  get imageCredit(): ImageCredit | null {
+    return this.props.imageCredit ?? null;
+  }
+  /** Where the nutrition figures were looked up; `null` when they were estimated. */
+  get nutritionSource(): NutritionSourceType | null {
+    return this.props.nutritionSource ?? null;
   }
   get media(): MediaItem[] {
     return this.props.media;

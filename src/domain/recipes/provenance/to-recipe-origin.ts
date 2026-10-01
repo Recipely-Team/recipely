@@ -1,4 +1,7 @@
+import { isString } from '@core/guards/type-guards';
 import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+
+const KNOWN: ReadonlySet<string> = new Set(Object.values(RecipeOrigin));
 
 /**
  * The origin a wire value names, or `User` when it names none this app knows.
@@ -8,4 +11,4 @@ import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/
  * to the one that draws nothing, which is the safe way to be wrong.
  */
 export const toRecipeOrigin = (value: string | undefined): RecipeOriginType =>
-  value === RecipeOrigin.Ai || value === RecipeOrigin.Import ? value : RecipeOrigin.User;
+  isString(value) && KNOWN.has(value) ? (value as RecipeOriginType) : RecipeOrigin.User;

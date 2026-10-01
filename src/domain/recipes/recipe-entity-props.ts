@@ -1,5 +1,7 @@
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
@@ -22,9 +24,13 @@ export interface RecipeEntityProps {
   servings: number;
   caloriesPerServing: number;
   nutrition?: RecipeNutrition;
+  /** Where the nutrition figures were looked up; absent when they were estimated. */
+  nutritionSource?: NutritionSourceType;
   image: string;
   /** Where the dish sits in the cover; absent reads as a centred crop. */
   imageFocus?: FocalPoint;
+  /** Who took the cover photo and under which licence; absent for the owner's own photo. */
+  imageCredit?: ImageCredit;
   media: MediaItem[];
   rating: number;
   tags: string[];
