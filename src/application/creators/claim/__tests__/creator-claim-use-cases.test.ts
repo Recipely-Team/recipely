@@ -64,9 +64,11 @@ describe('RequestCreatorTagUseCase', () => {
 });
 
 describe('RemoveCreatorTagUseCase', () => {
-  it('returns the repository result', async () => {
-    const r = await new RemoveCreatorTagUseCase(new FakeAuthRepository({ removeCreatorTagResult: ok(session) })).execute();
+  it('clears the one platform it is given and returns the repository result', async () => {
+    const repo = new FakeAuthRepository({ removeCreatorTagResult: ok(session) });
+    const r = await new RemoveCreatorTagUseCase(repo).execute('tiktok');
     expect(r.ok && r.value).toBe(session);
+    expect(repo.removedPlatforms).toEqual(['tiktok']);
   });
 });
 

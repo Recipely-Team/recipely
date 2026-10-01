@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1501 source files.
+[architecture.md](architecture.md). 1506 source files.
 
 ## Layers
 
@@ -32,7 +32,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` _(7)_
 - `comments/` _(4)_
 - `common/` _(1)_
-- `creators/` _(9)_
+- `creators/` _(12)_
 - `device/` _(3)_
 - `diary/` — calendar, day, entry, month, nutrition _(25)_
 - `drafts/` _(7)_
@@ -41,7 +41,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `likes/` _(1)_
 - `network/` _(2)_
-- `notifications/` _(10)_
+- `notifications/` _(11)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(58)_
 - `storage/` _(1)_
 - `user-profile/` _(5)_
@@ -78,7 +78,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` — dtos, registration, session, social _(26)_
 - `comments/` — dtos _(4)_
 - `constants/` — analytics, api _(21)_
-- `creators/` — dtos _(13)_
+- `creators/` — dtos _(15)_
 - `crypto/` _(3)_
 - `device/` _(8)_
 - `di/` _(1)_
@@ -125,7 +125,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(7)_
 - `utils/` (diary) — small pure helpers _(18)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(155)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(154)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: aadd6fbef1eab920 -->
+<!-- fingerprint: 184c00cc263a20e6 -->

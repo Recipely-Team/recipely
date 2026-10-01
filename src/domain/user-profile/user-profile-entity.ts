@@ -55,11 +55,12 @@ export class UserProfileEntity extends BaseEntity<UserProfileEntityProps> {
     return this.props.joinedAt;
   }
 
-  get creator(): CreatorTag | null {
-    return this.props.creator;
+  /** Approved accounts, one per platform, Instagram first; empty when the user is not a creator. */
+  get creatorTags(): readonly CreatorTag[] {
+    return this.props.creatorTags;
   }
 
   get isCreator(): boolean {
-    return this.props.creator !== null;
+    return this.props.creatorTags.length > ValueConstants.zero;
   }
 }

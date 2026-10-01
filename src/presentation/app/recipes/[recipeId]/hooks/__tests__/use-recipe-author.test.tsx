@@ -23,7 +23,7 @@ const makeProfile = (overrides: Partial<Parameters<typeof UserProfileEntity.crea
     totalLikes: 100,
     totalViews: 2000,
     joinedAt: new Date('2026-04-01T12:00:00.000Z'),
-    creator: null,
+    creatorTags: [],
     ...overrides,
   });
   if (!result.ok) throw new Error('Test setup expected a valid UserProfile');

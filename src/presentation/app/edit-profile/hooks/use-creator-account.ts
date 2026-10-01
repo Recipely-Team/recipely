@@ -3,42 +3,45 @@ import { useFocusEffect } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import { CharConstants } from '@core/constants';
+import { CreatorClaims } from '@domain/creators/creator-claims';
 import { CreatorHandle } from '@domain/creators/creator-handle';
 import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
-import { CreatorAccountStep } from '@presentation/app/edit-profile/model/creator-account-step';
-import type { CreatorAccountView } from '@presentation/app/edit-profile/model/creator-account-view';
+import { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
+import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/creator-account-row';
 import type { UseCreatorAccountResult } from '@presentation/app/edit-profile/model/use-creator-account-result';
 
+const PLATFORMS: readonly CreatorPlatformType[] = Object.values(CreatorPlatform);
+
 /**
- * Orchestrates Edit Profile's creator section over the signed-in user's claim.
+ * Orchestrates Edit Profile's creator section over the signed-in user's
+ * claims, one per platform, each reviewed on its own.
  *
  * @remarks
- * - **The claim decides the face.** No claim is the form; a pending, approved
- *   or rejected claim is its card — until Try again opens the form on it,
- *   prefilled.
- * - **Re-reads the claim on every focus**, so an admin's decision shows the
- *   next time the user opens this page, without signing in again — but not
- *   while a send or remove is in flight; the auth store drops a refresh that
- *   one overtook.
+ * - **Rows from the claims.** A claimed platform is a linked row, an unclaimed
+ *   one a Link row — linked first; the one open form takes its platform's row.
+ * - **A withdrawn handle is remembered**, so linking the platform again opens
+ *   prefilled; an unlinked one is forgotten.
+ * - **Re-reads the claims on every focus**, so an admin's decision shows the
+ *   next time the user opens this page — but not while a send or remove is in
+ *   flight; the auth store drops a refresh that one overtook.
  * - **One action at a time**, guarded by a ref: `isBusy` is render state and
  *   a second tap in the same frame still sees `false`.
- * - **Sends the handle normalised** (`CreatorHandle.normalize`: no `@`, lower
- *   case), and a refusal is shown under the field in the words its key has.
  */
 export const useCreatorAccount = (): UseCreatorAccountResult => {
   const { authStore } = useStores();
-  const claim = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.creatorClaim : null));
+  const stored = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.creatorClaims : null));
+  const claims = stored ?? CreatorClaims.empty();
   const requestCreatorTag = authStore((s) => s.requestCreatorTag);
   const removeCreatorTag = authStore((s) => s.removeCreatorTag);
   const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
 
-  const [isEditing, setEditing] = useState(false);
-  const [platform, setPlatform] = useState<CreatorPlatformType>(CreatorPlatform.Instagram);
+  const [formPlatform, setFormPlatform] = useState<CreatorPlatformType | null>(null);
   const [handle, setHandle] = useState<string>(CharConstants.empty);
   const [error, setError] = useState<string | null>(null);
+  const [drafts, setDrafts] = useState<Partial<Record<CreatorPlatformType, string>>>({});
   const [isBusy, setBusy] = useState(false);
   // The guard itself: render state lags a second tap in the same frame.
   const busyRef = useRef(false);
@@ -62,20 +65,20 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
     }
   };
 
-  const view: CreatorAccountView =
-    claim === null || isEditing
-      ? { step: CreatorAccountStep.Form, platform, handle, error, canCancel: claim !== null }
-      : claim.isPending
-        ? { step: CreatorAccountStep.Pending, tag: claim.tag }
-        : claim.isApproved
-          ? { step: CreatorAccountStep.Approved, tag: claim.tag }
-          : { step: CreatorAccountStep.Rejected, tag: claim.tag };
+  const rowFor = (platform: CreatorPlatformType): CreatorAccountRow => {
+    if (platform === formPlatform) return { kind: CreatorAccountRowKind.Form, platform, handle, error };
+    const claim = claims.forPlatform(platform);
+    return claim === null ? { kind: CreatorAccountRowKind.Add, platform } : { kind: CreatorAccountRowKind.Linked, claim };
+  };
+  const linked = PLATFORMS.filter((platform) => claims.forPlatform(platform) !== null);
+  const unlinked = PLATFORMS.filter((platform) => claims.forPlatform(platform) === null);
 
   return {
-    view,
+    rows: [...linked, ...unlinked].map(rowFor),
     isBusy,
-    onPickPlatform: (next) => {
-      setPlatform(next);
+    onOpenForm: (platform) => {
+      setFormPlatform(platform);
+      setHandle(claims.forPlatform(platform)?.tag.handle ?? drafts[platform] ?? CharConstants.empty);
       setError(null);
     },
     onChangeHandle: (value) => {
@@ -83,29 +86,29 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       setError(null);
     },
     onSubmit: () => {
-      if (busyRef.current) return;
-      const input = { platform, handle: CreatorHandle.normalize(handle) };
+      if (busyRef.current || formPlatform === null) return;
+      const input = { platform: formPlatform, handle: CreatorHandle.normalize(handle) };
       void run(
         () => requestCreatorTag(input),
         (failure) => setError(failureKeyMessage(failure) ?? failureToastMessage(failure)),
       ).then((sent) => {
-        if (sent) setEditing(false);
+        if (sent) setFormPlatform(null);
       });
     },
-    onEdit: () => {
-      if (claim === null) return;
-      setPlatform(claim.tag.platform);
-      setHandle(claim.tag.handle);
-      setError(null);
-      setEditing(true);
-    },
-    onCancelEdit: () => {
-      setEditing(false);
+    onCancel: () => {
+      setFormPlatform(null);
       setError(null);
     },
-    onRemove: () => {
+    onRemove: (platform) => {
       if (busyRef.current) return;
-      void run(removeCreatorTag, (failure) => void showErrorToast(failure));
+      const claim = claims.forPlatform(platform);
+      void run(
+        () => removeCreatorTag(platform),
+        (failure) => void showErrorToast(failure),
+      ).then((removed) => {
+        if (!removed || claim === null) return;
+        setDrafts((current) => ({ ...current, [platform]: claim.isPending ? claim.tag.handle : undefined }));
+      });
     },
   };
 };

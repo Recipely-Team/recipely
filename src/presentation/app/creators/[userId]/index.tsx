@@ -42,7 +42,7 @@ export const CreatorProfileScreen = (): React.JSX.Element => {
   const recipeNames = vm.recipes.map((recipe) => recipe.name);
   useAssistantScreenContent(() => [name, recipeRoster(ROSTER_LABEL, recipeNames, listState)].join(SCREEN_PART_SEPARATOR));
   useAssistantScreenReading(() =>
-    [name, loaded?.profile.creator?.displayHandle ?? CharConstants.empty, loaded?.profile.bio ?? CharConstants.empty, listReading(ROSTER_LABEL, recipeNames, listState)]
+    [name, (loaded?.profile.creatorTags ?? []).map((tag) => tag.displayHandle).join(CharConstants.commaSpace), loaded?.profile.bio ?? CharConstants.empty, listReading(ROSTER_LABEL, recipeNames, listState)]
       .filter((part) => part.length > ValueConstants.zero)
       .join(SCREEN_PART_SEPARATOR),
   );

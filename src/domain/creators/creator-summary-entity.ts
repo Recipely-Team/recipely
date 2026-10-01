@@ -8,14 +8,15 @@ import type { CreatorTag } from '@domain/creators/creator-tag';
 import type { CreatorSummaryEntityProps } from '@domain/creators/creator-summary-entity-props';
 
 /**
- * One item of the Explore "Creators" strip: an approved creator with at least
- * one published recipe.
+ * One card of the Chefs tab: an approved creator with at least one published
+ * recipe, and at least one approved platform account.
  *
  * @remarks
  * - **A read model of a user's public profile**, not an aggregate of its own
  *   (architecture.md, Aggregates): its id IS the user id, and opening it loads
  *   the `UserProfileEntity`.
- * - Validates that `id` and `displayName` are non-empty, like the profile.
+ * - Validates that `id` and `displayName` are non-empty, like the profile, and
+ *   that there is a tag — a listed creator without one would be nobody's account.
  */
 export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> {
   private constructor(props: CreatorSummaryEntityProps) {
@@ -29,6 +30,9 @@ export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> 
     if (props.displayName.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.creatorSummary.displayNameRequired, 'displayName'));
     }
+    if (props.creatorTags.length === ValueConstants.zero) {
+      return fail(new ValidationFailure(DiagnosticMessage.creator.tagsRequired, 'creatorTags'));
+    }
     return ok(new CreatorSummaryEntity(props));
   }
 
@@ -40,8 +44,9 @@ export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> 
     return this.props.photoUrl;
   }
 
-  get creator(): CreatorTag {
-    return this.props.creator;
+  /** Approved accounts, Instagram first; never empty. */
+  get creatorTags(): readonly CreatorTag[] {
+    return this.props.creatorTags;
   }
 
   get recipeCount(): number {

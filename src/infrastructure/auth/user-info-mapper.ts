@@ -5,13 +5,13 @@ import type { Mapper } from '@core/mapper/mapper';
 import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
 import type { RecipelyUserDto } from '@infrastructure/auth/dtos/recipely-user-dto';
-import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
+import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
 
 /**
  * Maps a `RecipelyUserDto` from the API into a domain `UserEntity` entity. Validates
  * the raw email string through `Email.create` before constructing the entity,
  * returning a `ValidationFailure` if the address is malformed. A missing or
- * unreadable `creator` claim maps to none rather than failing the sign-in.
+ * unreadable `creatorTags` entry is skipped rather than failing the sign-in.
  */
 export const toUser: Mapper<RecipelyUserDto, UserEntity, ValidationFailure> = (dto) => {
   const emailResult = Email.create(dto.email);
@@ -24,6 +24,6 @@ export const toUser: Mapper<RecipelyUserDto, UserEntity, ValidationFailure> = (d
     displayName: dto.displayName,
     ...optional('photoUrl', dto.photoUrl),
     ...optional('bio', dto.bio),
-    creatorClaim: readCreatorClaim(dto.creator),
+    creatorClaims: readCreatorClaims(dto.creatorTags),
   });
 };

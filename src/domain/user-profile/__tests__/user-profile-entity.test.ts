@@ -10,7 +10,7 @@ const makeProps = (overrides: Partial<UserProfileEntityProps> = {}): UserProfile
   totalLikes: 3400,
   totalViews: 91000,
   joinedAt: new Date('2026-04-01T12:00:00.000Z'),
-  creator: null,
+  creatorTags: [],
   ...overrides,
 });
 

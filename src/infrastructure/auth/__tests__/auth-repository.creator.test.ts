@@ -5,6 +5,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { CreatorClaim } from '@domain/creators/creator-claim';
+import { CreatorClaims } from '@domain/creators/creator-claims';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
@@ -28,7 +29,8 @@ const approvedClaim = (): CreatorClaim => {
 const buildSession = (claim: CreatorClaim | null = null, userId = 'u-1'): AuthSessionEntity => {
   const email = Email.create('cook@example.com');
   if (!email.ok) throw new Error();
-  const user = UserEntity.create({ id: userId, email: email.value, displayName: 'Cook', creatorClaim: claim });
+  const claims = claim === null ? CreatorClaims.empty() : CreatorClaims.empty().with(claim);
+  const user = UserEntity.create({ id: userId, email: email.value, displayName: 'Cook', creatorClaims: claims });
   if (!user.ok) throw new Error();
   const session = AuthSessionEntity.create({
     id: 'session-1',
@@ -95,8 +97,8 @@ describe('AuthRepository — a claim answer for a user who has since signed out'
 
   it.each([
     ['requestCreatorTag', (repo: AuthRepository) => repo.requestCreatorTag(tagOf('instagram', 'chef')), ok({ platform: 'instagram', handle: 'chef', status: 'pending' })],
-    ['removeCreatorTag', (repo: AuthRepository) => repo.removeCreatorTag(), ok(undefined)],
-    ['refreshCreatorClaim', (repo: AuthRepository) => repo.refreshCreatorClaim(), ok({ creator: { platform: 'tiktok', handle: 'a', status: 'approved' } })],
+    ['removeCreatorTag', (repo: AuthRepository) => repo.removeCreatorTag('instagram'), ok(undefined)],
+    ['refreshCreatorClaim', (repo: AuthRepository) => repo.refreshCreatorClaim(), ok({ creatorTags: [{ platform: 'tiktok', handle: 'ab', status: 'approved' }] })],
   ])('%s does not write the first user\'s claim into the next user\'s session', async (_name, call, answer) => {
     const { repo, saved } = repoSwitchingUserMidRequest(answer, otherUser());
 
@@ -109,8 +111,8 @@ describe('AuthRepository — a claim answer for a user who has since signed out'
 });
 
 describe('AuthRepository.requestCreatorTag', () => {
-  it('PUTs the normalised tag to /me/creator and persists the pending claim on the session user', async () => {
-    const { repo, calls, saved } = makeRepo(ok({ platform: 'tiktok', handle: 'chef.ada', status: 'pending' }));
+  it('PUTs the normalised tag to /me/creator and persists the pending claim for that platform, keeping the other', async () => {
+    const { repo, calls, saved } = makeRepo(ok({ platform: 'tiktok', handle: 'chef.ada', status: 'pending' }), buildSession(approvedClaim()));
 
     const r = await repo.requestCreatorTag(tagOf('tiktok', '@Chef.Ada'));
 
@@ -118,8 +120,9 @@ describe('AuthRepository.requestCreatorTag', () => {
     expect(r.ok).toBe(true);
     if (!r.ok) return;
     expect(r.value.accessToken).toBe('reused-token');
-    expect(r.value.user.creatorStatus).toBe(CreatorStatus.Pending);
-    expect(r.value.user.creatorClaim?.tag.handle).toBe('chef.ada');
+    expect(r.value.user.creatorClaims.forPlatform('tiktok')?.isPending).toBe(true);
+    expect(r.value.user.creatorClaims.forPlatform('tiktok')?.tag.handle).toBe('chef.ada');
+    expect(r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
     expect(saved).toHaveLength(1);
   });
 
@@ -145,17 +148,14 @@ describe('AuthRepository.requestCreatorTag', () => {
 });
 
 describe('AuthRepository.removeCreatorTag', () => {
-  it('DELETEs /me/creator and persists a user without a claim', async () => {
+  it('DELETEs /me/creator/:platform and persists the user without that platform\'s claim', async () => {
     const { repo, calls, saved } = makeRepo(ok(undefined), buildSession(approvedClaim()));
 
-    const r = await repo.removeCreatorTag();
+    const r = await repo.removeCreatorTag('instagram');
 
-    expect(calls).toEqual([{ method: 'DELETE', url: '/me/creator', data: undefined }]);
+    expect(calls).toEqual([{ method: 'DELETE', url: '/me/creator/instagram', data: undefined }]);
     expect(r.ok).toBe(true);
-    if (r.ok) {
-      expect(r.value.user.creatorClaim).toBeNull();
-      expect(r.value.user.creatorStatus).toBe(CreatorStatus.None);
-    }
+    if (r.ok) expect(r.value.user.creatorClaims.isEmpty).toBe(true);
     expect(saved).toHaveLength(1);
   });
 });
@@ -163,22 +163,29 @@ describe('AuthRepository.removeCreatorTag', () => {
 describe('AuthRepository.refreshCreatorClaim', () => {
   it('reads the claim from GET /me and stores what the admin decided', async () => {
     const { repo, calls } = makeRepo(
-      ok({ id: 'u-1', creator: { platform: 'instagram', handle: 'old.handle', status: 'rejected' } }),
+      ok({
+        id: 'u-1',
+        creatorTags: [
+          { platform: 'instagram', handle: 'old.handle', status: 'rejected' },
+          { platform: 'tiktok', handle: 'chef', status: 'approved' },
+        ],
+      }),
       buildSession(approvedClaim()),
     );
 
     const r = await repo.refreshCreatorClaim();
 
     expect(calls[0]).toMatchObject({ method: 'GET', url: '/me' });
-    expect(r.ok && r.value.user.creatorStatus).toBe(CreatorStatus.Rejected);
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isRejected).toBe(true);
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('tiktok')?.isApproved).toBe(true);
   });
 
-  it('clears the claim when /me answers creator: null', async () => {
-    const { repo } = makeRepo(ok({ id: 'u-1', creator: null }), buildSession(approvedClaim()));
+  it('clears every claim when /me answers creatorTags: []', async () => {
+    const { repo } = makeRepo(ok({ id: 'u-1', creatorTags: [] }), buildSession(approvedClaim()));
 
     const r = await repo.refreshCreatorClaim();
 
-    expect(r.ok && r.value.user.creatorClaim).toBeNull();
+    expect(r.ok && r.value.user.creatorClaims.isEmpty).toBe(true);
   });
 
   it('keeps the stored claim when /me does not carry the field (older backend)', async () => {
@@ -186,7 +193,7 @@ describe('AuthRepository.refreshCreatorClaim', () => {
 
     const r = await repo.refreshCreatorClaim();
 
-    expect(r.ok && r.value.user.creatorStatus).toBe(CreatorStatus.Approved);
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
   });
 });
 
@@ -199,20 +206,20 @@ describe('AuthRepository.updateProfile — creator claim', () => {
     createdAt: '2026-01-01T00:00:00.000Z',
   };
 
-  it('keeps the stored claim when the profile answer has no creator field', async () => {
+  it('keeps the stored claims when the profile answer has no creatorTags field', async () => {
     const { repo } = makeRepo(ok({ user: userDto }), buildSession(approvedClaim()));
 
     const r = await repo.updateProfile({ bio: 'new' });
 
-    expect(r.ok && r.value.user.creatorStatus).toBe(CreatorStatus.Approved);
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
   });
 
-  it('takes the claim from the profile answer when it carries one', async () => {
-    const { repo } = makeRepo(ok({ user: { ...userDto, creator: null } }), buildSession(approvedClaim()));
+  it('takes the claims from the profile answer when it carries them', async () => {
+    const { repo } = makeRepo(ok({ user: { ...userDto, creatorTags: [] } }), buildSession(approvedClaim()));
 
     const r = await repo.updateProfile({ bio: 'new' });
 
-    expect(r.ok && r.value.user.creatorClaim).toBeNull();
+    expect(r.ok && r.value.user.creatorClaims.isEmpty).toBe(true);
   });
 });
 
@@ -266,10 +273,10 @@ describe('AuthRepository.refreshCreatorClaim — overtaken by a request', () => 
 
     answer('PUT', { platform: 'tiktok', handle: 'new.handle', status: 'pending' });
     await flush();
-    answer('GET', { id: 'u-1', creator: { platform: 'instagram', handle: 'old.handle', status: 'approved' } });
+    answer('GET', { id: 'u-1', creatorTags: [{ platform: 'instagram', handle: 'old.handle', status: 'approved' }] });
     await Promise.all(calls);
 
-    expect(stored()?.user.creatorStatus).toBe(CreatorStatus.Pending);
-    expect(stored()?.user.creatorClaim?.tag.handle).toBe('new.handle');
+    expect(stored()?.user.creatorClaims.forPlatform('tiktok')?.isPending).toBe(true);
+    expect(stored()?.user.creatorClaims.forPlatform('tiktok')?.tag.handle).toBe('new.handle');
   });
 });

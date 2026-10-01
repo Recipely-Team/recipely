@@ -1,7 +1,7 @@
 import { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { CreatorTag } from '@domain/creators/creator-tag';
 
-/** An approved Instagram creator with the given id — all a strip test needs. */
+/** An approved Instagram creator with the given id — all a grid test needs. */
 export const creatorSummaryOf = (id: string): CreatorSummaryEntity => {
   const tag = CreatorTag.create('instagram', `chef_${id}`);
   if (!tag.ok) throw new Error('fixture creator tag invalid');
@@ -9,7 +9,7 @@ export const creatorSummaryOf = (id: string): CreatorSummaryEntity => {
     id,
     displayName: `Creator ${id}`,
     photoUrl: null,
-    creator: tag.value,
+    creatorTags: [tag.value],
     recipeCount: 1,
     followerCount: 0,
   });

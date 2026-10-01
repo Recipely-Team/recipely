@@ -9,6 +9,8 @@ export interface SerializedSessionUser {
   email: string;
   displayName: string;
   photoUrl?: string;
-  /** Absent in sessions stored before creator tags, and when there is no claim. */
+  /** One entry per claimed platform; absent when there is none. */
+  creatorTags?: CreatorClaimDto[];
+  /** A single claim, as sessions stored before per-platform tags held it; read, never written. */
   creator?: CreatorClaimDto;
 }

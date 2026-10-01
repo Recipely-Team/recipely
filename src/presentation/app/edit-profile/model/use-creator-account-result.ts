@@ -1,18 +1,18 @@
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
-import type { CreatorAccountView } from '@presentation/app/edit-profile/model/creator-account-view';
+import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/creator-account-row';
 
 /** View model returned by {@link useCreatorAccount} for the Edit Profile creator section. */
 export interface UseCreatorAccountResult {
-  view: CreatorAccountView;
+  /** Linked platforms first, then the ones to link, Instagram first in each. */
+  rows: readonly CreatorAccountRow[];
   /** A request, withdrawal or removal is on its way; every action waits. */
   isBusy: boolean;
-  onPickPlatform: (platform: CreatorPlatformType) => void;
+  /** Opens the link form on `platform` (a Link row, or Try again on a rejected one); one form at a time. */
+  onOpenForm: (platform: CreatorPlatformType) => void;
   onChangeHandle: (value: string) => void;
-  /** Sends the claim for review, the handle normalised. */
+  /** Sends the open form's handle for review, normalised. */
   onSubmit: () => void;
-  /** Opens the form on the current claim (Change, Edit and resend). */
-  onEdit: () => void;
-  onCancelEdit: () => void;
-  /** Withdraws a pending claim or removes an approved one. */
-  onRemove: () => void;
+  onCancel: () => void;
+  /** Withdraws a pending claim or unlinks an approved one, on that platform only. */
+  onRemove: (platform: CreatorPlatformType) => void;
 }

@@ -4,6 +4,9 @@ import { CreatorTag } from '@domain/creators/creator-tag';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { CreatorCard } from '@presentation/base/widgets/creators/creator-card';
+import { CreatorAvatar } from '@presentation/base/widgets/creators/creator-avatar';
+import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
+import { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { CreatorTagChip } from '@presentation/base/widgets/creators/creator-tag-chip';
 import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge';
 import { t } from '@presentation/i18n';
@@ -72,5 +75,38 @@ describe('CreatorBadge', () => {
     const { root } = renderComponent(<CreatorBadge size={22} />);
 
     expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.approvedBadge).length).toBeGreaterThan(0);
+  });
+});
+
+describe('a creator verified on both platforms', () => {
+  const both = (): CreatorSummaryEntity => {
+    const created = CreatorSummaryEntity.create({
+      id: 'm',
+      displayName: 'Mert Yılmaz',
+      photoUrl: null,
+      creatorTags: [tagOf('instagram', 'mertmutfakta'), tagOf('tiktok', 'mert.mutfakta')],
+      recipeCount: 4,
+      followerCount: 10,
+    });
+    if (!created.ok) throw new Error('fixture summary invalid');
+    return created.value;
+  };
+
+  it('shows one handle line per account and names both in the card', () => {
+    const { root } = renderComponent(<CreatorCard creator={both()} onOpen={jest.fn()} />);
+
+    expect(textContent(root)).toEqual(expect.arrayContaining(['@mertmutfakta', '@mert.mutfakta']));
+    const label = String(pressable(root, 'button').props.accessibilityLabel);
+    expect(label).toContain('@mertmutfakta');
+    expect(label).toContain('@mert.mutfakta');
+  });
+
+  it('draws two overlapped seals as one image', () => {
+    const { root } = renderComponent(
+      <CreatorAvatar name="Mert" photoUrl={null} platforms={['instagram', 'tiktok']} size={64} markSize={22} groundColor="#fff" />,
+    );
+
+    expect(root.findAllByType(CreatorPlatformMark)).toHaveLength(2);
+    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.verifiedOnBoth).length).toBeGreaterThan(0);
   });
 });

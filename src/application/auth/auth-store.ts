@@ -290,7 +290,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
 
       requestCreatorTag: (input) => writeClaim(() => deps.requestCreatorTag.execute(input)),
 
-      removeCreatorTag: () => writeClaim(() => deps.removeCreatorTag.execute()),
+      removeCreatorTag: (platform) => writeClaim(() => deps.removeCreatorTag.execute(platform)),
 
       refreshCreatorClaim: () => {
         const startedAfter = claimWrites;

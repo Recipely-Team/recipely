@@ -1,57 +1,72 @@
+import { Fragment } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { t } from '@presentation/i18n';
 import { useCreatorAccount } from '@presentation/app/edit-profile/hooks/use-creator-account';
-import { CreatorAccountStep } from '@presentation/app/edit-profile/model/creator-account-step';
-import { CreatorClaimForm } from '@presentation/app/edit-profile/body/creator/creator-claim-form';
-import { CreatorClaimCard } from '@presentation/app/edit-profile/body/creator/creator-claim-card';
+import { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
+import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/creator-account-row';
+import { CreatorLinkedRow } from '@presentation/app/edit-profile/body/creator/creator-linked-row';
+import { CreatorLinkForm } from '@presentation/app/edit-profile/body/creator/creator-link-form';
+import { CreatorAddRow } from '@presentation/app/edit-profile/items/creator-add-row';
+
+const keyOf = (row: CreatorAccountRow): string =>
+  row.kind === CreatorAccountRowKind.Linked ? row.claim.tag.platform : row.platform;
 
 /**
- * Edit Profile's "Creator account" section: the shared section header, then
- * one card in whichever of its four states the user's claim is — the form (no
- * claim, or trying again), in review, approved, rejected (design spec §7).
- *
- * @remarks
- * - **The three result states are a live region** (`status`), so a screen
- *   reader announces the change when a claim is sent, withdrawn or decided.
+ * Edit Profile's "Creator account" section (design spec §7, rev 2): the
+ * shared section header, then one card — the intro, a row per claimed
+ * platform, and a Link row per platform still to claim, split by hairlines.
+ * Each platform is reviewed on its own; one link form is open at a time.
  */
 export const CreatorAccountSection = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreatorAccount();
-  const { view } = vm;
-  const isForm = view.step === CreatorAccountStep.Form;
+
+  const renderRow = (row: CreatorAccountRow): React.JSX.Element => {
+    switch (row.kind) {
+      case CreatorAccountRowKind.Linked:
+        return (
+          <CreatorLinkedRow
+            claim={row.claim}
+            isBusy={vm.isBusy}
+            onRemove={() => vm.onRemove(row.claim.tag.platform)}
+            onTryAgain={() => vm.onOpenForm(row.claim.tag.platform)}
+          />
+        );
+      case CreatorAccountRowKind.Add:
+        return <CreatorAddRow platform={row.platform} disabled={vm.isBusy} onPress={vm.onOpenForm} />;
+      case CreatorAccountRowKind.Form:
+        return (
+          <CreatorLinkForm
+            platform={row.platform}
+            handle={row.handle}
+            error={row.error}
+            isBusy={vm.isBusy}
+            onChangeHandle={vm.onChangeHandle}
+            onSubmit={vm.onSubmit}
+            onCancel={vm.onCancel}
+          />
+        );
+    }
+  };
 
   return (
     <View style={styles.section}>
       <SectionHeader title={t().creators.account.title} />
-      <View
-        role={isForm ? undefined : 'status'}
-        accessibilityLiveRegion={isForm ? 'none' : 'polite'}
-        style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}
-      >
-        {view.step === CreatorAccountStep.Form ? (
-          <>
-            <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.text}>
-              {t().creators.account.intro}
-            </SizedText>
-            <CreatorClaimForm
-              platform={view.platform}
-              handle={view.handle}
-              error={view.error}
-              canCancel={view.canCancel}
-              isBusy={vm.isBusy}
-              onPickPlatform={vm.onPickPlatform}
-              onChangeHandle={vm.onChangeHandle}
-              onSubmit={vm.onSubmit}
-              onCancel={vm.onCancelEdit}
-            />
-          </>
-        ) : (
-          <CreatorClaimCard step={view.step} tag={view.tag} isBusy={vm.isBusy} onEdit={vm.onEdit} onRemove={vm.onRemove} />
-        )}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
+        <SizedText size={fontSizes.caption} ratio={lineHeights.normal} style={styles.intro}>
+          {t().creators.account.intro}
+        </SizedText>
+        {vm.rows.map((row) => (
+          <Fragment key={keyOf(row)}>
+            <View style={[styles.rule, { backgroundColor: colors.border }]} />
+            {renderRow(row)}
+          </Fragment>
+        ))}
       </View>
     </View>
   );
@@ -63,9 +78,15 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
   },
   card: {
-    padding: spacing.lg,
-    gap: spacing.md,
     borderRadius: radii.xl,
     borderWidth: borderWidths.hairline,
+    overflow: 'hidden',
+  },
+  intro: {
+    padding: spacing.lg,
+  },
+  rule: {
+    height: borderWidths.hairline,
+    marginHorizontal: ValueConstants.zero,
   },
 });

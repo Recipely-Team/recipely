@@ -146,6 +146,8 @@ export const DiagnosticMessage = {
     handleInvalid: (platform: string): string => `Not a valid ${platform} handle`,
     platformInvalid: (raw: string): string => `Not a creator platform: ${raw}`,
     claimStatusInvalid: (raw: string): string => `Not a creator claim status: ${raw}`,
+    duplicatePlatform: (platform: string): string => `More than one creator claim for ${platform}`,
+    tagsRequired: 'A listed creator needs at least one approved tag',
   },
   diary: {
     dateInvalid: (raw: string): string => `Not a calendar date (YYYY-MM-DD): ${raw}`,

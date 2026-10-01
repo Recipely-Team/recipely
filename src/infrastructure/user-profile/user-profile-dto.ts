@@ -21,8 +21,9 @@ export interface UserProfileDto {
   isFollowedByMe?: boolean;
   joinedAt: string;
   /**
-   * The approved creator tag, `null` otherwise. Optional because a backend
-   * older than creator tags does not send it; that reads as `null`.
+   * The approved creator tags, one per platform, Instagram first; `[]` for
+   * someone who is not a creator. Optional because a backend older than
+   * per-platform tags does not send it; that reads as `[]`.
    */
-  creator?: CreatorTagDto | null;
+  creatorTags?: CreatorTagDto[];
 }

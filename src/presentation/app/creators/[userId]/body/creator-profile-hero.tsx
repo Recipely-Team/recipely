@@ -23,8 +23,8 @@ const RING_END = { x: ValueConstants.one, y: ValueConstants.one };
 
 /**
  * The top of a creator's page: the avatar in the app's gradient ring (104 on a
- * phone, 128 expanded), the name (24/800, 30/800), the verified platform badge
- * and the bio (design spec → Creators §6.1–6.4).
+ * phone, 128 expanded), the name (24/800, 30/800), one verified badge per
+ * platform (wrapping, centred) and the bio (design spec → Creators §6.1–6.4).
  *
  * @remarks
  * - **The ring is the app's `primaryGradient`** for every creator; the
@@ -36,7 +36,6 @@ export const CreatorProfileHero = ({ profile, expanded }: CreatorProfileHeroProp
   const outer = expanded ? CreatorProfileMetrics.avatarExpanded : CreatorProfileMetrics.avatar;
   const gap = outer - BAND * ValueConstants.two;
   const photo = gap - BAND * ValueConstants.two;
-  const tag = profile.creator;
 
   return (
     <View style={styles.hero}>
@@ -58,9 +57,11 @@ export const CreatorProfileHero = ({ profile, expanded }: CreatorProfileHeroProp
       >
         {profile.displayName}
       </SizedText>
-      {tag !== null ? (
-        <View style={styles.badge}>
-          <CreatorTagChip tag={tag} />
+      {profile.isCreator ? (
+        <View style={styles.badges}>
+          {profile.creatorTags.map((tag) => (
+            <CreatorTagChip key={tag.platform} tag={tag} />
+          ))}
         </View>
       ) : null}
       {profile.bio !== null && profile.bio.trim().length > ValueConstants.zero ? (
@@ -85,7 +86,11 @@ const styles = StyleSheet.create({
   name: {
     marginTop: spacing.md,
   },
-  badge: {
+  badges: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: spacing.sm,
     marginTop: spacing.sm,
   },
   centred: {

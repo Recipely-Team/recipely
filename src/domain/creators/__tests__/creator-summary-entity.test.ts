@@ -9,7 +9,7 @@ const props: CreatorSummaryEntityProps = {
   id: 'u-1',
   displayName: 'Ada',
   photoUrl: null,
-  creator: tag.value,
+  creatorTags: [tag.value],
   recipeCount: 4,
   followerCount: 120,
 };
@@ -22,7 +22,7 @@ describe('CreatorSummaryEntity', () => {
     expect(result.value.id).toBe('u-1');
     expect(result.value.displayName).toBe('Ada');
     expect(result.value.photoUrl).toBeNull();
-    expect(result.value.creator.displayHandle).toBe('@chef.ada');
+    expect(result.value.creatorTags[0]?.displayHandle).toBe('@chef.ada');
     expect(result.value.recipeCount).toBe(4);
     expect(result.value.followerCount).toBe(120);
   });
@@ -30,6 +30,11 @@ describe('CreatorSummaryEntity', () => {
   it('refuses a blank id or display name', () => {
     expect(CreatorSummaryEntity.create({ ...props, id: ' ' }).ok).toBe(false);
     expect(CreatorSummaryEntity.create({ ...props, displayName: '' }).ok).toBe(false);
+  });
+
+  // A listed creator is someone's verified account; with none there is nothing to show.
+  it('refuses a summary with no approved tag', () => {
+    expect(CreatorSummaryEntity.create({ ...props, creatorTags: [] }).ok).toBe(false);
   });
 
   it('is equal to another summary of the same user', () => {

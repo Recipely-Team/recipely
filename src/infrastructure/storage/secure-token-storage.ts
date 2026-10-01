@@ -9,19 +9,19 @@ import { Email } from '@domain/common/email';
 import type { SerializedSession } from '@infrastructure/storage/serialized-session';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { optional } from '@core/guards/type-guards';
-import type { CreatorClaim } from '@domain/creators/creator-claim';
+import type { CreatorClaims } from '@domain/creators/creator-claims';
 import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
-import { readCreatorClaim } from '@infrastructure/creators/read-creator-claim';
+import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
 import {
   SESSION_STORAGE_KEY,
   LEGACY_SESSION_STORAGE_KEY,
 } from '@infrastructure/constants/storage';
 
-/** The stored form of a claim — the wire shape, so one reader serves both. */
-const toStoredClaim = (claim: CreatorClaim | null): CreatorClaimDto | undefined =>
-  claim === null
+/** The stored form of the claims — the wire shape, so one reader serves both; absent when there are none. */
+const toStoredClaims = (claims: CreatorClaims): CreatorClaimDto[] | undefined =>
+  claims.isEmpty
     ? undefined
-    : { platform: claim.tag.platform, handle: claim.tag.handle, status: claim.status };
+    : claims.all.map((claim) => ({ platform: claim.tag.platform, handle: claim.tag.handle, status: claim.status }));
 
 /**
  * Persists and restores the authenticated `AuthSessionEntity` using the platform
@@ -49,7 +49,7 @@ export class SecureTokenStorage {
           email: session.user.email.value,
           displayName: session.user.displayName,
           photoUrl: session.user.photoUrl,
-          ...optional('creator', toStoredClaim(session.user.creatorClaim)),
+          ...optional('creatorTags', toStoredClaims(session.user.creatorClaims)),
         },
       };
       await kvStore.setItem(SESSION_STORAGE_KEY, JSON.stringify(payload));
@@ -94,7 +94,8 @@ export class SecureTokenStorage {
       email: emailResult.value,
       displayName: parsed.user.displayName,
       photoUrl: parsed.user.photoUrl,
-      creatorClaim: readCreatorClaim(parsed.user.creator),
+      // A session stored before per-platform tags held one claim under `creator`.
+      creatorClaims: readCreatorClaims(parsed.user.creatorTags ?? (parsed.user.creator === undefined ? undefined : [parsed.user.creator])),
     });
     if (!userResult.ok) {
       return fail(userResult.failure);

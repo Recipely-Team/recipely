@@ -14,8 +14,8 @@ import { replaceSessionUser } from '@infrastructure/auth/session/replace-session
  * the current session's token/expiry/id are reused to keep the user signed in.
  * Fails with `UnauthorizedFailure` when there is no active session to update,
  * or when it belongs to someone other than the answer's user.
- * A user answer without a `creator` field (a backend older than creator tags)
- * keeps the stored claim: editing a bio must not clear it.
+ * A user answer without a `creatorTags` field (a backend older than
+ * per-platform tags) keeps the stored claims: editing a bio must not clear them.
  */
 export const rebuildSessionWithUser = (
   storage: SecureTokenStorage,
@@ -23,6 +23,6 @@ export const rebuildSessionWithUser = (
 ): Promise<Result<AuthSessionEntity, Failure>> =>
   replaceSessionUser(storage, userDto.id, (current) => {
     const user = toUser(userDto);
-    if (!user.ok || userDto.creator !== undefined) return user;
-    return ok(user.value.withCreatorClaim(current.creatorClaim));
+    if (!user.ok || userDto.creatorTags !== undefined) return user;
+    return ok(user.value.withCreatorClaims(current.creatorClaims));
   });

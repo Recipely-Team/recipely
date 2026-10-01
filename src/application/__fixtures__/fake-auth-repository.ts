@@ -6,6 +6,7 @@ import type { RegistrationChallenge } from '@domain/auth/registration-challenge'
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
 import type { FakeAuthRepositoryConfig } from '@application/__fixtures__/fake-auth-repository-config';
 import type { CreatorTag } from '@domain/creators/creator-tag';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 
 /**
  * In-memory test double for `AuthRepositoryInterface`. Each method returns the
@@ -100,7 +101,11 @@ export class FakeAuthRepository implements AuthRepositoryInterface {
     );
   }
 
-  removeCreatorTag(): Promise<Result<AuthSessionEntity, Failure>> {
+  /** Every platform `removeCreatorTag` was asked to clear, in order. */
+  readonly removedPlatforms: CreatorPlatformType[] = [];
+
+  removeCreatorTag(platform: CreatorPlatformType): Promise<Result<AuthSessionEntity, Failure>> {
+    this.removedPlatforms.push(platform);
     return Promise.resolve(
       this.config.removeCreatorTagResult ?? fail(new UnknownFailure('not configured')),
     );
