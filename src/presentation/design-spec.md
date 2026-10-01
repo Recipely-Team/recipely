@@ -3505,3 +3505,26 @@ xl 24 · xxl 32`; radii `lg 12 · xl 16 · round`.
 - The form opened from Try again keeps a Cancel outline pill, so a user can back out to the rejected card.
 - The /creators subtitle carries no count: the list is paged and the total is not known up front.
 - The 140 ms hover transition on creator cards is not animated; the lift is immediate.
+
+### Rev 2 and rev 3 (Oct 2026) — Chefs tab and one claim per platform
+
+Source: the Recipely Prototype spec rev 3 (sections marked rev 2 / rev 3).
+
+- **Chefs tab (rev 3):** `/creators` is a root tab — fifth bottom tab (chef hat, between My Recipes and Diary;
+  labels 10, one line), web header item lit on `/creators` and creator pages. No back button; 24/700 title
+  (web h1 36/800, 40 under the header), subtitle 13 (web 15). Empty: 64 chef-hat disc + "No chefs yet." The
+  Creators strip and web row are gone from the Recipes home. A creator page goes back to Chefs ("Back to chefs").
+- **Per-platform accounts (rev 2):** avatar seals — one per verified account, the second shifted left by 60 % of
+  a seal (13 at 22) behind the primary, one image "Verified on Instagram and TikTok"; creator card — one handle
+  line per account (seal 18 + `@handle` 13 `textSubtle`), caption pinned to the bottom; creator profile — one
+  linked platform badge per account, wrapping, centred, gap 8; Profile tab — one approved badge once any platform
+  is approved.
+- **Edit profile (rev 2):** one card, `overflow hidden`, hairline-separated: intro 13; a row per claimed platform
+  (seal 36, platform 15/700 + `@handle` 13 — a link once approved, status pill 24 high: in review hourglass
+  `primary`, approved on `primary`, rejected alert `danger`; body 13; one action 44 high, round, 14/700 —
+  Withdraw / Unlink ghost, Try again primary); a "Link {Platform} account" row (min 60, seal 36, plus 18 `primary`)
+  per unclaimed platform, which opens the form in its place (seal 28 title, HANDLE label 11/700 `textMuted`, 48
+  field, hint 12, Cancel ghost + Submit primary flex 1). One form at a time; no platform picker.
+- **Departures:** the review and rejection bodies keep the admin-review wording (no "add recipely.app/@username to
+  your bio", no "up to 2 days"); Submit unlocks at each platform's minimum handle length; status-pill icons are
+  14 (spec 13–14); half-point type sizes round to the ladder.
