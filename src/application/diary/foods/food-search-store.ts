@@ -35,10 +35,15 @@ const productKey = (product: FoodProduct): string => product.key;
  * - **Stale answers never land.** Each group's `PagedListLoader` drops an
  *   answer begun before the latest `search`, so an older query's slow
  *   response cannot replace a newer one — first page or next page.
+ * - **A repeat of the query in flight joins it.** The assistant's
+ *   `searchFood` searches and opens the sheet, whose box then asks for the
+ *   same query; that second call waits on the first instead of sending it twice.
  * - **User-scoped** (saved / mine): cleared on sign-out.
  */
-export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<FoodSearchStoreState> =>
-  create<FoodSearchStoreState>((set, get) => {
+export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<FoodSearchStoreState> => {
+  let inFlight: { query: string; done: Promise<void> } | null = null;
+
+  return create<FoodSearchStoreState>((set, get) => {
     const recipeLoader = (group: RecipeHitGroupType): PagedListLoader<RecipeFoodHit> =>
       new PagedListLoader(() => get()[group], (list) => set({ [group]: list }), hitKey);
     const loaders = {
@@ -53,6 +58,24 @@ export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<
       (page: number): ReturnType<SearchRecipeGroupUseCase['execute']> =>
         deps.searchRecipeGroup.execute(query, group, page, FOOD_SEARCH_PAGE_SIZE);
 
+    const run = async (query: string): Promise<void> => {
+      set({ query });
+      if (query.length === ValueConstants.zero) {
+        loaders.products.reset();
+        await Promise.all(recipeGroups.map((group) => loaders[group].load(recipePages(query, group))));
+        return;
+      }
+      const tokens = {
+        saved: loaders.saved.begin(recipePages(query, FoodSearchGroup.Saved)),
+        mine: loaders.mine.begin(recipePages(query, FoodSearchGroup.Mine)),
+        recipes: loaders.recipes.begin(recipePages(query, FoodSearchGroup.Recipes)),
+        products: loaders.products.begin((page) => deps.searchProducts.execute(query, page, FOOD_SEARCH_PAGE_SIZE)),
+      };
+      const result = await deps.searchFoods.execute(query, FOOD_SEARCH_PAGE_SIZE);
+      for (const group of recipeGroups) loaders[group].settle(tokens[group], result.ok ? ok(result.value[group]) : result);
+      loaders.products.settle(tokens.products, result.ok ? ok(result.value.products) : result);
+    };
+
     return {
       query: null,
       saved: { status: StoreStatus.Idle },
@@ -60,30 +83,23 @@ export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<
       products: { status: StoreStatus.Idle },
       recipes: { status: StoreStatus.Idle },
 
-      search: async (raw) => {
+      search: (raw) => {
         const query = raw.trim();
-        set({ query });
-        if (query.length === ValueConstants.zero) {
-          loaders.products.reset();
-          await Promise.all(recipeGroups.map((group) => loaders[group].load(recipePages(query, group))));
-          return;
-        }
-        const tokens = {
-          saved: loaders.saved.begin(recipePages(query, FoodSearchGroup.Saved)),
-          mine: loaders.mine.begin(recipePages(query, FoodSearchGroup.Mine)),
-          recipes: loaders.recipes.begin(recipePages(query, FoodSearchGroup.Recipes)),
-          products: loaders.products.begin((page) => deps.searchProducts.execute(query, page, FOOD_SEARCH_PAGE_SIZE)),
-        };
-        const result = await deps.searchFoods.execute(query, FOOD_SEARCH_PAGE_SIZE);
-        for (const group of recipeGroups) loaders[group].settle(tokens[group], result.ok ? ok(result.value[group]) : result);
-        loaders.products.settle(tokens.products, result.ok ? ok(result.value.products) : result);
+        if (inFlight !== null && inFlight.query === query) return inFlight.done;
+        const done = run(query).finally(() => {
+          if (inFlight?.done === done) inFlight = null;
+        });
+        inFlight = { query, done };
+        return done;
       },
 
       loadMore: (group) => loaders[group].loadMore(),
 
       clear: () => {
+        inFlight = null;
         Object.values(loaders).forEach((loader) => loader.reset());
         set({ query: null });
       },
     };
   });
+};

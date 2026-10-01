@@ -8,7 +8,10 @@ import { resolveDiaryDate } from '@presentation/base/hooks/assistant/args/diary/
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
 import { matchEntries } from '@presentation/base/hooks/assistant/args/diary/match-entries';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
-import { hitOf, pageOf, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { hitOf, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
+import { LoggableProduct } from '@domain/diary/foods/loggable-product';
+import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
 import { FoodSource } from '@presentation/base/hooks/assistant/args/diary/food-source';
 import { parseLogFoodArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-log-food-arg';
 import { parseEntryTargetArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-entry-target-arg';
@@ -116,11 +119,9 @@ describe('name matching', () => {
   });
 
   it('offers the search’s groups in display order, products per 100 of their unit, then recent foods', () => {
-    const recent = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
-    const candidates = buildFoodCandidates(
-      { query: 'x', saved: pageOf([hitOf('s')]), mine: pageOf([hitOf('m')]), products: pageOf([productOf()]), recipes: pageOf([hitOf('r')]) },
-      [recent],
-    );
+    const apple = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
+    const recent = { kind: RecentFoodKind.Food, key: 'apple', food: apple } as const;
+    const candidates = buildFoodCandidates({ saved: [hitOf('s')], mine: [hitOf('m')], products: [productOf()], recipes: [hitOf('r')] }, [recent]);
     expect(candidates.map((c) => [c.name, c.source, c.per])).toEqual([
       ['Recipe s', FoodSource.Saved, 'per serving'],
       ['Recipe m', FoodSource.Mine, 'per serving'],
@@ -129,5 +130,18 @@ describe('name matching', () => {
       ['Apple', FoodSource.Recent, 'per serving'],
     ]);
     expect(buildFoodCandidates(null, [recent])).toHaveLength(1);
+  });
+
+  // `/diary/recent` holds a product row's totals; divided per serving it logged "Ayran, 0 kcal".
+  it('offers a recent product as a product at the unit it was logged in, with that unit’s kcal', () => {
+    const product = LoggableProduct.fromLogged(
+      'Ayran · Az yağlı',
+      { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+      nutrientsOf({ calories: 52 }),
+    );
+    const recent = { kind: RecentFoodKind.Product, key: 'ayran', product, quantity: FoodQuantity.of({ key: 'glass', amount: 200 }, 1.5) } as const;
+    const [candidate] = buildFoodCandidates(null, [recent]);
+    expect(candidate?.kind).toBe('product');
+    expect([candidate?.kcal, candidate?.per]).toEqual([52, 'per 1 glass']);
   });
 });

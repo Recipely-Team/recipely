@@ -230,6 +230,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   });
   const foodCatalogRepo = container.resolve<FoodCatalogRepositoryInterface>(TOKENS.FoodCatalogRepository);
   const searchFoods = new SearchFoodsUseCase(foodCatalogRepo);
+  const listRecentFoods = new ListRecentFoodPageUseCase(foodCatalogRepo);
   const foodSearchStore = configureFoodSearchStore({
     searchFoods,
     searchRecipeGroup: new SearchRecipeGroupUseCase(foodCatalogRepo),
@@ -238,7 +239,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const foodCatalogStore = configureFoodCatalogStore({
     listCategories: new ListFoodCategoriesUseCase(foodCatalogRepo),
     listProducts: new ListFoodProductsUseCase(foodCatalogRepo),
-    listRecent: new ListRecentFoodPageUseCase(foodCatalogRepo),
+    listRecent: listRecentFoods,
     loadDetail: new LoadFoodDetailUseCase(foodCatalogRepo),
   });
   const commentsStore = configureCommentsStore({
@@ -367,6 +368,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     foodSearchStore,
     foodCatalogStore,
     searchFoods,
+    listRecentFoods,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,
   };

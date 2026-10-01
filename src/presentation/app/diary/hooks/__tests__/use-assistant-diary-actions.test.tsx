@@ -15,7 +15,15 @@ import { StoreStatus } from '@application/store/store-status';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { FoodSearchResults } from '@domain/diary/foods/search/food-search-results';
 import { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
-import { pageOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { fakeFoodCatalogRepository, pageOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { configureFoodSearchStore } from '@application/diary/foods/food-search-store';
+import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
+import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
+import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
+import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import { LoggableProduct } from '@domain/diary/foods/loggable-product';
+import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
@@ -25,6 +33,16 @@ import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-dia
 const hit = (id: string, name: string, calories: number): RecipeFoodHit =>
   RecipeFoodHit.of({ id, name, imageUrl: null, perServing: nutrientsOf({ calories, protein: 20 }), isDraft: false });
 const apple = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
+const ayran = LoggableProduct.fromLogged(
+  'Ayran · Az yağlı',
+  { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+  nutrientsOf({ calories: 52 }),
+);
+/** `/diary/foods/recent`: a quick-add apple and a glass and a half of ayran. */
+const recentFoods: RecentFood[] = [
+  { kind: RecentFoodKind.Food, key: 'apple', food: apple },
+  { kind: RecentFoodKind.Product, key: 'ayran', product: ayran, quantity: FoodQuantity.of({ key: 'glass', amount: 200 }, 1.5) },
+];
 /** What the server search answers: the user's Menemen, plus whatever a test puts among everyone's recipes. */
 const searchAnswer = (recipes: RecipeFoodHit[] = []): FoodSearchResults => ({
   query: 'x', saved: pageOf([]), mine: pageOf([hit('r1', 'Menemen', 300)]), products: pageOf([]), recipes: pageOf(recipes),
@@ -39,12 +57,19 @@ const harness = (
   answer: FoodSearchResults = searchAnswer(),
 ) => {
   const searchFoods = { execute: jest.fn(async () => ok(answer)) };
+  const listRecentFoods = { execute: jest.fn(async () => ok(pageOf(recentFoods))) };
+  const repo = fakeFoodCatalogRepository();
+  repo.search.mockResolvedValue(ok(answer));
+  const foodSearchStore = configureFoodSearchStore({
+    searchFoods: new SearchFoodsUseCase(repo),
+    searchRecipeGroup: new SearchRecipeGroupUseCase(repo),
+    searchProducts: new SearchProductsUseCase(repo),
+  });
   const day = DiaryDay.of({ date: today, entries: entries.map((e) => e), waterGlasses: 5, goals: NutritionGoals.defaults() });
   const diaryStore = create(() => ({
     selectedDate: today,
     days: Object.fromEntries([day, ...otherDays].map((d) => [d.date.value, d])),
     goals: NutritionGoals.defaults(),
-    recent: [apple],
     addEntry: jest.fn(async (entry: NewFoodLogEntry) => ok(foodLogEntryOf({ name: entry.name, servings: entry.servings }))),
     deleteEntry: jest.fn(async () => ok(undefined)),
     updateEntry: jest.fn(async () => ok(foodLogEntryOf({ name: 'Menemen', servings: 2, meal: MealSlot.Lunch }))),
@@ -67,7 +92,7 @@ const harness = (
     useAssistantDiaryActions({ view: { status: StoreStatus.Loaded, day }, selected: today, today, select, sheets });
     return null;
   };
-  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<Stores>);
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction], arg?: string): Promise<AssistantActionResultType> => {
     let result!: AssistantActionResultType;
     await act(async () => {
@@ -75,7 +100,7 @@ const harness = (
     });
     return result;
   };
-  return { registry, diaryStore, store: diaryStore.getState(), select, sheets, run, searchFoods };
+  return { registry, diaryStore, store: diaryStore.getState(), select, sheets, run, searchFoods, repo };
 };
 
 describe('useAssistantDiaryActions', () => {
@@ -112,6 +137,14 @@ describe('useAssistantDiaryActions', () => {
     expect([quick?.name, quick?.recipeId, quick?.nutrients.carbs]).toEqual(['Simit', null, 50]);
   });
 
+  // `/diary/recent` keeps a product row's totals; divided per serving it logged "Ayran, 0 kcal".
+  it('logFood logs a recent product at its own unit, with that unit’s nutrients', async () => {
+    const h = harness();
+    await expect(h.run(AssistantAction.LogFood, JSON.stringify({ name: 'ayran', servings: 2 }))).resolves.toMatchObject({ ok: true });
+    const entry = h.store.addEntry.mock.calls[0]?.[0];
+    expect([entry?.servings, entry?.product?.unitKey, entry?.nutrients.calories]).toEqual([2, 'glass', 104]);
+  });
+
   // "bread" with the model's own estimate once logged the feed's "Banana Bread" at its calories.
   it('logFood keeps the model estimate when only a loose name match exists', async () => {
     const h = harness(undefined, [], searchAnswer([hit('r2', 'Banana Bread', 420)]));
@@ -143,6 +176,8 @@ describe('useAssistantDiaryActions', () => {
     const result = await h.run(AssistantAction.SearchFood, 'menem');
     expect(h.sheets.openSearch).toHaveBeenCalledWith('menem');
     expect(result.title).toBe('Menemen, 300 kcal per serving, my recipe');
+    // The sheet's own search for the same query joins this one: one request, not two.
+    expect(h.repo.search).toHaveBeenCalledTimes(1);
   });
 
   it('removeFood removes the one match, and asks which when several match', async () => {

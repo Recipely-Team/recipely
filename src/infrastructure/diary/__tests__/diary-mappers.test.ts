@@ -88,6 +88,14 @@ describe('diary read mappers', () => {
     expect(r.value.days[0]?.nutrients.fiber).toBeNull();
   });
 
+  // A product row of /diary/recent is a quantity (250 ml) with its totals: dividing it logged "Ayran, 0 kcal".
+  it('keeps a recent product row whole instead of dividing its totals by the quantity', () => {
+    const product = { source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'ml', unitAmount: 1, foodId: 'f1',
+      perUnit: { kcal: 0.26, protein: null, carbs: null, fat: null, fiber: null } };
+    const r = toLoggableFood({ ...entryDto, servings: 250, calories: 65, product });
+    expect(r.ok && r.value.perServing.calories).toBe(65);
+  });
+
   it('reduces a recent food to one serving', () => {
     const r = toLoggableFood({ ...entryDto, servings: 2, product: null });
     expect(r.ok && r.value.perServing.calories).toBe(230);

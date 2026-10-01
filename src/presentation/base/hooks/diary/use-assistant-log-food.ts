@@ -11,7 +11,7 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
 import { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import { FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE, FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
@@ -62,7 +62,10 @@ const fromCandidate = (candidate: FoodCandidate): ResolvedFood => {
  * @remarks
  * - **A name is searched on the server**, as the Add food sheet does — the
  *   user's saved and own recipes (drafts too), catalogue products and
- *   everyone's recipes — then ranked with the recent foods by name.
+ *   everyone's recipes — then ranked with the recent foods by name. Recent
+ *   foods come from `/diary/foods/recent`, where a product keeps its unit:
+ *   the old `/diary/recent` rows hold a product's totals and would log
+ *   "Ayran, 0 kcal" once divided per serving.
  * - **The model's numbers beat a loose match.** When it sent calories it was
  *   estimating a generic food, so only an exact name may override them —
  *   "bread" must not log "Banana Bread".
@@ -71,7 +74,7 @@ const fromCandidate = (candidate: FoodCandidate): ResolvedFood => {
  *   is refused exactly what the Add food sheet would refuse.
  */
 export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, signedIn }: AssistantLogFoodOptions): void => {
-  const { diaryStore, searchFoods } = useStores();
+  const { diaryStore, searchFoods, listRecentFoods } = useStores();
 
   const resolveFood = useCallback(
     async (args: LogFoodArgs): Promise<ResolvedFood | string> => {
@@ -81,8 +84,14 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
       const pick = <T extends { name: string }>(items: readonly T[]): T | undefined =>
         rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
       if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
-      const found = await searchFoods.execute(name, FOOD_SEARCH_PAGE_SIZE);
-      const best = pick(buildFoodCandidates(found.ok ? found.value : null, diaryStore.getState().recent));
+      const [found, recent] = await Promise.all([
+        searchFoods.execute(name, FOOD_SEARCH_PAGE_SIZE),
+        listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE),
+      ]);
+      const groups = found.ok
+        ? { saved: found.value.saved.items, mine: found.value.mine.items, products: found.value.products.items, recipes: found.value.recipes.items }
+        : null;
+      const best = pick(buildFoodCandidates(groups, recent.ok ? recent.value.items : []));
       if (best !== undefined) return fromCandidate(best);
       if (args.perServing === null) return found.ok ? DiaryArgError.UnknownFood : failureReason(found.failure);
       const nutrients = Nutrients.create(args.perServing);
@@ -90,7 +99,7 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
       const quick = LoggableFood.quickAdd(name, nutrients.value);
       return quick.ok ? asResolved(quick.value) : failureReason(quick.failure);
     },
-    [diaryStore, openRecipeFood, searchFoods],
+    [listRecentFoods, openRecipeFood, searchFoods],
   );
 
   useAssistantAction(

@@ -54,6 +54,15 @@ describe('foodSearchStore', () => {
     expect(s.products.status === StoreStatus.Loaded && s.products.items).toHaveLength(1);
   });
 
+  it('joins a repeat of the query already in flight instead of sending it again', async () => {
+    const { repo, store } = setup();
+    repo.search.mockResolvedValue(ok(results('menem')));
+    await Promise.all([store.getState().search('menem'), store.getState().search(' menem ')]);
+    expect(repo.search).toHaveBeenCalledTimes(1);
+    await store.getState().search('menem');
+    expect(repo.search).toHaveBeenCalledTimes(2);
+  });
+
   it('lists the recipe groups unfiltered, one request each, for an empty query', async () => {
     const { repo, store } = setup();
     await store.getState().search('');
