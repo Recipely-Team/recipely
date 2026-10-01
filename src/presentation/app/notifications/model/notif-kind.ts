@@ -10,6 +10,10 @@ export const NotifKind = {
   ModerationApproved: 'moderation_approved',
   ModerationPending: 'moderation_pending',
   Follow: 'follow',
+  /** One platform of the user's creator claim was approved. */
+  CreatorApproved: 'creator_approved',
+  /** One platform of the user's creator claim was rejected. */
+  CreatorRejected: 'creator_rejected',
   Generic: 'generic',
 } as const;
 

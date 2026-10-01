@@ -6,6 +6,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { NotificationTarget } from '@domain/notifications/notification-target';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import { ValueConstants } from '@core/constants';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
@@ -62,6 +63,11 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
   /** Where an import's recipe came from — the platform its push named. */
   get sourcePlatform(): SourcePlatformType | null {
     return this.props.sourcePlatform;
+  }
+
+  /** The platform a creator decision is about; `null` for every other type. */
+  get creatorPlatform(): CreatorPlatformType | null {
+    return this.props.creatorPlatform ?? null;
   }
 
   get sourceHandle(): string | null {

@@ -15,6 +15,8 @@ const KNOWN_KINDS = new Set<NotifKind>([
   'moderation_approved',
   'moderation_pending',
   'follow',
+  'creator_approved',
+  'creator_rejected',
 ]);
 
 /** What a notification with no sender is attributed to. */
@@ -37,7 +39,14 @@ export const toNotifItem = (notification: NotificationEntity): NotifItem => ({
   body: notification.message ?? undefined,
   target: notification.target,
   ...importSourceOf(notification),
+  ...creatorAccountOf(notification),
 });
+
+/** The account a creator decision names; nothing for other kinds, or a platform this build cannot name. */
+function creatorAccountOf(notification: NotificationEntity): Pick<NotifItem, 'creator'> {
+  const platform = notification.creatorPlatform;
+  return platform === null ? {} : { creator: { platform, handle: notification.sourceHandle } };
+}
 
 /** The platform (and account) an import row names; nothing for a row the server wrote before it stored them. */
 function importSourceOf(notification: NotificationEntity): { source?: ImportSource } {

@@ -80,3 +80,17 @@ describe('NotifRow copy', () => {
     expect(lines).toContain(t().notifications.genericLabel);
   });
 });
+
+describe('NotifRow copy — creator decisions', () => {
+  it('names the platform when an account is approved, and the handle under it', () => {
+    const lines = linesOf(item({ kind: NotifKind.CreatorApproved, creator: { platform: 'instagram', handle: 'mertmutfakta' } }));
+
+    expect(lines).toEqual(expect.arrayContaining([t().notifications.creatorApproved.replace('{platform}', 'Instagram'), '@mertmutfakta']));
+  });
+
+  it('names the platform when an account is rejected', () => {
+    const lines = linesOf(item({ kind: NotifKind.CreatorRejected, creator: { platform: 'tiktok', handle: null } }));
+
+    expect(lines).toContain(t().notifications.creatorRejected.replace('{platform}', 'TikTok'));
+  });
+});

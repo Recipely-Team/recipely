@@ -53,3 +53,22 @@ describe('NotificationRepository.list — import provenance', () => {
     expect(n.sourceHandle).toBeNull();
   });
 });
+
+// A creator decision names a lower-case creator platform where an import names
+// an upper-case source one; the type decides which reading applies.
+describe('NotificationRepository.list — creator decisions', () => {
+  it.each(['creator_approved', 'creator_rejected'])('reads %s as a creator platform and handle, not an import source', async (type) => {
+    const n = await listOf(dto({ type, sourcePlatform: 'instagram', sourceHandle: 'mertmutfakta', draftId: null }));
+
+    expect(n.creatorPlatform).toBe('instagram');
+    expect(n.sourceHandle).toBe('mertmutfakta');
+    expect(n.sourcePlatform).toBeNull();
+  });
+
+  it('leaves an import\'s upper-case platform as the import source', async () => {
+    const n = await listOf(dto({ sourcePlatform: 'INSTAGRAM' }));
+
+    expect(n.sourcePlatform).toBe('INSTAGRAM');
+    expect(n.creatorPlatform).toBeNull();
+  });
+});

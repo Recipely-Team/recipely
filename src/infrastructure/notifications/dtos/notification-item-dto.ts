@@ -21,9 +21,14 @@ export interface NotificationItemDto {
    *  notification with no destination rather than break the list. */
   draftId?: string | null;
   message: string | null;
-  /** Where an import's recipe came from. Optional like `draftId`: an older server omits it. */
+  /**
+   * Where an import's recipe came from (upper-case, `INSTAGRAM`), or the
+   * creator platform a `creator_approved` / `creator_rejected` is about
+   * (lower-case, `instagram`) — read by type. Optional like `draftId`: an older
+   * server omits it.
+   */
   sourcePlatform?: string | null;
-  /** The account or site an import came from, when the importer reported one. */
+  /** The account or site an import came from, or the claimed handle of a creator decision. */
   sourceHandle?: string | null;
   read: boolean;
   createdAt: string;

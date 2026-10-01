@@ -16,6 +16,8 @@ export const useKindMeta = (kind: NotifKind): KindMeta => {
     moderation_approved: { icon: 'shield-checkmark-outline', color: colors.success },
     moderation_pending: { icon: 'alert-circle-outline', color: colors.warning },
     follow: { icon: 'person-add-outline', color: colors.primary },
+    creator_approved: { icon: 'checkmark-circle-outline', color: colors.success },
+    creator_rejected: { icon: 'alert-circle-outline', color: colors.danger },
     generic: { icon: 'notifications-outline', color: colors.primary },
   };
   return map[kind];
