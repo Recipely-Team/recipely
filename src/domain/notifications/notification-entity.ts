@@ -89,9 +89,14 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * so that combination wins; a bare `recipeId` (likes, AI completions, and
    * any future type we don't special-case) lands on the recipe; a `follow`
    * notification carries no `recipeId` — there is no public user-profile
-   * route yet — so it has no destination and this returns `null`.
+   * route yet — so it has no destination and this returns `null`. A creator
+   * decision opens the user's own creator account settings.
    */
   get target(): NotificationTarget | null {
+    const creatorPlatform = this.props.creatorPlatform ?? null;
+    if (creatorPlatform !== null) {
+      return { kind: NotificationTargetKind.CreatorAccount, platform: creatorPlatform };
+    }
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }

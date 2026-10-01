@@ -4,6 +4,8 @@ export const NotificationTargetKind = {
   Comment: 'comment',
   /** A background import finished; tapping opens the draft it produced. */
   Draft: 'draft',
+  /** The user's own creator account settings — a decision on one platform's claim. */
+  CreatorAccount: 'creator_account',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing

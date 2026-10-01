@@ -77,5 +77,6 @@ describe('toNotifItem — creator decisions', () => {
     expect(item.kind).toBe(kind);
     expect(item.creator).toEqual({ platform: 'tiktok', handle: 'mert.mutfakta' });
     expect(item.source).toBeUndefined();
+    expect(item.target).toEqual({ kind: 'creator_account', platform: 'tiktok' });
   });
 });

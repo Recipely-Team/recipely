@@ -1,5 +1,5 @@
 import { Fragment } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
@@ -13,6 +13,11 @@ import { CreatorLinkedRow } from '@presentation/app/edit-profile/body/creator/cr
 import { CreatorLinkForm } from '@presentation/app/edit-profile/body/creator/creator-link-form';
 import { CreatorAddRow } from '@presentation/app/edit-profile/items/creator-add-row';
 
+export interface CreatorAccountSectionProps {
+  /** Reports where the section sits, so a `?section=creator` link can scroll to it. */
+  onLayout?: (event: LayoutChangeEvent) => void;
+}
+
 const keyOf = (row: CreatorAccountRow): string =>
   row.kind === CreatorAccountRowKind.Linked ? row.claim.tag.platform : row.platform;
 
@@ -22,7 +27,7 @@ const keyOf = (row: CreatorAccountRow): string =>
  * platform, and a Link row per platform still to claim, split by hairlines.
  * Each platform is reviewed on its own; one link form is open at a time.
  */
-export const CreatorAccountSection = (): React.JSX.Element => {
+export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreatorAccount();
 
@@ -55,7 +60,7 @@ export const CreatorAccountSection = (): React.JSX.Element => {
   };
 
   return (
-    <View style={styles.section}>
+    <View style={styles.section} onLayout={onLayout}>
       <SectionHeader title={t().creators.account.title} />
       <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.cardBorder }]}>
         <SizedText size={fontSizes.caption} ratio={lineHeights.normal} style={styles.intro}>
