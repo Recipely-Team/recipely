@@ -765,3 +765,52 @@ describe('auth store — creator claim', () => {
     expect(store.getState().state.status).toBe('unauthenticated');
   });
 });
+
+describe('auth store — claim writes run one at a time', () => {
+  // Two platforms written together each answered with a session built before
+  // the other's write; whichever landed last dropped the other platform.
+  it('starts a second platform write only after the first has answered', async () => {
+    const started: string[] = [];
+    const answers: ((result: Result<AuthSessionEntity, Failure>) => void)[] = [];
+    const held = (label: string) =>
+      new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+        started.push(label);
+        answers.push(resolve);
+      });
+    const repo = new (class extends FakeAuthRepository {
+      override requestCreatorTag() {
+        return held('request');
+      }
+      override removeCreatorTag() {
+        return held('remove');
+      }
+    })({ signInResult: ok(buildSession()) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const first = store.getState().requestCreatorTag({ platform: 'instagram', handle: 'chef.ada' });
+    const second = store.getState().removeCreatorTag('tiktok');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(started).toEqual(['request']);
+
+    answers[0]?.(ok(buildSession()));
+    expect(await first).toBeNull();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(started).toEqual(['request', 'remove']);
+
+    answers[1]?.(ok(buildSession()));
+    expect(await second).toBeNull();
+  });
+
+  it('keeps the queue moving after a write fails', async () => {
+    const repo = new FakeAuthRepository({ signInResult: ok(buildSession()), removeCreatorTagResult: ok(buildSession()) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    expect(await store.getState().requestCreatorTag({ platform: 'tiktok', handle: 'bad..handle' })).not.toBeNull();
+    expect(await store.getState().removeCreatorTag('tiktok')).toBeNull();
+    expect(repo.removedPlatforms).toEqual(['tiktok']);
+  });
+});
