@@ -1261,7 +1261,7 @@ export const en = {
       approvedBody: 'Your badge now shows next to your name.',
       remove: 'Unlink account',
       rejected: 'Rejected',
-      rejectedBody: "We couldn't verify that {handle} belongs to you. Check the username and send it again.",
+      rejectedBody: "We couldn't verify that {handle} belongs to you. Check the handle and send it again.",
       resubmit: 'Try again',
     },
   },
