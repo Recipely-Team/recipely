@@ -46,7 +46,7 @@ export const configureCreatorsStore = (deps: CreatorsStoreDeps): BoundStore<Crea
         return;
       }
       const { items, page, hasMore } = result.value;
-      set({ creators: items, listState: { status: StoreStatus.Loaded, page, hasMore } });
+      set({ creators: [...items], listState: { status: StoreStatus.Loaded, page, hasMore } });
     };
 
     return {

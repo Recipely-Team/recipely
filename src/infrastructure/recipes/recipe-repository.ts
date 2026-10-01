@@ -10,10 +10,10 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { DraftRecipeSnapshot } from '@domain/drafts/draft-recipe-snapshot';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { toRecipeListQuery } from '@infrastructure/recipes/to-recipe-list-query';
 import { toRecipePage } from '@infrastructure/recipes/to-recipe-page';
-import { FIRST_PAGE, MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
+import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
+import { MY_RECIPES_PAGE_SIZE, TRENDING_RECIPES_LIMIT } from '@infrastructure/constants/api/api-paging';
 import { AI_REQUEST_TIMEOUT_MS, FILE_IMPORT_TIMEOUT_MS, IMPORT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
@@ -21,7 +21,6 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import type { RefineRecipeResponseDto } from '@infrastructure/recipes/refine/refine-recipe-response-dto';
-import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { toRecipe } from '@infrastructure/recipes/recipe-mapper';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import { buildCreateRecipeFormData } from '@infrastructure/recipes/create/build-create-recipe-form-data';
@@ -42,6 +41,9 @@ import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
 import type { PublishOutcomeDto } from '@infrastructure/recipes/publishing/publish-outcome-dto';
 import type { CoverRemovalDto } from '@infrastructure/recipes/publishing/cover-removal-dto';
 import { toEditRecipeRequest } from '@infrastructure/recipes/edit/to-edit-recipe-request';
+import type { Page } from '@domain/common/page';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 
 /**
  * Implements `RecipeRepositoryInterface` against the Recipely backend. Handles
@@ -55,8 +57,8 @@ const RECIPE_PHOTO_FIELD = 'photo';
 export class RecipeRepository implements RecipeRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
-  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>> {
-    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
+  async listActiveRecipes(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.root, { params: toRecipeListQuery(filters) });
     if (!result.ok) {
       return result;
     }
@@ -64,15 +66,15 @@ export class RecipeRepository implements RecipeRepositoryInterface {
   }
 
   async listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.get<RecipesListDto>(ApiRoutes.recipes.trending, { params: { limit: limit ?? TRENDING_RECIPES_LIMIT } });
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.recipes.trending, { params: { limit: limit ?? TRENDING_RECIPES_LIMIT } });
     if (!result.ok) {
       return result;
     }
     return mapRecipeSummaries(result.value.items);
   }
 
-  async listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>> {
-    const result = await this.http.get<RecipesListDto>(ApiRoutes.me.recipes, { params: { page: page ?? FIRST_PAGE, pageSize: MY_RECIPES_PAGE_SIZE } });
+  async listMyRecipes(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>> {
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.recipes, { params: toPageQuery({ page, pageSize: MY_RECIPES_PAGE_SIZE }) });
     if (!result.ok) {
       return result;
     }

@@ -31,6 +31,9 @@ export const CREATORS_PAGE_SIZE = 20;
 /** A creator's recipes on their profile page; the backend caps pageSize at 100. */
 export const CREATOR_RECIPES_PAGE_SIZE = 20;
 
+/** The notifications badge only needs `unreadCount`, which comes with any page: one item is the cheapest ask. */
+export const UNREAD_PROBE_LIMIT = 1;
+
 /** Backend caps `limit` at 1–30. */
 export const TRENDING_RECIPES_LIMIT = 10;
 

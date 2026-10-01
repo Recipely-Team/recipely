@@ -1,6 +1,6 @@
 import { toCreatorPage } from '@infrastructure/creators/to-creator-page';
 import type { CreatorSummaryDto } from '@infrastructure/creators/dtos/creator-summary-dto';
-import type { CreatorsPageDto } from '@infrastructure/creators/dtos/creators-page-dto';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 const item = (id: string, overrides: Partial<CreatorSummaryDto> = {}): CreatorSummaryDto => ({
   id,
@@ -12,7 +12,7 @@ const item = (id: string, overrides: Partial<CreatorSummaryDto> = {}): CreatorSu
   ...overrides,
 });
 
-const page = (items: CreatorSummaryDto[], overrides: Partial<CreatorsPageDto> = {}): CreatorsPageDto => ({
+const page = (items: CreatorSummaryDto[], overrides: Partial<PageDto<CreatorSummaryDto>> = {}): PageDto<CreatorSummaryDto> => ({
   items,
   total: items.length,
   page: 1,

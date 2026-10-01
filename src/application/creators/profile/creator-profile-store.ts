@@ -54,7 +54,7 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
       if (requested !== generation) return;
       if (result.ok) {
         const { items, page, hasMore } = result.value;
-        set({ recipes: items, recipesState: { status: StoreStatus.Loaded, page, hasMore } });
+        set({ recipes: [...items], recipesState: { status: StoreStatus.Loaded, page, hasMore } });
       } else if (get().recipesState.status !== StoreStatus.Loaded) {
         set({ recipesState: { status: StoreStatus.Error, failure: result.failure } });
       }

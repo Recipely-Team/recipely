@@ -8,9 +8,9 @@ import type { UpsertDraftUseCase } from "@application/drafts/write/upsert-draft-
 import { UnknownFailure, type Failure } from "@core/failure";
 import type { Result } from "@core/result/result";
 import { fail, ok } from "@core/result/result-helpers";
-import type { PagedDrafts } from "@domain/drafts/paged-drafts";
 import type { RecipeDraft } from "@domain/drafts/recipe-draft";
 import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
+import type { Page } from '@domain/common/page';
 
 const makeDraft = (id: string): RecipeDraft => ({
   id,
@@ -22,15 +22,16 @@ const makeDraft = (id: string): RecipeDraft => ({
   updatedAt: new Date("2026-05-11T12:00:00.000Z"),
 });
 
-const makePage = (items: RecipeDraft[]): PagedDrafts => ({
+const makePage = (items: RecipeDraft[]): Page<RecipeDraft> => ({
   items,
   total: items.length,
   page: 1,
   pageSize: 20,
+  hasMore: false,
 });
 
 interface StubConfig {
-  listResult?: Result<PagedDrafts, Failure>;
+  listResult?: Result<Page<RecipeDraft>, Failure>;
   latestResult?: Result<RecipeDraft | null, Failure>;
   draftResult?: Result<RecipeDraft, Failure>;
   upsertResult?: Result<RecipeDraft, Failure>;

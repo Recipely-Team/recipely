@@ -7,6 +7,7 @@ import { ValueConstants } from '@core/constants';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
+import { UNREAD_PROBE_LIMIT } from '@infrastructure/constants/api/api-paging';
 
 interface NotificationsStoreDeps {
   listNotifications: ListNotificationsUseCase;
@@ -47,7 +48,7 @@ export const configureNotificationsStore = (
     refreshUnread: async () => {
       // Fetch the minimum page — the endpoint returns unreadCount regardless of
       // page size, so we only pay for one item to keep the badge fresh.
-      const result = await deps.listNotifications.execute({ limit: 1 });
+      const result = await deps.listNotifications.execute({ limit: UNREAD_PROBE_LIMIT });
       if (!result.ok) return;
       set({ unreadCount: result.value.unreadCount });
     },

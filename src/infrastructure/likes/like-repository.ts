@@ -5,10 +5,11 @@ import type { Failure } from '@core/failure';
 import type { LikeRepositoryInterface } from '@domain/likes/like-repository-interface';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import type { LikedRecipesResponse } from '@infrastructure/likes/liked-recipes-response';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { LIKED_RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 
 /** Implements `LikeRepositoryInterface` against the Recipely backend. */
 export class LikeRepository implements LikeRepositoryInterface {
@@ -27,7 +28,7 @@ export class LikeRepository implements LikeRepositoryInterface {
   }
 
   async listLiked(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.get<LikedRecipesResponse>(ApiRoutes.me.likes, {
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.likes, {
       params: toPageQuery({ pageSize: LIKED_RECIPES_PAGE_SIZE }),
     });
 

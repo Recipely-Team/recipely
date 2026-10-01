@@ -1291,6 +1291,21 @@ returns the backend's envelope (`total` / `page` / `hasMore`), and its mapper is
 covered by a test that asserts a requested page reaches the query — the test that was
 missing when this shipped.
 
+**One page shape.** `Page<T>` (`@domain/common/page`) is the only domain page,
+`PageDto<T>` (`@infrastructure/network/paging/page-dto`) the only wire envelope, and
+`toPage(dto, mapItem)` the only conversion — it derives `hasMore` from
+`page * pageSize < total` and skips an unreadable row (a list that must fail whole maps
+its items strictly first, then passes them through `toPage` with `ok`). Every list once
+had its own envelope (`RecipePage`, `CreatorPage`, `CommentPage`, `PagedDrafts` and their
+DTO twins) and they drifted — half carried `hasMore`, half made each caller recompute
+it. Page sizes are named constants in `infrastructure/constants/api/api-paging.ts`.
+**Every list screen pages on scroll** (`FlatList onEndReached`) through its store's
+paging — `PagedList<T>` + `PagedListLoader` (`application/diary/foods/paging/`) where
+the list fits it — never by loading one big page. **Enforced mechanically** by
+`check:structure` rule AK, judged by the body rather than the name (half the old
+envelopes were `*ListDto` / `*Response`): an exported interface or type whose own body
+names `total` and `pageSize` or `hasMore`, other than the generic two, fails the gate.
+
 ### Rule 23e
 
 **An ad needs a screen with something on it** — a placement may only sit on

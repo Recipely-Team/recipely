@@ -235,6 +235,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 23d. **A repository issues requests; it does not build them** — query params and bodies are DTOs from a
     `RequestMapper`; paging is a parameter, never a literal; list endpoints return the backend envelope
     (`total` / `page` / `hasMore`) with a mapper test proving the requested page reaches the query.
+    `Page<T>` / `PageDto<T>` / `toPage` are the only page shapes; lists page on scroll. `check:structure` rule AK
+    (any exported type whose body has `total` + `pageSize`/`hasMore`).
 23e. **An ad needs a screen with something on it** — placements only on the recipe feed; the web shell
     (`+html.tsx`) never loads an ad script; the one AdSense unit's loader comes via `mountAdsenseUnit`.
     `check:structure` rule T (placement allowlist).

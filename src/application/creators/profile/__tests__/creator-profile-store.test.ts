@@ -1,7 +1,6 @@
 import { ConflictFailure, NetworkFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import { StoreStatus } from '@application/store/store-status';
 import { configureCreatorProfileStore } from '@application/creators/profile/creator-profile-store';
 import { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
@@ -13,6 +12,8 @@ import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { recipeSummaryOf } from '@application/__fixtures__/recipe-summary-of';
 import { viewedProfileOf } from '@application/__fixtures__/viewed-profile-of';
 import { CREATOR_RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import type { Page } from '@domain/common/page';
+import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
 const storeOver = (repo: FakeUserProfileRepository) =>
   configureCreatorProfileStore({
@@ -80,7 +81,7 @@ describe('creator profile store', () => {
 
   it('drops the answer for a user that is no longer open', async () => {
     const repo = new FakeUserProfileRepository();
-    const slow = deferred<RecipePage>();
+    const slow = deferred<Page<RecipeSummaryEntity>>();
     repo.viewedAnswers = [ok(viewedProfileOf('u-1')), ok(viewedProfileOf('u-2'))];
     repo.recipeAnswers = [slow.promise, ok(recipePageOf([recipeSummaryOf('r-2')]))];
     const store = storeOver(repo);

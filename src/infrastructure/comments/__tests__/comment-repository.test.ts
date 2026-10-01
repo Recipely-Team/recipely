@@ -4,9 +4,9 @@ import type { Result } from '@core/result/result';
 import { CommentEntity } from '@domain/comments/comment-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
-import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 const validDto: CommentDto = {
   id: 'c1',
@@ -40,7 +40,7 @@ const makeHttp = (
   return { http: stub, calls };
 };
 
-const makePageDto = (items: CommentDto[]): CommentPageDto => ({
+const makePageDto = (items: CommentDto[]): PageDto<CommentDto> => ({
   items,
   total: items.length,
   page: 1,
