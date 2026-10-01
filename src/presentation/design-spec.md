@@ -3383,6 +3383,85 @@ toast "Goals updated"; everything recomputes immediately.
 Hit areas ≥ 44. Segmented controls `accessibilityRole="tab"` + selected. Date and calendar cells
 expose selected and a spoken label with kcal and status. Status = text + shape + colour.
 
+## Diary · Add food v2 (Oct 2026 — supersedes "Food Diary" §6)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(files `src/diary-sheets.jsx`, `src/diary-products.js`, `src/diary-data.js`, `src/diary.jsx`; Tweaks →
+Starting screen → `Diary · add food`, `Add food · search results`, `Add food · products tab`,
+`Add food · product (Ayran)`, `Add food · branded product`; all palettes, light + dark, Mobil + Web,
+EN + TR). Written per rule 28 step 3 from the prototype's RN spec. Everything listed comes from the
+backend (`/diary/foods/*`, backend #371 / #373), paged with `PageResult`; only unit words and labels
+are i18n. Built in `base/widgets/diary/add-food/`.
+
+### 1. Tokens
+
+No new colours; all from the active palette. Sheet `background`/`text`; secondary text, headings,
+kcal/100 `textMuted`; inputs `inputBackground` + `inputBorder`; segmented track, total box, variant
+list and Draft tag bg `surface` + hairline `cardBorder`; active segment / selected chip / radio
+`primary` + `primaryText`; row "+" disc, thumb tile, Quick add chip `chipBackground` / `chipText`;
+row separators `cardBorder`; skeleton `skeleton`; Draft tag border and unselected radio `border`.
+Radii: inputs/segments/lists `radii.lg` (12), total box `radii.xl` (16), chips pill, thumbs 10, tag 6.
+Measurements live in `diarySizes` (`pickBodyMinHeight` 360, `draftTag*`, `unitChipMinHeight` 40 /
+`unitChipMinHeightWeb` 36, `amountValueMinWidth` 96, `radio*` 20/10/2, `variantRowMinHeight` 44,
+`variantSegmentsMax` 4, `pickMessageCircle` 48, skeleton 5 rows at 58% / 36%).
+
+### 2. Layout
+
+- **Sheet:** shared `BottomSheet` (mobile bottom sheet, web centred dialog max 520) with
+  `scrollsItself` — each step owns its scroll so the paged `FlatList`s virtualise.
+- **Pick step:** search field 44 h (search icon, clear button once there is text; autofocus on the
+  web shell only, return key "Search"). While the query is empty, tabs **Recipes · Products · Recent ·
+  Quick add** (segmented, labels may wrap to 2 lines at line-height 1.15). Group heading 11 uppercase
+  muted. Pick row min 60 h: 44 thumb · name (+ Draft tag) · sub · optional "Open Food Facts" note ·
+  32 "+" disc; whole row is the target.
+  - Recipe sub `300 kcal · per serving`; curated product `3 variants · 38 kcal / 100 ml`; branded
+    `Ülker · 36 g · 530 kcal / 100 g`. Product tiles: drink → cup, food → plate, branded → box.
+- **Product step:** header (back unless editing, 52 thumb, name, branded brand line `Sütaş · 300 ml`,
+  `38 kcal / 100 ml · 30 September · Today`) · Variant (≤ 4 segmented, > 4 radio list with kcal/100)
+  · total box · Amount (unit chips `1 bardak · 200 ml` … then `ml`/`g`; `= 400 ml` left of a stepper
+  44 −/+ with a 17/800 value) · meal picker · branded source note · footer `Add to diary · 76 kcal`
+  (edit: Remove + Save changes).
+  - Steps: serving units 0.5 (min 0.5), `ml` 50, `g` 10, max 5000. To the base unit the amount is
+    converted and snapped; to a serving unit it restarts at 1. Default: first serving unit × 1, else
+    100 of the base unit.
+- **Recipe detail step:** unchanged from v1.
+
+### 3. Search and paging
+
+Debounce 300 ms (clearing is immediate); an older query's answer never replaces a newer one. Groups,
+in order: **Saved · My recipes** (drafts tagged) **· Products · Recipes**; each group pages via
+`group=`. The Recipes tab without a query lists Saved · My recipes · From Recipely unfiltered
+(#373) and dedupes on the client, Saved first. Every list (groups, shelves, a shelf's products,
+recent) loads its next page on scroll.
+
+### 4. States
+
+| State | Shows |
+|---|---|
+| First page loading | 5 skeleton rows, body min height 360 |
+| Loading more | row with spinner + "Loading more…" under the group being paged |
+| Next page failed | inline "Try again" row |
+| No results | search disc, `No results for “x”`, hint, chip "Quick add" (opens it with the name) |
+| Error | same layout, "Couldn't load results" + "Try again" |
+| Recent empty | "Foods you log will show up here." |
+| Products tab | shelf chips ("All" first, paged) + "Foods & drinks" rows |
+| Product loading / failed | skeleton / error with retry |
+
+Diary rows for product entries read `Ayran · Az yağlı` with portion `1,5 bardak` / `250 ml`. Unit words
+(EN pluralises, TR does not): glass, teaGlass, can, bottle, slice, piece, pack, tbsp, medium,
+portion; an unknown key shows its amount in g/ml.
+
+### 5. Departures from the prototype
+
+1. **Variant sub line:** the backend lists one product row per variant, so a row shows that
+   variant's kcal / 100 rather than the range across variants.
+2. **Products tab is curated only:** `/diary/foods/products` has no branded packs, so the tab has no
+   "Packaged" group; Open Food Facts packs come from search only.
+3. **Editing a product entry** keeps its variant and unit and changes the quantity only — the API
+   rescales `servings` and nothing else.
+4. **Paging trigger:** `FlatList onEndReached` on mobile and web alike, not an IntersectionObserver
+   sentinel; it pages the first group (in display order) that still has more.
+
 ## Creators (Sept 2026)
 
 **Source of truth:** the Claude Design canvas **Recipely Creators**
