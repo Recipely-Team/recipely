@@ -46,6 +46,13 @@ describe('CreatorsScreen', () => {
     );
   });
 
+  // The Chefs tab is a root tab: the tab bar takes the user elsewhere, so there is no back button.
+  it('has no back button', () => {
+    const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([creatorSummaryOf('1')]) });
+
+    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.back && typeof n.props.onPress === 'function')).toHaveLength(0);
+  });
+
   it('says there are none yet when the list is empty', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([]) });
 

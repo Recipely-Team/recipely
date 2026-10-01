@@ -7,7 +7,6 @@ import { RoutePaths } from '@presentation/base/constants';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { autoFillColumns } from '@presentation/base/widgets/creators/auto-fill-columns';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
-import { useCreatorsBack } from '@presentation/app/creators/shared/hooks/use-creators-back';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
 
@@ -23,7 +22,6 @@ import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/u
  */
 export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const router = useRouter();
-  const onBack = useCreatorsBack();
   const { width, isExpanded } = useLayout();
   const { creatorsStore } = useStores();
   const creators = creatorsStore((s) => s.creators);
@@ -65,6 +63,5 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
     onRefresh,
     onEndReached: () => void loadMore(),
     onOpenCreator,
-    onBack,
   };
 };

@@ -15,5 +15,4 @@ export interface UseCreatorsScreenResult {
   onRefresh: () => void;
   onEndReached: () => void;
   onOpenCreator: (id: string) => void;
-  onBack: () => void;
 }

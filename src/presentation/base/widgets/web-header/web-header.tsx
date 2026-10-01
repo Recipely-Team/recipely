@@ -10,6 +10,8 @@ import { t, useLocale } from '@presentation/i18n';
 import { WebHeaderLogo } from '@presentation/base/widgets/web-header/web-header-logo';
 import { WebHeaderTabs } from '@presentation/base/widgets/web-header/web-header-tabs';
 import { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
+import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
+import { TabIconFamily } from '@presentation/base/widgets/navigation/tab-icon-family';
 import { WebHeaderSearch } from '@presentation/base/widgets/web-header/web-header-search';
 import { WebHeaderActions } from '@presentation/base/widgets/web-header/web-header-actions';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -19,13 +21,14 @@ const HEADER_HEIGHT = 68;
 
 /**
  * Maps the current pathname to a top-level tab key so sub-pages
- * (e.g. /recipes/[id], /create-recipe) keep the parent tab highlighted.
+ * (e.g. /recipes/[id], /create-recipe, /creators/[id]) keep the parent tab highlighted.
  */
 const resolveActiveTab = (pathname: string): WebHeaderTabKey | null => {
   if (pathname.startsWith('/my-recipes') || pathname.startsWith('/create-recipe')) {
     return 'myRecipes';
   }
   if (pathname.startsWith('/recipes')) return 'recipes';
+  if (pathname.startsWith(RoutePaths.creators)) return 'chefs';
   if (pathname.startsWith(RoutePaths.diary)) return 'diary';
   return null;
 };
@@ -51,22 +54,11 @@ export const WebHeader = (): React.JSX.Element => {
   const activeTab = resolveActiveTab(pathname);
   const isProfileActive = isProfileRoute(pathname);
 
-  const tabs = [
-    {
-      key: 'recipes' as const,
-      label: t().recipes.title,
-      icon: 'restaurant-outline' as const,
-    },
-    {
-      key: 'myRecipes' as const,
-      label: t().myRecipes.title,
-      icon: 'bookmark-outline' as const,
-    },
-    {
-      key: 'diary' as const,
-      label: t().navigation.diary,
-      icon: 'calendar-outline' as const,
-    },
+  const tabs: TabItem<WebHeaderTabKey>[] = [
+    { key: 'recipes', label: t().recipes.title, icon: { family: TabIconFamily.Ionicons, name: 'restaurant-outline' } },
+    { key: 'myRecipes', label: t().myRecipes.title, icon: { family: TabIconFamily.Ionicons, name: 'bookmark-outline' } },
+    { key: 'chefs', label: t().navigation.chefs, icon: { family: TabIconFamily.Material, name: 'chef-hat' } },
+    { key: 'diary', label: t().navigation.diary, icon: { family: TabIconFamily.Ionicons, name: 'calendar-outline' } },
   ];
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
@@ -79,6 +71,7 @@ export const WebHeader = (): React.JSX.Element => {
   const goTab = (key: WebHeaderTabKey): void => {
     if (key === WebHeaderTabKey.Recipes) router.replace(RoutePaths.recipes);
     else if (key === WebHeaderTabKey.Diary) router.replace(RoutePaths.diary);
+    else if (key === WebHeaderTabKey.Chefs) router.replace(RoutePaths.creators);
     else router.replace(RoutePaths.myRecipes);
   };
   const goCreate = (): void => router.push(RoutePaths.createRecipe);

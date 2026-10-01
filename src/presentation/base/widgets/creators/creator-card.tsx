@@ -52,7 +52,7 @@ const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.
         name={creator.displayName}
         photoUrl={creator.photoUrl}
         platform={creator.creator.platform}
-        size={avatarSizes.creatorStrip}
+        size={avatarSizes.creatorCard}
         markSize={creatorMarkGeometry.avatar}
         groundColor={colors.cardBackground}
       />

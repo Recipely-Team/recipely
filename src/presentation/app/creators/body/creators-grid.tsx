@@ -5,13 +5,12 @@ import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-enti
 import { ValueConstants } from '@core/constants';
 import { ListConstants } from '@presentation/base/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { fontSizes, lineHeights, spacing } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
-import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { CreatorCard } from '@presentation/base/widgets/creators/creator-card';
-import { useLayout } from '@presentation/base/responsive/use-layout';
+import { ChefsEmpty } from '@presentation/app/creators/items/chefs-empty';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
@@ -25,14 +24,12 @@ export interface CreatorsGridProps {
 const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
 
 /**
- * The /creators body, by list state: a spinner before the first answer, the
- * error with a retry, an empty note, or the card grid with the subtitle above it
- * (13 on a phone, 15 on the web).
+ * The Chefs tab's body under its heading, by list state: a spinner before the
+ * first answer, the error with a retry, the chef-hat empty state, or the card grid.
  * Every settled branch is pull-to-refresh.
  */
 export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { isWebShell } = useLayout();
   const { listState, onOpenCreator, cellWidth, gap } = vm;
   const renderItem = useCallback(
     ({ item }: { item: CreatorSummaryEntity }) => (
@@ -45,17 +42,6 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
   const refreshControl = (
     <RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} tintColor={colors.textMuted} colors={[colors.primary]} />
   );
-  const intro = (
-    <SizedText
-      size={isWebShell ? fontSizes.body : fontSizes.caption}
-      ratio={lineHeights.normal}
-      color={colors.textSubtle}
-      style={styles.intro}
-    >
-      {t().creators.listSubtitle}
-    </SizedText>
-  );
-
   switch (listState.status) {
     case StoreStatus.Idle:
     case StoreStatus.Loading:
@@ -81,10 +67,7 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
       if (vm.creators.length === ValueConstants.zero) {
         return (
           <ScrollView {...scrollable} contentContainerStyle={styles.emptyContent} refreshControl={refreshControl}>
-            {intro}
-            <SizedText size={fontSizes.body} color={colors.textSubtle} style={styles.empty}>
-              {t().creators.empty}
-            </SizedText>
+            <ChefsEmpty />
           </ScrollView>
         );
       }
@@ -96,7 +79,6 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
           keyExtractor={keyOf}
           numColumns={vm.columns}
           renderItem={renderItem}
-          ListHeaderComponent={intro}
           columnWrapperStyle={{ gap }}
           contentContainerStyle={[styles.content, { gap }]}
           refreshControl={refreshControl}
@@ -117,9 +99,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  intro: {
-    paddingBottom: spacing.lg,
-  },
   content: {
     paddingHorizontal: CreatorsGridMetrics.gutter,
     paddingBottom: spacing.xxl,
@@ -127,9 +106,5 @@ const styles = StyleSheet.create({
   emptyContent: {
     flexGrow: ValueConstants.one,
     paddingHorizontal: CreatorsGridMetrics.gutter,
-  },
-  empty: {
-    textAlign: 'center',
-    paddingVertical: spacing.xxxl,
   },
 });

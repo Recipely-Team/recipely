@@ -12,4 +12,8 @@ export const CreatorsGridMetrics = {
   minCardWidthExpanded: scale(180),
   /** Each side of the grid. */
   gutter: spacing.lg,
+  /** Above the web h1, under the header. */
+  webTopPadding: scale(40),
+  /** Under the web subtitle, before the grid. */
+  webSubtitleGap: scale(28),
 } as const;

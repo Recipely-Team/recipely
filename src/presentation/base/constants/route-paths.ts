@@ -36,7 +36,7 @@ export const RoutePaths = {
   profile: '/profile',
   editProfile: '/edit-profile',
   settings: '/settings',
-  /** Every approved creator, as cards; the Explore strip's "See all". */
+  /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
   /** One creator's public page; open to guests. */

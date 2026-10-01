@@ -1,6 +1,7 @@
 export const WebHeaderTabKey = {
   Recipes: 'recipes',
   MyRecipes: 'myRecipes',
+  Chefs: 'chefs',
   Diary: 'diary',
 } as const;
 

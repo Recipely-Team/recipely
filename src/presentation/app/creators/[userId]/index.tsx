@@ -12,8 +12,8 @@ import { ListState } from '@presentation/base/hooks/assistant/args/describing/li
 import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
-import { CreatorsPageHeader } from '@presentation/app/creators/shared/body/creators-page-header';
-import { CreatorsRoundButton } from '@presentation/app/creators/shared/body/creators-round-button';
+import { CreatorsPageHeader } from '@presentation/app/creators/[userId]/body/creators-page-header';
+import { CreatorsRoundButton } from '@presentation/app/creators/[userId]/body/creators-round-button';
 import { useCreatorProfile } from '@presentation/app/creators/[userId]/hooks/use-creator-profile';
 import { CreatorProfileBody } from '@presentation/app/creators/[userId]/body/creator-profile-body';
 import { t } from '@presentation/i18n';
@@ -53,6 +53,7 @@ export const CreatorProfileScreen = (): React.JSX.Element => {
       <ResponsiveContainer route="creatorProfile" gutter={false} fill>
         <CreatorsPageHeader
           onBack={vm.onBack}
+          backLabel={t().creators.backToChefs}
           trailing={loaded !== null ? <CreatorsRoundButton icon="share-outline" label={t().creators.share} onPress={vm.onShare} /> : null}
         />
         <CreatorProfileBody vm={vm} scrollable={scrollable} />
