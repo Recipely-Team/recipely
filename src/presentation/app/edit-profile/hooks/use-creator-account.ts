@@ -4,7 +4,6 @@ import { StoreStatus } from '@application/store/store-status';
 import type { Failure } from '@core/failure';
 import { CharConstants } from '@core/constants';
 import { CreatorHandle } from '@domain/creators/creator-handle';
-import { CreatorHandleRules } from '@domain/creators/creator-handle-rules';
 import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
@@ -80,9 +79,7 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
       setError(null);
     },
     onChangeHandle: (value) => {
-      // The field shows a fixed `@`, so a pasted "@name" or "my name" loses the `@` and the spaces.
-      const typed = value.split(CharConstants.space).join(CharConstants.empty);
-      setHandle(typed.startsWith(CreatorHandleRules.Prefix) ? typed.slice(CreatorHandleRules.Prefix.length) : typed);
+      setHandle(CreatorHandle.sanitizeInput(value));
       setError(null);
     },
     onSubmit: () => {

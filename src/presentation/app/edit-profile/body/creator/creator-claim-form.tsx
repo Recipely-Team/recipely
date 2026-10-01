@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, TextInput, View } from 'react-native';
+import { CreatorHandle } from '@domain/creators/creator-handle';
 import { CreatorHandleRules } from '@domain/creators/creator-handle-rules';
 import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -42,8 +43,8 @@ export const CreatorClaimForm = (props: CreatorClaimFormProps): React.JSX.Elemen
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
   const [focused, setFocused] = useState(false);
-  const { Min, Max } = CreatorHandleRules.Length[props.platform];
-  const longEnough = props.handle.trim().length >= Min;
+  const { Max } = CreatorHandleRules.Length[props.platform];
+  const longEnough = CreatorHandle.meetsMinimum(props.handle, props.platform);
   const fieldBorder = props.error !== null ? danger.icon : focused ? colors.inputBorderFocused : colors.inputBorder;
 
   return (

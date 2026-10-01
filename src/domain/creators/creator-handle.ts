@@ -1,4 +1,5 @@
 import { BaseValueObject } from '@core/value-object/base-value-object';
+import { CharConstants } from '@core/constants';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ErrorMessageKey, ValidationFailure } from '@core/failure';
@@ -45,6 +46,20 @@ export class CreatorHandle extends BaseValueObject<string> {
       ? trimmed.slice(CreatorHandleRules.Prefix.length)
       : trimmed;
     return bare.toLowerCase();
+  }
+
+  /**
+   * What the handle field keeps of a keystroke or a paste: no spaces and no
+   * leading `@` — the field draws its own `@`. Case is left for `normalize`.
+   */
+  static sanitizeInput(raw: string): string {
+    const typed = raw.split(CharConstants.space).join(CharConstants.empty);
+    return typed.startsWith(CreatorHandleRules.Prefix) ? typed.slice(CreatorHandleRules.Prefix.length) : typed;
+  }
+
+  /** Whether a handle is long enough to send for review on its platform — the form's Submit gate. */
+  static meetsMinimum(raw: string, platform: CreatorPlatformType): boolean {
+    return CreatorHandle.normalize(raw).length >= CreatorHandleRules.Length[platform].Min;
   }
 
   /** `@handle`, the way both platforms print an account. */
