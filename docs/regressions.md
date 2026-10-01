@@ -19,6 +19,22 @@ Keep this file short. If a row stops teaching anything, delete it.
 
 ---
 
+## Data sources
+
+**A search that only looked at what the phone had already loaded.**
+The diary's Add food sheet (and the assistant's `logFood` / `searchFood`) filtered the
+recipe stores already in memory — my recipes, saved, the loaded feed — so a recipe the
+user created a minute ago, or one beyond the feed's first page, could not be found.
+*Guard:* the sheet and the assistant search the server (`GET /diary/foods/search`
+through `foodSearchStore` / `SearchFoodsUseCase`); the client-side matchers were
+deleted, so there is nothing local left to filter. Covered in
+`add-food-pick-step.test.tsx` and `use-assistant-diary-actions.test.tsx`.
+
+*The class:* **a list that answers "what exists" must come from the source of truth,
+paged — never from a snapshot another screen happened to load.**
+
+---
+
 ## Async UI
 
 **A response arriving out of order overwrote a newer one.**

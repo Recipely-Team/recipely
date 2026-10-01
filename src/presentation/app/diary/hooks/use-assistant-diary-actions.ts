@@ -5,12 +5,12 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { CharConstants } from '@core/constants';
+import { FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
-import { useRecipeFoodSources } from '@presentation/base/hooks/diary/use-recipe-food-sources';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
@@ -50,9 +50,8 @@ const SEARCH_ANSWER_LIMIT = 5;
  *   the numbers, or a snake_case reason it can act on.
  */
 export const useAssistantDiaryActions = ({ view, selected, today, select, sheets }: AssistantDiaryActionsDeps): void => {
-  const { diaryStore } = useStores();
+  const { diaryStore, searchFoods } = useStores();
   const locale = useLocale();
-  const sources = useRecipeFoodSources();
 
   useAssistantScreenContent(() => diaryScreenLine(view, selected, today));
   useAssistantScreenReading(() => diaryDayReading(view, selected, today, locale));
@@ -91,18 +90,20 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         const query = (arg ?? CharConstants.empty).trim();
         if (query.length === 0) return { ok: false, error: 'nothing_to_search' };
         sheets.openSearch(query);
-        const matches = rankByName(buildFoodCandidates(sources, diaryStore.getState().recent), (c) => c.name, query);
+        const found = await searchFoods.execute(query, FOOD_SEARCH_PAGE_SIZE);
+        if (!found.ok) return { ok: false, error: failureReason(found.failure) };
+        const matches = rankByName(buildFoodCandidates(found.value, diaryStore.getState().recent), (c) => c.name, query);
         if (matches.length === 0) return { ok: true, title: 'no matches', n: { matches: 0 } };
         return {
           ok: true,
           n: { matches: matches.length },
           title: matches
             .slice(0, SEARCH_ANSWER_LIMIT)
-            .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal per serving, ${c.source}`)
+            .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal ${c.per}, ${c.source}`)
             .join(SCREEN_PART_SEPARATOR),
         };
       },
-      [diaryStore, sheets, sources],
+      [diaryStore, searchFoods, sheets],
     ),
   );
 

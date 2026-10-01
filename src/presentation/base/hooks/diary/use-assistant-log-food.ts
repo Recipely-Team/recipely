@@ -6,13 +6,16 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { defaultMealForHour } from '@domain/diary/entry/default-meal-for-hour';
 import { LoggableFood } from '@domain/diary/entry/loggable-food';
+import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
+import type { MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
 import { Nutrients } from '@domain/diary/nutrition/nutrients';
+import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
+import { FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
-import { useRecipeFoodSources } from '@presentation/base/hooks/diary/use-recipe-food-sources';
-import { useRecipeFoodLoader } from '@presentation/base/hooks/diary/use-recipe-food-loader';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
+import type { FoodCandidate } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
@@ -33,46 +36,61 @@ interface AssistantLogFoodOptions {
   signedIn: boolean;
 }
 
+/** A resolved food: its name, and how to log `servings` of it. */
+interface ResolvedFood {
+  name: string;
+  entryFor: (date: CalendarDate, meal: MealSlotType, servings: Servings) => NewFoodLogEntry;
+}
+
+const asResolved = (food: LoggableFood): ResolvedFood => ({ name: food.name, entryFor: (date, meal, servings) => food.entryFor(date, meal, servings) });
+
+/** A candidate as something to log; a product's "servings" count its default amount (1 glass, or 100 g). */
+const fromCandidate = (candidate: FoodCandidate): ResolvedFood => {
+  if (candidate.kind === 'food') return asResolved(candidate.food);
+  const product = candidate.product;
+  const base = product.defaultQuantity();
+  return {
+    name: product.name,
+    entryFor: (date, meal, servings) => product.entryFor(date, meal, FoodQuantity.of(base.unit, base.value * servings.value)),
+  };
+};
+
 /**
  * `logFood` (docs/diary-assistant-contract.md): resolve the food, the amount,
  * the meal and the day, then log it through the store like the sheet does.
  *
  * @remarks
- * - **A name is matched, not trusted.** The user's recipes, saved ones, the
- *   loaded feed and recent foods are ranked by name; the best one's own
- *   nutrition is used. Only when nothing matches do the model's numbers make a
- *   quick-add food — and with no numbers the call is sent back asking for them.
+ * - **A name is searched on the server**, as the Add food sheet does — the
+ *   user's saved and own recipes (drafts too), catalogue products and
+ *   everyone's recipes — then ranked with the recent foods by name.
  * - **The model's numbers beat a loose match.** When it sent calories it was
  *   estimating a generic food, so only an exact name may override them —
- *   "bread" must not log the feed's "Banana Bread".
+ *   "bread" must not log "Banana Bread".
  * - **Every value goes through the domain** (`Servings.create`,
  *   `Nutrients.create`, `LoggableFood.quickAdd`, `CalendarDate`), so the model
  *   is refused exactly what the Add food sheet would refuse.
  */
 export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, signedIn }: AssistantLogFoodOptions): void => {
-  const { diaryStore } = useStores();
-  const sources = useRecipeFoodSources();
-  const loader = useRecipeFoodLoader();
+  const { diaryStore, searchFoods } = useStores();
 
   const resolveFood = useCallback(
-    async (args: LogFoodArgs): Promise<LoggableFood | string> => {
+    async (args: LogFoodArgs): Promise<ResolvedFood | string> => {
       const name = args.name;
-      if (name === null) return openRecipeFood ?? DiaryArgError.MissingName;
+      if (name === null) return openRecipeFood === null ? DiaryArgError.MissingName : asResolved(openRecipeFood);
       const exactOnly = args.perServing !== null;
       const pick = <T extends { name: string }>(items: readonly T[]): T | undefined =>
         rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
-      const openMatch = pick(openRecipeFood === null ? [] : [{ name: openRecipeFood.name, food: openRecipeFood }]);
-      if (openMatch !== undefined) return openMatch.food;
-      const best = pick(buildFoodCandidates(sources, diaryStore.getState().recent));
-      if (best?.kind === 'food') return best.food;
-      if (best?.kind === 'recipe') return (await loader.open(best.recipe.id)) ?? DiaryArgError.RecipeNotLoaded;
-      if (args.perServing === null) return DiaryArgError.UnknownFood;
+      if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
+      const found = await searchFoods.execute(name, FOOD_SEARCH_PAGE_SIZE);
+      const best = pick(buildFoodCandidates(found.ok ? found.value : null, diaryStore.getState().recent));
+      if (best !== undefined) return fromCandidate(best);
+      if (args.perServing === null) return found.ok ? DiaryArgError.UnknownFood : failureReason(found.failure);
       const nutrients = Nutrients.create(args.perServing);
       if (!nutrients.ok) return failureReason(nutrients.failure);
       const quick = LoggableFood.quickAdd(name, nutrients.value);
-      return quick.ok ? quick.value : failureReason(quick.failure);
+      return quick.ok ? asResolved(quick.value) : failureReason(quick.failure);
     },
-    [diaryStore, loader, openRecipeFood, sources],
+    [diaryStore, openRecipeFood, searchFoods],
   );
 
   useAssistantAction(
@@ -95,9 +113,10 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
         const result = await diaryStore.getState().addEntry(entry);
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
         onLogged(date.value);
+        const amount = entry.product === null ? `${servings.value.value} serving(s)` : `${entry.servings} ${entry.product.unitKey}`;
         return {
           ok: true,
-          title: `Logged ${servings.value.value} serving(s) of ${food.name} to ${meal} on ${date.value.value}, ${Math.round(entry.nutrients.calories)} kcal`,
+          title: `Logged ${amount} of ${food.name} to ${meal} on ${date.value.value}, ${Math.round(entry.nutrients.calories)} kcal`,
         };
       },
       [defaultDate, diaryStore, onLogged, resolveFood, signedIn],

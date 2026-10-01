@@ -1,23 +1,20 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { MealSlotType } from '@domain/diary/meal-slot';
-import { ValueConstants } from '@core/constants';
-import { useStores } from '@presentation/bootstrap/use-stores';
-import { useRecipeFoodSources } from '@presentation/base/hooks/diary/use-recipe-food-sources';
-import { useRecipeFoodLoader } from '@presentation/base/hooks/diary/use-recipe-food-loader';
-import { SuffixField } from '@presentation/base/widgets/diary/suffix-field';
+import type { FoodProduct } from '@domain/diary/foods/product/food-product';
+import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
-import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { PickListHeading } from '@presentation/base/widgets/diary/add-food/pick/pick-list-heading';
-import { RecipeFoodRows } from '@presentation/base/widgets/diary/add-food/pick/recipe-food-rows';
-import { RecentFoodRows } from '@presentation/base/widgets/diary/add-food/pick/recent-food-rows';
+import { FoodSearchField } from '@presentation/base/widgets/diary/add-food/pick/food-search-field';
+import { SearchResultsBody } from '@presentation/base/widgets/diary/add-food/pick/search-results-body';
+import { ProductsTabBody } from '@presentation/base/widgets/diary/add-food/pick/products-tab-body';
+import { RecentTabBody } from '@presentation/base/widgets/diary/add-food/pick/recent-tab-body';
 import { QuickAddFormView } from '@presentation/base/widgets/diary/add-food/pick/quick-add-form-view';
-import { buildRecipeFoodGroups } from '@presentation/base/widgets/diary/add-food/search/build-recipe-food-groups';
-import { matchesFoodQuery } from '@presentation/base/widgets/diary/add-food/search/matches-food-query';
-import { FoodSourceTab, type FoodSourceTabType } from '@presentation/base/widgets/diary/add-food/search/food-source-tab';
-import { fontSizes, spacing } from '@presentation/base/theme';
-import { t, useLocale } from '@presentation/i18n';
+import { PickTab, type PickTabType } from '@presentation/base/widgets/diary/add-food/list/pick-tab';
+import { diarySizes, spacing } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
 
 export interface AddFoodPickStepProps {
   /** What the search field opens with; a new value replaces what was typed. */
@@ -25,95 +22,88 @@ export interface AddFoodPickStepProps {
   meal: MealSlotType;
   isSubmitting: boolean;
   onChoose: (food: LoggableFood) => void;
+  onChooseProduct: (product: FoodProduct) => void;
+  onChooseRecent: (recent: RecentFood) => void;
   onQuickAdd: (food: LoggableFood, meal: MealSlotType) => void;
 }
 
 /**
- * The Add food sheet's first step: search, then Recipes · Recent · Quick add
- * (design spec → Food Diary §6). Typing replaces the tabs with one "Results"
- * list over recipes and recent foods alike.
+ * The Add food sheet's first step (Add food v2 spec §2–§4): a search over
+ * the server's recipes and products, and — while the box is empty — the
+ * Recipes · Products · Recent · Quick add tabs. Everything listed comes from
+ * the backend, page by page.
+ *
+ * @remarks
+ * - **Typing on Quick add leaves it**: the results replace the tabs, and
+ *   clearing the box brings back Recipes.
+ * - **No results offers Quick add** with the query as the name.
  */
-export const AddFoodPickStep = ({ initialQuery, meal, isSubmitting, onChoose, onQuickAdd }: AddFoodPickStepProps): React.JSX.Element => {
-  const locale = useLocale();
+export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element => {
+  const { initialQuery, meal, isSubmitting } = props;
   const strings = t().diary;
-  const { diaryStore } = useStores();
-  const recent = diaryStore((s) => s.recent);
-  const sources = useRecipeFoodSources();
-  const loader = useRecipeFoodLoader();
   const [query, setQuery] = useState(initialQuery);
   const [seenQuery, setSeenQuery] = useState(initialQuery);
+  const [tab, setTab] = useState<PickTabType>(PickTab.Recipes);
+  const [quickName, setQuickName] = useState(CharConstants.empty);
   if (initialQuery !== seenQuery) {
     setSeenQuery(initialQuery);
     setQuery(initialQuery);
   }
-  const [tab, setTab] = useState<FoodSourceTabType>(FoodSourceTab.Recipes);
+  useFoodSearchQuery(query);
+  const trimmed = query.trim();
+  const isSearching = trimmed.length > ValueConstants.zero;
 
-  useEffect(() => {
-    void diaryStore.getState().loadRecent();
-  }, [diaryStore]);
-
-  const groups = useMemo(() => buildRecipeFoodGroups(sources, query, locale), [sources, query, locale]);
-  const isSearching = query.trim().length > ValueConstants.zero;
-  const recentMatches = recent.filter((food) => matchesFoodQuery(food.name, query, locale));
-  const recipeMatches = groups.flatMap((group) => group.recipes);
-
-  const empty = (message: string): React.JSX.Element => (
-    <SizedText size={fontSizes.medium} muted style={styles.empty}>
-      {message}
-    </SizedText>
-  );
+  const onChangeQuery = (text: string): void => {
+    setQuery(text);
+    if (text.trim().length > ValueConstants.zero && tab === PickTab.QuickAdd) setTab(PickTab.Recipes);
+  };
 
   const body = (): React.JSX.Element => {
-    if (isSearching) {
-      if (recipeMatches.length + recentMatches.length === ValueConstants.zero) return empty(strings.noResults);
+    if (isSearching || tab === PickTab.Recipes) {
       return (
-        <>
-          <PickListHeading title={strings.results} />
-          <RecipeFoodRows recipes={recipeMatches} loader={loader} onChoose={onChoose} />
-          <RecentFoodRows foods={recentMatches} onChoose={onChoose} />
-        </>
+        <SearchResultsBody
+          query={isSearching ? trimmed : CharConstants.empty}
+          onChoose={props.onChoose}
+          onChooseProduct={props.onChooseProduct}
+          onQuickAdd={() => {
+            setQuickName(trimmed);
+            setQuery(CharConstants.empty);
+            setTab(PickTab.QuickAdd);
+          }}
+        />
       );
     }
     switch (tab) {
-      case FoodSourceTab.Recipes:
-        if (groups.length === ValueConstants.zero) return empty(strings.recipesEmpty);
-        return (
-          <>
-            {groups.map((group) => (
-              <View key={group.key}>
-                <PickListHeading title={group.title} />
-                <RecipeFoodRows recipes={group.recipes} loader={loader} onChoose={onChoose} />
-              </View>
-            ))}
-          </>
-        );
-      case FoodSourceTab.Recent:
-        return recent.length === ValueConstants.zero ? empty(strings.recentEmpty) : <RecentFoodRows foods={recent} onChoose={onChoose} />;
-      case FoodSourceTab.QuickAdd:
-        return <QuickAddFormView initialMeal={meal} isSubmitting={isSubmitting} onSubmit={onQuickAdd} />;
+      case PickTab.Products:
+        return <ProductsTabBody onChooseProduct={props.onChooseProduct} />;
+      case PickTab.Recent:
+        return <RecentTabBody onChooseRecent={props.onChooseRecent} />;
+      case PickTab.QuickAdd:
+        return <QuickAddFormView key={quickName} initialMeal={meal} initialName={quickName} isSubmitting={isSubmitting} onSubmit={props.onQuickAdd} />;
     }
   };
 
   return (
     <View style={styles.stack}>
-      <SuffixField value={query} onChangeText={setQuery} accessibilityLabel={strings.searchPlaceholder} placeholder={strings.searchPlaceholder} />
+      <FoodSearchField value={query} onChangeText={onChangeQuery} />
       {isSearching ? null : (
         <SegmentedTabs
           options={[
-            { key: FoodSourceTab.Recipes, label: strings.tabRecipes },
-            { key: FoodSourceTab.Recent, label: strings.tabRecent },
-            { key: FoodSourceTab.QuickAdd, label: strings.tabQuickAdd },
+            { key: PickTab.Recipes, label: strings.tabRecipes },
+            { key: PickTab.Products, label: strings.tabProducts },
+            { key: PickTab.Recent, label: strings.tabRecent },
+            { key: PickTab.QuickAdd, label: strings.tabQuickAdd },
           ]}
           value={tab}
           onChange={setTab}
         />
       )}
-      <View>{body()}</View>
+      <View style={styles.body}>{body()}</View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
-  stack: { gap: spacing.md },
-  empty: { paddingVertical: spacing.xl, textAlign: 'center' },
+  stack: { gap: spacing.md, flexShrink: ValueConstants.one },
+  body: { minHeight: diarySizes.pickBodyMinHeight, flexShrink: ValueConstants.one },
 });

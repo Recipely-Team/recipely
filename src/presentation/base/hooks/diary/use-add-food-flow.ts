@@ -1,106 +1,114 @@
 import { useCallback, useState } from 'react';
-import type { LoggableFood } from '@domain/diary/entry/loggable-food';
+import { StoreStatus } from '@application/store/store-status';
 import { Servings } from '@domain/diary/entry/servings';
-import { MealSlot, type MealSlotType } from '@domain/diary/meal-slot';
+import { MealSlot } from '@domain/diary/meal-slot';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
+import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
-import { mealLabel } from '@presentation/base/utils/diary/meal-label';
+import { useAddFoodWrites } from '@presentation/base/hooks/diary/use-add-food-writes';
+import { useProductStep } from '@presentation/base/hooks/diary/use-product-step';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import type { AddFoodFlow } from '@presentation/base/widgets/diary/add-food/state/add-food-flow';
 import type { AddFoodState } from '@presentation/base/widgets/diary/add-food/state/add-food-state';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
+import { ProductChoiceKind } from '@presentation/base/widgets/diary/add-food/state/product/product-choice-kind';
 import { initialAddFoodState } from '@presentation/base/widgets/diary/add-food/state/initial-add-food-state';
-import { t } from '@presentation/i18n';
+
+/** The state before the sheet was ever opened; nothing renders from it. */
+const CLOSED: AddFoodState = { date: CalendarDate.today(), meal: MealSlot.Breakfast, canGoBack: false, step: AddFoodStep.Pick };
 
 /**
- * The Add food sheet's state machine: pick → detail, the stepper, the meal,
- * and the add / save / remove writes.
+ * The Add food sheet's state machine: pick → a recipe's servings or a
+ * product's variant and amount, the meal, and the add / save / remove writes.
  *
  * @remarks
  * - **Reset while rendering, not in an effect.** A new request replaces the
  *   state in the same render it arrives in, so the sheet never paints one
  *   frame of the previous food. A `null` request (the sheet closing) keeps the
  *   state, so the exit animation still shows what was on screen.
- * - **Outcomes are toasts** (design spec §6): the sheet closes on success, and
- *   a failure keeps it open with the failure's own copy.
- * - `onOpenDiary` is passed only from outside the diary; the success toast
- *   then offers a "Diary" action.
+ * - **A listed product is fetched by the catalogue store**; the step reads
+ *   it through `useProductStep`, so a late answer for another row never shows.
+ * - **Steppers use functional updates**: two quick taps in one render both count.
  */
-export const useAddFoodFlow = (
-  request: AddFoodRequest | null,
-  onClose: () => void,
-  onOpenDiary: (() => void) | undefined,
-): AddFoodFlow => {
-  const { diaryStore } = useStores();
+export const useAddFoodFlow = (request: AddFoodRequest | null, onClose: () => void, onOpenDiary: (() => void) | undefined): AddFoodFlow => {
+  const { foodCatalogStore } = useStores();
   const [state, setState] = useState<AddFoodState | null>(() => (request === null ? null : initialAddFoodState(request, new Date())));
   const [seen, setSeen] = useState(request);
-  const [isSubmitting, setSubmitting] = useState(false);
   if (request !== seen) {
     setSeen(request);
     if (request !== null) setState(initialAddFoodState(request, new Date()));
   }
+  const writes = useAddFoodWrites(request, onClose, onOpenDiary);
+  const product = useProductStep(state);
+  const ready = product?.status === StoreStatus.Loaded ? product : null;
+  const current = state ?? CLOSED;
+  const update = useCallback((change: (s: AddFoodState) => AddFoodState) => setState((s) => (s === null ? s : change(s))), []);
+  const amount = (change: 'increment' | 'decrement') =>
+    update((s) => (s.step === AddFoodStep.Product && ready !== null ? { ...s, quantity: (s.quantity ?? ready.quantity)[change]() } : s));
+  const servings = (change: 'increment' | 'decrement') =>
+    update((s) => (s.step === AddFoodStep.Detail ? { ...s, servings: s.servings[change]() } : s));
 
-  const patch = useCallback((next: Partial<AddFoodState>) => setState((s) => (s === null ? s : { ...s, ...next })), []);
+  const submit = async (): Promise<void> => {
+    const isEdit = request?.kind === AddFoodRequestKind.Edit;
+    if (current.step === AddFoodStep.Detail) {
+      if (isEdit) return writes.update(request.entry.changesTo(current.servings.value, current.meal));
+      return writes.add(current.food.entryFor(current.date, current.meal, current.servings));
+    }
+    if (current.step !== AddFoodStep.Product || ready === null) return;
+    if (isEdit) return writes.update(request.entry.changesTo(ready.quantity.value, current.meal));
+    return writes.add(ready.product.entryFor(current.date, current.meal, ready.quantity));
+  };
 
-  const logged = useCallback(
-    (meal: MealSlotType): void => {
-      onClose();
-      const message = t().diary.addedToast.replace('{meal}', mealLabel(meal));
-      showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t().diary.toastAction, onRetry: onOpenDiary });
-    },
-    [onClose, onOpenDiary],
-  );
-
-  const add = useCallback(
-    async (food: LoggableFood, meal: MealSlotType, servings: Servings): Promise<void> => {
-      if (state === null) return;
-      setSubmitting(true);
-      const result = await diaryStore.getState().addEntry(food.entryFor(state.date, meal, servings));
-      setSubmitting(false);
-      if (result.ok) logged(meal);
-      else showErrorToast(result.failure);
-    },
-    [diaryStore, logged, state],
-  );
-
-  const submit = useCallback(async (): Promise<void> => {
-    if (request === null || state === null || state.food === null) return;
-    if (request.kind !== AddFoodRequestKind.Edit) return add(state.food, state.meal, state.servings);
-    const changes = request.entry.changesTo(state.servings.value, state.meal);
-    if (changes === null) return onClose();
-    setSubmitting(true);
-    const result = await diaryStore.getState().updateEntry(request.entry, changes);
-    setSubmitting(false);
-    if (!result.ok) return void showErrorToast(result.failure);
-    onClose();
-    showSuccessToast(t().diary.updatedToast);
-  }, [add, diaryStore, onClose, request, state]);
-
-  const remove = useCallback(async (): Promise<void> => {
-    if (request?.kind !== AddFoodRequestKind.Edit) return;
-    // The store drops the row at once and puts it back if the server refuses.
-    onClose();
-    const result = await diaryStore.getState().deleteEntry(request.entry);
-    if (result.ok) showSuccessToast(t().diary.removedToast);
-    else showErrorToast(result.failure);
-  }, [diaryStore, onClose, request]);
-
-  // Null only before the sheet was ever opened; nothing renders from it then.
-  const current = state ?? { date: CalendarDate.today(), step: AddFoodStep.Pick, food: null, servings: Servings.one(), meal: MealSlot.Breakfast, canGoBack: false };
   return {
-    ...current,
+    date: current.date,
+    step: current.step,
+    meal: current.meal,
     isEdit: request?.kind === AddFoodRequestKind.Edit,
-    isSubmitting,
-    choose: (food) => patch({ step: AddFoodStep.Detail, food, servings: Servings.one(), canGoBack: true }),
-    back: () => patch({ step: AddFoodStep.Pick, food: null, canGoBack: false }),
-    // Functional updates: two quick taps inside one render must both count.
-    increment: () => setState((s) => (s === null ? s : { ...s, servings: s.servings.increment() })),
-    decrement: () => setState((s) => (s === null ? s : { ...s, servings: s.servings.decrement() })),
-    setMeal: (meal) => patch({ meal }),
+    canGoBack: current.canGoBack,
+    isSubmitting: writes.isSubmitting,
+    food: current.step === AddFoodStep.Detail ? current.food : null,
+    servings: current.step === AddFoodStep.Detail ? current.servings : Servings.one(),
+    product,
+    footerCalories:
+      current.step === AddFoodStep.Detail
+        ? current.food.nutrientsFor(current.servings).calories
+        : ready === null
+          ? null
+          : ready.product.nutrientsFor(ready.quantity).calories,
+    choose: (food) => update((s) => ({ date: s.date, meal: s.meal, canGoBack: true, step: AddFoodStep.Detail, food, servings: Servings.one() })),
+    chooseProduct: (row) => {
+      void foodCatalogStore.getState().openProduct(row);
+      const choice = { kind: ProductChoiceKind.Listed, row } as const;
+      update((s) => ({ date: s.date, meal: s.meal, canGoBack: true, step: AddFoodStep.Product, choice, variantIndex: null, quantity: null }));
+    },
+    chooseRecent: (recent) => {
+      if (recent.kind === RecentFoodKind.Food) {
+        update((s) => ({ date: s.date, meal: s.meal, canGoBack: true, step: AddFoodStep.Detail, food: recent.food, servings: Servings.one() }));
+        return;
+      }
+      const choice = { kind: ProductChoiceKind.Logged, product: recent.product, quantity: recent.quantity } as const;
+      update((s) => ({ date: s.date, meal: s.meal, canGoBack: true, step: AddFoodStep.Product, choice, variantIndex: null, quantity: null }));
+    },
+    back: () => {
+      foodCatalogStore.getState().closeProduct();
+      update((s) => ({ date: s.date, meal: s.meal, canGoBack: false, step: AddFoodStep.Pick }));
+    },
+    increment: () => servings('increment'),
+    decrement: () => servings('decrement'),
+    setMeal: (meal) => update((s) => ({ ...s, meal })),
+    setVariant: (index) => update((s) => (s.step === AddFoodStep.Product ? { ...s, variantIndex: index } : s)),
+    setUnit: (unit) =>
+      update((s) => (s.step === AddFoodStep.Product && ready !== null ? { ...s, quantity: ready.quantity.inUnit(unit) } : s)),
+    incrementAmount: () => amount('increment'),
+    decrementAmount: () => amount('decrement'),
+    retryProduct: () => {
+      if (current.step === AddFoodStep.Product && current.choice.kind === ProductChoiceKind.Listed) {
+        void foodCatalogStore.getState().openProduct(current.choice.row);
+      }
+    },
     submit,
-    submitQuickAdd: (food, meal) => add(food, meal, Servings.one()),
-    remove,
+    submitQuickAdd: (food, meal) => writes.add(food.entryFor(current.date, meal, Servings.one())),
+    remove: writes.remove,
   };
 };

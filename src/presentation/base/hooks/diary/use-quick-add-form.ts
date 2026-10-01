@@ -8,7 +8,8 @@ import type { QuickAddForm } from '@presentation/base/widgets/diary/add-food/sta
 
 /**
  * The Quick add tab (design spec → Food Diary §6): a name, calories and
- * optional P/C/F grams, logged as one serving with no recipe behind it.
+ * optional P/C/F grams, logged as one serving with no recipe behind it. A
+ * search with no results opens it with the query as the name.
  *
  * @remarks
  * - **Validation is the domain's.** The figures go through `Nutrients.create`
@@ -17,8 +18,8 @@ import type { QuickAddForm } from '@presentation/base/widgets/diary/add-food/sta
  * - **Zero kcal is not a food** — `quickAdd` refuses it, which keeps submit
  *   disabled until the kcal are above zero (design spec §6).
  */
-export const useQuickAddForm = (initialMeal: MealSlotType): QuickAddForm => {
-  const [name, setName] = useState(CharConstants.empty);
+export const useQuickAddForm = (initialMeal: MealSlotType, initialName: string = CharConstants.empty): QuickAddForm => {
+  const [name, setName] = useState(initialName);
   const [calories, setCalories] = useState(CharConstants.empty);
   const [protein, setProtein] = useState(CharConstants.empty);
   const [carbs, setCarbs] = useState(CharConstants.empty);

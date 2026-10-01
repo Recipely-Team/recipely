@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import { useQuickAddForm } from '@presentation/base/hooks/diary/use-quick-add-form';
@@ -13,14 +13,16 @@ import { ValueConstants } from '@core/constants';
 
 export interface QuickAddFormViewProps {
   initialMeal: MealSlotType;
+  /** Pre-filled from a search that found nothing. */
+  initialName: string;
   isSubmitting: boolean;
   onSubmit: (food: LoggableFood, meal: MealSlotType) => void;
 }
 
-/** The Quick add tab: a name, kcal and optional macros, logged in one step. */
-export const QuickAddFormView = ({ initialMeal, isSubmitting, onSubmit }: QuickAddFormViewProps): React.JSX.Element => {
+/** The Quick add tab: a name, kcal and optional macros, logged in one step; scrolls on its own inside the sheet. */
+export const QuickAddFormView = ({ initialMeal, initialName, isSubmitting, onSubmit }: QuickAddFormViewProps): React.JSX.Element => {
   const locale = useLocale();
-  const form = useQuickAddForm(initialMeal);
+  const form = useQuickAddForm(initialMeal, initialName);
   const strings = t().diary;
   const nutrition = t().nutrition;
   const food = form.food;
@@ -31,7 +33,7 @@ export const QuickAddFormView = ({ initialMeal, isSubmitting, onSubmit }: QuickA
   ];
 
   return (
-    <View style={styles.stack}>
+    <ScrollView contentContainerStyle={styles.stack} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
       <SizedText size={fontSizes.caption} weight={fontWeights.semibold} muted>
         {strings.quickName}
       </SizedText>
@@ -69,7 +71,7 @@ export const QuickAddFormView = ({ initialMeal, isSubmitting, onSubmit }: QuickA
           loading={isSubmitting}
         />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 

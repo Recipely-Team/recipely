@@ -8,13 +8,13 @@ import { resolveDiaryDate } from '@presentation/base/hooks/assistant/args/diary/
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
 import { matchEntries } from '@presentation/base/hooks/assistant/args/diary/match-entries';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
+import { hitOf, pageOf, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { FoodSource } from '@presentation/base/hooks/assistant/args/diary/food-source';
 import { parseLogFoodArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-log-food-arg';
 import { parseEntryTargetArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-entry-target-arg';
 import { parseGoalsArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-goals-arg';
 import { parseWaterArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-water-arg';
 import { parseMealArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-meal-arg';
-import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__fixtures__/recipe-summary-of';
 
 const today = CalendarDate.of(2026, 9, 30);
 
@@ -115,17 +115,19 @@ describe('name matching', () => {
     expect(matchEntries(entries, 'menemen', MealSlot.Dinner).map((e) => e.id)).toEqual(['b']);
   });
 
-  it('offers each recipe once, only with calories, in source order, then recent foods', () => {
-    const mine = recipeSummaryOf('a', 'Menemen');
+  it('offers the search’s groups in display order, products per 100 of their unit, then recent foods', () => {
     const recent = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
     const candidates = buildFoodCandidates(
-      { mine: [mine], saved: [mine, recipeSummaryOf('z', 'No kcal', 0)], feed: [recipeSummaryOf('b', 'Pilav')] },
+      { query: 'x', saved: pageOf([hitOf('s')]), mine: pageOf([hitOf('m')]), products: pageOf([productOf()]), recipes: pageOf([hitOf('r')]) },
       [recent],
     );
-    expect(candidates.map((c) => [c.name, c.source])).toEqual([
-      ['Menemen', FoodSource.Mine],
-      ['Pilav', FoodSource.Recipely],
-      ['Apple', FoodSource.Recent],
+    expect(candidates.map((c) => [c.name, c.source, c.per])).toEqual([
+      ['Recipe s', FoodSource.Saved, 'per serving'],
+      ['Recipe m', FoodSource.Mine, 'per serving'],
+      ['Ayran · Klasik', FoodSource.Product, 'per 100 ml'],
+      ['Recipe r', FoodSource.Recipely, 'per serving'],
+      ['Apple', FoodSource.Recent, 'per serving'],
     ]);
+    expect(buildFoodCandidates(null, [recent])).toHaveLength(1);
   });
 });

@@ -1,32 +1,28 @@
+import { NetworkFailure } from '@core/failure';
+import { StoreStatus } from '@application/store/store-status';
+import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import { loadedList } from '@application/diary/foods/paging/loaded-list';
+import { hitOf, pageOf, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { LoggableFood } from '@domain/diary/entry/loggable-food';
-import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import { Difficulty } from '@domain/recipes/difficulty';
-import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
-import type { RecipeSummaryEntityProps } from '@domain/recipes/recipe-summary-entity-props';
 import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
 import { initialAddFoodState } from '@presentation/base/widgets/diary/add-food/state/initial-add-food-state';
-import { buildRecipeFoodGroups } from '@presentation/base/widgets/diary/add-food/search/build-recipe-food-groups';
-import { matchesFoodQuery } from '@presentation/base/widgets/diary/add-food/search/matches-food-query';
+import { resolveProductStep } from '@presentation/base/widgets/diary/add-food/state/product/resolve-product-step';
+import { ProductChoiceKind } from '@presentation/base/widgets/diary/add-food/state/product/product-choice-kind';
+import { searchRows } from '@presentation/base/widgets/diary/add-food/list/search-rows';
+import { phaseOfLists } from '@presentation/base/widgets/diary/add-food/list/phase-of-lists';
+import { nextListToLoad } from '@presentation/base/widgets/diary/add-food/list/next-list-to-load';
+import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';
 
 const date = CalendarDate.of(2026, 9, 30);
 const at = (hour: number): Date => new Date(2026, 8, 30, hour);
 const food = LoggableFood.of({ name: 'Menemen', perServing: nutrientsOf({ calories: 300 }), recipeId: 'r1', imageUrl: null });
-
-const summary = (id: string, name: string, caloriesPerServing = 350): RecipeSummaryEntity => {
-  const props: RecipeSummaryEntityProps = {
-    id, name, image: '', cuisine: '', category: '', difficulty: Difficulty.Easy,
-    totalTimeMinutes: null, rating: 0, isPublished: true, moderationStatus: 'approved', likeCount: 0, likedByMe: false,
-    commentCount: 0, viewCount: 0, origin: RecipeOrigin.User, sourcePlatform: null, aiWritten: false, photoCount: 0, caloriesPerServing,
-  };
-  const created = RecipeSummaryEntity.create(props);
-  if (!created.ok) throw new Error(created.failure.message);
-  return created.value;
-};
+const idle: PagedList<never> = { status: StoreStatus.Idle };
+const titles = { saved: 'Saved', mine: 'My recipes', products: 'Products', recipes: 'Recipes' };
 
 describe('initialAddFoodState', () => {
   it('opens the pick step with the meal from the clock when none is given', () => {
@@ -38,44 +34,82 @@ describe('initialAddFoodState', () => {
 
   it('keeps a meal the caller chose, and a chosen food skips to the detail step at one serving', () => {
     const state = initialAddFoodState({ kind: AddFoodRequestKind.Food, date, meal: MealSlot.Snacks, food }, at(8));
-    expect(state.step).toBe(AddFoodStep.Detail);
+    expect(state.step === AddFoodStep.Detail && state.servings.value).toBe(1);
     expect(state.meal).toBe(MealSlot.Snacks);
-    expect(state.servings.value).toBe(1);
     expect(state.canGoBack).toBe(false);
   });
 
-  it('pre-fills an edit from its entry, on the entry’s own day, rounding the amount to the stepper', () => {
+  it('pre-fills a recipe edit from its entry, rounding the amount to the stepper', () => {
     const entry = foodLogEntryOf({ date: CalendarDate.of(2026, 9, 27), meal: MealSlot.Dinner, servings: 1.3 });
     const state = initialAddFoodState({ kind: AddFoodRequestKind.Edit, entry }, at(8));
     expect(state.date.value).toBe('2026-09-27');
-    expect(state.meal).toBe(MealSlot.Dinner);
-    expect(state.servings.value).toBe(1.5);
+    expect(state.step === AddFoodStep.Detail && state.servings.value).toBe(1.5);
+  });
+
+  it('opens a product entry on the product step at its unit and quantity', () => {
+    const entry = foodLogEntryOf({
+      servings: 250, recipeId: null, nutrients: nutrientsOf({ calories: 65 }),
+      product: { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'ml', unitAmount: 1 },
+    });
+    const state = initialAddFoodState({ kind: AddFoodRequestKind.Edit, entry }, at(8));
+    expect(state.step).toBe(AddFoodStep.Product);
+    if (state.step !== AddFoodStep.Product) return;
+    const model = resolveProductStep(state.choice, { status: StoreStatus.Idle }, null, null);
+    expect(model.status === StoreStatus.Loaded && [model.quantity.value, model.quantity.unit.key]).toEqual([250, 'ml']);
   });
 });
 
-describe('recipe search', () => {
-  it('matches with the reader’s locale casing — Turkish İ is i', () => {
-    expect(matchesFoodQuery('İzmir köfte', 'izmir', 'tr')).toBe(true);
-    expect(matchesFoodQuery('Menemen', '  ', 'tr')).toBe(true);
-    expect(matchesFoodQuery('Menemen', 'pilav', 'tr')).toBe(false);
+describe('resolveProductStep', () => {
+  const row = productOf({ foodVariantId: 'v1' });
+  const choice = { kind: ProductChoiceKind.Listed, row } as const;
+
+  it('is loading while the opened detail is another row’s', () => {
+    const other = productOf({ foodVariantId: 'x' });
+    expect(resolveProductStep(choice, { status: StoreStatus.Loading, key: other.key }, null, null).status).toBe(StoreStatus.Loading);
+    expect(resolveProductStep(choice, { status: StoreStatus.Error, key: row.key, failure: new NetworkFailure('x') }, null, null).status).toBe(
+      StoreStatus.Error,
+    );
   });
 
-  it('lists a recipe once, in its first group, and drops empty groups', () => {
-    const mine = summary('a', 'Menemen');
-    const groups = buildRecipeFoodGroups({ mine: [mine], saved: [mine, summary('b', 'Pilav')], feed: [summary('a', 'Menemen')] }, '', 'en');
-    expect(groups.map((g) => [g.key, g.recipes.map((r) => r.id)])).toEqual([
-      ['mine', ['a']],
-      ['saved', ['b']],
+  it('starts on the row’s variant at its first serving unit', () => {
+    const detail = row.asDetail;
+    if (detail === null) throw new Error('no detail');
+    const model = resolveProductStep(choice, { status: StoreStatus.Loaded, key: row.key, detail }, null, null);
+    expect(model.status === StoreStatus.Loaded && [model.variantIndex, model.quantity.unit.key, model.quantity.value, model.variants.length]).toEqual([
+      0, 'glass', 1, 0,
     ]);
   });
+});
 
-  it('offers only recipes with calories — nothing else can be logged', () => {
-    const groups = buildRecipeFoodGroups({ mine: [summary('a', 'Menemen', 0)], saved: [summary('b', 'Pilav')], feed: [] }, '', 'en');
-    expect(groups.flatMap((g) => g.recipes.map((r) => r.id))).toEqual(['b']);
+describe('pick lists', () => {
+  it('lists non-empty groups in order under their headings, with a next-page row while one loads', () => {
+    const saved = { ...loadedList(pageOf([hitOf('s1')], 1, 9)), isLoadingMore: true };
+    const rows = searchRows({ saved, mine: loadedList(pageOf([])), products: loadedList(pageOf([productOf()])), recipes: idle }, titles);
+    expect(rows.map((row) => row.type)).toEqual(['heading', 'recipe', 'more', 'heading', 'product']);
   });
 
-  it('filters every group by the search', () => {
-    const groups = buildRecipeFoodGroups({ mine: [summary('a', 'Menemen')], saved: [summary('b', 'Pilav')], feed: [] }, 'pil', 'en');
-    expect(groups.flatMap((g) => g.recipes.map((r) => r.id))).toEqual(['b']);
+  // Backend #373 lists the Recipes tab's groups without deduping them.
+  it('lists a recipe once, under Saved before My recipes', () => {
+    const rows = searchRows(
+      { saved: loadedList(pageOf([hitOf('a')])), mine: loadedList(pageOf([hitOf('a'), hitOf('b')])), products: idle, recipes: loadedList(pageOf([hitOf('a')])) },
+      titles,
+    );
+    expect(rows.flatMap((row) => (row.type === 'recipe' ? [row.key] : []))).toEqual(['saved:a', 'mine:b']);
+    expect(rows.filter((row) => row.type === 'heading')).toHaveLength(2);
+  });
+
+  it('shows rows that arrived, skeleton while nothing has, the error only when every group failed, empty when all are empty', () => {
+    const failed: PagedList<never> = { status: StoreStatus.Error, failure: new NetworkFailure('x') };
+    expect(phaseOfLists([loadedList(pageOf([hitOf('a')])), { status: StoreStatus.Loading }]).phase).toBe(PickPhase.Ready);
+    expect(phaseOfLists([{ status: StoreStatus.Loading }, idle]).phase).toBe(PickPhase.Loading);
+    expect(phaseOfLists([failed, failed]).phase).toBe(PickPhase.Error);
+    expect(phaseOfLists([loadedList(pageOf([])), failed]).phase).toBe(PickPhase.Empty);
+  });
+
+  it('pages next the first list in display order that has more and is not already loading', () => {
+    const more = loadedList(pageOf([hitOf('a')], 1, 9));
+    const busy = { ...loadedList(pageOf([hitOf('b')], 1, 9)), isLoadingMore: true };
+    expect(nextListToLoad([{ key: 'saved', list: busy }, { key: 'mine', list: more }])).toBe('mine');
+    expect(nextListToLoad([{ key: 'saved', list: loadedList(pageOf([hitOf('a')])) }])).toBeNull();
   });
 });
