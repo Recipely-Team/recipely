@@ -1,4 +1,5 @@
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
@@ -13,8 +14,8 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface SearchResultsBodyProps {
-  /** The trimmed query; empty on the Recipes tab, which lists the recipe groups unfiltered. */
-  query: string;
+  /** The box's text as typed; empty on the Recipes tab, which lists the recipe groups unfiltered. */
+  rawQuery: string;
   onChoose: (food: LoggableFood) => void;
   onChooseProduct: (product: FoodProduct) => void;
   /** No results: open Quick add with the query as the name. */
@@ -28,8 +29,10 @@ const isSearchGroup = (key: string): key is FoodSearchGroupType => (SEARCH_GROUP
  * recipes · Products · Recipes, each group paging on scroll (Add food v2
  * spec §3, §4): skeleton, no-results and failed faces first.
  */
-export const SearchResultsBody = ({ query, onChoose, onChooseProduct, onQuickAdd }: SearchResultsBodyProps): React.JSX.Element => {
+export const SearchResultsBody = ({ rawQuery, onChoose, onChooseProduct, onQuickAdd }: SearchResultsBodyProps): React.JSX.Element => {
   const { foodSearchStore } = useStores();
+  useFoodSearchQuery(rawQuery);
+  const query = rawQuery.trim();
   const saved = foodSearchStore((s) => s.saved);
   const mine = foodSearchStore((s) => s.mine);
   const products = foodSearchStore((s) => s.products);

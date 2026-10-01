@@ -5,7 +5,6 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFood } from '@domain/diary/foods/search/recent-food';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import { FoodSearchField } from '@presentation/base/widgets/diary/add-food/pick/food-search-field';
 import { SearchResultsBody } from '@presentation/base/widgets/diary/add-food/pick/search-results-body';
@@ -49,7 +48,6 @@ export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element 
     setSeenQuery(initialQuery);
     setQuery(initialQuery);
   }
-  useFoodSearchQuery(query);
   const trimmed = query.trim();
   const isSearching = trimmed.length > ValueConstants.zero;
 
@@ -62,7 +60,7 @@ export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element 
     if (isSearching || tab === PickTab.Recipes) {
       return (
         <SearchResultsBody
-          query={isSearching ? trimmed : CharConstants.empty}
+          rawQuery={isSearching ? query : CharConstants.empty}
           onChoose={props.onChoose}
           onChooseProduct={props.onChooseProduct}
           onQuickAdd={() => {

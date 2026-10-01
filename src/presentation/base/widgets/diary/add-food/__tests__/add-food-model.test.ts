@@ -106,10 +106,11 @@ describe('pick lists', () => {
     expect(phaseOfLists([loadedList(pageOf([])), failed]).phase).toBe(PickPhase.Empty);
   });
 
-  it('pages next the first list in display order that has more and is not already loading', () => {
+  it('pages next the first list in display order that has more, one next page at a time', () => {
     const more = loadedList(pageOf([hitOf('a')], 1, 9));
     const busy = { ...loadedList(pageOf([hitOf('b')], 1, 9)), isLoadingMore: true };
-    expect(nextListToLoad([{ key: 'saved', list: busy }, { key: 'mine', list: more }])).toBe('mine');
+    expect(nextListToLoad([{ key: 'saved', list: more }, { key: 'mine', list: more }])).toBe('saved');
+    expect(nextListToLoad([{ key: 'saved', list: busy }, { key: 'mine', list: more }])).toBeNull();
     expect(nextListToLoad([{ key: 'saved', list: loadedList(pageOf([hitOf('a')])) }])).toBeNull();
   });
 });
