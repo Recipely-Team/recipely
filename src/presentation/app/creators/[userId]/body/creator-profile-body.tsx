@@ -5,6 +5,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { ValueConstants } from '@core/constants';
 import { ListConstants } from '@presentation/base/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import { fontSizes, spacing } from '@presentation/base/theme';
 import { failureContent, failureIcon, failureSeverity, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -40,7 +41,10 @@ const keyOf = (cell: GridCell): string => cell.id;
  */
 export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { profileState, recipesState, gridColumns, onOpenRecipe } = vm;
+  const { isExpanded } = useLayout();
+  const { profileState, recipesState, gridColumns, onOpenRecipe, isSaved, onToggleSave } = vm;
+  const rowGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.rowGap;
+  const columnGap = isExpanded ? CreatorProfileMetrics.gapExpanded : CreatorProfileMetrics.columnGap;
 
   const cells = useMemo<GridCell[]>(() => {
     const short = (gridColumns - (vm.recipes.length % gridColumns)) % gridColumns;
@@ -49,8 +53,18 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
 
   const renderItem = useCallback(
     ({ item }: { item: GridCell }) =>
-      isFiller(item) ? <View style={styles.filler} /> : <CreatorRecipeCell recipe={item} onOpen={onOpenRecipe} />,
-    [onOpenRecipe],
+      isFiller(item) ? (
+        <View style={styles.filler} />
+      ) : (
+        <CreatorRecipeCell
+          recipe={item}
+          expanded={isExpanded}
+          saved={isSaved(item.id)}
+          onOpen={onOpenRecipe}
+          onToggleSave={onToggleSave}
+        />
+      ),
+    [isExpanded, isSaved, onOpenRecipe, onToggleSave],
   );
 
   if (profileState.status === StoreStatus.Error) {
@@ -95,8 +109,8 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
           <ActivityIndicator color={colors.primary} style={styles.spinner} />
         )
       }
-      columnWrapperStyle={styles.row}
-      contentContainerStyle={styles.content}
+      columnWrapperStyle={[styles.row, { gap: columnGap }]}
+      contentContainerStyle={[styles.content, { gap: rowGap }]}
       refreshControl={
         <RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} tintColor={colors.textMuted} colors={[colors.primary]} />
       }
@@ -119,11 +133,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   content: {
-    gap: CreatorProfileMetrics.gap,
     paddingBottom: spacing.xxl,
   },
   row: {
-    gap: CreatorProfileMetrics.gap,
     paddingHorizontal: CreatorProfileMetrics.gutter,
   },
   filler: {

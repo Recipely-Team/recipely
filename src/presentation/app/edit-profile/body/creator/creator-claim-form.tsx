@@ -5,11 +5,12 @@ import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/crea
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
-import { borderWidths, controlSizes, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, fontSizes, fontWeights, letterSpacings, lineHeights, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PillButton } from '@presentation/base/widgets/buttons/pill-button';
 import { PillButtonTone } from '@presentation/base/widgets/buttons/pill-button-tone';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 import { CreatorPlatformOption } from '@presentation/app/edit-profile/items/creator-platform-option';
 
 export interface CreatorClaimFormProps {
@@ -27,8 +28,9 @@ export interface CreatorClaimFormProps {
 const PLATFORMS = Object.values(CreatorPlatform);
 
 /**
- * The claim form: pick Instagram or TikTok, type the username after a fixed
- * `@`, send for review.
+ * The claim form: pick Instagram or TikTok, type the handle after a fixed
+ * `@`, submit for review (design spec → Creators §7, Form). Submit stays
+ * disabled until the handle reaches the platform's minimum length.
  *
  * @remarks
  * - **The hint becomes the error.** A refused handle replaces the rules line
@@ -40,22 +42,27 @@ export const CreatorClaimForm = (props: CreatorClaimFormProps): React.JSX.Elemen
   const colors = useTheme().colors;
   const danger = useSeveritySurfaces().danger;
   const [focused, setFocused] = useState(false);
-  const { Max } = CreatorHandleRules.Length[props.platform];
-  const hasHandle = props.handle.trim().length > ValueConstants.zero;
+  const { Min, Max } = CreatorHandleRules.Length[props.platform];
+  const longEnough = props.handle.trim().length >= Min;
   const fieldBorder = props.error !== null ? danger.icon : focused ? colors.inputBorderFocused : colors.inputBorder;
 
   return (
     <>
-      <View accessibilityRole="radiogroup" accessibilityLabel={t().creators.account.platformLabel} style={styles.options}>
-        {PLATFORMS.map((platform) => (
-          <CreatorPlatformOption key={platform} platform={platform} selected={platform === props.platform} onPick={props.onPickPlatform} />
-        ))}
+      <View style={styles.field}>
+        <SizedText size={fontSizes.micro} weight={fontWeights.bold} color={colors.textSubtle} style={styles.label}>
+          {upperCase(t().creators.account.platformLabel)}
+        </SizedText>
+        <View accessibilityRole="radiogroup" accessibilityLabel={t().creators.account.platformLabel} style={styles.options}>
+          {PLATFORMS.map((platform) => (
+            <CreatorPlatformOption key={platform} platform={platform} selected={platform === props.platform} onPick={props.onPickPlatform} />
+          ))}
+        </View>
       </View>
       <View style={styles.field}>
-        <SizedText size={fontSizes.caption} weight={fontWeights.semibold}>
-          {t().creators.account.handleLabel}
+        <SizedText size={fontSizes.micro} weight={fontWeights.bold} color={colors.textSubtle} style={styles.label}>
+          {upperCase(t().creators.account.handleLabel)}
         </SizedText>
-        <View style={[styles.input, { borderColor: fieldBorder, backgroundColor: colors.surface }]}>
+        <View style={[styles.input, { borderColor: fieldBorder, backgroundColor: colors.background }]}>
           <SizedText size={fontSizes.body} color={colors.textSubtle}>
             {CreatorHandleRules.Prefix}
           </SizedText>
@@ -84,7 +91,7 @@ export const CreatorClaimForm = (props: CreatorClaimFormProps): React.JSX.Elemen
           {props.error ?? t().creators.account.handleHint}
         </SizedText>
       </View>
-      <PillButton label={t().creators.account.submit} onPress={props.onSubmit} loading={props.isBusy} disabled={!hasHandle} />
+      <PillButton label={t().creators.account.submit} onPress={props.onSubmit} loading={props.isBusy} disabled={!longEnough} />
       {props.canCancel ? (
         <PillButton label={t().creators.account.cancel} tone={PillButtonTone.Outline} onPress={props.onCancel} disabled={props.isBusy} />
       ) : null}
@@ -100,6 +107,9 @@ const styles = StyleSheet.create({
   field: {
     gap: spacing.xs2,
   },
+  label: {
+    letterSpacing: letterSpacings.wide,
+  },
   input: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -107,7 +117,7 @@ const styles = StyleSheet.create({
     minHeight: controlSizes.buttonSm,
     paddingHorizontal: spacing.md,
     borderRadius: radii.lg,
-    borderWidth: borderWidths.hairline,
+    borderWidth: borderWidths.thin,
   },
   text: {
     flex: ValueConstants.one,

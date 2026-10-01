@@ -1,6 +1,6 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { CharConstants } from '@core/constants';
+import { ValueConstants } from '@core/constants';
 import { CreatorPlatform } from '@domain/creators/creator-platform';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import { instagramProfileUrl, tiktokProfileUrl } from '@presentation/base/constants';
@@ -30,22 +30,22 @@ const profileUrlOf = (tag: CreatorTag): string =>
   tag.platform === CreatorPlatform.TikTok ? tiktokProfileUrl(tag.handle) : instagramProfileUrl(tag.handle);
 
 /**
- * The verified creator badge: platform mark, `@handle` and a check, as one
- * pill that opens the account on its platform.
+ * The verified platform badge: platform seal, `@handle` and a check, as one
+ * 32-high pill that opens the account on its platform (design spec →
+ * Creators §3, CreatorPlatformBadge).
  *
  * @remarks
  * - **Shown on the creator's page and on the owner's own Profile**, the same
  *   chip in both, so the badge a user earns looks like the one they see on
  *   others.
- * - **A link, not a button.** It leaves the app for the platform, so it says
- *   so to assistive tech, with the platform and handle in its name.
+ * - **A link, not a button.** It leaves the app for the platform; its name
+ *   says the account is verified, on which platform, and which handle.
  */
 export const CreatorTagChip = ({ tag }: CreatorTagChipProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const open = t()
-    .creators.openAccount.replace('{handle}', tag.displayHandle)
+  const label = t()
+    .creators.verifiedAccount.replace('{handle}', tag.displayHandle)
     .replace('{platform}', creatorPlatformName(tag.platform));
-  const label = [open, t().creators.verified].join(CharConstants.commaSpace);
 
   return (
     <Pressable
@@ -54,16 +54,16 @@ export const CreatorTagChip = ({ tag }: CreatorTagChipProps): React.JSX.Element 
       accessibilityLabel={label}
       style={({ pressed }) => [
         styles.chip,
-        { backgroundColor: colors.surface, borderColor: colors.border },
+        { backgroundColor: colors.surface, borderColor: colors.cardBorder },
         { opacity: pressed ? opacities.pressed : opacities.full },
       ]}
     >
       <CreatorPlatformMark platform={tag.platform} size={creatorMarkGeometry.chip} />
-      <SizedText size={fontSizes.caption} weight={fontWeights.semibold}>
+      <SizedText size={fontSizes.caption} weight={fontWeights.semibold} numberOfLines={ValueConstants.one} style={styles.handle}>
         {tag.displayHandle}
       </SizedText>
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Ionicons name="checkmark" size={iconSizes.sm} color={colors.primary} />
+        <Ionicons name="checkmark-circle" size={iconSizes.sm} color={colors.primary} />
       </View>
     </Pressable>
   );
@@ -76,9 +76,13 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     gap: spacing.xs2,
     minHeight: controlSizes.iconBtnSm,
+    maxWidth: '100%',
     paddingLeft: spacing.xs,
-    paddingRight: spacing.md,
+    paddingRight: spacing.sm2,
     borderRadius: radii.round,
     borderWidth: borderWidths.hairline,
+  },
+  handle: {
+    flexShrink: ValueConstants.one,
   },
 });

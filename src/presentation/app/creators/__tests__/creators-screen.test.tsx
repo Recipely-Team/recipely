@@ -42,7 +42,7 @@ describe('CreatorsScreen', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([creatorSummaryOf('1'), creatorSummaryOf('2')]) });
 
     expect(textContent(root)).toEqual(
-      expect.arrayContaining([t().creators.title, t().creators.listIntro, 'Creator 1', 'Creator 2']),
+      expect.arrayContaining([t().creators.title, t().creators.listSubtitle, 'Creator 1', 'Creator 2']),
     );
   });
 

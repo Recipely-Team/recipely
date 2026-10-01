@@ -17,6 +17,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { CreatorAccountSection } from '@presentation/app/edit-profile/body/creator/creator-account-section';
 import { t } from '@presentation/i18n';
+import { upperCase } from '@presentation/i18n/upper-case';
 
 jest.mock('expo-router', () => ({
   useFocusEffect: (callback: () => void) => {
@@ -83,7 +84,7 @@ describe('CreatorAccountSection', () => {
       expect(radio(root, 'Instagram').props.accessibilityState).toEqual({ checked: true });
       expect(radio(root, 'TikTok').props.accessibilityState).toEqual({ checked: false });
       expect(root.findAllByType(TextInput)).toHaveLength(1);
-      expect(textContent(root)).toEqual(expect.arrayContaining([copy().title, copy().intro, copy().submit]));
+      expect(textContent(root)).toEqual(expect.arrayContaining([upperCase(copy().title), copy().intro, copy().submit]));
     });
 
     it('sends the picked platform and the handle normalised', async () => {
@@ -131,20 +132,39 @@ describe('CreatorAccountSection', () => {
     expect(actions.removeCreatorTag).toHaveBeenCalledTimes(1);
   });
 
-  it('approved: offers change, which opens the form on the claim, and remove', async () => {
+  it('approved: shows the approved badge and the linked account, and offers to unlink', async () => {
     const { root, actions } = renderSection(CreatorStatus.Approved);
 
     expect(textContent(root)).toEqual(expect.arrayContaining([copy().approved, copy().approvedBody]));
+    expect(root.findAll((n) => n.props.accessibilityLabel === t().creators.approvedBadge).length).toBeGreaterThan(0);
+    expect(root.findAll((n) => n.props.accessibilityRole === 'link').length).toBeGreaterThan(0);
     await press(button(root, copy().remove));
     expect(actions.removeCreatorTag).toHaveBeenCalledTimes(1);
-
-    await press(button(root, copy().change));
-    expect(root.findByType(TextInput).props.value).toBe('aysemutfakta');
-    await press(button(root, copy().cancel));
-    expect(root.findAllByType(TextInput)).toHaveLength(0);
   });
 
-  it('refused: names the handle and offers to edit and resend', async () => {
+  it('announces a sent claim as a status, but not the form', () => {
+    expect(renderSection(CreatorStatus.Pending).root.findAll((n) => n.props.role === 'status').length).toBeGreaterThan(0);
+    expect(renderSection(null).root.findAll((n) => n.props.role === 'status')).toHaveLength(0);
+  });
+
+  it('keeps send disabled until the handle is long enough for the platform', async () => {
+    const { root } = renderSection(null);
+
+    await press(radio(root, 'TikTok'));
+    type(root, 'a');
+    expect(button(root, copy().submit).props.accessibilityState).toEqual(expect.objectContaining({ disabled: true }));
+    type(root, 'ab');
+    expect(button(root, copy().submit).props.accessibilityState).toEqual(expect.objectContaining({ disabled: false }));
+  });
+
+  it('drops a typed @ and spaces from the handle field', () => {
+    const { root } = renderSection(null);
+
+    type(root, '@ayse mutfakta');
+    expect(root.findByType(TextInput).props.value).toBe('aysemutfakta');
+  });
+
+  it('rejected: names the handle and offers to try again, prefilled', async () => {
     const { root } = renderSection(CreatorStatus.Rejected);
 
     expect(textContent(root)).toEqual(

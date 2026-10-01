@@ -41,7 +41,7 @@ export const CreatorsScreen = (): React.JSX.Element => {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <PageTitle subject={t().creators.title} />
       <ResponsiveContainer route="creators" gutter={false} fill>
-        <CreatorsPageHeader onBack={vm.onBack} title={t().creators.title} />
+        <CreatorsPageHeader onBack={vm.onBack} title={t().creators.title} backLabel={t().creators.backToRecipes} />
         <CreatorsGrid vm={vm} scrollable={scrollable} />
       </ResponsiveContainer>
     </View>

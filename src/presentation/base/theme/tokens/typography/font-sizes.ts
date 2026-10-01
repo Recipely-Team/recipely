@@ -22,7 +22,11 @@ export const fontSizes = {
   subheading: scaleFont(20),
   display: scaleFont(22),
   title: scaleFont(24),
+  /** A profile's name as the web page's heading (creator profile). */
+  largeTitle: scaleFont(30),
   headline: scaleFont(32),
+  /** A web list page's h1 (/creators). */
+  pageHeading: scaleFont(36),
   jumbo: scaleFont(40),
   hero: scaleFont(44),
 } as const;

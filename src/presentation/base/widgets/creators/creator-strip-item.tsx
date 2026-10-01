@@ -15,8 +15,8 @@ export interface CreatorStripItemProps {
 }
 
 /**
- * One creator in the Explore strip: a 64 avatar with the platform mark, then
- * the name and the handle on one line each.
+ * One creator in the Explore strip, 76 wide: a 64 avatar with the platform
+ * seal, then the name (bold) and the handle on one line each.
  *
  * @remarks
  * - **One accessible name for the whole item** — name, platform and handle —
@@ -37,10 +37,10 @@ const CreatorStripItemComponent = ({ creator, onOpen }: CreatorStripItemProps): 
         photoUrl={creator.photoUrl}
         platform={creator.creator.platform}
         size={avatarSizes.creatorStrip}
-        markSize={creatorMarkGeometry.strip}
+        markSize={creatorMarkGeometry.avatar}
         groundColor={colors.background}
       />
-      <SizedText size={fontSizes.small} weight={fontWeights.semibold} numberOfLines={ValueConstants.one} style={styles.line}>
+      <SizedText size={fontSizes.small} weight={fontWeights.bold} numberOfLines={ValueConstants.one} style={styles.line}>
         {creator.displayName}
       </SizedText>
       <SizedText size={fontSizes.micro} color={colors.textSubtle} numberOfLines={ValueConstants.one} style={[styles.line, styles.handle]}>
@@ -63,6 +63,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   handle: {
-    marginTop: -spacing.xs,
+    marginTop: -spacing.xs2,
   },
 });

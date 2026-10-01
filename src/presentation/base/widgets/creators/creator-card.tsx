@@ -1,47 +1,50 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { avatarSizes, borderWidths, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
+import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { t } from '@presentation/i18n';
+import { getLocale, t } from '@presentation/i18n';
 import { CreatorAvatar } from '@presentation/base/widgets/creators/creator-avatar';
 import { creatorItemLabel } from '@presentation/base/widgets/creators/creator-item-label';
 import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
-import { CreatorCardSize, type CreatorCardSizeType } from '@presentation/base/widgets/creators/creator-card-size';
 
 export interface CreatorCardProps {
   creator: CreatorSummaryEntity;
-  size: CreatorCardSizeType;
   onOpen: (id: string) => void;
 }
 
 /**
- * A creator as a card: avatar with the platform mark, name, handle and how
- * many recipes they have. The /creators grid on a phone uses the compact
- * card; the expanded viewport's grid (Explore and /creators) the wide one.
+ * A creator as a card, on the /creators grid and the expanded Explore row:
+ * 64 avatar with the platform seal, name, `@handle`, and "4 recipes · 184K
+ * followers" (design spec → Creators §3, CreatorCard).
  *
  * @remarks
- * - **Secondary lines are `textSubtle`**, which reads at AA on the card's
- *   `surface` in every palette.
- * - **The name wraps to two lines** rather than truncating a short card's
- *   only identifying word.
+ * - **Secondary lines are `textSubtle`**, which reads at AA on the card in
+ *   every palette.
+ * - **Lifts on hover** (web): the medium shadow and 2 up, as the recipe cards do.
  */
-const CreatorCardComponent = ({ creator, size, onOpen }: CreatorCardProps): React.JSX.Element => {
+const CreatorCardComponent = ({ creator, onOpen }: CreatorCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const wide = size === CreatorCardSize.Wide;
-  const count = t().creators.recipeCount.replace('{n}', String(creator.recipeCount));
+  const [hovered, setHovered] = useState(false);
+  const caption = t()
+    .creators.cardCaption.replace('{recipes}', formatCompactCount(creator.recipeCount, getLocale()))
+    .replace('{followers}', formatCompactCount(creator.followerCount, getLocale()));
 
   return (
     <Pressable
       onPress={() => onOpen(creator.id)}
+      onHoverIn={() => setHovered(true)}
+      onHoverOut={() => setHovered(false)}
       accessibilityRole="button"
       accessibilityLabel={creatorItemLabel(creator)}
       style={({ pressed }) => [
         styles.card,
-        wide ? styles.wide : styles.compact,
-        { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+        hovered ? [shadows.md, styles.lifted] : shadows.sm,
+        { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder },
         { opacity: pressed ? opacities.pressedSubtle : opacities.full },
       ]}
     >
@@ -49,18 +52,18 @@ const CreatorCardComponent = ({ creator, size, onOpen }: CreatorCardProps): Reac
         name={creator.displayName}
         photoUrl={creator.photoUrl}
         platform={creator.creator.platform}
-        size={wide ? avatarSizes.xl : avatarSizes.creatorCard}
-        markSize={wide ? creatorMarkGeometry.wideCard : creatorMarkGeometry.card}
-        groundColor={colors.surface}
+        size={avatarSizes.creatorStrip}
+        markSize={creatorMarkGeometry.avatar}
+        groundColor={colors.cardBackground}
       />
-      <SizedText size={fontSizes.medium} weight={fontWeights.bold} numberOfLines={ValueConstants.two} style={styles.centred}>
+      <SizedText size={fontSizes.body} weight={fontWeights.bold} numberOfLines={ValueConstants.one} style={[styles.line, styles.name]}>
         {creator.displayName}
       </SizedText>
-      <SizedText size={fontSizes.small} color={colors.textSubtle} numberOfLines={ValueConstants.one} style={styles.centred}>
+      <SizedText size={fontSizes.caption} color={colors.textSubtle} numberOfLines={ValueConstants.one} style={styles.line}>
         {creator.creator.displayHandle}
       </SizedText>
-      <SizedText size={fontSizes.small} color={colors.textSubtle} style={styles.centred}>
-        {count}
+      <SizedText size={fontSizes.small} color={colors.textSubtle} style={[styles.line, styles.caption]}>
+        {caption}
       </SizedText>
     </Pressable>
   );
@@ -72,22 +75,23 @@ const styles = StyleSheet.create({
   card: {
     flex: ValueConstants.one,
     alignItems: 'center',
-    borderRadius: radii.xl,
-    borderWidth: borderWidths.hairline,
-  },
-  compact: {
-    gap: spacing.xs2,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
-    paddingHorizontal: spacing.sm,
-  },
-  wide: {
-    gap: spacing.sm,
     paddingTop: spacing.lg2,
     paddingBottom: spacing.lg,
     paddingHorizontal: spacing.md,
+    borderRadius: radii.xl,
+    borderWidth: borderWidths.hairline,
   },
-  centred: {
+  lifted: {
+    transform: [{ translateY: -spacing.xxs }],
+  },
+  line: {
+    width: '100%',
     textAlign: 'center',
+  },
+  name: {
+    marginTop: spacing.sm2,
+  },
+  caption: {
+    marginTop: spacing.xs2,
   },
 });

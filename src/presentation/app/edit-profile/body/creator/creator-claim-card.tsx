@@ -1,18 +1,18 @@
-import { StyleSheet, View } from 'react-native';
 import type { CreatorTag } from '@domain/creators/creator-tag';
-import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { fontSizes, fontWeights, lineHeights, spacing } from '@presentation/base/theme';
+import { fontSizes, lineHeights } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { PillButton } from '@presentation/base/widgets/buttons/pill-button';
 import { PillButtonTone } from '@presentation/base/widgets/buttons/pill-button-tone';
-import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
-import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
+import { CreatorTagChip } from '@presentation/base/widgets/creators/creator-tag-chip';
 import { t } from '@presentation/i18n';
 import { CreatorAccountStep } from '@presentation/app/edit-profile/model/creator-account-step';
+import type { CreatorClaimStepType } from '@presentation/app/edit-profile/model/creator-claim-step-type';
+import { CreatorClaimStatus } from '@presentation/app/edit-profile/items/creator-claim-status';
+import { CreatorHandleChip } from '@presentation/app/edit-profile/items/creator-handle-chip';
 
 export interface CreatorClaimCardProps {
-  step: typeof CreatorAccountStep.Pending | typeof CreatorAccountStep.Approved | typeof CreatorAccountStep.Rejected;
+  step: CreatorClaimStepType;
   tag: CreatorTag;
   isBusy: boolean;
   onEdit: () => void;
@@ -20,9 +20,14 @@ export interface CreatorClaimCardProps {
 }
 
 /**
- * A claim that has been sent: the account, what review said, and what the
- * user can do about it — withdraw while in review, change or remove once
- * approved, edit and resend once refused.
+ * A claim that has been sent: its state, what review said, the account, and
+ * the one thing the user can do about it (design spec → Creators §7) —
+ * withdraw while in review, unlink once approved, try again once rejected
+ * (the form, prefilled).
+ *
+ * @remarks
+ * - **Approved shows the verified badge**, linked to the account; in review
+ *   and rejected the neutral chip, since nothing is verified.
  */
 export const CreatorClaimCard = ({ step, tag, isBusy, onEdit, onRemove }: CreatorClaimCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -36,46 +41,18 @@ export const CreatorClaimCard = ({ step, tag, isBusy, onEdit, onRemove }: Creato
 
   return (
     <>
-      {step !== CreatorAccountStep.Rejected ? (
-        <View style={styles.account}>
-          <CreatorPlatformMark platform={tag.platform} size={creatorMarkGeometry.row} />
-          <SizedText size={fontSizes.body} weight={fontWeights.semibold}>
-            {tag.displayHandle}
-          </SizedText>
-        </View>
-      ) : null}
-      <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.textSubtle}>
+      <CreatorClaimStatus step={step} />
+      <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.text}>
         {body}
       </SizedText>
+      {step === CreatorAccountStep.Approved ? <CreatorTagChip tag={tag} /> : <CreatorHandleChip tag={tag} />}
       {step === CreatorAccountStep.Pending ? (
-        <PillButton label={copy.withdraw} tone={PillButtonTone.Danger} onPress={onRemove} loading={isBusy} />
+        <PillButton label={copy.withdraw} tone={PillButtonTone.Ghost} onPress={onRemove} loading={isBusy} />
       ) : null}
       {step === CreatorAccountStep.Approved ? (
-        <View style={styles.pair}>
-          <View style={styles.half}>
-            <PillButton label={copy.change} tone={PillButtonTone.Outline} onPress={onEdit} disabled={isBusy} />
-          </View>
-          <View style={styles.half}>
-            <PillButton label={copy.remove} tone={PillButtonTone.Danger} onPress={onRemove} loading={isBusy} />
-          </View>
-        </View>
+        <PillButton label={copy.remove} tone={PillButtonTone.Ghost} onPress={onRemove} loading={isBusy} />
       ) : null}
       {step === CreatorAccountStep.Rejected ? <PillButton label={copy.resubmit} onPress={onEdit} disabled={isBusy} /> : null}
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  account: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm2,
-  },
-  pair: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-  },
-  half: {
-    flex: ValueConstants.one,
-  },
-});

@@ -11,6 +11,7 @@ import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { CreatorCard } from '@presentation/base/widgets/creators/creator-card';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
@@ -25,26 +26,33 @@ const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
 
 /**
  * The /creators body, by list state: a spinner before the first answer, the
- * error with a retry, an empty note, or the card grid with the intro above it.
+ * error with a retry, an empty note, or the card grid with the subtitle above it
+ * (13 on a phone, 15 on the web).
  * Every settled branch is pull-to-refresh.
  */
 export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { listState, onOpenCreator, cardSize, cellWidth } = vm;
+  const { isWebShell } = useLayout();
+  const { listState, onOpenCreator, cellWidth, gap } = vm;
   const renderItem = useCallback(
     ({ item }: { item: CreatorSummaryEntity }) => (
       <View style={{ width: cellWidth }}>
-        <CreatorCard creator={item} size={cardSize} onOpen={onOpenCreator} />
+        <CreatorCard creator={item} onOpen={onOpenCreator} />
       </View>
     ),
-    [cardSize, cellWidth, onOpenCreator],
+    [cellWidth, onOpenCreator],
   );
   const refreshControl = (
     <RefreshControl refreshing={vm.isPullRefreshing} onRefresh={vm.onRefresh} tintColor={colors.textMuted} colors={[colors.primary]} />
   );
   const intro = (
-    <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.textSubtle} style={styles.intro}>
-      {t().creators.listIntro}
+    <SizedText
+      size={isWebShell ? fontSizes.body : fontSizes.caption}
+      ratio={lineHeights.normal}
+      color={colors.textSubtle}
+      style={styles.intro}
+    >
+      {t().creators.listSubtitle}
     </SizedText>
   );
 
@@ -89,8 +97,8 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
           numColumns={vm.columns}
           renderItem={renderItem}
           ListHeaderComponent={intro}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.content}
+          columnWrapperStyle={{ gap }}
+          contentContainerStyle={[styles.content, { gap }]}
           refreshControl={refreshControl}
           onEndReached={vm.onEndReached}
           onEndReachedThreshold={ListConstants.endReachedThreshold}
@@ -115,10 +123,6 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: CreatorsGridMetrics.gutter,
     paddingBottom: spacing.xxl,
-    gap: CreatorsGridMetrics.gap,
-  },
-  row: {
-    gap: CreatorsGridMetrics.gap,
   },
   emptyContent: {
     flexGrow: ValueConstants.one,

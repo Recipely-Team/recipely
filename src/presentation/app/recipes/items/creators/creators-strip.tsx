@@ -3,7 +3,8 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { ListConstants } from '@presentation/base/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { controlSizes, fontSizes, fontWeights, opacities, spacing } from '@presentation/base/theme';
+import { Ionicons } from '@expo/vector-icons';
+import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { CreatorStripItem } from '@presentation/base/widgets/creators/creator-strip-item';
 import { useCreatorsStrip } from '@presentation/app/recipes/hooks/use-creators-strip';
@@ -13,8 +14,8 @@ import { ValueConstants } from '@core/constants';
 const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
 
 /**
- * The phone feed's "Creators" strip: a heading with "See all", then one row
- * of creators that scrolls sideways, directly above the recipe list.
+ * The phone feed's "Creators" strip: a 15/700 heading with "See all ›", then
+ * one row of 76-wide creators that scrolls sideways (design spec → Creators §4).
  *
  * @remarks
  * - **Renders nothing until there is a creator to show** (`useCreatorsStrip`).
@@ -34,14 +35,9 @@ export const CreatorsStrip = (): React.JSX.Element | null => {
   return (
     <View style={styles.section}>
       <View style={styles.head}>
-        <View style={styles.titles}>
-          <SizedText size={fontSizes.subtitle} weight={fontWeights.bold} accessibilityRole="header">
-            {t().creators.title}
-          </SizedText>
-          <SizedText size={fontSizes.small} color={colors.textSubtle}>
-            {t().creators.stripSubtitle}
-          </SizedText>
-        </View>
+        <SizedText size={fontSizes.body} weight={fontWeights.bold} accessibilityRole="header" style={styles.title}>
+          {t().creators.title}
+        </SizedText>
         <Pressable
           onPress={onOpenAll}
           accessibilityRole="button"
@@ -49,9 +45,10 @@ export const CreatorsStrip = (): React.JSX.Element | null => {
           hitSlop={spacing.sm}
           style={({ pressed }) => [styles.seeAll, { opacity: pressed ? opacities.pressed : opacities.full }]}
         >
-          <SizedText size={fontSizes.medium} weight={fontWeights.bold} color={colors.primary}>
+          <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.primary}>
             {t().creators.seeAll}
           </SizedText>
+          <Ionicons name="chevron-forward" size={iconSizes.sm} color={colors.primary} />
         </Pressable>
       </View>
       <FlatList
@@ -70,9 +67,8 @@ export const CreatorsStrip = (): React.JSX.Element | null => {
 
 const styles = StyleSheet.create({
   section: {
-    gap: spacing.md,
     paddingTop: spacing.sm,
-    paddingBottom: spacing.lg,
+    paddingBottom: spacing.sm,
   },
   head: {
     flexDirection: 'row',
@@ -81,16 +77,19 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.lg,
   },
-  titles: {
+  title: {
     flexShrink: ValueConstants.one,
-    gap: spacing.xxs,
   },
   seeAll: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xxs,
     minHeight: controlSizes.touchTarget,
-    justifyContent: 'center',
   },
   row: {
     gap: spacing.md,
+    paddingTop: spacing.xxs,
+    paddingBottom: spacing.sm,
     paddingHorizontal: spacing.lg,
   },
 });

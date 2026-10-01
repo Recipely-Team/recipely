@@ -1,13 +1,14 @@
 /**
- * The owner's own Profile shows the same verified creator chip as their
- * public page — and only once the claim is approved (`approvedTag`).
+ * The owner's own Profile shows the approved-creator badge beside the name —
+ * and only once the claim is approved (`approvedTag`).
  */
 import { act } from 'react-test-renderer';
 import { CreatorClaim } from '@domain/creators/creator-claim';
 import { CreatorStatus } from '@domain/creators/creator-status';
 import { CreatorTag } from '@domain/creators/creator-tag';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { CreatorTagChip } from '@presentation/base/widgets/creators/creator-tag-chip';
+import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge';
+import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
 import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity';
 
 const claimOf = (status: CreatorStatus): CreatorClaim => {
@@ -40,16 +41,15 @@ afterEach(async () => {
 });
 
 describe('ProfileIdentity — creator badge', () => {
-  it('shows the verified chip for an approved claim', () => {
+  it('shows the phone-sized approved badge for an approved claim', () => {
     const { root } = renderIdentity(claimOf(CreatorStatus.Approved));
 
-    const tag = root.findByType(CreatorTagChip).props.tag;
-    expect(tag instanceof CreatorTag && tag.displayHandle).toBe('@sefkerem');
+    expect(root.findByType(CreatorBadge).props.size).toBe(creatorMarkGeometry.badgeProfile);
   });
 
-  it.each([CreatorStatus.Pending, CreatorStatus.Rejected])('shows no chip while the claim is %s', (status) => {
+  it.each([CreatorStatus.Pending, CreatorStatus.Rejected])('shows no badge while the claim is %s', (status) => {
     const { root } = renderIdentity(claimOf(status));
 
-    expect(root.findAllByType(CreatorTagChip)).toHaveLength(0);
+    expect(root.findAllByType(CreatorBadge)).toHaveLength(0);
   });
 });
