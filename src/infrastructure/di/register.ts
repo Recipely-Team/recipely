@@ -10,6 +10,7 @@ import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { FavoritesRepository } from '@infrastructure/favorites/favorites-repository';
 import { FoodDiaryRepository } from '@infrastructure/diary/food-diary-repository';
+import { FoodCatalogRepository } from '@infrastructure/diary/foods/food-catalog-repository';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
@@ -176,6 +177,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.FoodDiaryRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new FoodDiaryRepository(http);
+  });
+
+  container.register(TOKENS.FoodCatalogRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new FoodCatalogRepository(http);
   });
 
   container.register(TOKENS.AddFavoriteUseCase, () => {

@@ -11,6 +11,9 @@ import type { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { FoodLogEntryEntityProps } from '@domain/diary/food-log-entry-entity-props';
 import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-changes';
+import type { FoodLogProduct } from '@domain/diary/entry/food-log-product';
+import { LoggableProduct } from '@domain/diary/foods/loggable-product';
+import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
 
 /**
  * One food the user logged on a day, in a meal — the food diary's aggregate
@@ -19,8 +22,9 @@ import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-cha
  * @remarks
  * - **Values are a snapshot.** Editing the recipe later does not change what
  *   was eaten; changing `servings` is a server-side rescale.
- * - **Servings only need to be positive here** (≤ 20), not on the 0.5 step:
- *   the stepper rule is `Servings`'s, and an entry is shown however it was logged.
+ * - **Servings only need to be positive here** (≤ 20, or ≤ 5000 of a
+ *   product's unit), not on a step: the stepper rules are `Servings`'s and
+ *   `FoodQuantity`'s, and an entry is shown however it was logged.
  */
 export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
   private constructor(props: FoodLogEntryEntityProps) {
@@ -34,7 +38,8 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
     if (props.name.trim().length === ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.diaryEntry.nameRequired, 'name'));
     }
-    if (!(props.servings > ValueConstants.zero && props.servings <= DiaryLimits.ServingsMax)) {
+    const max = props.product === null ? DiaryLimits.ServingsMax : DiaryLimits.ProductQuantityMax;
+    if (!(props.servings > ValueConstants.zero && props.servings <= max)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.diaryEntry.servingsInvalid, 'servings'));
     }
     return ok(new FoodLogEntryEntity(props));
@@ -68,8 +73,12 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
     return this.props.recipeImageUrl;
   }
 
+  get product(): FoodLogProduct | null {
+    return this.props.product;
+  }
+
   get isQuickAdd(): boolean {
-    return this.props.recipeId === null;
+    return this.props.recipeId === null && this.props.product === null;
   }
 
   /**
@@ -85,6 +94,15 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
       ...(servingsChanged ? { servings } : {}),
       ...(mealChanged ? { meal } : {}),
     };
+  }
+
+  /** A product entry as its product at the logged unit, with the quantity the edit sheet starts on; null otherwise. */
+  get loggedProduct(): { product: LoggableProduct; quantity: FoodQuantity } | null {
+    const product = this.props.product;
+    if (product === null) return null;
+    const loggable = LoggableProduct.fromLogged(this.props.name, product, this.props.nutrients.scale(ValueConstants.one / this.props.servings));
+    const unit = loggable.units[ValueConstants.zero] ?? { key: product.unitKey, amount: product.unitAmount };
+    return { product: loggable, quantity: FoodQuantity.of(unit, this.props.servings) };
   }
 
   /** This entry as one serving of a food — what the edit sheet's stepper multiplies. */

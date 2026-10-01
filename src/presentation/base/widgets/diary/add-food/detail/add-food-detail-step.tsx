@@ -1,9 +1,10 @@
-import { StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { Servings } from '@domain/diary/entry/servings';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { FoodThumb } from '@presentation/base/widgets/diary/food-thumb';
+import { FoodThumbIcon } from '@presentation/base/widgets/diary/food-thumb-icon';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { MealPicker } from '@presentation/base/widgets/diary/add-food/meal-picker';
@@ -38,12 +39,12 @@ export const AddFoodDetailStep = (props: AddFoodDetailStepProps): React.JSX.Elem
   );
 
   return (
-    <View style={styles.stack}>
+    <ScrollView contentContainerStyle={styles.stack} showsVerticalScrollIndicator={false}>
       <View style={styles.header}>
         {props.canGoBack ? (
           <RoundIconButton icon="chevron-back" accessibilityLabel={t().common.back} onPress={props.onBack} size={controlSizes.iconBtn} />
         ) : null}
-        <FoodThumb imageUrl={food.imageUrl} isQuickAdd={food.isQuickAdd} size={diarySizes.foodThumbLarge} />
+        <FoodThumb imageUrl={food.imageUrl} icon={food.isQuickAdd ? FoodThumbIcon.QuickAdd : null} size={diarySizes.foodThumbLarge} />
         <View style={styles.headerText}>
           <SizedText size={fontSizes.heading} weight={fontWeights.bold} numberOfLines={ValueConstants.two}>
             {food.name}
@@ -62,7 +63,7 @@ export const AddFoodDetailStep = (props: AddFoodDetailStepProps): React.JSX.Elem
         {strings.meal}
       </SizedText>
       <MealPicker value={props.meal} onChange={props.onMealChange} />
-    </View>
+    </ScrollView>
   );
 };
 

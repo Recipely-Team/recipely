@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1510 source files.
+[architecture.md](architecture.md). 1613 source files.
 
 ## Layers
 
@@ -31,10 +31,10 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(1)_
 - `auth/` _(7)_
 - `comments/` _(4)_
-- `common/` _(1)_
+- `common/` _(2)_
 - `creators/` _(14)_
 - `device/` _(3)_
-- `diary/` — calendar, day, entry, month, nutrition _(25)_
+- `diary/` — calendar, day, entry, foods, month, nutrition _(50)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -56,7 +56,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` _(3)_
-- `diary/` — day, entries, goals, month _(14)_
+- `diary/` — day, entries, foods, goals, month _(31)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
@@ -83,14 +83,14 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
-- `diary/` — dtos, read, write _(27)_
+- `diary/` — dtos, foods, read, write _(55)_
 - `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
 - `firebase/` _(7)_
 - `i18n/` _(1)_
 - `likes/` _(2)_
-- `network/` — envelope, errors, http, jwt, paging, upload _(25)_
+- `network/` — envelope, errors, http, jwt, paging, upload _(27)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(34)_
 - `storage/` _(6)_
@@ -117,15 +117,15 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(9)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(93)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(94)_
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(4)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(49)_
 - `timers/` — timer control helpers _(7)_
-- `utils/` (diary) — small pure helpers _(18)_
+- `utils/` (diary) — small pure helpers _(22)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(154)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(179)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 76c4e3faf3308746 -->
+<!-- fingerprint: 67f414f11ced2b20 -->

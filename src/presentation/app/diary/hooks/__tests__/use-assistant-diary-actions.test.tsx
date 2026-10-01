@@ -1,11 +1,3 @@
-/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-jest.mock('@presentation/base/hooks/diary/use-recipe-food-sources', () => ({
-  useRecipeFoodSources: () => mockSources,
-}));
-jest.mock('@presentation/base/hooks/diary/use-recipe-food-loader', () => ({
-  useRecipeFoodLoader: () => mockLoader,
-}));
-
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { ok } from '@core/result/result-helpers';
@@ -21,19 +13,40 @@ import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import { StoreStatus } from '@application/store/store-status';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { FoodSearchResults } from '@domain/diary/foods/search/food-search-results';
+import { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
+import { fakeFoodCatalogRepository, pageOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { configureFoodSearchStore } from '@application/diary/foods/food-search-store';
+import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
+import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
+import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
+import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import { LoggableProduct } from '@domain/diary/foods/loggable-product';
+import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
-import { recipeSummaryOf } from '@presentation/base/hooks/assistant/args/diary/__fixtures__/recipe-summary-of';
 import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
 import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-diary-sheets-result';
 
-const menemenRecipe = recipeSummaryOf('r1', 'Menemen', 300);
-const menemenFood = LoggableFood.of({ name: 'Menemen', perServing: nutrientsOf({ calories: 300, protein: 20 }), recipeId: 'r1', imageUrl: null });
+const hit = (id: string, name: string, calories: number): RecipeFoodHit =>
+  RecipeFoodHit.of({ id, name, imageUrl: null, perServing: nutrientsOf({ calories, protein: 20 }), isDraft: false });
 const apple = LoggableFood.of({ name: 'Apple', perServing: nutrientsOf({ calories: 95 }), recipeId: null, imageUrl: null });
-const mockSources: { mine: RecipeSummaryEntity[]; saved: RecipeSummaryEntity[]; feed: RecipeSummaryEntity[] } = { mine: [menemenRecipe], saved: [], feed: [] };
-const mockLoader = { loadingId: null, open: jest.fn(async () => menemenFood) };
+const ayran = LoggableProduct.fromLogged(
+  'Ayran · Az yağlı',
+  { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+  nutrientsOf({ calories: 52 }),
+);
+/** `/diary/foods/recent`: a quick-add apple and a glass and a half of ayran. */
+const recentFoods: RecentFood[] = [
+  { kind: RecentFoodKind.Food, key: 'apple', food: apple },
+  { kind: RecentFoodKind.Product, key: 'ayran', product: ayran, quantity: FoodQuantity.of({ key: 'glass', amount: 200 }, 1.5) },
+];
+/** What the server search answers: the user's Menemen, plus whatever a test puts among everyone's recipes. */
+const searchAnswer = (recipes: RecipeFoodHit[] = []): FoodSearchResults => ({
+  query: 'x', saved: pageOf([]), mine: pageOf([hit('r1', 'Menemen', 300)]), products: pageOf([]), recipes: pageOf(recipes),
+});
 
 const today = CalendarDate.today();
 const yesterday = today.addDays(-1);
@@ -41,13 +54,22 @@ const yesterday = today.addDays(-1);
 const harness = (
   entries = [foodLogEntryOf({ id: 'e1', name: 'Menemen', date: today, meal: MealSlot.Breakfast, servings: 1 })],
   otherDays: DiaryDay[] = [],
+  answer: FoodSearchResults = searchAnswer(),
 ) => {
+  const searchFoods = { execute: jest.fn(async () => ok(answer)) };
+  const listRecentFoods = { execute: jest.fn(async () => ok(pageOf(recentFoods))) };
+  const repo = fakeFoodCatalogRepository();
+  repo.search.mockResolvedValue(ok(answer));
+  const foodSearchStore = configureFoodSearchStore({
+    searchFoods: new SearchFoodsUseCase(repo),
+    searchRecipeGroup: new SearchRecipeGroupUseCase(repo),
+    searchProducts: new SearchProductsUseCase(repo),
+  });
   const day = DiaryDay.of({ date: today, entries: entries.map((e) => e), waterGlasses: 5, goals: NutritionGoals.defaults() });
   const diaryStore = create(() => ({
     selectedDate: today,
     days: Object.fromEntries([day, ...otherDays].map((d) => [d.date.value, d])),
     goals: NutritionGoals.defaults(),
-    recent: [apple],
     addEntry: jest.fn(async (entry: NewFoodLogEntry) => ok(foodLogEntryOf({ name: entry.name, servings: entry.servings }))),
     deleteEntry: jest.fn(async () => ok(undefined)),
     updateEntry: jest.fn(async () => ok(foodLogEntryOf({ name: 'Menemen', servings: 2, meal: MealSlot.Lunch }))),
@@ -70,7 +92,7 @@ const harness = (
     useAssistantDiaryActions({ view: { status: StoreStatus.Loaded, day }, selected: today, today, select, sheets });
     return null;
   };
-  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<Stores>);
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction], arg?: string): Promise<AssistantActionResultType> => {
     let result!: AssistantActionResultType;
     await act(async () => {
@@ -78,7 +100,7 @@ const harness = (
     });
     return result;
   };
-  return { registry, diaryStore, store: diaryStore.getState(), select, sheets, run };
+  return { registry, diaryStore, store: diaryStore.getState(), select, sheets, run, searchFoods, repo };
 };
 
 describe('useAssistantDiaryActions', () => {
@@ -91,10 +113,11 @@ describe('useAssistantDiaryActions', () => {
     await expect(h.run(AssistantAction.SelectDate, today.addDays(1).value)).resolves.toMatchObject({ ok: false, error: DiaryArgError.FutureDate });
   });
 
+  // A recipe created a minute ago is only on the server: the name is searched there, not in loaded lists.
   it('logFood logs a named recipe with its own nutrition, to the meal, amount and day asked', async () => {
     const h = harness();
     const result = await h.run(AssistantAction.LogFood, JSON.stringify({ name: 'menemen', meal: 'lunch', servings: 1.5, date: yesterday.value }));
-    expect(mockLoader.open).toHaveBeenCalledWith('r1');
+    expect(h.searchFoods.execute).toHaveBeenCalledWith('menemen', 8);
     const entry = h.store.addEntry.mock.calls[0]?.[0];
     expect([entry?.meal, entry?.servings, entry?.date.value, entry?.nutrients.calories]).toEqual([MealSlot.Lunch, 1.5, yesterday.value, 450]);
     expect(result).toMatchObject({ ok: true });
@@ -114,19 +137,20 @@ describe('useAssistantDiaryActions', () => {
     expect([quick?.name, quick?.recipeId, quick?.nutrients.carbs]).toEqual(['Simit', null, 50]);
   });
 
+  // `/diary/recent` keeps a product row's totals; divided per serving it logged "Ayran, 0 kcal".
+  it('logFood logs a recent product at its own unit, with that unit’s nutrients', async () => {
+    const h = harness();
+    await expect(h.run(AssistantAction.LogFood, JSON.stringify({ name: 'ayran', servings: 2 }))).resolves.toMatchObject({ ok: true });
+    const entry = h.store.addEntry.mock.calls[0]?.[0];
+    expect([entry?.servings, entry?.product?.unitKey, entry?.nutrients.calories]).toEqual([2, 'glass', 104]);
+  });
+
   // "bread" with the model's own estimate once logged the feed's "Banana Bread" at its calories.
   it('logFood keeps the model estimate when only a loose name match exists', async () => {
-    const saved = mockSources.feed;
-    mockSources.feed = [recipeSummaryOf('r2', 'Banana Bread', 420)];
-    try {
-      const h = harness();
-      await expect(h.run(AssistantAction.LogFood, JSON.stringify({ name: 'bread', calories: 80 }))).resolves.toMatchObject({ ok: true });
-      const entry = h.store.addEntry.mock.calls[0]?.[0];
-      expect([entry?.name, entry?.recipeId, entry?.nutrients.calories]).toEqual(['bread', null, 80]);
-      expect(mockLoader.open).not.toHaveBeenCalled();
-    } finally {
-      mockSources.feed = saved;
-    }
+    const h = harness(undefined, [], searchAnswer([hit('r2', 'Banana Bread', 420)]));
+    await expect(h.run(AssistantAction.LogFood, JSON.stringify({ name: 'bread', calories: 80 }))).resolves.toMatchObject({ ok: true });
+    const entry = h.store.addEntry.mock.calls[0]?.[0];
+    expect([entry?.name, entry?.recipeId, entry?.nutrients.calories]).toEqual(['bread', null, 80]);
   });
 
   // "Go to yesterday and remove the menemen": removeFood runs before the screen re-renders.
@@ -152,6 +176,8 @@ describe('useAssistantDiaryActions', () => {
     const result = await h.run(AssistantAction.SearchFood, 'menem');
     expect(h.sheets.openSearch).toHaveBeenCalledWith('menem');
     expect(result.title).toBe('Menemen, 300 kcal per serving, my recipe');
+    // The sheet's own search for the same query joins this one: one request, not two.
+    expect(h.repo.search).toHaveBeenCalledTimes(1);
   });
 
   it('removeFood removes the one match, and asks which when several match', async () => {

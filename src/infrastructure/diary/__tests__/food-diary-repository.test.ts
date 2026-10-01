@@ -60,7 +60,7 @@ describe('FoodDiaryRepository', () => {
     const { http, calls } = makeHttp(ok(entryDto));
     const r = await new FoodDiaryRepository(http).addEntry({
       date: CalendarDate.of(2026, 9, 30), meal: MealSlot.Lunch, name: 'Menemen', servings: 1,
-      nutrients: nutrientsOf({ calories: 300, protein: 20, carbs: 10, fat: 15 }), recipeId: 'r1',
+      nutrients: nutrientsOf({ calories: 300, protein: 20, carbs: 10, fat: 15 }), recipeId: 'r1', product: null,
     });
     expect(calls[0]).toMatchObject({ method: 'POST', url: '/diary/entries', data: { meal: 'LUNCH', calories: 300 } });
     expect(r.ok && r.value.id).toBe('e1');

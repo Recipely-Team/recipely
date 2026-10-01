@@ -3,7 +3,7 @@ import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
 import type { CreateFoodLogEntryRequestDto } from '@infrastructure/diary/write/create-food-log-entry-request-dto';
 import { toMealSlotWire } from '@infrastructure/diary/write/to-meal-slot-wire';
 
-/** `NewFoodLogEntry` → `POST /diary/entries` body; the name is trimmed, nothing is rounded. */
+/** `NewFoodLogEntry` → `POST /diary/entries` body; the name is trimmed, nothing is rounded, `product` only when there is one. */
 export const toCreateFoodLogEntryRequest: RequestMapper<NewFoodLogEntry, CreateFoodLogEntryRequestDto> = (entry) => ({
   date: entry.date.value,
   meal: toMealSlotWire(entry.meal),
@@ -15,4 +15,5 @@ export const toCreateFoodLogEntryRequest: RequestMapper<NewFoodLogEntry, CreateF
   fat: entry.nutrients.fat,
   fiber: entry.nutrients.fiber,
   recipeId: entry.recipeId,
+  ...(entry.product === null ? {} : { product: { ...entry.product } }),
 });

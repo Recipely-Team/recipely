@@ -6,6 +6,7 @@ import { formatMacroLine } from '@presentation/base/utils/diary/format-macro-lin
 import { formatServings } from '@presentation/base/utils/diary/format-servings';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 import { formatOneDecimal } from '@presentation/base/utils/diary/format-one-decimal';
+import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
 
 describe('diary formatting', () => {
   afterEach(() => setLocale(LocaleConstants.en));
@@ -33,5 +34,18 @@ describe('diary formatting', () => {
     setLocale(LocaleConstants.en);
     expect(formatServings(1, 'en')).toBe('1 serving');
     expect(formatServings(1.5, 'en')).toBe('1.5 servings');
+  });
+
+  it('reads a product amount in its unit, pluralised in English and not in Turkish', () => {
+    expect(formatFoodPortion({ key: 'glass', amount: 200 }, 2, 'ml', 'en')).toBe('2 glasses');
+    expect(formatFoodPortion({ key: 'portion', amount: 300 }, 1, 'g', 'en')).toBe('1 portion');
+    expect(formatFoodPortion({ key: 'ml', amount: 1 }, 250, 'ml', 'en')).toBe('250 ml');
+    setLocale(LocaleConstants.tr);
+    expect(formatFoodPortion({ key: 'glass', amount: 200 }, 1.5, 'ml', 'tr')).toBe('1,5 bardak');
+  });
+
+  it('shows a unit key the app has no word for as its amount in the base unit, never failing', () => {
+    expect(formatFoodPortion({ key: 'ladle', amount: 150 }, 2, 'ml', 'en')).toBe('300 ml');
+    expect(formatFoodPortion({ key: 'ladle', amount: 150 }, 2, null, 'en')).toBe('2 ladle');
   });
 });

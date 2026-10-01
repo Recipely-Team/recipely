@@ -13,6 +13,14 @@ import { useAddFoodFlow } from '@presentation/base/hooks/diary/use-add-food-flow
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import type { AddFoodFlow } from '@presentation/base/widgets/diary/add-food/state/add-food-flow';
+import { StoreStatus } from '@application/store/store-status';
+import { configureFoodCatalogStore } from '@application/diary/foods/food-catalog-store';
+import { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
+import { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
+import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
+import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
+import { fakeFoodCatalogRepository, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import { FoodDetail } from '@domain/diary/foods/product/food-detail';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
@@ -22,20 +30,39 @@ jest.mock('@presentation/base/feedback/show-toast', () => ({
 const date = CalendarDate.of(2026, 9, 29);
 const food = LoggableFood.of({ name: 'Menemen', perServing: nutrientsOf({ calories: 300, protein: 20 }), recipeId: 'r1', imageUrl: null });
 
-const setup = (request: AddFoodRequest, onOpenDiary?: () => void) => {
+/** Ayran with two variants, a glass of 200 ml, per 100 ml: 38 / 26 kcal. */
+const ayranDetail = () =>
+  FoodDetail.create({
+    source: 'curated', foodId: 'f1', offBarcode: null, kind: 'drink', category: 'dairy', name: 'Ayran', brand: null, packSize: null,
+    unit: 'ml', imageUrl: null,
+    variants: [
+      { foodVariantId: 'v1', name: 'Klasik', per100: nutrientsOf({ calories: 38, protein: 1.7 }), servingUnits: [{ key: 'glass', amount: 200 }] },
+      { foodVariantId: 'v2', name: 'Az yağlı', per100: nutrientsOf({ calories: 26, protein: 1.5 }), servingUnits: [{ key: 'glass', amount: 200 }] },
+    ],
+  });
+
+const setup = (request: AddFoodRequest, onOpenDiary?: () => void, detail = ayranDetail()) => {
   const actions = {
     addEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
     updateEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
     deleteEntry: jest.fn().mockResolvedValue(ok(undefined)),
   };
   const diaryStore = { getState: () => actions };
+  const repo = fakeFoodCatalogRepository();
+  repo.getProduct.mockResolvedValue(detail);
+  const foodCatalogStore = configureFoodCatalogStore({
+    listCategories: new ListFoodCategoriesUseCase(repo),
+    listProducts: new ListFoodProductsUseCase(repo),
+    listRecent: new ListRecentFoodPageUseCase(repo),
+    loadDetail: new LoadFoodDetailUseCase(repo),
+  });
   const onClose = jest.fn();
   const flow: { current: AddFoodFlow | null } = { current: null };
   const Probe = (): null => {
     flow.current = useAddFoodFlow(request, onClose, onOpenDiary);
     return null;
   };
-  renderComponent(<Probe />, { diaryStore } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { diaryStore, foodCatalogStore } as unknown as Partial<Stores>);
   const get = (): AddFoodFlow => {
     if (flow.current === null) throw new Error('not rendered');
     return flow.current;
@@ -90,6 +117,61 @@ describe('useAddFoodFlow', () => {
       flow.increment();
     });
     expect(get().servings.value).toBe(2);
+  });
+
+  it('logs a listed product: its variants load, one glass by default, totals for the amount, with the product reference', async () => {
+    const { actions, get } = setup({ kind: AddFoodRequestKind.Pick, date, meal: MealSlot.Lunch });
+    await act(async () => get().chooseProduct(productOf({ foodVariantId: 'v2' })));
+    const ready = get().product;
+    expect(ready?.status === StoreStatus.Loaded && [ready.product.name, ready.quantity.unit.key, ready.quantity.value]).toEqual([
+      'Ayran · Az yağlı', 'glass', 1,
+    ]);
+    act(() => get().incrementAmount());
+    expect(get().footerCalories).toBeCloseTo(78);
+    act(() => get().setUnit({ key: 'ml', amount: 1 }));
+    expect(get().footerCalories).toBeCloseTo(78);
+    act(() => get().setVariant(0));
+    expect(get().footerCalories).toBeCloseTo(114);
+    await act(async () => get().submit());
+    const entry = actions.addEntry.mock.calls[0][0];
+    expect([entry.name, entry.servings, entry.recipeId]).toEqual(['Ayran · Klasik', 300, null]);
+    expect(entry.product).toEqual({ source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'ml', unitAmount: 1 });
+  });
+
+  // The stepper went dead: a quantity in a unit the new variant lacks was kept and stepped, while the screen showed the default.
+  it('restarts the amount when the new variant lacks the chosen unit, and the stepper keeps working', async () => {
+    const tea = FoodDetail.create({
+      source: 'curated', foodId: 'f2', offBarcode: null, kind: 'drink', category: 'drinks', name: 'Tea', brand: null, packSize: null,
+      unit: 'ml', imageUrl: null,
+      variants: [
+        { foodVariantId: 't1', name: 'Black', per100: nutrientsOf({ calories: 1 }), servingUnits: [{ key: 'teaGlass', amount: 100 }] },
+        { foodVariantId: 't2', name: 'With sugar', per100: nutrientsOf({ calories: 20 }), servingUnits: [] },
+      ],
+    });
+    const { get } = setup({ kind: AddFoodRequestKind.Pick, date, meal: MealSlot.Lunch }, undefined, tea);
+    await act(async () => get().chooseProduct(productOf({ foodId: 'f2', foodVariantId: 't1' })));
+    act(() => get().incrementAmount());
+    act(() => get().setVariant(1));
+    const amountOf = (): [string, number] | null => {
+      const model = get().product;
+      return model?.status === StoreStatus.Loaded ? [model.quantity.unit.key, model.quantity.value] : null;
+    };
+    expect(amountOf()).toEqual(['ml', 100]);
+    act(() => get().incrementAmount());
+    expect(amountOf()).toEqual(['ml', 150]);
+  });
+
+  it('edits a product entry by its quantity, which the server rescales', async () => {
+    const entry = foodLogEntryOf({
+      name: 'Ayran · Az yağlı', servings: 1, nutrients: nutrientsOf({ calories: 52 }), recipeId: null,
+      product: { source: 'curated', foodVariantId: 'v2', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+    });
+    const { actions, get } = setup({ kind: AddFoodRequestKind.Edit, entry });
+    expect(get().product?.status).toBe(StoreStatus.Loaded);
+    act(() => get().incrementAmount());
+    expect(get().footerCalories).toBeCloseTo(78);
+    await act(async () => get().submit());
+    expect(actions.updateEntry).toHaveBeenCalledWith(entry, { servings: 1.5 });
   });
 
   it('removes an edited entry', async () => {

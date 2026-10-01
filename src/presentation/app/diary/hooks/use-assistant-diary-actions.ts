@@ -5,12 +5,14 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { CharConstants } from '@core/constants';
+import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/diary/foods/paging/loaded-items';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
-import { useRecipeFoodSources } from '@presentation/base/hooks/diary/use-recipe-food-sources';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
@@ -50,9 +52,8 @@ const SEARCH_ANSWER_LIMIT = 5;
  *   the numbers, or a snake_case reason it can act on.
  */
 export const useAssistantDiaryActions = ({ view, selected, today, select, sheets }: AssistantDiaryActionsDeps): void => {
-  const { diaryStore } = useStores();
+  const { diaryStore, foodSearchStore, listRecentFoods } = useStores();
   const locale = useLocale();
-  const sources = useRecipeFoodSources();
 
   useAssistantScreenContent(() => diaryScreenLine(view, selected, today));
   useAssistantScreenReading(() => diaryDayReading(view, selected, today, locale));
@@ -90,19 +91,24 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
       async (arg?: string): Promise<AssistantActionResultType> => {
         const query = (arg ?? CharConstants.empty).trim();
         if (query.length === 0) return { ok: false, error: 'nothing_to_search' };
+        // The sheet opens on the same query; its search joins this one instead of repeating it.
         sheets.openSearch(query);
-        const matches = rankByName(buildFoodCandidates(sources, diaryStore.getState().recent), (c) => c.name, query);
+        const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE)]);
+        const s = foodSearchStore.getState();
+        if (s.saved.status === StoreStatus.Error) return { ok: false, error: failureReason(s.saved.failure) };
+        const found = { saved: loadedItems(s.saved), mine: loadedItems(s.mine), products: loadedItems(s.products), recipes: loadedItems(s.recipes) };
+        const matches = rankByName(buildFoodCandidates(found, recent.ok ? recent.value.items : []), (c) => c.name, query);
         if (matches.length === 0) return { ok: true, title: 'no matches', n: { matches: 0 } };
         return {
           ok: true,
           n: { matches: matches.length },
           title: matches
             .slice(0, SEARCH_ANSWER_LIMIT)
-            .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal per serving, ${c.source}`)
+            .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal ${c.per}, ${c.source}`)
             .join(SCREEN_PART_SEPARATOR),
         };
       },
-      [diaryStore, sheets, sources],
+      [foodSearchStore, listRecentFoods, sheets],
     ),
   );
 

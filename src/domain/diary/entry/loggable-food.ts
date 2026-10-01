@@ -82,6 +82,7 @@ export class LoggableFood {
       servings: servings.value,
       nutrients: this.nutrientsFor(servings),
       recipeId: this.props.recipeId,
+      product: null,
     };
   }
 }

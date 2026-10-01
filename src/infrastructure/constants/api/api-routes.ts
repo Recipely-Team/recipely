@@ -86,6 +86,15 @@ export const ApiRoutes = {
     entries: '/diary/entries',
     entry: (id: string): string => `/diary/entries/${encodeURIComponent(id)}`,
     goals: '/diary/goals',
+    /** What the Add food sheet can log: grouped search, curated catalogue, branded packs, recent foods. */
+    foods: {
+      search: '/diary/foods/search',
+      products: '/diary/foods/products',
+      product: (foodId: string): string => `/diary/foods/products/${encodeURIComponent(foodId)}`,
+      barcode: (barcode: string): string => `/diary/foods/products/barcode/${encodeURIComponent(barcode)}`,
+      categories: '/diary/foods/categories',
+      recent: '/diary/foods/recent',
+    },
   },
   assistant: {
     session: '/assistant/session',

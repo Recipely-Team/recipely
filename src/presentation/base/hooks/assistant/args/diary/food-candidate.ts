@@ -1,11 +1,12 @@
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
-import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import type { FoodSourceType } from '@presentation/base/hooks/assistant/args/diary/food-source';
 
 /**
- * Something the user may mean by a food's name: a listed recipe (its macros
- * need the full recipe) or a food already loggable as it is.
+ * Something the user may mean by a food's name: a food loggable in servings
+ * (a recipe the search found, a recent food) or a catalogue product logged in
+ * its own unit. `per` says what `kcal` is for, in the model's English.
  */
 export type FoodCandidate =
-  | { kind: 'recipe'; source: FoodSourceType; name: string; kcal: number; recipe: RecipeSummaryEntity }
-  | { kind: 'food'; source: FoodSourceType; name: string; kcal: number; food: LoggableFood };
+  | { kind: 'food'; source: FoodSourceType; name: string; kcal: number; per: string; food: LoggableFood }
+  | { kind: 'product'; source: FoodSourceType; name: string; kcal: number; per: string; product: LoggableProduct };

@@ -8,6 +8,10 @@ import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/c
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import type { DiaryStoreState } from '@application/diary/diary-store-state';
 import type { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
+import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
+import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
+import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
+import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
 import type { FileImportStoreState } from '@application/recipes/import-file/file-import-store-state';
@@ -62,6 +66,14 @@ export interface ApplicationStores {
   creatorProfileStore: BoundStore<CreatorProfileStoreState>;
   /** The food diary: days, months, recent foods, goals. User-scoped. */
   diaryStore: BoundStore<DiaryStoreState>;
+  /** The Add food sheet's server-side search, four paged groups. User-scoped. */
+  foodSearchStore: BoundStore<FoodSearchStoreState>;
+  /** The Add food sheet's shelves, products, recent foods and opened product. User-scoped. */
+  foodCatalogStore: BoundStore<FoodCatalogStoreState>;
+  /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
+  searchFoods: SearchFoodsUseCase;
+  /** Recent foods, product-aware, for the assistant's name matching. */
+  listRecentFoods: ListRecentFoodPageUseCase;
   /** Recipe → one serving the Add food sheet can log; synchronous, no I/O. */
   buildLoggableFoodFromRecipe: BuildLoggableFoodFromRecipeUseCase;
   loadFavoritesUseCase: LoadFavoritesUseCase;

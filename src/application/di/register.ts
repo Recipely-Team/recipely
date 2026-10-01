@@ -53,6 +53,16 @@ import { LoadRecentFoodsUseCase } from '@application/diary/entries/load-recent-f
 import { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
 import { LoadNutritionGoalsUseCase } from '@application/diary/goals/load-nutrition-goals-use-case';
 import { SaveNutritionGoalsUseCase } from '@application/diary/goals/save-nutrition-goals-use-case';
+import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
+import { configureFoodSearchStore } from '@application/diary/foods/food-search-store';
+import { configureFoodCatalogStore } from '@application/diary/foods/food-catalog-store';
+import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
+import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
+import { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
+import { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
+import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
+import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
 import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -218,6 +228,20 @@ export const registerApplication = (container: Container): ApplicationStores => 
     loadGoals: new LoadNutritionGoalsUseCase(diaryRepo),
     saveGoals: new SaveNutritionGoalsUseCase(diaryRepo),
   });
+  const foodCatalogRepo = container.resolve<FoodCatalogRepositoryInterface>(TOKENS.FoodCatalogRepository);
+  const searchFoods = new SearchFoodsUseCase(foodCatalogRepo);
+  const listRecentFoods = new ListRecentFoodPageUseCase(foodCatalogRepo);
+  const foodSearchStore = configureFoodSearchStore({
+    searchFoods,
+    searchRecipeGroup: new SearchRecipeGroupUseCase(foodCatalogRepo),
+    searchProducts: new SearchProductsUseCase(foodCatalogRepo),
+  });
+  const foodCatalogStore = configureFoodCatalogStore({
+    listCategories: new ListFoodCategoriesUseCase(foodCatalogRepo),
+    listProducts: new ListFoodProductsUseCase(foodCatalogRepo),
+    listRecent: listRecentFoods,
+    loadDetail: new LoadFoodDetailUseCase(foodCatalogRepo),
+  });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,
     addComment: addCommentUseCase,
@@ -296,6 +320,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
     diaryStore.getState().clear();
+    foodSearchStore.getState().clear();
+    foodCatalogStore.getState().clear();
     importJobStore.getState().clear();
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
@@ -339,6 +365,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
     creatorsStore,
     creatorProfileStore,
     diaryStore,
+    foodSearchStore,
+    foodCatalogStore,
+    searchFoods,
+    listRecentFoods,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,
   };

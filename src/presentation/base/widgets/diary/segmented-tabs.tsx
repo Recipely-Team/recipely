@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { diarySizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
+import { diarySizes, fontSizes, fontWeights, lineHeights, radii, spacing } from '@presentation/base/theme';
 import type { SegmentOption } from '@presentation/base/widgets/diary/segment-option';
 import { ValueConstants } from '@core/constants';
 
@@ -15,6 +15,7 @@ export interface SegmentedTabsProps<K extends string> {
  * A row of equal segments on a `surface` track; the selected one is filled
  * `primary`. Each segment is a `tab` with its selected state, so a screen
  * reader announces "Lunch, tab, selected" (design spec → Food Diary §9).
+ * A label may wrap to two lines, so four tabs fit at 375 pt (Add food v2 §2).
  */
 export const SegmentedTabs = <K extends string>({ options, value, onChange }: SegmentedTabsProps<K>): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -34,7 +35,9 @@ export const SegmentedTabs = <K extends string>({ options, value, onChange }: Se
               size={fontSizes.caption}
               weight={fontWeights.bold}
               color={selected ? colors.primaryText : colors.textMuted}
-              numberOfLines={ValueConstants.one}
+              numberOfLines={ValueConstants.two}
+              ratio={lineHeights.tight}
+              style={styles.label}
             >
               {option.label}
             </SizedText>
@@ -46,6 +49,7 @@ export const SegmentedTabs = <K extends string>({ options, value, onChange }: Se
 };
 
 const styles = StyleSheet.create({
+  label: { textAlign: 'center' },
   track: {
     flexDirection: 'row',
     borderRadius: radii.lg,
