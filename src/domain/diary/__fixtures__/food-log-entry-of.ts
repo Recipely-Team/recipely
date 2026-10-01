@@ -15,6 +15,7 @@ export const foodLogEntryOf = (overrides: Partial<FoodLogEntryEntityProps> = {})
     nutrients: nutrientsOf({ calories: 300, protein: 20, carbs: 10, fat: 15 }),
     recipeId: 'recipe-1',
     recipeImageUrl: null,
+    product: null,
     ...overrides,
   });
   if (!created.ok) throw new Error(created.failure.message);

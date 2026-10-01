@@ -33,3 +33,9 @@ export const CREATOR_RECIPES_PAGE_SIZE = 20;
 
 /** Backend caps `limit` at 1–30. */
 export const TRENDING_RECIPES_LIMIT = 10;
+
+/** Each group of the Add food search, per page (Add food v2 spec §3); the backend caps pageSize at 100. */
+export const FOOD_SEARCH_PAGE_SIZE = 8;
+
+/** The Add food sheet's catalogue lists — categories, products, recent foods. */
+export const FOOD_LIST_PAGE_SIZE = 20;

@@ -89,7 +89,7 @@ describe('diary read mappers', () => {
   });
 
   it('reduces a recent food to one serving', () => {
-    const r = toLoggableFood({ ...entryDto, servings: 2 });
+    const r = toLoggableFood({ ...entryDto, servings: 2, product: null });
     expect(r.ok && r.value.perServing.calories).toBe(230);
     expect(r.ok && r.value.isQuickAdd).toBe(true);
   });
@@ -105,6 +105,7 @@ describe('diary request mappers', () => {
         servings: 1.5,
         nutrients: nutrientsOf({ calories: 345, protein: 6 }),
         recipeId: null,
+        product: null,
       }),
     ).toEqual({
       date: '2026-09-30',
@@ -118,6 +119,31 @@ describe('diary request mappers', () => {
       fiber: null,
       recipeId: null,
     });
+  });
+
+  it('sends a product entry with its product reference and the quantity as servings', () => {
+    const body = toCreateFoodLogEntryRequest({
+      date: CalendarDate.of(2026, 9, 30),
+      meal: MealSlot.Lunch,
+      name: 'Ayran · Az yağlı',
+      servings: 1.5,
+      nutrients: nutrientsOf({ calories: 78 }),
+      recipeId: null,
+      product: { source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+    });
+    expect(body).toMatchObject({
+      servings: 1.5,
+      calories: 78,
+      product: { source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'glass', unitAmount: 200 },
+    });
+  });
+
+  it('reads an entry’s product reference, and refuses one from an unknown source', () => {
+    const product = { source: 'curated', foodVariantId: 'v1', offBarcode: null, unitKey: 'ml', unitAmount: 1 };
+    const read = toFoodLogEntry({ ...entryDto, servings: 250, product });
+    expect(read.ok && read.value.product).toEqual(product);
+    expect(read.ok && read.value.isQuickAdd).toBe(false);
+    expect(toFoodLogEntry({ ...entryDto, product: { ...product, source: 'usda' } }).ok).toBe(false);
   });
 
   it('sends only the changed fields of an update', () => {

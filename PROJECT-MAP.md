@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1510 source files.
+[architecture.md](architecture.md). 1566 source files.
 
 ## Layers
 
@@ -31,10 +31,10 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(1)_
 - `auth/` _(7)_
 - `comments/` _(4)_
-- `common/` _(1)_
+- `common/` _(2)_
 - `creators/` _(14)_
 - `device/` _(3)_
-- `diary/` — calendar, day, entry, month, nutrition _(25)_
+- `diary/` — calendar, day, entry, foods, month, nutrition _(50)_
 - `drafts/` _(7)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -83,14 +83,14 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
-- `diary/` — dtos, read, write _(27)_
+- `diary/` — dtos, foods, read, write _(55)_
 - `drafts/` — dtos _(6)_
 - `favorites/` _(2)_
 - `feedback/` _(3)_
 - `firebase/` _(7)_
 - `i18n/` _(1)_
 - `likes/` _(2)_
-- `network/` — envelope, errors, http, jwt, paging, upload _(25)_
+- `network/` — envelope, errors, http, jwt, paging, upload _(27)_
 - `notifications/` — dtos _(8)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(34)_
 - `storage/` _(6)_
@@ -158,4 +158,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 76c4e3faf3308746 -->
+<!-- fingerprint: a77da58823902025 -->

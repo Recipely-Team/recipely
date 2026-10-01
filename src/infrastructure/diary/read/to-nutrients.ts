@@ -1,19 +1,9 @@
 import type { Mapper } from '@core/mapper/mapper';
 import type { ValidationFailure } from '@core/failure';
 import { Nutrients } from '@domain/diary/nutrition/nutrients';
+import type { NutrientFieldsDto } from '@infrastructure/diary/dtos/nutrient-fields-dto';
 
-/**
- * The nutrient fields every diary DTO shares. A field the wire omits (the
- * month rows carry no fiber) or sends as `null` is "not reported".
- */
-interface NutrientFieldsDto {
-  calories: number;
-  protein?: number | null;
-  carbs?: number | null;
-  fat?: number | null;
-  fiber?: number | null;
-}
-
+/** The nutrient fields every diary DTO shares → `Nutrients`; an omitted or `null` field is "not reported". */
 export const toNutrients: Mapper<NutrientFieldsDto, Nutrients, ValidationFailure> = (dto) =>
   Nutrients.create({
     calories: dto.calories,

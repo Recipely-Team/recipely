@@ -162,6 +162,10 @@ export const DiagnosticMessage = {
     foodNameTooLong: 'Food name is longer than the diary allows',
     nutrientTooHigh: (field: string): string => `Nutrient ${field} is past the diary's plausibility cap`,
     recipeWithoutCalories: 'A recipe without calories per serving cannot be logged',
+    foodWithoutVariants: 'A catalogue food arrived without any variant',
+    foodUnitInvalid: (raw: string): string => `Not a food base unit (g or ml): ${raw}`,
+    foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
+    foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
   },
   assistant: {
     microphoneDenied: 'Microphone permission was refused',
