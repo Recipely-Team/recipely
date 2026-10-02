@@ -221,7 +221,7 @@ weight log over time is wanted (it turns a setting into a chart).
 
 ## 9. Comment-to-DM recipe delivery for creators
 
-**Status:** `idea` · **Next after:** the diary voice assistant
+**Status:** `in progress` — board: [docs/comment-to-dm-plan.md](comment-to-dm-plan.md)
 
 Food creators get hundreds of "recipe?" comments per Reel and pay ~$100/month
 for ManyChat-style tools that DM a link when a follower comments a keyword.
