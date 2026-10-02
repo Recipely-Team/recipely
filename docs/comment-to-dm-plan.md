@@ -12,11 +12,11 @@ creator tag can be approved without an admin — which is what fills the Chefs t
 | Phase | Work | Status | PR |
 |-------|------|--------|-----|
 | 0 | Technical scope (this file) | ✅ done | — |
-| 1 | Meta app setup (user) | ⏳ waiting on the user | — |
-| 2 | Design in the Claude Design prototype | ⏳ | — |
-| 3 | Backend: Instagram Login, tokens, webhooks, rules, sender | ⏳ | — |
-| 4 | App: connect, automations list, rule editor, activity | 🔄 PR open (feat/instagram-automations) | — |
-| 5 | Test with app-role accounts (Standard Access) | ⏳ | — |
+| 1 | Meta app setup (user) | 🟡 app created, env on dev+prod; redirect/webhook/testers pending | — |
+| 2 | Design in the Claude Design prototype | ✅ done | — |
+| 3 | Backend: Instagram Login, tokens, webhooks, rules, sender | ✅ merged to dev | backend [#374](https://github.com/Recipely-Team/recipely-backend/pull/374) |
+| 4 | App: connect, automations list, rule editor, activity | ✅ merged to dev, dev APK/IPA built | [#503](https://github.com/Recipely-Team/recipely/pull/503) |
+| 5 | Test with app-role accounts (Standard Access) | ⏳ on device | — |
 | 6 | Meta App Review + Business Verification (Advanced Access) | ⏳ | — |
 
 ## Platform facts (Instagram API with Instagram Login, checked 2026-10-02)
