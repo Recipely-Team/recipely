@@ -7,7 +7,7 @@ import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFood } from '@domain/diary/foods/search/recent-food';
 import { FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
-import { PagedListLoader } from '@application/diary/foods/paging/paged-list-loader';
+import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
 import type { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';

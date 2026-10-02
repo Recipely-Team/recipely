@@ -3,7 +3,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { DmKeywords } from '@domain/instagram/dm/dm-keywords';
 import { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
-import { DmSendReason } from '@domain/instagram/dm/dm-send-reason';
+import { DmSendReason } from '@domain/instagram/activity/dm-send-reason';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';

@@ -4,9 +4,9 @@ import { ValueConstants } from '@core/constants';
 import type { Page } from '@domain/common/page';
 import { StoreStatus } from '@application/store/store-status';
 import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
-import { loadedList } from '@application/diary/foods/paging/loaded-list';
-import { appendedList } from '@application/diary/foods/paging/appended-list';
+import type { PagedList } from '@application/store/paging/paged-list';
+import { loadedList } from '@application/store/paging/loaded-list';
+import { appendedList } from '@application/store/paging/appended-list';
 
 /** Fetches one 1-based page of a list. */
 type PageFetch<T> = (page: number) => Promise<Result<Page<T>, Failure>>;

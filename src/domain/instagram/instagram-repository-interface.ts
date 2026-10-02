@@ -7,7 +7,7 @@ import type { InstagramMedia } from '@domain/instagram/instagram-media';
 import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
 import type { DmRuleChanges } from '@domain/instagram/dm/dm-rule-changes';
-import type { DmSend } from '@domain/instagram/dm/dm-send';
+import type { DmSend } from '@domain/instagram/activity/dm-send';
 
 /**
  * The viewer's Instagram link and comment-to-DM rules (backend #374). Every

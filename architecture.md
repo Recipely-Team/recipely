@@ -1301,7 +1301,7 @@ had its own envelope (`RecipePage`, `CreatorPage`, `CommentPage`, `PagedDrafts` 
 DTO twins) and they drifted — half carried `hasMore`, half made each caller recompute
 it. Page sizes are named constants in `infrastructure/constants/api/api-paging.ts`.
 **Every list screen pages on scroll** (`FlatList onEndReached`) through its store's
-paging — `PagedList<T>` + `PagedListLoader` (`application/diary/foods/paging/`) where
+paging — `PagedList<T>` + `PagedListLoader` (`application/store/paging/`) where
 the list fits it — never by loading one big page. **Enforced mechanically** by
 `check:structure` rule AK, judged by the body rather than the name (half the old
 envelopes were `*ListDto` / `*Response`): an exported interface or type whose own body

@@ -9,7 +9,7 @@ import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
-import { PagedListLoader } from '@application/diary/foods/paging/paged-list-loader';
+import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
 import type { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import type { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';

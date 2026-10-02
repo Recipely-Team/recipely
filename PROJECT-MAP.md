@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1648 source files.
+[architecture.md](architecture.md). 1665 source files.
 
 ## Layers
 
@@ -39,7 +39,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `favorites/` _(1)_
 - `feedback/` _(3)_
 - `i18n/` _(1)_
-- `instagram/` — connect, dm _(24)_
+- `instagram/` — activity, connect, dm _(24)_
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(11)_
@@ -57,17 +57,18 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` _(3)_
-- `diary/` — day, entries, foods, goals, month _(31)_
+- `diary/` — day, entries, foods, goals, month _(26)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
 - `i18n/` _(5)_
+- `instagram/` — activity, connect, rules _(17)_
 - `likes/` _(6)_
 - `notifications/` — list, read _(11)_
 - `onboarding/` _(2)_
 - `recipes/` — create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(57)_
 - `storage/` _(2)_
-- `store/` _(2)_
+- `store/` — paging _(7)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes _(11)_
 
@@ -160,4 +161,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: ccb094f0aa9c11ec -->
+<!-- fingerprint: 6e42002012d6c933 -->

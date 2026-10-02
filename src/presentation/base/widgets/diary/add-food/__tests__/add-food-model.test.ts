@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { StoreStatus } from '@application/store/store-status';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
-import { loadedList } from '@application/diary/foods/paging/loaded-list';
+import type { PagedList } from '@application/store/paging/paged-list';
+import { loadedList } from '@application/store/paging/loaded-list';
 import { hitOf, pageOf, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { MealSlot } from '@domain/diary/meal-slot';

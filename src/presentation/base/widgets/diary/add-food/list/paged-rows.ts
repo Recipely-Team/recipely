@@ -1,5 +1,5 @@
 import { StoreStatus } from '@application/store/store-status';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 import { CharConstants } from '@core/constants';
 import type { PickRow } from '@presentation/base/widgets/diary/add-food/list/pick-row';
 import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick-row-type';

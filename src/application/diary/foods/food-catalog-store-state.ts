@@ -1,7 +1,7 @@
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFood } from '@domain/diary/foods/search/recent-food';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 import type { FoodDetailState } from '@application/diary/foods/food-detail-state';
 
 export interface FoodCatalogStoreState {

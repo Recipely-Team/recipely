@@ -7,7 +7,7 @@ import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { CharConstants } from '@core/constants';
 import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { StoreStatus } from '@application/store/store-status';
-import { loadedItems } from '@application/diary/foods/paging/loaded-items';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';

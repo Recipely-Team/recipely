@@ -1,5 +1,5 @@
 import { StoreStatus } from '@application/store/store-status';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 /**
  * Which list the end of the scroll pages next: the first, in display order,
