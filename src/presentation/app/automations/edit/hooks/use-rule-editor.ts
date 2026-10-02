@@ -10,6 +10,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { EditorStep, type EditorStepType } from '@presentation/app/automations/edit/model/editor-step';
 import { EDITOR_STEPS } from '@presentation/app/automations/edit/model/editor-steps';
 import type { UseRuleEditorResult } from '@presentation/app/automations/edit/model/use-rule-editor-result';
+import { useAutomationsGuard } from '@presentation/app/automations/shared/hooks/use-automations-guard';
 import { t } from '@presentation/i18n';
 
 /**
@@ -20,12 +21,14 @@ import { t } from '@presentation/i18n';
  * - **An existing rule fills the form once**, when it arrives; edits after
  *   that are the user's. Its post cannot change — the API refuses it — so
  *   the post step only shows it.
+ * - **A rule that cannot be opened is an error with Try again**, never an
+ *   endless spinner; without an Instagram link the editor is not reachable.
  * - **Forward only through valid steps**; back is always free.
  */
 export const useRuleEditor = (): UseRuleEditorResult => {
   const router = useRouter();
   const params = useLocalSearchParams<{ ruleId?: string }>();
-  const ruleId = params.ruleId ?? null;
+  const ruleId = params.ruleId === undefined || params.ruleId.length === ValueConstants.zero ? null : params.ruleId;
   const { automationsStore } = useStores();
   const opened = automationsStore((s) => s.opened);
   const copy = t().instagram;
@@ -43,9 +46,12 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   const [isDeleteOpen, setDeleteOpen] = useState(false);
   const [seeded, setSeeded] = useState(false);
 
+  useAutomationsGuard(false);
+
   useEffect(() => {
     if (ruleId !== null) void automationsStore.getState().openRule(ruleId);
   }, [automationsStore, ruleId]);
+  const loadFailure = ruleId !== null && opened.status === StoreStatus.Error && opened.id === ruleId ? opened.failure : null;
 
   const existing = ruleId !== null && opened.status === StoreStatus.Loaded && opened.rule.id === ruleId ? opened.rule : null;
   if (existing !== null && !seeded) {
@@ -72,7 +78,11 @@ export const useRuleEditor = (): UseRuleEditorResult => {
   };
 
   return {
-    isLoading: ruleId !== null && !seeded,
+    isLoading: ruleId !== null && !seeded && loadFailure === null,
+    loadFailure,
+    retryLoad: () => {
+      if (ruleId !== null) void automationsStore.getState().openRule(ruleId);
+    },
     isEdit: ruleId !== null,
     step,
     stepValid,

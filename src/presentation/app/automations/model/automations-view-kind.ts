@@ -2,6 +2,8 @@
 export const AutomationsViewKind = {
   /** The link has not answered yet. */
   Loading: 'loading',
+  /** The link could not be read: Try again. */
+  Error: 'error',
   /** The server offers no Instagram login: nothing to manage. */
   Unavailable: 'unavailable',
   /** Not connected: Connect with Instagram. */

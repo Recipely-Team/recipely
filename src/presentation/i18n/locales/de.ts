@@ -1326,6 +1326,7 @@ export const de = {
     connectBody: "Melde dich mit Instagram an, um dein Profikonto zu verknüpfen. Dein Creator-Tag wird sofort bestätigt und du kannst Automationen einschalten.",
     cancelled: "Die Instagram-Anmeldung wurde abgebrochen. Es wurde nichts verknüpft.",
     loginFailed: "Instagram konnte die Anmeldung nicht abschließen. Versuch es erneut.",
+    loginNotFinished: "Die Instagram-Anmeldung wurde nicht abgeschlossen. Verbinde dich erneut.",
     viaInstagram: "Über Instagram bestätigt",
     approved: "Bestätigt",
     expired: "Verbindung abgelaufen. Instagram akzeptiert diese Verbindung seit {date} nicht mehr. Automationen sind pausiert, bis du dich neu verbindest.",

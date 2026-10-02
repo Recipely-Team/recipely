@@ -1326,6 +1326,7 @@ export const es = {
     connectBody: "Inicia sesión con Instagram para vincular tu cuenta profesional. Tu etiqueta de creador se aprueba al momento y puedes activar automatizaciones.",
     cancelled: "Se canceló el inicio de sesión en Instagram. No se vinculó nada.",
     loginFailed: "Instagram no pudo completar el inicio de sesión. Inténtalo de nuevo.",
+    loginNotFinished: "El inicio de sesión de Instagram no terminó. Vuelve a conectar.",
     viaInstagram: "Verificado con Instagram",
     approved: "Aprobado",
     expired: "La conexión caducó. Instagram dejó de aceptarla el {date}. Las automatizaciones están en pausa hasta que vuelvas a conectar.",

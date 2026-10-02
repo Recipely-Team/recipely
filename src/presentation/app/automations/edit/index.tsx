@@ -9,6 +9,8 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { failureContent, failureIcon } from '@presentation/base/errors/failure-lookups';
 import { AutomationsBar } from '@presentation/app/automations/shared/items/automations-bar';
 import { useRuleEditor } from '@presentation/app/automations/edit/hooks/use-rule-editor';
 import { EditorStep } from '@presentation/app/automations/edit/model/editor-step';
@@ -77,6 +79,16 @@ export const AutomationEditScreen = (): React.JSX.Element => {
     }
   };
 
+  const body = (): React.JSX.Element => {
+    if (vm.loadFailure !== null) {
+      const content = failureContent(vm.loadFailure);
+      return (
+        <ErrorState icon={failureIcon(vm.loadFailure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.retryLoad} />
+      );
+    }
+    return vm.isLoading ? <ActivityIndicator color={colors.primary} /> : step();
+  };
+
   const isLast = vm.step === EditorStep.Message;
   return (
     <KeyboardAvoider style={[styles.screen, { backgroundColor: colors.background }]}>
@@ -85,7 +97,7 @@ export const AutomationEditScreen = (): React.JSX.Element => {
       {isExpanded ? null : <EditorProgress step={vm.step} />}
       <View style={[styles.body, isExpanded ? styles.row : null]}>
         {isExpanded ? <EditorStepper step={vm.step} stepValid={vm.stepValid} onGoTo={vm.goTo} /> : null}
-        <View style={styles.step}>{vm.isLoading ? <ActivityIndicator color={colors.primary} /> : step()}</View>
+        <View style={styles.step}>{body()}</View>
       </View>
       <EditorFooter
         isLast={isLast}

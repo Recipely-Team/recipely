@@ -1326,6 +1326,7 @@ export const ar = {
     connectBody: "سجّل الدخول عبر Instagram لربط حسابك الاحترافي. تُعتمد شارة صانع المحتوى فورًا ويمكنك تشغيل الأتمتة.",
     cancelled: "أُلغي تسجيل الدخول إلى Instagram. لم يُربط شيء.",
     loginFailed: "تعذّر على Instagram إكمال تسجيل الدخول. حاول مجددًا.",
+    loginNotFinished: "لم يكتمل تسجيل الدخول إلى Instagram. حاول الربط مجددًا.",
     viaInstagram: "تم التحقق عبر Instagram",
     approved: "معتمد",
     expired: "انتهت صلاحية الاتصال. توقف Instagram عن قبول هذا الاتصال في {date}. الأتمتة متوقفة مؤقتًا حتى تعيد الربط.",

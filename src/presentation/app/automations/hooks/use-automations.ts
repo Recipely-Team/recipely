@@ -16,6 +16,8 @@ import type { UseAutomationsResult } from '@presentation/app/automations/model/u
  * @remarks
  * - **The link and the first page reload on every focus**, so a rule saved
  *   in the editor or an expiry is there when the user comes back.
+ * - **A link that cannot be read is an error with Try again**, never an
+ *   endless spinner.
  * - **A refused switch flips back** (the store) and says why (a toast).
  */
 export const useAutomations = (): UseAutomationsResult => {
@@ -36,8 +38,11 @@ export const useAutomations = (): UseAutomationsResult => {
     if (isConnected) void automationsStore.getState().loadRules();
   }, [automationsStore, isConnected]);
 
+  const connectionFailure = connection.status === StoreStatus.Error ? connection.failure : null;
   const view =
-    linked === null
+    connectionFailure !== null
+      ? AutomationsViewKind.Error
+      : linked === null
       ? AutomationsViewKind.Loading
       : !linked.isAvailable
         ? AutomationsViewKind.Unavailable
@@ -47,6 +52,8 @@ export const useAutomations = (): UseAutomationsResult => {
 
   return {
     view,
+    connectionFailure,
+    onRetryConnection: () => void instagramStore.getState().load(),
     rules,
     isPaused: linked?.isExpired ?? false,
     handle: linked?.displayHandle ?? CharConstants.empty,

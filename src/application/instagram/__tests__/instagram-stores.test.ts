@@ -119,7 +119,8 @@ describe('automationsStore', () => {
     const first = store.getState().setEnabled(dmRuleOf({ enabled: true }), false);
     await store.getState().setEnabled(dmRuleOf({ enabled: false }), true);
     refuseFirst(fail(new NetworkFailure('offline')));
-    await first;
+    // Overtaken: nothing to report, so the screen shows no toast for a switch already where the user left it.
+    await expect(first).resolves.toEqual({ ok: true, value: undefined });
     expect(enabledIn(store)).toBe(true);
   });
 

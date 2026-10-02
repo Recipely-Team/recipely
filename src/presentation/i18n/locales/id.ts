@@ -1326,6 +1326,7 @@ export const id = {
     connectBody: "Masuk dengan Instagram untuk menautkan akun profesionalmu. Tag kreatormu langsung disetujui dan kamu bisa menyalakan otomatisasi.",
     cancelled: "Login Instagram dibatalkan. Tidak ada yang ditautkan.",
     loginFailed: "Instagram tidak bisa menyelesaikan login. Coba lagi.",
+    loginNotFinished: "Login Instagram belum selesai. Coba hubungkan lagi.",
     viaInstagram: "Diverifikasi lewat Instagram",
     approved: "Disetujui",
     expired: "Koneksi kedaluwarsa. Instagram berhenti menerima koneksi ini pada {date}. Otomatisasi dijeda sampai kamu menghubungkan ulang.",

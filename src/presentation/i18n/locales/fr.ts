@@ -1326,6 +1326,7 @@ export const fr = {
     connectBody: "Connecte-toi avec Instagram pour lier ton compte professionnel. Ton badge de créateur est approuvé tout de suite et tu peux activer les automatisations.",
     cancelled: "La connexion Instagram a été annulée. Rien n’a été lié.",
     loginFailed: "Instagram n’a pas pu terminer la connexion. Réessaie.",
+    loginNotFinished: "La connexion Instagram n’a pas abouti. Reconnecte-toi.",
     viaInstagram: "Vérifié via Instagram",
     approved: "Approuvé",
     expired: "Connexion expirée. Instagram n’accepte plus cette connexion depuis le {date}. Les automatisations sont en pause jusqu’à la reconnexion.",

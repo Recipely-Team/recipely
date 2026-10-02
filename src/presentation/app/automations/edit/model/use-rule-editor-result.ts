@@ -1,3 +1,4 @@
+import type { Failure } from '@core/failure';
 import type { DmKeywords } from '@domain/instagram/dm/dm-keywords';
 import type { EditorStepType } from '@presentation/app/automations/edit/model/editor-step';
 
@@ -5,6 +6,10 @@ import type { EditorStepType } from '@presentation/app/automations/edit/model/ed
 export interface UseRuleEditorResult {
   /** True while an existing rule is still loading into the form. */
   isLoading: boolean;
+  /** Why the rule could not be opened (deleted, someone else's); null otherwise. */
+  loadFailure: Failure | null;
+  /** Opens the rule again after a failure. */
+  retryLoad: () => void;
   isEdit: boolean;
   step: EditorStepType;
   /** Whether each step, in order, holds what it needs. */

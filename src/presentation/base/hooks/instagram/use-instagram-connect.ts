@@ -7,6 +7,7 @@ import { showErrorToast, showWarningToast } from '@presentation/base/feedback/sh
 import { useInstagramFinalize } from '@presentation/base/hooks/instagram/use-instagram-finalize';
 import { openInstagramLogin } from '@presentation/base/utils/instagram/open-instagram-login';
 import { instagramReturnUrl } from '@presentation/base/utils/instagram/instagram-return-url';
+import { InstagramLoginInFlight } from '@presentation/base/utils/instagram/instagram-login-in-flight';
 import { InstagramConnectPhase, type InstagramConnectPhaseType } from '@presentation/base/widgets/instagram/instagram-connect-phase';
 import { t } from '@presentation/i18n';
 
@@ -47,7 +48,8 @@ export const useInstagramConnect = (): InstagramConnect => {
         showErrorToast(start.failure);
         return InstagramConnectPhase.Idle;
       }
-      const back = await openInstagramLogin(start.value, returnUrl);
+      InstagramLoginInFlight.begin();
+      const back = await openInstagramLogin(start.value, returnUrl).finally(InstagramLoginInFlight.end);
       if (back === null) return InstagramConnectPhase.Cancelled;
       const outcome = readInstagramReturn(readReturnQuery(back));
       switch (outcome.kind) {

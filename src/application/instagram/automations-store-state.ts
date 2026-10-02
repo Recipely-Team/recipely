@@ -20,7 +20,7 @@ export interface AutomationsStoreState {
   opened: OpenedRuleState;
   loadRules: () => Promise<void>;
   loadMoreRules: () => Promise<void>;
-  /** Flips the switch at once; puts it back when the server refuses, if no later flip overtook it. */
+  /** Flips the switch at once; puts it back when the server refuses, if no later flip overtook it — an overtaken flip reports nothing. */
   setEnabled: (rule: DmRuleEntity, enabled: boolean) => Promise<Result<void, Failure>>;
   loadMedia: () => Promise<void>;
   loadMoreMedia: () => Promise<void>;

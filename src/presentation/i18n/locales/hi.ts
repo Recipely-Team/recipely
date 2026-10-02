@@ -1322,6 +1322,7 @@ export const hi: Translations = {
     connectBody: "अपना प्रोफ़ेशनल अकाउंट जोड़ने के लिए Instagram से लॉग इन करें। आपका क्रिएटर टैग तुरंत मंज़ूर होता है और आप ऑटोमेशन चालू कर सकते हैं।",
     cancelled: "Instagram लॉगिन रद्द हुआ। कुछ नहीं जुड़ा।",
     loginFailed: "Instagram लॉगिन पूरा नहीं कर सका। फिर कोशिश करें।",
+    loginNotFinished: "Instagram लॉगिन पूरा नहीं हुआ। फिर से जोड़ें।",
     viaInstagram: "Instagram से सत्यापित",
     approved: "मंज़ूर",
     expired: "कनेक्शन की अवधि खत्म हो गई। Instagram ने {date} को यह कनेक्शन स्वीकार करना बंद कर दिया। दोबारा जोड़ने तक ऑटोमेशन रुके हैं।",

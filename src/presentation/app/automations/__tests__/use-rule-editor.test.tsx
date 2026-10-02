@@ -1,11 +1,17 @@
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 const mockRouter = { back: jest.fn(), replace: jest.fn(), canGoBack: () => true, push: jest.fn() };
 let mockParams: { ruleId?: string } = {};
-jest.mock('expo-router', () => ({ useRouter: () => mockRouter, useLocalSearchParams: () => mockParams }));
+jest.mock('expo-router', () => ({
+  useRouter: () => mockRouter,
+  useLocalSearchParams: () => mockParams,
+  useFocusEffect: (callback: () => void) => {
+    jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
+  },
+}));
 jest.mock('@presentation/base/feedback/show-toast', () => ({ showErrorToast: jest.fn(), showSuccessToast: jest.fn() }));
 
 import { act } from 'react-test-renderer';
-import { ok } from '@core/result/result-helpers';
+import { fail, ok } from '@core/result/result-helpers';
 import { configureAutomationsStore } from '@application/instagram/automations-store';
 import { ListDmRulesUseCase } from '@application/instagram/rules/list-dm-rules-use-case';
 import { GetDmRuleUseCase } from '@application/instagram/rules/get-dm-rule-use-case';
@@ -16,7 +22,9 @@ import { ListInstagramMediaUseCase } from '@application/instagram/rules/list-ins
 import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-sends-use-case';
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import { fakeFoodCatalogRepository } from '@application/diary/foods/__fixtures__/food-fixtures';
-import { dmRuleOf, fakeInstagramRepository } from '@application/instagram/__fixtures__/instagram-fixtures';
+import { connectionOf, dmRuleOf, fakeInstagramRepository } from '@application/instagram/__fixtures__/instagram-fixtures';
+import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
+import { NotFoundFailure } from '@core/failure';
 import type { Stores } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRuleEditor } from '@presentation/app/automations/edit/hooks/use-rule-editor';
@@ -24,11 +32,11 @@ import type { UseRuleEditorResult } from '@presentation/app/automations/edit/mod
 import { EditorStep } from '@presentation/app/automations/edit/model/editor-step';
 import { t } from '@presentation/i18n';
 
-const setup = () => {
+const setup = (connection = connectionOf(), ruleAnswer: Parameters<ReturnType<typeof fakeInstagramRepository>['getRule']['mockResolvedValue']>[0] | null = null) => {
   const repo = fakeInstagramRepository();
   repo.createRule.mockResolvedValue(ok(dmRuleOf()));
   repo.updateRule.mockResolvedValue(ok(dmRuleOf()));
-  repo.getRule.mockResolvedValue(ok(dmRuleOf({ keywords: ['tarif'], publicReplyText: 'Sent 👌' })));
+  repo.getRule.mockResolvedValue(ruleAnswer ?? ok(dmRuleOf({ keywords: ['tarif'], publicReplyText: 'Sent 👌' })));
   const automationsStore = configureAutomationsStore({
     listRules: new ListDmRulesUseCase(repo),
     getRule: new GetDmRuleUseCase(repo),
@@ -44,7 +52,7 @@ const setup = () => {
     hook.current = useRuleEditor();
     return null;
   };
-  renderComponent(<Probe />, { automationsStore } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { automationsStore, instagramStore: instagramStoreOf(connection).store } as unknown as Partial<Stores>);
   const vm = (): UseRuleEditorResult => {
     if (hook.current === null) throw new Error('not rendered');
     return hook.current;
@@ -106,5 +114,22 @@ describe('useRuleEditor', () => {
     await act(async () => vm().save());
     expect(repo.updateRule).toHaveBeenCalledWith('r1', expect.objectContaining({ keywords: ['tarif'], publicReplyText: 'Sent 👌' }));
     expect(repo.createRule).not.toHaveBeenCalled();
+  });
+
+  // A deleted rule's editor spun forever.
+  it('shows a rule that cannot be opened as an error with Try again, not a spinner', async () => {
+    mockParams = { ruleId: 'gone' };
+    const { repo, vm } = setup(connectionOf(), fail(new NotFoundFailure('gone')));
+    await act(async () => undefined);
+    expect(vm().loadFailure).not.toBeNull();
+    expect(vm().isLoading).toBe(false);
+    act(() => vm().retryLoad());
+    expect(repo.getRule).toHaveBeenCalledTimes(2);
+  });
+
+  it('sends the user to Automations when no Instagram account is linked', async () => {
+    setup(connectionOf({ connected: false, status: null }));
+    await act(async () => undefined);
+    expect(mockRouter.replace).toHaveBeenCalledWith('/automations');
   });
 });

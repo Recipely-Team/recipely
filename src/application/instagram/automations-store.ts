@@ -87,7 +87,8 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         flips.set(rule.id, flip);
         show(rule.withEnabled(enabled));
         const result = await deps.setEnabled.execute(rule.id, enabled);
-        if (flips.get(rule.id) !== flip) return result.ok ? ok(undefined) : result;
+        // A later flip overtook this one: its answer decides, and this one has nothing to report.
+        if (flips.get(rule.id) !== flip) return ok(undefined);
         if (result.ok) {
           show(result.value);
           return ok(undefined);

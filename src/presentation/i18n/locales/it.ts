@@ -1326,6 +1326,7 @@ export const it = {
     connectBody: "Accedi con Instagram per collegare il tuo account professionale. Il tuo tag creator viene approvato subito e puoi attivare le automazioni.",
     cancelled: "L’accesso a Instagram è stato annullato. Non è stato collegato nulla.",
     loginFailed: "Instagram non è riuscito a completare l’accesso. Riprova.",
+    loginNotFinished: "L’accesso a Instagram non è stato completato. Ricollegati.",
     viaInstagram: "Verificato tramite Instagram",
     approved: "Approvato",
     expired: "Connessione scaduta. Instagram non accetta più questa connessione dal {date}. Le automazioni sono in pausa finché non ti ricolleghi.",

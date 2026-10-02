@@ -1330,6 +1330,7 @@ export const zh = {
     connectBody: "使用 Instagram 登录以关联你的专业账号。你的创作者标签会立即通过，并且可以开启自动化。",
     cancelled: "Instagram 登录已取消，未关联任何账号。",
     loginFailed: "Instagram 未能完成登录，请重试。",
+    loginNotFinished: "Instagram 登录未完成，请重新连接。",
     viaInstagram: "已通过 Instagram 验证",
     approved: "已通过",
     expired: "连接已过期。Instagram 已于 {date} 停止接受此连接。重新连接前，自动化已暂停。",

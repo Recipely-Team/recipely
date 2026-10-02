@@ -1326,6 +1326,7 @@ export const ja = {
     connectBody: "Instagramでログインしてプロアカウントを連携します。クリエイタータグはすぐに承認され、自動化をオンにできます。",
     cancelled: "Instagramへのログインはキャンセルされました。何も連携されていません。",
     loginFailed: "Instagramがログインを完了できませんでした。もう一度お試しください。",
+    loginNotFinished: "Instagramへのログインが完了しませんでした。もう一度連携してください。",
     viaInstagram: "Instagramで認証済み",
     approved: "承認済み",
     expired: "接続の有効期限が切れました。Instagramは{date}にこの接続の受け付けを停止しました。再接続するまで自動化は一時停止しています。",

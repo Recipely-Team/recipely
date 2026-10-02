@@ -1326,6 +1326,7 @@ export const pt = {
     connectBody: "Entre com o Instagram para vincular sua conta profissional. Sua tag de criador é aprovada na hora e você pode ativar automações.",
     cancelled: "O login do Instagram foi cancelado. Nada foi vinculado.",
     loginFailed: "O Instagram não conseguiu concluir o login. Tente de novo.",
+    loginNotFinished: "O login do Instagram não foi concluído. Conecte de novo.",
     viaInstagram: "Verificado pelo Instagram",
     approved: "Aprovado",
     expired: "Conexão expirada. O Instagram deixou de aceitar esta conexão em {date}. As automações estão pausadas até você reconectar.",

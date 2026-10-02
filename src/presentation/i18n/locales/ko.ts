@@ -1322,6 +1322,7 @@ export const ko: Translations = {
     connectBody: "Instagram으로 로그인해 프로페셔널 계정을 연결하세요. 크리에이터 태그가 바로 승인되고 자동화를 켤 수 있어요.",
     cancelled: "Instagram 로그인이 취소되었습니다. 아무것도 연결되지 않았어요.",
     loginFailed: "Instagram이 로그인을 완료하지 못했어요. 다시 시도하세요.",
+    loginNotFinished: "Instagram 로그인이 완료되지 않았어요. 다시 연결하세요.",
     viaInstagram: "Instagram으로 인증됨",
     approved: "승인됨",
     expired: "연결이 만료되었습니다. Instagram이 {date}에 이 연결을 더 이상 받지 않아요. 다시 연결할 때까지 자동화가 일시 중지됩니다.",

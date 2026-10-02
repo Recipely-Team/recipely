@@ -49,6 +49,19 @@ export const AutomationsScreen = (): React.JSX.Element => {
 
   const body = (): React.JSX.Element => {
     switch (vm.view) {
+      case AutomationsViewKind.Error: {
+        if (vm.connectionFailure === null) return <ActivityIndicator style={styles.spinner} color={colors.primary} />;
+        const content = failureContent(vm.connectionFailure);
+        return (
+          <ErrorState
+            icon={failureIcon(vm.connectionFailure)}
+            title={content.title}
+            body={content.body}
+            primaryLabel={copy.tryAgain}
+            onPrimary={vm.onRetryConnection}
+          />
+        );
+      }
       case AutomationsViewKind.Loading:
         return <ActivityIndicator style={styles.spinner} color={colors.primary} />;
       case AutomationsViewKind.Unavailable:

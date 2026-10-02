@@ -1330,6 +1330,7 @@ export const tr: Translations = {
     connectBody: "Profesyonel hesabını bağlamak için Instagram ile giriş yap. İçerik üreticisi etiketin hemen onaylanır ve otomasyonları açabilirsin.",
     cancelled: "Instagram girişi iptal edildi. Hiçbir hesap bağlanmadı.",
     loginFailed: "Instagram girişi tamamlanamadı. Tekrar dene.",
+    loginNotFinished: "Instagram girişi tamamlanmadı. Yeniden bağlanmayı dene.",
     viaInstagram: "Instagram ile doğrulandı",
     approved: "Onaylandı",
     expired: "Bağlantının süresi doldu. Instagram bu bağlantıyı {date} tarihinde sonlandırdı. Yeniden bağlanana kadar otomasyonlar duraklatıldı.",

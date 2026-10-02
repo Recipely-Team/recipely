@@ -1337,6 +1337,7 @@ export const en = {
     connectBody: "Log in with Instagram to link your professional account. Your creator tag is approved right away and you can turn on automations.",
     cancelled: "Instagram login was cancelled. Nothing was linked.",
     loginFailed: "Instagram couldn't finish the login. Try again.",
+    loginNotFinished: "Instagram login didn't finish. Try connecting again.",
     viaInstagram: "Verified via Instagram",
     approved: "Approved",
     expired: "Connection expired. Instagram stopped accepting this connection on {date}. Automations are paused until you reconnect.",
