@@ -42,6 +42,7 @@
  *   AJ. No accessibility prop directly on a react-native-svg `<Svg>` — on the
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
+ *   AL. Every routed page is declared on the root stack (no default header).
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
  *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
@@ -1291,6 +1292,40 @@ function openingTag(src, at) {
         `${file}: \`${found[1]}\` on <Svg> — react-native-svg forwards it to the DOM on web; put it on the wrapping View (CLAUDE.md §24)`,
       );
     }
+  }
+}
+
+// --- AL: every routed page is declared on the root stack (CLAUDE.md §24) -----
+// The stack draws its own header — titled with the raw route name — on any
+// screen it has no options for. The Instagram automations routes shipped
+// without `<Stack.Screen … headerShown: false>` and a device showed
+// "automations/edit/index" in a bar above the screen's own header; every test
+// passed, because none renders the navigator. A page folder is therefore
+// matched against the `<Stack.Screen name="<segment>/index">` declarations in
+// the root `_layout.tsx`, the one place that decides it.
+{
+  const APP = path.join(SRC, 'presentation/app');
+  const LAYOUT = path.join(APP, '_layout.tsx');
+  if (fs.existsSync(LAYOUT)) {
+    const declared = new Set([...fs.readFileSync(LAYOUT, 'utf8').matchAll(/<Stack\.Screen\s+name="([^"]+)"/g)].map((m) => m[1]));
+    const walkPages = (dir) => {
+      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+        const full = path.join(dir, entry.name);
+        if (entry.isDirectory()) {
+          if (!CO_LOCATION_FOLDERS.includes(entry.name)) walkPages(full);
+          continue;
+        }
+        if (entry.name !== 'index.tsx') continue;
+        const relDir = path.relative(APP, dir).split(path.sep).join('/');
+        const name = relDir === '' ? 'index' : `${relDir}/index`;
+        if (!declared.has(name)) {
+          errors.push(
+            `src/presentation/app/_layout.tsx: no <Stack.Screen name="${name}"> — the stack would draw its own header titled "${name}" above the page (CLAUDE.md §24)`,
+          );
+        }
+      }
+    };
+    walkPages(APP);
   }
 }
 
