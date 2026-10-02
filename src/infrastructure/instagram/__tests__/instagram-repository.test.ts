@@ -56,11 +56,11 @@ describe('InstagramRepository', () => {
     expect(!r.ok && r.failure).toBe(failure);
   });
 
-  it('puts the requested page in the media, rules and sends queries, and skips a row it cannot read', async () => {
+  it('puts the requested page in the media, rules and sends queries', async () => {
     const media = answering(json(InstagramWireSamples.mediaPage));
     const page = await new InstagramRepository(media.http).listMedia(2, 9);
     expect(media.calls[0]).toMatchObject({ url: '/me/instagram/media', params: { page: 2, pageSize: 9 } });
-    expect(page.ok && [page.value.items.map((m) => m.id), page.value.hasMore]).toEqual([['m1'], true]);
+    expect(page.ok && [page.value.items.map((m) => m.id), page.value.hasMore]).toEqual([['m1', 'm2'], true]);
 
     const rules = answering(json(InstagramWireSamples.rulesPage));
     const r = await new InstagramRepository(rules.http).listRules(1, 5);
@@ -85,5 +85,16 @@ describe('InstagramRepository', () => {
     expect(calls[1]).toMatchObject({ method: 'PATCH', url: '/me/instagram/rules/r1', data: { enabled: false } });
     expect(calls[2]).toMatchObject({ method: 'DELETE', url: '/me/instagram/rules/r1' });
     expect(toDmRuleChangesRequest({ publicReplyText: null })).toEqual({ publicReplyText: null });
+  });
+
+  // The post picker came up empty on a device: images arrived with a null thumbnailUrl.
+  it('keeps every post — one with no cover and one of a type this build does not know', async () => {
+    const media = answering(json(InstagramWireSamples.mediaPage));
+    const page = await new InstagramRepository(media.http).listMedia(2, 9);
+    if (!page.ok) throw new Error('expected ok');
+    expect(page.value.items.map((m) => [m.id, m.mediaType, m.thumbnailUrl])).toEqual([
+      ['m1', 'VIDEO', 'https://cdn.test/1.jpg'],
+      ['m2', 'IMAGE', null],
+    ]);
   });
 });
