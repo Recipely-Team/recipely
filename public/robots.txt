@@ -22,6 +22,10 @@ Disallow: /notifications
 Disallow: /my-recipes
 Disallow: /diary
 Disallow: /diary/calendar
+Disallow: /automations
+Disallow: /automations/edit
+Disallow: /automations/activity
+Disallow: /instagram-connected
 
 # Authoring flows: wait screens and wizards.
 Disallow: /create-recipe

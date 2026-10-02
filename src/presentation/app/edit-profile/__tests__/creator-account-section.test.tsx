@@ -15,13 +15,18 @@ import { CreatorTag } from '@domain/creators/creator-tag';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
+import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 import { CreatorAccountSection } from '@presentation/app/edit-profile/body/creator/creator-account-section';
 import { t } from '@presentation/i18n';
+import { connectionOf } from '@application/instagram/__fixtures__/instagram-fixtures';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 
+const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
   useFocusEffect: (callback: () => void) => {
     jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
   },
+  useRouter: () => ({ push: mockPush }),
 }));
 
 type ClaimSpec = [platform: string, status: CreatorStatus, handle?: string];
@@ -43,10 +48,10 @@ const userWith = (...specs: ClaimSpec[]): UserEntity => {
   return user.value;
 };
 
-const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStoreState> = {}) => {
+const renderSection = (specs: ClaimSpec[], overrides: Partial<AuthStoreState> = {}, instagram = instagramStoreOf()) => {
   const authStore = authStoreOf(userWith(...specs), overrides);
-  const rendered = renderComponent(<CreatorAccountSection />, { authStore });
-  return { ...rendered, actions: authStore.getState() };
+  const rendered = renderComponent(<CreatorAccountSection />, { authStore, instagramStore: instagram.store });
+  return { ...rendered, actions: authStore.getState(), instagram };
 };
 
 const button = (root: ReactTestInstance, label: string): ReactTestInstance =>
@@ -204,5 +209,37 @@ describe('CreatorAccountSection', () => {
     await press(button(root, copy().resubmit));
 
     expect(root.findByType(TextInput).props.value).toBe('aysemutfakta');
+  });
+
+  describe('Instagram login offered', () => {
+    const ig = () => t().instagram;
+
+    it('offers Connect with Instagram in the Instagram row, and the manual handle form one tap away', async () => {
+      const { root } = renderSection([], {}, instagramStoreOf(connectionOf({ connected: false, status: null })));
+      await act(async () => undefined);
+      expect(textContent(root)).toEqual(expect.arrayContaining([ig().connect, ig().manual]));
+      const manual = root.find((n) => n.props.accessibilityRole === 'button' && typeof n.props.onPress === 'function' && textContent(n).includes(ig().manual));
+      await press(manual);
+      expect(root.findAllByType(TextInput)).toHaveLength(1);
+    });
+
+    it('shows the linked account, verified via Instagram, and disconnects only after the confirmation', async () => {
+      const instagram = instagramStoreOf(connectionOf());
+      const { root } = renderSection([['instagram', CreatorStatus.Approved, 'mertmutfakta']], {}, instagram);
+      await act(async () => undefined);
+      expect(textContent(root)).toEqual(expect.arrayContaining(['@mertmutfakta', ig().viaInstagram, ig().automations]));
+      await press(button(root, ig().disconnect));
+      expect(instagram.repo.disconnect).not.toHaveBeenCalled();
+      const onConfirm: unknown = root.findByType(ConfirmSheet).props.onConfirm;
+      if (typeof onConfirm !== 'function') throw new Error('no confirmation');
+      await act(async () => onConfirm());
+      expect(instagram.repo.disconnect).toHaveBeenCalled();
+    });
+
+    it('asks to reconnect once Instagram stopped accepting the link', async () => {
+      const { root } = renderSection([['instagram', CreatorStatus.Approved, 'mertmutfakta']], {}, instagramStoreOf(connectionOf({ status: 'expired' })));
+      await act(async () => undefined);
+      expect(textContent(root)).toEqual(expect.arrayContaining([ig().reconnect]));
+    });
   });
 });

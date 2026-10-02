@@ -26,6 +26,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { t } from '@presentation/i18n';
+import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 
 // The screen is rendered bare here, without a StoresProvider — these cover
 // what it displays, not how it is wired. The assistant hook only registers
@@ -136,6 +137,7 @@ const renderProfile = (
     authStore,
     userProfileStore: makeUserProfileStore(),
     savedRecipesStore: makeSavedRecipesStore(),
+    instagramStore: instagramStoreOf().store,
     // The screen tells the assistant what it is showing, which is a real
     // registry call on mount — a bare object here crashes the render before
     // any of this file's assertions get to look at it.

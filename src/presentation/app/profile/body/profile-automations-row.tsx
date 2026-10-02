@@ -1,0 +1,62 @@
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import { ValueConstants } from '@core/constants';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useInstagramConnection } from '@presentation/base/hooks/instagram/use-instagram-connection';
+import { SizedText } from '@presentation/base/widgets/text/sized-text';
+import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
+import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
+import { RoutePaths } from '@presentation/base/constants';
+import { CreatorPlatform } from '@domain/creators/creator-platform';
+import { borderWidths, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
+import { t } from '@presentation/i18n';
+
+/**
+ * Profile's way into Instagram automations (spec §2 → Entry): shown only
+ * while an Instagram account is linked through Instagram's login; "Paused"
+ * in danger once the link expired.
+ */
+export const ProfileAutomationsRow = (): React.JSX.Element | null => {
+  const colors = useTheme().colors;
+  const router = useRouter();
+  const connection = useInstagramConnection();
+  if (!connection.isAvailable || !connection.isConnected) return null;
+  const copy = t().instagram;
+  return (
+    <Pressable
+      onPress={() => router.push(RoutePaths.automations)}
+      accessibilityRole="button"
+      style={({ pressed }) => [
+        styles.row,
+        { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder, opacity: pressed ? opacities.pressed : opacities.full },
+      ]}
+    >
+      <CreatorPlatformMark platform={CreatorPlatform.Instagram} size={AutomationMetrics.connectMark} />
+      <View style={styles.text}>
+        <SizedText size={fontSizes.medium} weight={fontWeights.bold}>
+          {copy.profileEntry}
+        </SizedText>
+        <SizedText size={fontSizes.small} color={connection.isExpired ? colors.danger : colors.textSubtle} numberOfLines={ValueConstants.one}>
+          {connection.isExpired ? copy.profileEntryPaused : copy.automationsSub}
+        </SizedText>
+      </View>
+      <Ionicons name="chevron-forward" size={iconSizes.md} color={colors.textMuted} />
+    </Pressable>
+  );
+};
+
+const styles = StyleSheet.create({
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+    minHeight: AutomationMetrics.recipeRow - spacing.xs,
+    marginHorizontal: spacing.lg,
+    marginTop: spacing.md,
+    paddingHorizontal: spacing.lg,
+    borderRadius: radii.xl,
+    borderWidth: borderWidths.hairline,
+  },
+  text: { flex: ValueConstants.one, minWidth: ValueConstants.zero, gap: spacing.xxs },
+});
