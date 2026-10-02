@@ -3462,6 +3462,73 @@ portion; an unknown key shows its amount in g/ml.
 4. **Paging trigger:** `FlatList onEndReached` on mobile and web alike, not an IntersectionObserver
    sentinel; it pages the first group (in display order) that still has more.
 
+## Instagram connect + Automations (Oct 2026)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(`src/ig-automations.jsx`, `src/social.jsx`, `src/app.jsx`; Tweaks → Starting screen → `IG · connect /
+login cancelled / connected / token expired`, `Automations (· empty / · paused / · not connected)`,
+`Rule · 1–4`, `Automation · activity`). Written per rule 28 step 3; backend contract #374. Built in
+`app/automations/` (list, `edit/`, `activity/`), `app/instagram-connected/`, Edit Profile's creator card
+and `base/widgets/instagram/`.
+
+### Tokens and measurements
+
+All colours from the active palette: surfaces `background` / `surface` / `cardBackground`, `cardBorder`
+hairlines, `border` dividers; `text` / `textSubtle` / `textMuted`; `primary` / `primaryText` (CTA, switch
+on, selected ring, step dots, DM bubble); `chipBackground` / `chipText` (keywords, step numbers, selected
+recipe row); status pills from the severity surfaces (success Sent, warning Older than 7 days / expired,
+danger the other failures); `danger` for Disconnect / Delete / `{link}` missing. Measurements are
+`AutomationMetrics` (`base/widgets/instagram/automation-metrics.ts`): Connect h48 pill with a 22 seal,
+rule thumb 64 / 72 web, summary thumb 56, keyword chip 24 (removable 32 with a 28 ×), empty disc 64 and
+step dots 28, CTA max 340, progress h4, stepper 190, recipe row 64 (thumb 48, radio 22), post ring 3 +
+check 24 + Reel badge 20, activity row 64 (avatar 36), status pill 24, DM bubble 82% / radius 18 with a 4
+tail, preview card 220 (image 2:1), page max 960, preview column 300.
+
+### Screens
+
+1. **Edit profile → Creator account (Instagram row):** not linked → the seal, "Instagram", Connect with
+   Instagram (busy: spinner + "Waiting for Instagram…"), the why, and "Enter handle for manual review
+   instead" (opens the existing form); cancelled → warning banner above the button. Linked → `@handle`,
+   "Verified via Instagram" (shield), Approved pill, an Automations row (send icon, title, sub), Disconnect
+   (ghost) → ConfirmSheet. Expired → warning banner with the date + Reconnect. TikTok unchanged.
+2. **Automations** (`/automations`): bar (back, title, "+ New"); sub; account strip; rule cards (thumb,
+   up to 3 keywords + "+n", recipe with utensils, "124 sent · Off/Paused", switch) paged on scroll; empty
+   (disc, title, three numbered steps, CTA); paused (banner + Reconnect, switches and New disabled); not
+   connected (title + Connect); rules note under the list. Profile shows an entry row while linked.
+3. **Editor** (`/automations/edit?ruleId=`): bar (×, New/Edit automation, "Step n of 4 · name"); a phone
+   shows 4 progress segments, an expanded viewport a 190 stepper (number → check, back freely, forward
+   past valid steps); footer Back + Next/Save (disabled until the step is valid).
+   Step 1 posts grid 3 / 4 columns, paged, selected ring + check, Reel badge, "Has rule". Step 2 keywords
+   (Enter or comma adds; lower-cased, deduped, ≤10 × ≤40), suggestions (dashed), "Try a comment" →
+   Matches · word / No match. Step 3 own recipes, server search, paged, radio rows. Step 4 DM (auto-grow,
+   counter n/900, insert `{name}` `{link}`, `{link}` required with a danger border and alert), public reply
+   switch + field (≤300), Delete (edit), preview (comment context, bubble with `{name}`→Zeynep and the link
+   underlined, recipe card, public reply under a dashed rule) — beside the fields when expanded.
+4. **Activity** (`/automations/activity?ruleId=`): bar (back, Activity, Edit); summary (thumb, every
+   keyword, recipe, switch); Sent count; All / Sent / Failed; rows (initial, @handle, time ago, quoted
+   comment, status pill with a label for every reason code, "Replied publicly"); paged; no-retry note;
+   "No comments matched yet."
+
+### Departures from the prototype
+
+1. **No failed count.** `DmRule` carries `sentCount` only, so cards read "124 sent · Off" and Activity
+   shows one stat (Sent), not Sent / Failed.
+2. **The All / Sent / Failed segment filters the loaded rows**; the sends endpoint has no status filter, so
+   paging continues across all kinds.
+3. **Delete asks first** (ConfirmSheet) instead of a toast with Undo — a deleted rule cannot be restored
+   through the API.
+4. **Lists page on scroll** (`onEndReached`) everywhere — rules, posts, recipes, sends — instead of the
+   prototype's "1–5 of 8" pager.
+5. **The post of an existing rule is fixed** (the API does not change `mediaId`); editing opens on
+   Keywords and the post step only shows it.
+6. **Draft recipes are listed but not selectable** ("Not published — publish it to send"): the picker uses
+   the food search's `group=mine`, which includes drafts.
+7. **Web always returns to Edit Profile** after the login (same-tab redirect to `/instagram-connected`),
+   wherever the user started it.
+8. **Switch** is the platform `Switch` with the palette's track colours, not a custom 51×31 control; the
+   Profile entry's sub line is the feature's purpose (no "n on · n DMs sent" — those totals are not on the
+   wire).
+
 ## Creators (Sept 2026)
 
 **Source of truth:** the Claude Design canvas **Recipely Creators**

@@ -15,7 +15,7 @@ creator tag can be approved without an admin — which is what fills the Chefs t
 | 1 | Meta app setup (user) | ⏳ waiting on the user | — |
 | 2 | Design in the Claude Design prototype | ⏳ | — |
 | 3 | Backend: Instagram Login, tokens, webhooks, rules, sender | ⏳ | — |
-| 4 | App: connect, automations list, rule editor, activity | ⏳ | — |
+| 4 | App: connect, automations list, rule editor, activity | 🔄 PR open (feat/instagram-automations) | — |
 | 5 | Test with app-role accounts (Standard Access) | ⏳ | — |
 | 6 | Meta App Review + Business Verification (Advanced Access) | ⏳ | — |
 
