@@ -10,7 +10,9 @@ import { ValueConstants } from '@core/constants';
  * is: the assistant is mounted once for the whole app and cannot be told by a
  * screen it does not know about.
  */
-const OCCUPIED_CORNERS: readonly string[] = [RoutePaths.recipes];
+// Screens whose bottom-right corner already holds a control (the feed's filter
+// button, the automation editor's Next button) — the assistant floats above it.
+const OCCUPIED_CORNERS: readonly string[] = [RoutePaths.recipes, RoutePaths.automationEdit];
 
 /**
  * How far the assistant must sit above the bottom edge to clear the screen's
