@@ -121,6 +121,7 @@ references are **by id only**.
 | `AuthSessionEntity` | Root (token lifecycle). |
 | `NotificationEntity` | Own root; references related entities by id. |
 | `FoodLogEntryEntity` | Own root (the food diary); references its recipe by `recipeId`. `DiaryDay` / `DiaryMonth` are read models over a user's entries, water and `NutritionGoals`; `Nutrients`, `NutritionGoals`, `Servings`, `CalendarDate`, `CalendarMonth` are value objects; `LoggableFood` is a transient one-serving view. |
+| `DmRuleEntity` | Own root (Instagram comment-to-DM); references its post by `mediaId` and its recipe by `recipeId`. `InstagramConnection`, `InstagramMedia` and `DmSend` are read models; `DmKeywords` is a value object; `DmRuleDraft` is a validated, transient write model. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.

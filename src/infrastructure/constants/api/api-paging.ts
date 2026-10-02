@@ -42,3 +42,15 @@ export const FOOD_SEARCH_PAGE_SIZE = 8;
 
 /** The Add food sheet's catalogue lists — categories, products, recent foods. */
 export const FOOD_LIST_PAGE_SIZE = 20;
+
+/** Automations list (design spec: 5 rule cards a page). */
+export const DM_RULES_PAGE_SIZE = 5;
+
+/** A rule's activity, per page (design spec: 8 rows). */
+export const DM_SENDS_PAGE_SIZE = 8;
+
+/** The post picker, per page (design spec: a 3 × 3 grid on a phone; the backend caps it at 50). */
+export const INSTAGRAM_MEDIA_PAGE_SIZE = 9;
+
+/** The rule editor's recipe picker (design spec: 6 rows). */
+export const DM_RECIPES_PAGE_SIZE = 6;

@@ -23,6 +23,7 @@ export const TOKENS = {
   FavoritesRepository: Symbol.for('FavoritesRepository'),
   FoodDiaryRepository: Symbol.for('FoodDiaryRepository'),
   FoodCatalogRepository: Symbol.for('FoodCatalogRepository'),
+  InstagramRepository: Symbol.for('InstagramRepository'),
   AddFavoriteUseCase: Symbol.for('AddFavoriteUseCase'),
   RemoveFavoriteUseCase: Symbol.for('RemoveFavoriteUseCase'),
   LoadFavoritesUseCase: Symbol.for('LoadFavoritesUseCase'),
