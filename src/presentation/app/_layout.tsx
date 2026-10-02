@@ -173,6 +173,10 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="notifications/index" options={{ headerShown: false }} />
         <Stack.Screen name="profile/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="edit-profile/index" options={{ headerShown: false }} />
+        <Stack.Screen name="automations/index" options={{ headerShown: false }} />
+        <Stack.Screen name="automations/edit/index" options={{ headerShown: false }} />
+        <Stack.Screen name="automations/activity/index" options={{ headerShown: false }} />
+        <Stack.Screen name="instagram-connected/index" options={{ headerShown: false }} />
       </Stack>
       <RootTabBar />
       <ActiveTimersBar />

@@ -18,19 +18,32 @@ export interface PostTileProps {
   onPress: (media: InstagramMedia) => void;
 }
 
-/** A square post or Reel cover in the post picker (spec step 1): selected ring and check, Reel badge, "Has rule" tag. */
+/**
+ * A square post or Reel cover in the post picker (spec step 1): selected
+ * ring and check, Reel badge, "Has rule" tag.
+ *
+ * @remarks
+ * - **A post without a cover is still a tile.** The tile paints its own chip
+ *   background and a media-type glyph; when it only drew the image, a post
+ *   with a null `thumbnailUrl` was an invisible cell and the grid looked empty.
+ */
 export const PostTile = ({ media, selected, hasRule, onPress }: PostTileProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const isReel = media.mediaType === InstagramMediaType.Video;
+  const placeholderIcon = isReel ? 'videocam-outline' : media.mediaType === InstagramMediaType.Carousel ? 'albums-outline' : 'image-outline';
   return (
     <Pressable
       onPress={() => onPress(media)}
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
       accessibilityLabel={media.caption ?? (isReel ? t().instagram.reel : t().instagram.stepPost)}
-      style={styles.tile}
+      style={[styles.tile, { backgroundColor: colors.chipBackground }]}
     >
-      <RecipeImage uri={media.thumbnailUrl} placeholderCompact style={StyleSheet.absoluteFill} />
+      {media.thumbnailUrl === null ? (
+        <Ionicons name={placeholderIcon} size={iconSizes.xl} color={colors.chipText} />
+      ) : (
+        <RecipeImage uri={media.thumbnailUrl} placeholderCompact style={StyleSheet.absoluteFill} />
+      )}
       {selected ? <View style={[StyleSheet.absoluteFill, styles.ring, { borderColor: colors.primary }]} /> : null}
       {selected ? (
         <View style={[styles.check, { backgroundColor: colors.primary }]}>
@@ -54,7 +67,7 @@ export const PostTile = ({ media, selected, hasRule, onPress }: PostTileProps): 
 };
 
 const styles = StyleSheet.create({
-  tile: { flex: ValueConstants.one, aspectRatio: ValueConstants.one, borderRadius: radii.lg, overflow: 'hidden' },
+  tile: { flex: ValueConstants.one, aspectRatio: ValueConstants.one, borderRadius: radii.lg, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   ring: { borderWidth: AutomationMetrics.postSelectedRing, borderRadius: radii.lg },
   check: {
     position: 'absolute',
