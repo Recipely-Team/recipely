@@ -39,6 +39,15 @@ export const RoutePaths = {
   /** Edit Profile scrolled to its creator account section — where a claim decision is acted on. */
   editProfileCreatorAccount: `/edit-profile?section=${EditProfileSection.CreatorAccount}`,
   settings: '/settings',
+  /** Instagram automations: the creator's comment-to-DM rules. */
+  automations: '/automations',
+  /** The rule editor; `ruleId` (absent for a new rule) and `step` ride the query. */
+  automationEdit: '/automations/edit',
+  /** One automation's Activity; `ruleId` rides the query (an account page, not crawlable content). */
+  automationActivityPath: '/automations/activity',
+  automationActivity: (ruleId: string): string => `/automations/activity?ruleId=${encodeURIComponent(ruleId)}`,
+  /** Where the Instagram login returns to (web same-tab, and Android's deep link). */
+  instagramConnected: '/instagram-connected',
   /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,

@@ -96,6 +96,16 @@ export const ApiRoutes = {
       recent: '/diary/foods/recent',
     },
   },
+  /** The viewer's Instagram link and comment-to-DM rules (backend #374). */
+  instagram: {
+    start: '/auth/instagram/start',
+    connection: '/me/instagram',
+    finalize: '/me/instagram/finalize',
+    media: '/me/instagram/media',
+    rules: '/me/instagram/rules',
+    rule: (id: string): string => `/me/instagram/rules/${encodeURIComponent(id)}`,
+    sends: (ruleId: string): string => `/me/instagram/rules/${encodeURIComponent(ruleId)}/sends`,
+  },
   assistant: {
     session: '/assistant/session',
     heartbeat: '/assistant/heartbeat',

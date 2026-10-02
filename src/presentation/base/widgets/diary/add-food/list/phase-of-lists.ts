@@ -1,5 +1,5 @@
 import { StoreStatus } from '@application/store/store-status';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 import { ValueConstants } from '@core/constants';
 import type { ListPhase } from '@presentation/base/widgets/diary/add-food/list/list-phase';
 import { PickPhase } from '@presentation/base/widgets/diary/add-food/list/pick-phase';

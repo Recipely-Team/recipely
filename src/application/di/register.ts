@@ -63,6 +63,20 @@ import { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-
 import { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
 import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
+import type { InstagramRepositoryInterface } from '@domain/instagram/instagram-repository-interface';
+import { configureInstagramStore } from '@application/instagram/instagram-store';
+import { configureAutomationsStore } from '@application/instagram/automations-store';
+import { GetInstagramConnectionUseCase } from '@application/instagram/connect/get-instagram-connection-use-case';
+import { StartInstagramLoginUseCase } from '@application/instagram/connect/start-instagram-login-use-case';
+import { FinalizeInstagramLinkUseCase } from '@application/instagram/connect/finalize-instagram-link-use-case';
+import { DisconnectInstagramUseCase } from '@application/instagram/connect/disconnect-instagram-use-case';
+import { ListDmRulesUseCase } from '@application/instagram/rules/list-dm-rules-use-case';
+import { GetDmRuleUseCase } from '@application/instagram/rules/get-dm-rule-use-case';
+import { SaveDmRuleUseCase } from '@application/instagram/rules/save-dm-rule-use-case';
+import { SetDmRuleEnabledUseCase } from '@application/instagram/rules/set-dm-rule-enabled-use-case';
+import { DeleteDmRuleUseCase } from '@application/instagram/rules/delete-dm-rule-use-case';
+import { ListInstagramMediaUseCase } from '@application/instagram/rules/list-instagram-media-use-case';
+import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-sends-use-case';
 import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -242,6 +256,23 @@ export const registerApplication = (container: Container): ApplicationStores => 
     listRecent: listRecentFoods,
     loadDetail: new LoadFoodDetailUseCase(foodCatalogRepo),
   });
+  const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
+  const instagramStore = configureInstagramStore({
+    getConnection: new GetInstagramConnectionUseCase(instagramRepo),
+    startLogin: new StartInstagramLoginUseCase(instagramRepo),
+    finalize: new FinalizeInstagramLinkUseCase(instagramRepo),
+    disconnect: new DisconnectInstagramUseCase(instagramRepo),
+  });
+  const automationsStore = configureAutomationsStore({
+    listRules: new ListDmRulesUseCase(instagramRepo),
+    getRule: new GetDmRuleUseCase(instagramRepo),
+    saveRule: new SaveDmRuleUseCase(instagramRepo),
+    setEnabled: new SetDmRuleEnabledUseCase(instagramRepo),
+    deleteRule: new DeleteDmRuleUseCase(instagramRepo),
+    listMedia: new ListInstagramMediaUseCase(instagramRepo),
+    listSends: new ListDmSendsUseCase(instagramRepo),
+    searchMyRecipes: new SearchRecipeGroupUseCase(foodCatalogRepo),
+  });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,
     addComment: addCommentUseCase,
@@ -322,6 +353,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     diaryStore.getState().clear();
     foodSearchStore.getState().clear();
     foodCatalogStore.getState().clear();
+    instagramStore.getState().clear();
+    automationsStore.getState().clear();
     importJobStore.getState().clear();
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
@@ -367,6 +400,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
     diaryStore,
     foodSearchStore,
     foodCatalogStore,
+    instagramStore,
+    automationsStore,
     searchFoods,
     listRecentFoods,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),

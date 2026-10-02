@@ -167,6 +167,17 @@ export const DiagnosticMessage = {
     foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
     foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
   },
+  instagram: {
+    keywordInvalid: 'A keyword must be 1–40 characters',
+    tooManyKeywords: 'A rule holds at most 10 keywords',
+    keywordsRequired: 'A rule needs at least one keyword',
+    mediaRequired: 'A rule needs a post or Reel',
+    recipeRequired: 'A rule needs a recipe to send',
+    dmTextInvalid: 'The DM must carry {link} and stay within 900 characters',
+    publicReplyInvalid: 'A public reply must be 1–300 characters when it is on',
+    sourceInvalid: (field: string, raw: string): string => `Not a valid Instagram ${field}: ${raw}`,
+    returnLinkUnreadable: 'The Instagram login returned without a usable result',
+  },
   assistant: {
     microphoneDenied: 'Microphone permission was refused',
     microphoneUnavailable: (reason: string): string => `Microphone could not start: ${reason}`,

@@ -1,6 +1,6 @@
 import { StoreStatus } from '@application/store/store-status';
 import type { Page } from '@domain/common/page';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 type LoadedList<T> = Extract<PagedList<T>, { status: typeof StoreStatus.Loaded }>;
 

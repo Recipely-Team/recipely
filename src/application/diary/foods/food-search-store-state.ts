@@ -1,7 +1,7 @@
 import type { FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
-import type { PagedList } from '@application/diary/foods/paging/paged-list';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 export interface FoodSearchStoreState {
   /**

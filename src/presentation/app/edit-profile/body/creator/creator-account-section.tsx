@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
-import { ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, fontSizes, lineHeights, radii, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
@@ -12,13 +12,18 @@ import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/cre
 import { CreatorLinkedRow } from '@presentation/app/edit-profile/body/creator/creator-linked-row';
 import { CreatorLinkForm } from '@presentation/app/edit-profile/body/creator/creator-link-form';
 import { CreatorAddRow } from '@presentation/app/edit-profile/items/creator-add-row';
+import { CreatorPlatform, type CreatorPlatformType } from '@domain/creators/creator-platform';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
+import { useInstagramAccount } from '@presentation/app/edit-profile/hooks/use-instagram-account';
+import { InstagramConnectedRow } from '@presentation/app/edit-profile/body/creator/instagram-connected-row';
+import { InstagramConnectRow } from '@presentation/app/edit-profile/body/creator/instagram-connect-row';
 
 export interface CreatorAccountSectionProps {
   /** Reports where the section sits, so a `?section=creator` link can scroll to it. */
   onLayout?: (event: LayoutChangeEvent) => void;
 }
 
-const keyOf = (row: CreatorAccountRow): string =>
+const platformOf = (row: CreatorAccountRow): CreatorPlatformType =>
   row.kind === CreatorAccountRowKind.Linked ? row.claim.tag.platform : row.platform;
 
 /**
@@ -26,12 +31,34 @@ const keyOf = (row: CreatorAccountRow): string =>
  * shared section header, then one card — the intro, a row per claimed
  * platform, and a Link row per platform still to claim, split by hairlines.
  * Each platform is reviewed on its own; one link form is open at a time.
+ * Where the server offers Instagram's login, the Instagram row is Connect
+ * with Instagram (the manual form one tap away) and, once linked, the
+ * connected account (Instagram automations spec §1).
  */
 export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreatorAccount();
+  const ig = useInstagramAccount();
+  const copy = t().instagram;
 
   const renderRow = (row: CreatorAccountRow): React.JSX.Element => {
+    if (ig.connection.isAvailable && platformOf(row) === CreatorPlatform.Instagram) {
+      if (ig.connection.isConnected) {
+        return (
+          <InstagramConnectedRow
+            connection={ig.connection}
+            phase={ig.phase}
+            isBusy={ig.isDisconnecting}
+            onReconnect={ig.connect}
+            onDisconnect={ig.openDisconnect}
+            onOpenAutomations={ig.openAutomations}
+          />
+        );
+      }
+      if (row.kind === CreatorAccountRowKind.Add) {
+        return <InstagramConnectRow phase={ig.phase} onConnect={ig.connect} onManual={() => vm.onOpenForm(CreatorPlatform.Instagram)} />;
+      }
+    }
     switch (row.kind) {
       case CreatorAccountRowKind.Linked:
         return (
@@ -67,12 +94,22 @@ export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps):
           {t().creators.account.intro}
         </SizedText>
         {vm.rows.map((row) => (
-          <Fragment key={keyOf(row)}>
+          <Fragment key={platformOf(row)}>
             <View style={[styles.rule, { backgroundColor: colors.border }]} />
             {renderRow(row)}
           </Fragment>
         ))}
       </View>
+      <ConfirmSheet
+        visible={ig.isDisconnectOpen}
+        title={copy.disconnectTitle}
+        message={copy.disconnectQ.replace('{h}', ig.connection.username ?? CharConstants.empty)}
+        confirmLabel={copy.disconnect}
+        destructive
+        loading={ig.isDisconnecting}
+        onConfirm={ig.confirmDisconnect}
+        onClose={ig.closeDisconnect}
+      />
     </View>
   );
 };
