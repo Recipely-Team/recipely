@@ -94,6 +94,12 @@ export const ErrorMessageKey = {
   creatorHandleTaken: 'errors.conflict.creator_handle_taken',
   /** An approve or reject of a claim that is no longer pending (the admin path). */
   creatorNotPending: 'errors.conflict.creator_not_pending',
+  // Instagram connect + automations (backend #374)
+  instagramNotConfigured: 'errors.instagram.not_configured',
+  instagramLinkInvalid: 'errors.instagram.link_invalid',
+  instagramAccountLinked: 'errors.conflict.instagram_account_linked',
+  instagramNotConnected: 'errors.instagram.not_connected',
+  instagramReturnInvalid: 'errors.validation.instagram_return_invalid',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

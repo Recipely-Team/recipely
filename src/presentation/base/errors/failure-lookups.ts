@@ -60,6 +60,8 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   resetLinkUsed: SeverityType.Warning,
   codeExpired: SeverityType.Warning,
   creatorNotPending: SeverityType.Neutral,
+  instagramNotConfigured: SeverityType.Neutral,
+  instagramLinkInvalid: SeverityType.Warning,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
@@ -101,6 +103,11 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   creatorHandleInvalid: 'at-outline',
   creatorHandleTaken: 'person-circle-outline',
   creatorNotPending: 'refresh-outline',
+  instagramNotConfigured: 'logo-instagram',
+  instagramLinkInvalid: 'time-outline',
+  instagramAccountLinked: 'person-circle-outline',
+  instagramNotConnected: 'logo-instagram',
+  instagramReturnInvalid: 'link-outline',
 
   emailExists: 'mail-outline',
   codeInvalid: 'keypad-outline',

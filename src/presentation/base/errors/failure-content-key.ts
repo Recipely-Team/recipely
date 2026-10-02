@@ -65,6 +65,11 @@ export type FailureContentKey =
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'
   | 'creatorNotPending'
+  | 'instagramNotConfigured'
+  | 'instagramLinkInvalid'
+  | 'instagramAccountLinked'
+  | 'instagramNotConnected'
+  | 'instagramReturnInvalid'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'
