@@ -1,18 +1,27 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { DmMessageToken } from '@domain/instagram/dm/dm-message-token';
-import { DmRuleLimits } from '@domain/instagram/dm/dm-rule-limits';
-import { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
-import { CharConstants, ValueConstants } from '@core/constants';
-import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { useLayout } from '@presentation/base/responsive/use-layout';
-import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
-import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
-import { AutomationSwitch } from '@presentation/app/automations/shared/items/automation-switch';
-import { DmPreview } from '@presentation/app/automations/edit/body/dm-preview';
-import { borderWidths, controlSizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
-import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
+import { useState } from "react";
+import { Pressable, ScrollView, StyleSheet, View } from "react-native";
+import { DmMessageToken } from "@domain/instagram/dm/dm-message-token";
+import { DmRuleLimits } from "@domain/instagram/dm/dm-rule-limits";
+import { DmRuleDraft } from "@domain/instagram/dm/dm-rule-draft";
+import { ValueConstants } from "@core/constants";
+import { useTheme } from "@presentation/base/theme/context/use-theme";
+import { useLayout } from "@presentation/base/responsive/use-layout";
+import { SizedText } from "@presentation/base/widgets/text/sized-text";
+import { AutoGrowTextInput } from "@presentation/base/widgets/inputs/auto-grow-text-input";
+import { AutomationMetrics } from "@presentation/base/widgets/instagram/automation-metrics";
+import { AutomationSwitch } from "@presentation/app/automations/shared/items/automation-switch";
+import { DmPreview } from "@presentation/app/automations/edit/body/dm-preview";
+import { insertTokenAt } from "@presentation/app/automations/edit/model/insert-token-at";
+import {
+  borderWidths,
+  controlSizes,
+  fontSizes,
+  fontWeights,
+  radii,
+  spacing,
+} from "@presentation/base/theme";
+import { t } from "@presentation/i18n";
+import type { AssistantScrollableProps } from "@presentation/base/hooks/assistant/actions/assistant-scrollable-props";
 
 export interface MessageStepProps {
   /** Lets the assistant move this step's list. */
@@ -44,7 +53,21 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
   const copy = t().instagram;
   const linkMissing = !props.dmText.includes(DmMessageToken.Link);
   const overLimit = props.dmText.length > DmRuleLimits.DmTextMax;
-  const field = { color: colors.text, backgroundColor: colors.inputBackground, borderColor: linkMissing ? colors.danger : colors.inputBorder };
+  // The caret, so a token lands where the user is typing rather than at the end.
+  const [selection, setSelection] = useState({
+    start: props.dmText.length,
+    end: props.dmText.length,
+  });
+  const insert = (token: string): void => {
+    const next = insertTokenAt(props.dmText, selection, token);
+    props.onDmText(next.text);
+    setSelection({ start: next.caret, end: next.caret });
+  };
+  const field = {
+    color: colors.text,
+    backgroundColor: colors.inputBackground,
+    borderColor: linkMissing ? colors.danger : colors.inputBorder,
+  };
   const preview = (
     <DmPreview
       handle={props.handle}
@@ -55,9 +78,17 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
     />
   );
   return (
-    <ScrollView {...props.scrollable} contentContainerStyle={[styles.stack, isExpanded ? styles.columns : null]} keyboardShouldPersistTaps="handled">
+    <ScrollView
+      {...props.scrollable}
+      contentContainerStyle={[styles.stack, isExpanded ? styles.columns : null]}
+      keyboardShouldPersistTaps="handled"
+    >
       <View style={styles.fields}>
-        <SizedText accessibilityRole="header" size={fontSizes.subtitle} weight={fontWeights.heavy}>
+        <SizedText
+          accessibilityRole="header"
+          size={fontSizes.subtitle}
+          weight={fontWeights.heavy}
+        >
           {copy.messageTitle}
         </SizedText>
         <SizedText size={fontSizes.small} weight={fontWeights.bold} muted>
@@ -66,6 +97,8 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
         <AutoGrowTextInput
           value={props.dmText}
           onChangeText={props.onDmText}
+          selection={selection}
+          onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
           minHeight={controlSizes.messageField}
           accessibilityLabel={copy.privateReply}
           style={[styles.input, field]}
@@ -74,30 +107,64 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
           <SizedText size={fontSizes.small} muted>
             {copy.insert}
           </SizedText>
-          {TOKENS.map((token) => (
-            <Pressable
-              key={token}
-              onPress={() => props.onDmText(`${props.dmText}${CharConstants.space}${token}`)}
-              accessibilityRole="button"
-              style={[styles.token, { backgroundColor: colors.chipBackground }]}
-            >
-              <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.chipText} style={styles.mono}>
-                {token}
-              </SizedText>
-            </Pressable>
-          ))}
-          <SizedText size={fontSizes.small} color={overLimit ? colors.danger : colors.textMuted} style={styles.counter}>
-            {copy.counter.replace('{n}', String(props.dmText.length)).replace('{max}', String(DmRuleLimits.DmTextMax))}
+          {TOKENS.map((token) => {
+            // One link is all a DM needs; a second would only repeat the card.
+            const used = token === DmMessageToken.Link && !linkMissing;
+            return (
+              <Pressable
+                key={token}
+                onPress={() => insert(token)}
+                disabled={used}
+                accessibilityRole="button"
+                accessibilityState={{ disabled: used }}
+                style={[
+                  styles.token,
+                  { backgroundColor: colors.chipBackground },
+                  used ? styles.used : null,
+                ]}
+              >
+                <SizedText
+                  size={fontSizes.caption}
+                  weight={fontWeights.bold}
+                  color={colors.chipText}
+                  style={styles.mono}
+                >
+                  {token}
+                </SizedText>
+              </Pressable>
+            );
+          })}
+          <SizedText
+            size={fontSizes.small}
+            numberOfLines={1}
+            color={overLimit ? colors.danger : colors.textMuted}
+            style={styles.counter}
+          >
+            {copy.counter
+              .replace("{n}", String(props.dmText.length))
+              .replace("{max}", String(DmRuleLimits.DmTextMax))}
           </SizedText>
         </View>
-        <SizedText size={fontSizes.small} color={linkMissing ? colors.danger : colors.textSubtle} role={linkMissing ? 'alert' : undefined}>
+        <SizedText
+          size={fontSizes.small}
+          color={linkMissing ? colors.danger : colors.textSubtle}
+          role={linkMissing ? "alert" : undefined}
+        >
           {linkMissing ? copy.linkMissing : copy.cardHelper}
         </SizedText>
         <View style={styles.switchRow}>
-          <SizedText size={fontSizes.medium} weight={fontWeights.semibold} style={styles.grow}>
+          <SizedText
+            size={fontSizes.medium}
+            weight={fontWeights.semibold}
+            style={styles.grow}
+          >
             {copy.replyToggle}
           </SizedText>
-          <AutomationSwitch value={props.replyOn} disabled={false} onChange={props.onReplyOn} />
+          <AutomationSwitch
+            value={props.replyOn}
+            disabled={false}
+            onChange={props.onReplyOn}
+          />
         </View>
         {props.replyOn ? (
           <>
@@ -109,7 +176,13 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
               accessibilityLabel={copy.replyLabel}
               style={[
                 styles.input,
-                { color: colors.text, backgroundColor: colors.inputBackground, borderColor: DmRuleDraft.isPublicReplyValid(props.replyText) ? colors.inputBorder : colors.danger },
+                {
+                  color: colors.text,
+                  backgroundColor: colors.inputBackground,
+                  borderColor: DmRuleDraft.isPublicReplyValid(props.replyText)
+                    ? colors.inputBorder
+                    : colors.danger,
+                },
               ]}
             />
             <SizedText size={fontSizes.small} color={colors.textSubtle}>
@@ -118,8 +191,16 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
           </>
         ) : null}
         {props.isEdit ? (
-          <Pressable onPress={props.onDelete} accessibilityRole="button" style={styles.delete}>
-            <SizedText size={fontSizes.medium} weight={fontWeights.bold} color={colors.danger}>
+          <Pressable
+            onPress={props.onDelete}
+            accessibilityRole="button"
+            style={styles.delete}
+          >
+            <SizedText
+              size={fontSizes.medium}
+              weight={fontWeights.bold}
+              color={colors.danger}
+            >
               {copy.deleteRule}
             </SizedText>
           </Pressable>
@@ -132,15 +213,42 @@ export const MessageStep = (props: MessageStepProps): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   stack: { gap: spacing.lg, paddingBottom: spacing.xl },
-  columns: { flexDirection: 'row', alignItems: 'flex-start' },
+  columns: { flexDirection: "row", alignItems: "flex-start" },
   fields: { flex: ValueConstants.one, gap: spacing.sm },
   previewColumn: { width: AutomationMetrics.previewColumn },
-  input: { borderRadius: radii.lg, borderWidth: borderWidths.hairline, paddingHorizontal: spacing.md, paddingVertical: spacing.sm, fontSize: fontSizes.body },
-  tokens: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', gap: spacing.sm },
-  token: { minHeight: controlSizes.iconBtnSm, paddingHorizontal: spacing.md, borderRadius: radii.round, justifyContent: 'center' },
-  mono: { fontFamily: 'monospace' },
-  counter: { marginLeft: 'auto' },
-  switchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, minHeight: controlSizes.touchTarget, marginTop: spacing.sm },
+  input: {
+    borderRadius: radii.lg,
+    borderWidth: borderWidths.hairline,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    fontSize: fontSizes.body,
+  },
+  tokens: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: spacing.sm,
+  },
+  token: {
+    minHeight: controlSizes.iconBtnSm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.round,
+    justifyContent: "center",
+  },
+  mono: { fontFamily: "monospace" },
+  counter: { marginLeft: "auto", flexShrink: ValueConstants.zero },
+  used: { opacity: AutomationMetrics.disabledOpacity },
+  switchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    minHeight: controlSizes.touchTarget,
+    marginTop: spacing.sm,
+  },
   grow: { flex: ValueConstants.one },
-  delete: { minHeight: controlSizes.touchTarget, justifyContent: 'center', marginTop: spacing.md },
+  delete: {
+    minHeight: controlSizes.touchTarget,
+    justifyContent: "center",
+    marginTop: spacing.md,
+  },
 });
