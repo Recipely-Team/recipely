@@ -48,19 +48,23 @@ for a wire shape are the contract's JSON, parsed as `unknown`.
 The Instagram automations pages shipped without `<Stack.Screen … headerShown: false>`, so
 an Android build showed the raw route name ("automations/edit/index") in a bar above the
 page's own header. No test renders the navigator, so nothing failed.
-*Guard:* `check:structure` rule AL — every `app/**/index.tsx` page must be declared on the
-root stack in `app/_layout.tsx`.
+*Guard:* `check:structure` rule AL — every `app/**/index.tsx` page must be declared by the
+`_layout.tsx` that owns it, and the declaration must hide the header (`headerShown: false`
+or `TAB_SCREEN_OPTIONS`).
 
 *The class:* **a default the framework draws when you say nothing.** Make the "say
 something" a gate, not a habit.
 
 **A media cell that only drew its image was invisible without one.**
 The rule editor's post picker came up empty on a device: images arrived with a null
-`thumbnailUrl`, and the tile painted nothing but the image, so the grid looked empty (and
-reopening showed only the one Reel that had a cover). The mapper also dropped a post of an
-unknown media type.
-*Guard:* the tile paints its own background and a media-type glyph; the mapper keeps every
-post with an id. Covered in `post-step.test.tsx` and `instagram-repository.test.ts`.
+`thumbnailUrl`. The tile drew nothing but `RecipeImage`, and with no URI `RecipeImage`
+renders `RecipePlaceholder` *without* the `absoluteFill` style the tile passed for the
+image — so the placeholder had no size inside the `aspectRatio` tile and the cell was
+blank (reopening showed only the one Reel that had a cover). The mapper also dropped a
+post of an unknown media type.
+*Guard:* the tile paints its own background and a media-type glyph and only renders
+`RecipeImage` when there is a cover; the mapper keeps every post with an id. Covered in
+`post-step.test.tsx` and `instagram-repository.test.ts`.
 
 *The class:* **a cell whose only content is optional data.** Every cell draws a visible
 frame of its own; the data decorates it.

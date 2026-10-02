@@ -42,7 +42,7 @@
  *   AJ. No accessibility prop directly on a react-native-svg `<Svg>` — on the
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
- *   AL. Every routed page is declared on the root stack (no default header).
+ *   AL. Every routed page is declared on the stack that owns it, header hidden.
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
  *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
@@ -1295,38 +1295,61 @@ function openingTag(src, at) {
   }
 }
 
-// --- AL: every routed page is declared on the root stack (CLAUDE.md §24) -----
+// --- AL: every routed page is declared on its stack, header hidden (CLAUDE.md §24)
 // The stack draws its own header — titled with the raw route name — on any
 // screen it has no options for. The Instagram automations routes shipped
 // without `<Stack.Screen … headerShown: false>` and a device showed
 // "automations/edit/index" in a bar above the screen's own header; every test
-// passed, because none renders the navigator. A page folder is therefore
-// matched against the `<Stack.Screen name="<segment>/index">` declarations in
-// the root `_layout.tsx`, the one place that decides it.
+// passed, because none renders the navigator. So each page folder must be
+// declared by the `_layout.tsx` that owns it, AND that declaration must hide
+// the header (`headerShown: false`, or `TAB_SCREEN_OPTIONS`, which does) — a
+// bare `<Stack.Screen name="x/index" />` brings the default header back.
+//
+// A subtree with its own `_layout.tsx` is judged against THAT layout's
+// declarations (names relative to it); one that declares no `Stack.Screen`
+// (a Slot, Tabs) is left to its own conventions rather than false-failed.
 {
   const APP = path.join(SRC, 'presentation/app');
-  const LAYOUT = path.join(APP, '_layout.tsx');
-  if (fs.existsSync(LAYOUT)) {
-    const declared = new Set([...fs.readFileSync(LAYOUT, 'utf8').matchAll(/<Stack\.Screen\s+name="([^"]+)"/g)].map((m) => m[1]));
-    const walkPages = (dir) => {
-      for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-        const full = path.join(dir, entry.name);
-        if (entry.isDirectory()) {
-          if (!CO_LOCATION_FOLDERS.includes(entry.name)) walkPages(full);
-          continue;
-        }
-        if (entry.name !== 'index.tsx') continue;
-        const relDir = path.relative(APP, dir).split(path.sep).join('/');
-        const name = relDir === '' ? 'index' : `${relDir}/index`;
-        if (!declared.has(name)) {
-          errors.push(
-            `src/presentation/app/_layout.tsx: no <Stack.Screen name="${name}"> — the stack would draw its own header titled "${name}" above the page (CLAUDE.md §24)`,
-          );
-        }
+  const HIDES = /headerShown:\s*false/;
+  const declarationsOf = (layoutFile) => {
+    const src = fs.readFileSync(layoutFile, 'utf8');
+    const tabOptionsHide = /TAB_SCREEN_OPTIONS\s*=\s*\{[^}]*headerShown:\s*false/.test(src);
+    const byName = new Map();
+    for (const m of src.matchAll(/<Stack\.Screen\b/g)) {
+      const tag = openingTag(src, m.index);
+      const name = /\bname="([^"]+)"/.exec(tag)?.[1];
+      if (name === undefined) continue;
+      byName.set(name, HIDES.test(tag) || (tabOptionsHide && /options=\{TAB_SCREEN_OPTIONS\}/.test(tag)));
+    }
+    return byName;
+  };
+  const walkPages = (dir, owner, ownerDir) => {
+    const layout = path.join(dir, '_layout.tsx');
+    if (dir !== ownerDir && fs.existsSync(layout)) {
+      const nested = declarationsOf(layout);
+      if (nested.size === 0) return;
+      walkPages(dir, { file: layout, declared: nested }, dir);
+      return;
+    }
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!CO_LOCATION_FOLDERS.includes(entry.name)) walkPages(full, owner, ownerDir);
+        continue;
       }
-    };
-    walkPages(APP);
-  }
+      if (entry.name !== 'index.tsx') continue;
+      const relDir = path.relative(ownerDir, dir).split(path.sep).join('/');
+      const name = relDir === '' ? 'index' : `${relDir}/index`;
+      const where = path.relative(SRC, owner.file).split(path.sep).join('/');
+      if (!owner.declared.has(name)) {
+        errors.push(`src/${where}: no <Stack.Screen name="${name}"> — the stack would draw its own header titled "${name}" above the page (CLAUDE.md §24)`);
+      } else if (!owner.declared.get(name)) {
+        errors.push(`src/${where}: <Stack.Screen name="${name}"> does not hide the header — add headerShown: false (CLAUDE.md §24)`);
+      }
+    }
+  };
+  const ROOT_LAYOUT = path.join(APP, '_layout.tsx');
+  if (fs.existsSync(ROOT_LAYOUT)) walkPages(APP, { file: ROOT_LAYOUT, declared: declarationsOf(ROOT_LAYOUT) }, APP);
 }
 
 // --- AA: every routed screen reports its own name to analytics (CLAUDE.md §25)
