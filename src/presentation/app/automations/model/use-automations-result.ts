@@ -21,6 +21,12 @@ export interface UseAutomationsResult {
   onNew: () => void;
   onOpen: (rule: DmRuleEntity) => void;
   onToggle: (rule: DmRuleEntity, enabled: boolean) => void;
+  /** The rule whose delete is being confirmed; null when the sheet is shut. */
+  pendingDelete: DmRuleEntity | null;
+  isDeleting: boolean;
+  onAskDelete: (rule: DmRuleEntity) => void;
+  onConfirmDelete: () => void;
+  onCloseDelete: () => void;
   onEndReached: () => void;
   onRetry: () => void;
 }
