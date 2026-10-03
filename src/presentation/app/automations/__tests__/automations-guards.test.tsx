@@ -98,4 +98,16 @@ describe('Automations screens', () => {
     await act(async () => undefined);
     expect(mockRouter.replace).toHaveBeenCalledWith('/automations');
   });
+
+  it('deletes a rule from the list only after the sheet is confirmed', async () => {
+    const s = stores();
+    const rule = dmRuleOf();
+    const vm = probe(useAutomations, s.value);
+    await act(async () => vm.current().onAskDelete(rule));
+    expect(vm.current().pendingDelete).toBe(rule);
+    expect(s.repo.deleteRule).not.toHaveBeenCalled();
+    await act(async () => vm.current().onConfirmDelete());
+    expect(s.repo.deleteRule).toHaveBeenCalledWith(rule.id);
+    expect(vm.current().pendingDelete).toBeNull();
+  });
 });

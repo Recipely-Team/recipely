@@ -1,24 +1,40 @@
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { StoreStatus } from '@application/store/store-status';
-import { ValueConstants } from '@core/constants';
-import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
-import { ListConstants } from '@presentation/base/constants/list-constants';
-import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
-import { PageTitle } from '@presentation/base/widgets/head/page-title';
-import { InstagramConnectBlock } from '@presentation/base/widgets/instagram/instagram-connect-block';
-import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
-import { failureContent, failureIcon } from '@presentation/base/errors/failure-lookups';
-import { useAutomations } from '@presentation/app/automations/hooks/use-automations';
-import { AutomationsViewKind } from '@presentation/app/automations/model/automations-view-kind';
-import { AutomationsBar } from '@presentation/app/automations/shared/items/automations-bar';
-import { AutomationsHeader } from '@presentation/app/automations/body/automations-header';
-import { AutomationsEmpty } from '@presentation/app/automations/body/automations-empty';
-import { RulesNote } from '@presentation/app/automations/body/rules-note';
-import { RuleCard } from '@presentation/app/automations/items/rule-card';
-import { controlSizes, fontSizes, fontWeights, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+} from "react-native";
+import { StoreStatus } from "@application/store/store-status";
+import { ValueConstants } from "@core/constants";
+import { useTheme } from "@presentation/base/theme/context/use-theme";
+import { useAssistantScrollable } from "@presentation/base/hooks/assistant/actions/use-assistant-scrollable";
+import { ListConstants } from "@presentation/base/constants/list-constants";
+import { SizedText } from "@presentation/base/widgets/text/sized-text";
+import { ErrorState } from "@presentation/base/widgets/feedback/error-state";
+import { PageTitle } from "@presentation/base/widgets/head/page-title";
+import { InstagramConnectBlock } from "@presentation/base/widgets/instagram/instagram-connect-block";
+import { AutomationMetrics } from "@presentation/base/widgets/instagram/automation-metrics";
+import {
+  failureContent,
+  failureIcon,
+} from "@presentation/base/errors/failure-lookups";
+import { useAutomations } from "@presentation/app/automations/hooks/use-automations";
+import { AutomationsViewKind } from "@presentation/app/automations/model/automations-view-kind";
+import { AutomationsBar } from "@presentation/app/automations/shared/items/automations-bar";
+import { AutomationsHeader } from "@presentation/app/automations/body/automations-header";
+import { AutomationsEmpty } from "@presentation/app/automations/body/automations-empty";
+import { RulesNote } from "@presentation/app/automations/body/rules-note";
+import { RuleCard } from "@presentation/app/automations/items/rule-card";
+import { ConfirmSheet } from "@presentation/base/widgets/sheets/confirm-sheet";
+import {
+  controlSizes,
+  fontSizes,
+  fontWeights,
+  radii,
+  spacing,
+} from "@presentation/base/theme";
+import { t } from "@presentation/i18n";
 
 /**
  * Instagram automations (spec §2): the creator's comment-to-DM rules, paged
@@ -28,7 +44,9 @@ import { t } from '@presentation/i18n';
 export const AutomationsScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useAutomations();
-  const scrollable = useAssistantScrollable(vm.view === AutomationsViewKind.Rules);
+  const scrollable = useAssistantScrollable(
+    vm.view === AutomationsViewKind.Rules,
+  );
   const copy = t().instagram;
   const rules = vm.rules;
 
@@ -39,9 +57,21 @@ export const AutomationsScreen = (): React.JSX.Element => {
         disabled={vm.isPaused}
         accessibilityRole="button"
         accessibilityState={{ disabled: vm.isPaused }}
-        style={[styles.new, { backgroundColor: colors.primary, opacity: vm.isPaused ? AutomationMetrics.disabledOpacity : ValueConstants.one }]}
+        style={[
+          styles.new,
+          {
+            backgroundColor: colors.primary,
+            opacity: vm.isPaused
+              ? AutomationMetrics.disabledOpacity
+              : ValueConstants.one,
+          },
+        ]}
       >
-        <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.primaryText}>
+        <SizedText
+          size={fontSizes.caption}
+          weight={fontWeights.bold}
+          color={colors.primaryText}
+        >
           {`+ ${copy.newShort}`}
         </SizedText>
       </Pressable>
@@ -50,7 +80,10 @@ export const AutomationsScreen = (): React.JSX.Element => {
   const body = (): React.JSX.Element => {
     switch (vm.view) {
       case AutomationsViewKind.Error: {
-        if (vm.connectionFailure === null) return <ActivityIndicator style={styles.spinner} color={colors.primary} />;
+        if (vm.connectionFailure === null)
+          return (
+            <ActivityIndicator style={styles.spinner} color={colors.primary} />
+          );
         const content = failureContent(vm.connectionFailure);
         return (
           <ErrorState
@@ -63,38 +96,84 @@ export const AutomationsScreen = (): React.JSX.Element => {
         );
       }
       case AutomationsViewKind.Loading:
-        return <ActivityIndicator style={styles.spinner} color={colors.primary} />;
+        return (
+          <ActivityIndicator style={styles.spinner} color={colors.primary} />
+        );
       case AutomationsViewKind.Unavailable:
-        return <ErrorState icon="logo-instagram" title={t().errors.instagramNotConfigured.title} body={t().errors.instagramNotConfigured.body} />;
+        return (
+          <ErrorState
+            icon="logo-instagram"
+            title={t().errors.instagramNotConfigured.title}
+            body={t().errors.instagramNotConfigured.body}
+          />
+        );
       case AutomationsViewKind.Locked:
         return (
           <View style={styles.locked}>
-            <SizedText accessibilityRole="header" size={fontSizes.subtitle} weight={fontWeights.heavy}>
+            <SizedText
+              accessibilityRole="header"
+              size={fontSizes.subtitle}
+              weight={fontWeights.heavy}
+            >
               {copy.lockedTitle}
             </SizedText>
-            <InstagramConnectBlock phase={vm.phase} onConnect={vm.connect} label={copy.connect} showBody />
+            <InstagramConnectBlock
+              phase={vm.phase}
+              onConnect={vm.connect}
+              label={copy.connect}
+              showBody
+            />
             <RulesNote />
           </View>
         );
       case AutomationsViewKind.Rules:
         if (rules.status === StoreStatus.Error) {
           const content = failureContent(rules.failure);
-          return <ErrorState icon={failureIcon(rules.failure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />;
+          return (
+            <ErrorState
+              icon={failureIcon(rules.failure)}
+              title={content.title}
+              body={content.body}
+              primaryLabel={copy.tryAgain}
+              onPrimary={vm.onRetry}
+            />
+          );
         }
         return (
           <FlatList
             {...scrollable}
             data={rules.status === StoreStatus.Loaded ? rules.items : []}
             keyExtractor={(rule) => rule.id}
-            renderItem={({ item }) => <RuleCard rule={item} isPaused={vm.isPaused} onOpen={vm.onOpen} onToggle={vm.onToggle} />}
+            renderItem={({ item }) => (
+              <RuleCard
+                rule={item}
+                isPaused={vm.isPaused}
+                onOpen={vm.onOpen}
+                onToggle={vm.onToggle}
+                onDelete={vm.onAskDelete}
+              />
+            )}
             ItemSeparatorComponent={Separator}
-            ListHeaderComponent={<AutomationsHeader handle={vm.handle} isPaused={vm.isPaused} phase={vm.phase} onReconnect={vm.connect} />}
+            ListHeaderComponent={
+              <AutomationsHeader
+                handle={vm.handle}
+                isPaused={vm.isPaused}
+                phase={vm.phase}
+                onReconnect={vm.connect}
+              />
+            }
             ListEmptyComponent={
-              rules.status === StoreStatus.Loaded ? <AutomationsEmpty disabled={vm.isPaused} onCreate={vm.onNew} /> : <ActivityIndicator color={colors.primary} />
+              rules.status === StoreStatus.Loaded ? (
+                <AutomationsEmpty disabled={vm.isPaused} onCreate={vm.onNew} />
+              ) : (
+                <ActivityIndicator color={colors.primary} />
+              )
             }
             ListFooterComponent={
               <>
-                {rules.status === StoreStatus.Loaded && rules.isLoadingMore ? <ActivityIndicator color={colors.primary} /> : null}
+                {rules.status === StoreStatus.Loaded && rules.isLoadingMore ? (
+                  <ActivityIndicator color={colors.primary} />
+                ) : null}
                 <RulesNote />
               </>
             }
@@ -109,8 +188,24 @@ export const AutomationsScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
       <PageTitle subject={copy.automations} />
-      <AutomationsBar title={copy.automations} subtitle={null} icon="chevron-back" onBack={vm.onBack} right={newButton} />
+      <AutomationsBar
+        title={copy.automations}
+        subtitle={null}
+        icon="chevron-back"
+        onBack={vm.onBack}
+        right={newButton}
+      />
       <View style={styles.content}>{body()}</View>
+      <ConfirmSheet
+        visible={vm.pendingDelete !== null}
+        title={copy.deleteRule}
+        message={copy.deleteQ}
+        confirmLabel={copy.deleteRule}
+        destructive
+        loading={vm.isDeleting}
+        onConfirm={vm.onConfirmDelete}
+        onClose={vm.onCloseDelete}
+      />
     </View>
   );
 };
@@ -121,10 +216,20 @@ export default AutomationsScreen;
 
 const styles = StyleSheet.create({
   screen: { flex: ValueConstants.one },
-  content: { flex: ValueConstants.one, width: '100%', maxWidth: AutomationMetrics.pageMaxWidth, alignSelf: 'center' },
+  content: {
+    flex: ValueConstants.one,
+    width: "100%",
+    maxWidth: AutomationMetrics.pageMaxWidth,
+    alignSelf: "center",
+  },
   list: { padding: spacing.lg, paddingBottom: spacing.xxl },
   separator: { height: spacing.sm },
   spinner: { marginTop: spacing.xl },
   locked: { padding: spacing.lg, gap: spacing.lg },
-  new: { minHeight: controlSizes.iconBtn, paddingHorizontal: spacing.md, borderRadius: radii.round, justifyContent: 'center' },
+  new: {
+    minHeight: controlSizes.iconBtn,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.round,
+    justifyContent: "center",
+  },
 });
