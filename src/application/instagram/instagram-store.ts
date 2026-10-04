@@ -7,6 +7,8 @@ import type { GetInstagramConnectionUseCase } from '@application/instagram/conne
 import type { StartInstagramLoginUseCase } from '@application/instagram/connect/start-instagram-login-use-case';
 import type { FinalizeInstagramLinkUseCase } from '@application/instagram/connect/finalize-instagram-link-use-case';
 import type { DisconnectInstagramUseCase } from '@application/instagram/connect/disconnect-instagram-use-case';
+import { FeatureFlags } from '@application/config/feature-flags';
+import { InstagramConnection } from '@domain/instagram/connect/instagram-connection';
 
 interface InstagramStoreDeps {
   getConnection: GetInstagramConnectionUseCase;
@@ -32,6 +34,8 @@ export const configureInstagramStore = (deps: InstagramStoreDeps): BoundStore<In
   return create<InstagramStoreState>((set, get) => {
     const load = async (): Promise<void> => {
       generation += ValueConstants.one;
+      // Flagged off: report the feature unavailable without asking the server, which hides every entry point.
+      if (!FeatureFlags.instagramAutomations) return void set({ connection: { status: StoreStatus.Loaded, connection: InstagramConnection.none() } });
       const requested = generation;
       if (get().connection.status !== StoreStatus.Loaded) set({ connection: { status: StoreStatus.Loading } });
       const result = await deps.getConnection.execute();
