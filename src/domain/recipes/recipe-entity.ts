@@ -6,11 +6,13 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { RecipeNutrition } from '@domain/recipes/recipe-nutrition';
 import { ValueConstants } from '@core/constants';
 import { NutritionFacts } from '@domain/recipes/nutrition/nutrition-facts';
-import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
+import { RecipeOrigin, type RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { ProvenanceMarkType } from '@domain/recipes/provenance/provenance-mark';
 import { toProvenanceMarks } from '@domain/recipes/provenance/to-provenance-marks';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -99,6 +101,14 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get imageFocus(): FocalPoint | undefined {
     return this.props.imageFocus;
   }
+  /** The cover photo's credit line; `null` when the photo needs none. */
+  get imageCredit(): ImageCredit | null {
+    return this.props.imageCredit ?? null;
+  }
+  /** Where the nutrition figures were looked up; `null` when they were estimated. */
+  get nutritionSource(): NutritionSourceType | null {
+    return this.props.nutritionSource ?? null;
+  }
   get media(): MediaItem[] {
     return this.props.media;
   }
@@ -160,6 +170,10 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get aiWritten(): boolean {
     return this.props.aiWritten;
+  }
+  /** A Recipely Kitchen recipe: credited to the Kitchen, not to the account that holds it. */
+  get isCurated(): boolean {
+    return this.props.origin === RecipeOrigin.Curated;
   }
   /** What the provenance seal carries; empty when a person wrote the recipe. */
   get provenanceMarks(): readonly ProvenanceMarkType[] {

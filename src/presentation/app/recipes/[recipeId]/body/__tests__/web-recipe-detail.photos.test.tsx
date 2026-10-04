@@ -13,6 +13,11 @@
 
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
 
+// "Add to diary" carries its own sheet and reads the auth and diary stores; not under test here.
+jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
+  AddToDiaryButton: () => null,
+}));
+
 // The layout reads the router only to word its back link; a unit test about the
 // owner's photo controls has no navigator and does not need one.
 jest.mock('expo-router', () => ({

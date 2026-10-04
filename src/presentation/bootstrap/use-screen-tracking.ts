@@ -14,13 +14,20 @@ import { RoutePaths } from '@presentation/base/constants';
  */
 const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.recipes, AnalyticsScreen.recipeList],
+  [RoutePaths.creators, AnalyticsScreen.creators],
   [RoutePaths.myRecipes, AnalyticsScreen.myRecipes],
+  [RoutePaths.diary, AnalyticsScreen.diary],
+  [RoutePaths.diaryCalendar, AnalyticsScreen.diaryCalendar],
   [RoutePaths.createRecipe, AnalyticsScreen.createRecipe],
   [RoutePaths.importRecipe, AnalyticsScreen.importRecipe],
   [RoutePaths.notifications, AnalyticsScreen.notifications],
   [RoutePaths.profile, AnalyticsScreen.profile],
   [RoutePaths.editProfile, AnalyticsScreen.editProfile],
   [RoutePaths.settings, AnalyticsScreen.settings],
+  [RoutePaths.automations, AnalyticsScreen.automations],
+  [RoutePaths.automationEdit, AnalyticsScreen.automationEdit],
+  [RoutePaths.automationActivityPath, AnalyticsScreen.automationActivity],
+  [RoutePaths.instagramConnected, AnalyticsScreen.instagramConnected],
   [RoutePaths.onboarding, AnalyticsScreen.onboarding],
   [RoutePaths.login, AnalyticsScreen.login],
   [RoutePaths.register, AnalyticsScreen.register],
@@ -29,19 +36,21 @@ const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.resetPassword, AnalyticsScreen.resetPassword],
 ]);
 
-/** Prefix of the one parameterised route: `/recipes/<id>`. */
+/** Prefixes of the parameterised routes: `/recipes/<id>` and `/creators/<userId>`. */
 const RECIPE_DETAIL_PREFIX = `${RoutePaths.recipes}${CharConstants.slash}`;
+const CREATOR_PROFILE_PREFIX = `${RoutePaths.creators}${CharConstants.slash}`;
 
 /**
  * The screen a path belongs to, or `null` when the path is not one users see.
  *
- * The recipe id never becomes part of the name: a screen name is a dimension
+ * The recipe or user id never becomes part of the name: a screen name is a dimension
  * with one row per value, and one row per recipe is a report nobody can read.
  */
 const resolveScreen = (pathname: string): string | null => {
   const exact = SCREEN_BY_PATH.get(pathname);
   if (exact !== undefined) return exact;
   if (pathname.startsWith(RECIPE_DETAIL_PREFIX)) return AnalyticsScreen.recipeDetail;
+  if (pathname.startsWith(CREATOR_PROFILE_PREFIX)) return AnalyticsScreen.creatorProfile;
   return null;
 };
 

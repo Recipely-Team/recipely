@@ -1,12 +1,7 @@
-More places to bring a recipe in from, more control over when it goes public, and a clearer look at what is in it.
+Track what you eat, find any food fast, and meet the chefs.
 
-• Import a recipe from Instagram, TikTok, Facebook and YouTube videos, from Pinterest pins, from any recipe website, or from photos and PDFs of a recipe's pages.
-• The source link opens the original video and names the account it came from.
-• Save a recipe privately first, and publish it from the recipe page when you are ready.
-• A recipe imported from a website is someone else's work: before it can be published, give it your own photo and put the ingredients and steps in your own words.
-• Nutrition is shown per 100 g or per serving, with a switch between the two.
-• A new photo viewer: swipe through a recipe's photos, and each one is cropped on the dish. Cards show how many photos a recipe has.
-• Import notifications say which platform a recipe came from, and a failed import no longer reads as a finished one.
-• Translation fixes, including buttons and difficulty levels that still spoke English in other languages.
-
-Thanks for cooking with Recipely!
+• Food Diary: log meals and water, see daily calories and nutrients, and browse a month calendar.
+• Add food searches all recipes — your saved recipes and your own drafts first — plus everyday products like ayran or cola in every variant.
+• New Chefs tab: food creators from Instagram and TikTok, with verified accounts on both.
+• Recipely Kitchen recipes with photo credits and USDA nutrition.
+• The voice assistant can log what you ate.

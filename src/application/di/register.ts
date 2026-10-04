@@ -41,6 +41,42 @@ import { GetDraftUseCase } from '@application/drafts/read/get-draft-use-case';
 import { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
+import type { FoodDiaryRepositoryInterface } from '@domain/diary/food-diary-repository-interface';
+import { configureDiaryStore } from '@application/diary/diary-store';
+import { LoadDiaryDayUseCase } from '@application/diary/day/load-diary-day-use-case';
+import { SetDayWaterUseCase } from '@application/diary/day/set-day-water-use-case';
+import { LoadDiaryMonthUseCase } from '@application/diary/month/load-diary-month-use-case';
+import { AddFoodLogEntryUseCase } from '@application/diary/entries/add-food-log-entry-use-case';
+import { UpdateFoodLogEntryUseCase } from '@application/diary/entries/update-food-log-entry-use-case';
+import { DeleteFoodLogEntryUseCase } from '@application/diary/entries/delete-food-log-entry-use-case';
+import { LoadRecentFoodsUseCase } from '@application/diary/entries/load-recent-foods-use-case';
+import { BuildLoggableFoodFromRecipeUseCase } from '@application/diary/entries/build-loggable-food-from-recipe-use-case';
+import { LoadNutritionGoalsUseCase } from '@application/diary/goals/load-nutrition-goals-use-case';
+import { SaveNutritionGoalsUseCase } from '@application/diary/goals/save-nutrition-goals-use-case';
+import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
+import { configureFoodSearchStore } from '@application/diary/foods/food-search-store';
+import { configureFoodCatalogStore } from '@application/diary/foods/food-catalog-store';
+import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
+import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
+import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
+import { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
+import { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
+import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
+import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
+import type { InstagramRepositoryInterface } from '@domain/instagram/instagram-repository-interface';
+import { configureInstagramStore } from '@application/instagram/instagram-store';
+import { configureAutomationsStore } from '@application/instagram/automations-store';
+import { GetInstagramConnectionUseCase } from '@application/instagram/connect/get-instagram-connection-use-case';
+import { StartInstagramLoginUseCase } from '@application/instagram/connect/start-instagram-login-use-case';
+import { FinalizeInstagramLinkUseCase } from '@application/instagram/connect/finalize-instagram-link-use-case';
+import { DisconnectInstagramUseCase } from '@application/instagram/connect/disconnect-instagram-use-case';
+import { ListDmRulesUseCase } from '@application/instagram/rules/list-dm-rules-use-case';
+import { GetDmRuleUseCase } from '@application/instagram/rules/get-dm-rule-use-case';
+import { SaveDmRuleUseCase } from '@application/instagram/rules/save-dm-rule-use-case';
+import { SetDmRuleEnabledUseCase } from '@application/instagram/rules/set-dm-rule-enabled-use-case';
+import { DeleteDmRuleUseCase } from '@application/instagram/rules/delete-dm-rule-use-case';
+import { ListInstagramMediaUseCase } from '@application/instagram/rules/list-instagram-media-use-case';
+import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-sends-use-case';
 import { configureImportJobStore } from '@application/recipes/import/import-job-store';
 import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -86,7 +122,21 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceRepositoryInterface } from '@domain/device/device-repository-interface';
 import { RecordDeviceUseCase } from '@application/device/record-device-use-case';
+import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-profile-repository-interface';
+import { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
+import { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
+import { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
+import { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
+import { configureCreatorsStore } from '@application/creators/creators-store';
+import { configureCreatorProfileStore } from '@application/creators/profile/creator-profile-store';
+import { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
+import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
+import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-use-case';
+import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
 import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
+import { FeatureFlags } from '@application/config/feature-flags';
+import { isFeatureOn } from '@application/config/is-feature-on';
+import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
 
 export const registerApplication = (container: Container): ApplicationStores => {
@@ -183,6 +233,50 @@ export const registerApplication = (container: Container): ApplicationStores => 
     upsertDraftUseCase,
     deleteDraftUseCase,
   });
+  const diaryRepo = container.resolve<FoodDiaryRepositoryInterface>(TOKENS.FoodDiaryRepository);
+  const diaryStore = configureDiaryStore({
+    loadDay: new LoadDiaryDayUseCase(diaryRepo),
+    loadMonth: new LoadDiaryMonthUseCase(diaryRepo),
+    loadRecent: new LoadRecentFoodsUseCase(diaryRepo),
+    addEntry: new AddFoodLogEntryUseCase(diaryRepo),
+    updateEntry: new UpdateFoodLogEntryUseCase(diaryRepo),
+    deleteEntry: new DeleteFoodLogEntryUseCase(diaryRepo),
+    setWater: new SetDayWaterUseCase(diaryRepo),
+    loadGoals: new LoadNutritionGoalsUseCase(diaryRepo),
+    saveGoals: new SaveNutritionGoalsUseCase(diaryRepo),
+  });
+  const foodCatalogRepo = container.resolve<FoodCatalogRepositoryInterface>(TOKENS.FoodCatalogRepository);
+  const searchFoods = new SearchFoodsUseCase(foodCatalogRepo);
+  const listRecentFoods = new ListRecentFoodPageUseCase(foodCatalogRepo);
+  const foodSearchStore = configureFoodSearchStore({
+    searchFoods,
+    searchRecipeGroup: new SearchRecipeGroupUseCase(foodCatalogRepo),
+    searchProducts: new SearchProductsUseCase(foodCatalogRepo),
+  });
+  const foodCatalogStore = configureFoodCatalogStore({
+    listCategories: new ListFoodCategoriesUseCase(foodCatalogRepo),
+    listProducts: new ListFoodProductsUseCase(foodCatalogRepo),
+    listRecent: listRecentFoods,
+    loadDetail: new LoadFoodDetailUseCase(foodCatalogRepo),
+  });
+  const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
+  const instagramStore = configureInstagramStore({
+    enabled: isFeatureOn(FeatureFlags.instagramAutomations, IS_DEV_BUILD),
+    getConnection: new GetInstagramConnectionUseCase(instagramRepo),
+    startLogin: new StartInstagramLoginUseCase(instagramRepo),
+    finalize: new FinalizeInstagramLinkUseCase(instagramRepo),
+    disconnect: new DisconnectInstagramUseCase(instagramRepo),
+  });
+  const automationsStore = configureAutomationsStore({
+    listRules: new ListDmRulesUseCase(instagramRepo),
+    getRule: new GetDmRuleUseCase(instagramRepo),
+    saveRule: new SaveDmRuleUseCase(instagramRepo),
+    setEnabled: new SetDmRuleEnabledUseCase(instagramRepo),
+    deleteRule: new DeleteDmRuleUseCase(instagramRepo),
+    listMedia: new ListInstagramMediaUseCase(instagramRepo),
+    listSends: new ListDmSendsUseCase(instagramRepo),
+    searchMyRecipes: new SearchRecipeGroupUseCase(foodCatalogRepo),
+  });
   const commentsStore = configureCommentsStore({
     listComments: listCommentsUseCase,
     addComment: addCommentUseCase,
@@ -223,6 +317,18 @@ export const registerApplication = (container: Container): ApplicationStores => 
     TOKENS.SubmitFeedbackUseCase,
   );
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase });
+  // Public, like the strip it feeds: not in `clearSessionCaches`.
+  const userProfileRepo = container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository);
+  const creatorsStore = configureCreatorsStore({
+    listCreators: new ListCreatorsUseCase(userProfileRepo),
+  });
+  // Viewer-dependent (the follow standing), so it IS cleared on sign-out.
+  const creatorProfileStore = configureCreatorProfileStore({
+    getViewedProfile: new GetViewedUserProfileUseCase(userProfileRepo),
+    listUserRecipes: new ListUserRecipesUseCase(userProfileRepo),
+    follow: new FollowUserUseCase(userProfileRepo),
+    unfollow: new UnfollowUserUseCase(userProfileRepo),
+  });
   // The registry is created here and handed to the presentation layer, because
   // half of what the assistant does — navigate, focus a field, open the photo
   // picker — only a screen can perform. Screens register those on mount.
@@ -248,9 +354,15 @@ export const registerApplication = (container: Container): ApplicationStores => 
     notificationsStore.getState().clear();
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();
+    diaryStore.getState().clear();
+    foodSearchStore.getState().clear();
+    foodCatalogStore.getState().clear();
+    instagramStore.getState().clear();
+    automationsStore.getState().clear();
     importJobStore.getState().clear();
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
+    creatorProfileStore.getState().clear();
     // The transcript is the previous user's conversation, and a live socket
     // outlives a sign-out unless something closes it.
     assistantSessionStore.getState().reset();
@@ -261,7 +373,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
       container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
     ),
   );
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, clearSessionCaches, onSessionRestored });
+  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, requestCreatorTag: new RequestCreatorTagUseCase(authRepo), removeCreatorTag: new RemoveCreatorTagUseCase(authRepo), refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo), clearSessionCaches, onSessionRestored });
   return {
     assistantSessionStore,
     assistantActionRegistry,
@@ -287,6 +399,16 @@ export const registerApplication = (container: Container): ApplicationStores => 
     userProfileStore,
     taxonomyStore,
     feedbackStore,
+    creatorsStore,
+    creatorProfileStore,
+    diaryStore,
+    foodSearchStore,
+    foodCatalogStore,
+    instagramStore,
+    automationsStore,
+    searchFoods,
+    listRecentFoods,
+    buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
     loadFavoritesUseCase,
   };
 };

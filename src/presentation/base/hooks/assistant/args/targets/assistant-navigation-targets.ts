@@ -32,6 +32,9 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
   liked: RoutePaths.myRecipesTab(TabType.Liked),
   created: RoutePaths.myRecipesTab(TabType.Created),
   drafts: RoutePaths.myRecipesTab(TabType.Drafts),
+  // The Food Diary; the calendar page redirects to the Day view on an expanded viewport, whose rail shows the month.
+  diary: RoutePaths.diary,
+  diaryCalendar: RoutePaths.diaryCalendar,
   notifications: RoutePaths.notifications,
   profile: RoutePaths.profile,
   editProfile: RoutePaths.editProfile,

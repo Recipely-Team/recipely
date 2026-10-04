@@ -4,10 +4,10 @@ import { ValueConstants } from "@core/constants";
 import { type Failure, UnknownFailure } from "@core/failure";
 import type { Result } from "@core/result/result";
 import { fail, ok } from "@core/result/result-helpers";
-import type { PagedDrafts } from "@domain/drafts/paged-drafts";
 import type { RecipeDraft } from "@domain/drafts/recipe-draft";
 import type { RecipeDraftRepositoryInterface } from "@domain/drafts/recipe-draft-repository-interface";
 import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
+import type { Page } from '@domain/common/page';
 
 /**
  * In-memory test double for `RecipeDraftRepositoryInterface`. Returns pre-configured
@@ -30,7 +30,7 @@ export class FakeRecipeDraftRepository implements RecipeDraftRepositoryInterface
   listDrafts(
     page: number,
     pageSize: number,
-  ): Promise<Result<PagedDrafts, Failure>> {
+  ): Promise<Result<Page<RecipeDraft>, Failure>> {
     this.lastListCall = { page, pageSize };
     this.listCallCount++;
     return Promise.resolve(

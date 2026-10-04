@@ -8,10 +8,12 @@ import { fontSizes, iconSizes, lineHeights, spacing } from '@presentation/base/t
 import { t } from '@presentation/i18n';
 import type { NutritionFacts } from '@domain/recipes/nutrition/nutrition-facts';
 import { NutritionBasis, type NutritionBasisType } from '@domain/recipes/nutrition/nutrition-basis';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import { ValueConstants } from '@core/constants';
 import { NutritionBasisSwitch } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-basis-switch';
 import { CalorieSummary } from '@presentation/app/recipes/[recipeId]/items/nutrition/calorie-summary';
 import { MacroTile } from '@presentation/app/recipes/[recipeId]/items/nutrition/macro-tile';
+import { NutritionSourceNote } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-source-note';
 import { pairUp } from '@presentation/app/recipes/[recipeId]/model/nutrition/pair-up';
 
 export interface NutritionPanelProps {
@@ -20,6 +22,8 @@ export interface NutritionPanelProps {
   isCalculating: boolean;
   /** The web sidebar's tighter ring, gaps and tile padding. */
   compact?: boolean;
+  /** Where the figures were looked up; a database source is credited in the last row. */
+  source?: NutritionSourceType | null;
 }
 
 /**
@@ -36,7 +40,7 @@ export interface NutritionPanelProps {
  *   switch is withheld and a note says why, rather than offering a basis the
  *   domain would silently ignore.
  */
-export const NutritionPanel = ({ facts, isCalculating, compact = false }: NutritionPanelProps): React.JSX.Element => {
+export const NutritionPanel = ({ facts, isCalculating, compact = false, source = null }: NutritionPanelProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const strings = t().nutrition;
   const noteLineHeight = useTextLineHeight(fontSizes.small, lineHeights.normal);
@@ -79,6 +83,7 @@ export const NutritionPanel = ({ facts, isCalculating, compact = false }: Nutrit
           </ThemedText>
         </View>
       ) : null}
+      <NutritionSourceNote source={source} />
     </View>
   );
 };

@@ -19,6 +19,10 @@ export const ApiRoutes = {
     favorites: '/me/favorites',
     likes: '/me/likes',
     recipes: '/me/recipes',
+    /** The signed-in user's creator claims: PUT `{ platform, handle }` to request one. */
+    creator: '/me/creator',
+    /** DELETE clears one platform's claim, whatever its status. */
+    creatorPlatform: (platform: string): string => `/me/creator/${encodeURIComponent(platform)}`,
     deviceToken: '/me/device-token',
     devices: '/me/devices',
     notifications: '/me/notifications',
@@ -64,9 +68,44 @@ export const ApiRoutes = {
       `/recipes/${encodeURIComponent(recipeId)}/comments/${encodeURIComponent(commentId)}/like`,
   },
   users: {
+    /** Approved creators with a published recipe; the backend registers it before `/users/:id`. */
+    creators: '/users/creators',
     byId: (userId: string): string => `/users/${encodeURIComponent(userId)}`,
+    /** A user's published recipes; open to guests. */
+    recipes: (userId: string): string => `/users/${encodeURIComponent(userId)}/recipes`,
+    /** POST to follow, DELETE to stop following (auth). */
+    follow: (userId: string): string => `/users/${encodeURIComponent(userId)}/follow`,
   },
   feedback: '/feedback',
+  /** The signed-in user's food diary; every route is scoped to the session's user. */
+  diary: {
+    day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,
+    dayWater: (date: string): string => `/diary/days/${encodeURIComponent(date)}/water`,
+    month: (month: string): string => `/diary/months/${encodeURIComponent(month)}`,
+    recent: '/diary/recent',
+    entries: '/diary/entries',
+    entry: (id: string): string => `/diary/entries/${encodeURIComponent(id)}`,
+    goals: '/diary/goals',
+    /** What the Add food sheet can log: grouped search, curated catalogue, branded packs, recent foods. */
+    foods: {
+      search: '/diary/foods/search',
+      products: '/diary/foods/products',
+      product: (foodId: string): string => `/diary/foods/products/${encodeURIComponent(foodId)}`,
+      barcode: (barcode: string): string => `/diary/foods/products/barcode/${encodeURIComponent(barcode)}`,
+      categories: '/diary/foods/categories',
+      recent: '/diary/foods/recent',
+    },
+  },
+  /** The viewer's Instagram link and comment-to-DM rules (backend #374). */
+  instagram: {
+    start: '/auth/instagram/start',
+    connection: '/me/instagram',
+    finalize: '/me/instagram/finalize',
+    media: '/me/instagram/media',
+    rules: '/me/instagram/rules',
+    rule: (id: string): string => `/me/instagram/rules/${encodeURIComponent(id)}`,
+    sends: (ruleId: string): string => `/me/instagram/rules/${encodeURIComponent(ruleId)}/sends`,
+  },
   assistant: {
     session: '/assistant/session',
     heartbeat: '/assistant/heartbeat',

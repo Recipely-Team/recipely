@@ -16,8 +16,8 @@ const HANDLE_SLOT = '{handle}';
 const HANDLE_PREFIX = '@';
 const WEB_SCHEME = 'https://';
 
-/** The marks that name a source; the AI mark qualifies one and names none. */
-type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai>;
+/** The marks that name an outside source; the AI mark qualifies one and Recipely Kitchen is ours. */
+type SourceMarkType = Exclude<ProvenanceMarkType, typeof ProvenanceMark.Ai | typeof ProvenanceMark.Curated>;
 
 const SOURCE_WORDS: Record<SourceMarkType, {
   sentence: () => string;
@@ -101,22 +101,26 @@ export interface ProvenanceNoteProps {
  * - **A web page is named by its site**, without an `@`, and the site links to
  *   the page itself — the one address that recipe actually came from.
  * - **An AI-only recipe has no platform to name**, so it is a chip — seal and
- *   label — rather than a sentence with a missing half.
+ *   label — rather than a sentence with a missing half. A Recipely Kitchen
+ *   recipe is the same chip, with the logo and "Recipely Kitchen".
  */
 export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: ProvenanceNoteProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
   if (marks.length === ValueConstants.zero) return null;
 
   const seal = <ProvenanceSeal marks={marks} surface={SealSurface.Page} size={provenanceSealMetrics.pageSize} />;
-  const platform = marks.find((mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai);
+  const curated = marks.includes(ProvenanceMark.Curated);
+  const platform = marks.find(
+    (mark): mark is SourceMarkType => mark !== ProvenanceMark.Ai && mark !== ProvenanceMark.Curated,
+  );
 
-  if (platform === undefined) {
+  if (curated || platform === undefined) {
     return (
       <View style={style}>
         <View style={[styles.aiChip, { backgroundColor: colors.chipBackground }]}>
           {seal}
           <ThemedText style={[styles.aiLabel, { color: colors.chipText }]}>
-            {t().recipes.originAiDetailLabel}
+            {curated ? t().recipes.originCuratedDetailLabel : t().recipes.originAiDetailLabel}
           </ThemedText>
         </View>
       </View>

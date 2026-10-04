@@ -1,16 +1,17 @@
 import { fail, ok } from '@core/result/result-helpers';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
+import { toPage } from '@infrastructure/network/paging/to-page';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { CommentEntity } from '@domain/comments/comment-entity';
 import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
-import type { CommentPage } from '@domain/comments/comment-page';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { CommentDto } from '@infrastructure/comments/dtos/comment-dto';
-import type { CommentPageDto } from '@infrastructure/comments/dtos/comment-page-dto';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { ValueConstants } from '@core/constants';
 import type { AddCommentRequestDto } from '@infrastructure/comments/dtos/add-comment-request-dto';
+import type { Page } from '@domain/common/page';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 /**
  * Implements `CommentRepositoryInterface` against the Recipely backend. Supports
@@ -23,8 +24,8 @@ export class CommentRepository implements CommentRepositoryInterface {
     recipeId: string,
     page: number,
     pageSize: number,
-  ): Promise<Result<CommentPage, Failure>> {
-    const result = await this.http.get<CommentPageDto>(ApiRoutes.recipes.comments(recipeId), {
+  ): Promise<Result<Page<CommentEntity>, Failure>> {
+    const result = await this.http.get<PageDto<CommentDto>>(ApiRoutes.recipes.comments(recipeId), {
       params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {
@@ -38,12 +39,8 @@ export class CommentRepository implements CommentRepositoryInterface {
       }
       items.push(mapped.value);
     }
-    return ok({
-      items,
-      total: result.value.total,
-      page: result.value.page,
-      pageSize: result.value.pageSize,
-    });
+    // Strict: one unreadable comment fails the page, as before; `toPage` only wraps the envelope.
+    return ok(toPage({ ...result.value, items }, ok));
   }
 
   async add(recipeId: string, body: string): Promise<Result<CommentEntity, Failure>> {

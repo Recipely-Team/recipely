@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { useAvatarUpload } from '@presentation/base/hooks/profile/use-avatar-upload';
@@ -13,6 +13,8 @@ interface UseProfileResult {
   displayName: string;
   handle: string;
   bio: string;
+  /** At least one platform approved — the Profile's one creator badge. */
+  isCreator: boolean;
   photoUri: string | undefined;
   isUploading: boolean;
   onPickAvatar: () => void;
@@ -28,6 +30,10 @@ interface UseProfileResult {
  * fields, lazily loads the profile stats (recipes / likes / views / saved) and
  * models that fetch as a discriminated union, and wires the avatar upload and
  * edit-profile navigation intents.
+ *
+ * @remarks
+ * - **Re-reads the creator claim on every focus**, as Edit Profile does, so an
+ *   admin's approval puts the verified chip here without a visit there.
  */
 export const useProfile = (): UseProfileResult => {
   const router = useRouter();
@@ -37,6 +43,7 @@ export const useProfile = (): UseProfileResult => {
   const authState = authStore((s) => s.state);
   const profileState = userProfileStore((s) => s.state);
   const loadProfile = userProfileStore((s) => s.load);
+  const refreshCreatorClaim = authStore((s) => s.refreshCreatorClaim);
   const savedCount = savedRecipesStore((s) => s.savedIds.size);
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
@@ -46,12 +53,19 @@ export const useProfile = (): UseProfileResult => {
   const photoUri = user?.photoUrl ?? undefined;
   const handle = email.split('@')[ValueConstants.zero];
   const bio = user?.bio?.trim() ?? CharConstants.empty;
+  const isCreator = user?.creatorClaims.isCreator ?? false;
 
   useEffect(() => {
     if (userId !== undefined && profileState.status === StoreStatus.Idle) {
       void loadProfile(userId);
     }
   }, [userId, profileState.status, loadProfile]);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (userId !== undefined) void refreshCreatorClaim();
+    }, [userId, refreshCreatorClaim]),
+  );
 
   const retry = (): void => {
     if (userId !== undefined) void loadProfile(userId);
@@ -84,6 +98,7 @@ export const useProfile = (): UseProfileResult => {
     displayName,
     handle,
     bio,
+    isCreator,
     photoUri,
     isUploading,
     onPickAvatar: () => void pickAndUpload(),

@@ -16,8 +16,9 @@ import { UpdateProfileUseCase } from '@application/auth/profile/update-profile-u
 import { DeleteAccountUseCase } from '@application/auth/session/delete-account-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureSavedRecipesStore } from '@application/recipes/saved/saved-recipes-store';
-import { NetworkFailure, NotFoundFailure, UnauthorizedFailure } from '@core/failure';
+import { ErrorMessageKey, NetworkFailure, NotFoundFailure, UnauthorizedFailure, type Failure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
@@ -25,6 +26,13 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { Difficulty } from '@domain/recipes/difficulty';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { RequestCreatorTagUseCase } from '@application/creators/claim/request-creator-tag-use-case';
+import { RemoveCreatorTagUseCase } from '@application/creators/claim/remove-creator-tag-use-case';
+import { RefreshCreatorClaimUseCase } from '@application/creators/claim/refresh-creator-claim-use-case';
+import { CreatorClaim } from '@domain/creators/creator-claim';
+import { CreatorClaims } from '@domain/creators/creator-claims';
+import { CreatorStatus } from '@domain/creators/creator-status';
+import { CreatorTag } from '@domain/creators/creator-tag';
 
 const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity => {
   const email = Email.create('u@example.com');
@@ -106,6 +114,9 @@ const makeStore = (
     uploadAvatar: new UploadAvatarUseCase(repo),
     updateProfile: new UpdateProfileUseCase(repo),
     deleteAccount: new DeleteAccountUseCase(repo),
+    requestCreatorTag: new RequestCreatorTagUseCase(repo),
+    removeCreatorTag: new RemoveCreatorTagUseCase(repo),
+    refreshCreatorClaim: new RefreshCreatorClaimUseCase(repo),
     clearSessionCaches:
       overrides.clearSessionCaches ??
       (() => savedRecipesStore.getState().setSaved([])),
@@ -553,5 +564,253 @@ describe('auth-store', () => {
       expect(s.status).toBe('authenticated');
       if (s.status === 'authenticated') expect(s.session).toBe(session);
     });
+  });
+});
+
+describe('auth store — creator claim', () => {
+  const claimedSession = (status: string): AuthSessionEntity => {
+    const tag = CreatorTag.create('instagram', 'chef.ada');
+    if (!tag.ok) throw new Error();
+    const claim = CreatorClaim.create(tag.value, status);
+    if (!claim.ok) throw new Error();
+    const email = Email.create('u@example.com');
+    if (!email.ok) throw new Error();
+    const user = UserEntity.create({ id: 'u1', email: email.value, displayName: 'U', creatorClaims: CreatorClaims.empty().with(claim.value) });
+    if (!user.ok) throw new Error();
+    const session = AuthSessionEntity.create({
+      id: 's1',
+      accessToken: 'tok',
+      expiresAt: new Date(Date.now() + 60_000),
+      user: user.value,
+    });
+    if (!session.ok) throw new Error();
+    return session.value;
+  };
+
+  const userOf = (store: ReturnType<typeof makeStore>): UserEntity | null => {
+    const s = store.getState().state;
+    return s.status === 'authenticated' ? s.session.user : null;
+  };
+
+  /** The Instagram claim's status, `null` when there is no claim. */
+  const statusOf = (store: ReturnType<typeof makeStore>): string | null =>
+    userOf(store)?.creatorClaims.forPlatform('instagram')?.status ?? null;
+
+  it('requestCreatorTag puts the pending claim on the session user', async () => {
+    const store = makeStore(
+      new FakeAuthRepository({ signInResult: ok(buildSession()), requestCreatorTagResult: ok(claimedSession('pending')) }),
+    );
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const result = await store.getState().requestCreatorTag({ platform: 'instagram', handle: '@Chef.Ada' });
+
+    expect(result).toBeNull();
+    expect(statusOf(store)).toBe(CreatorStatus.Pending);
+    expect(userOf(store)?.creatorClaims.forPlatform('instagram')?.tag.displayHandle).toBe('@chef.ada');
+  });
+
+  it('requestCreatorTag returns the handle failure and keeps the session as it was', async () => {
+    const session = buildSession();
+    const store = makeStore(new FakeAuthRepository({ signInResult: ok(session) }));
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const result = await store.getState().requestCreatorTag({ platform: 'tiktok', handle: 'bad..handle' });
+
+    expect(result?.messageKey).toBe(ErrorMessageKey.creatorHandleInvalid);
+    const s = store.getState().state;
+    expect(s.status === 'authenticated' && s.session).toBe(session);
+  });
+
+  it('removeCreatorTag leaves the session user without a claim', async () => {
+    const store = makeStore(
+      new FakeAuthRepository({ signInResult: ok(claimedSession('approved')), removeCreatorTagResult: ok(buildSession()) }),
+    );
+    await store.getState().signIn('a@b.co', 'pw');
+    expect(statusOf(store)).toBe(CreatorStatus.Approved);
+
+    expect(await store.getState().removeCreatorTag('instagram')).toBeNull();
+
+    expect(statusOf(store)).toBeNull();
+  });
+
+  it('refreshCreatorClaim shows the admin decision', async () => {
+    const store = makeStore(
+      new FakeAuthRepository({
+        signInResult: ok(claimedSession('pending')),
+        refreshCreatorClaimResult: ok(claimedSession('approved')),
+      }),
+    );
+    await store.getState().signIn('a@b.co', 'pw');
+
+    expect(await store.getState().refreshCreatorClaim()).toBeNull();
+
+    expect(userOf(store)?.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
+  });
+
+  it('refreshCreatorClaim returns the failure and keeps the claim shown', async () => {
+    const failure = new NetworkFailure('offline');
+    const store = makeStore(
+      new FakeAuthRepository({ signInResult: ok(claimedSession('pending')), refreshCreatorClaimResult: fail(failure) }),
+    );
+    await store.getState().signIn('a@b.co', 'pw');
+
+    expect(await store.getState().refreshCreatorClaim()).toBe(failure);
+    expect(statusOf(store)).toBe(CreatorStatus.Pending);
+  });
+
+  it('a claim answer for the previous user does not land in the next user\'s session', async () => {
+    const next = (() => {
+      const email = Email.create('b@example.com');
+      if (!email.ok) throw new Error();
+      const user = UserEntity.create({ id: 'u2', email: email.value, displayName: 'B' });
+      if (!user.ok) throw new Error();
+      const session = AuthSessionEntity.create({ id: 's2', accessToken: 'tok2', expiresAt: new Date(Date.now() + 60_000), user: user.value });
+      if (!session.ok) throw new Error();
+      return session.value;
+    })();
+    let release: (session: AuthSessionEntity) => void = () => undefined;
+    const signIns = [buildSession(), next];
+    const repo = new (class extends FakeAuthRepository {
+      override signIn() {
+        const session = signIns.shift();
+        return Promise.resolve(session === undefined ? fail(new NetworkFailure('none')) : ok(session));
+      }
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          release = (session) => resolve(ok(session));
+        });
+      }
+    })();
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+    const refreshing = store.getState().refreshCreatorClaim();
+    await store.getState().signOut();
+    await store.getState().signIn('b@b.co', 'pw');
+
+    release(claimedSession('approved'));
+    await refreshing;
+
+    const s = store.getState().state;
+    expect(s.status === 'authenticated' && s.session).toBe(next);
+  });
+
+  it('a focus refresh that started before a request does not put the old claim back', async () => {
+    let release: (session: AuthSessionEntity) => void = () => undefined;
+    const repo = new (class extends FakeAuthRepository {
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          release = (session) => resolve(ok(session));
+        });
+      }
+    })({ signInResult: ok(claimedSession('approved')), requestCreatorTagResult: ok(claimedSession('pending')) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const refreshing = store.getState().refreshCreatorClaim();
+    expect(await store.getState().requestCreatorTag({ platform: 'instagram', handle: 'chef.ada' })).toBeNull();
+    release(claimedSession('approved'));
+    await refreshing;
+
+    expect(statusOf(store)).toBe(CreatorStatus.Pending);
+  });
+
+  // The store counted only writes that STARTED during a refresh, so one already
+  // in flight when the refresh began was missed and its old claim won.
+  it('a focus refresh that started while a request was in flight does not put the old claim back', async () => {
+    let answerRequest: (session: AuthSessionEntity) => void = () => undefined;
+    let answerRefresh: (session: AuthSessionEntity) => void = () => undefined;
+    const repo = new (class extends FakeAuthRepository {
+      override requestCreatorTag() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          answerRequest = (session) => resolve(ok(session));
+        });
+      }
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          answerRefresh = (session) => resolve(ok(session));
+        });
+      }
+    })({ signInResult: ok(claimedSession('approved')) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const requesting = store.getState().requestCreatorTag({ platform: 'instagram', handle: 'chef.ada' });
+    const refreshing = store.getState().refreshCreatorClaim();
+    await Promise.resolve();
+    answerRequest(claimedSession('pending'));
+    expect(await requesting).toBeNull();
+    answerRefresh(claimedSession('approved'));
+    await refreshing;
+
+    expect(statusOf(store)).toBe(CreatorStatus.Pending);
+  });
+
+  it('an answer landing after sign-out does not sign the user back in', async () => {
+    let release: (session: AuthSessionEntity) => void = () => undefined;
+    const repo = new (class extends FakeAuthRepository {
+      override refreshCreatorClaim() {
+        return new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+          release = (session) => resolve(ok(session));
+        });
+      }
+    })({ signInResult: ok(buildSession()) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+    const refreshing = store.getState().refreshCreatorClaim();
+    await store.getState().signOut();
+
+    release(claimedSession('approved'));
+    await refreshing;
+
+    expect(store.getState().state.status).toBe('unauthenticated');
+  });
+});
+
+describe('auth store — claim writes run one at a time', () => {
+  // Two platforms written together each answered with a session built before
+  // the other's write; whichever landed last dropped the other platform.
+  it('starts a second platform write only after the first has answered', async () => {
+    const started: string[] = [];
+    const answers: ((result: Result<AuthSessionEntity, Failure>) => void)[] = [];
+    const held = (label: string) =>
+      new Promise<Result<AuthSessionEntity, Failure>>((resolve) => {
+        started.push(label);
+        answers.push(resolve);
+      });
+    const repo = new (class extends FakeAuthRepository {
+      override requestCreatorTag() {
+        return held('request');
+      }
+      override removeCreatorTag() {
+        return held('remove');
+      }
+    })({ signInResult: ok(buildSession()) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    const first = store.getState().requestCreatorTag({ platform: 'instagram', handle: 'chef.ada' });
+    const second = store.getState().removeCreatorTag('tiktok');
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(started).toEqual(['request']);
+
+    answers[0]?.(ok(buildSession()));
+    expect(await first).toBeNull();
+    await Promise.resolve();
+    await Promise.resolve();
+    expect(started).toEqual(['request', 'remove']);
+
+    answers[1]?.(ok(buildSession()));
+    expect(await second).toBeNull();
+  });
+
+  it('keeps the queue moving after a write fails', async () => {
+    const repo = new FakeAuthRepository({ signInResult: ok(buildSession()), removeCreatorTagResult: ok(buildSession()) });
+    const store = makeStore(repo);
+    await store.getState().signIn('a@b.co', 'pw');
+
+    expect(await store.getState().requestCreatorTag({ platform: 'tiktok', handle: 'bad..handle' })).not.toBeNull();
+    expect(await store.getState().removeCreatorTag('tiktok')).toBeNull();
+    expect(repo.removedPlatforms).toEqual(['tiktok']);
   });
 });

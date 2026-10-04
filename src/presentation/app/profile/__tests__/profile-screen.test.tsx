@@ -26,6 +26,7 @@ import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { t } from '@presentation/i18n';
+import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 
 // The screen is rendered bare here, without a StoresProvider — these cover
 // what it displays, not how it is wired. The assistant hook only registers
@@ -37,6 +38,10 @@ jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-action', () 
 
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: jest.fn() })),
+  // Focus is mount here: the effect runs once, like the page opening.
+  useFocusEffect: (callback: () => void) => {
+    jest.requireActual<typeof import('react')>('react').useEffect(callback, [callback]);
+  },
 }));
 
 jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
@@ -98,6 +103,9 @@ const makeAuthStore = (bio: string | undefined) =>
     uploadAvatar: jest.fn(),
     updateProfile: jest.fn(),
     deleteAccount: jest.fn(),
+    requestCreatorTag: jest.fn(),
+    removeCreatorTag: jest.fn(),
+    refreshCreatorClaim: jest.fn(),
   }));
 
 const makeUserProfileStore = () =>
@@ -121,11 +129,15 @@ const makeSavedRecipesStore = () =>
     clear: jest.fn(),
   }));
 
-const renderProfile = (bio: string | undefined): ReturnType<typeof renderComponent> => {
+const renderProfile = (
+  bio: string | undefined,
+  authStore: ReturnType<typeof makeAuthStore> = makeAuthStore(bio),
+): ReturnType<typeof renderComponent> => {
   const stores = {
-    authStore: makeAuthStore(bio),
+    authStore,
     userProfileStore: makeUserProfileStore(),
     savedRecipesStore: makeSavedRecipesStore(),
+    instagramStore: instagramStoreOf().store,
     // The screen tells the assistant what it is showing, which is a real
     // registry call on mount — a bare object here crashes the render before
     // any of this file's assertions get to look at it.
@@ -162,5 +174,15 @@ describe('ProfileScreen — bio display', () => {
     const { root } = renderProfile('   ');
 
     expect(textContent(root)).toContain(t().profile.addBioPrompt);
+  });
+});
+
+describe('ProfileScreen — creator claim', () => {
+  it('re-reads the claim when the page gains focus, so an approval shows here too', () => {
+    const authStore = makeAuthStore(undefined);
+
+    renderProfile(undefined, authStore);
+
+    expect(authStore.getState().refreshCreatorClaim).toHaveBeenCalledTimes(1);
   });
 });

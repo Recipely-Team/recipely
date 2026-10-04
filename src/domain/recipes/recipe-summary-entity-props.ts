@@ -1,5 +1,7 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
+import type { ImageCredit } from '@domain/recipes/media/image-credit';
+import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import type { RecipeOriginType } from '@domain/recipes/provenance/recipe-origin';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 
@@ -9,6 +11,8 @@ export interface RecipeSummaryEntityProps {
   image: string;
   /** Where the dish sits in the cover; absent reads as a centred crop. */
   imageFocus?: FocalPoint;
+  /** Who took the cover photo and under which licence; absent for the owner's own photo. */
+  imageCredit?: ImageCredit;
   // Opaque taxonomy keys — see `RecipeEntityProps.cuisine` in `recipe.ts` for why
   // these stay `string` rather than the local curated enums.
   cuisine: string;
@@ -39,4 +43,11 @@ export interface RecipeSummaryEntityProps {
   aiWritten: boolean;
   /** How many photos the recipe has; `0` from a server that does not send it, which hides the card chip. */
   photoCount: number;
+  /**
+   * Kcal per serving; 0 (or absent, from a server that predates it) means
+   * unknown. Optional so a summary built before the field existed still is one.
+   */
+  caloriesPerServing?: number;
+  /** Where the nutrition figures were looked up; absent when they were estimated. */
+  nutritionSource?: NutritionSourceType;
 }

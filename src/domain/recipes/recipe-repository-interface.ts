@@ -9,19 +9,19 @@ import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
 import type { CreateRecipeProgressCallback } from '@domain/recipes/create/create-recipe-progress-callback';
 import type { MediaItem } from '@domain/recipes/media/media-item';
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-batch';
 import type { FileImportReceipt } from '@domain/recipes/import-file/file-import-receipt';
 import type { EditRecipeInput } from '@domain/recipes/edit/edit-recipe-input';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
 import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
+import type { Page } from '@domain/common/page';
 
 export interface RecipeRepositoryInterface {
-  listActiveRecipes(filters?: RecipeFilters): Promise<Result<RecipePage, Failure>>;
+  listActiveRecipes(filters?: RecipeFilters): Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
   listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>>;
-  listMyRecipes(page?: number): Promise<Result<RecipePage, Failure>>;
+  listMyRecipes(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
   getRecipe(id: string): Promise<Result<RecipeEntity, Failure>>;
   createRecipe(
     input: CreateRecipeInput,

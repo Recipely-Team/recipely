@@ -56,6 +56,20 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.photoNotFound]: 'photoNotFound',
   [ErrorMessageKey.nothingToEdit]: 'nothingToEdit',
 
+  [ErrorMessageKey.diaryEntryNotFound]: 'diaryEntryNotFound',
+  [ErrorMessageKey.diaryFoodNameTooLong]: 'diaryFoodNameTooLong',
+  [ErrorMessageKey.diaryNutrientInvalid]: 'diaryNutrientInvalid',
+  [ErrorMessageKey.diaryGoalInvalid]: 'diaryGoalInvalid',
+
+  [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
+  [ErrorMessageKey.creatorHandleTaken]: 'creatorHandleTaken',
+  [ErrorMessageKey.creatorNotPending]: 'creatorNotPending',
+  [ErrorMessageKey.instagramNotConfigured]: 'instagramNotConfigured',
+  [ErrorMessageKey.instagramLinkInvalid]: 'instagramLinkInvalid',
+  [ErrorMessageKey.instagramAccountLinked]: 'instagramAccountLinked',
+  [ErrorMessageKey.instagramNotConnected]: 'instagramNotConnected',
+  [ErrorMessageKey.instagramReturnInvalid]: 'instagramReturnInvalid',
+
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',
   [ErrorMessageKey.codeExpired]: 'codeExpired',

@@ -85,3 +85,59 @@ describe('UserProfileRepository.getById', () => {
     if (!r.ok) expect(r.failure.code).toBe('validation');
   });
 });
+
+describe('UserProfileRepository.listCreators', () => {
+  const pageDto = {
+    items: [
+      {
+        id: 'u-7',
+        displayName: 'Ada',
+        photoUrl: null,
+        creatorTags: [{ platform: 'instagram', handle: 'ada.cooks' }],
+        recipeCount: 5,
+        followerCount: 900,
+      },
+    ],
+    total: 61,
+    page: 3,
+    pageSize: 20,
+  };
+
+  it('issues GET /users/creators with the requested page in the query', async () => {
+    const { http, calls } = makeHttp(ok(pageDto));
+    const repo = new UserProfileRepository(http);
+
+    await repo.listCreators(3, 20);
+
+    expect(calls).toHaveLength(1);
+    expect(calls[0].method).toBe('GET');
+    expect(calls[0].url).toBe('/users/creators');
+    expect(calls[0].params).toEqual({ page: 3, pageSize: 20 });
+  });
+
+  it('returns the mapped page with the backend envelope', async () => {
+    const { http } = makeHttp(ok(pageDto));
+    const repo = new UserProfileRepository(http);
+
+    const r = await repo.listCreators(3, 20);
+
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.items.map((c) => c.id)).toEqual(['u-7']);
+      expect(r.value.page).toBe(3);
+      expect(r.value.total).toBe(61);
+      expect(r.value.hasMore).toBe(true);
+    }
+  });
+
+  it('propagates the HttpClient failure unchanged', async () => {
+    const failure = new NetworkFailure('offline');
+    const { http } = makeHttp(fail(failure));
+    const repo = new UserProfileRepository(http);
+
+    const r = await repo.listCreators(1, 20);
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBe(failure);
+  });
+});

@@ -1,0 +1,84 @@
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { ValueConstants } from '@core/constants';
+import type { CreatorTag } from '@domain/creators/creator-tag';
+import { creatorProfileUrl } from '@presentation/base/widgets/creators/creator-profile-url';
+import { useTheme } from '@presentation/base/theme/context/use-theme';
+import {
+  borderWidths,
+  controlSizes,
+  fontSizes,
+  fontWeights,
+  iconSizes,
+  opacities,
+  radii,
+  spacing,
+} from '@presentation/base/theme';
+import { SizedText } from '@presentation/base/widgets/text/sized-text';
+import { t } from '@presentation/i18n';
+import { CreatorPlatformMark } from '@presentation/base/widgets/creators/creator-platform-mark';
+import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
+import { creatorPlatformName } from '@presentation/base/widgets/creators/creator-platform-name';
+
+export interface CreatorTagChipProps {
+  /** An approved tag — the chip says "verified", so it is never drawn for a claim under review. */
+  tag: CreatorTag;
+}
+
+/**
+ * The verified platform badge: platform seal, `@handle` and a check, as one
+ * 32-high pill that opens the account on its platform (design spec →
+ * Creators §3, CreatorPlatformBadge).
+ *
+ * @remarks
+ * - **Shown on the creator's page and on the owner's own Profile**, the same
+ *   chip in both, so the badge a user earns looks like the one they see on
+ *   others.
+ * - **A link, not a button.** It leaves the app for the platform; its name
+ *   says the account is verified, on which platform, and which handle.
+ */
+export const CreatorTagChip = ({ tag }: CreatorTagChipProps): React.JSX.Element => {
+  const colors = useTheme().colors;
+  const label = t()
+    .creators.verifiedAccount.replace('{handle}', tag.displayHandle)
+    .replace('{platform}', creatorPlatformName(tag.platform));
+
+  return (
+    <Pressable
+      onPress={() => void Linking.openURL(creatorProfileUrl(tag)).catch(() => undefined)}
+      accessibilityRole="link"
+      accessibilityLabel={label}
+      style={({ pressed }) => [
+        styles.chip,
+        { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+        { opacity: pressed ? opacities.pressed : opacities.full },
+      ]}
+    >
+      <CreatorPlatformMark platform={tag.platform} size={creatorMarkGeometry.chip} />
+      <SizedText size={fontSizes.caption} weight={fontWeights.semibold} numberOfLines={ValueConstants.one} style={styles.handle}>
+        {tag.displayHandle}
+      </SizedText>
+      <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+        <Ionicons name="checkmark-circle" size={iconSizes.sm} color={colors.primary} />
+      </View>
+    </Pressable>
+  );
+};
+
+const styles = StyleSheet.create({
+  chip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'center',
+    gap: spacing.xs2,
+    minHeight: controlSizes.iconBtnSm,
+    maxWidth: '100%',
+    paddingLeft: spacing.xs,
+    paddingRight: spacing.sm2,
+    borderRadius: radii.round,
+    borderWidth: borderWidths.hairline,
+  },
+  handle: {
+    flexShrink: ValueConstants.one,
+  },
+});

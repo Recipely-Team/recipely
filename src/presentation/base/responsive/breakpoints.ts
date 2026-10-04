@@ -30,7 +30,12 @@ export const WEB_CONTENT_MAX_WIDTH = {
   aiGenerate: 760,
   importRecipe: 560,
   recipeDetail: 980,
+  /** Six creator cards across, as the prototype's Explore row. */
+  creators: 1200,
+  /** A creator's header reads like a profile; their recipe grid below shares the cap. */
+  creatorProfile: 980,
   notifications: 720,
+  diary: 1200,
   settings: 720,
   forms: 480,
 } as const;

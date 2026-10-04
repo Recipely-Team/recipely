@@ -1,6 +1,7 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { MediaDto } from '@infrastructure/recipes/media/media-dto';
 import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
+import type { ImageCreditDto } from '@infrastructure/recipes/media/image-credit-dto';
 import type { NutritionDto } from '@infrastructure/recipes/dtos/nutrition-dto';
 
 // Wire shape returned by the Recipely backend for a single recipe.
@@ -21,6 +22,10 @@ export interface RecipeDto {
   image: string;
   /** The cover's focal point; absent until the backend's focus sweep has found it. */
   imageFocus?: FocusDto;
+  /** The cover photo's credit; `null` (or absent, from an older server) when it needs none. */
+  imageCredit?: ImageCreditDto | null;
+  /** Where the nutrition figures were looked up: `USDA_FDC`, or `null` when estimated. */
+  nutritionSource?: string | null;
   rating: number;
   tags: string[];
   mealType: string[];
@@ -32,7 +37,7 @@ export interface RecipeDto {
   createdAt: string;
   updatedAt: string;
   viewCount: number;
-  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  /** Where the text came from: `USER`, `AI`, `IMPORT` or `CURATED`. */
   origin?: string;
   /** The post an import came from. */
   sourceUrl?: string;

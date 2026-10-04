@@ -3230,3 +3230,447 @@ light/dark — the numbers above are the floor, not a suggestion. The `pearl-whi
 (`contrastRatio(colors.textMuted, colors.surface) >= 3.0`, currently failing) — file it as
 expected-to-fail or `.skip` with a comment pointing at this section until `ts-developer` fixes it,
 per item 7 above; do not silently drop it.
+
+---
+
+## Food Diary / Günlük (Sep 2026)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(files `src/diary-data.js`, `src/diary.jsx`, `src/diary-sheets.jsx`; Tweaks → Starting screen →
+`Diary · filled / first day / over goal / month / add food / goals`). This section is the RN spec
+the prototype wrote (`food-diary-rn-spec.md` in the design project), trimmed of the palette table
+that already lives in `themes.ts`. **v1 scope cut:** the prototype's generic "Foods" catalogue
+(`DIARY_FOODS`, units piece/glass/cup/bowl/g) has no backend source yet — v1 ships Recipes, Recent
+and Quick add only, and every entry's unit is `serving`.
+
+### 1. Navigation
+
+| | Mobile | Web |
+|---|---|---|
+| Entry | bottom tab between **My Recipes** and **Profile** | header nav item after **My Recipes** |
+| Label | `Diary` / `Günlük` | same |
+| Icon | calendar (22 px) | same icon, 16 px |
+
+Recipe Detail gets **Add to diary / Günlüğe ekle** directly under the Nutrition card, only when
+`caloriesPerServing > 0`; it opens the Add food sheet on its detail step with the recipe selected.
+- Mobile: full width, 48 h, radius 12, `chipBackground` fill, `chipText` label 15/700, calendar icon 18.
+- Web: inside the Nutrition card, full width, 44 h, radius 12, `primary` fill, `primaryText` label 14/700.
+
+### 2. Tokens
+
+Existing theme only, except the status tones in 2.1.
+- Spacing `xs 4 · sm 8 · md 12 · lg 16 · xl 24`; gutter 16 mobile, 24 web.
+- Radii: cards 16, rows/inputs/buttons 12, day cells 10–12, pills round.
+- Card: `cardBackground`, 1 px `cardBorder`, `shadow.sm`. Tracks (ring, bars, water pills): `skeleton`.
+- Type: title 24/700, card heading 16/700, row name 14.5/600, meta 12.5 `textMuted`, macro line 12
+  `textMuted`, big number 28/800 (mobile ring), 32/800 (web ring), 36/800 (sheet total).
+- Ring, macro bars, water pills, selected date, primary buttons, active segments: `primary` / `primaryText`.
+
+#### 2.1 Status tones (`DIARY_TONES`, new)
+
+Fixed hues (not per palette) so "over" never collides with Crimson's red primary; light/dark only.
+`fg` on `bg` ≥ 7:1; `solid` ≥ 3:1 on `cardBackground` / `surface` in all 8 palette/mode combos.
+
+| status | eaten ÷ goal | light bg / fg / solid | dark bg / fg / solid | marker |
+|---|---|---|---|---|
+| none | no entries | transparent, 1 px `cardBorder` | same | none |
+| under | < 0.90 | #DCE7F5 / #1E3A5F / #2F62A8 | #1E3350 / #D6E6FB / #8AB8F2 | hollow circle |
+| on | 0.90 – 1.10 | #CFEFD9 / #14532D / #15803D | #163A26 / #BDEFCD / #6BD394 | check |
+| over | 1.10 – 1.25 | #FDE2C4 / #7C2D12 / #C2410C | #4A2A10 / #FFD7AE / #FB923C | filled up-triangle |
+| far | > 1.25 | #F8CFCB / #7F1D1D / #B91C1C | #4F1818 / #FFC8C2 / #F87171 | double up-chevron |
+
+Never colour alone: each cell has a 10 px shape marker and an `accessibilityLabel`
+(`"27 Eylül Pazar: 2.269 kcal, Hedefin üstünde"`); the legend repeats marker + text. Cell border is
+`fg` at 15% alpha.
+
+### 3. Data rules
+
+- Goal defaults: `2000 kcal · 120 g protein · 230 g carbs · 65 g fat · 30 g fiber`, water 8 glasses.
+- Recipe nutrition = `caloriesPerServing` + `nutrition.{protein,carbs,fat,fiber}`; calories without
+  macros → macros `null`, the entry counts toward kcal and the UI shows "calories only".
+- Entry values are a snapshot at log time. Totals = Σ values, ignoring nulls; round only for display.
+- Water: glasses of 250 ml, range 0–12. Numbers via `Intl` per locale (TR `1.429`, `1,5`).
+- Default meal from the clock: <11 breakfast, <16 lunch, <21 dinner, else snacks.
+
+### 4. Day view (tab root)
+
+**Mobile (390 × 844):**
+1. TopAppBar "Günlük / Diary"; right: 40 × 40 round buttons (`surface`, 1 px `cardBorder`):
+   calendar → Month view, target → Daily goals, bell (existing).
+2. Date strip (no card, gutter 16): header row with long date 15/700, a `Today` pill (26 h, chip
+   colours) when on today or a `Today` ghost button (32 h) otherwise, prev/next week 36 × 36 round.
+   7-column Monday-first grid, gap 6, cell 62 h radius 12: weekday 11/600 muted, day 16/800, 4 px dot
+   when the day has entries. Selected: `primary` fill, `primaryText`. Future days disabled at 40%.
+   Next-week disabled past the current week. Horizontal swipe > 40 px shifts ±1 week.
+3. Summary card (padding 16): ring 128, stroke 12, round caps, track `skeleton`, from 12 o'clock,
+   fill `primary`; at over/far the ring is full in `tone.solid`. Centre: remaining kcal 28/800 +
+   "kcal left" 12/600; when over `+269` in `tone.solid` + "kcal over". Right column (min 140):
+   Eaten, Goal, divider, Remaining/Over 16/700. Status strip (on/over/far only): 8 × 12 padding,
+   radius 12, `tone.bg` + `tone.fg` 13/700, 12 px marker — "Within 10% of your goal" /
+   "269 kcal over your goal". Macros 2 × 2 grid, gap 14/18: label 13/600, `value / goal g` 12.5
+   (value bold, wraps under long labels), bar 6 h radius 3; P/C/F past goal use `over.solid`; fiber
+   never over.
+4. Water row (card, padding 12 12 12 16): 36 px droplet disc (chip colours), "Water" 15/700 +
+   "5 / 8 glasses · 1.3 L" 12.5 muted, 8 pills 18 × 6; 44 × 44 round minus (outlined, disabled at 0)
+   and plus (`primary`).
+5. Meal cards ×4 (gap 14): header name 16/700 + kcal total 13 muted; "+ Add" pill (32 h, 44 hit,
+   chip colours) only when the meal has items. Item row (min 64 h, padding 10 × 16, separators):
+   44 px thumb radius 10 (recipe photo, or chip tile with a bolt icon for quick adds), name 14.5/600
+   one line, portion line `"2 servings · Recipe"`, macro line `"P 20 g · C 76 g · F 10 g"` (omitted
+   when null), kcal 15/700 + "kcal" 11.5 on the right. Tap → Add food sheet in edit mode. Empty meal:
+   dashed button (min 52 h, 1.5 px dashed `border`, radius 12), "Nothing logged yet" muted left,
+   "+ Add" `primary` 13.5/700 right. Bottom padding 120.
+
+**Web (≥ 1020 px):** container max 1200, padding 28 24 64, H1 28/800, "Daily goals" ghost button
+(40 h, target icon). Two columns `1fr 380px`, gap 24. Left: date strip in a card, summary as one row
+(ring 156 / stroke 14, stats, 4 stacked bars), water row, meals in a 2-column grid (1 below 1180).
+Right rail: month calendar (cells 44 h, gap 4), stats tiles, legend; no calendar header button;
+tapping a day updates the left column. Below 1020 px the rail stacks under the main column.
+
+### 5. Month view
+
+Mobile: pushed inside the Diary tab (tab bar stays), header with back button and "Calendar" 24/700.
+Order: stats → month card → legend.
+- Stats: 3 tiles (gap 8, radius 16, padding 12 × 14): label 12 muted (2-line min), value 20/800 —
+  daily average (logged days of the month before today), days on target `on / logged`, logging
+  streak (consecutive logged days ending today, or yesterday if today is empty). Footnote 12 muted:
+  "Logged days this month. Today isn't counted until it's over."
+- Month card: `"September 2026"` 17/800 + prev/next 36 px (next disabled after the current month).
+  Weekday header 11/600, Monday first; grid gap 6, cell 52 h radius 10: day 13.5/700 in `tone.fg`,
+  10 px marker beneath. Today underlined 2 px; selected 2 px `text` outline; future disabled 45%.
+  Tap → set date and return to Day view (web: in place).
+- Legend: "CALORIES VS GOAL" (11 uppercase muted), auto-fill grid (min 150) of 22 px swatches + 12.5 text.
+
+### 6. Add food sheet
+
+Shared `BottomSheet` (mobile) / centred dialog (web, max-width 520). Payload `{ date, meal?, recipe?, entry? }`.
+- **Pick step** (skipped with a recipe or entry): search 44 h; typing shows one "Results" list.
+  Segmented tabs 38 h: **Recipes** (groups: My recipes · Saved · From Recipely; row 60 min, 44 thumb,
+  `"350 kcal · per serving"`, 32 px "+"), **Recent** (last distinct items, `"460 kcal · 2 servings ·
+  29 Sep"`, tap pre-fills the last quantity; empty: "Foods you log will show up here."),
+  **Quick add** (name, calories with "kcal" suffix, optional P/C/F grams, hint "Macros add up to ≈ X
+  kcal" at 4/4/9, meal picker; submit disabled until name and kcal > 0).
+- **Detail step**: back button (only after the pick step), 52 px thumb, name 16/700,
+  `"300 kcal · per serving · 30 September · Today"`. Total box (`surface`, radius 16, 16 × 14):
+  kcal 36/800 + 4 macro columns (15/700, label 11.5) or "calories only". Servings stepper: 44 px
+  round −/+, step 0.5, min 0.5, value "1.5 servings", `accessibilityLiveRegion="polite"`. Meal picker
+  4 segments. Footer: add mode "Add to diary · 460 kcal"; edit mode `Remove` (danger) + `Save changes`.
+- Result: close + success toast "Added to diary · Lunch"; from outside the diary the toast has a
+  "Diary" action to the tab.
+
+### 7. Daily goals sheet
+
+Max-width 480 on web; header action "Defaults" resets. Calories: −50/+50 round buttons (44) around a
+52 h input (22/800, "kcal"). Macro rows (min 52, `surface`, radius 12): label 15/600, share of
+calories for P/C/F, 104 px numeric input with "g". Hint "Protein, carbs and fat add up to ≈ 1,985
+kcal"; > 10% off the calorie goal adds a warning (triangle marker + text). Footer "Save goals" →
+toast "Goals updated"; everything recomputes immediately.
+
+### 8. States
+
+| State | What shows |
+|---|---|
+| First day / empty | welcome card (44 px calendar tile, title 19/800, body 14.5, starting-goal note, 48 h buttons "Log your first meal" / "Set my goals"); summary 0 / 2,000; all meals empty; stats "—", streak 0; card gone after the first entry |
+| Filled day | ring + macros, some meals filled |
+| On target | green strip "Within 10% of your goal" + check |
+| Over / far over | ring full in the tone, centre `+269 kcal over`, strip with marker |
+| Past day | fully editable; "Today" returns |
+| Future day | disabled |
+| Recipe without macros | kcal counted; macro line hidden |
+
+### 9. Accessibility
+
+Hit areas ≥ 44. Segmented controls `accessibilityRole="tab"` + selected. Date and calendar cells
+expose selected and a spoken label with kcal and status. Status = text + shape + colour.
+
+## Diary · Add food v2 (Oct 2026 — supersedes "Food Diary" §6)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(files `src/diary-sheets.jsx`, `src/diary-products.js`, `src/diary-data.js`, `src/diary.jsx`; Tweaks →
+Starting screen → `Diary · add food`, `Add food · search results`, `Add food · products tab`,
+`Add food · product (Ayran)`, `Add food · branded product`; all palettes, light + dark, Mobil + Web,
+EN + TR). Written per rule 28 step 3 from the prototype's RN spec. Everything listed comes from the
+backend (`/diary/foods/*`, backend #371 / #373), paged with `PageResult`; only unit words and labels
+are i18n. Built in `base/widgets/diary/add-food/`.
+
+### 1. Tokens
+
+No new colours; all from the active palette. Sheet `background`/`text`; secondary text, headings,
+kcal/100 `textMuted`; inputs `inputBackground` + `inputBorder`; segmented track, total box, variant
+list and Draft tag bg `surface` + hairline `cardBorder`; active segment / selected chip / radio
+`primary` + `primaryText`; row "+" disc, thumb tile, Quick add chip `chipBackground` / `chipText`;
+row separators `cardBorder`; skeleton `skeleton`; Draft tag border and unselected radio `border`.
+Radii: inputs/segments/lists `radii.lg` (12), total box `radii.xl` (16), chips pill, thumbs 10, tag 6.
+Measurements live in `diarySizes` (`pickBodyMinHeight` 360, `draftTag*`, `unitChipMinHeight` 40 /
+`unitChipMinHeightWeb` 36, `amountValueMinWidth` 96, `radio*` 20/10/2, `variantRowMinHeight` 44,
+`variantSegmentsMax` 4, `pickMessageCircle` 48, skeleton 5 rows at 58% / 36%).
+
+### 2. Layout
+
+- **Sheet:** shared `BottomSheet` (mobile bottom sheet, web centred dialog max 520) with
+  `scrollsItself` — each step owns its scroll so the paged `FlatList`s virtualise.
+- **Pick step:** search field 44 h (search icon, clear button once there is text; autofocus on the
+  web shell only, return key "Search"). While the query is empty, tabs **Recipes · Products · Recent ·
+  Quick add** (segmented, labels may wrap to 2 lines at line-height 1.15). Group heading 11 uppercase
+  muted. Pick row min 60 h: 44 thumb · name (+ Draft tag) · sub · optional "Open Food Facts" note ·
+  32 "+" disc; whole row is the target.
+  - Recipe sub `300 kcal · per serving`; curated product `3 variants · 38 kcal / 100 ml`; branded
+    `Ülker · 36 g · 530 kcal / 100 g`. Product tiles: drink → cup, food → plate, branded → box.
+- **Product step:** header (back unless editing, 52 thumb, name, branded brand line `Sütaş · 300 ml`,
+  `38 kcal / 100 ml · 30 September · Today`) · Variant (≤ 4 segmented, > 4 radio list with kcal/100)
+  · total box · Amount (unit chips `1 bardak · 200 ml` … then `ml`/`g`; `= 400 ml` left of a stepper
+  44 −/+ with a 17/800 value) · meal picker · branded source note · footer `Add to diary · 76 kcal`
+  (edit: Remove + Save changes).
+  - Steps: serving units 0.5 (min 0.5), `ml` 50, `g` 10, max 5000. To the base unit the amount is
+    converted and snapped; to a serving unit it restarts at 1. Default: first serving unit × 1, else
+    100 of the base unit.
+- **Recipe detail step:** unchanged from v1.
+
+### 3. Search and paging
+
+Debounce 300 ms (clearing is immediate); an older query's answer never replaces a newer one. Groups,
+in order: **Saved · My recipes** (drafts tagged) **· Products · Recipes**; each group pages via
+`group=`. The Recipes tab without a query lists Saved · My recipes · From Recipely unfiltered
+(#373) and dedupes on the client, Saved first. Every list (groups, shelves, a shelf's products,
+recent) loads its next page on scroll.
+
+### 4. States
+
+| State | Shows |
+|---|---|
+| First page loading | 5 skeleton rows, body min height 360 |
+| Loading more | row with spinner + "Loading more…" under the group being paged |
+| Next page failed | inline "Try again" row |
+| No results | search disc, `No results for “x”`, hint, chip "Quick add" (opens it with the name) |
+| Error | same layout, "Couldn't load results" + "Try again" |
+| Recent empty | "Foods you log will show up here." |
+| Products tab | shelf chips ("All" first, paged) + "Foods & drinks" rows |
+| Product loading / failed | skeleton / error with retry |
+
+Diary rows for product entries read `Ayran · Az yağlı` with portion `1,5 bardak` / `250 ml`. Unit words
+(EN pluralises, TR does not): glass, teaGlass, can, bottle, slice, piece, pack, tbsp, medium,
+portion; an unknown key shows its amount in g/ml.
+
+### 5. Departures from the prototype
+
+1. **Variant sub line:** the backend lists one product row per variant, so a row shows that
+   variant's kcal / 100 rather than the range across variants.
+2. **Products tab is curated only:** `/diary/foods/products` has no branded packs, so the tab has no
+   "Packaged" group; Open Food Facts packs come from search only.
+3. **Editing a product entry** keeps its variant and unit and changes the quantity only — the API
+   rescales `servings` and nothing else.
+4. **Paging trigger:** `FlatList onEndReached` on mobile and web alike, not an IntersectionObserver
+   sentinel; it pages the first group (in display order) that still has more.
+
+## Instagram connect + Automations (Oct 2026)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(`src/ig-automations.jsx`, `src/social.jsx`, `src/app.jsx`; Tweaks → Starting screen → `IG · connect /
+login cancelled / connected / token expired`, `Automations (· empty / · paused / · not connected)`,
+`Rule · 1–4`, `Automation · activity`). Written per rule 28 step 3; backend contract #374. Built in
+`app/automations/` (list, `edit/`, `activity/`), `app/instagram-connected/`, Edit Profile's creator card
+and `base/widgets/instagram/`.
+
+### Tokens and measurements
+
+All colours from the active palette: surfaces `background` / `surface` / `cardBackground`, `cardBorder`
+hairlines, `border` dividers; `text` / `textSubtle` / `textMuted`; `primary` / `primaryText` (CTA, switch
+on, selected ring, step dots, DM bubble); `chipBackground` / `chipText` (keywords, step numbers, selected
+recipe row); status pills from the severity surfaces (success Sent, warning Older than 7 days / expired,
+danger the other failures); `danger` for Disconnect / Delete / `{link}` missing. Measurements are
+`AutomationMetrics` (`base/widgets/instagram/automation-metrics.ts`): Connect h48 pill with a 22 seal,
+rule thumb 64 / 72 web, summary thumb 56, keyword chip 24 (removable 32 with a 28 ×), empty disc 64 and
+step dots 28, CTA max 340, progress h4, stepper 190, recipe row 64 (thumb 48, radio 22), post ring 3 +
+check 24 + Reel badge 20, activity row 64 (avatar 36), status pill 24, DM bubble 82% / radius 18 with a 4
+tail, preview card 220 (image 2:1), page max 960, preview column 300.
+
+### Screens
+
+1. **Edit profile → Creator account (Instagram row):** not linked → the seal, "Instagram", Connect with
+   Instagram (busy: spinner + "Waiting for Instagram…"), the why, and "Enter handle for manual review
+   instead" (opens the existing form); cancelled → warning banner above the button. Linked → `@handle`,
+   "Verified via Instagram" (shield), Approved pill, an Automations row (send icon, title, sub), Disconnect
+   (ghost) → ConfirmSheet. Expired → warning banner with the date + Reconnect. TikTok unchanged.
+2. **Automations** (`/automations`): bar (back, title, "+ New"); sub; account strip; rule cards (thumb,
+   up to 3 keywords + "+n", recipe with utensils, "124 sent · Off/Paused", switch) paged on scroll; empty
+   (disc, title, three numbered steps, CTA); paused (banner + Reconnect, switches and New disabled); not
+   connected (title + Connect); rules note under the list. Profile shows an entry row while linked.
+3. **Editor** (`/automations/edit?ruleId=`): bar (×, New/Edit automation, "Step n of 4 · name"); a phone
+   shows 4 progress segments, an expanded viewport a 190 stepper (number → check, back freely, forward
+   past valid steps); footer Back + Next/Save (disabled until the step is valid).
+   Step 1 posts grid 3 / 4 columns, paged, selected ring + check, Reel badge, "Has rule". Step 2 keywords
+   (Enter or comma adds; lower-cased, deduped, ≤10 × ≤40), suggestions (dashed), "Try a comment" →
+   Matches · word / No match. Step 3 own recipes, server search, paged, radio rows. Step 4 DM (auto-grow,
+   counter n/900, insert `{name}` `{link}`, `{link}` required with a danger border and alert), public reply
+   switch + field (≤300), Delete (edit), preview (comment context, bubble with `{name}`→Zeynep and the link
+   underlined, recipe card, public reply under a dashed rule) — beside the fields when expanded.
+4. **Activity** (`/automations/activity?ruleId=`): bar (back, Activity, Edit); summary (thumb, every
+   keyword, recipe, switch); Sent count; All / Sent / Failed; rows (initial, @handle, time ago, quoted
+   comment, status pill with a label for every reason code, "Replied publicly"); paged; no-retry note;
+   "No comments matched yet."
+
+### Departures from the prototype
+
+1. **No failed count.** `DmRule` carries `sentCount` only, so cards read "124 sent · Off" and Activity
+   shows one stat (Sent), not Sent / Failed.
+2. **The All / Sent / Failed segment filters the loaded rows**; the sends endpoint has no status filter, so
+   paging continues across all kinds.
+3. **Delete asks first** (ConfirmSheet) instead of a toast with Undo — a deleted rule cannot be restored
+   through the API.
+4. **Lists page on scroll** (`onEndReached`) everywhere — rules, posts, recipes, sends — instead of the
+   prototype's "1–5 of 8" pager.
+5. **The post of an existing rule is fixed** (the API does not change `mediaId`); editing opens on
+   Keywords and the post step only shows it.
+6. **Draft recipes are listed but not selectable** ("Not published — publish it to send"): the picker uses
+   the food search's `group=mine`, which includes drafts.
+7. **Web always returns to Edit Profile** after the login (same-tab redirect to `/instagram-connected`),
+   wherever the user started it.
+8. **Switch** is the platform `Switch` with the palette's track colours, not a custom 51×31 control; the
+   Profile entry's sub line is the feature's purpose (no "n on · n DMs sent" — those totals are not on the
+   wire).
+
+## Creators (Sept 2026)
+
+**Source of truth:** the Claude Design canvas **Recipely Creators**
+(<https://claude.ai/artifact/K5HupwQzSYHUuzX9PNpnnq>), boards `Main` (Explore, phone, light),
+`StripDark`, `WebExplore`, `CreatorsList` (/creators), `CreatorProfile` (/creators/[userId]) and
+`CreatorAccount` (Edit Profile, four states). Contract: `docs/creator-tag-contract.md`.
+
+### 1. Surfaces
+
+| Surface | Where | Notes |
+|---|---|---|
+| Creators strip | phone feed list header, under the cuisine strip, right above the recipes | heading 18/700 + subtitle 12 `textSubtle`, "See all" 14/700 `primary`; row of 72-wide items, gap 12, padding 16 |
+| Creators row | expanded feed, after the cuisine rail, above the recipe grid | heading 22/700, subtitle 13 + "See all" on the right; ONE row of up to six wide cards, gap 16 |
+| /creators | phone and web | back 44 round + title 20/700; intro 13 `textSubtle`; card grid, 2 columns on a phone, up to 6 (`creatorGridColumns`, min card 150) |
+| /creators/[userId] | phone and web (cap 980) | back + share; 112 ring avatar; name 24/800; verified chip; bio 14 `textSubtle` (max 320); stats card; Follow pill 48; "Recipes" 18/700 + count; recipe grid 2 (phone) / 3 (expanded) |
+| Creator account | Edit Profile, under the name/bio card | surface card, radius 16, padding 16, gap 12 |
+| Verified chip | creator page and the owner's own Profile | 32 min height, round, `surface` + 1px `border`, mark 24, `@handle` 13/600, check 14 `primary`; opens the account on its platform |
+
+Strip and row are hidden before the first answer, on an empty list and on a failed first load.
+
+### 2. Tokens
+
+- **New colour `textSubtle`** (ThemeColors): handles, captions, counts, intro and bio. `textMuted` mixed
+  towards `text` in 5% steps until it reaches 4.5:1 on BOTH `background` and `surface`
+  (`readableMuted` in `themes.ts`). Used in the creators UI only.
+- **New avatar sizes:** `avatarSizes.creatorStrip` 64, `avatarSizes.creatorCard` 72; the wide card uses
+  `xl` 80, the profile `frame` 112 / `frameInner` 106 with a 3px page-coloured gap.
+- Platform mark plates (`creatorMarkGeometry`): strip 22, card 24, wide card 26, chip 24, claim row 28,
+  radio 20; glyph 55% of the plate; a 2px ring in the colour it is cut out of. The glyph is
+  `ProvenanceGlyph`'s Instagram / TikTok outline painted white (`ink`), on `BrandColors.instagramGradient*`
+  or `BrandColors.tiktokNote`. The profile ring: Instagram gradient, TikTok `tiktokCyan`→`tiktokRed`.
+- Spacing / radii / type from the existing ladders: gaps 2/4/6/8/12/16, card radius `xl` 16, option
+  radius `lg` 12, pills `round`; `PillButton` (new, `base/widgets/buttons`) 48 primary / 44 outline.
+- Status pills: `useSeveritySurfaces()` warning / success / danger (`bg` + `text`), 28 min height, 12/700.
+  Withdraw / Remove labels use the danger surface's `text`, not `colors.danger`.
+
+### 3. Contrast (measured, `creator-contrast.test.ts`)
+
+`textMuted` on Pearl White light `background` is **4.12:1** — why `textSubtle` exists.
+
+| Palette | Variant | `textSubtle` | on `background` | on `surface` |
+|---|---|---|---|---|
+| Pearl White | light | `#5C6B81` | 4.69 | 5.09 |
+| Pearl White | dark | `#95A1B2` | 6.64 | 4.57 |
+| Crimson Ember | light | `#636A76` | 4.59 | 5.04 |
+| Crimson Ember | dark | `#AB9090` | 6.71 | 4.60 |
+| Emerald Garden | light | `#636B76` | 4.53 | 4.99 |
+| Emerald Garden | dark | `#8FB7A9` | 5.93 | 4.62 |
+| Royal Purple | light | `#64627C` | 4.56 | 5.26 |
+| Royal Purple | dark | `#B197BE` | 6.21 | 4.63 |
+
+Status pill label on its fill (severity surfaces are fixed per variant, so every palette measures the
+same): light — in review 6.39, approved 4.76, not approved 5.72; dark — 11.88, 10.26, 9.08.
+
+### 4. Where the build departs from the canvas
+
+- `textSubtle` on Pearl White light is `#5C6B81` (4.69:1), a touch lighter than the canvas's `#55657D`:
+  the token is the least change from `textMuted` that clears AA on both grounds in every palette.
+- Avatars without a photo use the app's `AvatarImage` fallback (primary gradient, `primaryText`
+  initials) rather than the canvas's `primaryLight` disc with `primary` initials, so a creator reads the
+  same here as everywhere else in the app. The canvas's 2px surface ring round the strip avatar is not drawn.
+- The claim form, when opened on an existing claim (Change, Edit and resend), adds a Cancel outline pill
+  under Send for review — the canvas only draws the empty form, which has nothing to go back to.
+- The follow button turns into an outline "Following" pill once followed; the canvas draws only "Follow".
+- The Instagram plate is the three-stop gradient the canvas draws (`instagramGradientStart/Mid/End`).
+
+## Creators + Recipely Kitchen (Oct 2026 — supersedes "Creators (Sept 2026)" where they differ)
+
+**Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
+(`src/social.jsx`, `src/widgets.jsx`, `src/photos.jsx`, `src/theme.js`); Tweaks → Starting screen *Detail · Kitchen,
+Creators, Creator profile, Creator · form / in review / approved / rejected*. Spacing `xs 4 · sm 8 · md 12 · lg 16 ·
+xl 24 · xxl 32`; radii `lg 12 · xl 16 · round`.
+
+### 1. Tokens and contrast
+
+- `textSubtle` (unchanged, `readableMuted`): `textMuted` mixed toward `text` in 5 % steps until ≥ 4.5:1 on both
+  `background` and `surface`. Values and ratios as in the Sept table (Pearl light `#5C6B81` 4.69 / 5.09 … Purple dark
+  `#B197BE` 6.21 / 4.63). Used for handles, captions, stat labels, the photo credit, the USDA note and the `@username`
+  under the Profile name and in the recipe author card.
+- `primaryText` on `primary` ≥ 5.68:1 and `chipText` on `chipBackground` ≥ 4.52:1 in every palette — the approved
+  badge, Follow and the selected platform radio rely on them. `success` / `danger` are icon ink only.
+- New type steps: `fontSizes.largeTitle` 30 (web creator name), `fontSizes.pageHeading` 36 (web /creators h1).
+  Half-point sizes in the prototype (10.5, 11.5, 12.5, 13.5) round to the nearest step (11, 11, 12, 13).
+
+### 2. Creators
+
+| Piece | Measurements |
+|---|---|
+| Platform seal (`CreatorPlatformMark`) | the provenance seal on the page: white face, 1px `cardBorder`, brand-ink glyph 60 %; 22 on a 64 avatar (`max(20, round(avatar × 0.34))`), offset −2/−2, 2px `background` halo; 22 in chips, 24 in the claim radios |
+| Platform badge (`CreatorTagChip`) | 32 high, round, `surface`, 1px `cardBorder`, padding 0 10 0 4, gap 6; seal 22 · `@handle` 13/600 `text` · `checkmark-circle` 14 `primary`; links to the account; a11y "Verified {platform} account: {handle}" |
+| Approved badge (`CreatorBadge`) | `primary` disc, `primaryText` check at 62 %; 22 phone Profile, 20 web Profile, 18 in the Approved card; a11y "Approved creator" |
+| Creator card | `cardBackground`, 1px `cardBorder`, radius 16, padding 20 12 16; avatar 64; name 15/700 mt 10; `@handle` 13 `textSubtle`; "N recipes · N followers" 12 `textSubtle` mt 6; shadow sm, web hover md + 2 up |
+| Strip (phone) | heading 15/700; "See all ›" 13/700 `primary` + chevron 14, min 44; items 76 wide, gap 12, padding 2 16 8; name 12/700, handle 11 `textSubtle` |
+| Row (web) | h2 22/800; "See all" 14/700, 36 high; six columns, three below an 860 viewport; gap 16 |
+| /creators | phone: back 44 + title 24/700, subtitle 13 `textSubtle`, 2 columns gap 12; web: "Back to recipes" 14/600 `textMuted`, h1 36/800, subtitle 15, `auto-fill minmax(180)` gap 20 |
+| Creator profile | ring avatar 104 / 128 (2px `primaryGradient` 135°, 2px `background` gap); name 24/800 / 30/800 mt 12; badge mt 8; bio 14/1.45 `text`, max 340, mt 8; stats card mt 16 (`surface`, `cardBorder`, radius 16, padding 12 0, value 18/800, label 11/600 upper-case +0.5 `textSubtle`, 1px `border` dividers); Follow mt 12, 48 high, round, 15/700 + icon 16, full width on a phone, stats + Follow capped at 460 expanded; heading 18/800 (22/800 web) + count 14 `textSubtle`; phone tiles 2 columns gap 16/12 (square photo radius 16, seal 24 at 8/8, name 13/700 two lines, "★ 4.7 · 25 min" 12 `textSubtle`), web `WebRecipeCard` `auto-fill minmax(270)` gap 24 with the save toggle |
+| Edit profile → Creator account | `SectionHeader` + one card (`surface`, `cardBorder`, radius 16, padding 16, gap 12). Form: intro 13 `text`; PLATFORM radios 48, radius 12, gap 8 (selected `chipBackground` + 1.5 `primary` + `chipText`; unselected `background` + 1.5 `cardBorder`); HANDLE field 48, radius 12, `@` prefix `textSubtle`, a typed `@` and spaces dropped; Submit primary 48, disabled until the platform's minimum length. In review: 40 tile + `hourglass` `primary`, title 16/800, neutral handle chip, Withdraw (ghost 48). Approved: `checkmark-circle` `success`, title + badge 18, platform badge, Unlink account (ghost). Rejected: `alert-circle` `danger`, neutral chip, Try again (primary → form prefilled). Result states are `role="status"` |
+| Profile tab | approved badge right of the name, gap 8; `@username` in `textSubtle` |
+
+### 3. Recipely Kitchen
+
+- `origin: CURATED` → the provenance mark `Curated`, alone: the full-colour Recipely logo in the white seal, label
+  "Recipely Kitchen" / "Recipely Mutfağı". Same seal slot and sizes as AI/import (card 27, web card 28, creator tile 24).
+- Detail: the AI-style chip (`chipBackground`, `chipText` 12/600, padding 2 12 2 2, seal 22); mobile under the author
+  card (mt 10), web under the title meta row (12 gap + 2). Author card / web byline read "Recipely Kitchen" with the logo
+  avatar and a `primary` `checkmark-circle`, no recipe count.
+- Photo credit: "Photo: {author} · {license}", 12/1.3 `textSubtle`, author underlined, the whole line one link to the
+  credit url (`accessibilityRole="link"`). Mobile directly under the cover, min-height 44, −12 below; web under the
+  framed viewer, gap 8, min-height 28. Only `http(s)` links are accepted (`ImageCredit`).
+- USDA: last row of the nutrition block when `nutritionSource === 'USDA_FDC'` — tag "USDA" 10/800 +0.5, padding 2 6,
+  radius 4, 1px `border`, `textSubtle`; text 12 `textSubtle`; gap 8.
+
+### 4. Where the build departs from the prototype
+
+- The Explore strip and row keep their current place on the recipes page (that page is not a prototype target); only
+  their own measurements follow the prototype.
+- The claim hint and review bodies keep the admin-review wording: the prototype's "add recipely.app/@{username} to your
+  bio" and "up to 2 days" describe a bio check and a turnaround the backend does not do.
+- Submit enables at the platform's minimum handle length (`CreatorHandleRules`, Instagram 1, TikTok 2), not a fixed 2.
+- The form opened from Try again keeps a Cancel outline pill, so a user can back out to the rejected card.
+- The /creators subtitle carries no count: the list is paged and the total is not known up front.
+- The 140 ms hover transition on creator cards is not animated; the lift is immediate.
+
+### Rev 2 and rev 3 (Oct 2026) — Chefs tab and one claim per platform
+
+Source: the Recipely Prototype spec rev 3 (sections marked rev 2 / rev 3).
+
+- **Chefs tab (rev 3):** `/creators` is a root tab — fifth bottom tab (chef hat, between My Recipes and Diary;
+  labels 10, one line), web header item lit on `/creators` and creator pages. No back button; 24/700 title
+  (web h1 36/800, 40 under the header), subtitle 13 (web 15). Empty: 64 chef-hat disc + "No chefs yet." The
+  Creators strip and web row are gone from the Recipes home. A creator page goes back to Chefs ("Back to chefs").
+- **Per-platform accounts (rev 2):** avatar seals — one per verified account, the second shifted left by 60 % of
+  a seal (13 at 22) behind the primary, one image "Verified on Instagram and TikTok"; creator card — one handle
+  line per account (seal 18 + `@handle` 13 `textSubtle`), caption pinned to the bottom; creator profile — one
+  linked platform badge per account, wrapping, centred, gap 8; Profile tab — one approved badge once any platform
+  is approved.
+- **Edit profile (rev 2):** one card, `overflow hidden`, hairline-separated: intro 13; a row per claimed platform
+  (seal 36, platform 15/700 + `@handle` 13 — a link once approved, status pill 24 high: in review hourglass
+  `primary`, approved on `primary`, rejected alert `danger`; body 13; one action 44 high, round, 14/700 —
+  Withdraw / Unlink ghost, Try again primary); a "Link {Platform} account" row (min 60, seal 36, plus 18 `primary`)
+  per unclaimed platform, which opens the form in its place (seal 28 title, HANDLE label 11/700 `textMuted`, 48
+  field, hint 12, Cancel ghost + Submit primary flex 1). One form at a time; no platform picker.
+- **Departures:** the review and rejection bodies keep the admin-review wording (no "add recipely.app/@username to
+  your bio", no "up to 2 days"); Submit unlocks at each platform's minimum handle length; status-pill icons are
+  14 (spec 13–14); half-point type sizes round to the ladder.

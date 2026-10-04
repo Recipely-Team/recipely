@@ -16,6 +16,8 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     name: recipe.name,
     image: recipe.image,
     ...(recipe.imageFocus !== undefined ? { imageFocus: recipe.imageFocus } : {}),
+    ...(recipe.imageCredit !== null ? { imageCredit: recipe.imageCredit } : {}),
+    ...(recipe.nutritionSource !== null ? { nutritionSource: recipe.nutritionSource } : {}),
     cuisine: recipe.cuisine,
     category: recipe.category,
     difficulty: recipe.difficulty,
@@ -35,5 +37,6 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     sourcePlatform: recipe.sourcePlatform,
     aiWritten: recipe.aiWritten,
     photoCount: recipe.photoCount,
+    caloriesPerServing: recipe.caloriesPerServing,
   });
 };

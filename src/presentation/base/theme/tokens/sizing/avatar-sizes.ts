@@ -14,6 +14,8 @@ export const avatarSizes = {
   md: scale(40),
   /** Sheet header avatar. */
   lg: scale(56),
+  /** Creator card avatar on the Chefs tab; the empty state's disc. */
+  creatorCard: scale(64),
   /** Feature avatar. */
   xl: scale(80),
   /** Profile screen ring frame. */

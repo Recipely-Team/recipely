@@ -24,7 +24,8 @@ export interface MobileFeedHeaderProps {
 
 /**
  * Mobile feed list header (scrolls away with the rows): AI promo, cuisine strip,
- * result-count + Clear-all row, and the active-filter chips. Negative horizontal
+ * result-count + Clear-all row,
+ * and the active-filter chips. Negative horizontal
  * margin cancels the list's `spacing.lg` inset so the banner/strip/chips are
  * full-bleed while the recipe rows keep their padding.
  */

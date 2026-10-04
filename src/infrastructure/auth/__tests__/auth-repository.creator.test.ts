@@ -1,0 +1,282 @@
+import { NetworkFailure, UnauthorizedFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
+import type { Result } from '@core/result/result';
+import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
+import { UserEntity } from '@domain/auth/user-entity';
+import { Email } from '@domain/common/email';
+import { CreatorClaim } from '@domain/creators/creator-claim';
+import { CreatorClaims } from '@domain/creators/creator-claims';
+import { CreatorStatus } from '@domain/creators/creator-status';
+import { CreatorTag } from '@domain/creators/creator-tag';
+import { AuthRepository } from '@infrastructure/auth/auth-repository';
+import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
+import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+
+const tagOf = (platform: string, handle: string): CreatorTag => {
+  const r = CreatorTag.create(platform, handle);
+  if (!r.ok) throw new Error('fixture tag');
+  return r.value;
+};
+
+const approvedClaim = (): CreatorClaim => {
+  const r = CreatorClaim.create(tagOf('instagram', 'old.handle'), CreatorStatus.Approved);
+  if (!r.ok) throw new Error('fixture claim');
+  return r.value;
+};
+
+const buildSession = (claim: CreatorClaim | null = null, userId = 'u-1'): AuthSessionEntity => {
+  const email = Email.create('cook@example.com');
+  if (!email.ok) throw new Error();
+  const claims = claim === null ? CreatorClaims.empty() : CreatorClaims.empty().with(claim);
+  const user = UserEntity.create({ id: userId, email: email.value, displayName: 'Cook', creatorClaims: claims });
+  if (!user.ok) throw new Error();
+  const session = AuthSessionEntity.create({
+    id: 'session-1',
+    accessToken: 'reused-token',
+    expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+    user: user.value,
+  });
+  if (!session.ok) throw new Error();
+  return session.value;
+};
+
+interface RequestCall {
+  method?: string;
+  url?: string;
+  data?: unknown;
+}
+
+const makeRepo = (
+  httpResult: Result<unknown, unknown>,
+  stored: AuthSessionEntity | null = buildSession(),
+): { repo: AuthRepository; calls: RequestCall[]; saved: AuthSessionEntity[] } => {
+  const calls: RequestCall[] = [];
+  const http = withHttpVerbs(jest.fn((config: RequestCall) => {
+    calls.push({ method: config.method, url: config.url, data: config.data });
+    return Promise.resolve(httpResult);
+  })) as HttpClient;
+  const saved: AuthSessionEntity[] = [];
+  const storage = {
+    loadSession: jest.fn(() => Promise.resolve(ok(stored))),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      saved.push(session);
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), calls, saved };
+};
+
+/**
+ * A repository whose stored session becomes `next` while the request is in
+ * flight — the user signed out and someone else signed in before it answered.
+ */
+const repoSwitchingUserMidRequest = (
+  httpResult: Result<unknown, unknown>,
+  next: AuthSessionEntity,
+): { repo: AuthRepository; saved: AuthSessionEntity[] } => {
+  let stored = buildSession(approvedClaim());
+  const http = withHttpVerbs(jest.fn(() => {
+    stored = next;
+    return Promise.resolve(httpResult);
+  })) as HttpClient;
+  const saved: AuthSessionEntity[] = [];
+  const storage = {
+    loadSession: jest.fn(() => Promise.resolve(ok(stored))),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      saved.push(session);
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return { repo: new AuthRepository(http, storage, new FixedDeviceIdentity()), saved };
+};
+
+describe('AuthRepository — a claim answer for a user who has since signed out', () => {
+  const otherUser = (): AuthSessionEntity => buildSession(null, 'u-2');
+
+  it.each([
+    ['requestCreatorTag', (repo: AuthRepository) => repo.requestCreatorTag(tagOf('instagram', 'chef')), ok({ platform: 'instagram', handle: 'chef', status: 'pending' })],
+    ['removeCreatorTag', (repo: AuthRepository) => repo.removeCreatorTag('instagram'), ok(undefined)],
+    ['refreshCreatorClaim', (repo: AuthRepository) => repo.refreshCreatorClaim(), ok({ creatorTags: [{ platform: 'tiktok', handle: 'ab', status: 'approved' }] })],
+  ])('%s does not write the first user\'s claim into the next user\'s session', async (_name, call, answer) => {
+    const { repo, saved } = repoSwitchingUserMidRequest(answer, otherUser());
+
+    const r = await call(repo);
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBeInstanceOf(UnauthorizedFailure);
+    expect(saved).toHaveLength(0);
+  });
+});
+
+describe('AuthRepository.requestCreatorTag', () => {
+  it('PUTs the normalised tag to /me/creator and persists the pending claim for that platform, keeping the other', async () => {
+    const { repo, calls, saved } = makeRepo(ok({ platform: 'tiktok', handle: 'chef.ada', status: 'pending' }), buildSession(approvedClaim()));
+
+    const r = await repo.requestCreatorTag(tagOf('tiktok', '@Chef.Ada'));
+
+    expect(calls).toEqual([{ method: 'PUT', url: '/me/creator', data: { platform: 'tiktok', handle: 'chef.ada' } }]);
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.accessToken).toBe('reused-token');
+    expect(r.value.user.creatorClaims.forPlatform('tiktok')?.isPending).toBe(true);
+    expect(r.value.user.creatorClaims.forPlatform('tiktok')?.tag.handle).toBe('chef.ada');
+    expect(r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
+    expect(saved).toHaveLength(1);
+  });
+
+  it('propagates a server refusal without touching the stored session', async () => {
+    const failure = new NetworkFailure('offline');
+    const { repo, saved } = makeRepo(fail(failure));
+
+    const r = await repo.requestCreatorTag(tagOf('instagram', 'chef'));
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBe(failure);
+    expect(saved).toHaveLength(0);
+  });
+
+  it('fails with UnauthorizedFailure when the session is gone by the time the answer lands', async () => {
+    const { repo } = makeRepo(ok({ platform: 'instagram', handle: 'chef', status: 'pending' }), null);
+
+    const r = await repo.requestCreatorTag(tagOf('instagram', 'chef'));
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure).toBeInstanceOf(UnauthorizedFailure);
+  });
+});
+
+describe('AuthRepository.removeCreatorTag', () => {
+  it('DELETEs /me/creator/:platform and persists the user without that platform\'s claim', async () => {
+    const { repo, calls, saved } = makeRepo(ok(undefined), buildSession(approvedClaim()));
+
+    const r = await repo.removeCreatorTag('instagram');
+
+    expect(calls).toEqual([{ method: 'DELETE', url: '/me/creator/instagram', data: undefined }]);
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.user.creatorClaims.isEmpty).toBe(true);
+    expect(saved).toHaveLength(1);
+  });
+});
+
+describe('AuthRepository.refreshCreatorClaim', () => {
+  it('reads the claim from GET /me and stores what the admin decided', async () => {
+    const { repo, calls } = makeRepo(
+      ok({
+        id: 'u-1',
+        creatorTags: [
+          { platform: 'instagram', handle: 'old.handle', status: 'rejected' },
+          { platform: 'tiktok', handle: 'chef', status: 'approved' },
+        ],
+      }),
+      buildSession(approvedClaim()),
+    );
+
+    const r = await repo.refreshCreatorClaim();
+
+    expect(calls[0]).toMatchObject({ method: 'GET', url: '/me' });
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isRejected).toBe(true);
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('tiktok')?.isApproved).toBe(true);
+  });
+
+  it('clears every claim when /me answers creatorTags: []', async () => {
+    const { repo } = makeRepo(ok({ id: 'u-1', creatorTags: [] }), buildSession(approvedClaim()));
+
+    const r = await repo.refreshCreatorClaim();
+
+    expect(r.ok && r.value.user.creatorClaims.isEmpty).toBe(true);
+  });
+
+  it('keeps the stored claim when /me does not carry the field (older backend)', async () => {
+    const { repo } = makeRepo(ok({ id: 'u-1' }), buildSession(approvedClaim()));
+
+    const r = await repo.refreshCreatorClaim();
+
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
+  });
+});
+
+describe('AuthRepository.updateProfile — creator claim', () => {
+  const userDto = {
+    id: 'u-1',
+    email: 'cook@example.com',
+    displayName: 'Cook',
+    photoUrl: null,
+    createdAt: '2026-01-01T00:00:00.000Z',
+  };
+
+  it('keeps the stored claims when the profile answer has no creatorTags field', async () => {
+    const { repo } = makeRepo(ok({ user: userDto }), buildSession(approvedClaim()));
+
+    const r = await repo.updateProfile({ bio: 'new' });
+
+    expect(r.ok && r.value.user.creatorClaims.forPlatform('instagram')?.isApproved).toBe(true);
+  });
+
+  it('takes the claims from the profile answer when it carries them', async () => {
+    const { repo } = makeRepo(ok({ user: { ...userDto, creatorTags: [] } }), buildSession(approvedClaim()));
+
+    const r = await repo.updateProfile({ bio: 'new' });
+
+    expect(r.ok && r.value.user.creatorClaims.isEmpty).toBe(true);
+  });
+});
+
+/**
+ * One stored session shared by every call, and an HTTP double that holds each
+ * answer until the test releases it — so a refresh and a request can
+ * interleave the way a focus refresh and a send do on Edit Profile.
+ */
+const racingRepo = (): {
+  repo: AuthRepository;
+  stored: () => AuthSessionEntity | null;
+  answer: (method: string, body: unknown) => void;
+} => {
+  let stored: AuthSessionEntity | null = buildSession(approvedClaim());
+  const pending = new Map<string, (r: Result<unknown, unknown>) => void>();
+  const http = withHttpVerbs((config: RequestCall) =>
+    new Promise((resolve) => {
+      pending.set(config.method ?? '', resolve);
+    }),
+  ) as HttpClient;
+  const storage = {
+    loadSession: jest.fn(() => Promise.resolve(ok(stored))),
+    saveSession: jest.fn((session: AuthSessionEntity) => {
+      stored = session;
+      return Promise.resolve(ok(undefined));
+    }),
+  } as unknown as SecureTokenStorage;
+  return {
+    repo: new AuthRepository(http, storage, new FixedDeviceIdentity()),
+    stored: () => stored,
+    answer: (method, body) => pending.get(method)?.(ok(body)),
+  };
+};
+
+const flush = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 0));
+
+describe('AuthRepository.refreshCreatorClaim — overtaken by a request', () => {
+  // A refresh read the claim before the request changed it, and saved that
+  // old claim over the request's even when the store then dropped the answer:
+  // the next cold start brought the old claim back from disk.
+  it.each([
+    ['refresh started first', ['refresh', 'request']],
+    ['request already in flight', ['request', 'refresh']],
+  ])('a cold start after the race restores the request\'s claim, not the old one (%s)', async (_name, order) => {
+    const { repo, stored, answer } = racingRepo();
+    const calls: Promise<unknown>[] = [];
+    for (const call of order) {
+      calls.push(call === 'refresh' ? repo.refreshCreatorClaim() : repo.requestCreatorTag(tagOf('tiktok', 'new.handle')));
+      await flush();
+    }
+
+    answer('PUT', { platform: 'tiktok', handle: 'new.handle', status: 'pending' });
+    await flush();
+    answer('GET', { id: 'u-1', creatorTags: [{ platform: 'instagram', handle: 'old.handle', status: 'approved' }] });
+    await Promise.all(calls);
+
+    expect(stored()?.user.creatorClaims.forPlatform('tiktok')?.isPending).toBe(true);
+    expect(stored()?.user.creatorClaims.forPlatform('tiktok')?.tag.handle).toBe('new.handle');
+  });
+});

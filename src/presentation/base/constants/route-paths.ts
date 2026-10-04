@@ -1,4 +1,5 @@
 import { ImportSource } from '@presentation/base/constants/import-source';
+import { EditProfileSection } from '@presentation/base/constants/edit-profile-section';
 
 /**
  * Every in-app expo-router navigation target in one place, so route strings
@@ -19,6 +20,9 @@ export const RoutePaths = {
   /** The import screen asking for photos or a PDF instead of a link. */
   importRecipeFromFile: `/import-recipe?source=${ImportSource.File}`,
   myRecipes: '/my-recipes',
+  diary: '/diary',
+  /** The Diary tab's month page — a phone layout only; an expanded viewport shows the month in the Day view's rail. */
+  diaryCalendar: '/diary/calendar',
   /**
    * The feed's name in the root navigator's state (not a path) — expo-router
    * registers folder pages as `<segment>/index`. Used to tell where a back
@@ -32,8 +36,23 @@ export const RoutePaths = {
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',
+  /** Edit Profile scrolled to its creator account section — where a claim decision is acted on. */
+  editProfileCreatorAccount: `/edit-profile?section=${EditProfileSection.CreatorAccount}`,
   settings: '/settings',
+  /** Instagram automations: the creator's comment-to-DM rules. */
+  automations: '/automations',
+  /** The rule editor; `ruleId` (absent for a new rule) and `step` ride the query. */
+  automationEdit: '/automations/edit',
+  /** One automation's Activity; `ruleId` rides the query (an account page, not crawlable content). */
+  automationActivityPath: '/automations/activity',
+  automationActivity: (ruleId: string): string => `/automations/activity?ruleId=${encodeURIComponent(ruleId)}`,
+  /** Where the Instagram login returns to (web same-tab, and Android's deep link). */
+  instagramConnected: '/instagram-connected',
+  /** The Chefs tab: every approved creator, as cards. */
+  creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /** One creator's public page; open to guests. */
+  creatorProfile: (userId: string): string => `/creators/${encodeURIComponent(userId)}`,
   /**
    * The feed, arriving with the search box already filled.
    *

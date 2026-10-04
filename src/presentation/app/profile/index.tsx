@@ -11,6 +11,7 @@ import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity
 import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
+import { ProfileAutomationsRow } from '@presentation/app/profile/body/profile-automations-row';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
@@ -52,11 +53,13 @@ export const ProfileScreen = (): React.JSX.Element => {
             isUploading={vm.isUploading}
             onPickAvatar={vm.onPickAvatar}
             onAddBio={vm.onEditProfile}
+            isCreator={vm.isCreator}
           />
 
           <ProfileStats stats={vm.stats} />
 
           <ProfileActions onEditProfile={vm.onEditProfile} />
+          <ProfileAutomationsRow />
 
           <View style={styles.settingsSections}>
             <ProfileSettingsSections />

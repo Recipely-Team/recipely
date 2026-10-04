@@ -1,4 +1,4 @@
-import type { Ionicons } from '@expo/vector-icons';
+import type { TabIconType } from '@presentation/base/widgets/navigation/tab-icon-type';
 
 /**
  * One entry in a tab bar: what it is keyed by, what it reads as, and what it
@@ -8,5 +8,5 @@ import type { Ionicons } from '@expo/vector-icons';
 export interface TabItem<K extends string> {
   key: K;
   label: string;
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: TabIconType;
 }

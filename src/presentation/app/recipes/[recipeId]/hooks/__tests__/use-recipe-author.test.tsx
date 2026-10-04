@@ -23,6 +23,7 @@ const makeProfile = (overrides: Partial<Parameters<typeof UserProfileEntity.crea
     totalLikes: 100,
     totalViews: 2000,
     joinedAt: new Date('2026-04-01T12:00:00.000Z'),
+    creatorTags: [],
     ...overrides,
   });
   if (!result.ok) throw new Error('Test setup expected a valid UserProfile');
@@ -144,6 +145,18 @@ describe('useRecipeAuthor', () => {
     );
 
     expect(latest().status).toBe('unavailable');
+    expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('credits a Recipely Kitchen recipe to the Kitchen without looking the account up', () => {
+    const { latest, execute } = driveHook(
+      { ownerId: 'kitchen-account', owner: null, isOwner: false, isKitchen: true },
+      () => Promise.resolve(ok(makeProfile())),
+    );
+
+    const state = latest();
+    expect(state.status).toBe('resolved');
+    if (state.status === 'resolved') expect(state.author.isKitchen).toBe(true);
     expect(execute).not.toHaveBeenCalled();
   });
 });

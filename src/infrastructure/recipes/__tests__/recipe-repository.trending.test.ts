@@ -4,12 +4,12 @@ import type { Result } from '@core/result/result';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
-import type { RecipesListDto } from '@infrastructure/recipes/dtos/recipes-list-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 const validDto: RecipeListItemDto = {
   id: '7d1f0a3c-2b8d-4c89-9e10-4d2f1cde1234',
@@ -27,7 +27,7 @@ const validDto: RecipeListItemDto = {
   viewCount: 0,
 };
 
-const makeList = (items: RecipeListItemDto[]): RecipesListDto => ({
+const makeList = (items: RecipeListItemDto[]): PageDto<RecipeListItemDto> => ({
   items,
   total: items.length,
   page: 1,

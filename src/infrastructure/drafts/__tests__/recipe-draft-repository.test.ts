@@ -3,9 +3,9 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
-import type { DraftsListDto } from '@infrastructure/drafts/dtos/drafts-list-dto';
 import { RecipeDraftRepository } from '@infrastructure/drafts/recipe-draft-repository';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 const draftDto: RecipeDraftDto = {
   id: 'd1e2f3a4-5678-4901-bcde-f01234567890',
@@ -17,7 +17,7 @@ const draftDto: RecipeDraftDto = {
   updatedAt: '2026-05-12T08:30:00.000Z',
 };
 
-const listDto: DraftsListDto = {
+const listDto: PageDto<RecipeDraftDto> = {
   items: [draftDto],
   total: 1,
   page: 2,

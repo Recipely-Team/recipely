@@ -66,3 +66,17 @@ describe('toNotifItem — import provenance', () => {
     expect(toNotifItem(importRow({ draftId: 'd1' })).source).toBeUndefined();
   });
 });
+
+describe('toNotifItem — creator decisions', () => {
+  it.each([
+    ['creator_approved', NotifKind.CreatorApproved],
+    ['creator_rejected', NotifKind.CreatorRejected],
+  ])('draws %s as its own kind, naming the account', (type, kind) => {
+    const item = toNotifItem(importRow({ type, creatorPlatform: 'tiktok', sourceHandle: 'mert.mutfakta' }));
+
+    expect(item.kind).toBe(kind);
+    expect(item.creator).toEqual({ platform: 'tiktok', handle: 'mert.mutfakta' });
+    expect(item.source).toBeUndefined();
+    expect(item.target).toEqual({ kind: 'creator_account', platform: 'tiktok' });
+  });
+});

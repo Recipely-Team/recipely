@@ -32,6 +32,14 @@ export interface BottomSheetProps {
    * position goes here; supporting content stays in `children`.
    */
   footer?: ReactNode;
+  /** The centred dialog's width cap on an expanded viewport; defaults to `layoutSizes.dialogMaxWidth`. */
+  dialogMaxWidth?: number;
+  /**
+   * The body brings its own scroll (a paged `FlatList`), so the sheet lays it
+   * out in a shrinking `View` instead of a `ScrollView` — a list nested in a
+   * same-direction scroll view never virtualises and never reaches its end.
+   */
+  scrollsItself?: boolean;
   children: ReactNode;
 }
 
@@ -62,6 +70,8 @@ export const BottomSheet = ({
   showCloseButton = false,
   rightAction,
   footer,
+  dialogMaxWidth,
+  scrollsItself = false,
   children,
 }: BottomSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -96,6 +106,7 @@ export const BottomSheet = ({
           style={[
             styles.sheet,
             isExpanded ? styles.dialog : null,
+            isExpanded && dialogMaxWidth !== undefined ? { maxWidth: dialogMaxWidth } : null,
             {
               backgroundColor: colors.background,
               paddingBottom: isExpanded ? spacing.lg : Math.max(insets.bottom, spacing.lg),
@@ -125,13 +136,17 @@ export const BottomSheet = ({
             showCloseButton={showCloseButton || isExpanded}
             rightAction={rightAction}
           />
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.content}
-            showsVerticalScrollIndicator={false}
-          >
-            {children}
-          </ScrollView>
+          {scrollsItself ? (
+            <View style={[styles.scroll, styles.content]}>{children}</View>
+          ) : (
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.content}
+              showsVerticalScrollIndicator={false}
+            >
+              {children}
+            </ScrollView>
+          )}
           {footer === undefined ? null : (
             <View style={[styles.footer, { borderTopColor: colors.border }]}>{footer}</View>
           )}

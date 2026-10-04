@@ -2,6 +2,8 @@ import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
 import type { AuthStatus } from '@application/auth/auth-status';
+import type { RequestCreatorTagInput } from '@application/creators/claim/request-creator-tag-input';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 
 export interface AuthStoreState {
   state: AuthStatus;
@@ -52,4 +54,14 @@ export interface AuthStoreState {
    * returned Failure) so the user can retry.
    */
   deleteAccount: () => Promise<Failure | null>;
+  /**
+   * Claims a creator account on one platform; on success the session user holds
+   * the new claim for it (`session.user.creatorClaims`). Returns null or the Failure
+   * — `errors.validation.creator_handle` before any request for a bad handle.
+   */
+  requestCreatorTag: (input: RequestCreatorTagInput) => Promise<Failure | null>;
+  /** Clears one platform's claim; on success the session user has none there. Returns null or the Failure. */
+  removeCreatorTag: (platform: CreatorPlatformType) => Promise<Failure | null>;
+  /** Re-reads every claim from the server (an admin may have decided). Returns null or the Failure. */
+  refreshCreatorClaim: () => Promise<Failure | null>;
 }

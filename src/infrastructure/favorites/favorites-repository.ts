@@ -5,10 +5,11 @@ import type { Failure } from '@core/failure';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import type { FavoritesListResponse } from '@infrastructure/favorites/favorites-list-response';
 import { mapRecipeSummaries } from '@infrastructure/recipes/map-recipe-summaries';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import type { PageDto } from '@infrastructure/network/paging/page-dto';
+import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 
 /**
  * Implements `FavoritesRepositoryInterface` against the Recipely backend. Persists
@@ -40,7 +41,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
   }
 
   async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {
-    const result = await this.http.get<FavoritesListResponse>(ApiRoutes.me.favorites, {
+    const result = await this.http.get<PageDto<RecipeListItemDto>>(ApiRoutes.me.favorites, {
       params: toPageQuery({ pageSize: FAVORITES_PAGE_SIZE }),
     });
 

@@ -39,6 +39,12 @@
  *   AI. No vocabulary value mapped to an English word in presentation — a
  *      `[Difficulty.Medium]: 'Medium'` map shows "Medium" on every locale
  *      (CLAUDE.md §11).
+ *   AJ. No accessibility prop directly on a react-native-svg `<Svg>` — on the
+ *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
+ *      attributes (CLAUDE.md §24).
+ *   AL. Every routed page is declared on the stack that owns it, header hidden.
+ *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
+ *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -833,6 +839,43 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
   }
 }
 
+// --- AK: one page shape (CLAUDE.md §23d) ----------------------------------------
+// Every paged list used to bring its own envelope — RecipePage, CreatorPage,
+// CommentPage, PagedDrafts, RecipesListDto, DraftsListDto, FavoritesListResponse
+// and more — and they drifted: some carried `hasMore`, some left every caller to
+// recompute it from `total`, and one repository asked for a page size nobody
+// passed. `Page<T>` (domain), `PageDto<T>` (wire) and `toPage(dto, mapItem)` are
+// now the only shapes.
+//
+// Judged by the BODY, not the name — half of the old envelopes were not called
+// `*Page`. An exported interface or type is an envelope when its own body names
+// `total` AND (`pageSize` or `hasMore`). The body ends at the declaration's
+// closing `\n}` (an interface or object type) or its first `;` (any other
+// alias), so a one-line alias is never judged by the block after it. The
+// notifications list (`total` + `unreadCount`, no paging fields) and `FilePage`
+// (one picked page of a document) pass.
+{
+  const GENERIC = new Set(['Page', 'PageDto']);
+  const DECL = /^export\s+(interface|type)\s+(\w+)/gm;
+  const bodyOf = (src, start, kind) => {
+    const rest = src.slice(start);
+    const objectType = kind === 'interface' || /^[^=;]*=\s*\{/.test(rest);
+    const end = objectType ? rest.indexOf('\n}') : rest.indexOf(';');
+    return end < 0 ? rest : rest.slice(0, end + 2);
+  };
+  for (const file of files) {
+    if (isTest(file) || file.includes('__fixtures__')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const match of src.matchAll(DECL)) {
+      const [, kind, name] = match;
+      if (GENERIC.has(name)) continue;
+      const body = bodyOf(src, match.index, kind);
+      if (!/\btotal\b/.test(body) || !/\b(pageSize|hasMore)\b/.test(body)) continue;
+      errors.push(`${file}: '${name}' is a hand-written page envelope — use Page<T> / PageDto<T> and toPage (CLAUDE.md §23d)`);
+    }
+  }
+}
+
 // --- R: no removeClippedSubviews (CLAUDE.md §6c) ------------------------------
 // The prop detaches and re-attaches child views behind Fabric's back, and on the
 // New Architecture that is a crash, not an optimisation: opening a finished
@@ -1226,6 +1269,87 @@ function openingTag(src, at) {
   };
 
   if (fs.existsSync(PRESENTATION)) walk(PRESENTATION);
+}
+
+// --- AJ: no accessibility props on a react-native-svg <Svg> (CLAUDE.md §24) --
+// The diary's status marker hid itself from screen readers with
+// `accessibilityElementsHidden` / `importantForAccessibility` on its `<Svg>`.
+// Native ignores them; on the web react-native-svg hands every unknown prop to
+// the DOM `<svg>`, and React logged "React does not recognize the
+// `accessibilityElementsHidden` prop on a DOM element" for every date cell. The
+// accessible thing is the View around the drawing — put the prop there.
+{
+  const SVG_OPEN = /<Svg\b/g;
+  const A11Y_PROP = /\s(accessib\w*|importantForAccessibility)\b/;
+
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith('presentation/') || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(SVG_OPEN)) {
+      const found = A11Y_PROP.exec(openingTag(src, m.index));
+      if (found === null) continue;
+      errors.push(
+        `${file}: \`${found[1]}\` on <Svg> — react-native-svg forwards it to the DOM on web; put it on the wrapping View (CLAUDE.md §24)`,
+      );
+    }
+  }
+}
+
+// --- AL: every routed page is declared on its stack, header hidden (CLAUDE.md §24)
+// The stack draws its own header — titled with the raw route name — on any
+// screen it has no options for. The Instagram automations routes shipped
+// without `<Stack.Screen … headerShown: false>` and a device showed
+// "automations/edit/index" in a bar above the screen's own header; every test
+// passed, because none renders the navigator. So each page folder must be
+// declared by the `_layout.tsx` that owns it, AND that declaration must hide
+// the header (`headerShown: false`, or `TAB_SCREEN_OPTIONS`, which does) — a
+// bare `<Stack.Screen name="x/index" />` brings the default header back.
+//
+// A subtree with its own `_layout.tsx` is judged against THAT layout's
+// declarations (names relative to it); one that declares no `Stack.Screen`
+// (a Slot, Tabs) is left to its own conventions rather than false-failed.
+{
+  const APP = path.join(SRC, 'presentation/app');
+  const HIDES = /headerShown:\s*false/;
+  const declarationsOf = (layoutFile) => {
+    const src = fs.readFileSync(layoutFile, 'utf8');
+    const tabOptionsHide = /TAB_SCREEN_OPTIONS\s*=\s*\{[^}]*headerShown:\s*false/.test(src);
+    const byName = new Map();
+    for (const m of src.matchAll(/<Stack\.Screen\b/g)) {
+      const tag = openingTag(src, m.index);
+      const name = /\bname="([^"]+)"/.exec(tag)?.[1];
+      if (name === undefined) continue;
+      byName.set(name, HIDES.test(tag) || (tabOptionsHide && /options=\{TAB_SCREEN_OPTIONS\}/.test(tag)));
+    }
+    return byName;
+  };
+  const walkPages = (dir, owner, ownerDir) => {
+    const layout = path.join(dir, '_layout.tsx');
+    if (dir !== ownerDir && fs.existsSync(layout)) {
+      const nested = declarationsOf(layout);
+      if (nested.size === 0) return;
+      walkPages(dir, { file: layout, declared: nested }, dir);
+      return;
+    }
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (!CO_LOCATION_FOLDERS.includes(entry.name)) walkPages(full, owner, ownerDir);
+        continue;
+      }
+      if (entry.name !== 'index.tsx') continue;
+      const relDir = path.relative(ownerDir, dir).split(path.sep).join('/');
+      const name = relDir === '' ? 'index' : `${relDir}/index`;
+      const where = path.relative(SRC, owner.file).split(path.sep).join('/');
+      if (!owner.declared.has(name)) {
+        errors.push(`src/${where}: no <Stack.Screen name="${name}"> — the stack would draw its own header titled "${name}" above the page (CLAUDE.md §24)`);
+      } else if (!owner.declared.get(name)) {
+        errors.push(`src/${where}: <Stack.Screen name="${name}"> does not hide the header — add headerShown: false (CLAUDE.md §24)`);
+      }
+    }
+  };
+  const ROOT_LAYOUT = path.join(APP, '_layout.tsx');
+  if (fs.existsSync(ROOT_LAYOUT)) walkPages(APP, { file: ROOT_LAYOUT, declared: declarationsOf(ROOT_LAYOUT) }, APP);
 }
 
 // --- AA: every routed screen reports its own name to analytics (CLAUDE.md §25)

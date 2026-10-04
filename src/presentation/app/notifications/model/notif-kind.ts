@@ -1,3 +1,5 @@
+import { CreatorNotificationType } from '@domain/notifications/creator-notification-type';
+
 export const NotifKind = {
   Comment: 'comment',
   Like: 'like',
@@ -10,6 +12,10 @@ export const NotifKind = {
   ModerationApproved: 'moderation_approved',
   ModerationPending: 'moderation_pending',
   Follow: 'follow',
+  /** One platform of the user's creator claim was approved. */
+  CreatorApproved: CreatorNotificationType.Approved,
+  /** One platform of the user's creator claim was rejected. */
+  CreatorRejected: CreatorNotificationType.Rejected,
   Generic: 'generic',
 } as const;
 

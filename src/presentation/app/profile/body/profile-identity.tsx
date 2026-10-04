@@ -7,6 +7,9 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, fontWeights, iconSizes, controlSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { CreatorBadge } from '@presentation/base/widgets/creators/creator-badge';
+import { creatorMarkGeometry } from '@presentation/base/widgets/creators/creator-mark-geometry';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 
 const AVATAR_FRAME = avatarSizes.frame;
 const AVATAR_INNER = avatarSizes.frameInner;
@@ -21,9 +24,15 @@ export interface ProfileIdentityProps {
   isUploading: boolean;
   onPickAvatar: () => void;
   onAddBio: () => void;
+  /** At least one platform approved: the one approved badge beside the name. */
+  isCreator: boolean;
 }
 
-/** Avatar (with upload overlay + camera button), display name, handle and bio. */
+/**
+ * Avatar (with upload overlay + camera button), display name with the
+ * approved-creator badge (22, or 20 on the web shell), `@handle` in
+ * `textSubtle` and bio (design spec → Creators §8).
+ */
 export const ProfileIdentity = ({
   displayName,
   handle,
@@ -32,8 +41,10 @@ export const ProfileIdentity = ({
   isUploading,
   onPickAvatar,
   onAddBio,
+  isCreator,
 }: ProfileIdentityProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const { isWebShell } = useLayout();
 
   return (
     <View style={styles.identityBlock}>
@@ -68,11 +79,16 @@ export const ProfileIdentity = ({
         </Pressable>
       </View>
 
-      <ThemedText variant="title" style={styles.displayName}>
-        {displayName}
-      </ThemedText>
+      <View style={styles.nameRow}>
+        <ThemedText variant="title" style={styles.displayName}>
+          {displayName}
+        </ThemedText>
+        {isCreator ? (
+          <CreatorBadge size={isWebShell ? creatorMarkGeometry.badgeProfileWeb : creatorMarkGeometry.badgeProfile} />
+        ) : null}
+      </View>
       {handle.length > ValueConstants.zero ? (
-        <ThemedText variant="caption" muted style={styles.handle}>
+        <ThemedText variant="caption" style={[styles.handle, { color: colors.textSubtle }]}>
           @{handle}
         </ThemedText>
       ) : null}
@@ -137,9 +153,16 @@ const styles = StyleSheet.create({
   cameraBtnDisabled: {
     opacity: opacities.disabledFaint,
   },
-  displayName: {
-    fontWeight: fontWeights.bold,
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     marginTop: spacing.md,
+  },
+  displayName: {
+    flexShrink: ValueConstants.one,
+    fontWeight: fontWeights.bold,
     textAlign: 'center',
   },
   handle: {

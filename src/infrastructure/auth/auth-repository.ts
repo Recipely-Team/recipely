@@ -32,6 +32,16 @@ import type { UpdateProfileRequestDto } from '@infrastructure/auth/dtos/update-p
 import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import type { DeviceContextDto } from '@infrastructure/device/device-context-dto';
 import { toDeviceContextDto } from '@infrastructure/device/to-device-context-dto';
+import type { CreatorTag } from '@domain/creators/creator-tag';
+import type { CreatorClaimDto } from '@infrastructure/creators/dtos/creator-claim-dto';
+import type { MeCreatorDto } from '@infrastructure/creators/dtos/me-creator-dto';
+import { toCreatorClaim } from '@infrastructure/creators/to-creator-claim';
+import { readCreatorClaims } from '@infrastructure/creators/read-creator-claims';
+import type { CreatorPlatformType } from '@domain/creators/creator-platform';
+import { toCreatorTagRequest } from '@infrastructure/creators/to-creator-tag-request';
+import { replaceSessionUser } from '@infrastructure/auth/session/replace-session-user';
+import { signedInUserId } from '@infrastructure/auth/session/signed-in-user-id';
+import { signedInUser } from '@infrastructure/auth/session/signed-in-user';
 
 /**
  * Implements `AuthRepositoryInterface` against the Recipely backend (email/password)
@@ -171,6 +181,47 @@ export class AuthRepository implements AuthRepositoryInterface {
       return fail(clearResult.failure);
     }
     return ok(undefined);
+  }
+
+  // The claim calls read the issuing user first: see `replaceSessionUser`.
+  async requestCreatorTag(tag: CreatorTag): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUserId(this.storage);
+    if (!issuer.ok) return issuer;
+    const result = await this.http.put<CreatorClaimDto>(ApiRoutes.me.creator, toCreatorTagRequest(tag));
+    if (!result.ok) return result;
+    const claim = toCreatorClaim(result.value);
+    if (!claim.ok) return claim;
+    return replaceSessionUser(this.storage, issuer.value, (user) =>
+      ok(user.withCreatorClaims(user.creatorClaims.with(claim.value))),
+    );
+  }
+
+  async removeCreatorTag(platform: CreatorPlatformType): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUserId(this.storage);
+    if (!issuer.ok) return issuer;
+    const result = await this.http.delete<void>(ApiRoutes.me.creatorPlatform(platform));
+    if (!result.ok) return result;
+    return replaceSessionUser(this.storage, issuer.value, (user) =>
+      ok(user.withCreatorClaims(user.creatorClaims.without(platform))),
+    );
+  }
+
+  // Writes only if the stored claim is still the one read before the GET: a
+  // request / remove saved in between is newer than this answer.
+  async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
+    const issuer = await signedInUser(this.storage);
+    if (!issuer.ok) return issuer;
+    const readBefore = issuer.value.creatorClaims;
+    const result = await this.http.get<MeCreatorDto>(ApiRoutes.me.root);
+    if (!result.ok) return result;
+    const { creatorTags } = result.value;
+    return replaceSessionUser(this.storage, issuer.value.id, (user) =>
+      ok(
+        creatorTags === undefined || !user.holdsCreatorClaims(readBefore)
+          ? user
+          : user.withCreatorClaims(readCreatorClaims(creatorTags)),
+      ),
+    );
   }
 
   /** Sends a Firebase ID token to the backend and persists the returned backend JWT. */

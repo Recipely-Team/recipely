@@ -35,4 +35,14 @@ export const ASSISTANT_ACTION_HOMES: Readonly<
   [AssistantAction.RemoveFilter]: 'recipes',
   [AssistantAction.ClearFilters]: 'recipes',
   [AssistantAction.Sort]: 'recipes',
+  // The diary always exists for a signed-in user, so its words carry the user there.
+  [AssistantAction.SelectDate]: 'diary',
+  [AssistantAction.LogFood]: 'diary',
+  [AssistantAction.SearchFood]: 'diary',
+  [AssistantAction.RemoveFood]: 'diary',
+  [AssistantAction.ChangeFood]: 'diary',
+  [AssistantAction.AddWater]: 'diary',
+  [AssistantAction.SetGoals]: 'diary',
+  [AssistantAction.OpenGoals]: 'diary',
+  [AssistantAction.OpenAddFood]: 'diary',
 };

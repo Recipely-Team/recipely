@@ -56,6 +56,20 @@ export type FailureContentKey =
   | 'editPublished'
   | 'photoNotFound'
   | 'nothingToEdit'
+  // ── key-tier: food diary ───────────────────────────────────────────────────
+  | 'diaryEntryNotFound'
+  | 'diaryFoodNameTooLong'
+  | 'diaryNutrientInvalid'
+  | 'diaryGoalInvalid'
+  // ── key-tier: creator tag ──────────────────────────────────────────────────
+  | 'creatorHandleInvalid'
+  | 'creatorHandleTaken'
+  | 'creatorNotPending'
+  | 'instagramNotConfigured'
+  | 'instagramLinkInvalid'
+  | 'instagramAccountLinked'
+  | 'instagramNotConnected'
+  | 'instagramReturnInvalid'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

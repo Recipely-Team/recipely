@@ -78,6 +78,29 @@ export const ErrorMessageKey = {
   /** An edit that changes nothing. */
   nothingToEdit: 'errors.validation.nothing_to_edit',
 
+  // Food diary
+  /** The entry is gone — deleted on another device, or never this user's. */
+  diaryEntryNotFound: 'errors.not_found.diary_entry',
+  diaryFoodNameRequired: 'errors.validation.food_name_required',
+  diaryFoodNameTooLong: 'errors.validation.food_name_too_long',
+  /** Calories or grams past the plausibility cap (a mistyped extra zero). */
+  diaryNutrientInvalid: 'errors.validation.nutrient_invalid',
+  diaryGoalInvalid: 'errors.validation.goal_invalid',
+
+  // Creator tag
+  /** The handle breaks the contract's rules: charset, per-platform length, dots. */
+  creatorHandleInvalid: 'errors.validation.creator_handle',
+  /** Another approved creator already holds the same platform + handle. */
+  creatorHandleTaken: 'errors.conflict.creator_handle_taken',
+  /** An approve or reject of a claim that is no longer pending (the admin path). */
+  creatorNotPending: 'errors.conflict.creator_not_pending',
+  // Instagram connect + automations (backend #374)
+  instagramNotConfigured: 'errors.instagram.not_configured',
+  instagramLinkInvalid: 'errors.instagram.link_invalid',
+  instagramAccountLinked: 'errors.conflict.instagram_account_linked',
+  instagramNotConnected: 'errors.instagram.not_connected',
+  instagramReturnInvalid: 'errors.validation.instagram_return_invalid',
+
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',
   codeInvalid: 'errors.validation.code_invalid',

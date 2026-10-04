@@ -16,6 +16,7 @@
 export { AnimationConstants } from './animation-constants';
 export { RoutePaths } from './route-paths';
 export { ImportSource, type ImportSourceType } from './import-source';
+export { EditProfileSection, type EditProfileSectionType } from './edit-profile-section';
 export { ListConstants } from './list-constants';
 export { KeyboardKey } from './platform-events';
 export { scrollThrottleMs } from './scroll-constants';

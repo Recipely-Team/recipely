@@ -59,7 +59,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       set({
         state: {
           status: StoreStatus.Loaded,
-          recipes: result.value.items,
+          recipes: [...result.value.items],
           query: filters?.search ?? CharConstants.empty,
           page: result.value.page,
           hasMore: result.value.hasMore,

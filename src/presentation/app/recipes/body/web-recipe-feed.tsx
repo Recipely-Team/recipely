@@ -20,8 +20,9 @@ export interface WebRecipeFeedProps {
 }
 
 /**
- * The whole feed on an expanded viewport: the hero row, the cuisine rail, and
- * the recipe grid, in one scroll view and one content column.
+ * The whole feed on an expanded viewport: the hero row, the cuisine rail and
+ * the recipe grid, in one scroll
+ * view and one content column.
  *
  * Split out of `RecipeListBody` because that file carried two entirely separate
  * layouts — a windowed `FlatList` for the phone and this scrolling document for

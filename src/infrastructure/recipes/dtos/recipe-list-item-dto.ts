@@ -1,5 +1,6 @@
 import type { Difficulty } from '@domain/recipes/difficulty';
 import type { FocusDto } from '@infrastructure/recipes/media/focus-dto';
+import type { ImageCreditDto } from '@infrastructure/recipes/media/image-credit-dto';
 
 // Lean wire shape returned by the Recipely backend for list/my-recipes/trending
 // endpoints. Keep in sync with recipely-backend
@@ -11,6 +12,10 @@ export interface RecipeListItemDto {
   readonly image: string;
   /** The cover's focal point; absent until the backend's focus sweep has found it. */
   readonly imageFocus?: FocusDto;
+  /** The cover photo's credit; `null` (or absent, from an older server) when it needs none. */
+  readonly imageCredit?: ImageCreditDto | null;
+  /** Where the nutrition figures were looked up: `USDA_FDC`, or `null` when estimated. */
+  readonly nutritionSource?: string | null;
   readonly cuisine: string;
   readonly category: string;
   readonly difficulty: Difficulty;
@@ -29,7 +34,7 @@ export interface RecipeListItemDto {
   readonly likedByMe: boolean;
   readonly commentCount: number;
   readonly viewCount: number;
-  /** Where the text came from: `USER`, `AI` or `IMPORT`. */
+  /** Where the text came from: `USER`, `AI`, `IMPORT` or `CURATED`. */
   origin?: string;
   /** Which platform an import came from: `INSTAGRAM`, `TIKTOK`, `FACEBOOK`, `YOUTUBE` or `WEB`. */
   sourcePlatform?: string | null;
@@ -37,4 +42,6 @@ export interface RecipeListItemDto {
   aiWritten?: boolean;
   /** The recipe's photos — gallery images, or 1 for a lone cover. Absent from a server that predates it. */
   readonly mediaCount?: number;
+  /** Whole kcal per serving; 0 when unknown. Absent from a server (or cached response) that predates recipely-backend #364. */
+  readonly caloriesPerServing?: number;
 }

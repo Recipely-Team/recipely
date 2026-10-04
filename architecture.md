@@ -116,10 +116,12 @@ references are **by id only**.
 |---|---|
 | `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
 | `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
-| `UserEntity` | Root (auth identity). |
-| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. |
+| `UserEntity` | Root (auth identity). Holds the user's own `CreatorClaim` (value object: `CreatorTag` + review status). |
+| `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. `CreatorSummaryEntity` (the Explore creators strip) is a read model of it, not a separate aggregate; `CreatorTag` / `CreatorHandle` are value objects. |
 | `AuthSessionEntity` | Root (token lifecycle). |
 | `NotificationEntity` | Own root; references related entities by id. |
+| `FoodLogEntryEntity` | Own root (the food diary); references its recipe by `recipeId`. `DiaryDay` / `DiaryMonth` are read models over a user's entries, water and `NutritionGoals`; `Nutrients`, `NutritionGoals`, `Servings`, `CalendarDate`, `CalendarMonth` are value objects; `LoggableFood` is a transient one-serving view. |
+| `DmRuleEntity` | Own root (Instagram comment-to-DM); references its post by `mediaId` and its recipe by `recipeId`. `InstagramConnection`, `InstagramMedia` and `DmSend` are read models; `DmKeywords` is a value object; `DmRuleDraft` is a validated, transient write model. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.
@@ -1289,6 +1291,21 @@ entire life and no type ever objected. A list endpoint takes the page from its c
 returns the backend's envelope (`total` / `page` / `hasMore`), and its mapper is
 covered by a test that asserts a requested page reaches the query — the test that was
 missing when this shipped.
+
+**One page shape.** `Page<T>` (`@domain/common/page`) is the only domain page,
+`PageDto<T>` (`@infrastructure/network/paging/page-dto`) the only wire envelope, and
+`toPage(dto, mapItem)` the only conversion — it derives `hasMore` from
+`page * pageSize < total` and skips an unreadable row (a list that must fail whole maps
+its items strictly first, then passes them through `toPage` with `ok`). Every list once
+had its own envelope (`RecipePage`, `CreatorPage`, `CommentPage`, `PagedDrafts` and their
+DTO twins) and they drifted — half carried `hasMore`, half made each caller recompute
+it. Page sizes are named constants in `infrastructure/constants/api/api-paging.ts`.
+**Every list screen pages on scroll** (`FlatList onEndReached`) through its store's
+paging — `PagedList<T>` + `PagedListLoader` (`application/store/paging/`) where
+the list fits it — never by loading one big page. **Enforced mechanically** by
+`check:structure` rule AK, judged by the body rather than the name (half the old
+envelopes were `*ListDto` / `*Response`): an exported interface or type whose own body
+names `total` and `pageSize` or `hasMore`, other than the generic two, fails the gate.
 
 ### Rule 23e
 

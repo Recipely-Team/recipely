@@ -1,7 +1,7 @@
-import type { RecipePage } from '@domain/recipes/list/recipe-page';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import type { Page } from '@domain/common/page';
 
 /**
  * Wraps items as a single complete page — what a test means when it does not
@@ -9,8 +9,8 @@ import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
  */
 export const recipePageOf = (
   items: RecipeSummaryEntity[],
-  overrides: Partial<Omit<RecipePage, 'items'>> = {},
-): RecipePage => {
+  overrides: Partial<Omit<Page<RecipeSummaryEntity>, 'items'>> = {},
+): Page<RecipeSummaryEntity> => {
   const page = overrides.page ?? FIRST_PAGE;
   const pageSize = overrides.pageSize ?? Math.max(items.length, ValueConstants.one);
   const total = overrides.total ?? items.length;

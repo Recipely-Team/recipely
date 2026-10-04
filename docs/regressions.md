@@ -19,6 +19,58 @@ Keep this file short. If a row stops teaching anything, delete it.
 
 ---
 
+## Data sources
+
+**A search that only looked at what the phone had already loaded.**
+The diary's Add food sheet (and the assistant's `logFood` / `searchFood`) filtered the
+recipe stores already in memory — my recipes, saved, the loaded feed — so a recipe the
+user created a minute ago, or one beyond the feed's first page, could not be found.
+*Guard:* the sheet and the assistant search the server (`GET /diary/foods/search`
+through `foodSearchStore` / `SearchFoodsUseCase`); the client-side matchers were
+deleted, so there is nothing local left to filter. Covered in
+`add-food-pick-step.test.tsx` and `use-assistant-diary-actions.test.tsx`.
+
+*The class:* **a list that answers "what exists" must come from the source of truth,
+paged — never from a snapshot another screen happened to load.**
+
+**A DTO and its test fixture written from the client's types instead of the wire.**
+`RecentFoodProductDto.perUnit` was typed `{ calories, … }` like the entry DTOs, and the
+repository test built its fixture from that same type — so the test agreed with the bug.
+The server sends `{ kcal, … }`; every recent product row failed mapping and was skipped.
+*Guard:* `foods-wire-contract.test.ts` parses JSON text copied from the wire contract
+(`infrastructure/diary/foods/__fixtures__/foods-wire-samples.ts`) through the
+repository, so a DTO that disagrees with the server drops a row the test counts.
+
+*The class:* **a fixture typed by the DTO it tests can only confirm the DTO.** Fixtures
+for a wire shape are the contract's JSON, parsed as `unknown`.
+
+**A new route without a root-stack declaration got the stack's default header.**
+The Instagram automations pages shipped without `<Stack.Screen … headerShown: false>`, so
+an Android build showed the raw route name ("automations/edit/index") in a bar above the
+page's own header. No test renders the navigator, so nothing failed.
+*Guard:* `check:structure` rule AL — every `app/**/index.tsx` page must be declared by the
+`_layout.tsx` that owns it, and the declaration must hide the header (`headerShown: false`
+or `TAB_SCREEN_OPTIONS`).
+
+*The class:* **a default the framework draws when you say nothing.** Make the "say
+something" a gate, not a habit.
+
+**A media cell that only drew its image was invisible without one.**
+The rule editor's post picker came up empty on a device: images arrived with a null
+`thumbnailUrl`. The tile drew nothing but `RecipeImage`, and with no URI `RecipeImage`
+renders `RecipePlaceholder` *without* the `absoluteFill` style the tile passed for the
+image — so the placeholder had no size inside the `aspectRatio` tile and the cell was
+blank (reopening showed only the one Reel that had a cover). The mapper also dropped a
+post of an unknown media type.
+*Guard:* the tile paints its own background and a media-type glyph and only renders
+`RecipeImage` when there is a cover; the mapper keeps every post with an id. Covered in
+`post-step.test.tsx` and `instagram-repository.test.ts`.
+
+*The class:* **a cell whose only content is optional data.** Every cell draws a visible
+frame of its own; the data decorates it.
+
+---
+
 ## Async UI
 
 **A response arriving out of order overwrote a newer one.**
@@ -30,6 +82,24 @@ already typed past.
 only the newest may write. Covered in `recipe-list-store.test.ts` with a deferred
 promise per request. **Any store that loads from a user-driven, debounced input needs
 this** — the pattern is not specific to search.
+The same shape without a debounce: Edit Profile's focus refresh of the creator claim
+could read the claim before a send changed it and answer after, putting the old claim
+back — on screen, and on disk, since the repository saved the session before the store
+decided to drop the answer, so a cold start restored it. *Guard:* on screen,
+`configureAuthStore` drops a refresh when a request / remove was in flight as it
+started or started while it ran ("a focus refresh that started before a request…" and
+"…started while a request was in flight…", `auth-store.test.ts`); on disk,
+`AuthRepository.refreshCreatorClaim` writes only if the stored claim is still the one
+it read before the GET ("a cold start after the race restores the request's claim",
+`auth-repository.creator.test.ts`). **Dropping an answer in the store does not undo a
+write the layer below already made.**
+The same shape with the wrong key: the creator page's follow answer was matched to the
+page by user id, so after `clear()` and a reopen of the same creator an old refusal
+rolled back a new tap. *Guard:* `configureCreatorProfileStore` matches it to a counter
+bumped whenever the page is replaced, not by a same-user re-read ("a refused follow
+from before clear() does not undo a new tap on the same creator reopened",
+`creator-profile-store.test.ts`). **Key a stale-answer guard on the thing that
+changed, not on a value that can come back.**
 
 **Rows were rendered as an answer to whatever question happened to be current.**
 Search is a backend filter, so on the first keystroke the store still held the
@@ -110,6 +180,15 @@ ingredients — indistinguishable from a unit — lost their amount badge entire
 longer-named rows beside them kept theirs. Nothing looked broken; it looked
 inconsistent.
 *Guard:* it falls back to the amount alone. **An early return is a product decision.**
+
+**A "lenient" reader that threw on a missing field.**
+`readCreatorClaim` / `readCreatorTag` promised that an unreadable creator object reads
+as "none", but the TypeScript DTO type is only a claim about the wire: a `creator`
+without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `toUser`
+(sign-in) and `loadSession` (cold start). *Guard:* both readers check each field with
+`isString` from `@core/guards/type-guards` before calling the domain; the malformed
+cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
+is not a check** — a reader that promises leniency narrows the shape itself.
 
 ## Integration
 
@@ -358,6 +437,19 @@ about — and "the user signed out" is the version of that question with teeth, 
 the data belongs to someone else. Related: [Session Cache Reset](../CLAUDE.md) — a new
 user-scoped store must be registered in `clearSessionCaches`, and now also needs this
 guard.
+
+**The same class, one layer down: the claim written into the next user's session.**
+A creator-claim request / remove / refresh (and a profile or avatar save) rewrites the
+session user in secure storage once it answers. Checking only "is someone signed in"
+let an answer for user A that landed after A signed out and B signed in put A's claim
+on B's persisted session and on screen. *Guard:* the issuing user id is read when the
+call starts and compared when it lands — `replaceSessionUser(storage, issuerId, …)`
+refuses a different user, and `configureAuthStore`'s `applyClaimResult` drops the
+answer. Covered by "does not write the first user's claim into the next user's
+session" (`auth-repository.creator.test.ts`), "does not put the previous user into the
+session of whoever is signed in now" (`auth-repository.update-profile.test.ts`,
+`auth-repository.upload-avatar.test.ts`) and "a claim answer for the previous user does
+not land in the next user's session" (`auth-store.test.ts`).
 
 ---
 
@@ -2307,3 +2399,19 @@ the old row), `notification-repository.test.ts`, `to-notif-item.test.ts`.
 a second surface (the feed) must show what the first (the push) says, store the
 fact, not just the wording — and never let a "default" icon name one specific
 source.
+
+## An accessibility prop on a drawing, rendered as a DOM attribute
+
+The food diary's status marker hid itself from screen readers with
+`accessibilityElementsHidden` and `importantForAccessibility` set directly on its
+react-native-svg `<Svg>`. Native ignores those there; on the web react-native-svg
+passes every prop it does not know straight to the DOM `<svg>`, so React logged an
+unknown-prop error for every date cell on the calendar.
+
+*Now:* the hiding props sit on a `View` wrapping the `<Svg>` (the cell around it is
+the accessible element and speaks the status). Rule AJ refuses any `accessib*` or
+`importantForAccessibility` prop on an `<Svg>` opening tag.
+
+*The class:* **a cross-platform library is only cross-platform for the props it
+declares.** Anything else falls through to the host element, and on the web the
+host element is HTML. Put behaviour props on a React Native view you own.
