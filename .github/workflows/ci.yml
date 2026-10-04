@@ -65,7 +65,10 @@ jobs:
             echo "Reusing existing tag on HEAD: $tag"
           else
             # First-ever release uses v1.0.0 to match app.json's seed version.
-            # Subsequent releases patch-bump from the last tag.
+            # Later releases follow semver from the conventional commits since the
+            # last tag: a breaking change (`type!:` / BREAKING CHANGE) bumps major,
+            # any `feat` bumps minor, anything else bumps patch. `[major]`, `[minor]`
+            # or `[patch]` in the merge commit's subject (the release PR title) overrides.
             last="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
             if [ -z "$last" ]; then
               tag='v1.0.0'
@@ -73,9 +76,22 @@ jobs:
             else
               ver="${last#v}"
               IFS='.' read -r major minor patch <<<"$ver"
-              patch=$((patch + 1))
+              subject="$(git log -1 --format=%s)"
+              log="$(git log "$last"..HEAD --format='%s%n%b')"
+              if echo "$subject" | grep -q '\[major\]'; then level=major
+              elif echo "$subject" | grep -q '\[minor\]'; then level=minor
+              elif echo "$subject" | grep -q '\[patch\]'; then level=patch
+              elif echo "$log" | grep -qE '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE'; then level=major
+              elif echo "$log" | grep -qE '^feat(\([^)]*\))?:'; then level=minor
+              else level=patch
+              fi
+              case "$level" in
+                major) major=$((major + 1)); minor=0; patch=0 ;;
+                minor) minor=$((minor + 1)); patch=0 ;;
+                *) patch=$((patch + 1)) ;;
+              esac
               tag="v${major}.${minor}.${patch}"
-              echo "Bumping from $last to $tag"
+              echo "Bumping $level from $last to $tag"
             fi
             git config user.name 'github-actions[bot]'
             git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
