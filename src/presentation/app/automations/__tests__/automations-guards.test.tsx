@@ -1,5 +1,4 @@
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-jest.mock('@application/config/feature-flags', () => ({ FeatureFlags: { instagramAutomations: true } }));
 const mockRouter = { back: jest.fn(), replace: jest.fn(), canGoBack: () => true, push: jest.fn() };
 let mockParams: { ruleId?: string } = {};
 jest.mock('expo-router', () => ({

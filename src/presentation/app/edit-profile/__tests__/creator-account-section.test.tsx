@@ -1,5 +1,4 @@
-/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-jest.mock('@application/config/feature-flags', () => ({ FeatureFlags: { instagramAutomations: true } }));
+ 
 /**
  * Edit Profile's creator account section, one row per platform (design spec
  * §7, rev 2): a Link row opens the form for its platform, each claimed platform

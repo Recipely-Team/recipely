@@ -46,7 +46,7 @@ const enabledIn = (store: ReturnType<typeof automations>['store']): boolean | nu
 describe('instagramStore', () => {
   const setup = () => {
     const repo = fakeInstagramRepository();
-    const store = configureInstagramStore({
+    const store = configureInstagramStore({ enabled: true,
       getConnection: new GetInstagramConnectionUseCase(repo),
       startLogin: new StartInstagramLoginUseCase(repo),
       finalize: new FinalizeInstagramLinkUseCase(repo),
