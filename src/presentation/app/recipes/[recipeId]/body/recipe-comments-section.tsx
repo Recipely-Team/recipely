@@ -88,6 +88,8 @@ export const RecipeCommentsSection = ({
 
       {commentState !== undefined && commentState.items.length < commentState.total ? (
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ busy: commentState.isLoadingMore }}
           onPress={onLoadMoreComments}
           style={({ pressed }) => [
             styles.loadMoreBtn,

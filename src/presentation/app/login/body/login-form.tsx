@@ -180,6 +180,8 @@ export const LoginForm = (): React.JSX.Element => {
       </Pressable>
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: fieldsEmpty || isLoading, busy: isLoading }}
         onPress={() => { void handleSignIn(); }}
         disabled={fieldsEmpty || isLoading}
         style={[

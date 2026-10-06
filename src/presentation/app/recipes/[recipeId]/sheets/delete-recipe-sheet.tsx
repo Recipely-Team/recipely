@@ -44,6 +44,7 @@ export const DeleteRecipeSheet = ({
       ) : null}
       <View style={styles.deleteSheetActions}>
         <Pressable
+          accessibilityRole="button"
           onPress={onClose}
           style={({ pressed }) => [
             styles.deleteSheetBtn,
@@ -55,6 +56,8 @@ export const DeleteRecipeSheet = ({
           </ThemedText>
         </Pressable>
         <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isDeleting, busy: isDeleting }}
           onPress={onConfirm}
           disabled={isDeleting}
           style={({ pressed }) => [

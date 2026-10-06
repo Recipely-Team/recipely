@@ -25,6 +25,7 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
@@ -78,6 +79,7 @@ export const RecipePreviewEditor = ({
   const scrollable = useAssistantScrollable();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const [picker, setPicker] = useState<TaxonomyPickerKind | null>(null);
+  const stepKeys = useStableKeys(recipe.instructions);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
@@ -211,7 +213,7 @@ export const RecipePreviewEditor = ({
         >
           {recipe.instructions.map((value, i) => (
             <StepRow
-              key={`step-${i}`}
+              key={stepKeys[i]}
               index={i}
               value={value}
               onChange={(v) => onChangeStep(i, v)}

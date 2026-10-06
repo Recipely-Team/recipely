@@ -28,6 +28,8 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
         return (
           <Pressable
             key={opt.key}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: active, checked: active }}
             onPress={() => onChange(opt.key)}
             style={[
               styles.segment,

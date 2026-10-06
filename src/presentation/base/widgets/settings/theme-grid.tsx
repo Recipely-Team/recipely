@@ -58,6 +58,9 @@ export const ThemeGrid = ({
         return (
           <Pressable
             key={id}
+            accessibilityRole="radio"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: isActive, checked: isActive }}
             onPress={() => onSelect(id)}
             style={({ pressed }) => [
               styles.chip,
