@@ -12,7 +12,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
 import type { CommentNodeType } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
@@ -166,9 +166,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.xxs,
+    minHeight: targetSizes.min,
   },
   deleteBtn: {
-    padding: spacing.xxs,
+    minWidth: targetSizes.min,
+    minHeight: targetSizes.min,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

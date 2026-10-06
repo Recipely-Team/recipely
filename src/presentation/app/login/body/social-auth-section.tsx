@@ -3,7 +3,7 @@ import { isAndroid } from '@infrastructure/constants/platform';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, fontWeights, borderWidths } from '@presentation/base/theme';
+import { spacing, fontWeights, borderWidths, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -64,6 +64,7 @@ export const SocialAuthSection = ({
           onPress={onSignUp}
           accessibilityRole="button"
           accessibilityLabel={t().login.signUp}
+          style={styles.linkTarget}
         >
           <ThemedText variant="body" style={[styles.signUpLink, { color: colors.primary }]}>
             {t().login.signUp}
@@ -86,6 +87,10 @@ export const SocialAuthSection = ({
 };
 
 const styles = StyleSheet.create({
+  linkTarget: {
+    minHeight: targetSizes.min,
+    justifyContent: 'center',
+  },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',

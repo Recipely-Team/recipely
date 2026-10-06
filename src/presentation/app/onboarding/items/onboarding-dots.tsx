@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, decorSizes, opacities } from '@presentation/base/theme';
+import { decorSizes, opacities, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -25,15 +25,20 @@ export const OnboardingDots = ({ count, index, onSelect }: OnboardingDotsProps):
             onPress={() => onSelect(i)}
             accessibilityRole="button"
             accessibilityLabel={t().onboarding.slideLabel}
-            style={[
-              styles.dot,
-              {
-                width: active ? decorSizes.dotActiveWidth : DOT_SIZE,
-                backgroundColor: colors.primary,
-                opacity: active ? opacities.full : opacities.inactive,
-              },
-            ]}
-          />
+            accessibilityState={{ selected: active }}
+            style={styles.target}
+          >
+            <View
+              style={[
+                styles.dot,
+                {
+                  width: active ? decorSizes.dotActiveWidth : DOT_SIZE,
+                  backgroundColor: colors.primary,
+                  opacity: active ? opacities.full : opacities.inactive,
+                },
+              ]}
+            />
+          </Pressable>
         );
       })}
     </View>
@@ -45,7 +50,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xs2,
+  },
+  target: {
+    minWidth: targetSizes.min,
+    minHeight: targetSizes.min,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   dot: {
     height: DOT_SIZE,

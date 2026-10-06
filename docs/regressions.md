@@ -2415,3 +2415,23 @@ the accessible element and speaks the status). Rule AJ refuses any `accessib*` o
 *The class:* **a cross-platform library is only cross-platform for the props it
 declares.** Anything else falls through to the host element, and on the web the
 host element is HTML. Put behaviour props on a React Native view you own.
+
+## Targets too small to press, and a label measured before its font loaded
+
+The device-matrix suite (recipely-tests `tests/matrix`, 13 device shapes × 3 engines)
+found two classes on its first run:
+
+- **Pointer targets under 24×24 CSS px** (WCAG 2.2 AA 2.5.8) on every touch device:
+  the onboarding page dots (7×7), login "Create account" (22 tall), the register
+  terms row (23) and "Sign in" link (19), and the comment and recipe-stat Like
+  buttons (22). *Now:* each carries `targetSizes.min` (an unscaled 24, kept out of
+  the scaled ladders so a small screen never shrinks it).
+- **"Filter & S…" on a 344px Galaxy Z Fold cover screen**: the FAB measured its
+  width once, on the first layout — before the web font loaded — and pinned it.
+  *Now:* at rest the FAB takes its natural width and the morph uses the widest
+  layout seen.
+
+*Guard:* the matrix spec fails on any target under 24px (inline text links exempt, as
+WCAG exempts them), page overflow, off-screen content or the error screen.
+*The class:* **a size measured once is a size measured too early; and a target is
+the box you can hit, not the glyph you can see.**
