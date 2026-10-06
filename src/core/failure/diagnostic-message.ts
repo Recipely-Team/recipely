@@ -92,6 +92,7 @@ export const DiagnosticMessage = {
   },
   auth: {
     invalidEmail: 'Invalid email format',
+    passwordTooShort: 'Password is shorter than the minimum length',
     noActiveSession: 'No active session to update',
     sessionUserChanged: 'The signed-in user changed before the answer arrived',
     appleUnavailableInBuild: 'Apple Sign-In is not available in this build',
@@ -203,6 +204,7 @@ export const DiagnosticMessage = {
 export const FailureField = {
   token: 'token',
   email: 'email',
+  password: 'password',
   focus: 'focus',
   imageCredit: 'imageCredit',
   creatorHandle: 'handle',

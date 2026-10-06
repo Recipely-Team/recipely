@@ -22,6 +22,7 @@ import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
 import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { RecipeLimits } from '@domain/recipes/recipe-limits';
 
 
 /**
@@ -48,7 +49,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
     if (props.caloriesPerServing < ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.caloriesNegative, 'caloriesPerServing'));
     }
-    if (props.servings < 1) {
+    if (props.servings < RecipeLimits.servingsMin) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.servingsTooLow, 'servings'));
     }
     return ok(new RecipeEntity(props));
@@ -139,6 +140,11 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
   get ownerId(): string {
     return this.props.ownerId;
+  }
+
+  /** Whether `userId` owns this recipe — a guest (`null`) never does. */
+  isOwnedBy(userId: string | null): boolean {
+    return userId !== null && this.props.ownerId === userId;
   }
   get likeCount(): number {
     return this.props.likeCount;

@@ -4,11 +4,10 @@ import { useAssistantNotificationActions } from '@presentation/app/notifications
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
 import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
-import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { type Href, useRouter } from 'expo-router';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
@@ -25,12 +24,11 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
-import { RoutePaths } from '@presentation/base/constants';
 import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { useOpenNotificationTarget } from '@presentation/app/notifications/hooks/use-open-notification-target';
 
 
 
@@ -67,29 +65,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
     state.status === StoreStatus.Loaded ? state.unreadCount : ValueConstants.zero;
   const sections = buildSections(items, filter);
 
-  // Cast: a dynamic recipe path can't be statically verified against
-  // expo-router's typed-routes union — same pattern as useRecipeDetail.
-  const openTarget = (target: NotificationTarget): void => {
-    // A draft is the one target with no recipe behind it: the import produced
-    // something to finish, not something to read. It opens the editor the same
-    // way My Recipes does, so a resumed import and a resumed draft are the same
-    // screen in the same state.
-    if (target.kind === NotificationTargetKind.Draft) {
-      router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
-      return;
-    }
-    // A decision on a creator claim: the user acts on it where the claim lives.
-    if (target.kind === NotificationTargetKind.CreatorAccount) {
-      router.push(RoutePaths.editProfileCreatorAccount as Href);
-      return;
-    }
-    const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
-    router.push(
-      (target.kind === NotificationTargetKind.Comment
-        ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
-        : path) as Href,
-    );
-  };
+  const openTarget = useOpenNotificationTarget();
 
   // Flattened in the order the sections render them, so "the second one" is
   // the second row the user can see — not the second row of the raw feed,

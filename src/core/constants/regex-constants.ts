@@ -23,6 +23,12 @@ export const RegexConstants = {
   sha256Hex: /^[0-9a-fA-F]{64}$/,
   /** Digits only, at least one. */
   digitsOnly: /^\d+$/,
+  /** Contains at least one ASCII capital letter. */
+  hasUppercase: /[A-Z]/,
+  /** Contains at least one digit. */
+  hasDigit: /[0-9]/,
+  /** Contains at least one character that is not an ASCII letter or digit. */
+  hasSymbol: /[^A-Za-z0-9]/,
   /** Absolute http(s) URL prefix. */
   absoluteHttpUrl: /^https?:\/\//i,
 } as const;

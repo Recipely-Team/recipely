@@ -68,8 +68,9 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     // expo-router's typed-routes union — same pattern as useAuthGuard.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
-  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe.ownerId : null);
-  const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
+  const shownRecipe = localRecipe ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe : null);
+  const recipeOwnerId = shownRecipe?.ownerId ?? null;
+  const isOwner = shownRecipe?.isOwnedBy(userId) ?? false;
   const ownProfileState = userProfileStore((s) => s.state);
   const loadOwnProfile = userProfileStore((s) => s.load);
   const owner: ResolvedAuthor | null =

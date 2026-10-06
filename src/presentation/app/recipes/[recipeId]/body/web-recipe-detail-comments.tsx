@@ -103,7 +103,7 @@ export const WebRecipeDetailComments = ({
               authorDisplayName={comment.authorDisplayName}
               authorPhotoUrl={comment.authorPhotoUrl}
               createdAt={comment.createdAt}
-              isOwn={comment.authorId === userId}
+              isOwn={comment.isAuthoredBy(userId)}
               likeCount={comment.likeCount}
               likedByMe={comment.likedByMe}
               canLike

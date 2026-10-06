@@ -53,6 +53,9 @@ export const RoutePaths = {
   /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /** A recipe page scrolled to one of its comments (a comment notification's target). */
+  recipeComment: (recipeId: string, commentId: string): string =>
+    `/recipes/${encodeURIComponent(recipeId)}?commentId=${encodeURIComponent(commentId)}`,
   /** Matches exactly one segment after `/recipes` (the detail page); group 1 is the recipe id. */
   recipeDetailPattern: /^\/recipes\/([^/]+)$/,
   /** One creator's public page; open to guests. */
