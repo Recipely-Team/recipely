@@ -508,6 +508,12 @@ export const ru = {
     themeLight: 'Светлая',
     themeDark: 'Темная',
     chooseTheme: 'Выберите тему',
+    themeNames: {
+      'pearl-white': 'Жемчужно-белая',
+      'crimson-ember': 'Багровый уголь',
+      'emerald-garden': 'Изумрудный сад',
+      'royal-purple': 'Королевский пурпур',
+    },
     language: 'Язык',
     languageComingSoon: 'Скоро',
     account: 'Аккаунт',

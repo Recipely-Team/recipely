@@ -511,6 +511,12 @@ export const zh = {
     themeLight: '浅色',
     themeDark: '深色',
     chooseTheme: '选择主题',
+    themeNames: {
+      'pearl-white': '珍珠白',
+      'crimson-ember': '绯红余烬',
+      'emerald-garden': '翡翠花园',
+      'royal-purple': '皇家紫',
+    },
     language: '语言',
     languageComingSoon: '即将推出',
     account: '账户',

@@ -508,6 +508,12 @@ export const fr = {
     themeLight: 'Clair',
     themeDark: 'Sombre',
     chooseTheme: 'Choisissez votre thème',
+    themeNames: {
+      'pearl-white': 'Blanc nacré',
+      'crimson-ember': 'Braise pourpre',
+      'emerald-garden': 'Jardin émeraude',
+      'royal-purple': 'Pourpre royal',
+    },
     language: 'Langue',
     languageComingSoon: 'Bientôt',
     account: 'Compte',

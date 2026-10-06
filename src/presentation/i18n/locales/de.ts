@@ -508,6 +508,12 @@ export const de = {
     themeLight: 'Hell',
     themeDark: 'Dunkel',
     chooseTheme: 'Wähle dein Design',
+    themeNames: {
+      'pearl-white': 'Perlweiß',
+      'crimson-ember': 'Purpurglut',
+      'emerald-garden': 'Smaragdgarten',
+      'royal-purple': 'Königsviolett',
+    },
     language: 'Sprache',
     languageComingSoon: 'Demnächst',
     account: 'Konto',

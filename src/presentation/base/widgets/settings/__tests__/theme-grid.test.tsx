@@ -6,7 +6,8 @@
 
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
-import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
+import { ALL_THEMES } from '@presentation/base/theme/colors/palette/themes';
+import { t } from '@presentation/i18n';
 
 /** Recursively flattens a possibly-nested RN style prop into one object. */
 const flattenStyle = (style: unknown): Record<string, unknown> => {
@@ -33,7 +34,7 @@ describe('ThemeGrid — palette size', () => {
       .filter((s) => s.length > 0);
 
     for (const id of ALL_THEMES) {
-      expect(texts).toContain(getThemeDefinition(id).name);
+      expect(texts).toContain(t().settings.themeNames[id]);
     }
   });
 });

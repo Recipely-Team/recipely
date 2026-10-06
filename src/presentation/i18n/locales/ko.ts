@@ -510,6 +510,12 @@ export const ko: Translations = {
     themeLight: '라이트',
     themeDark: '다크',
     chooseTheme: '테마 선택',
+    themeNames: {
+      'pearl-white': '펄 화이트',
+      'crimson-ember': '크림슨 엠버',
+      'emerald-garden': '에메랄드 가든',
+      'royal-purple': '로열 퍼플',
+    },
     language: '언어',
     languageComingSoon: '곧 지원',
     account: '계정',

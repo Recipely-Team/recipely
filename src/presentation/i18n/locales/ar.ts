@@ -508,6 +508,12 @@ export const ar = {
     themeLight: "فاتح",
     themeDark: "داكن",
     chooseTheme: "اختر السمة",
+    themeNames: {
+      'pearl-white': "أبيض لؤلؤي",
+      'crimson-ember': "جمرة قرمزية",
+      'emerald-garden': "حديقة الزمرد",
+      'royal-purple': "أرجواني ملكي",
+    },
     language: "اللغة",
     languageComingSoon: 'قريبًا',
     account: "الحساب",
