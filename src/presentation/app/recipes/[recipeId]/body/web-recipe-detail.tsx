@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-header';

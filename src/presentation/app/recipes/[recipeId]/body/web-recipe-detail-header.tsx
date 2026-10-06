@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebAuthorByline } from '@presentation/app/recipes/[recipeId]/items/meta/web-author-byline';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';

@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 import type { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

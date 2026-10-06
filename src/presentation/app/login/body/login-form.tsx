@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { AuthField } from '@presentation/app/login/model/auth-field';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

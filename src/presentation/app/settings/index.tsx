@@ -3,7 +3,7 @@ import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-accou
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View, Pressable, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

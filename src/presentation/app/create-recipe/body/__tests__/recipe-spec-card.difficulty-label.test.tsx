@@ -7,7 +7,8 @@
  */
 
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null, MaterialCommunityIcons: () => null }));
+jest.mock('@expo/vector-icons/Ionicons', () => () => null);
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => () => null);
 
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';

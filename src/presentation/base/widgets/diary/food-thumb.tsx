@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import type { FoodThumbIconType } from '@presentation/base/widgets/diary/food-thumb-icon';

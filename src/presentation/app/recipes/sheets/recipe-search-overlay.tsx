@@ -1,6 +1,6 @@
 import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';

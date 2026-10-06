@@ -1,4 +1,4 @@
-import type { Ionicons } from '@expo/vector-icons';
+import type Ionicons from '@expo/vector-icons/Ionicons';
 
 export interface KindMeta {
   icon: keyof typeof Ionicons.glyphMap;

@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { assistantActionLabel } from '@presentation/base/widgets/assistant/assistant-action-label';

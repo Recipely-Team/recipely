@@ -1,7 +1,7 @@
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ListConstants } from '@presentation/base/constants';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';

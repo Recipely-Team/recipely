@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Image, Linking, Pressable, Share, StyleSheet, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ChannelTile } from '@presentation/app/recipes/[recipeId]/sheets/channel-tile';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';

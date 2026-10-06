@@ -7,7 +7,7 @@ import { NotificationFilter } from '@presentation/app/notifications/model/notifi
 import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { type Href, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';

@@ -8,7 +8,8 @@
  */
 
 /* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null, MaterialCommunityIcons: () => null }));
+jest.mock('@expo/vector-icons/Ionicons', () => () => null);
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => () => null);
 
 import { RecipeFloatingActions } from '@presentation/app/recipes/[recipeId]/body/recipe-floating-actions';
 import { renderComponent } from '@presentation/base/test-support/render-component';

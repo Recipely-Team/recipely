@@ -22,6 +22,26 @@ module.exports = defineConfig([
     },
   },
   {
+    // Icon fonts are bundled per family IMPORTED, not per glyph used: the root
+    // `@expo/vector-icons` index pulls in every family, so importing Ionicons
+    // from it shipped all 19 fonts (4.1 MB in the iOS build; 0.4 MB are used).
+    // Import the family from its own path: `@expo/vector-icons/Ionicons`.
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@expo/vector-icons',
+              message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The React Compiler inference rules that eslint-config-expo 57 newly turns
     // on. They are off until the compiler itself is on (app.json `experiments`
     // has only `typedRoutes`), because without it they report 244 findings and

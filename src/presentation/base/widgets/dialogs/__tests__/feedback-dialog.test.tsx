@@ -14,7 +14,7 @@ import {
 } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { t } from '@presentation/i18n';
 
 const PRIMARY_LABEL = 'View recipe';

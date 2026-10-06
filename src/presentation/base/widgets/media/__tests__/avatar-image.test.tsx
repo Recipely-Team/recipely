@@ -1,4 +1,4 @@
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Text } from 'react-native';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { renderComponent } from '@presentation/base/test-support/render-component';

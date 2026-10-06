@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
 import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

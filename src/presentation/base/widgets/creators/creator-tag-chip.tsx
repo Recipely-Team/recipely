@@ -1,5 +1,5 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ValueConstants } from '@core/constants';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import { creatorProfileUrl } from '@presentation/base/widgets/creators/creator-profile-url';
