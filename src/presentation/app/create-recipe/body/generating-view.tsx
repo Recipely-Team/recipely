@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities, fontWeights, BrandColors } from '@presentation/base/theme';
 import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -108,7 +108,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
                 style={[
                   styles.checkBadge,
                   {
-                    backgroundColor: done ? colors.primary : 'transparent',
+                    backgroundColor: done ? colors.primary : BrandColors.transparent,
                     borderColor: active ? colors.primary : colors.border,
                     borderWidth: done ? ValueConstants.zero : borderWidths.thin,
                   },
@@ -125,7 +125,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
                   styles.checkLabel,
                   {
                     color: active || done ? colors.text : colors.textMuted,
-                    fontWeight: active ? '700' : '500',
+                    fontWeight: active ? fontWeights.bold : fontWeights.medium,
                   },
                 ]}
               >
@@ -168,8 +168,8 @@ const styles = StyleSheet.create({
     height: STAGE,
     borderRadius: STAGE / ValueConstants.two,
     borderWidth: borderWidths.thick,
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
+    borderRightColor: BrandColors.transparent,
+    borderBottomColor: BrandColors.transparent,
   },
   orbit: {
     position: 'absolute',

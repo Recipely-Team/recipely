@@ -15,11 +15,12 @@ import {
   opacities,
   iconSizes,
   BrandColors,
+  avatarSizes,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
 const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
-const AVATAR_SIZE = 36;
 
 export interface WebHeaderActionsProps {
   createLabel: string;
@@ -53,7 +54,7 @@ export const WebHeaderActions = ({
   onDiscover,
 }: WebHeaderActionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
+  const badgeText = countBadgeLabel(unreadCount);
   const showDiscover = discoverLabel !== undefined && onDiscover !== undefined;
 
   return (
@@ -140,7 +141,7 @@ export const WebHeaderActions = ({
           },
         ]}
       >
-        <AvatarImage name={avatarName} uri={avatarUri} size={AVATAR_SIZE - 4} />
+        <AvatarImage name={avatarName} uri={avatarUri} size={avatarSizes.xs} />
       </Pressable>
     </View>
   );
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
     borderWidth: borderWidths.hairline,
-    backgroundColor: 'transparent',
+    backgroundColor: BrandColors.transparent,
   },
   createLabel: {
     fontSize: fontSizes.caption,

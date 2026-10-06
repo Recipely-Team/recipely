@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities, colorAlphas } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
@@ -91,7 +91,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
           <ProvenanceSeal marks={[item.source.platform]} surface={SealSurface.Page} size={avatarSizes.md} decorative />
         </View>
       ) : (
-        <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
+        <View style={[styles.iconCircle, { backgroundColor: meta.color + colorAlphas.wash }]}>
           <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
         </View>
       )}

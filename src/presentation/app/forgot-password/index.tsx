@@ -16,7 +16,7 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();

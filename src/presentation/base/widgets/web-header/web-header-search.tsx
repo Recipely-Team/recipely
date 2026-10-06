@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, layoutSizes } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 export interface WebHeaderSearchProps {
@@ -12,7 +12,7 @@ export interface WebHeaderSearchProps {
   ariaClear: string;
 }
 
-const SEARCH_MAX_WIDTH = 460;
+const SEARCH_MAX_WIDTH = layoutSizes.maxContentXl;
 
 /** Pill-shaped search input centered in the header. Only mounted on Recipes. */
 export const WebHeaderSearch = ({

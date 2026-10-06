@@ -10,6 +10,8 @@
 export const colorAlphas = {
   /** ~9% — a tinted fill that barely departs from the surface beneath it. */
   faint: '18',
+  /** 12.5% — the tinted disc behind a tone's icon (notification kinds). */
+  wash: '20',
   /** 15% — a hairline border drawn in a tone's own ink (the diary's date cells). */
   light: '26',
   /** 25% — a tinted border on that fill. */

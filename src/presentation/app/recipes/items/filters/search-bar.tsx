@@ -1,7 +1,7 @@
 import { StyleSheet, TextInput, View, Pressable } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, iconSizes, controlSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, BrandColors } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 
@@ -55,6 +55,6 @@ const styles = StyleSheet.create({
   input: {
     flex: ValueConstants.one,
     fontSize: fontSizes.body,
-    backgroundColor: 'transparent',
+    backgroundColor: BrandColors.transparent,
   },
 });

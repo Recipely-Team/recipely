@@ -11,13 +11,13 @@ import { LoginForm } from '@presentation/app/login/body/login-form';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
 import { ValueConstants } from '@core/constants';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const LoginScreen = (): React.JSX.Element => {
   const router = useRouter();

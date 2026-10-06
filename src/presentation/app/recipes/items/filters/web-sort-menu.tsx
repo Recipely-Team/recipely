@@ -111,7 +111,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
                     styles.optionLabel,
                     {
                       color: selected ? colors.chipText : colors.text,
-                      fontWeight: selected ? '700' : '500',
+                      fontWeight: selected ? fontWeights.bold : fontWeights.medium,
                     },
                   ]}
                 >

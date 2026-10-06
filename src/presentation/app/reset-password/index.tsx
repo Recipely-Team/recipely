@@ -21,7 +21,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 const MIN_PASSWORD_LENGTH = 8;
 
 export const ResetPasswordScreen = (): React.JSX.Element => {

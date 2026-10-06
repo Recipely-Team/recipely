@@ -7,8 +7,7 @@ import {
   fontSizes,
   borderWidths,
   opacities,
-  iconSizes,
-} from '@presentation/base/theme';
+  iconSizes, fontWeights } from '@presentation/base/theme';
 import type { WebHeaderTabKey } from '@presentation/base/widgets/web-header/web-header-tab-key';
 import type { TabItem } from '@presentation/base/widgets/navigation/tab-item';
 import { TabIcon } from '@presentation/base/widgets/navigation/tab-icon';
@@ -41,7 +40,7 @@ export const WebHeaderTabs = ({ active, tabs, onPress }: WebHeaderTabsProps): Re
           >
             <TabIcon icon={tab.icon} active={false} size={iconSizes.md} color={tint} />
             <ThemedText
-              style={[styles.label, { color: tint, fontWeight: isActive ? '700' : '500' }]}
+              style={[styles.label, { color: tint, fontWeight: isActive ? fontWeights.bold : fontWeights.medium }]}
             >
               {tab.label}
             </ThemedText>
