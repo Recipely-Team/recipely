@@ -3,6 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { t } from '@presentation/i18n';
 
 export interface SearchBarProps {
   value: string;
@@ -27,7 +28,12 @@ export const SearchBar = ({ value, onChangeText, placeholder }: SearchBarProps):
         autoCorrect={false}
       />
       {value.length > ValueConstants.zero ? (
-        <Pressable onPress={() => onChangeText(CharConstants.empty)} hitSlop={spacing.sm}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t().common.clear}
+          onPress={() => onChangeText(CharConstants.empty)}
+          hitSlop={spacing.sm}
+        >
           <Ionicons name="close-circle" size={iconSizes.lg} color={colors.textMuted} />
         </Pressable>
       ) : null}

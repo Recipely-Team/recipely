@@ -23,6 +23,9 @@ export const SelectChip = ({
 
   return (
     <Pressable
+      accessibilityRole="checkbox"
+      accessibilityLabel={label}
+      accessibilityState={{ checked: selected }}
       onPress={onToggle}
       style={[
         styles.chip,

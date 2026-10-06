@@ -16,6 +16,7 @@ import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
+import { t } from '@presentation/i18n';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
@@ -85,6 +86,7 @@ export const RegisterScreen = (): React.JSX.Element => {
 
         <Pressable
           accessibilityRole="button"
+          accessibilityLabel={t().common.back}
           onPress={() => router.back()}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >

@@ -185,6 +185,8 @@ export const RegisterForm = (): React.JSX.Element => {
       ) : null}
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canSubmit || isLoading, busy: isLoading }}
         onPress={() => { void handleRegister(); }}
         disabled={!canSubmit || isLoading}
         style={[
@@ -206,7 +208,7 @@ export const RegisterForm = (): React.JSX.Element => {
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
           {t().register.haveAccount}
         </ThemedText>
-        <Pressable onPress={() => router.back()}>
+        <Pressable accessibilityRole="link" onPress={() => router.back()}>
           <ThemedText variant="caption" style={[styles.signInLink, { color: colors.primary }]}>
             {t().register.signIn}
           </ThemedText>
