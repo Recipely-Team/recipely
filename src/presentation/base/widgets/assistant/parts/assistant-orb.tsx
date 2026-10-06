@@ -19,8 +19,16 @@ export interface AssistantOrbProps {
 }
 
 const SVG_SIZE = 100;
-const CENTRE = SVG_SIZE / 2;
+const CENTRE = SVG_SIZE / ValueConstants.two;
 const HIGHLIGHT_STOPS = ['0.42', '0'] as const;
+/** The orb drawing, as fractions of its centre (circles) or of the orb (overlays). */
+const ORB_SHAPE = {
+  light: { cx: 0.7, cy: 0.6, r: 0.8 },
+  shade: { cx: 1.4, cy: 1.5, r: 0.7 },
+  slash: { across: 0.02, along: 0.72 },
+  sweep: { across: 0.35, along: 1.6 },
+  liftHeight: 0.5,
+} as const;
 
 /**
  * The assistant, as one object.
@@ -125,18 +133,18 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
               <Stop offset="1" stopColor={colors.primaryGradientEnd} />
             </RadialGradient>
             <RadialGradient id="assistantOrbLight">
-              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[0]} />
-              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[1]} />
+              <Stop offset="0" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
+              <Stop offset="1" stopColor={colors.onOverlay} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
             </RadialGradient>
             <RadialGradient id="assistantOrbShade">
-              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[0]} />
-              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[1]} />
+              <Stop offset="0" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.zero]} />
+              <Stop offset="1" stopColor={colors.shadow} stopOpacity={HIGHLIGHT_STOPS[ValueConstants.one]} />
             </RadialGradient>
           </Defs>
 
           <Circle cx={CENTRE} cy={CENTRE} r={CENTRE} fill="url(#assistantOrbBody)" />
-          <Circle cx={CENTRE * 0.7} cy={CENTRE * 0.6} r={CENTRE * 0.8} fill="url(#assistantOrbLight)" />
-          <Circle cx={CENTRE * 1.4} cy={CENTRE * 1.5} r={CENTRE * 0.7} fill="url(#assistantOrbShade)" />
+          <Circle cx={CENTRE * ORB_SHAPE.light.cx} cy={CENTRE * ORB_SHAPE.light.cy} r={CENTRE * ORB_SHAPE.light.r} fill="url(#assistantOrbLight)" />
+          <Circle cx={CENTRE * ORB_SHAPE.shade.cx} cy={CENTRE * ORB_SHAPE.shade.cy} r={CENTRE * ORB_SHAPE.shade.r} fill="url(#assistantOrbShade)" />
         </Svg>
 
         <View style={styles.face}>
@@ -206,15 +214,15 @@ const styles = StyleSheet.create({
   face: { ...StyleSheet.absoluteFill, alignItems: 'center', justifyContent: 'center' },
   slash: {
     position: 'absolute',
-    width: assistantMetrics.orb * 0.02,
-    height: assistantMetrics.orb * 0.72,
+    width: assistantMetrics.orb * ORB_SHAPE.slash.across,
+    height: assistantMetrics.orb * ORB_SHAPE.slash.along,
     borderRadius: radii.xs,
     transform: [{ rotate: '45deg' }],
   },
   sweep: {
     position: 'absolute',
-    width: assistantMetrics.orb * 0.35,
-    height: assistantMetrics.orb * 1.6,
+    width: assistantMetrics.orb * ORB_SHAPE.sweep.across,
+    height: assistantMetrics.orb * ORB_SHAPE.sweep.along,
   },
   // Sits ON the orb's lower edge: the level belongs to the object making the
   // sound, not to a bar somewhere else on the screen.
@@ -230,7 +238,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: ValueConstants.zero,
     width: assistantMetrics.orbHalo,
-    height: assistantMetrics.orbHalo * 0.5,
+    height: assistantMetrics.orbHalo * ORB_SHAPE.liftHeight,
     borderRadius: radii.round,
   },
 });

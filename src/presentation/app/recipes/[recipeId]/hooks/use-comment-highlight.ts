@@ -88,7 +88,7 @@ export const useCommentHighlight = ({
   // Bumped when the target card mounts, so the scroll effect re-runs with a node.
   const [nodeVersion, setNodeVersion] = useState(ValueConstants.zero);
   const attemptsRef = useRef(ValueConstants.zero);
-  const lastCountRef = useRef(-1);
+  const lastCountRef = useRef(ValueConstants.minusOne);
   const flashedRef = useRef(false);
   const scrollDoneRef = useRef(false);
   const scrollAttemptsRef = useRef(ValueConstants.zero);

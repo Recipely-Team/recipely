@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 /**
  * Gradient geometry for the web hero card overlay.
  *
@@ -10,7 +11,7 @@
  */
 export const HeroGradientConstants = {
   // Tuple-typed: LinearGradient's `locations` requires at least two stops.
-  locations: [0, 0.45, 0.8, 1] as readonly [number, number, ...number[]],
+  locations: [ValueConstants.zero, 0.45, 0.8, ValueConstants.one] as readonly [number, number, ...number[]],
   /** Bottom-left origin. */
   start: { x: 0.15, y: 1 } as const,
   /** Top-right terminus. */

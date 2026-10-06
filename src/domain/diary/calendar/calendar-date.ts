@@ -45,7 +45,7 @@ export class CalendarDate extends BaseValueObject<string> {
 
   static create(raw: string): Result<CalendarDate, ValidationFailure> {
     const match = ISO_DATE.exec(raw);
-    const date = match === null ? null : CalendarDate.of(Number(match[1]), Number(match[2]), Number(match[3]));
+    const date = match === null ? null : CalendarDate.of(Number(match[ValueConstants.one]), Number(match[ValueConstants.two]), Number(match[ValueConstants.three]));
     if (date === null || date.value !== raw) {
       return fail(new ValidationFailure(DiagnosticMessage.diary.dateInvalid(raw), 'date'));
     }

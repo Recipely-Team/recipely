@@ -7,8 +7,9 @@ import { borderWidths, colorAlphas, opacities, radii } from '@presentation/base/
 import { ValueConstants } from '@core/constants';
 
 /** Two rings and three points, each starting a fraction of a cycle after the last. */
-const RINGS = [ValueConstants.zero, 0.5];
-const POINTS = [ValueConstants.zero, 0.33, 0.66];
+const PHASE = { start: 0, half: 0.5, third: 0.33, twoThirds: 0.66 } as const;
+const RINGS = [PHASE.start, PHASE.half];
+const POINTS = [PHASE.start, PHASE.third, PHASE.twoThirds];
 const FULL_TURN = '360deg';
 
 export interface AssistantOrbAuraProps {

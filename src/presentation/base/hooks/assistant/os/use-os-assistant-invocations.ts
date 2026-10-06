@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { AssistantView } from '@application/assistant/session/assistant-view';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import { isStaleInvocation } from '@domain/assistant/os/is-stale-invocation';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
@@ -84,7 +84,7 @@ export const useOsAssistantInvocations = (): void => {
         const { setView, sendText } = assistantSessionStore.getState();
         setView(AssistantView.Open);
         const question = request.arg ?? CharConstants.empty;
-        if (question.length > 0) sendText(question, locale);
+        if (question.length > ValueConstants.zero) sendText(question, locale);
       }
     },
     [assistantSessionStore, locale, registry],

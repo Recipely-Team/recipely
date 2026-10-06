@@ -62,7 +62,7 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
     const isExpanded = width >= BREAKPOINTS.desktop;
     const isWebShell = isWeb() && isExpanded;
     const isCompact = breakpoint === BreakpointType.Mobile;
-    const aspectRatio = height === ValueConstants.zero ? 1 : width / height;
+    const aspectRatio = height === ValueConstants.zero ? ValueConstants.one : width / height;
     return { width, height, aspectRatio, orientation, breakpoint, isWebShell, isExpanded, isCompact };
   }, [gated, width, height]);
 

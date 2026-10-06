@@ -47,7 +47,7 @@ export const useEditableRecipe = () => {
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        ingredients: r.ingredients.length <= 1 ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
+        ingredients: r.ingredients.length <= ValueConstants.one ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
       }));
       clearFieldError('ingredients');
     },
@@ -135,7 +135,7 @@ export const useEditableRecipe = () => {
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        instructions: r.instructions.length <= 1 ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
+        instructions: r.instructions.length <= ValueConstants.one ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
       }));
       clearFieldError('instructions');
     },
@@ -164,7 +164,7 @@ export const useEditableRecipe = () => {
   const onSetCover = useCallback((i: number): void => {
     setRecipe((r) => {
       const arr = [...r.media];
-      const [picked] = arr.splice(i, 1);
+      const [picked] = arr.splice(i, ValueConstants.one);
       if (picked === undefined) return r;
       return { ...r, media: [picked, ...arr] };
     });

@@ -86,7 +86,7 @@ export const FilterSortFab = ({
     if (reduceMotion || labelWidth === ValueConstants.zero) {
       return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
     }
-    const progress = interpolate(scrollY.value, morphRange, [1, ValueConstants.zero], Extrapolation.CLAMP);
+    const progress = interpolate(scrollY.value, morphRange, [ValueConstants.one, ValueConstants.zero], Extrapolation.CLAMP);
     return {
       opacity: progress,
       width: labelWidth * progress,

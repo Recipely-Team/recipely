@@ -16,7 +16,6 @@ export interface MacroBarProps {
 }
 
 const VALUE_SLOT = '{v}';
-const PERCENT = 100;
 
 /** One macro of the summary: "Protein", "62 / 120 g" and a 6pt bar (design spec → Food Diary §4). */
 export const MacroBar = ({ label, value, goal, color }: MacroBarProps): React.JSX.Element => {
@@ -42,7 +41,7 @@ export const MacroBar = ({ label, value, goal, color }: MacroBarProps): React.JS
         </SizedText>
       </View>
       <View style={[styles.track, { backgroundColor: colors.skeleton }]}>
-        <View style={[styles.fill, { backgroundColor: color, width: `${share * PERCENT}%` }]} />
+        <View style={[styles.fill, { backgroundColor: color, width: `${share * ValueConstants.percent}%` }]} />
       </View>
     </View>
   );

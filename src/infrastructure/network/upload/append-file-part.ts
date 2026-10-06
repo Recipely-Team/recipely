@@ -1,4 +1,5 @@
 import { isWeb } from '@infrastructure/constants/platform';
+import { ValueConstants } from '@core/constants';
 
 /** A local file to append to a multipart `FormData` body. */
 interface FilePart {
@@ -25,7 +26,7 @@ export async function appendFilePart(
     const fetched = await resp.blob();
     // A picked HEIC comes back typeless from the browser; the backend decides by
     // type, so the part carries the one the file was picked as.
-    const blob = fetched.type.length > 0 ? fetched : new Blob([fetched], { type: part.mimeType });
+    const blob = fetched.type.length > ValueConstants.zero ? fetched : new Blob([fetched], { type: part.mimeType });
     formData.append(field, blob, part.fileName);
   } else {
     formData.append(field, {

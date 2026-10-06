@@ -22,7 +22,8 @@ const CORE = 104;
 const ORBIT_RADIUS = 90;
 const ORBIT_COUNT = 6;
 /** Even spacing of the orbiting dots around the full circle. */
-const ORBIT_STEP_DEG = 360 / ORBIT_COUNT;
+const FULL_TURN_DEG = 360;
+const ORBIT_STEP_DEG = FULL_TURN_DEG / ORBIT_COUNT;
 /** Faintest orbiting dot, and the step that fans the rest brighter. */
 const ORBIT_DOT_MIN_OPACITY = 0.35;
 const ORBIT_DOT_OPACITY_STEP = 0.22;
@@ -139,7 +140,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.zero }}
-            style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            style={[styles.progressFill, { width: `${progress * ValueConstants.percent}%` }]}
           />
         </View>
       </View>

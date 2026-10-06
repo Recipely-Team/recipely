@@ -4,7 +4,7 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
@@ -90,7 +90,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const query = (arg ?? CharConstants.empty).trim();
-        if (query.length === 0) return { ok: false, error: AssistantActionError.NothingToSearch };
+        if (query.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NothingToSearch };
         // The sheet opens on the same query; its search joins this one instead of repeating it.
         sheets.openSearch(query);
         const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE)]);
@@ -98,12 +98,12 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         if (s.saved.status === StoreStatus.Error) return { ok: false, error: failureReason(s.saved.failure) };
         const found = { saved: loadedItems(s.saved), mine: loadedItems(s.mine), products: loadedItems(s.products), recipes: loadedItems(s.recipes) };
         const matches = rankByName(buildFoodCandidates(found, recent.ok ? recent.value.items : []), (c) => c.name, query);
-        if (matches.length === 0) return { ok: true, title: 'no matches', n: { matches: 0 } };
+        if (matches.length === ValueConstants.zero) return { ok: true, title: 'no matches', n: { matches: 0 } };
         return {
           ok: true,
           n: { matches: matches.length },
           title: matches
-            .slice(0, SEARCH_ANSWER_LIMIT)
+            .slice(ValueConstants.zero, SEARCH_ANSWER_LIMIT)
             .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal ${c.per}, ${c.source}`)
             .join(SCREEN_PART_SEPARATOR),
         };
@@ -165,7 +165,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     AssistantAction.OpenAddFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const meal = parseMealArg(arg === undefined || arg.trim().length === 0 ? undefined : arg);
+        const meal = parseMealArg(arg === undefined || arg.trim().length === ValueConstants.zero ? undefined : arg);
         if (!meal.ok) return { ok: false, error: meal.error };
         sheets.openAdd(meal.value);
         return { ok: true };

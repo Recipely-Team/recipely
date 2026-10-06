@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, layoutSizes, opacities } from '@presentation/base/theme';
+import { spacing, layoutSizes, opacities, brandMarkSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -16,7 +16,7 @@ export const LoginHero = ({ isLandscapeShell }: LoginHeroProps): React.JSX.Eleme
 
   return (
     <View style={[styles.gradientContent, isLandscapeShell ? styles.heroLandscape : null]}>
-      <RecipelyLogo size={isLandscapeShell ? 96 : 72} monochrome mono={colors.onOverlay} />
+      <RecipelyLogo size={isLandscapeShell ? brandMarkSizes.heroLandscape : brandMarkSizes.hero} monochrome mono={colors.onOverlay} />
       <ThemedText variant="headline" style={[styles.appName, { color: colors.onOverlay }]}>
         {t().login.title}
       </ThemedText>

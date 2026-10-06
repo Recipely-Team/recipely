@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
   arrowBtn: {
     width: ARROW_SIZE,
     height: ARROW_SIZE,
-    borderRadius: ARROW_SIZE / 2,
+    borderRadius: ARROW_SIZE / ValueConstants.two,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',

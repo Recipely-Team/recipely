@@ -5,7 +5,7 @@ import Svg, {
   Path,
   Stop,
 } from 'react-native-svg';
-import { BrandColors, opacities } from '@presentation/base/theme';
+import { BrandColors, brandMarkSizes, opacities } from '@presentation/base/theme';
 
 export interface RecipelyLogoProps {
   size?: number;
@@ -15,8 +15,10 @@ export interface RecipelyLogoProps {
   mono?: string;
 }
 
-const VIEW_BOX = '315 40 370 335';
-const ASPECT = 335 / 370;
+/** The brand SVG's drawing box: origin and span. */
+const DRAWING = { x: 315, y: 40, spanX: 370, spanY: 335 } as const;
+const VIEW_BOX = `${DRAWING.x} ${DRAWING.y} ${DRAWING.spanX} ${DRAWING.spanY}`;
+const ASPECT = DRAWING.spanY / DRAWING.spanX;
 
 /**
  * Recipely brand logo — chef hat + open cookbook with fork & spoon.
@@ -26,7 +28,7 @@ const ASPECT = 335 / 370;
  * (gradient auth heroes, splash, etc.).
  */
 export const RecipelyLogo = ({
-  size = 64,
+  size = brandMarkSizes.default,
   monochrome = false,
   mono = BrandColors.white,
 }: RecipelyLogoProps): React.JSX.Element => {

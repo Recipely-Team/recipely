@@ -17,6 +17,8 @@ const WAITING: readonly AssistantStatusType[] = [
 ];
 const DOTS = [ValueConstants.zero, ValueConstants.one, ValueConstants.two];
 const DOT_STAGGER_MS = 160;
+/** Each dot's pulse: how long its peak lasts (share of a cycle) and how dim it rests. */
+const DOT_PULSE = { peakSpan: 0.3, restOpacity: 0.6 } as const;
 
 export interface AssistantWaitingLineProps {
   status: AssistantStatusType;
@@ -100,10 +102,10 @@ export const AssistantWaitingLine = ({
                       inputRange: [
                         ValueConstants.zero,
                         (index * DOT_STAGGER_MS) / durations.pulse,
-                        (index * DOT_STAGGER_MS) / durations.pulse + 0.3,
+                        (index * DOT_STAGGER_MS) / durations.pulse + DOT_PULSE.peakSpan,
                         ValueConstants.one,
                       ],
-                      outputRange: [0.6, 0.6, 1, 0.6],
+                      outputRange: [DOT_PULSE.restOpacity, DOT_PULSE.restOpacity, ValueConstants.one, DOT_PULSE.restOpacity],
                       extrapolate: 'clamp',
                     }),
                   },

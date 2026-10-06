@@ -1,8 +1,4 @@
 import { useCallback, useState } from 'react';
-import {
-  MIME_BY_EXTENSION,
-  DEFAULT_IMAGE_MIME,
-} from '@infrastructure/constants/image-mime';
 import * as ImagePicker from 'expo-image-picker';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
@@ -14,23 +10,16 @@ import type { AvatarUpload } from '@presentation/base/hooks/profile/avatar-uploa
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
 import { ValueConstants } from '@core/constants';
+import { uploadFileMeta } from '@presentation/base/utils/upload-file-meta';
 
 // No `quality` here on purpose: `shrinkForUpload` owns the one re-encode, the
 // same way the recipe media picker leaves it to do.
+const AVATAR_FILE_PREFIX = 'avatar';
+
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
   allowsEditing: true,
-  aspect: [1, 1],
-};
-
-/** Derives a multipart-friendly `fileName`/`mimeType` from a picked asset uri. */
-const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
-  const ext = uri.split('.').pop()?.toLowerCase() ?? 'jpg';
-  const safeExt = ext.length > ValueConstants.zero && ext.length <= 4 ? ext : 'jpg';
-  return {
-    fileName: `avatar-${Date.now()}.${safeExt}`,
-    mimeType: MIME_BY_EXTENSION[safeExt] ?? DEFAULT_IMAGE_MIME,
-  };
+  aspect: [ValueConstants.one, ValueConstants.one],
 };
 
 /**
@@ -83,7 +72,7 @@ export const useAvatarUpload = (): AvatarUpload => {
           { uri: asset.uri, width: asset.width, height: asset.height },
           AVATAR_UPLOAD_MAX_EDGE,
         );
-        const { fileName, mimeType } = toUploadMeta(uri);
+        const { fileName, mimeType } = uploadFileMeta(uri, AVATAR_FILE_PREFIX, String(Date.now()));
         const failure = await uploadAvatar(uri, fileName, mimeType);
         if (failure !== null) {
           // Prefer the precise catalogue copy (e.g. "only images … can be

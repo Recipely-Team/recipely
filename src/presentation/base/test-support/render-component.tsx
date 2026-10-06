@@ -25,7 +25,7 @@ const mounted: ReactTestRenderer[] = [];
 if (typeof afterEach === 'function') {
   afterEach(async () => {
     await act(async () => undefined);
-    for (const renderer of mounted.splice(0)) act(() => renderer.unmount());
+    for (const renderer of mounted.splice(ValueConstants.zero)) act(() => renderer.unmount());
   });
 }
 

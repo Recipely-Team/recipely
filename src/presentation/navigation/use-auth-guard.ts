@@ -4,6 +4,7 @@ import { type Href, useGlobalSearchParams, usePathname, useRouter } from 'expo-r
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { isString } from '@core/guards/type-guards';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
@@ -61,10 +62,10 @@ const isPublicPath = (pathname: string): boolean =>
 const withParams = (pathname: string, params: Record<string, unknown>): string => {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (isString(value) && value.length > 0) search.append(key, value);
+    if (isString(value) && value.length > ValueConstants.zero) search.append(key, value);
   }
   const query = search.toString();
-  return query.length > 0 ? `${pathname}?${query}` : pathname;
+  return query.length > ValueConstants.zero ? `${pathname}?${query}` : pathname;
 };
 
 /**

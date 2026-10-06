@@ -8,6 +8,7 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes } from '@presentation
 import { t } from '@presentation/i18n';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
+import { ValueConstants } from '@core/constants';
 
 const CARD_WIDTH = 264;
 const HEADER_ICON = 30;
@@ -128,7 +129,7 @@ const styles = StyleSheet.create({
   bullet: {
     width: BULLET,
     height: BULLET,
-    borderRadius: BULLET / 2,
+    borderRadius: BULLET / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },

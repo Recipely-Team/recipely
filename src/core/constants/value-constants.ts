@@ -13,5 +13,8 @@ export const ValueConstants = {
   zero: 0 as number,
   one: 1 as number,
   two: 2 as number,
+  three: 3 as number,
+  /** A fraction (0–1) times this is a percentage. */
+  percent: 100 as number,
   minusOne: -1 as number,
 } as const;

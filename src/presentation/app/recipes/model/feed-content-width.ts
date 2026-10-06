@@ -1,5 +1,6 @@
 import { BREAKPOINTS, WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 /**
  * The gutter the feed paints on each side, per the wide-screen home design:
@@ -21,7 +22,7 @@ export const feedGutter = (viewportWidth: number): number => {
  * no gutter at all while the arithmetic sizing its cards assumed one.
  */
 export const feedContentWidth = (viewportWidth: number): number =>
-  Math.min(viewportWidth, WEB_CONTENT_MAX_WIDTH.recipes) - feedGutter(viewportWidth) * 2;
+  Math.min(viewportWidth, WEB_CONTENT_MAX_WIDTH.recipes) - feedGutter(viewportWidth) * ValueConstants.two;
 
 /**
  * The inset the PHONE feed paints on each side of every row.
@@ -39,4 +40,4 @@ export const MOBILE_FEED_GUTTER = spacing.lg;
  * line up with the cards above and below it.
  */
 export const mobileFeedRowWidth = (viewportWidth: number): number =>
-  viewportWidth - MOBILE_FEED_GUTTER * 2;
+  viewportWidth - MOBILE_FEED_GUTTER * ValueConstants.two;

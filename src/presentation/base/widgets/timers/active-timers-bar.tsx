@@ -59,7 +59,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const timers = timerStore((s) => s.timers);
   const collapsed = timersBarStore((s) => s.collapsed);
   const setCollapsed = timersBarStore((s) => s.setCollapsed);
-  const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[1] ?? null;
+  const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const entries = Object.values(timers).filter(
     (entry) => entry.recipeId !== currentRecipeId,
   );
