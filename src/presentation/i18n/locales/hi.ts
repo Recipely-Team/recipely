@@ -510,6 +510,12 @@ export const hi: Translations = {
     themeLight: 'लाइट',
     themeDark: 'डार्क',
     chooseTheme: 'थीम चुनें',
+    themeNames: {
+      'pearl-white': 'मोती सफ़ेद',
+      'crimson-ember': 'किरमिजी अंगारा',
+      'emerald-garden': 'पन्ना बगीचा',
+      'royal-purple': 'शाही बैंगनी',
+    },
     language: 'भाषा',
     languageComingSoon: 'जल्द आ रहा है',
     account: 'खाता',

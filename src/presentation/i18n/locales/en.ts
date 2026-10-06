@@ -518,6 +518,12 @@ export const en = {
     themeLight: 'Light',
     themeDark: 'Dark',
     chooseTheme: 'Choose Your Theme',
+    themeNames: {
+      'pearl-white': 'Pearl White',
+      'crimson-ember': 'Crimson Ember',
+      'emerald-garden': 'Emerald Garden',
+      'royal-purple': 'Royal Purple',
+    },
     language: 'Language',
     languageComingSoon: 'Coming soon',
     account: 'Account',

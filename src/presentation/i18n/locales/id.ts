@@ -508,6 +508,12 @@ export const id = {
     themeLight: 'Terang',
     themeDark: 'Gelap',
     chooseTheme: 'Pilih tema kamu',
+    themeNames: {
+      'pearl-white': 'Putih Mutiara',
+      'crimson-ember': 'Bara Merah',
+      'emerald-garden': 'Taman Zamrud',
+      'royal-purple': 'Ungu Kerajaan',
+    },
     language: 'Bahasa',
     languageComingSoon: 'Segera hadir',
     account: 'Akun',

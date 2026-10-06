@@ -508,6 +508,12 @@ export const it = {
     themeLight: 'Chiaro',
     themeDark: 'Scuro',
     chooseTheme: 'Scegli il tuo tema',
+    themeNames: {
+      'pearl-white': 'Bianco perla',
+      'crimson-ember': 'Brace cremisi',
+      'emerald-garden': 'Giardino smeraldo',
+      'royal-purple': 'Viola reale',
+    },
     language: 'Lingua',
     languageComingSoon: 'Prossimamente',
     account: 'Account',

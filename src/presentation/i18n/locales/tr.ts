@@ -511,6 +511,12 @@ export const tr: Translations = {
     themeLight: 'Açık',
     themeDark: 'Koyu',
     chooseTheme: 'Temayı seç',
+    themeNames: {
+      'pearl-white': 'İnci Beyazı',
+      'crimson-ember': 'Kırmızı Kor',
+      'emerald-garden': 'Zümrüt Bahçe',
+      'royal-purple': 'Kraliyet Moru',
+    },
     language: 'Dil',
     languageComingSoon: 'Yakında',
     account: 'Hesap',

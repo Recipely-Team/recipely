@@ -2,10 +2,9 @@ import { ListState } from '@presentation/base/hooks/assistant/args/describing/li
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
-import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
+import { ALL_THEMES } from '@presentation/base/theme/colors/palette/themes';
 import type { ThemeId } from '@presentation/base/theme/context/theme-id';
-import { getLocale } from '@presentation/i18n';
-import { LocaleConstants } from '@application/i18n/locale-constants';
+import { t } from '@presentation/i18n';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -170,6 +169,5 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
 
 /** The palette's name in the language the user is reading, as the swatch shows it. */
 function paletteName(id: ThemeId): string {
-  const def = getThemeDefinition(id);
-  return getLocale() === LocaleConstants.tr ? def.nameTr : def.name;
+  return t().settings.themeNames[id];
 }

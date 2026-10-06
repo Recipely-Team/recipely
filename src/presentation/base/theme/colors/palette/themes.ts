@@ -184,9 +184,6 @@ const makeLight = (a: LightArgs): ThemeColors => {
 
 const themes: Record<ThemeId, ThemeDefinition> = {
   'pearl-white': {
-    name: 'Pearl White',
-    nameTr: 'İnci Beyazı',
-    description: 'Clean, airy light mode with blue accents',
     preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#1D4ED8', primaryText: '#FFFFFF', primaryLight: '#DBEAFE',
@@ -200,9 +197,6 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     }),
   },
   'crimson-ember': {
-    name: 'Crimson Ember',
-    nameTr: 'Kırmızı Kor',
-    description: 'Bold, passionate red for energy and urgency',
     preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#B91C1C', primaryText: '#FFFFFF', primaryLight: '#FEE2E2',
@@ -218,9 +212,6 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     }),
   },
   'emerald-garden': {
-    name: 'Emerald Garden',
-    nameTr: 'Zümrüt Bahçe',
-    description: 'Deep emerald green suggesting growth and balance',
     preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#053A29', primaryText: '#FFFFFF', primaryLight: '#D1FAE5',
@@ -236,9 +227,6 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     }),
   },
   'royal-purple': {
-    name: 'Royal Purple',
-    nameTr: 'Kraliyet Moru',
-    description: 'Bold purple on dark surfaces for a regal mood',
     preferredVariant: ThemeVariant.Dark,
     light: makeLight({
       primary: '#7E22CE', primaryText: '#FFFFFF', primaryLight: '#F3E8FF',

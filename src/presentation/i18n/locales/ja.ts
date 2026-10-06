@@ -508,6 +508,12 @@ export const ja = {
     themeLight: 'ライト',
     themeDark: 'ダーク',
     chooseTheme: 'テーマを選択',
+    themeNames: {
+      'pearl-white': 'パールホワイト',
+      'crimson-ember': 'クリムゾンエンバー',
+      'emerald-garden': 'エメラルドガーデン',
+      'royal-purple': 'ロイヤルパープル',
+    },
     language: '言語',
     languageComingSoon: '近日対応',
     account: 'アカウント',
