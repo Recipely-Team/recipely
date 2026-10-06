@@ -5,6 +5,7 @@ import { type Href, useRouter } from 'expo-router';
 import { isWeb } from '@infrastructure/constants/platform';
 import { isString } from '@core/guards/type-guards';
 import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Keys the backend puts in the FCM data payload. Mirrors
@@ -22,7 +23,7 @@ const TIMER_TYPE_PREFIX = 'timer';
 
 const readString = (data: Record<string, unknown> | undefined, key: string): string | null => {
   const value = data?.[key];
-  return isString(value) && value.length > 0 ? value : null;
+  return isString(value) && value.length > ValueConstants.zero ? value : null;
 };
 
 /**

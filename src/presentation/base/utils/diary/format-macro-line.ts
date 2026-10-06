@@ -1,6 +1,6 @@
 import type { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { t } from '@presentation/i18n';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
 
 /**
@@ -17,7 +17,7 @@ export const formatMacroLine = (nutrients: Nutrients, locale: string): string | 
     [strings.macroFatShort, nutrients.fat],
   ];
   return parts
-    .filter((part): part is [string, number] => part[1] !== null)
+    .filter((part): part is [string, number] => part[ValueConstants.one] !== null)
     .map(([label, grams]) => strings.macroPart.replace('{l}', label).replace('{n}', formatWholeNumber(grams, locale)))
     .join(CharConstants.middotSpaced);
 };

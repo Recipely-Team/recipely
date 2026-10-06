@@ -38,7 +38,7 @@ export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }
   const page = index === null ? undefined : pages[index];
   const at = index ?? ValueConstants.zero;
   const title =
-    page === undefined ? copy.pdfLabel : isPdf ? page.file.fileName : copy.page.replace(COUNT_TOKEN, String(at + 1));
+    page === undefined ? copy.pdfLabel : isPdf ? page.file.fileName : copy.page.replace(COUNT_TOKEN, String(at + ValueConstants.one));
   const moves = [
     { label: copy.moveEarlier, icon: 'chevron-back', to: at - ValueConstants.one },
     { label: copy.moveLater, icon: 'chevron-forward', to: at + ValueConstants.one },
@@ -50,7 +50,7 @@ export const FilePageSheet = ({ pages, index, isPdf, onMove, onRemove, onClose }
         <View style={styles.body}>
           {isPdf ? null : (
             <ThemedText variant="caption" style={{ color: colors.textMuted }}>
-              {copy.pageCount.replace(COUNT_TOKEN, String(at + 1)).replace(MAX_TOKEN, String(pages.length))}
+              {copy.pageCount.replace(COUNT_TOKEN, String(at + ValueConstants.one)).replace(MAX_TOKEN, String(pages.length))}
             </ThemedText>
           )}
           <View style={[styles.preview, { borderColor: colors.cardBorder }]}>

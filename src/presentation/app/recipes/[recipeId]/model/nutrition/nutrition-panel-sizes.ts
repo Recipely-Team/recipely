@@ -1,4 +1,5 @@
 import { radii, scale } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const SWITCH_INSET = scale(3);
 
@@ -18,7 +19,7 @@ export const nutritionPanelSizes = {
   ringStroke: scale(9),
   ringStrokeCompact: scale(8),
   barHeight: scale(4),
-  barRadius: scale(2),
+  barRadius: scale(ValueConstants.two),
   switchInset: SWITCH_INSET,
   switchRadius: radii.lg,
   optionRadius: radii.lg - SWITCH_INSET,

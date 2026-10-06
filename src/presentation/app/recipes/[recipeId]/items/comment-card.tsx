@@ -63,7 +63,7 @@ export const CommentCard = ({
   useEffect(() => {
     if (!highlighted) return;
     flash.value = withSequence(
-      withTiming(1, { duration: FLASH_IN_MS }),
+      withTiming(ValueConstants.one, { duration: FLASH_IN_MS }),
       withDelay(FLASH_HOLD_MS, withTiming(ValueConstants.zero, { duration: FLASH_OUT_MS })),
     );
   }, [highlighted, flash]);

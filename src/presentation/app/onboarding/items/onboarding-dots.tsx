@@ -2,6 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, decorSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 const DOT_SIZE = 7;
 
@@ -48,6 +49,6 @@ const styles = StyleSheet.create({
   },
   dot: {
     height: DOT_SIZE,
-    borderRadius: DOT_SIZE / 2,
+    borderRadius: DOT_SIZE / ValueConstants.two,
   },
 });

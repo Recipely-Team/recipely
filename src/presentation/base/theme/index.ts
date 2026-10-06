@@ -31,6 +31,7 @@ export { avatarSizes } from '@presentation/base/theme/tokens/sizing/avatar-sizes
 export { mediaSizes } from '@presentation/base/theme/tokens/sizing/media-sizes';
 export { aspectRatios } from '@presentation/base/theme/tokens/sizing/aspect-ratios';
 export { decorSizes } from '@presentation/base/theme/tokens/sizing/decor-sizes';
+export { brandMarkSizes } from '@presentation/base/theme/tokens/sizing/brand-mark-sizes';
 export { layoutSizes } from '@presentation/base/theme/tokens/sizing/layout-sizes';
 export { borderWidths } from '@presentation/base/theme/tokens/sizing/border-widths';
 export { opacities } from '@presentation/base/theme/tokens/effects/opacities';

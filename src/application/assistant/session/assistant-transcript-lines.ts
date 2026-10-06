@@ -4,7 +4,7 @@ import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
 import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 
 /** Longer than a phrase is not a chip: it wraps, and the transcript stops being scannable. */
@@ -60,18 +60,18 @@ export function toTranscriptLines(
   const lines: AssistantTranscriptLine[] = [];
   let next = 0;
   const flushExtras = (upTo: number): void => {
-    while (next < extras.length && (extras[next]?.after ?? 0) <= upTo) {
+    while (next < extras.length && (extras[next]?.after ?? ValueConstants.zero) <= upTo) {
       const extra = extras[next];
       if (extra !== undefined) lines.push(extra.line);
-      next += 1;
+      next += ValueConstants.one;
     }
   };
 
-  flushExtras(0);
+  flushExtras(ValueConstants.zero);
   entries.forEach((entry, index) => {
     const line = toLine(entry);
     if (line !== null) lines.push(line);
-    flushExtras(index + 1);
+    flushExtras(index + ValueConstants.one);
   });
   flushExtras(Number.POSITIVE_INFINITY);
   return lines;

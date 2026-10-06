@@ -1,9 +1,8 @@
 import type { ImageContentPosition } from 'expo-image';
 import type { FocalPoint } from '@domain/recipes/media/focal-point';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 
 /** A focal point is a share of the frame; expo-image positions by percentage. */
-const PERCENT_SCALE = 100;
 const CENTRED: ImageContentPosition = 'center';
 
 /**
@@ -18,6 +17,6 @@ export const toContentPosition = (focus: FocalPoint | undefined): ImageContentPo
   focus === undefined
     ? CENTRED
     : {
-        left: `${Math.round(focus.x * PERCENT_SCALE)}${CharConstants.percent}`,
-        top: `${Math.round(focus.y * PERCENT_SCALE)}${CharConstants.percent}`,
+        left: `${Math.round(focus.x * ValueConstants.percent)}${CharConstants.percent}`,
+        top: `${Math.round(focus.y * ValueConstants.percent)}${CharConstants.percent}`,
       };

@@ -2,6 +2,7 @@ import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provena
 import { BrandColors, type ThemeColors } from '@presentation/base/theme';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
 import { appImportLook } from '@presentation/app/import-recipe/model/app-import-look';
+import { ValueConstants } from '@core/constants';
 
 const INSTAGRAM_GRADIENT = [
   BrandColors.instagramGradientStart,
@@ -10,8 +11,8 @@ const INSTAGRAM_GRADIENT = [
   BrandColors.instagramGradientEnd,
 ] as const;
 const TIKTOK_GRADIENT = [BrandColors.tiktokCyan, BrandColors.tiktokRed] as const;
-const INSTAGRAM_RING_STOPS = [0, 0.3, 0.62, 1] as const;
-const TWO_STOP_RING = [0, 1] as const;
+const INSTAGRAM_RING_STOPS = [ValueConstants.zero, 0.3, 0.62, ValueConstants.one] as const;
+const TWO_STOP_RING = [ValueConstants.zero, ValueConstants.one] as const;
 
 /**
  * Which colours the importing screen wears, decided by the link — never chosen.

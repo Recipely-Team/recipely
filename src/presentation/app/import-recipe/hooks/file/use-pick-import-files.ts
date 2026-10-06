@@ -9,6 +9,7 @@ import { PickSource } from '@presentation/base/utils/pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import type { PickImportFilesCallback } from '@presentation/app/import-recipe/model/file/pick-import-files';
 import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
 
 // No `quality`: `shrinkForUpload` owns the one re-encode.
 const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
@@ -50,7 +51,7 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
     try {
       if (source === PickSource.File) {
         const doc = await DocumentPicker.getDocumentAsync({ type: ImportFileMimeType.Pdf, copyToCacheDirectory: true, multiple: false });
-        const asset = doc.canceled ? undefined : doc.assets[0];
+        const asset = doc.canceled ? undefined : doc.assets[ValueConstants.zero];
         if (asset === undefined) return [];
         return [{ uri: asset.uri, fileName: asset.name, mimeType: ImportFileMimeType.Pdf, sizeBytes: asset.size ?? null }];
       }

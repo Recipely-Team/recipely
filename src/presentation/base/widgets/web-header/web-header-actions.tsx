@@ -205,7 +205,7 @@ const styles = StyleSheet.create({
   avatarBtn: {
     width: NOTIF_BTN_SIZE,
     height: NOTIF_BTN_SIZE,
-    borderRadius: NOTIF_BTN_SIZE / 2,
+    borderRadius: NOTIF_BTN_SIZE / ValueConstants.two,
     borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',

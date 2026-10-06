@@ -1,4 +1,5 @@
 import { scale } from '@presentation/base/theme/tokens/scale';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Sizes and timings only the assistant's chrome reads.
@@ -40,8 +41,8 @@ export const assistantMetrics = {
   miniMascot: scale(30),
   headerMascot: scale(24),
   bubbleMascot: scale(19),
-  waveBarWidth: scale(2),
-  waveBarGap: scale(2),
+  waveBarWidth: scale(ValueConstants.two),
+  waveBarGap: scale(ValueConstants.two),
   waveMiniBars: 16,
   waveMiniHeight: scale(16),
   wavePanelBars: 42,
@@ -86,7 +87,7 @@ export const assistantMetrics = {
   blinkIntervalMs: 3600,
   blinkDurationMs: 120,
   bobDurationMs: 1400,
-  bobTravel: scale(2),
+  bobTravel: scale(ValueConstants.two),
   ringDurationMs: 2600,
   ringScale: 1.6,
 } as const;

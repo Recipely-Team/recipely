@@ -143,7 +143,7 @@ export class ImportLink extends BaseValueObject<string> {
 
   private static shorten(page: string): string {
     const bare = page.replace(TRAILING_SLASH, CharConstants.empty);
-    return bare.length > SHORT_FORM_MAX ? `${bare.slice(0, SHORT_FORM_MAX)}${ELLIPSIS}` : bare;
+    return bare.length > SHORT_FORM_MAX ? `${bare.slice(ValueConstants.zero, SHORT_FORM_MAX)}${ELLIPSIS}` : bare;
   }
 
   /** The id a YouTube link names — the same forms the backend reads — or `null` for a channel or a playlist. */

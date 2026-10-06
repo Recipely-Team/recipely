@@ -10,6 +10,7 @@ import Animated, {
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { radii, opacities, durations } from '@presentation/base/theme';
 import { WebShimmer } from '@presentation/base/widgets/loading/web-shimmer';
+import { ValueConstants } from '@core/constants';
 
 /**
  * A pixel count or a percentage — the two the shimmer can actually be given.
@@ -53,7 +54,7 @@ export const SkeletonLoader = ({
     if (isWeb()) return;
     translateX.value = withRepeat(
       withTiming(SHIMMER_SWEEP_WIDTH, { duration: durations.shimmer }),
-      -1,
+      ValueConstants.minusOne,
       false,
     );
   }, [translateX]);

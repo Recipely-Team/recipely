@@ -39,7 +39,7 @@ const HAPTIC_INTERVAL_MS = 1500;
 export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JSX.Element => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(ValueConstants.one)).current;
 
   useEffect(() => {
     // Pulse animation

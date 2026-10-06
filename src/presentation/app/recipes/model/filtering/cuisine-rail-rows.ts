@@ -1,5 +1,6 @@
 import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 import { avatarSizes, spacing } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 
 const MAX_ROWS_ROOMY = 3;
 const MAX_ROWS_TIGHT = 2;
@@ -30,8 +31,8 @@ export const railChipCount = (
   viewportWidth: number,
   viewportHeight: number,
 ): number => {
-  const perRow = Math.max(1, Math.floor((contentWidth + spacing.lg) / CHIP_PITCH));
+  const perRow = Math.max(ValueConstants.one, Math.floor((contentWidth + spacing.lg) / CHIP_PITCH));
   const roomy = viewportWidth >= BREAKPOINTS.wide && viewportHeight >= BREAKPOINTS.desktop;
   const rows = roomy ? MAX_ROWS_ROOMY : MAX_ROWS_TIGHT;
-  return Math.max(1, perRow * rows - RESET_CHIP);
+  return Math.max(ValueConstants.one, perRow * rows - RESET_CHIP);
 };

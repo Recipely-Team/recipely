@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 /**
  * The output ranges the collapsing home header interpolates over.
  *
@@ -15,11 +16,11 @@
  */
 export const HomeHeaderAnimation = {
   /** Title scale, full size down to slightly tucked. */
-  titleScale: [1, 0.82],
+  titleScale: [ValueConstants.one, 0.82],
   /** Eyebrow opacity, fully faded by {@link midpoint} of the shrink distance. */
-  eyebrowOpacity: [1, 0],
+  eyebrowOpacity: [ValueConstants.one, ValueConstants.zero],
   /** Search-field opacity — dimmed, never hidden. */
-  searchOpacity: [1, 0.55],
+  searchOpacity: [ValueConstants.one, 0.55],
   /** Share of the shrink distance at which the eyebrow has finished fading. */
   midpoint: 0.5,
 } as const;

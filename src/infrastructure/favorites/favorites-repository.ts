@@ -10,6 +10,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { FAVORITES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Implements `FavoritesRepositoryInterface` against the Recipely backend. Persists
@@ -27,7 +28,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
       return fail(result.failure);
     }
 
-    return ok(void 0);
+    return ok(void ValueConstants.zero);
   }
 
   async removeFavorite(userId: string, recipeId: string): Promise<Result<void, Failure>> {
@@ -37,7 +38,7 @@ export class FavoritesRepository implements FavoritesRepositoryInterface {
       return fail(result.failure);
     }
 
-    return ok(void 0);
+    return ok(void ValueConstants.zero);
   }
 
   async listFavorites(): Promise<Result<RecipeSummaryEntity[], Failure>> {

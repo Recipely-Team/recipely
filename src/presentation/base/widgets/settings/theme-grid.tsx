@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   swatch: {
     width: SWATCH_SIZE,
     height: SWATCH_SIZE,
-    borderRadius: SWATCH_SIZE / 2,
+    borderRadius: SWATCH_SIZE / ValueConstants.two,
     overflow: 'hidden',
   },
   checkBadge: {

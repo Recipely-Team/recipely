@@ -23,7 +23,6 @@ export interface GoalsSheetProps {
   onClose: () => void;
 }
 
-const PERCENT = 100;
 
 /**
  * Daily goals (design spec → Food Diary §7): the calorie goal with ±50 steps,
@@ -39,7 +38,7 @@ export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Ele
   const nutrition = t().nutrition;
   const { candidate } = form;
   const share = (macro: keyof typeof AtwaterFactors): string | null =>
-    candidate === null ? null : strings.calorieShare.replace('{n}', formatWholeNumber(candidate.calorieShare(macro) * PERCENT, locale));
+    candidate === null ? null : strings.calorieShare.replace('{n}', formatWholeNumber(candidate.calorieShare(macro) * ValueConstants.percent, locale));
   const calories = parseDecimalInput(form.values.calories) ?? ValueConstants.zero;
 
   return (

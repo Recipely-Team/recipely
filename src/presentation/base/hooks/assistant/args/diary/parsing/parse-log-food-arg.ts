@@ -1,4 +1,4 @@
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isNonEmptyString, isString } from '@core/guards/type-guards';
 import type { ArgParse } from '@presentation/base/hooks/assistant/args/diary/arg-parse';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
@@ -21,7 +21,7 @@ const macro = (value: unknown): number | null => {
  */
 export const parseLogFoodArg = (arg: string | undefined): ArgParse<LogFoodArgs> => {
   const raw = (arg ?? CharConstants.empty).trim();
-  if (raw.length === 0) return { ok: true, value: NO_ARGS };
+  if (raw.length === ValueConstants.zero) return { ok: true, value: NO_ARGS };
   const json = parseJsonObject(raw);
   if (json === undefined) return { ok: true, value: { ...NO_ARGS, name: raw } };
   if (json === null) return { ok: false, error: DiaryArgError.InvalidJson };

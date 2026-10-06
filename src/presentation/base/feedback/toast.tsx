@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   iconChip: {
     width: ICON_CHIP_SIZE,
     height: ICON_CHIP_SIZE,
-    borderRadius: ICON_CHIP_SIZE / 2,
+    borderRadius: ICON_CHIP_SIZE / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },

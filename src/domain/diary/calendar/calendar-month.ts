@@ -26,7 +26,7 @@ export class CalendarMonth extends BaseValueObject<string> {
 
   static create(raw: string): Result<CalendarMonth, ValidationFailure> {
     const match = ISO_MONTH.exec(raw);
-    const month = match === null ? null : CalendarMonth.of(CalendarDate.of(Number(match[1]), Number(match[2]), ValueConstants.one));
+    const month = match === null ? null : CalendarMonth.of(CalendarDate.of(Number(match[ValueConstants.one]), Number(match[ValueConstants.two]), ValueConstants.one));
     if (month === null || month.value !== raw) {
       return fail(new ValidationFailure(DiagnosticMessage.diary.monthInvalid(raw), 'month'));
     }

@@ -243,7 +243,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
           ok: true,
           n: {
             ing: ingredients.length,
-            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? -1 : 1),
+            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
           },
         };
       },
@@ -262,7 +262,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
           ok: true,
           n: {
             step: instructions.length,
-            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? -1 : 1),
+            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
           },
         };
       },
