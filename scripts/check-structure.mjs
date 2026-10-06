@@ -43,6 +43,8 @@
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
  *   AL. Every routed page is declared on the stack that owns it, header hidden.
+ *   AN. Every Firebase hosting target sends the web security headers on `**`
+ *      (nosniff, frame denial, referrer / permissions policy, COOP, HSTS).
  *   AM. Inline comments are one line (CLAUDE.md §3): no two consecutive indented
  *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
@@ -1557,6 +1559,37 @@ function openingTag(src, at) {
         errors.push(`${file}:${i}: multi-line inline comment — keep it to one line; longer rationale goes in the head doc block (CLAUDE.md §3)`);
         break;
       }
+    }
+  }
+}
+
+// --- AN: the web app is served with its security headers -----------------
+// firebase.json shipped with no security header at all: the site could be
+// framed (clickjacking), MIME-sniffed, and leaked full referrers. Every
+// hosting target must set these on `**`.
+{
+  // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
+  // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
+  const REQUIRED = {
+    'X-Content-Type-Options': (v) => v === 'nosniff',
+    'X-Frame-Options': (v) => v === 'SAMEORIGIN' || v === 'DENY',
+    'Content-Security-Policy': (v) => /frame-ancestors '(self|none)'/.test(v),
+    'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
+    'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
+    'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
+    'Strict-Transport-Security': (v) => /max-age=\d{7,}/.test(v),
+  };
+  const firebase = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
+  const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
+  for (const target of targets) {
+    const sent = new Map(
+      (target.headers ?? []).filter((h) => h.source === '**').flatMap((h) => h.headers.map((x) => [x.key, x.value])),
+    );
+    const missing = Object.entries(REQUIRED)
+      .filter(([key, ok]) => !sent.has(key) || !ok(sent.get(key)))
+      .map(([key]) => key);
+    if (missing.length > 0) {
+      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on "**" — ${missing.join(', ')}`);
     }
   }
 }

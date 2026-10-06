@@ -165,5 +165,8 @@
       "jest --bail --findRelatedTests --passWithNoTests"
     ]
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "shell-quote": "^1.11.0"
+  }
 }

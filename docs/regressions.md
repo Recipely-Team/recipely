@@ -2435,3 +2435,18 @@ found two classes on its first run:
 WCAG exempts them), page overflow, off-screen content or the error screen.
 *The class:* **a size measured once is a size measured too early; and a target is
 the box you can hit, not the glyph you can see.**
+## A web app served with no security headers, and a redirect a backslash could bend
+
+- **No security header at all** on either Firebase hosting target: the site could
+  be framed by any origin (clickjacking), MIME-sniffed, and leaked full referrers.
+  *Now:* `**` carries nosniff, `X-Frame-Options: SAMEORIGIN` + `frame-ancestors 'self'` (Firebase Auth frames its own host),
+  `Referrer-Policy`, `Permissions-Policy` (camera/microphone self only), COOP
+  `same-origin-allow-popups` (Google sign-in popups still work) and HSTS.
+  *Guard:* `check:structure` rule AN fails when a target lacks any of them.
+- **`/login?redirect=` accepted `/\evil.com`**: the check refused `//` but browsers
+  normalise a backslash to a slash, and an encoded `%2F` / `%5C` or a control
+  character slipped past too. *Now:* `RegexConstants.unsafeRedirectChar` / `encodedSlash` (path only) reject them;
+  pinned by `resolve-redirect.test.ts` (a query may still carry an encoded slash).
+
+*The class:* **a check on a URL string must see it the way the browser will: decode
+and normalise first, or refuse what could normalise into something else.**

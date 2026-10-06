@@ -105,6 +105,28 @@ describe('resolveRedirect', () => {
       expect(resolveRedirect('//evil.com')).toBe('/recipes');
     });
 
+    // Browsers normalise a backslash to a slash, so "/\\evil.com" is "//evil.com" to them.
+    it.each(['/\\evil.com', '/\\/evil.com', '/recipes\\..\\x', '/%5Cevil.com', '/%2F%2Fevil.com', '/ok\nLocation: x'])(
+      'returns /recipes for a disguised or control-character redirect %p',
+      (redirect) => {
+        expect(resolveRedirect(redirect)).toBe('/recipes');
+      },
+    );
+
+    it('accepts an encoded slash inside the query (a search for "a/b")', () => {
+      expect(resolveRedirect('/recipes?q=a%2Fb')).toBe('/recipes?q=a%2Fb');
+    });
+
+    // A signed-out share import: use-auth-guard encodes the shared URL's slashes into the query.
+    it('keeps a shared link carried in the query', () => {
+      expect(resolveRedirect('/create-recipe?url=https%3A%2F%2Fx.com%2Fp')).toBe('/create-recipe?url=https%3A%2F%2Fx.com%2Fp');
+      expect(resolveRedirect('/recipes#a%2Fb')).toBe('/recipes#a%2Fb');
+    });
+
+    it('still accepts an ordinary encoded path', () => {
+      expect(resolveRedirect('/recipes/a%20b')).toBe('/recipes/a%20b');
+    });
+
     it('returns /recipes for an absolute external URL', () => {
       expect(resolveRedirect('https://evil.com')).toBe('/recipes');
     });
