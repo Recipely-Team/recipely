@@ -110,10 +110,7 @@ const styles = StyleSheet.create({
   list: {
     flex: ValueConstants.one,
   },
-  // ONE content column for the whole feed. Every block inside — hero, rail,
-  // grid — sits in it and shares its edges, which is the thing that stops the
-  // page reading as three loosely stacked slabs. The gutter narrows with the
-  // viewport, so a small screen spends its width on content, not margin.
+  // One content column for hero, rail and grid.
   webContent: {
     width: '100%',
     maxWidth: WEB_CONTENT_MAX_WIDTH.recipes,

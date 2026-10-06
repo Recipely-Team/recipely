@@ -36,9 +36,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === StoreStatus.Authenticated) {
-    // The code has been accepted, so the whole sign-up detour behind this
-      // screen is spent. Landing on the feed with it still stacked let one back
-      // gesture return to a code entry that can no longer be used.
+    // The sign-up detour is spent: replace the stack.
       enterApp(router, RoutePaths.recipes);
     }
   }, [state.status, router]);

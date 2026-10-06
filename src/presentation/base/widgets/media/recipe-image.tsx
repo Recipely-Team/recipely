@@ -51,8 +51,7 @@ export const RecipeImage = ({
 }: RecipeImageProps): React.JSX.Element => {
   const [failed, setFailed] = useState(false);
 
-  // A row can be recycled for a different recipe, so clear the failed flag
-  // whenever the URI changes — otherwise a once-broken image stays a placeholder.
+  // Rows are recycled: reset the failed flag when the uri changes.
   useEffect(() => {
     setFailed(false);
   }, [uri]);

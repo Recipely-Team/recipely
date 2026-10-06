@@ -33,10 +33,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   const labels = sortKeyLabels();
   const [open, setOpen] = useState(false);
 
-  // Outside-press + Escape close on web. The popover only renders on the web
-  // shell, so the native branch is a no-op (document is unavailable there).
-  // The anchor's DOM id (RN-web maps `nativeID` → `id`) scopes the outside
-  // check without reaching into the View's host node.
+  // Web only: close on outside press and Escape.
   useEffect(() => {
     if (!open || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {

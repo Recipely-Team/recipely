@@ -64,8 +64,6 @@ export const analyticsService: AnalyticsServiceInterface = {
   async setEnabled(enabled: boolean): Promise<void> {
     collecting = enabled;
     if (!enabled) {
-      // Only reachable once something already booted gtag; the flag above is
-      // what prevents that in the first place.
       if (instance !== null) setAnalyticsCollectionEnabled(instance, false);
       return;
     }

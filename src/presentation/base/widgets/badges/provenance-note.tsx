@@ -41,8 +41,7 @@ const SOURCE_WORDS: Record<SourceMarkType, {
     prefix: HANDLE_PREFIX,
     href: (handle, sourceUrl) => sourceUrl ?? tiktokProfileUrl(handle),
   },
-  // A page and a channel are named as their owners write them, without an `@`,
-  // and a display name builds no address: without the video, the name is plain text.
+  // Pages and channels are named without @.
   [ProvenanceMark.Facebook]: {
     sentence: () => t().recipes.originFacebookDetailLabel,
     fallback: () => t().recipes.originFacebookA11y,
@@ -129,8 +128,7 @@ export const ProvenanceNote = ({ marks, sourceHandle, sourceUrl, style }: Proven
 
   const words = SOURCE_WORDS[platform];
   const tail = marks.includes(ProvenanceMark.Ai) ? t().recipes.originEditedByAiSuffix : '';
-  // An import with no handle still says where it came from; `@undefined` would
-  // be worse than the missing half of a sentence.
+  // No handle: still say where it came from.
   const [before, after] =
     sourceHandle === undefined ? [words.fallback(), ''] : words.sentence().split(HANDLE_SLOT);
   const shownHandle = `${words.prefix}${sourceHandle ?? ''}`;
@@ -172,8 +170,7 @@ const styles = StyleSheet.create({
   },
   aiLabel: { fontSize: fontSizes.small, fontWeight: fontWeights.semibold },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
-  // No `numberOfLines`: the sentence is the point, so it wraps on a narrow
-  // phone rather than truncating the fact it exists to state.
+  // Wraps rather than truncates.
   sentence: { fontSize: fontSizes.caption, lineHeight: lineHeightFor(fontSizes.caption), flexShrink: 1 },
   handle: { fontWeight: fontWeights.semibold, textDecorationLine: 'underline' },
 });

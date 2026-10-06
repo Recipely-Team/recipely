@@ -38,8 +38,7 @@ export class NotificationRepository implements NotificationRepositoryInterface {
       if (mapped.ok) {
         items.push(mapped.value);
       }
-      // Silently skip items that fail mapping — a single malformed notification
-      // should not prevent the rest of the list from rendering.
+      // Skip an unmappable item rather than lose the list.
     }
 
     return ok({

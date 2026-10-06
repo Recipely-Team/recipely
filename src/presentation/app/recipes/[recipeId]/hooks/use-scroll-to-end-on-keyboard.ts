@@ -23,8 +23,7 @@ export const useScrollToEndOnKeyboard = (
 ): (() => void) => {
   const subscription = useRef<EmitterSubscription | null>(null);
 
-  // Drop a pending listener on unmount (e.g. focus, then navigate away
-  // before the keyboard ever appears — hardware-keyboard devices).
+  // Drop a pending listener on unmount.
   useEffect(
     () => () => {
       subscription.current?.remove();
@@ -35,8 +34,7 @@ export const useScrollToEndOnKeyboard = (
 
   return useCallback(() => {
     const scrollToEnd = (): void => {
-      // Double rAF: the avoider applies its padding in reaction to the same
-      // keyboard event, so give layout one extra frame to settle first.
+      // Double rAF: let the avoider's padding settle first.
       requestAnimationFrame(() => {
         requestAnimationFrame(() => scrollRef.current?.scrollToEnd({ animated: true }));
       });

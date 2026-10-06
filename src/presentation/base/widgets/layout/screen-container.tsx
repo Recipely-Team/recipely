@@ -31,9 +31,7 @@ export const ScreenContainer = ({
 }: ScreenContainerProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const padStyle = padded ? styles.padded : undefined;
-  // A container that scrolls can be scrolled by the assistant — the screens
-  // that use it (settings, the import queue) do not each have to remember to
-  // say so, and the ones rendering the plain View branch register nothing.
+  // A scrolling container is assistant-scrollable by default.
   const assistantScroll = useAssistantScrollable(scrollable);
 
   if (scrollable) {

@@ -62,34 +62,21 @@ export const RefineDock = ({
 }: RefineDockProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const canSend = chatInput.trim().length > ValueConstants.zero && !refining;
-  // WHY: `KeyboardAvoidingView` (in the parent screen) already pads its content
-  // up flush with the keyboard's top edge once shown — that alone clears the
-  // home indicator area too, since the keyboard occludes it. Adding the fixed
-  // `bottomInset` (needed only while the keyboard is hidden) on top of that
-  // padding left a visible gap between the input and the keyboard.
+  // The keyboard already covers the home indicator, so drop the bottom inset while it is up.
   const keyboardVisible = useKeyboardVisible();
   const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;
 
-  // Clearing belongs to the free-text path, not to `onSubmit`: a quick chip
-  // sends its own instruction and must leave whatever the cook has typed alone.
-  // The sent text is not lost — `onSubmitRefine` appends it to the transcript
-  // above before the request goes out, so it stays on screen as their turn.
+  // Only free text clears the field; a chip sends its own instruction.
   const submitFreeText = (): void => {
     if (!canSend) return;
     onSubmit(chatInput.trim());
     onChangeChatInput(CharConstants.empty);
   };
 
-  // WHY the two steps are serialized: dismissing the keyboard and unmounting
-  // the transcript in the same frame ran two layout animations against each
-  // other, and the dock visibly jumped. Waiting for the keyboard to finish
-  // hiding costs nothing and the panel closes into a settled layout. The
-  // timeout is the escape hatch for a platform that never emits the event.
+  // Close after the keyboard hides, so two layout animations do not fight.
   const pendingClose = useRef<(() => void) | null>(null);
 
-  // A close in flight is cancelled on unmount (the exit sheet can take the
-  // screen down inside the window) and before starting another, so a second
-  // tap cannot stack a second listener and timer.
+  // Cancel a pending close on unmount and before starting another.
   useEffect(() => () => pendingClose.current?.(), []);
 
   const closeAssistant = (): void => {

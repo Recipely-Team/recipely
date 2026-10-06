@@ -56,9 +56,7 @@ const UNNAMED = 'unnamed';
 export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): void => {
   const { displayName, bio, onChangeName, onChangeBio, onSave, isDirty } = deps;
 
-  // `unsaved` is the fact the model acts on: it is what tells it there is
-  // something to offer to save, on a screen where writing a field and saving
-  // it are two separate acts.
+  // unsaved tells the model there is something to offer to save.
   useAssistantScreenContent(() =>
     [
       `profile=${displayName === CharConstants.empty ? UNNAMED : displayName}`,
@@ -66,8 +64,7 @@ export const useAssistantProfileActions = (deps: AssistantProfileActionsDeps): v
     ].join(SCREEN_PART_SEPARATOR),
   );
 
-  // The form as it stands, for `readScreen`. The bio is off the screen line on
-  // purpose — it is a paragraph, and the line is charged on every turn.
+  // The form for readScreen; the bio stays off the per-turn line.
   useAssistantScreenReading(() =>
     [
       `name=${displayName === CharConstants.empty ? UNNAMED : displayName}`,

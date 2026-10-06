@@ -95,9 +95,7 @@ export const useOsAssistantInvocations = (): void => {
       try {
         if (!isStaleInvocation(invocation, Date.now())) await perform(invocation);
       } finally {
-        // Swallowed deliberately: the bridge failing to forget a request is not
-        // something a screen can act on, and letting it escape would strand
-        // every entry behind this one.
+        // Swallowed: a failed acknowledge must not strand the rest of the queue.
         await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       }
     },
@@ -117,8 +115,7 @@ export const useOsAssistantInvocations = (): void => {
         await dispatch(invocation);
       }
     } catch {
-      // The queue could not be read. The next foreground tries again, and the
-      // entries are still there because nothing acknowledged them.
+      // Unreadable queue: the next foreground retries.
     } finally {
       isDraining.current = false;
     }

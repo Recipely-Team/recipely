@@ -28,10 +28,7 @@ export const timersBarStore = create<TimersBarStoreState>((set, get) => ({
     } catch {
       return;
     }
-    // The stored value is only a default. On a cold start this read races the
-    // (equally slow) timer read that makes the bar appear at all, so it must
-    // never overwrite a choice the user has already made on screen — that
-    // would pop the bar back open over the content they just uncovered.
+    // The stored value is a default: never overwrite a choice made on screen.
     if (get().chosen) return;
     set({ collapsed: stored === COLLAPSED });
   },

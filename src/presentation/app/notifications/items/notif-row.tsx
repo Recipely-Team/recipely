@@ -28,9 +28,7 @@ const actionText = (n: NotifItem): string => {
     case NotifKind.Follow: return labels.followed;
     case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
     case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
-    // NEVER empty. An unknown type degrades to `generic`, and this used to
-    // return '' for anything with no recipe behind it — which is how an
-    // `import_done` the app did not know about rendered as a blank row.
+    // Never empty: unknown kinds fall back to the generic label.
     case NotifKind.Generic: return n.recipeName ?? labels.genericLabel;
   }
 };
@@ -80,8 +78,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
       accessibilityLabel={[item.actor, actionText(item), sourceLine].filter(Boolean).join(' ')}
-      // A target-less unread row's only action is "mark read" — say so, since
-      // the label alone gives assistive tech no cue what activating it does.
+      // Target-less unread rows only mark read; say so.
       accessibilityHint={
         item.target === null && !item.read ? t().notifications.markOneHint : undefined
       }

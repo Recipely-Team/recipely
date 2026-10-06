@@ -62,8 +62,7 @@ export interface MobileRecipeDetailProps {
 export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { recipe, recipeId, media, commentState } = props;
-  // The card tucks under the photo only when the photo is the hero's last edge;
-  // over a thumbnail strip it would bury the strip.
+  // Tuck under the photo only when no thumbnail strip follows it.
   const overlap = showsPhotoStrip(media.length, props.photos !== undefined)
     ? ValueConstants.zero
     : mobileContentOverlap;

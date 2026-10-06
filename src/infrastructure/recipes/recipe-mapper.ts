@@ -94,9 +94,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     viewCount: dto.viewCount ?? ValueConstants.zero,
     origin: toRecipeOrigin(dto.origin),
     sourcePlatform: toSourcePlatform(dto.sourcePlatform),
-    // A server that predates the column says nothing; an import is a model's
-    // work by definition, so `origin` answers for those rows rather than
-    // letting them read as hand-written.
+    // Older servers omit aiWritten: derive it from origin.
     aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,
     ...(dto.sourceUrl !== undefined ? { sourceUrl: dto.sourceUrl } : {}),
     ...(dto.sourceHandle !== undefined ? { sourceHandle: dto.sourceHandle } : {}),
@@ -132,9 +130,7 @@ export const toRecipeSummary: Mapper<RecipeListItemDto, RecipeSummaryEntity, Val
     likedByMe: dto.likedByMe ?? false,
     commentCount: dto.commentCount ?? ValueConstants.zero,
     viewCount: dto.viewCount ?? ValueConstants.zero,
-    // A row saved before the column existed sends nothing; `toRecipeOrigin`
-    // answers `User` for that, which is the honest reading — we do not know of
-    // anything else that wrote it.
+    // No origin from an older row reads as User.
     origin: toRecipeOrigin(dto.origin),
     sourcePlatform: toSourcePlatform(dto.sourcePlatform),
     aiWritten: dto.aiWritten ?? dto.origin !== RecipeOrigin.User,

@@ -51,9 +51,7 @@ export const useAssistantReportActions = (): void => {
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const said = arg === undefined || arg === CharConstants.empty ? NO_WORDS : arg;
-        // Read BEFORE the report below, which is itself a failure and would
-        // otherwise be the last one — every report after the first would have
-        // carried the previous report instead of the bug.
+        // Read before reporting, which is itself a failure.
         const seen = FailureReporter.lastFailure ?? NOTHING_FAILED;
         const message = [
           said,
@@ -64,9 +62,7 @@ export const useAssistantReportActions = (): void => {
           `lastFailure=${seen}`,
         ].join(LINE_BREAK);
 
-        // Crashlytics as well as the form: it is local, it cannot fail in a way
-        // that matters here, and a report the network then refuses is still
-        // worth having on the crash list.
+        // Also to Crashlytics, in case the network refuses the form.
         FailureReporter.report(new UnknownFailure(message), CRASH_CONTEXT);
 
         const sent = await feedbackStore.getState().submit({

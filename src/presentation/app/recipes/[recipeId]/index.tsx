@@ -44,20 +44,12 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
   const insets = useSafeAreaInsets();
   const vm = useRecipeDetail();
   useReportFailure(vm.failure ?? null, 'RecipeDetailScreen');
-  // Composed here rather than inside useRecipeDetail: the deep-link concern is
-  // self-contained (it only needs the comment state + scroll ref the vm already
-  // exposes), and useRecipeDetail is at its size budget already.
-  // The detail screen is one long ScrollView, so a step is measured against
-  // the window rather than a row height, and the offset is tracked here — a
-  // ScrollView has no way to be asked where it currently is.
+  // Deep-link and scroll wiring composed here; useRecipeDetail is at its size budget.
   const [unsavePending, setUnsavePending] = useState(false);
-  // Adding and removing photos on a recipe the user owns. Removing asks first:
-  // it is their own picture, but it may also be the only one the recipe has.
+  // Removing a photo asks first (it may be the only one).
   const photos = useRecipePhotoUpload(vm.recipeId);
   const photoRemoval = usePhotoRemoval(photos.remove);
-  // Built once and handed to whichever layout renders. It used to be written
-  // out at each call site, and the web one was simply never written — the
-  // owner had no way to add a photo on that surface at all.
+  // Built once for whichever layout renders (web included).
   const ownerPhotoControls = vm.isOwner
     ? {
         onAdd: () => void photos.pickAndAdd(),
@@ -80,8 +72,6 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     commentState: vm.commentState,
     scrollViewRef: vm.scrollViewRef,
   });
-  // "Save it" means the recipe on screen. Registering here is what supplies
-  // the subject the user never says out loud.
   const cookTimer = useRecipeTimer({
     timerId: cookTimerId(vm.recipeId),
     recipeId: vm.recipeId,
@@ -114,14 +104,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     onToggleIngredient: vm.onToggleIngredient,
     onToggleStep: vm.onToggleStep,
   });
-  // Deleting is the one thing on this screen nobody can undo, and it is also
-  // the one the cook most needs to answer without a free hand.
-  // One confirmation pending at a time: delete is a modal over everything, so
-  // while it is up the spoken yes belongs to it.
+  // One confirmation at a time: delete is a modal over everything.
   useAssistantConfirmation(vm.showDeleteSheet, vm.onConfirmDelete, vm.onCloseDelete);
-  // Everything drawn above the unsave sheet takes the word away from it: the
-  // share sheet and the sign-in prompt are both rendered after it, and
-  // `shareRecipe` is an action the model can raise while an unsave is pending.
+  // Sheets drawn later (share, sign-in) take the spoken answer away from unsave.
   useAssistantConfirmation(
     unsavePending && !vm.showDeleteSheet && !vm.shareOpen && !vm.promptVisible,
     () => {
@@ -146,15 +131,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           }}
           contentContainerStyle={styles.scroll}
           {...commentHighlight.scrollViewProps}
-          // After the spread on purpose, so a later addition to
-          // `scrollViewProps` cannot silently take this over.
-          //
-          // RN defaults this to 'never': with the keyboard up, the first tap
-          // anywhere inside the scroll view is swallowed to dismiss the
-          // keyboard and never reaches the child. Sending a comment therefore
-          // took two taps — the first only closed the keyboard. 'handled' lets
-          // a child that handles the touch (the send button) win, while a tap
-          // on empty space still dismisses.
+          // After the spread so scrollViewProps cannot override it; handled lets the first tap reach the send button.
           keyboardShouldPersistTaps="handled"
         >
           <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>

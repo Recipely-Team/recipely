@@ -194,12 +194,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     onRequestPublish,
   } = deps;
 
-  // The ingredients by NAME, not just a count — the one screen line in the app
-  // that carries content rather than numbers, and for the same reason
-  // `readStep` does: the user asked the assistant to read the draft's
-  // ingredients out loud, and it had no way to know what they were. Bounded to
-  // the first eight by `recipeRoster`, and only while the editor is open, so
-  // what it costs is paid on the screen that needs it.
+  // Ingredient names (first eight), so the assistant can read the draft aloud.
   useAssistantScreenContent(() =>
     !isDraftVisible
       ? resumeLine(resumableDraft)
@@ -211,30 +206,22 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         ].join(SCREEN_PART_SEPARATOR),
   );
 
-  // The draft, in full, for `readScreen`. Registered on the editor and nowhere
-  // else: the prompt phase has nothing to read.
+  // The whole draft for readScreen; editor only — the prompt phase has nothing to read.
   useAssistantScreenReading(() =>
     !isDraftVisible
       ? resumeLine(resumableDraft)
       : recipeReading(draftName(recipe), recipe.ingredients, recipe.instructions, draftFacts(recipe)),
   );
 
-  // The same two the recipe screen registers. A generated draft has its
-  // ingredients and its steps the moment it lands, and the user asking to hear
-  // them back was told to publish it first and open it again.
   useAssistantReadActions(recipe.ingredients, recipe.instructions, isDraftVisible);
 
-  // The resume card's own press, by voice. Registered only where the card is:
-  // in the editor `openDraft` would mean some OTHER draft, and there is no
-  // list here to choose one from.
+  // Resume-card press by voice; only where the card is shown.
   useAssistantAction(
     AssistantAction.OpenDraft,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (resumableDraft === null) return { ok: false, notMine: true };
-        // A named draft that is not the one on offer belongs to the drafts
-        // list, not to this card — declining passes the request outward
-        // instead of opening the wrong recipe.
+        // A different draft belongs to the drafts list: pass it outward.
         if (!namesTheDraft(arg, resumableDraft)) return { ok: false, notMine: true };
         onResumeDraft();
         return { ok: true, title: draftTitle(resumableDraft) };
@@ -244,9 +231,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     isPromptVisible && resumableDraft !== null,
   );
 
-  // Memoised because every handler below carries it into a `useCallback`
-  // dependency list; a fresh object per render would re-create all six on
-  // every keystroke the user types into the draft.
+  // Memoised: every handler below depends on it.
   const counts = useMemo(
     () => ({ ing: recipe.ingredients.length, step: recipe.instructions.length }),
     [recipe.ingredients.length, recipe.instructions.length],
@@ -263,9 +248,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         // "Prep Time Minutes=10" and "prep_time_minutes=10" name the same field.
         const field = resolveTargetName(parsed.key, DRAFT_FIELDS) ?? parsed.key;
 
-        // Before the numeric branch it used to sit in: the answer is a
-        // redirect, not a write. The model reads the reason and asks the
-        // refine to do it properly, quantities and all.
+        // Servings changes quantities too, so they go through refine.
         if (field === SERVINGS_FIELD) return { ok: false, error: AssistantActionError.ServingsNeedsRefine };
 
         if ((NUMERIC_FIELDS as readonly string[]).includes(field)) {
@@ -283,13 +266,9 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           return { ok: true, title: recipe.name, n: counts };
         }
         if (field === CUISINE_FIELD || field === CATEGORY_FIELD) {
-          // The model says "Italian"; the draft holds the backend's key. Both
-          // the key and the name are accepted, because the model has seen
-          // whichever the screen showed it.
+          // Accepts the backend key or the shown name.
           const options = field === CUISINE_FIELD ? cuisines : categories;
-          // An empty catalogue is not the same as an unrecognised value: the
-          // app has simply not loaded it yet, and telling the model the
-          // cuisine does not exist would have it say something untrue out loud.
+          // An empty catalogue means not loaded yet, not an unknown value.
           if (options.length === ValueConstants.zero) {
             return { ok: false, error: AssistantActionError.TaxonomyNotLoaded };
           }
@@ -318,9 +297,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
-        // One state update, not an append followed by a write. Two additions in
-        // one model turn run as microtasks — before React re-renders — so the
-        // second still saw the old length and both wrote to the same row.
+        // One state update, so two additions in one turn do not overwrite each other.
         onAppendIngredient(arg);
         return { ok: true, n: { ...counts, ing: counts.ing + ValueConstants.one } };
       },
@@ -373,8 +350,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   useAssistantAction(
     AssistantAction.AttachPhoto,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // The picker is opened; the user chooses. A model that could pick a photo
-      // could publish one the user never meant to share.
+      // Opens the picker only; the user chooses the photo.
       onOpenPhotos();
       return { ok: true, awaiting: true };
     }, [onOpenPhotos]),
@@ -387,9 +363,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
         onSubmitRefine(arg);
-        // The refine answers with a PROPOSAL the user accepts or rejects, so
-        // this is awaiting even though nothing was destroyed — telling the
-        // model it is done would have it announce a change that has not landed.
+        // awaiting: the refine is a proposal the user still accepts or rejects.
         return { ok: true, awaiting: true, n: counts };
       },
       [onSubmitRefine, counts],
@@ -400,28 +374,13 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
   useAssistantAction(
     AssistantAction.Regenerate,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // "Start over" — the same button the preview offers. It replaces the
-      // draft outright, so it goes through the screen's own control rather
-      // than being assembled from a prompt here.
       onRegenerate();
       return { ok: true };
     }, [onRegenerate]),
     isDraftVisible,
   );
 
-  // Generating from the editor would push a second create screen over this one
-  // and leave the draft the user is looking at behind — reported as "şöyle yap
-  // diyorum, gidip yeniden tarif oluşturuyor". So the screen asks first, with
-  // the question it already has: keep this draft or throw it away.
-  //
-  // It used to answer `draft_open_would_be_lost` and stop. That is a refusal
-  // dressed as a question — the model relayed it, the user said "sil", and
-  // there was nothing registered to hear the answer, because the exit sheet was
-  // never opened. Reported from production as a dozen turns of being told a
-  // draft would be lost while the screen showed no draft at all. Now the sheet
-  // opens with the request, `awaiting` makes the model say so out loud, and
-  // whichever answer it gets — kept or discarded — the recipe the user asked
-  // for is generated afterwards.
+  // Generating from the editor would discard this draft, so the screen asks first.
   useAssistantAction(
     AssistantAction.GenerateRecipe,
     useCallback(
@@ -434,12 +393,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     isDraftVisible,
   );
 
-  // "Kaydet" is what a person says about the thing they have just written, and
-  // this screen's button says Publish. With nothing registered under `save`
-  // here, the word fell through to a recipe handler that was not mounted, came
-  // back `unavailable_here`, and left the model guessing out loud that the
-  // button might be somewhere further down the page. It is the publish
-  // confirmation, same as `publishDraft` — never a silent publish.
+  // "save" here means publish: the same confirmation as publishDraft.
   useAssistantAction(
     AssistantAction.Save,
     useCallback(async (): Promise<AssistantActionResultType> => {

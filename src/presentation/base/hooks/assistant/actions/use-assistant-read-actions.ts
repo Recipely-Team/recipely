@@ -55,8 +55,7 @@ export const useAssistantReadActions = (
   isEnabled = true,
 ): void => {
   const stepCursor = useRef(ValueConstants.minusOne);
-  // The lines as they are NOW: a read that waited must not answer from the
-  // empty arrays its callback closed over while the screen was loading.
+  // Current lines, not the ones captured while loading.
   const latest = useRef({ ingredients, instructions });
   useEffect(() => {
     latest.current = { ingredients, instructions };
@@ -82,9 +81,7 @@ export const useAssistantReadActions = (
         if (step === undefined) return { ok: false, error: AssistantActionError.NoSuchStep };
 
         stepCursor.current = index;
-        // The step text is one of the few places a tool result carries content
-        // rather than a count, and it has to: the model is about to read it
-        // aloud and has no other way to know what it says.
+        // The step text itself: the model reads it aloud.
         return {
           ok: true,
           title: step,

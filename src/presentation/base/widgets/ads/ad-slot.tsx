@@ -84,8 +84,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  // Mounted but not yet loaded: the banner must be in the tree to request an
-  // ad, while taking up no room until it has one to show.
+  // In the tree to request an ad, taking no room until one arrives.
   pending: {
     height: 0,
     overflow: 'hidden',

@@ -96,9 +96,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
 
         switch (parsed.key) {
           case CUISINE: {
-            // The model says "Italian"; the feed filters on the backend's key.
-            // Passing the word through produced a filter that matched nothing,
-            // an empty feed, and `ok: true` reported to the model.
+            // Map the spoken name to the backend key.
             const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
             if (filters.cuisines.includes(key)) return { ok: true, n: filterCounts(filters) };
@@ -144,8 +142,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
             if (!filters.cuisines.includes(key)) return { ok: false, error: AssistantActionError.NotApplied };
-            // The quick toggle is what the chip row calls, so removing looks
-            // exactly like the user tapping the chip off.
+            // Same path as tapping the chip off.
             onToggleCuisineQuick(key);
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.minusOne) };
           }
@@ -165,8 +162,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             onRemoveMaxTime();
             return { ok: true, n: filterCounts(filters) };
           case SEARCH:
-            // The value is ignored: there is one query box, so "remove the
-            // search" is unambiguous however the model spells the subject.
+            // One query box: the value is irrelevant.
             onClearSearch();
             return { ok: true, n: filterCounts(filters) };
           default:
@@ -180,11 +176,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
   useAssistantAction(
     AssistantAction.ClearFilters,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Unconditional, and it clears the query too. Both halves were bugs the
-      // user watched: a count read from the previous render is zero for a
-      // filter this same turn had just applied, so the clear was skipped and
-      // reported done — and a feed narrowed only by a search was "cleared"
-      // without anything moving at all.
+      // Unconditional and clears the query too (a stale count would skip it).
       onClearAllFilters();
       return { ok: true, n: { filters: ValueConstants.zero } };
     }, [onClearAllFilters]),

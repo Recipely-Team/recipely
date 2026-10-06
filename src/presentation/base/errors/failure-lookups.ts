@@ -43,8 +43,7 @@ const CODE_TO_KEY: Record<FailureCode, FailureContentKeyType> = {
 const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   notFound: SeverityType.Neutral,
   rateLimit: SeverityType.Warning,
-  // Nothing is broken and nothing was refused — the user just has to wait, look
-  // elsewhere, or start the step again. Danger red would overstate all of these.
+  // Waiting or retrying, not an error: neutral.
   cancelled: SeverityType.Neutral,
   aiCooldown: SeverityType.Warning,
   codeCooldown: SeverityType.Warning,

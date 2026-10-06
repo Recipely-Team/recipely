@@ -67,8 +67,6 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   const storage = new SecureTokenStorage();
   container.register(TOKENS.SecureStorage, () => storage);
 
-  // Platform key-value store + local notification / alarm-audio services,
-  // resolved by presentation/application consumers through their ports.
   container.register(TOKENS.KeyValueStore, () => kvStore);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
@@ -91,15 +89,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     TOKENS.AssistantMessenger,
     () => new AssistantMessenger(container.resolve(TOKENS.HttpClient)),
   );
-  // Siri, Spotlight and the launcher, behind the same kind of port as every
-  // other platform capability. The web half answers `isAvailable: false`, so
-  // no caller asks which platform it is on.
+  // OS assistant integrations behind a port; the web half reports unavailable.
   container.register(TOKENS.OsAssistant, () => new OsAssistantBridge());
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 
-  // The app-wide single source of truth for the active language. Everything
-  // that needs a locale — the UI, the localized payloads, and the
-  // `Accept-Language` header below — reads it from this one service.
+  // The single source of the active language.
   container.register(
     TOKENS.LocaleService,
     () =>
@@ -118,18 +112,12 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
       }
       return result.value.accessToken;
     },
-    // Resolved per request, never captured: a language switch must be visible to
-    // the very next request without rebuilding the HTTP client. Awaiting
-    // `hydrate()` (a no-op after the first call) is what keeps a request issued
-    // during startup from racing ahead with the device language.
+    // Resolved per request; awaiting hydrate() stops startup requests racing the saved language.
     localeProvider: async () => {
       const localeService = container.resolve<LocaleService>(TOKENS.LocaleService);
       await localeService.hydrate();
       return localeService.getLocale();
     },
-    // WHY: dev-only HTTP traces — strips automatically from release bundles
-    // (Metro replaces __DEV__ with false in production). Helps diagnose
-    // network errors on real devices without leaking PII to logcat in prod.
     enableLogging: __DEV__,
   };
   if (opts?.onUnauthorized) {

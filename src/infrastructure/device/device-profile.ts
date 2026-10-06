@@ -41,8 +41,7 @@ export const readDeviceProfile = (): DeviceProfileType => {
     brand: readString(constants, 'Brand') ?? readString(constants, 'systemName') ?? UNKNOWN,
     model: readString(constants, 'Model') ?? ios?.model ?? UNKNOWN,
     appVersion: Constants.expoConfig?.version ?? UNKNOWN,
-    // The one that never changes for a given binary, which is what a crash
-    // report needs: two builds can share a version and differ by this.
+    // Build number: unique per binary, unlike the version.
     build: ios?.buildNumber ?? android?.versionCode?.toString() ?? UNKNOWN,
     locale: getLocales()[ValueConstants.zero]?.languageTag ?? UNKNOWN,
   };

@@ -23,8 +23,7 @@ const loadScript = (): Promise<void> => {
     tag.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT_ID}`;
     tag.onload = () => resolve();
     tag.onerror = () => {
-      // Cleared so a later mount may try again: the usual cause is a content
-      // blocker or a dropped request, neither of which is permanent.
+      // Cleared so a later mount may retry (blockers, dropped requests).
       script = null;
       reject(new Error(tag.src));
     };

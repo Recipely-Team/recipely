@@ -39,8 +39,6 @@ export const ProfileScreen = (): React.JSX.Element => {
         {...scrollable}
         contentContainerStyle={{
           paddingTop: isWebShell ? ValueConstants.zero : insets.top + spacing.sm,
-          // Mobile: the root TabBar (hosted in _layout) sits below the page,
-          // so only breathing room is needed; web keeps its former whitespace.
           paddingBottom: isWebShell ? controlSizes.tabBar + spacing.xxl : spacing.xxl,
         }}
         showsVerticalScrollIndicator={false}

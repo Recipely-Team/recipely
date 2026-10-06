@@ -50,9 +50,7 @@ export const uploadMultipart = async <T>(
     for (const [name, value] of Object.entries(commonHeaders)) {
       xhr.setRequestHeader(name, value);
     }
-    // WHY: deliberately NOT setting Content-Type — the XHR runtime sets it to
-    // `multipart/form-data; boundary=...` from the FormData object. Any explicit
-    // value breaks the boundary contract and the backend's middleware rejects it.
+    // No Content-Type: XHR sets the multipart boundary itself.
 
     if (onProgress !== undefined && xhr.upload) {
       xhr.upload.onprogress = (ev: ProgressEvent): void => {
@@ -92,10 +90,7 @@ export const uploadMultipart = async <T>(
       if (status === HttpStatus.unauthorized) {
         options.onUnauthorized?.();
       }
-      // `body` is the decrypted error envelope here, so the server's
-      // `messageKey` rides onto the mapped Failure via failureFromResponse.
-      // The onerror/ontimeout handlers below have no envelope at all — their
-      // failures intentionally carry no key.
+      // The decrypted envelope carries messageKey onto the failure.
       resolve(fail(failureFromResponse(status, body)));
     };
 
@@ -103,9 +98,7 @@ export const uploadMultipart = async <T>(
       if (enableLogging) {
         console.log(`${LogTag.multipartResponse} network error ${fullUrl} (status=${xhr.status}, body="${xhr.responseText}")`);
       }
-      // WHY: XHR onerror fires for connection-level failures (DNS, TCP,
-      // unreadable file URI, cleartext blocked). Surface as NetworkFailure with
-      // the status (0 == no response) so the UI can show something concrete.
+      // Connection-level failure (status 0 = no response).
       resolve(fail(new NetworkFailure(DiagnosticMessage.network.uploadFailed(xhr.status || ValueConstants.zero))));
     };
 

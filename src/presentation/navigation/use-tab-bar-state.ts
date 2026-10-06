@@ -47,9 +47,7 @@ export const useTabBarState = (): {
 
   const onChange = (key: TabBarKey): void => {
     const target = PATH_BY_TAB[key];
-    // No-op only when already ON the target page. Comparing against `active`
-    // would be wrong on /settings: it highlights the profile tab, yet pressing
-    // Profile there must still navigate back to /profile.
+    // Compare with the path, not the active tab (/settings lights Profile but must still navigate).
     if (target === pathname) return;
     router.replace(target);
   };

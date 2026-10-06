@@ -31,8 +31,6 @@ export const SettingsRow = ({
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      // A row with a handler is a button; without one it is plain text. Saying
-      // so is what lets assistive tech (and a test) tell the two apart.
       accessibilityRole={onPress !== undefined ? 'button' : 'text'}
       accessibilityLabel={label}
       style={({ pressed }) => [

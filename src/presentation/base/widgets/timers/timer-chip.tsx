@@ -134,9 +134,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  // A round button is a shape, so a pinned size is correct here — it holds a
-  // glyph, never text. Was an 18pt box with an 11pt glyph, which testers could
-  // not reliably hit; `controlSizes.iconBtn` + hit slop is a real target.
+  // A round glyph button: pinned size with hit slop.
   actionBtn: {
     width: controlSizes.iconBtn,
     height: controlSizes.iconBtn,

@@ -49,13 +49,7 @@ export const useAssistantGlobalActions = (): void => {
   useAssistantAction(
     AssistantAction.ReadScreen,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Registered HERE rather than per screen, because every screen already
-      // answers it: the reading comes from the describer stack, so this one
-      // handler reads whichever screen is innermost. A screen with nothing
-      // registered falls back to its screen line, which at least names the
-      // route — a truthful "there is nothing to read here" instead of the
-      // `unavailable_here` that had the assistant telling a user to go and open
-      // the draft they were looking at.
+      // Global: the reading comes from the describer stack, so it always reads the innermost screen.
       return { ok: true, title: registry.screenReading };
     }, [registry]),
   );
@@ -64,19 +58,13 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.Navigate,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       const name = arg ?? CharConstants.empty;
-      // Recognised, and refused. These are web pages: opening one ends the
-      // voice session and hands the user to a browser they must find their own
-      // way back from. The row is on the screen for them to tap. Saying so is
-      // the whole point of naming them — the alternative was "sayfa
-      // bulunamadı", which was untrue about a link the user was looking at.
+      // Web pages are refused on purpose: opening one ends the voice session.
       if (isAssistantExternalName(name)) {
         return { ok: false, error: AssistantActionError.LeavesTheApp };
       }
       const screen = resolveAssistantScreenName(name);
       if (screen === null) return { ok: false, error: AssistantActionError.UnknownScreen };
 
-      // `navigate`, not `push`: asked to go somewhere the user is already
-      // standing, `push` stacks a second copy of it and back stops leaving.
       router.navigate(ASSISTANT_NAVIGATION_TARGETS[screen] as Href);
       return { ok: true };
     }, []),
@@ -88,17 +76,9 @@ export const useAssistantGlobalActions = (): void => {
       if (arg === undefined || arg === CharConstants.empty) {
         return { ok: false, error: AssistantActionError.NothingToSearch };
       }
-      // Opening the feed WITH the query, rather than filling its store behind
-      // its back: the field shows what was asked for and the user watches the
-      // search happen, which is the whole point of an assistant that drives
-      // the app instead of talking about it.
-      // `navigate`, not `push`: the feed is usually the screen the user is
-      // already on, and pushing it again stacks a second copy whose only
-      // difference is the query.
+      // navigate, not push: the feed is usually already open, so push would stack a copy.
       router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
-      // And then WAIT for the rows. The registry reads the screen the moment
-      // this returns, so returning early told the model `recipes=none` and it
-      // answered "I could not find it" over a list that had just filled in.
+      // Wait for rows: the registry reads the screen as soon as this returns.
       await waitForRecipeListQuery(recipeListStore, arg);
       return { ok: true };
     }, [recipeListStore]),
@@ -110,10 +90,6 @@ export const useAssistantGlobalActions = (): void => {
       if (arg === undefined || arg === CharConstants.empty) {
         return { ok: false, error: AssistantActionError.EmptyPrompt };
       }
-      // Same shape, and the flagship case: the create screen opens with the
-      // prompt in place and the generating view runs in front of the user. The
-      // recipe TEXT never comes back through the voice session — the screen
-      // writes it, and the model is told only that it worked.
       router.push(RoutePaths.createRecipeWithPrompt(arg) as Href);
       return { ok: true };
     }, []),
@@ -126,18 +102,13 @@ export const useAssistantGlobalActions = (): void => {
         if (arg === undefined || arg === CharConstants.empty) {
           return { ok: false, error: AssistantActionError.NotFound };
         }
-        // Read at call time rather than subscribed: this hook lives in the
-        // pill, which is mounted for the app's whole life, and subscribing
-        // re-rendered it on every feed state change for a list only this one
-        // handler ever looks at.
+        // Read at call time: subscribing would re-render the always-mounted pill on every feed change.
         const rowsNow = (): { id: string; name: string }[] => {
           const listState = recipeListStore.getState().state;
           return listState.status === StoreStatus.Loaded ? [...listState.recipes] : [];
         };
 
-        // `rowAt` rather than a name search, because "the second one" is a
-        // thing people say and it used to fall through to the id branch —
-        // pushing `/recipes/2` and landing the user on an error screen.
+        // A position ("the second one") is about rows on screen, not an id.
         const pick = (rows: { id: string; name: string }[]): { id: string; name: string } | undefined => {
           const at = rowAt(
             rows.map((recipe) => recipe.name),
@@ -147,23 +118,14 @@ export const useAssistantGlobalActions = (): void => {
         };
 
         let match = pick(rowsNow());
-        // A name the screen does not have is not a name the app does not have.
-        // Asked for one while the feed showed something else, the model used
-        // to fall back on an id it remembered from an earlier turn — and the
-        // user watched the wrong recipe open ("şakşuka tarifi dedim, fıstıklı
-        // baklava tarifini açtı"). Looking for it is what a person would do.
-        // Never for "the second one": a position is about the rows on screen,
-        // and searching the catalogue for "2" finds recipes with digits in
-        // their names — the wrong-recipe failure this branch exists to end.
+        // An unknown name is searched for, never guessed from an id remembered from an earlier turn.
         if (match === undefined && !looksLikeId(arg) && rowNumberOf(arg) === null) {
           router.navigate(RoutePaths.recipesWithSearch(arg) as Href);
           await waitForRecipeListQuery(recipeListStore, arg);
           match = pick(rowsNow());
         }
 
-        // Only an argument that could BE an id is tried as one, so a reference
-        // from a previous turn or a deep link still opens while a phrase that
-        // matched nothing says so instead of opening a page that cannot exist.
+        // Only something shaped like an id is opened as one.
         const id = match?.id ?? (looksLikeId(arg) ? arg : null);
         if (id === null) return { ok: false, error: AssistantActionError.NotFound };
 
@@ -177,9 +139,7 @@ export const useAssistantGlobalActions = (): void => {
   useAssistantAction(
     AssistantAction.GoBack,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // The back gesture a thumb makes. `canGoBack` matters: popping an empty
-      // stack on web leaves the app entirely, which is not what "go back"
-      // means to anyone.
+      // canGoBack: popping an empty stack on web leaves the app.
       if (!router.canGoBack()) return { ok: false, error: AssistantActionError.NothingBehind };
       router.back();
       return { ok: true };

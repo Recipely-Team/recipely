@@ -48,9 +48,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
 
-  // Load the latest feed once per mount. Notifications stay unread until the
-  // user taps them individually or presses the explicit "mark all read" button —
-  // opening the screen alone never clears the badge.
+  // Load once per mount; opening the screen never clears the badge.
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -67,9 +65,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
   const openTarget = useOpenNotificationTarget();
 
-  // Flattened in the order the sections render them, so "the second one" is
-  // the second row the user can see — not the second row of the raw feed,
-  // which the date grouping and the unread filter both reorder.
+  // In render order, so "the second one" is the second visible row.
   const visibleItems = useMemo(() => sections.flatMap((section) => section.data), [sections]);
   useAssistantNotificationActions({
     listState:

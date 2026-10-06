@@ -24,8 +24,6 @@ export const EditProfileScreen = (): React.JSX.Element => {
   const scrollable = useAssistantScrollable();
   const { ref: scrollRef, onCreatorSectionLayout } = useSectionScroll(scrollable.ref);
 
-  // Registered by the screen that owns the form, so the assistant can fill in
-  // a name or a bio — and press Save — here and nowhere else.
   useAssistantProfileActions({
     displayName: vm.displayName,
     bio: vm.bio,

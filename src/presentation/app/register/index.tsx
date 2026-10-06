@@ -31,9 +31,7 @@ export const RegisterScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === StoreStatus.Authenticated) {
-    // Registration is a one-way door: the account exists now, so the form
-      // that created it — and the login screen it was reached from — must not
-      // stay behind a back gesture.
+    // One-way: the form and login must not stay behind a back gesture.
       enterApp(router, RoutePaths.recipes);
     }
   }, [state.status, router]);

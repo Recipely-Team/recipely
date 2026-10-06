@@ -39,8 +39,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
   const [localError, setLocalError] = useState<string | undefined>(undefined);
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
-  // Absolute expiry of the current code; the countdown derives from it so it
-  // stays correct across re-renders and app backgrounding.
+  // Absolute expiry, so the countdown survives re-renders and backgrounding.
   const [expiresAt, setExpiresAt] = useState(initialExpiresAt);
   const [remaining, setRemaining] = useState(() => computeRemaining(initialExpiresAt));
 

@@ -79,8 +79,7 @@ export interface UseRecipeListResult {
   reduceMotion: boolean;
   scrollHandler: ReturnType<typeof useAnimatedScrollHandler>;
 
-  // Search (mobile in-header field; web reads the shared app-header one).
-  // Raw, un-debounced value so the input stays responsive per keystroke.
+  // Raw (un-debounced) search value, so the field stays responsive.
   search: string;
   onSearchChange: (value: string) => void;
 

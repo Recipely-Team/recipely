@@ -70,8 +70,7 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
       </View>
 
       {vm.chatExpanded ? (
-        // Dim the editor behind the expanded assistant transcript so the
-        // conversation reads against a solid backdrop; tapping it collapses it.
+        // Dims the editor behind the open transcript; tap collapses it.
         <Pressable
           style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]}
           onPress={vm.onCollapseChat}

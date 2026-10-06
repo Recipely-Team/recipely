@@ -21,10 +21,7 @@ export const useAssistantScreenContent = (describe: () => string): void => {
   const latest = useRef(describe);
   latest.current = describe;
 
-  // Focus, not mount: a screen the user has navigated away from is still
-  // mounted under the stack, and the last one to have registered wins. Left on
-  // mount, the description of a screen nobody is looking at can be the one the
-  // assistant reads out.
+  // Focus, not mount: screens under the stack stay mounted.
   useEffect(() => {
     if (!isFocused) return;
     return assistantActionRegistry.registerScreenContent(() => latest.current());

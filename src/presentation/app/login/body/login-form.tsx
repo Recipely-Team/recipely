@@ -47,14 +47,12 @@ export const LoginForm = (): React.JSX.Element => {
   const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<AuthField | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  // Page-scoped error: it lives with this screen and dies when it unmounts, so
-  // a failed sign-in never bleeds onto register / other auth screens.
+  // Page-scoped error: dies with the screen.
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
   const passwordRef = useRef<TextInput>(null);
 
-  // Closing the Google / Apple sheet without finishing is an answer, not an
-  // error — the form stays exactly as the user left it and says nothing.
+  // Closing the provider sheet is an answer, not an error.
   const runSocial = useCallback(
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);

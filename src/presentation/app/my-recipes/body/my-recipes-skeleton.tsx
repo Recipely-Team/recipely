@@ -55,9 +55,7 @@ export const MyRecipesSkeleton = ({ tab, gridColumns }: MyRecipesSkeletonProps):
     );
   }
 
-  // Chunked into rows of `gridColumns` so each cell can be `flex: 1` — the same
-  // shape `FlatList`'s `columnWrapperStyle` produces, without a width percentage
-  // to keep in step with the column count.
+  // Rows of gridColumns so each cell can be flex 1.
   const rows: number[][] = [];
   for (let i = ValueConstants.zero; i < placeholders.length; i += gridColumns) {
     rows.push(placeholders.slice(i, i + gridColumns));

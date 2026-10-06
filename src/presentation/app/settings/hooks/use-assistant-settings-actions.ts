@@ -84,16 +84,12 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
   const { language, preference, themeId, onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } =
     deps;
 
-  // What the screen currently says, which the assistant could not read at all:
-  // asked which language the app was in, or what the theme was set to, it had
-  // only the route to go on and answered from the conversation instead.
+  // Current language/theme so the assistant can answer about them.
   useAssistantScreenContent(() =>
     [`language=${language}`, `theme=${preference}`, `palette=${themeId}`].join(SCREEN_PART_SEPARATOR),
   );
 
-  // The same three by the names they are shown under, plus what else is on the
-  // screen. `readScreen` is the accessibility path: someone who cannot see the
-  // rows still gets told what they are.
+  // Rows by their shown names, for readScreen (accessibility).
   useAssistantScreenReading(() =>
     [
       `language=${LANGUAGE_NAMES[language] ?? language}`,
@@ -115,11 +111,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
         const value = machineLower(parsed.value);
 
         if (key === LANGUAGE) {
-          // The code first, then the name the picker shows. "Almanca" reached
-          // here as a word and was compared against `de` — so German, Spanish
-          // and Russian were each refused as unavailable while all three are
-          // selectable. The model is told to send a code; matching the endonym
-          // as well means a spoken "Español" lands even when it does not.
+          // Code first, then the shown name ("Almanca" → de).
           const locale = SUPPORTED_LOCALE_LIST.includes(value)
             ? value
             : resolveTaxonomyKey(
@@ -133,9 +125,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
           return { ok: true };
         }
         if (key === PALETTE) {
-          // Matched by NAME, through the same resolver the cuisine chips use:
-          // the id is `pearl`, the swatch says "İnci Beyazı", and the user says
-          // what the swatch says.
+          // Matched by the swatch name the user sees.
           const themeId = resolveTaxonomyKey(
             ALL_THEMES.map((id) => ({ key: id, name: paletteName(id) })),
             parsed.value,

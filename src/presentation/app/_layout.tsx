@@ -136,10 +136,7 @@ const RootStack = (): React.JSX.Element => {
           headerStyle: { backgroundColor: headerBg },
           headerTintColor: headerTint,
           headerShadowVisible: false,
-          // Belt and braces with the theme above: `contentStyle` is what the
-          // native stack paints a scene with, and a screen that renders nothing
-          // on its first frame (a detail page waiting on its fetch) shows it
-          // bare. Both must be the app's background or that frame is a flash.
+          // contentStyle paints the scene before a screen's first frame.
           contentStyle: { backgroundColor: colors.background },
         }}
       >

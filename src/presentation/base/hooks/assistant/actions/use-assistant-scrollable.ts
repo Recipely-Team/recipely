@@ -52,10 +52,7 @@ export const useAssistantScrollable = (
 
   useAssistantScroll(scrollBy, isEnabled);
 
-  // Memoised: the object is spread onto a list, so a fresh identity every
-  // render would hand the list a new `ref` callback each time — React detaches
-  // and re-attaches on that, which is a re-mount of the ref on every keystroke
-  // a screen above it takes.
+  // Memoised: a fresh ref callback each render re-attaches the list.
   return useMemo(
     () => ({
       ref: (instance: ScrollHandleType): void => {

@@ -43,6 +43,8 @@
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
  *   AL. Every routed page is declared on the stack that owns it, header hidden.
+ *   AM. Inline comments are one line (CLAUDE.md §3): no two consecutive indented
+ *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
  *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
  *   T. Ads only on screens carrying publisher content, and the ad loader only
@@ -1535,6 +1537,27 @@ function openingTag(src, at) {
     errors.push(
       `${file}: imports expo-router/head outside a .web file — on iOS it registers a Handoff activity and alerts in release builds when no origin is set (CLAUDE.md §24)`,
     );
+  }
+}
+
+// --- AM: an inline comment is one line (CLAUDE.md §3) ------------------------
+// Multi-line `//` blocks inside function bodies had grown into incident
+// narratives (1853 lines in 257 files) that buried the code. The rule: one
+// short line where a reader would otherwise break; anything longer goes in the
+// unit's head doc block, the incident in docs/regressions.md.
+{
+  const DIRECTIVE = /^\s*\/\/\s*eslint-/;
+  const INDENTED_LINE_COMMENT = /^[ \t]+\/\//;
+  for (const file of files) {
+    if (isTest(file) || /\/__(fixtures|mocks)__\//.test(file) || file.includes(path.join('i18n', 'locales'))) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    for (let i = 1; i < lines.length; i += 1) {
+      const isComment = (l) => INDENTED_LINE_COMMENT.test(l) && !DIRECTIVE.test(l);
+      if (isComment(lines[i]) && isComment(lines[i - 1])) {
+        errors.push(`${file}:${i}: multi-line inline comment — keep it to one line; longer rationale goes in the head doc block (CLAUDE.md §3)`);
+        break;
+      }
+    }
   }
 }
 

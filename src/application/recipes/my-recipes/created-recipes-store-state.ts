@@ -12,21 +12,14 @@ import type { MyRecipesListState } from '@application/recipes/my-recipes/my-reci
 import type { ChatMessage } from '@domain/drafts/chat-message';
 
 export interface CreatedRecipesStoreState {
-  // WHY: `recipes` and `localRecipes` split the two jobs this used to do as
-  // one `Recipe[]` field. `recipes` is the lean list for the "My Recipes"
-  // grid, populated by `loadMyRecipes` (backend now returns RecipeSummaryEntity for
-  // /me/recipes). `localRecipes` is the full-detail override cache read by
-  // `findById` (the detail screen falls back to a network fetch when an id
-  // isn't present here) and is kept fresh by create/delete.
+  // recipes: the lean My Recipes grid; localRecipes: full entities for findById.
   recipes: readonly RecipeSummaryEntity[];
   /** Load status of `recipes` — what the My-Recipes grid shows a skeleton for. */
   myRecipesState: MyRecipesListState;
   localRecipes: readonly RecipeEntity[];
   createState: CreateRecipeState;
   generateState: GenerateRecipeState;
-  // WHY: reuses GenerateRecipeState — the import flow has the identical
-  // idle/generating/success/error shape (it produces the same preview Recipe),
-  // so a near-duplicate state union would only drift over time.
+  // Same shape as generate: both produce a preview recipe.
   importState: GenerateRecipeState;
   deleteState: DeleteRecipeState;
   refineState: RefineRecipeState;

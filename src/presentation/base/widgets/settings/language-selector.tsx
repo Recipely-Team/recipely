@@ -50,8 +50,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         <ScrollView contentContainerStyle={styles.list}>
           {ALL_LOCALE_LIST.map((locale) => {
             const active = locale === value;
-            // Translated but not yet verified on a device: shown, so a user
-            // finds their language and learns it is coming, but not selectable.
+            // Translated but unverified: shown, not selectable.
             const preview = isPreviewLocale(locale);
             return (
               <Pressable

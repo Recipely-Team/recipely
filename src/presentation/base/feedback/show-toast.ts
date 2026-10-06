@@ -16,9 +16,7 @@ import { FailureReporter } from '@presentation/base/errors/failure-reporter';
  * for action failures (save / delete / like / comment).
  */
 export const showErrorToast = (failure: Failure, retry?: ToastRetry): string => {
-  // Every user-visible failure funnels through here, which makes it the one
-  // place worth reporting from: no call site has to remember to, and the
-  // reporter itself decides what is worth keeping.
+  // Every shown failure funnels here, so report from here.
   FailureReporter.report(failure, 'showErrorToast');
   return toastStore.getState().show({
     severity: failureSeverity(failure),

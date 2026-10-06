@@ -18,13 +18,11 @@ export const onboardingStore = create<OnboardingStoreState>((set) => ({
   hydrate: async (): Promise<void> => {
     try {
       const read = await getKeyValueStore().getItem(ONBOARDING_SEEN_STORAGE_KEY);
-      // A read that failed must not be taken for "already seen" — showing the
-      // welcome twice is far better than hiding it from a first-time user.
+      // A failed read is not "already seen".
       const stored = read.ok ? read.value : null;
       set({ hydrated: true, dismissed: stored === SEEN_VALUE });
     } catch {
-      // A read failure must never block launch — fall back to "not dismissed"
-      // (the gate shows) rather than leaving the redirect waiting forever.
+      // A read failure never blocks launch.
       set({ hydrated: true, dismissed: false });
     }
   },
@@ -33,8 +31,7 @@ export const onboardingStore = create<OnboardingStoreState>((set) => ({
     try {
       await getKeyValueStore().setItem(ONBOARDING_SEEN_STORAGE_KEY, SEEN_VALUE);
     } catch {
-      // Best-effort persistence: the in-memory flag already hides the gate for
-      // this session even if the write fails.
+      // Best-effort: the in-memory flag already hides the gate.
     }
   },
 }));

@@ -24,18 +24,11 @@ import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const vm = useCreateRecipe();
-  // Only the assistant's publish goes through here: a spoken "yayınla" may have
-  // been misheard, so it is confirmed, then saved privately and published.
+  // Only the assistant's publish is confirmed here (speech may be misheard).
   const [assistantPublishOpen, setAssistantPublishOpen] = useState(false);
-  // Every sheet below lives in the preview phase; the prompt, resuming and
-  // generating phases return early and render none of them. A confirmation
-  // registered outside that phase was invisible and still accepted a spoken
-  // "yes" — the user agreeing to nothing they could see.
+  // Sheets live in the preview phase only, so confirmations are gated on it.
   const isPreview = vm.phase === PhaseType.Preview;
-  // Which sheet owns the spoken yes and no. Derived in one place, and tested
-  // there: at most one confirmation may be live, and each gate has to exclude
-  // the sheet it is about — a rule that is invisible in a screen file, and was
-  // broken twice while it lived here as three boolean expressions.
+  // Which sheet owns the spoken yes/no — derived and tested in one place.
   const { exitOrErrorOpen, canLeave, isExitPending } = assistantSheetGates({
     exitOpen: vm.exitOpen,
     publishOpen: assistantPublishOpen,
@@ -44,9 +37,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     photosOpen: vm.photosOpen,
   });
 
-  // Registered here rather than deeper down because the assistant's actions
-  // belong to the SCREEN: they are available exactly while a draft is open,
-  // and answer `unavailable_here` everywhere else.
   useAssistantExitActions({
     canLeave,
     isExitPending,
@@ -56,20 +46,11 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
   });
   useAssistantDraftActions({
     onGenerateAnother: vm.onGenerateAnother,
-    // Only while the editor is on screen. In the prompt phase there is nothing
-    // to edit and no confirmation sheet — the same condition the two
-    // confirmations below already carry.
     isDraftVisible: isPreview,
-    // The prompt phase offers exactly one draft to continue, and "taslağıma
-    // devam et" is a thing people say to a screen that shows the card.
     isPromptVisible: vm.phase === PhaseType.Prompt,
-    // The exit sheet registers `save` too, meaning "keep the draft and leave".
-    // It registers first, so the editor's own `save` has to stand down while
-    // that question is on screen or it would publish in answer to it.
+    // The exit sheet's save (keep and leave) wins while it is open.
     isExitPending,
-    // Whichever rejection dialog is up. The model is told what the user is
-    // reading, so it can say why the publish did not go through — and send it
-    // on with `reportProblem` if they ask.
+    // Tell the model which rejection the user is reading.
     saveProblem: vm.saveError ?? vm.saveIssue,
     resumableDraft: vm.latestDraft,
     onResumeDraft: vm.onResumeDraft,
@@ -84,8 +65,6 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     onRegenerate: vm.onRegenerate,
     onRequestPublish: () => setAssistantPublishOpen(true),
   });
-  // Each sheet that stops the assistant also takes a spoken answer, or the
-  // hands-free flow ends at the gate meant to protect it.
   useAssistantConfirmation(
     isPreview && assistantPublishOpen && !exitOrErrorOpen,
     () => {
@@ -94,10 +73,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     },
     () => setAssistantPublishOpen(false),
   );
-  // Exactly one confirmation is pending at a time. The publish sheet is a
-  // modal drawn over everything, so while it is up the spoken "yes" belongs to
-  // it — offering both would let a user reading the publish sheet accept the
-  // refine proposal behind it instead, and be told the publish succeeded.
+  // One confirmation at a time: the publish modal owns the spoken yes while open.
   useAssistantConfirmation(
     isPreview && vm.proposal !== null && !assistantPublishOpen && !exitOrErrorOpen,
     vm.onAcceptProposal,

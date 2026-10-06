@@ -40,9 +40,7 @@ const NO_JOB = 'none';
 export const useAssistantImportActions = (deps: AssistantImportActionsDeps): void => {
   const { sharedUrl, jobStatus, activeStage, stageCount, queuePosition, isDone, onSubmitLink, onOpenDraft } = deps;
 
-  // A wait screen still has something to say, and this one is asked about more
-  // than most: "ne durumda" during an import had no answer at all, because the
-  // model was told the route and nothing else.
+  // The wait screen reports the import status.
   const describe = (): string =>
     [
       `import=${jobStatus ?? NO_JOB}`,
@@ -51,9 +49,7 @@ export const useAssistantImportActions = (deps: AssistantImportActionsDeps): voi
       `done=${isDone ? Answer.yes : Answer.no}`,
     ].join(SCREEN_PART_SEPARATOR);
 
-  // The same words either way: the screen is four ticked boxes and a status,
-  // so a reading of it is the status. Registering both is what keeps
-  // `readScreen` from falling through to the bare route here.
+  // Same text for content and reading: the screen is its status.
   useAssistantScreenContent(describe);
   useAssistantScreenReading(describe);
 

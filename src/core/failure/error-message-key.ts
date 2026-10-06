@@ -19,15 +19,9 @@ export const ErrorMessageKey = {
   aiUpstreamFailed: 'errors.ai.upstream_failed',
   aiCooldown: 'errors.too_many_requests.ai_cooldown',
   promptRequired: 'errors.validation.prompt_required',
-  // The backend rejects an over-long prompt or refine instruction with this key.
-  // It was missing here, so `failureKeyMessage` returned undefined and the
-  // generate screen fell through to its unnamed-4xx branch: "Yapay zekâ yanıt
-  // veremedi — tekrar dene". The server had said exactly what was wrong, and the
-  // app answered by telling the user to retry input that could never succeed.
+  // The backend's over-long prompt/refine key.
   promptTooLong: 'errors.validation.prompt_too_long',
-  // Client-raised only: refine has no server-side blank-instruction rule, and
-  // "describe the dish" is the wrong advice when a recipe already exists on
-  // screen — the user is asked what to CHANGE, not what to cook.
+  // Client-raised only: refine asks what to change, not what to cook.
   refineInstructionRequired: 'errors.ai.refine_instruction_required',
 
   // Link import: Instagram videos and recipe web pages

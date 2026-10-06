@@ -57,9 +57,7 @@ export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<Im
       try {
         const result = await deps.getImportJobUseCase.execute(job.id);
         if (requested !== session || !result.ok) {
-          // A failed poll is not a failed import: the job is still on the
-          // worker, and the notification remains the promise. Keep the last
-          // good answer.
+          // A failed poll is not a failed import: keep the last answer.
           return;
         }
         set({ state: { status: StoreStatus.Loaded, job: result.value } });

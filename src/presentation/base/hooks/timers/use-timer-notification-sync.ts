@@ -40,8 +40,7 @@ const handleNotificationResponse = (
   const recipeName = typeof data['recipeName'] === 'string' ? data['recipeName'] : CharConstants.empty;
 
   if (response.actionIdentifier === DISMISS_ALARM_ACTION) {
-    // User tapped "Kapat" on the notification — stop the timer and cancel
-    // all remaining reminder notifications without opening the alarm screen.
+    // The notification's dismiss action: stop without opening the alarm screen.
     void stopTimer(timerId);
     return;
   }

@@ -32,8 +32,7 @@ const NOTHING = 'none';
  *   assistant could not give while the line was a path.
  */
 export const recipeRoster = (label: string, names: readonly string[], state: ListStateType): string => {
-  // Rows on hand are worth saying whatever the state: a refresh that failed
-  // over a list the user is looking at has not taken the list away.
+  // Rows on hand are reported whatever the state.
   if (names.length === ValueConstants.zero) {
     return `${label}=${state === ListState.Ready ? NOTHING : state}`;
   }

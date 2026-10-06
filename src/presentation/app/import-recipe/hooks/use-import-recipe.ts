@@ -105,9 +105,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     startWith(activeUrl);
   }, [activeUrl, startWith]);
 
-  // Queue once per arrival. A re-render must not re-submit the same reel — but
-  // the guard is only spent on a call that can actually run: setting it for a
-  // param that has not arrived yet left the screen queueing forever.
+  // Queue once per arrival, and only when the param is there.
   useEffect(() => {
     if (startedRef.current || importUrl === undefined) return;
     startedRef.current = true;
@@ -126,11 +124,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
   const isSettled =
     job !== null && (job.status === ImportJobStatus.Done || job.status === ImportJobStatus.Failed);
 
-  // WHY these are keyed on the job's ID and STATUS, not on `job` itself: every
-  // successful poll builds a fresh `ImportJob` object even when nothing changed,
-  // so an effect that depended on the object tore itself down every 4 s. The
-  // 9 s stage tick never survived long enough to fire once — the checklist that
-  // exists to prove the wait is alive sat frozen at zero for the whole import.
+  // Keyed on id and status: each poll builds a fresh job object.
   const jobId = job?.id ?? null;
   const isWatchable = jobId !== null && !isSettled;
 
@@ -146,39 +140,22 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     return () => clearInterval(tick);
   }, [isWatchable, jobId]);
 
-  // --- finding: leaving by gesture is still leaving ---
-  // Android back and the iOS swipe unmount this screen without going through
-  // `onClose`, and the receipt they left behind was rendered by the NEXT
-  // import's first frame — including an "Open draft" button wired to the
-  // previous reel. Dropping our copy is never cancelling; the job runs on.
+  // Back gesture / swipe also clears our copy of the receipt; the job runs on.
   useEffect(() => () => importJobStore.getState().clear(), [importJobStore]);
 
   const onClose = useCallback((): void => {
-    // The job outlives the screen; dropping our copy of the receipt is all that
-    // leaving means. `goBackOrHome`, not `back`: a share intent on a cold start
-    // makes this screen the entire stack, and backing out of it QUIT THE APP.
+    // goBackOrHome: a cold-start share leaves this screen as the whole stack.
     importJobStore.getState().clear();
     goBackOrHome();
   }, [importJobStore, goBackOrHome]);
 
-  // --- finding: the button said "notify me" and only closed the screen ---
-  // The copy promises a notification when the reel is ready, and the backend
-  // does send one — for both outcomes. What was missing sat here: nothing ever
-  // asked the OS for permission, so a user who had not already granted it was
-  // promised something the device would never deliver, and the app said
-  // nothing about it. Asking at the moment the promise is made is also the
-  // moment it makes sense to the user, which is why it is not at startup.
+  // The copy promises a notification, so ask the OS for permission here.
   const onNotifyMe = useCallback((): void => {
     void getNotificationService()
       .requestPermissions()
       .then((granted) => {
-        // Granting late is the normal case now, and registration gives up
-        // silently without permission — so ask for the token again rather than
-        // leaving the promise unkept until the next cold start.
+        // Re-register push now that permission exists.
         if (granted) ensurePushRegistration();
-        // Told plainly rather than silently swallowed: the import still runs,
-        // and the result still lands in the app — the only thing lost is the
-        // interruption, which is exactly what the user just asked for.
         else showWarningToast(t().importRecipe.notifyBlocked);
       })
       .catch(() => showWarningToast(t().importRecipe.notifyBlocked))
@@ -190,14 +167,7 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     const draftId = job?.draftId;
     importJobStore.getState().clear();
 
-    // A finished job without a draft id should not happen — the backend writes
-    // one before it reports `done`. It DID happen, and the button answered by
-    // doing nothing at all: the user tapped, the screen sat there, and the only
-    // way out of a share-launched app is the back gesture, which finishes the
-    // task and lands them back in Instagram. Whatever the cause, a primary
-    // action must move; this one goes where the drafts actually are and leaves
-    // a report behind so the next occurrence arrives with a code instead of a
-    // description.
+    // A done job without a draft id should not happen, but the button must still go somewhere.
     if (draftId === null || draftId === undefined) {
       FailureReporter.trail(ImportTrail.openDraftMissing);
       FailureReporter.report(
@@ -215,17 +185,13 @@ export const useImportRecipe = (importUrl: string | undefined): UseImportRecipeR
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId } } as Href);
   }, [job, importJobStore, router]);
 
-  // Arriving with no URL is not a dead end any more: it is the paste screen.
-  // (This is also every web visit, where no share sheet exists to arrive from.)
+  // No URL means the paste screen (always on web).
   const isAwaitingLink =
     (activeUrl === null || activeUrl === undefined) && state.status === StoreStatus.Idle;
 
   const jobStatus = job?.status ?? null;
   const queuePosition = job?.queuePosition ?? null;
-  // A job the worker failed is not a failed REQUEST, but it reaches the user as
-  // the same thing: a stop with a reason. Wearing it as a `Failure` lets the
-  // screen resolve its copy through the one lookup every other error uses —
-  // `errorKey` rides on `messageKey`, the channel the backend already names.
+  // A failed job is shown through the same failure lookup as any error (errorKey rides on messageKey).
   const jobFailure =
     job !== null && job.status === ImportJobStatus.Failed
       ? new UnknownFailure(DiagnosticMessage.recipeImport.jobFailed, undefined, job.errorKey ?? undefined)

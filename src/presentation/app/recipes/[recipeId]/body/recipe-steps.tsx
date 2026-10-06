@@ -84,8 +84,7 @@ export const RecipeSteps = ({
 
       {isOwner ? (
         isExpanded ? (
-          // WEB: design's header-cluster button language — a ghost
-          // "Delete" pill (danger-tinted).
+          // Web: ghost danger pill.
           <View style={styles.ownerActionsWeb}>
             <Pressable
               accessibilityRole="button"
@@ -103,8 +102,7 @@ export const RecipeSteps = ({
             </Pressable>
           </View>
         ) : (
-          // MOBILE: delete stays inline as a single danger button; the
-          // floating overlay cluster over the hero owns share/like/save.
+          // Mobile: inline danger button; the hero overlay owns share/like/save.
           <View style={styles.ownerActions}>
             <Pressable
               accessibilityRole="button"

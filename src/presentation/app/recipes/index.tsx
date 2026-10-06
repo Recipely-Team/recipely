@@ -27,8 +27,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   const { trendingRecipesStore } = useStores();
   const vm = useRecipeList();
 
-  // Filtering and sorting by voice, registered by the screen that owns the
-  // filters — everywhere else these answer `unavailable_here`.
+  // Filter/sort by voice, registered by the screen that owns the filters.
   useAssistantFeedActions({
     filters: vm.filters,
     onToggleCuisineQuick: vm.onToggleCuisineQuick,
@@ -45,11 +44,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
   });
   useAssistantScroll(vm.onAssistantScroll);
 
-  // The editorial hero reads its own store, so its three recipes were invisible
-  // to the assistant: asked for "öne çıkanlardan üçüncüsü" it counted into the
-  // grid instead and opened something else entirely. Published only while the
-  // hero is actually rendered — the phone layout has none, and offering rows
-  // the user cannot see is the same lie in the other direction.
+  // Hero rows are offered to the assistant only while the hero is rendered.
   const trendingState = trendingRecipesStore((state) => state.state);
   const featured = useMemo<readonly RecipeSummaryEntity[]>(
     () =>
@@ -59,8 +54,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
     [vm.isExpanded, vm.isSearching, trendingState],
   );
 
-  // Rows that are still on their way are not rows the user has none of: a
-  // reload that changes WHAT the list should hold empties it first.
+  // A reload that changes what the list holds empties it first.
   const feedListState =
     vm.state.status === StoreStatus.Error
       ? ListState.Failed
@@ -68,9 +62,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
         ? ListState.Loading
         : ListState.Ready;
 
-  // What is actually on the feed, so "the second one" and "is there anything
-  // here?" are questions the model can answer instead of guess at. Two rosters,
-  // separately labelled and numbered, because they are two lists on one screen.
+  // Two numbered rosters (grid, hero) so the model can answer about rows.
   useAssistantScreenContent(() =>
     [
       ...(featured.length > ValueConstants.zero
@@ -79,9 +71,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       recipeRoster('recipes', vm.recipes.map((recipe) => recipe.name), feedListState),
     ].join(SCREEN_PART_SEPARATOR),
   );
-  // The whole list, for `readScreen`. The line above stops at eight rows
-  // because it is charged on every turn; this is charged only when someone
-  // asks to have the page read to them, and then eight is not the page.
+  // The whole list for readScreen (the screen line is capped at eight).
   useAssistantScreenReading(() =>
     [
       ...(featured.length > ValueConstants.zero
@@ -90,9 +80,7 @@ export const RecipeListScreen = (): React.JSX.Element => {
       listReading('recipes', vm.recipes.map((recipe) => recipe.name), feedListState),
     ].join(SCREEN_PART_SEPARATOR),
   );
-  // Saving, liking and deleting a row the user can see, by name or by position.
-  // The grid comes FIRST so a bare "the second one" still counts into it, which
-  // is what it means nine times in ten; the hero's three resolve by name.
+  // Grid first so a bare "the second one" counts into it; hero rows resolve by name.
   useAssistantListRecipeActions(useMemo(() => [...vm.recipes, ...featured], [vm.recipes, featured]));
 
   return (
