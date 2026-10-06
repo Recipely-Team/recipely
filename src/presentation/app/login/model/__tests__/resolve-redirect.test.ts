@@ -105,6 +105,18 @@ describe('resolveRedirect', () => {
       expect(resolveRedirect('//evil.com')).toBe('/recipes');
     });
 
+    // Browsers normalise a backslash to a slash, so "/\\evil.com" is "//evil.com" to them.
+    it.each(['/\\evil.com', '/\\/evil.com', '/recipes\\..\\x', '/%5Cevil.com', '/%2F%2Fevil.com', '/ok\nLocation: x'])(
+      'returns /recipes for a disguised or control-character redirect %p',
+      (redirect) => {
+        expect(resolveRedirect(redirect)).toBe('/recipes');
+      },
+    );
+
+    it('still accepts an ordinary encoded path', () => {
+      expect(resolveRedirect('/recipes/a%20b')).toBe('/recipes/a%20b');
+    });
+
     it('returns /recipes for an absolute external URL', () => {
       expect(resolveRedirect('https://evil.com')).toBe('/recipes');
     });
