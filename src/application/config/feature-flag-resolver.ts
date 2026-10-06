@@ -1,8 +1,9 @@
 import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
 import { FeatureFlags } from '@application/config/feature-flags';
 import { isFeatureOn } from '@application/config/is-feature-on';
+import type { FeatureFlagName } from '@application/config/feature-flag-name';
 
-type FeatureFlagNameType = keyof typeof FeatureFlags;
+type FeatureFlagNameType = (typeof FeatureFlagName)[keyof typeof FeatureFlagName];
 
 /**
  * Answers "is this feature on?" — the admin panel's override if it set one,

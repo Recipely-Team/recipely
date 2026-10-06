@@ -135,6 +135,7 @@ import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-
 import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
 import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
+import { FeatureFlagName } from '@application/config/feature-flag-name';
 import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
@@ -265,7 +266,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     IS_DEV_BUILD,
   );
   const instagramStore = configureInstagramStore({
-    isEnabled: () => featureFlags.isOn('instagramAutomations'),
+    isEnabled: () => featureFlags.isOn(FeatureFlagName.InstagramAutomations),
     getConnection: new GetInstagramConnectionUseCase(instagramRepo),
     startLogin: new StartInstagramLoginUseCase(instagramRepo),
     finalize: new FinalizeInstagramLinkUseCase(instagramRepo),
