@@ -3,6 +3,7 @@ import type { NotifItem } from '@presentation/app/notifications/model/notif-item
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { TimeConstants, ValueConstants } from '@core/constants';
 import type { ImportSource } from '@presentation/app/notifications/model/import-source';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 /** The kinds this build knows how to draw; anything newer falls back to `generic`. */
 const KNOWN_KINDS = new Set<NotifKind>([
@@ -20,7 +21,7 @@ const KNOWN_KINDS = new Set<NotifKind>([
 ]);
 
 /** What a notification with no sender is attributed to. */
-const SYSTEM_ACTOR = 'Recipely';
+const SYSTEM_ACTOR = SiteMetadata.appName;
 
 /**
  * One notification, as the list renders it.

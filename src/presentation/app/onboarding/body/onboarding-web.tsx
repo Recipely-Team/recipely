@@ -14,6 +14,7 @@ import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-do
 import { OnboardingActions } from '@presentation/app/onboarding/items/onboarding-actions';
 import type { OnboardingSlide as OnboardingSlideModel } from '@presentation/app/onboarding/model/onboarding-slide';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 const LOGO_SIZE = 30;
 const COLUMN_MAX = 460;
@@ -52,7 +53,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
         <View style={[styles.copyCol, stacked ? styles.copyColStacked : null]}>
           <View style={styles.brand}>
             <RecipelyLogo size={LOGO_SIZE} />
-            <ThemedText style={styles.wordmark}>Recipely</ThemedText>
+            <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
           </View>
 
           <OnboardingReveal key={index} style={styles.copyBlock}>

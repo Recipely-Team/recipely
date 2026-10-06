@@ -19,6 +19,7 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { durations } from '@presentation/base/theme';
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -114,7 +115,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       createdRecipesStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
-      setTimeout(() => router.back(), 300);
+      setTimeout(() => router.back(), durations.sheetDismiss);
     } else if (s.status === StoreStatus.Error) {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);

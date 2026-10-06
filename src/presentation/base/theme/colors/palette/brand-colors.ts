@@ -78,4 +78,24 @@ export const BrandColors = {
   nutritionCarbs: '#F59E0B',
   nutritionFat: '#EF4444',
   nutritionFiber: '#10B981',
+  /**
+   * The full-colour Recipely logo (`RecipelyLogo`), from the brand SVG: the
+   * hat's warm gradient, the book's grey gradient, the orange of the cover and
+   * cutlery, the off-white hat, the cream pages and the grey page edges.
+   */
+  logoHatGradientStart: '#EC7B41',
+  logoHatGradientEnd: '#F9B050',
+  logoBookGradientStart: '#97999A',
+  logoBookGradientEnd: '#C4C2C0',
+  logoOrange: '#EE8941',
+  logoOffWhite: '#F0F3F1',
+  logoCream: '#F8E9D4',
+  logoGrey: '#BEC0C3',
+  /**
+   * What the browser paints its own chrome with around the web app
+   * (`<meta name="theme-color">` in `+html.tsx`), one per system scheme —
+   * the default theme's page background in each.
+   */
+  webChromeLight: '#FFFFFF',
+  webChromeDark: '#0B0B0D',
 } as const;

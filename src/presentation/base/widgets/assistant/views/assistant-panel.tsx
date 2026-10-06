@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
-import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
-import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -23,7 +21,6 @@ import {
   controlSizes,
   fontWeights,
   iconSizes,
-  opacities,
   radii,
   spacing,
 } from '@presentation/base/theme';
