@@ -1,6 +1,6 @@
 import { RoutePaths } from '@presentation/base/constants';
 import { isString } from '@core/guards/type-guards';
-import { RegexConstants } from '@core/constants';
+import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
 
 /**
  * Resolves the post-login redirect target from the `redirect` search param.
@@ -14,7 +14,8 @@ export const resolveRedirect = (redirect: string | string[] | undefined): string
     isString(redirect) &&
     redirect.startsWith('/') &&
     !redirect.startsWith('//') &&
-    !RegexConstants.unsafeRedirect.test(redirect) &&
+    !RegexConstants.unsafeRedirectChar.test(redirect) &&
+    !RegexConstants.encodedSlash.test(redirect.split(CharConstants.questionMark)[ValueConstants.zero] ?? CharConstants.empty) &&
     redirect !== RoutePaths.login &&
     !redirect.startsWith(`${RoutePaths.login}?`)
   ) {

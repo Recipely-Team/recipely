@@ -2445,8 +2445,8 @@ the box you can hit, not the glyph you can see.**
   *Guard:* `check:structure` rule AN fails when a target lacks any of them.
 - **`/login?redirect=` accepted `/\evil.com`**: the check refused `//` but browsers
   normalise a backslash to a slash, and an encoded `%2F` / `%5C` or a control
-  character slipped past too. *Now:* `RegexConstants.unsafeRedirect` rejects them;
-  pinned by `resolve-redirect.test.ts`.
+  character slipped past too. *Now:* `RegexConstants.unsafeRedirectChar` / `encodedSlash` (path only) reject them;
+  pinned by `resolve-redirect.test.ts` (a query may still carry an encoded slash).
 
 *The class:* **a check on a URL string must see it the way the browser will: decode
 and normalise first, or refuse what could normalise into something else.**

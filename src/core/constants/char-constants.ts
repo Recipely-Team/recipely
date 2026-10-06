@@ -22,4 +22,5 @@ export const CharConstants = {
   emDash: '—' as string,
   newline: '\n' as string,
   percent: '%' as string,
+  questionMark: '?' as string,
 } as const;

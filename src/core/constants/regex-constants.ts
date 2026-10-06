@@ -23,12 +23,10 @@ export const RegexConstants = {
   sha256Hex: /^[0-9a-fA-F]{64}$/,
   /** Digits only, at least one. */
   digitsOnly: /^\d+$/,
-  /**
-   * Anything that can turn an in-app path into another origin once a browser
-   * normalises it: a backslash, a control character, or an encoded slash /
-   * backslash. Used to vet a post-login redirect.
-   */
-  unsafeRedirect: /[\\\u0000-\u001f\u007f]|%(2f|5c)/i,
+  /** A backslash or control character: a browser may normalise it into another origin. Vets a post-login redirect. */
+  unsafeRedirectChar: /[\\\u0000-\u001f\u007f]/,
+  /** An encoded slash or backslash — refused in a redirect's PATH (a query may carry one legitimately). */
+  encodedSlash: /%(2f|5c)/i,
   /** Contains at least one ASCII capital letter. */
   hasUppercase: /[A-Z]/,
   /** Contains at least one digit. */

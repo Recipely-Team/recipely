@@ -113,6 +113,10 @@ describe('resolveRedirect', () => {
       },
     );
 
+    it('accepts an encoded slash inside the query (a search for "a/b")', () => {
+      expect(resolveRedirect('/recipes?q=a%2Fb')).toBe('/recipes?q=a%2Fb');
+    });
+
     it('still accepts an ordinary encoded path', () => {
       expect(resolveRedirect('/recipes/a%20b')).toBe('/recipes/a%20b');
     });
