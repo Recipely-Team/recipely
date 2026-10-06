@@ -40,10 +40,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
         : await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    // Firebase v10 deprecates this signature in favour of passing
-    // `{ serviceWorkerRegistration }`. Expo's web runtime does not register the
-    // messaging service worker for us, so the replacement has nothing to hand
-    // it yet; revisit when it does.
+    // Deprecated signature kept: Expo web does not register the messaging service worker.
     const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });
     if (token.length === ValueConstants.zero) return;
 

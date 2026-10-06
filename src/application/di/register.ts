@@ -334,9 +334,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     follow: new FollowUserUseCase(userProfileRepo),
     unfollow: new UnfollowUserUseCase(userProfileRepo),
   });
-  // The registry is created here and handed to the presentation layer, because
-  // half of what the assistant does — navigate, focus a field, open the photo
-  // picker — only a screen can perform. Screens register those on mount.
+  // Created here, filled by screens: only a screen can navigate or focus a field.
   const assistantActionRegistry = new AssistantActionRegistry();
   const assistantSessionStore = configureAssistantSessionStore({
     session: container.resolve<AssistantSession<LiveSessionCredentials>>(TOKENS.AssistantSession),
@@ -346,10 +344,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     messenger: container.resolve<AssistantMessengerInterface>(TOKENS.AssistantMessenger),
     registry: assistantActionRegistry,
   });
-  // WHY: built after every session-scoped store exists so sign-out / account
-  // deletion / session expiry can wipe all of them in one place — a cache that
-  // survives an account switch shows the previous user's data (stale comments,
-  // likes, notifications) until a manual refresh.
+  // Built after every session store so sign-out/delete/expiry wipe them in one place.
   const clearSessionCaches = (): void => {
     savedRecipesStore.getState().clear();
     likedRecipesStore.getState().clear();
@@ -368,8 +363,6 @@ export const registerApplication = (container: Container): ApplicationStores => 
     fileImportStore.getState().clear();
     userProfileStore.getState().reset();
     creatorProfileStore.getState().clear();
-    // The transcript is the previous user's conversation, and a live socket
-    // outlives a sign-out unless something closes it.
     assistantSessionStore.getState().reset();
   };
   const onSessionRestored = recordDeviceOnSessionRestore(

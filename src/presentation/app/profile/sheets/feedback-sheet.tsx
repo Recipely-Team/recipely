@@ -29,8 +29,7 @@ export const FeedbackSheet = ({ visible, onClose }: FeedbackSheetProps): React.J
   const [message, setMessage] = useState(CharConstants.empty);
   const [sent, setSent] = useState(false);
 
-  // UI deliberately requires `subject` too, even though the domain treats it as
-  // optional — keep both guards in sync if this is ever loosened.
+  // The UI requires a subject although the domain allows none.
   const canSend = subject.trim().length > ValueConstants.zero && message.trim().length > ValueConstants.zero;
 
   const handleSend = async (): Promise<void> => {

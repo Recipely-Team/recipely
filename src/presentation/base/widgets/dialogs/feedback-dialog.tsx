@@ -175,8 +175,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   action: {
-    // Equal halves when there are two, full width when there is one — the row
-    // needs no branch, `flex: 1` produces both.
     flex: ValueConstants.one,
     minHeight: controlSizes.button,
     borderRadius: radii.lg,

@@ -30,17 +30,14 @@ export const configureLikedRecipesStore = (
       }),
     loadLiked: async () => {
       const requested = session;
-      // Only the FIRST load announces itself: a reload of a grid already on
-      // screen keeps its `Loaded` state, or every re-focus — and every
-      // pull-to-refresh — would swap the rows for a skeleton.
+      // Only the first load shows a skeleton.
       if (get().listState.status !== StoreStatus.Loaded) {
         set({ listState: { status: StoreStatus.Loading } });
       }
       const result = await deps.loadLikedRecipesUseCase.execute();
       if (requested !== session) return result;
       if (!result.ok) {
-        // The rows already on screen stay: a failed reload must not blank the
-        // grid the user is looking at.
+        // A failed reload keeps the rows.
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return result;
       }

@@ -41,24 +41,14 @@ export const LayoutProvider = ({ children }: LayoutProviderProps): React.JSX.Ele
   const { width, height } = useWindowDimensions();
   const hydrated = useIsHydrated();
 
-  // The static web export prerenders with no viewport, so the server HTML is
-  // always the mobile/non-shell layout. Reproduce that on the first client
-  // render (DEFAULT_VALUE) and only adopt the real dimensions after hydration,
-  // otherwise the desktop shell mounts mid-hydration and React throws #418.
-  // Native has no hydration step, so it always uses the live dimensions.
+  // Static export renders the mobile layout; adopt real dimensions only after hydration.
   const gated = isWeb() && !hydrated;
 
   const value = useMemo<LayoutContextValue>(() => {
     if (gated) return DEFAULT_VALUE;
     const breakpoint = resolveBreakpoint(width);
     const orientation: OrientationType = width >= height ? OrientationType.Landscape : OrientationType.Portrait;
-    // Two questions, deliberately separate. `isExpanded` asks only how much
-    // room there is, so a 13" iPad (1032pt portrait) gets the grids and the
-    // columned detail the web has always had, and a Split View pane drops back
-    // to the phone layout on its own. `isWebShell` stays a question about the
-    // PLATFORM's chrome: only a browser swaps the native app bar for the sticky
-    // WebHeader and drops the TabBar and the safe-area insets. Answering both
-    // with one flag is what left the iPad rendering a stretched phone.
+    // isExpanded is width only (iPad gets grids, Split View falls back); isWebShell is browser chrome.
     const isExpanded = width >= BREAKPOINTS.desktop;
     const isWebShell = isWeb() && isExpanded;
     const isCompact = breakpoint === BreakpointType.Mobile;

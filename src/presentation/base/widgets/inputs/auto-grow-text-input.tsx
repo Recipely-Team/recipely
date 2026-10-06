@@ -20,8 +20,6 @@ export const AutoGrowTextInput = ({
 
 const styles = StyleSheet.create({
   base: {
-    // A multiline field is read top-down; centring it leaves the caret
-    // floating in the middle of an empty box.
     textAlignVertical: 'top',
   },
 });

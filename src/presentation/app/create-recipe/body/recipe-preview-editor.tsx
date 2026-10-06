@@ -83,8 +83,7 @@ export const RecipePreviewEditor = ({
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
-  // Group headings are structure, not shopping: three groups do not mean three
-  // more things to buy, and the count sits next to the word "Ingredients".
+  // Group headings are structure, not items.
   const ingredientGroups = parseIngredientGroups(recipe.ingredients);
   const ingredientCount = ingredientGroups.reduce(
     (total, group) =>
@@ -167,9 +166,7 @@ export const RecipePreviewEditor = ({
           count={ingredientCount}
           error={fieldErrors.ingredients}
           listGap={spacing.sm}
-          // Adding an ingredient belongs to a CARD now — a single button at the
-          // bottom could only ever append to the last group, which is what made
-          // adding to the right one a chore. The section keeps "add group".
+          // Ingredients are added per card; the section adds groups.
           onAdd={onAddIngredientGroup}
           addLabel={t().createRecipe.addGroup}
         >

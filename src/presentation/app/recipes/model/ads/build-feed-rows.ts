@@ -31,9 +31,7 @@ export const buildFeedRows = (
 
   for (const recipe of recipes) {
     const gap = adsPlaced === ValueConstants.zero ? FEED_ROWS_BEFORE_FIRST_AD : FEED_ROWS_BETWEEN_ADS;
-    // Asked BEFORE the recipe is pushed, so the ad lands between two recipes:
-    // there is always one above it and, because this runs inside the loop, one
-    // below it too.
+    // Checked before pushing the recipe, so an ad always sits between two recipes.
     if (adsEnabled && sinceLastAd === gap) {
       rows.push({ kind: FeedRowKind.Ad, ordinal: adsPlaced });
       adsPlaced += ValueConstants.one;

@@ -52,9 +52,7 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { isWebShell } = useLayout();
-  // The bar sits above the tab bar where there is one. On routes without it
-  // (onboarding, auth, detail pages) reserving that height pushed the bar UP
-  // into the content instead of leaving it at the screen edge.
+  // Clear the tab bar only on routes that have one.
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const timers = timerStore((s) => s.timers);
   const collapsed = timersBarStore((s) => s.collapsed);
@@ -149,11 +147,6 @@ const styles = StyleSheet.create({
   chipScroll: {
     flex: ValueConstants.one,
   },
-  // A round button parked at the end of the row: it reads as a control the way
-  // the hairline grabber before it never did, without the uppercase caption
-  // that replaced the grabber and cluttered the bar with a second row. Sized as
-  // a shape (it holds a glyph, never text) and slopped out well past the 44pt
-  // minimum, because this is the control that gets the bar off the content.
   hideBtn: {
     width: controlSizes.floatingBtn,
     height: controlSizes.floatingBtn,
@@ -161,11 +154,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Parked in a corner so the widest possible span of whatever is underneath
-  // stays reachable — the LEFT one, because the bottom-right belongs to the
-  // feed's Filter & Sort FAB and the pill sat squarely on top of it. Its
-  // resting size is a full 44pt tall: collapsed is a state the bar can sit in
-  // for the whole cook, so the way back out cannot be a target you aim at.
+  // Parked bottom-left: bottom-right belongs to the Filter & Sort FAB.
   collapsedPill: {
     alignSelf: 'flex-start',
     flexDirection: 'row',

@@ -41,8 +41,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
-    // The component stack is the half that says WHERE, and it is lost by the
-    // time Crashlytics sees the Error alone.
+    // The component stack says where.
     this.props.onError(error, `${CONTEXT}${info.componentStack ?? CharConstants.empty}`);
   }
 

@@ -22,8 +22,7 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
     }
     try {
       const stored = JSON.parse(raw) as Record<string, TimerEntry>;
-      // Keep ALL entries including expired ones. Expired timers are detected by
-      // useTimerNotificationSync which triggers the alarm then removes them.
+      // Keep expired entries: the notification sync alarms and removes them.
       set({ timers: stored, hydrated: true });
     } catch {
       set({ hydrated: true });

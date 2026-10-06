@@ -190,9 +190,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       register: async (email: string, password: string, displayName: string) => {
         set({ state: { status: StoreStatus.Loading } });
         const result = await deps.requestRegistration.execute(email, password, displayName);
-        // Account is not created yet — the user must confirm the emailed code.
-        // On failure the Result carries the failure back to the screen; either
-        // way the session stays unauthenticated.
+        // Not created until the emailed code is confirmed; the session stays unauthenticated.
         set({ state: { status: StoreStatus.Unauthenticated } });
         return result;
       },
@@ -209,15 +207,12 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       },
 
       resendRegistrationCode: async (email: string) => {
-        // No global state change — the verify-code screen stays put; the Result
-        // carries either the refreshed challenge or the failure back to it.
+        // The verify-code screen handles the result; no global state change.
         return deps.resendRegistrationCode.execute(email);
       },
 
       signOut: async () => {
-        // No `loading` transition: it would clobber the authenticated session,
-        // and on failure we want to leave the user signed in. Mirrors
-        // deleteAccount — the screen shows the returned failure and can retry.
+        // No loading state: a failed sign-out leaves the user signed in.
         const result = await deps.signOut.execute();
         if (!result.ok) {
           return result.failure;
@@ -260,8 +255,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       resetPassword: async (token: string, newPassword: string) => {
         const result = await deps.resetPassword.execute(token, newPassword);
         if (!result.ok) {
-          // The reset screen owns its own error (page-scoped) — return the
-          // failure without touching the global session state.
+          // Page-scoped error: the reset screen owns it.
           return result.failure;
         }
         return null;
@@ -270,8 +264,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       uploadAvatar: async (fileUri: string, fileName: string, mimeType: string) => {
         const result = await deps.uploadAvatar.execute(fileUri, fileName, mimeType);
         if (!result.ok) {
-          // The user is still authenticated — surface the failure to the screen
-          // without clobbering the session state.
+          // Still authenticated: return the failure, keep the session.
           return result.failure;
         }
         set({ state: { status: StoreStatus.Authenticated, session: result.value } });
@@ -281,8 +274,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       updateProfile: async (input: { displayName?: string; bio?: string }) => {
         const result = await deps.updateProfile.execute(input);
         if (!result.ok) {
-          // The user is still authenticated — surface the failure to the screen
-          // without clobbering the session state.
+          // Still authenticated: return the failure, keep the session.
           return result.failure;
         }
         set({ state: { status: StoreStatus.Authenticated, session: result.value } });
@@ -292,8 +284,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       deleteAccount: async () => {
         const result = await deps.deleteAccount.execute();
         if (!result.ok) {
-          // The account was not deleted — keep the user signed in and surface the
-          // failure to the screen without clobbering the session state.
+          // Not deleted: keep the session, return the failure.
           return result.failure;
         }
         set({ state: { status: StoreStatus.Unauthenticated } });

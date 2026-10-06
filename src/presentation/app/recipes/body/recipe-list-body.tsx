@@ -65,10 +65,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const colors = useTheme().colors;
   const { state, recipes, isExpanded, isSearching, gridColumns } = vm;
 
-  // Stable across renders so `RecipeListItem`'s memo actually holds. A fresh
-  // arrow per row per render defeats memoisation completely — the rows would
-  // re-render on every scroll frame the parent reacts to, which is what they
-  // were doing.
+  // Stable across renders so the row memo holds.
   const { onOpenRecipe } = vm;
   const openRecipe = useCallback(
     (id: string) => () => onOpenRecipe(id),
@@ -121,29 +118,15 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     body = (
       <Animated.FlatList
         ref={vm.attachList}
-        // Emptied on purpose while the next set is fetched: the rows on screen
-        // answer the PREVIOUS filter, and leaving them up read as a second
-        // load. `ListEmptyComponent` carries the loading placeholder, so the
-        // feed header above it (cuisine strip, active-filter chips) stays.
+        // Emptied while the next set loads; the header stays.
         data={rows}
         keyExtractor={keyExtractor}
         renderItem={renderItem}
-        // Windowing defaults are tuned for short rows; these are tall photo
-        // cards, so the defaults kept ~21 screens of them mounted. Measured
-        // against a full feed: fewer mounted rows, less memory, and the scroll
-        // stops dropping frames on the mid-range Android box the app targets.
+        // Tuned for tall photo cards (the defaults keep far too many mounted).
         initialNumToRender={ListConstants.initialRows}
         maxToRenderPerBatch={ListConstants.rowsPerBatch}
         windowSize={ListConstants.windowSize}
-        // NO `removeClippedSubviews` HERE — see check:structure rule R.
-        // It detaches and re-attaches child views behind Fabric's back, and on
-        // the New Architecture that crashed the app: opening a finished
-        // Instagram import threw `addViewAt: failed to insert view [332] into
-        // parent [338]` from `ReactClippingViewManager.addView`, the class that
-        // exists to implement this very prop. The feed sits UNDER the import
-        // screen, so it re-clipped as the stack transition finished and handed
-        // Fabric a child it had already parented elsewhere. The windowing props
-        // above are what actually bound how many rows stay mounted.
+        // No removeClippedSubviews: it crashed under Fabric (check:structure rule R).
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
@@ -185,15 +168,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         contentContainerStyle={[styles.listContent, styles.mobileListContent]}
         style={styles.list}
         refreshControl={
-          // `progressViewOffset` drops the spinner below the collapsing header
-          // band, which is absolutely positioned and opaque over the list — the
-          // spinner would otherwise render behind it and be invisible. iOS
-          // applies the value as a raw frame shift, so the full band height is
-          // right; Android's SwipeRefreshLayout rests the circle lower (see
-          // homeRefreshOffsetAndroid) and needs the smaller value to tuck the
-          // spinner under the band instead of floating it over the AI banner.
-          // `tintColor` is iOS-only and `colors` is Android-only; both are
-          // needed for the spinner to follow the theme on each platform.
+          // progressViewOffset puts the spinner below the opaque header band; per-platform values.
           <RefreshControl
             refreshing={vm.isPullRefreshing}
             onRefresh={vm.onRefresh}
@@ -209,9 +184,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     );
   }
 
-  // The loaded mobile feed pads for the header band inside its own list content
-  // (`mobileListContent`), so the container must not add the inset a second
-  // time. Every other mobile branch renders a plain surface and needs it.
+  // The loaded mobile feed pads for the band itself, so the container must not.
   const isMobileLoadedFeed = !isExpanded && !isSearching && state.status === StoreStatus.Loaded;
 
   return (
@@ -262,8 +235,6 @@ const styles = StyleSheet.create({
   },
   listContent: {
     flexGrow: ValueConstants.one,
-    // Named, because the feed banner has to request its width from the same
-    // number — see `mobileFeedRowWidth`.
     paddingHorizontal: MOBILE_FEED_GUTTER,
     paddingTop: spacing.md,
     paddingBottom: spacing.xxl,

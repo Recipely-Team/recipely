@@ -84,9 +84,7 @@ const GEN_STEP_INTERVAL_MS = 620;
 }: UseRecipeGenerationArgs) => {
   const router = useRouter();
   const goBackOrHome = useGoBackOrHome();
-  // Read before the stores that depend on it. The `?? {}` is for test harnesses
-  // that stub the hook — the real one returns `{}` for a route with no params,
-  // never undefined.
+  // ?? {} only for test stubs; the real hook returns {} without params.
   const params = useLocalSearchParams<{ prompt?: string; fromRecipeId?: string }>() ?? {};
   const promptParam = params.prompt;
   const fromRecipeId = params.fromRecipeId;
@@ -105,10 +103,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const loadLatestDraft = draftsStore((s) => s.loadLatestDraft);
   const upsertDraft = draftsStore((s) => s.upsertDraft);
 
-  // Opening a draft starts in `Resuming`, NOT `Prompt`: the draft is fetched
-  // asynchronously, and defaulting to the prompt phase parked the user on the
-  // AI-generate screen for the length of that request — tapping a draft looked
-  // like it had opened the wrong screen, or like nothing had happened at all.
+  // A draft opens in Resuming: it is fetched asynchronously.
   const [phase, setPhase] = useState<PhaseType>(
     draftId === undefined && editRecipeId === undefined ? PhaseType.Prompt : PhaseType.Resuming,
   );
@@ -117,10 +112,7 @@ const GEN_STEP_INTERVAL_MS = 620;
   const [generateError, setGenerateError] = useState<string | null>(null);
   const originalPrompt = useRef(CharConstants.empty);
 
-  // The assistant creates a recipe by opening this screen with `?prompt=`,
-  // exactly as a person would type it in and tap generate — the prompt appears
-  // in the field and the generating view runs where they can see it. A draft
-  // being resumed wins: `?draftId=` means the user asked for something else.
+  // The assistant generates via ?prompt=; a ?draftId= being resumed wins.
   const startedFromParam = useRef(false);
   /**
    * Whether the copy has already been laid into the editor.
@@ -154,20 +146,14 @@ const GEN_STEP_INTERVAL_MS = 620;
   useEffect(() => {
     if (draftId === undefined) return;
     let cancelled = false;
-    // Also set here, not just in the initial state: the resume card navigates
-    // with `router.replace`, which changes the param on an already-mounted
-    // screen sitting in `Prompt`.
+    // Also here: router.replace changes the param on an already-mounted screen.
     setPhase(PhaseType.Resuming);
     FailureReporter.trail(ImportTrail.editorMounted);
     void (async () => {
       FailureReporter.trail(ImportTrail.draftFetchStarted);
       const result = await draftsStore.getState().getDraft(draftId);
       if (cancelled) return;
-      // A draft that cannot be read must not leave the screen shimmering
-      // forever — fall back to the prompt phase and say WHY. The failure's own
-      // copy distinguishes a deleted draft from an expired session from a dead
-      // connection; "couldn't open that draft" said none of them, and reporting
-      // saw nothing at all.
+      // An unreadable draft falls back to the prompt phase and says why.
       if (!result.ok) {
         FailureReporter.trail(ImportTrail.draftFetchFailed);
         // Gone is not unreadable — see the "dead pointer" remark above.
@@ -181,10 +167,7 @@ const GEN_STEP_INTERVAL_MS = 620;
         }
         showErrorToast(result.failure);
         FailureReporter.report(result.failure, 'CreateRecipe.resumeDraft');
-        // Drop the param as well as the phase. `activeDraftId` is `draftId ??
-        // newDraftId`, so staying on it would point the autosave at the draft
-        // that FAILED to load — an offline read leaves that draft intact on the
-        // server, and the next thing typed here would overwrite it.
+        // Drop the param too, or autosave would target the draft that failed to load.
         router.replace(RoutePaths.createRecipe);
         setPhase(PhaseType.Prompt);
         return;
@@ -216,8 +199,6 @@ const GEN_STEP_INTERVAL_MS = 620;
     void loadRecipeDetail(editRecipeId);
   }, [editRecipeId, loadRecipeDetail]);
 
-  // A recipe that cannot be opened for editing leaves, saying why, rather than
-  // shimmering in `Resuming` for good.
   useEffect(() => {
     if (editState?.status !== StoreStatus.Error) return;
     showErrorToast(editState.failure);
@@ -299,8 +280,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     [createdRecipesStore, setRecipe],
   );
 
-  // Editing the prompt — by typing or by tapping an idea chip — is the user's fix
-  // for a failed run, so any change to it drops the stale error.
+  // Any prompt edit clears the stale error.
   useEffect(() => {
     if (promptParam === undefined || promptParam === CharConstants.empty) return;
     if (draftId !== undefined || editRecipeId !== undefined || startedFromParam.current) return;
@@ -368,15 +348,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     router.replace({ pathname: RoutePaths.createRecipe, params: { draftId: latestDraft.id } });
   }, [latestDraft, router]);
 
-  // WHY the identity check: the exit dialog asks what should happen to work
-  // that is not in the drafts list yet. Opening an existing draft, reading it,
-  // and backing out is not that — nothing was written, so there is nothing to
-  // keep or throw away. It asked anyway, and its only non-destructive answer
-  // re-saved a draft that was already saved, on every single exit.
-  // Returns whether it ASKED rather than left, which is what lets the
-  // assistant's `goBack` answer `awaiting` and say the question out loud. It
-  // used to report a clean exit while a sheet the user had to answer was
-  // opening in front of them.
+  // Opening an existing draft and leaving wrote nothing, so there is nothing to ask about.
   /** Work that is not in the drafts list yet — the only thing worth asking about. */
   const hasUnkeptWork = useCallback((): boolean => {
     const unchanged =
@@ -447,14 +419,9 @@ const GEN_STEP_INTERVAL_MS = 620;
   }, [upsertDraft, activeDraftId, recipe, chatHistory, leave]);
 
   const onDiscardAndExit = useCallback(async (): Promise<void> => {
-    // Stop autosaving BEFORE the delete, not after: the timer armed by the
-    // user's last keystroke was still pending, so it could fire while the
-    // delete was in flight and upsert the draft back into the list the user
-    // had just removed it from. That is why "leave without saving" appeared to
-    // do nothing.
+    // Cancel autosave BEFORE deleting, or a pending save re-creates the draft.
     cancelAutosave();
-    // Best-effort: if the delete fails the draft simply remains in My Recipes.
-    // Editing a saved recipe has no draft; discarding drops only the edits.
+    // Best-effort: a failed delete leaves the draft in My Recipes.
     if (editRecipeId === undefined) await draftsStore.getState().deleteDraft(activeDraftId);
     setExitOpen(false);
     leave();
@@ -493,8 +460,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     onGenerateAnother,
     onSaveDraftAndExit: () => void onSaveDraftAndExit(),
     onDiscardAndExit: () => void onDiscardAndExit(),
-    // Dropped on purpose: "keep editing" answers the question with neither, so
-    // the errand the user was on is not carried out behind their back.
+    // Keep editing: neither choice, so the pending errand is dropped.
     onKeepEditing: () => {
       afterExit.current = null;
       setExitOpen(false);

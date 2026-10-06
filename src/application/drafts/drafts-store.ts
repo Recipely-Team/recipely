@@ -33,9 +33,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
     latestDraft: null,
     loadDrafts: async () => {
       const requested = session;
-      // Only the FIRST load announces itself: a reload of a list that is
-      // already on screen keeps its `Loaded` state, or every re-focus — and
-      // every pull-to-refresh — would swap the rows for a skeleton.
+      // Only the first load shows a skeleton.
       if (get().listState.status !== StoreStatus.Loaded) {
         set({ listState: { status: StoreStatus.Loading } });
       }
@@ -101,8 +99,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
         return null;
       }
       const draft = result.value;
-      // WHY: keep the local list and the "latest" pointer in sync so the AI
-      // create flow reflects the just-saved draft without a full reload.
+      // Keep the list and the latest pointer in sync without a reload.
       set((s) => {
         const exists = s.drafts.some((d) => d.id === draft.id);
         const drafts = exists

@@ -61,8 +61,7 @@ export const SettingsScreen = (): React.JSX.Element => {
     onSetThemeId: setThemeId,
     onRequestSignOut: () => setSignOutVisible(true),
   });
-  // The sign-out sheet already existed for the button; it now also takes a
-  // spoken answer, so a voice session is not a session that cannot end.
+  // The sign-out sheet also takes a spoken answer.
   useAssistantConfirmation(signOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
 
   const displayName =

@@ -59,8 +59,7 @@ export class LocaleService {
   private async restore(): Promise<void> {
     try {
       const read = await this.store.getItem(LANGUAGE_STORAGE_KEY);
-      // A failed read is indistinguishable from an unset language for this
-      // purpose: both mean "fall back to the device locale".
+      // A failed read and an unset language both fall back to the device locale.
       const stored = read.ok ? read.value : null;
       if (stored === null || this.chosenByUser) return;
       this.apply(toSupportedLocale(stored));

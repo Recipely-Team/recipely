@@ -43,16 +43,10 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
   const setLikedInStore = likesStore((s) => s.setLiked);
   const favourites = useSaveRecipe();
   const authState = authStore((s) => s.state);
-  // Held in a ref, and read when a handler runs. A list re-renders on every
-  // fetch, filter and save; depended on directly, each of those would
-  // unregister and re-register five actions — and a call arriving mid-swap
-  // would find the key empty and be told the screen cannot do this.
+  // Read through a ref so list re-renders do not re-register the actions.
   const latest = useRef({ rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated });
   latest.current = { rows, favourites, isSignedIn: authState.status === StoreStatus.Authenticated };
-  // One hop at a time. `runOnRecipe` asks the registry to run the same action
-  // again once the recipe screen is up; that screen's handler is innermost and
-  // answers first, but a navigation that failed to produce one would otherwise
-  // come back round to this handler.
+  // One hop at a time, so a failed navigation cannot loop back here.
   const travelling = useRef(false);
 
   const find = useCallback((arg?: string): AssistantRecipeRow | null => {
@@ -67,9 +61,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
       if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
-      // Already saved is a success, not a toggle: the user asked for an
-      // outcome, and toggling here would remove the very thing they asked to
-      // keep.
+      // Already saved is success, not a toggle.
       if (!saved.isSaved(row.id)) await saved.toggleSave(row.id);
       return { ok: true, title: row.name };
     },
@@ -103,9 +95,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
 
-      // `RecipeListItem` seeds each row's like state on mount, so the entry is
-      // there for a row the user can see. When it genuinely is not, the store
-      // says so rather than reporting a heart it never touched.
+      // The store reports when the row's like state is unknown.
       const result = await setLikedInStore(row.id, wanted);
       return result.ok ? { ok: true, title: row.name } : { ok: false, error: AssistantActionError.NotReady };
     },
@@ -122,12 +112,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
     useCallback((arg?: string) => setLiked(arg, false), [setLiked]),
   );
 
-  // Both of these are in `CONFIRMED_ACTIONS`, and the sheet that asks lives on
-  // the recipe screen — so they travel there and report that the app is
-  // waiting on the user rather than that anything has happened. Un-saving is
-  // on that list for a reason worth restating: it drops a recipe out of a
-  // collection the user curated and may not find again, and a card's bookmark
-  // being one tap does not make a spoken "remove it" as easy to take back.
+  // Confirmed actions travel to the recipe screen, where the confirm sheet lives.
   useAssistantAction(
     AssistantAction.Unsave,
     useCallback(

@@ -71,9 +71,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
 };
 
 const styles = StyleSheet.create({
-  // No height of its own: the row is one rectangle whose height the featured
-  // card's ratio sets, and the two minis split it. A minHeight here made the
-  // column taller than the featured and left the row ragged along the bottom.
+  // No height: the featured card's ratio sets the row.
   card: {
     flex: ValueConstants.one,
     borderRadius: radii.xxl,

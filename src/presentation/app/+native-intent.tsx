@@ -46,8 +46,7 @@ export function redirectSystemPath({ path, initial }: NativeIntent): string {
       return RoutePaths.importRecipe;
     }
   } catch {
-    // A malformed URL must not stop the app from opening — fall through to the
-    // path the OS gave us and let the router decide.
+    // A malformed URL must not stop the app from opening.
     return initial ? RoutePaths.recipes : path;
   }
   return path;

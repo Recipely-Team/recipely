@@ -53,11 +53,7 @@ const draftCategory = (text: string | undefined): string | undefined => {
  */
 export const snapshotToEditable = (snapshot: DraftRecipeSnapshot): EditableRecipe => {
   const base = emptyEditable();
-  // Only media the backend hosts survives a resume. Drafts saved before
-  // `editableToSnapshot` stopped writing device URIs still hold `blob:` and
-  // `file:` addresses that no longer resolve, so restoring one would put a
-  // broken image in the editor and fail at publish time instead of here.
-  // Filtering on read is what repairs those rows without a migration.
+  // Only hosted media survives a resume; old drafts hold dead blob:/file: URIs.
   const hosted: MediaItem[] = (snapshot.media ?? [])
     .filter((m) => m.type === MediaType.Image && isHostedMedia({ type: MediaType.Image, url: m.url }))
     .map((m) => ({ type: MediaType.Image, url: m.url }));

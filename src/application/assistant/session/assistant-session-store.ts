@@ -137,15 +137,13 @@ export const configureAssistantSessionStore = (
       if (level !== null) set({ level });
     };
 
-    // Frames reach `sendAudio` only after the controller's mute and echo gate,
-    // so the waveform follows what the model actually hears.
+    // Frames arrive after mute/echo gating, so the waveform follows what the model hears.
     const session: AssistantSession<LiveSessionCredentials> = {
       audioFormat: deps.session.audioFormat,
       connect: (credentials) => deps.session.connect(credentials),
       sendAudio: (samples) => {
         deps.session.sendAudio(samples);
-        // A frame captured while the session was being torn down would
-        // otherwise leave the waveform standing at its last height.
+        // Drop frames captured during teardown.
         const { status } = controller.getState();
         if (status !== SessionStatus.Idle && status !== SessionStatus.Speaking) publishLevel(samples);
       },
@@ -258,12 +256,7 @@ export const configureAssistantSessionStore = (
       microphone: deps.microphone,
       player,
       tools: new ToolRegistry([createRunActionTool(registry)]),
-      // The library registers a generic page pack by default — read the DOM,
-      // follow a link, press a button. This app declares its own fifty-word
-      // vocabulary for the same acts, and on web both would be offered for the
-      // same sentence: asked to open a recipe, the model could press whatever
-      // the page happens to call it instead of running `openRecipe`, which
-      // knows what a recipe is. One vocabulary, and it is ours.
+      // No generic page pack: the app declares its own actions for the same acts.
       page: false,
       getConnection: async ({ resumptionHandle }) => {
         const grant = await tokens.mintSession(languageCode, resumptionHandle);
@@ -378,8 +371,7 @@ export const configureAssistantSessionStore = (
 
       sendText: (text: string, locale: string) => {
         if (text === CharConstants.empty) return;
-        // A live session carries the turn; anything else — Connecting included, whose socket
-        // is not yet acknowledged — goes over HTTP.
+        // Only a live session carries text; anything else (Connecting included) uses HTTP.
         if (controller.sendText(text)) return;
         askOverHttp(text, locale);
       },

@@ -60,8 +60,7 @@ export const useRefineProposal = ({
 }: UseRefineProposalArgs) => {
   const { createdRecipesStore } = useStores();
   const [proposal, setProposal] = useState<RefineProposal | null>(null);
-  // A refine outlives the screen, so its "there is a decision waiting" toast
-  // must not pop over whatever the user moved on to.
+  // A refine outlives the screen; no toast after unmount.
   const mounted = useRef(true);
   useEffect(() => () => { mounted.current = false; }, []);
 
@@ -101,18 +100,14 @@ export const useRefineProposal = ({
         setChatHistory((h) => [...h, { role: ChatRole.Assistant, content: reply }]);
         if (changes.length > ValueConstants.zero) {
           setProposal({ recipe: proposed, changes, reply });
-          // The answer landed with the assistant closed: there is now a decision
-          // waiting behind a panel the cook cannot see. Say it out loud.
+          // The answer landed behind a closed panel: say so.
           if (!chatExpanded && mounted.current) showSuccessToast(t().createRecipe.proposalWaiting);
         }
         createdRecipesStore.getState().resetRefineState();
         return;
       }
 
-      // `refineRecipe` collapses its failure to `null`, so the reason is read back
-      // off the store. Refine hits the same endpoint and the same prompt moderator
-      // as generate, so it needs the same disambiguation: a refused instruction
-      // must not read like an unusable AI response.
+      // refineRecipe collapses failures to null, so read the reason from the store.
       const state = createdRecipesStore.getState().refineState;
       if (state.status === StoreStatus.Error) showErrorToast(state.failure);
       const reason = state.status === StoreStatus.Error ? failureKeyMessage(state.failure) : undefined;

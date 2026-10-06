@@ -81,51 +81,34 @@ export const AssistantPill = (): React.JSX.Element | null => {
     sendText,
   } = useAssistantSession();
 
-  // The pill is the one component mounted for the whole app's life, so the
-  // actions that work from anywhere — and the screen line every tool result
-  // carries — are registered from here.
+  // The pill lives for the whole app, so global actions and the screen line register here.
   useAssistantGlobalActions();
   useAssistantReachActions();
   useAssistantReportActions();
   useAssistantTimerActions();
   useAssistantScreenContext();
-  // Last on purpose. Effects run in declaration order, so registering the
-  // global and reach tiers above is what guarantees they exist before the first
-  // request Siri or a launcher shortcut left behind is dispatched.
+  // Last on purpose: effects run in order, so the global and reach tiers exist first.
   useOsAssistantInvocations();
-  // Mounted here rather than on a screen because it has to keep running after
-  // a sign-out: the catalogue outlives the session in the shared container, and
-  // something must publish the empty list that clears it.
+  // Here, not on a screen: it must keep running through sign-out to clear the catalogue.
   useOsEntityCatalogueSync();
-  // Mounted here for the same reason as the catalogue sync: it has to keep
-  // running through a sign-out, because withdrawing the token is the half that
-  // matters.
+  // Same reason: withdrawing the token on sign-out must still run.
   useOsAssistantCredentials();
 
   const isOffered = useAssistantIsOffered();
   const live = assistantIsLive(status);
   const floatingClearance = useAssistantFloatingClearance();
   const hasTabBar = useTabBarState() !== null && !isWebShell;
-  // A phone hugs its edges; a desktop window does not. Docked at the same
-  // twelve pixels the phone uses, the panel read as glued to the side of the
-  // browser — an object stuck to the chrome rather than floating over the page.
   const edge = isExpanded ? spacing.xl : spacing.lg;
   const bottom =
     insets.bottom +
     (hasTabBar ? controlSizes.tabBar : ValueConstants.zero) +
     floatingClearance +
     edge;
-  // The wide layout has the same hole the phone sheet had, and a tablet is
-  // where it shows: `isExpanded` is a width, so an iPad takes this branch WITH
-  // a software keyboard, and the panel's composer sat under it. The dock is
-  // lifted, and the panel is told where its floor now is so it shortens to
-  // match instead of running off the top.
+  // isExpanded is width, so a tablet takes this branch with a software keyboard: lift the dock.
   const keyboardHeight = useKeyboardHeight();
   const dockBottom = bottom + keyboardHeight;
 
-  // Hiding the controls does not stop a session. Landing on the sign-in screen
-  // mid-conversation — an expired token redirects there — would otherwise leave
-  // the microphone open with nothing on screen able to close it.
+  // Hiding the controls must not leave a session running (e.g. on an expired-session redirect).
   useEffect(() => {
     if (!isOffered && live) void toggleVoice();
   }, [isOffered, live, toggleVoice]);
@@ -133,9 +116,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
   // Below every hook, so the order never changes with the route.
   if (!isOffered) return null;
 
-  // Hanging up is a decision. Putting the panel away is not, so it keeps a
-  // running session alive in the mini bar and only closes outright when there
-  // is nothing left to keep.
+  // Minimise keeps a running session in the mini bar; close only when nothing is running.
   const minimize = (): void => {
     setView(live ? AssistantView.Mini : AssistantView.Closed);
   };
@@ -161,9 +142,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
     if (!live) void toggleVoice();
   };
 
-  // On a phone the assistant IS the orb: there is no smaller form to minimise
-  // into, so `Mini` and `Open` are the same surface. The wide layout keeps the
-  // panel and the bar, which is where the extra room makes them worth having.
+  // On a phone the orb is the only form, so Mini and Open are the same surface.
   const isOpen = view === AssistantView.Open || view === AssistantView.Mini;
 
   if (!isExpanded) {
@@ -222,11 +201,7 @@ export const AssistantPill = (): React.JSX.Element | null => {
 };
 
 const styles = StyleSheet.create({
-  // Both edges are pinned so the dock spans the screen: the panel's own
-  // `width: '100%'` needs something to be a percentage OF, and without a left
-  // edge the dock shrank to its widest child, leaving the panel about a third
-  // of its cap. `box-none` keeps the empty span click-through, and `flex-end`
-  // keeps the control in its corner regardless.
+  // Both edges pinned so the panel's full width has a span; box-none keeps it click-through.
   dock: {
     position: 'absolute',
     left: spacing.md,
@@ -235,8 +210,5 @@ const styles = StyleSheet.create({
     alignItems: 'flex-end',
     gap: spacing.sm,
   },
-  // On a wide window the panel is a docked side column, so the dock stops
-  // spanning and lets its child size itself — and stands further off the edge,
-  // because a browser window has room and a phone does not.
   dockWide: { left: 'auto', right: spacing.xl },
 });

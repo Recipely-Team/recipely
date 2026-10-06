@@ -100,16 +100,11 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }
-    // A recipe outranks a draft when both are present. An import announces the
-    // draft it produced, and publishing that draft turns it into a recipe — at
-    // which point the server sets `recipeId` on the same notification. The
-    // draft pointer is the older claim of the two, so the newer one wins;
-    // checking the draft first sent the user to a row that no longer existed.
+    // A recipe outranks a draft: publishing an imported draft sets recipeId on the same notification.
     if (this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Recipe, recipeId: this.props.recipeId };
     }
-    // Only reachable while the import's draft is still unpublished: there is
-    // no recipe yet, just something to finish.
+    // Only while the imported draft is unpublished.
     if (this.props.draftId !== null) {
       return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
     }

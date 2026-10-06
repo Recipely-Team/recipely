@@ -78,17 +78,13 @@ export class NotificationService implements NotificationServiceInterface {
         }),
       });
 
-      // Register the "Kapat" action button — shown on both iOS (long-press /
-      // expanded notification) and Android (notification action row).
       await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
         {
           identifier: DISMISS_ALARM_ACTION,
           buttonTitle: copy.dismissAction,
           options: {
             isDestructive: true,
-            // opensAppToForeground: false lets the action run without bringing
-            // the app to the foreground. If the app is fully killed the OS may
-            // still open it briefly, but the intent is minimal interruption.
+            // Run the action without foregrounding the app.
             opensAppToForeground: false,
           },
         },
@@ -98,18 +94,11 @@ export class NotificationService implements NotificationServiceInterface {
         await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
           name: copy.channelName,
           importance: Notifications.AndroidImportance.MAX,
-          // WHY: omitting `sound` causes the Android channel manager to set
-          // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
-          // notification sound. Passing 'default' (string) mistakenly calls
-          // mSoundResolver.resolve('default') which returns null (file not in
-          // res/raw) → silent channel. Passing `true` is a TypeScript error.
-          // So the only correct way for default sound is to omit the key.
+          // Omit sound: 'default' resolves to null on Android (silent channel); omitting uses the system sound.
           enableVibrate: true,
-          // Copied: expo-notifications takes a mutable `number[]`, and the
-          // constant must not be mutable shared state.
+          // Copied: the API takes a mutable array.
           vibrationPattern: [...ALARM_VIBRATION_PATTERN],
-          // Route audio through the Alarm volume stream so it rings loudly
-          // even when notification volume is turned down.
+          // Alarm stream, so it rings even with notification volume down.
           audioAttributes: {
             usage: 4, // AudioUsage.ALARM
             contentType: 4, // AudioContentType.SONIFICATION
@@ -183,8 +172,7 @@ export class NotificationService implements NotificationServiceInterface {
         content: {
           title: `${ALARM_EMOJI} ${recipeName}`,
           body,
-          // iOS reads sound from content; Android ignores it (channel sets sound).
-          // Using 'default' until a native build bundles alarm.mp3 in the app.
+          // iOS reads sound from content; Android from the channel.
           sound: isIos() ? 'default' : undefined,
           categoryIdentifier: TIMER_ALERT_CATEGORY,
           data: { type: TIMER_COMPLETE, timerId, recipeName },

@@ -55,8 +55,7 @@ export class HttpClient {
       timeout: options.timeoutMs ?? DEFAULT_REQUEST_TIMEOUT_MS,
       headers: {
         [HttpHeader.accept]: HttpMediaType.json,
-        // Content-Type is set per-request in the interceptor so FormData uploads
-        // can omit it and let the XHR runtime auto-set multipart + boundary.
+        // Content-Type per request (multipart sets its own boundary).
       },
       validateStatus: () => true,
     });

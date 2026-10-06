@@ -22,9 +22,7 @@ interface CreatedRecipesStoreDeps {
   importInstagramRecipeUseCase: ImportInstagramRecipeUseCase;
   refineRecipeUseCase: RefineRecipeUseCase;
   deleteRecipeUseCase: DeleteRecipeUseCase;
-  // WHY: owner-mutation flows must keep the public feed and detail cache in
-  // sync. Without this, the recipe list at /recipes and the detail page show
-  // stale data after a delete until the next full reload.
+  // Owner mutations keep the public feed and detail cache in sync.
   recipeListStore: BoundStore<RecipeListStoreState>;
   recipeDetailStore: BoundStore<RecipeDetailStoreState>;
 }
@@ -47,12 +45,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     deleteState: { status: StoreStatus.Idle },
     refineState: { status: StoreStatus.Idle },
     aiDraft: null,
-    // WHY: localRecipes is the source of truth for `findById`; recipes (the
-    // lean "My Recipes" grid data) is kept in sync alongside it via
-    // `recipeToSummary` so a create/delete doesn't need a re-fetch to
-    // show up in both places. The conversion only fails on the
-    // practically-impossible case of an already-valid Recipe producing an
-    // invalid RecipeSummaryEntity — skip the lean-list update in that case.
+    // localRecipes backs findById; the lean grid list is kept in sync alongside it.
     add: (recipe) =>
       set((s) => {
         const summary = recipeToSummary(recipe);
@@ -67,14 +60,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         recipes: s.recipes.filter((r) => r.id !== id),
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
-    // The try/catch is not defensive dressing: this action owns the only state
-    // the publish button reads, so ANY throw between `Creating` and a terminal
-    // status leaves the button saying "Publishing…" with no way back. That is
-    // what a revoked `blob:` URL did — `fetch()` on it rejects while building
-    // the multipart body, the rejection escaped, and the screen sat there for
-    // as long as the user was willing to wait. Everything here is `Result`-based
-    // by convention, so a throw is by definition something nobody predicted,
-    // which is exactly when a stuck spinner is least acceptable.
+    // Any throw must still end in a terminal status, or the publish button stays busy.
     createRecipe: async (input, onProgress) => {
       set({ createState: { status: StoreStatus.Creating } });
       try {
@@ -99,17 +85,13 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     },
     loadMyRecipes: async () => {
       const requested = session;
-      // Only the FIRST load announces itself: a reload of a grid that is
-      // already on screen keeps its `Loaded` state, or every re-focus — and
-      // every pull-to-refresh — would swap the rows for a skeleton.
+      // Only the first load shows a skeleton; reloads keep the rows.
       if (get().myRecipesState.status !== StoreStatus.Loaded) {
         set({ myRecipesState: { status: StoreStatus.Loading } });
       }
       const result = await deps.listMyRecipesUseCase.execute();
       if (requested !== session) return;
       if (!result.ok) {
-        // The rows already on screen stay: a failed reload must not blank the
-        // grid the user is looking at.
         set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
@@ -123,12 +105,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         return;
       }
       const recipe = result.value;
-      // WHY: the backend does NOT persist generated recipes — `/recipes/generate`
-      // returns a preview with a throwaway id (see backend GenerateRecipeUseCase:
-      // "the recipe is NOT persisted; that's the client's choice via POST /recipes").
-      // So we surface it only as `aiDraft` to pre-fill the wizard. It must NOT be
-      // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
-      // that does not exist on the server until the user publishes it.
+      // Generated recipes are previews (not persisted): aiDraft only, never in the list.
       set({
         generateState: { status: StoreStatus.Success, recipe },
         aiDraft: recipe,
@@ -142,11 +119,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         return;
       }
       const recipe = result.value;
-      // WHY: the backend does NOT persist imported recipes — `/recipes/import`
-      // returns a preview with a throwaway id (same contract as generate). So we
-      // surface it only as `aiDraft` to pre-fill the wizard. It must NOT be
-      // prepended to `recipes`, otherwise "My Recipes" would show a phantom entry
-      // that does not exist on the server until the user publishes it.
+      // Imported recipes are previews too: aiDraft only.
       set({
         importState: { status: StoreStatus.Success, recipe },
         aiDraft: recipe,
@@ -160,11 +133,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         return null;
       }
       const refined = result.value;
-      // WHY: refine returns a NOT-persisted preview (same contract as generate).
-      // It is surfaced via refineState only and must NOT be prepended to
-      // `recipes`, which would create a phantom "My Recipes" entry. The full
-      // RefinedRecipe (recipe + AI summary/suggestion) is returned so the
-      // caller can surface the natural-language commentary.
+      // Refine returns a preview: refineState only.
       set({ refineState: { status: StoreStatus.Success, recipe: refined.recipe } });
       return refined;
     },

@@ -119,8 +119,7 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
-  // Appends the bare marker; the row it renders as edits the label. An unnamed
-  // group is dropped on save rather than published as a blank heading.
+  // An unnamed group is dropped on save.
   const onAddIngredientGroup = useCallback((): void => {
     setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, INGREDIENT_GROUP_PREFIX] }));
   }, []);

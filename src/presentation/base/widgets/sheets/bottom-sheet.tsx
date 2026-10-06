@@ -131,8 +131,7 @@ export const BottomSheet = ({
           <BottomSheetHeader
             title={title}
             onClose={onClose}
-            // The grabber is the mobile dismiss affordance; without it the
-            // dialog needs a visible close control of its own.
+            // Expanded dialogs have no grabber, so they show a close control.
             showCloseButton={showCloseButton || isExpanded}
             rightAction={rightAction}
           />
@@ -173,9 +172,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: radii.xl,
     borderTopRightRadius: radii.xl,
     maxHeight: '78%',
-    // Clips its own children to the rounded corners. Without it the scroll
-    // area and the header paint square corners over the radius, which reads as
-    // two odd notches at the top edge of the sheet.
     overflow: 'hidden',
   },
   dialog: {
@@ -195,9 +191,7 @@ const styles = StyleSheet.create({
     height: spacing.xs,
     borderRadius: radii.xs,
   },
-  // flexShrink lets the scroll area give up height to the pinned footer once the
-  // sheet hits its 78% cap; without it the ScrollView claims its content height
-  // and pushes the footer past the bottom edge — the bug the footer prevents.
+  // flexShrink lets the scroll yield to the pinned footer at the height cap.
   scroll: {
     flexShrink: ValueConstants.one,
   },
@@ -205,8 +199,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingBottom: spacing.lg,
   },
-  // The hairline separates the pinned action from content scrolling behind it,
-  // so it doesn't read as the last row of the list.
   footer: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,

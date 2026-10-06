@@ -17,9 +17,7 @@ export type FailureContentKeyType =
   | 'conflict'
   | 'rateLimit'
   | 'validation'
-  // Copy of last resort: a cancellation is meant to be swallowed by the screen
-  // (see `CancelledFailure`), so these words exist only so a caller that forgets
-  // cannot fall through to "something went wrong".
+  // Last-resort copy for a cancellation a screen forgot to swallow.
   | 'cancelled'
   | 'unknown'
   // ── key-tier: AI generation ────────────────────────────────────────────────

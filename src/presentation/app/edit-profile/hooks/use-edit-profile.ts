@@ -46,8 +46,7 @@ export const useEditProfile = (): UseEditProfileResult => {
 
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [bio, setBio] = useState(initialBio);
-  // The write-through copy the save reads. Updated by the setters below rather
-  // than during render, because a render is exactly what has not happened yet.
+  // Write-through copy for save, updated in the setters (not in render).
   const latest = useRef({ displayName: initialDisplayName, bio: initialBio });
 
   const onChangeName = (value: string): void => {

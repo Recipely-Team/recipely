@@ -64,8 +64,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
-    // Cast: the dynamic redirect param can't be statically verified against
-    // expo-router's typed-routes union — same pattern as useAuthGuard.
+    // Cast: a runtime path is not in the typed-routes union.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
   const shownRecipe = localRecipe ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe : null);
@@ -266,9 +265,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
-  // A recipe with no figures may simply be newer than the backend's
-  // calculator; `useNutritionRecheck` asks once more before the screen calls
-  // them absent. Nothing to wait for until a recipe has actually arrived.
+  // Ask the calculator once more before calling nutrition absent.
   const isNutritionCalculating = useNutritionRecheck(
     recipeId,
     recipe === null || recipe.nutritionFacts.hasAny,
@@ -320,8 +317,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
      */
     onCopyToDraft: () =>
       requestGate(
-        // Cast for the same reason as `onGoToSignIn`: a path built at runtime
-        // cannot be checked against expo-router's typed-routes union.
+        // Cast: same as onGoToSignIn.
         () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
         t().recipes.signInToCopy,
       ),

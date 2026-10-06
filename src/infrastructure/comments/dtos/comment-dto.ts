@@ -8,8 +8,7 @@ export interface CommentDto {
   authorPhotoUrl: string | null;
   createdAt: string;
   updatedAt: string;
-  // Optional: older backend responses may omit like data; the mapper defaults
-  // these to 0 / false.
+  // Optional: older responses omit like data.
   likeCount?: number;
   likedByMe?: boolean;
 }

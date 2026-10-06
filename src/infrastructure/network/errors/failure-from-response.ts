@@ -55,10 +55,7 @@ export const failureFromResponse = (status: number, body: unknown): Failure => {
       case ApiErrorCode.Validation:
         return new ValidationFailure(message, envelope.field, messageKey);
       case ApiErrorCode.Unprocessable:
-        // 422: the request arrived but a required piece (e.g. a missing image or
-        // field) was absent. Surface as ValidationFailure so the UI reads it as
-        // "fix your input"; `field` tells the UI which input was missing, and
-        // `messageKey` which of the several 422s this actually is.
+        // 422: a missing piece → ValidationFailure with its field.
         return new ValidationFailure(message, envelope.field, messageKey);
       case ApiErrorCode.Unauthorized:
         return new UnauthorizedFailure(message, messageKey);

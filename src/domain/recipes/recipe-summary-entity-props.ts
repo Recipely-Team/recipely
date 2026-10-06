@@ -13,8 +13,7 @@ export interface RecipeSummaryEntityProps {
   imageFocus?: FocalPoint;
   /** Who took the cover photo and under which licence; absent for the owner's own photo. */
   imageCredit?: ImageCredit;
-  // Opaque taxonomy keys — see `RecipeEntityProps.cuisine` in `recipe.ts` for why
-  // these stay `string` rather than the local curated enums.
+  // Opaque backend taxonomy keys (see RecipeEntityProps).
   cuisine: string;
   category: string;
   difficulty: Difficulty;

@@ -103,9 +103,7 @@ export const AssistantOrb = ({ status, level, isMuted }: AssistantOrbProps): Rea
     inputRange: [ValueConstants.zero, ValueConstants.one],
     outputRange: [ValueConstants.zero, -assistantMetrics.orbBobTravel],
   });
-  // The breath and the level are the same handle, so they cannot both hold it:
-  // while the assistant is speaking the orb's size means loudness, and that is
-  // the more informative of the two.
+  // Breath and level share one handle; while speaking, size means loudness.
   const breath = drift.interpolate({
     inputRange: [ValueConstants.zero, ValueConstants.one],
     outputRange: [ValueConstants.one, ValueConstants.one + assistantMetrics.orbBreathGrowth],
@@ -224,8 +222,6 @@ const styles = StyleSheet.create({
     width: assistantMetrics.orb * ORB_SHAPE.sweep.across,
     height: assistantMetrics.orb * ORB_SHAPE.sweep.along,
   },
-  // Sits ON the orb's lower edge: the level belongs to the object making the
-  // sound, not to a bar somewhere else on the screen.
   waveBadge: {
     position: 'absolute',
     bottom: ValueConstants.zero,

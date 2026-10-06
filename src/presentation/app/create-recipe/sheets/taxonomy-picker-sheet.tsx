@@ -89,10 +89,7 @@ export const TaxonomyPickerSheet = (props: TaxonomyPickerSheetProps): React.JSX.
   };
 
   return (
-    // Presented through the shared sheet, which is what decides
-    // sheet-on-mobile / dialog-on-web. The grid is plain wrapped Views rather
-    // than a FlatList: the sheet already scrolls its content, and a list
-    // inside that scroller would fight it for the gesture.
+    // The shared sheet scrolls its content, so the grid is plain Views, not a FlatList.
     <BottomSheet visible={visible} title={catalog.title} onClose={onClose} showCloseButton>
       <View style={styles.grid}>
         {catalog.items.map((item) => {
@@ -135,8 +132,6 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.md,
   },
   option: {
-    // Three per row: each cell takes a third of the row minus its share of the
-    // two gaps between them.
     width: GRID_COLUMN_WIDTH,
     alignItems: 'center',
     justifyContent: 'center',

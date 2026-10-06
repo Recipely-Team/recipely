@@ -62,8 +62,7 @@ export const WebHeader = (): React.JSX.Element => {
   ];
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
-  // Empty when nobody is signed in: the avatar then draws the person mark rather
-  // than initials of a placeholder name, which read as a signed-in account.
+  // Empty for guests, so the avatar shows the person mark.
   const displayName = user?.displayName ?? CharConstants.empty;
   const avatarUri = user?.photoUrl ?? undefined;
 
@@ -79,13 +78,11 @@ export const WebHeader = (): React.JSX.Element => {
   const goProfile = (): void => router.replace(RoutePaths.profile);
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
-  // The Discover entry to the welcome/onboarding screen is a guest-only affordance
-  // and — per the prototype — lives on the Recipes tab alone.
+  // Discover is guest-only and on the Recipes tab.
   const isAuthenticated = authState.status === StoreStatus.Authenticated;
   const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
-  // Search input only appears on the Recipes listing — that's where the recipe
-  // list reads `useWebShellState().searchQuery` and folds it into its filter.
+  // Search only on the Recipes listing, which reads it.
   const showSearch = activeTab === WebHeaderTabKey.Recipes;
 
   return (

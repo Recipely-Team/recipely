@@ -35,10 +35,7 @@ export class AssistantMessenger implements AssistantMessengerInterface {
           ? {}
           : { screenContext: screenContext.slice(ValueConstants.zero, ApiLimits.assistantScreenContext) }),
       },
-      // This is a model call, not a lookup. On the default ten seconds the
-      // request was cancelled mid-answer and the screen said "that did not go
-      // through" — for a question the assistant was still working on. The
-      // repository already keeps the number that AI calls are allowed.
+      // A model call: the default timeout cuts answers off.
       { timeout: AI_REQUEST_TIMEOUT_MS },
     );
     if (!result.ok) return fail(result.failure);

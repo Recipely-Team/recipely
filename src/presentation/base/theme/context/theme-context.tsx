@@ -40,11 +40,7 @@ const isThemePreference = (v: string): v is ThemePreference =>
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
   const hydrated = useIsHydrated();
-  // Locale is part of this provider on purpose: react-navigation blocks
-  // parent-driven re-renders of mounted screens, so a language switch would
-  // otherwise only show after something else (e.g. a theme change) re-rendered
-  // them. Every screen consumes this context, so rebuilding the value on a
-  // locale change re-renders each screen and re-evaluates its t() strings.
+  // Locale lives here so a language switch re-renders mounted screens (react-navigation blocks parent re-renders).
   const locale = useLocale();
   const [themeId, setThemeIdState] = useState<ThemeIdType>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
@@ -53,9 +49,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   useEffect(() => {
     void getKeyValueStore().getItem('theme_id').then((read) => {
       const stored = read.ok ? read.value : null;
-      // A previously-persisted theme may no longer be part of the palette
-      // (e.g. after trimming it down) — fall back to the default instead of
-      // handing an unknown id to `getThemeColors`, which would crash.
+      // Fall back when a stored theme id no longer exists.
       setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
     void getKeyValueStore().getItem('theme_preference').then((read) => {
@@ -76,14 +70,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     void getKeyValueStore().setItem('theme_preference', pref);
   }, []);
 
-  // On web the static export prerenders without `prefers-color-scheme`, so the
-  // server HTML is always light. Ignore the live system scheme until after
-  // hydration so the first client render matches and React can hydrate cleanly
-  // (React error #418). `preference` itself loads from storage in an effect, so
-  // it is already at its SSR default ('system') on the first render.
-  // React Native 0.83 widened `ColorSchemeName` with 'unspecified' (the system
-  // reports no preference); like a null scheme it resolves to light, so every
-  // non-'dark' value collapses to the same branch.
+  // Web static export renders light; ignore the system scheme until hydrated (React #418).
   const ignoreSystemScheme = isWeb() && !hydrated;
   const effectiveSystemScheme: ThemeVariant =
     !ignoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
@@ -96,8 +83,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
 
   const value = useMemo(
     () => ({ themeId, preference, scheme, colors, setThemeId, setPreference }),
-    // `locale` is a deliberate extra dependency: a new value identity per
-    // locale re-renders every useTheme consumer (see comment above).
+    // locale is a deliberate extra dependency (see above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [themeId, preference, scheme, colors, setThemeId, setPreference, locale],
   );

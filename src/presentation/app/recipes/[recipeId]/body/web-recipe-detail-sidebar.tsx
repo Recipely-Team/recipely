@@ -52,9 +52,7 @@ export const WebRecipeDetailSidebar = ({
         </View>
         <View style={styles.checklist}>
           {recipe.ingredients.map((item, i) => {
-            // A group heading names one component of the recipe — a syrup, a
-            // filling. There is nothing to tick off, so it must not carry a
-            // checkbox that does nothing when tapped.
+            // Group headings get no checkbox.
             if (isIngredientGroup(item)) {
               return (
                 <ThemedText

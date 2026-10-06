@@ -99,8 +99,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    // A long step must grow the card downwards, never squeeze the badge into
-    // an ellipse to make room for itself.
     flexShrink: ValueConstants.zero,
   },
   numberText: {

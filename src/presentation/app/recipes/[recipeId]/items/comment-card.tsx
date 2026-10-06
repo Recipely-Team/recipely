@@ -68,8 +68,6 @@ export const CommentCard = ({
     );
   }, [highlighted, flash]);
 
-  // At rest (flash = 0) this resolves to exactly the normal card colors, so a
-  // non-highlighted card is visually unchanged.
   const flashStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       flash.value,

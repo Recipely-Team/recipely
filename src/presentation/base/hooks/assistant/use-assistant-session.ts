@@ -62,9 +62,7 @@ export const useAssistantSession = (): AssistantSessionView => {
   const sendText = useCallback((text: string) => send(text, locale), [send, locale]);
 
   const toggleVoice = useCallback(() => {
-    // Asked as "is it idle", this called STOP when the status was Unavailable —
-    // so the first press after any failure appeared to do nothing, and the user
-    // had to press the same button twice to get a session.
+    // Not live (Unavailable included) starts a session.
     if (!assistantIsLive(status)) {
       void startVoice(locale);
       return;

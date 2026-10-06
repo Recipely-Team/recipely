@@ -43,8 +43,6 @@ export const ImportStageList = ({ activeStage, labels, accent }: ImportStageList
               style={[
                 styles.marker,
                 {
-                  // The active step wears the ring's accent, so the whole
-                  // screen says where this came from.
                   backgroundColor: isDone ? colors.success : isActive ? accent : colors.skeleton,
                 },
               ]}

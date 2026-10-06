@@ -113,15 +113,7 @@ export class AssistantActionRegistry {
       const current = this.handlers.get(action);
       if (current === undefined) return;
 
-      // Remove THIS handler wherever it sits, rather than clearing the key.
-      // Five actions are implemented by two screens each — the always-mounted
-      // pill answers `openRecipe`, and My Recipes answers it better while it
-      // is open — and expo-router leaves the screen underneath mounted. A
-      // cleanup that deleted the key took the shadowed handler with it, and
-      // nothing re-registered it: `useAssistantAction`'s effect depends only
-      // on the action and the registry, neither of which changes. Opening My
-      // Recipes once and going back left "open the lentil soup" answering
-      // `unavailable_here` for the rest of the process.
+      // Remove this handler wherever it sits: two screens can share a key and both stay mounted.
       const at = current.lastIndexOf(handler);
       if (at !== ValueConstants.minusOne) current.splice(at, ValueConstants.one);
       if (current.length === ValueConstants.zero) this.handlers.delete(action);
@@ -222,11 +214,7 @@ export class AssistantActionRegistry {
 
   /** The one-line screen state, for a caller that needs it outside a result. */
   get screenContext(): string {
-    // Screen describers are written by screens and close over their own state,
-    // so one of them throwing must not take the tool RESPONSE with it: a live
-    // session that gets no response simply stops, and the screen line is the
-    // least important thing in it. `run` promises to always answer, and this
-    // is on the path of every answer it gives.
+    // A throwing describer must not take the tool response with it.
     const route = this.describe(() => this.describeScreen());
     const last = this.contentDescribers[this.contentDescribers.length - ValueConstants.one];
     const content = last === undefined ? CharConstants.empty : this.describe(last);
@@ -262,10 +250,7 @@ export class AssistantActionRegistry {
       }
     }
 
-    // Only now. The fallback carries an action to the screen that owns it, so
-    // it must not pre-empt a screen that is open and willing. `notMine` is a
-    // screen saying "not THIS one" rather than "not here", so the stack is
-    // genuinely exhausted at this point and the fallback does run.
+    // Fallback only once the stack is exhausted (notMine = not this one).
     const fallback = this.fallbacks.get(action);
     if (fallback !== undefined) {
       try {
@@ -282,9 +267,6 @@ export class AssistantActionRegistry {
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {
-    // Every answer passes through here, which is the only place that sees all
-    // of them — handlers return from a dozen files and the session never looks
-    // at what came back.
     if (!result.ok) {
       this.lastFailedAction = [
         `error=${result.error ?? UNNAMED_ERROR}`,
@@ -294,9 +276,7 @@ export class AssistantActionRegistry {
         .join(SCREEN_LINE_SEPARATOR);
     }
 
-    // A handler that said something more specific keeps it. My Recipes reports
-    // which tab it refreshed; overwriting that with the pathname threw away
-    // the one thing that handler bothered to say.
+    // A handler's own ctx wins.
     if (result.ctx !== undefined) return result;
 
     const ctx = this.screenContext;

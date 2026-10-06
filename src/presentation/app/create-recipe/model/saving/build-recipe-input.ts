@@ -16,8 +16,7 @@ export const buildCreateInput = (
   fromDraftId?: string,
 ): CreateRecipeInput => {
   const images = recipe.media.filter((m) => m.type === MediaType.Image);
-  // An Instagram import arrives with a cover the backend already stored, so it
-  // is a URL to hand back rather than a file to upload — see `isHostedMedia`.
+  // An imported cover is already hosted: hand back the URL (isHostedMedia).
   const uploads = images.filter((m) => !isHostedMedia(m));
   const hosted = images.find(isHostedMedia);
   return {
@@ -36,9 +35,7 @@ export const buildCreateInput = (
     // Every save is private; publishing is a separate, deliberate step.
     visibility: RecipeVisibility.Private,
     locale,
-    // Names the draft so the server can retire it — and send its
-    // notifications on to this recipe — instead of the client deleting it
-    // in a call nothing connects to this one.
+    // Names the draft so the server retires it and repoints its notifications.
     ...(fromDraftId !== undefined ? { fromDraftId } : {}),
   };
 };

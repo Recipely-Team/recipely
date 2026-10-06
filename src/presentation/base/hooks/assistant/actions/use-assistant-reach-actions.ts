@@ -45,23 +45,12 @@ export const useAssistantReachActions = (): void => {
   const pathname = usePathname();
 
   useEffect(() => {
-    // `reach` asks the registry to run the action again, and the registry falls
-    // back HERE when nothing in the stack answers — so a screen handler that
-    // declines with `notMine` would send it round for ever.
-    //
-    // This set belongs to ONE run of the effect, and the effect re-runs on
-    // navigation — so a reach that navigates is re-registered with a fresh,
-    // empty set while still in flight. Recursion is bounded at two extra hops
-    // rather than one, which terminates but is not the "one at a time" it
-    // looks like. Anything that widens the deps weakens it further.
+    // Guards against reach looping: one run per action per effect run.
     const reaching = new Set<string>();
 
     const undo = Object.entries(ASSISTANT_ACTION_HOMES).map(([action, screen]) => {
       const reach = async (arg?: string): Promise<AssistantActionResultType> => {
-        // `not_found`, not `unavailable_here`: a screen DID answer and declined
-        // the subject. `unavailable_here` means "nothing here can do this, look
-        // elsewhere", which invites exactly the second attempt this guard cuts.
-        // This is the answer `run` would give with no fallback registered.
+        // not_found (a screen declined), not unavailable_here (which invites a retry).
         if (reaching.has(action)) return { ok: false, error: AssistantActionError.NotFound };
         reaching.add(action);
         try {
@@ -75,9 +64,7 @@ export const useAssistantReachActions = (): void => {
         const target = ASSISTANT_NAVIGATION_TARGETS[screen];
         const wasAt = pathname;
 
-        // Compared without the query: `usePathname()` never carries one, and
-        // four entries in the targets map do (`?tab=`). A home pointing at one
-        // would otherwise never match, and would navigate every time.
+        // Compare without the query: usePathname never carries one.
         const alreadyThere = wasAt === target.split(QUERY_START)[ValueConstants.zero];
         if (!alreadyThere) router.navigate(target as Href);
 
@@ -86,23 +73,14 @@ export const useAssistantReachActions = (): void => {
           SCREEN_ARRIVAL_TIMEOUT_MS,
         );
         if (!arrived) {
-          // Reported from where we are, rather than navigating back. `back()`
-          // fires up to four seconds later — long enough that the user has
-          // often navigated themselves, and it would undo THEIR move from a
-          // screen they chose, with no visible cause. `navigate` also reuses
-          // an existing route, so going back from one it popped to lands
-          // somewhere they were never standing.
+          // Report from where we are; a late back() could undo the user's own navigation.
           return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
         }
 
         const first = await registry.run(action as AssistantActionType, arg);
         if (first.error !== AssistantActionError.NotReady) return first;
 
-        // One more, once the screen has had a moment to fetch. Only ever on
-        // `not_ready`: inferring it from `not_found` would make everything
-        // genuinely missing wait for a retry it can never pass, and this
-        // re-runs the whole action, so nothing with a side effect may be
-        // retried this way.
+        // One retry after a settle, only on not_ready and only for side-effect-free reads.
         await new Promise((resolve) => setTimeout(resolve, SETTLE_MS));
         return registry.run(action as AssistantActionType, arg);
       };

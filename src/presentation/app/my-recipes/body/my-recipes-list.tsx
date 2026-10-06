@@ -100,8 +100,7 @@ export const MyRecipesList = ({
   scrollable,
 }: MyRecipesListProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  // `tintColor` is iOS-only and `colors` is Android-only; both are needed for the
-  // spinner to follow the theme on each platform.
+  // tintColor (iOS) and colors (Android) both theme the spinner.
   const refreshControl = (
     <RefreshControl
       refreshing={isRefreshing}
@@ -115,8 +114,7 @@ export const MyRecipesList = ({
     return <MyRecipesSkeleton tab={tab} gridColumns={gridColumns} />;
   }
 
-  // Only when there is nothing to fall back on: a failed RELOAD leaves the rows
-  // the user was already reading exactly where they are.
+  // Only with nothing to fall back on; a failed reload keeps the rows.
   if (loadFailure !== null && (tab === TabType.Drafts ? drafts.length : items.length) === ValueConstants.zero) {
     const content = failureContent(loadFailure);
     return (
@@ -256,8 +254,7 @@ const styles = StyleSheet.create({
   gridCell: {
     flex: ValueConstants.one,
   },
-  // flexGrow keeps the empty state pullable: the scroll content must fill the
-  // viewport so the gesture has a surface even with almost nothing rendered.
+  // flexGrow keeps the empty state pullable.
   emptyContent: {
     flexGrow: ValueConstants.one,
   },

@@ -61,8 +61,7 @@ export const WebHeroSection = ({
     }
   }, [state.status, load]);
 
-  // Re-fetch on locale switch (skip the first run so it doesn't double-load
-  // alongside the idle-guard mount effect above).
+  // Re-fetch on locale switch, skipping the first run.
   const didMountRef = useRef(false);
   useEffect(() => {
     if (!didMountRef.current) {
@@ -74,8 +73,6 @@ export const WebHeroSection = ({
 
   const stacked = width < STACK_WIDTH;
   const inRow = aiPanelInRow(width);
-  // Grow/basis rather than a bare weight: each block states the width below
-  // which it would rather the row wrapped than be squeezed.
   const featuredFlex = { flexGrow: HeroFlex.featured.grow, flexBasis: HeroFlex.featured.basis };
   const miniFlex = { flexGrow: HeroFlex.runners.grow, flexBasis: HeroFlex.runners.basis };
   const aiFlex = inRow
@@ -83,10 +80,7 @@ export const WebHeroSection = ({
     : styles.aiBand;
 
   if (state.status === StoreStatus.Idle || state.status === StoreStatus.Loading) {
-    // The placeholder reserves the SAME slots as the loaded band, not just the
-    // same ratio. Leaving the AI slot out gave the featured block the width of
-    // a two-block line, and since its height is now that width over the ratio,
-    // the band shrank ~140px the moment the recipes arrived.
+    // The placeholder reserves the same slots as the loaded band, so it does not jump on load.
     return (
       <View style={[styles.row, stacked ? styles.stacked : null]} testID={WEB_HERO_ROW_TEST_ID}>
         <View
@@ -148,12 +142,7 @@ export const WebHeroSection = ({
 };
 
 const styles = StyleSheet.create({
-  // `flexWrap` is what lets the AI panel drop to its own line instead of
-  // squeezing the photography beside it; `alignItems: stretch` (the default)
-  // keeps the three blocks the same height while they share a line.
-  //
-  // The row states NO height: the line is as tall as the featured card's ratio
-  // makes it, and the other two blocks stretch to that.
+  // flexWrap lets the AI panel drop to its own line; the row has no height of its own.
   row: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -168,8 +157,7 @@ const styles = StyleSheet.create({
   featured: {
     minWidth: ValueConstants.zero,
   },
-  // Loading only: the real card carries this ratio itself, so the placeholder
-  // has to borrow it or the band would change height on load.
+  // The placeholder borrows the card ratio so the band does not resize on load.
   featuredRatio: {
     aspectRatio: aspectRatios.heroWide,
   },
@@ -179,9 +167,7 @@ const styles = StyleSheet.create({
   aiSlot: {
     minWidth: ValueConstants.zero,
   },
-  // Below the wide breakpoint the panel takes a whole line of its own, which is
-  // what turns the third column into the design's full-width band. Wrapping is
-  // the collapse — nothing reorders.
+  // Below the wide breakpoint the panel takes its own line.
   aiBand: {
     flexBasis: '100%',
     maxWidth: '100%',

@@ -19,9 +19,7 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
   return create<RecipeDetailStoreState>((set, get) => ({
     byId: {},
     load: async (id: string) => {
-      // A re-entry refetches, and the cached recipe stays on screen while it
-      // does — dropping back to `loading` would blank a screen the user has
-      // already seen, for a request that usually changes nothing.
+      // A re-entry refetches behind the cached recipe.
       const cached = get().byId[id];
       if (cached?.status !== StoreStatus.Loaded) {
         set({ byId: { ...get().byId, [id]: { status: StoreStatus.Loading } } });
@@ -51,8 +49,7 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
       set({ isPhotoBusy: false });
       if (!result.ok) return result.failure;
 
-      // Reload rather than append: the gallery renders from the loaded recipe,
-      // and a second copy of the truth is a second thing to keep right.
+      // Reload rather than append: one source of truth.
       await get().load(recipeId);
       return null;
     },
@@ -65,8 +62,7 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
         const removal = await deps.removeRecipeCover.execute(recipeId);
         set({ isPhotoBusy: false });
         if (!removal.ok) return removal.failure;
-        // The server's answer goes on screen at once; the reload that follows
-        // refreshes what it does not carry (the publish checklist).
+        // Show the server answer at once; the reload refreshes the rest.
         get().put(recipe.withCoverRemoved(removal.value));
       } else {
         // A photo with no row is only on the device; there is nothing to ask the server.

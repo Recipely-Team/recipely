@@ -24,8 +24,7 @@ export async function appendFilePart(
   if (isWeb()) {
     const resp = await fetch(part.uri);
     const fetched = await resp.blob();
-    // A picked HEIC comes back typeless from the browser; the backend decides by
-    // type, so the part carries the one the file was picked as.
+    // A picked HEIC arrives typeless; send the picked type.
     const blob = fetched.type.length > ValueConstants.zero ? fetched : new Blob([fetched], { type: part.mimeType });
     formData.append(field, blob, part.fileName);
   } else {

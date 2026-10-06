@@ -63,9 +63,7 @@ export const CountBadge = ({
         {
           backgroundColor: isAlert ? colors.danger : colors.chipBackground,
           borderColor: colors.background,
-          // The ring cuts the badge out of the glyph beneath it. A tally sits
-          // beside its glyph rather than on it, so the ring would only be
-          // 2pt of extra disc crowding the row.
+          // Only an alert badge sits on its glyph and needs the cut-out ring.
           borderWidth: isAlert ? borderWidths.medium : ValueConstants.zero,
         },
         style,
@@ -94,9 +92,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: fontSizes.nano,
     fontWeight: fontWeights.bold,
-    // A badge is a fixed disc: the digits inside it cannot reflow, so the line
-    // box is pinned and the OS font multiplier is capped rather than allowed to
-    // push the number out of its circle.
+    // A fixed disc: pinned line box, capped font scale.
     lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },

@@ -126,9 +126,7 @@ export const FailureReporter = {
    * surface one.
    */
   report(failure: Failure, context: string): void {
-    // Remembered whatever the code — the assistant is asked to report the
-    // failures the product HANDLES just as often as the ones it does not, and
-    // "the network was down" is a perfectly good thing for a report to say.
+    // Remember every code: handled failures are reported too.
     last = `${context}: ${failure.code}: ${redact(failure.message)}`;
     try {
       events?.(failure.code, context);

@@ -171,8 +171,7 @@ export class AuthRepository implements AuthRepositoryInterface {
 
   async deleteAccount(): Promise<Result<void, Failure>> {
     const result = await this.http.delete<void>(ApiRoutes.me.root);
-    // Keep the session on any HTTP/network failure so the user stays signed in
-    // and can retry — only clear local credentials once the server confirms.
+    // Keep the session on failure; clear only once the server confirms.
     if (!result.ok) {
       return result;
     }
@@ -206,8 +205,7 @@ export class AuthRepository implements AuthRepositoryInterface {
     );
   }
 
-  // Writes only if the stored claim is still the one read before the GET: a
-  // request / remove saved in between is newer than this answer.
+  // Writes only if the stored claim has not changed since the read.
   async refreshCreatorClaim(): Promise<Result<AuthSessionEntity, Failure>> {
     const issuer = await signedInUser(this.storage);
     if (!issuer.ok) return issuer;

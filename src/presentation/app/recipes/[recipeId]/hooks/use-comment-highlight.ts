@@ -149,8 +149,7 @@ export const useCommentHighlight = ({
         if (scrollDoneRef.current) return;
         const previousY = lastYRef.current;
         lastYRef.current = y;
-        // The same y twice running means the content above the comment has
-        // stopped growing: this landing is the final one.
+        // The same y twice: content above has stopped growing.
         if (
           previousY !== null &&
           Math.abs(y - previousY) <= SETTLE_EPSILON_PX
@@ -168,13 +167,7 @@ export const useCommentHighlight = ({
     );
   }, [targetId, scrollViewRef]);
 
-  // The flash is deliberately independent of the scroll: it fires as soon as the
-  // target card exists, whether or not we ever move the viewport. Tying it to a
-  // successful measurement would let a user who touches the scroller during the
-  // load (on native `onTouchMove` fires on incidental movement, not just a
-  // deliberate drag) surrender the scroll and lose the highlight with it —
-  // leaving the deep link doing nothing at all. Marking the comment costs them
-  // nothing; only moving them under their finger would.
+  // The flash is independent of the scroll: it fires once the card exists.
   useEffect(() => {
     if (targetId === null || flashedRef.current || nodeRef.current === null)
       return;
@@ -188,17 +181,11 @@ export const useCommentHighlight = ({
   }, [scrollToTarget, nodeVersion]);
 
   const scrollViewProps = useMemo<ScrollViewProps>(() => {
-    // `onWheel` is a web-only DOM prop that RN's types don't declare and native
-    // ignores. Spreading it in keeps the cast to this one prop, so the three
-    // real ScrollView handlers below stay excess-property-checked — a typo like
-    // `onContentSizeChanged` must not compile.
+    // onWheel is web-only and untyped; spread so the real handlers stay type-checked.
     const webOnly = { onWheel: releaseToUser } as Partial<ScrollViewProps>;
     return {
       onContentSizeChange: scrollToTarget,
-      // Three handlers because no single one covers both shells: react-native-web
-      // NEVER fires `onScrollBeginDrag` (its ScrollViewBase only forwards
-      // onScroll/onTouchMove/onWheel to the DOM), so `onWheel` is the only
-      // desktop-web signal that the user has taken over.
+      // Three handlers: react-native-web never fires onScrollBeginDrag (wheel is the web signal).
       onScrollBeginDrag: releaseToUser,
       onTouchMove: releaseToUser,
       ...webOnly,

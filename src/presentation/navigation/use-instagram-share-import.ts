@@ -42,11 +42,7 @@ export const useInstagramShareImport = (): void => {
 
     handledRef.current = true;
     resetShareIntent();
-    // expo-router serializes/deserializes object-form params itself, so the raw
-    // URL rides through without a manual encode/decode pair on either side.
-    // REPLACE when the import screen is already up. Pushing stacked a second
-    // copy: both instances stayed mounted, both polled the one job at 4 s, and
-    // popping back revealed a screen reporting the other share's progress.
+    // Object params are serialised by expo-router; replace when the import screen is already up.
     const target = { pathname: RoutePaths.importRecipe, params: { importUrl: url } };
     if (pathname === RoutePaths.importRecipe) router.replace(target);
     else router.push(target);

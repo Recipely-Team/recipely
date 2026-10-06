@@ -82,11 +82,7 @@ export class AdsService implements AdsServiceInterface {
 
   async prepare(): Promise<boolean> {
     this.pending ??= this.run();
-    // WHY the outcome rides on the awaited promise rather than an instance
-    // flag: concurrent callers await the same run, and a flag read after the
-    // await describes whichever run finished last. The identity check is the
-    // same hazard one level up — a late awaiter of an older run must not clear
-    // a newer one that has already taken its place.
+    // The outcome rides on the awaited promise: concurrent callers share one run.
     const started = this.pending;
     const outcome = await started;
     if (
@@ -139,9 +135,7 @@ export class AdsService implements AdsServiceInterface {
         ? RunOutcome.Refused
         : RunOutcome.Unavailable;
     } catch {
-      // Deliberately silent, and the one place in this file that is: the gather
-      // failure that sent us here was already reported, and this call fails for
-      // the same reason. A second non-fatal would say nothing the first did not.
+      // Silent on purpose: the first failure was already reported.
       return RunOutcome.Unavailable;
     }
   }

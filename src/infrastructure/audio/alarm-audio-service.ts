@@ -79,23 +79,18 @@ export class AlarmAudioService implements AlarmAudioServiceInterface {
     this.generation += ValueConstants.one;
     const generation = this.generation;
 
-    // Configuring the session and playing the tone are separate failures. A
-    // device that rejects the audio mode can still ring at whatever session the
-    // app already has, and a silent alarm is the worst possible outcome — so a
-    // failure here must never skip the playback below.
+    // Session setup and playback fail separately; a session failure must never skip playback.
     try {
       await setAudioModeAsync(ALARM_AUDIO_MODE);
       this.holdsAlarmSession = true;
-      // Left active on stop: `false` disables the audio subsystem app-wide, so
-      // handing back the exclusive mode is what releases other apps, not this.
+      // Left active on stop: false would disable audio app-wide.
       await setIsAudioActiveAsync(true);
     } catch {
       // Keep going with the session the app already has.
     }
 
     if (generation !== this.generation) {
-      // Dismissed while the session was being configured: hand the exclusive
-      // mode back here, because `stop()` already ran and saw nothing to undo.
+      // Dismissed during setup: release here, stop() already ran.
       await this.releaseSession();
       return;
     }
@@ -106,9 +101,7 @@ export class AlarmAudioService implements AlarmAudioServiceInterface {
       player.volume = ValueConstants.one;
       player.play();
 
-      // The source loads asynchronously, so the `play()` above can land before
-      // there is anything to play — on iOS that is silence, with no error and
-      // no retry. Re-issue play as soon as the player reports itself loaded.
+      // Re-issue play once loaded: an early play() on iOS is silent.
       let attempts = ValueConstants.zero;
       this.statusSubscription = player.addListener(
         'playbackStatusUpdate',
@@ -144,9 +137,7 @@ export class AlarmAudioService implements AlarmAudioServiceInterface {
       }
     }
 
-    // Runs even when there was no player: a dismiss can land while `start()` is
-    // still awaiting the session, and the exclusive mode it already applied
-    // would otherwise keep every other app's audio paused indefinitely.
+    // Release even without a player: a dismiss can land while start() awaits the session.
     await this.releaseSession();
   }
 

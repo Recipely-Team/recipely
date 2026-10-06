@@ -94,11 +94,7 @@ export const useAuthGuard = (): void => {
   useEffect(() => {
     if (status !== StoreStatus.Unauthenticated) return;
     if (isPublicPath(pathname)) return;
-    // `pathname` is guaranteed non-public here — the isPublicPath early return
-    // above already handled `/`, `/login`, and the other public routes — so it
-    // is always worth preserving as a post-login redirect target. Cast: the
-    // dynamic redirect param can't be statically verified against expo-router's
-    // typed-routes union.
+    // Non-public here, so always worth keeping as the post-login redirect.
     router.replace(RoutePaths.loginWithRedirect(withParams(pathname, params)) as Href);
   }, [status, pathname, params, router]);
 };

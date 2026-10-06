@@ -41,8 +41,7 @@ export const useRecipeAuthor = ({
       setState({ status: StoreStatus.Resolved, author: owner });
       return;
     }
-    // Owned recipe whose own profile has not resolved yet: hold on loading
-    // instead of fetching — the signed-in user's profile is the caller's job.
+    // Own recipe: wait for the caller to resolve the signed-in profile.
     if (isOwner) {
       setState({ status: StoreStatus.Loading });
       return;

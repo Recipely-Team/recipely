@@ -41,9 +41,7 @@ export const installCrashHandlers = (): void => {
   if (isWeb()) return;
   warmUpCrashReporting();
 
-  // Dev sessions end the way crashes do: a Metro reload, a dev-menu restart, a
-  // debugger detach. Arming here would report a phantom death on nearly every
-  // save, and drown the real ones.
+  // Not in dev: reloads would report phantom crashes.
   if (__DEV__) return;
 
   void (async () => {

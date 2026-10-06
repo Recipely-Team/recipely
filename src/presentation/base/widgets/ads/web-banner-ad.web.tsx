@@ -54,8 +54,6 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
 
   useEffect(() => {
     const node = hostRef.current;
-    // On web a View ref IS the DOM node; the guard both proves that to
-    // TypeScript and skips the (impossible) non-element case.
     if (node === null || !(node instanceof HTMLElement) || slotId === CharConstants.empty) return;
 
     void mountAdsenseUnit(node, slotId).catch((error: Error) => {
@@ -67,12 +65,7 @@ export const WebBannerAd = ({ slotId, accessibilityLabel }: WebBannerAdProps): R
       );
     });
 
-    // AdSense writes the verdict onto the element it was given rather than
-    // calling anything back, so watching the subtree is the only way to learn
-    // whether an ad arrived. No `attributeFilter`: naming the attribute here
-    // as well would spell the same vocabulary in two files that must agree,
-    // and `readAdUnitStatus` is the one that decides what counts. The host
-    // holds a single `<ins>`, so there is nothing to be noisy about.
+    // AdSense writes its verdict onto the element, so observe the subtree.
     const observer = new MutationObserver(() => setStatus(readAdUnitStatus(node)));
     observer.observe(node, { subtree: true, attributes: true });
 
@@ -105,10 +98,7 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     gap: spacing.xs,
   },
-  // `display: none` rather than a zero height: the `<ins>` keeps the inline
-  // height AdSense gave it, so the box has to be taken out of layout entirely
-  // for the gap to close. The node stays mounted — removing it would re-request
-  // an ad AdSense has already declined for this page view.
+  // display: none (the <ins> keeps its inline height); the node stays mounted.
   collapsed: {
     display: 'none',
   },

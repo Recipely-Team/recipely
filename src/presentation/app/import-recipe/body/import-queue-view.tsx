@@ -97,8 +97,6 @@ export const ImportQueueView = ({
 };
 
 const styles = StyleSheet.create({
-  // flex:1 so the footer keeps its place at the bottom instead of being pushed
-  // off by the scroll body.
   scroll: {
     flex: ValueConstants.one,
   },

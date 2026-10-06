@@ -30,8 +30,7 @@ export const configureSavedRecipesStore = (
         const next = new Set(s.savedIds);
         if (next.has(id)) {
           next.delete(id);
-          // Unsaving from the saved grid must take the card with it, or the row
-          // sits there un-bookmarked until the next load.
+          // Unsaving removes the card from the saved grid.
           return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
         }
         next.add(id);
@@ -59,17 +58,14 @@ export const configureSavedRecipesStore = (
       }),
     loadSaved: async () => {
       const requested = session;
-      // Only the FIRST load announces itself: a reload of a grid that is
-      // already on screen keeps its `Loaded` state, or every re-focus — and
-      // every pull-to-refresh — would swap the rows for a skeleton.
+      // Only the first load shows a skeleton.
       if (get().listState.status !== StoreStatus.Loaded) {
         set({ listState: { status: StoreStatus.Loading } });
       }
       const result = await deps.loadFavoritesUseCase.execute();
       if (requested !== session) return result;
       if (!result.ok) {
-        // The rows already on screen stay: a failed reload must not blank the
-        // grid the user is looking at.
+        // A failed reload keeps the rows.
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return result;
       }

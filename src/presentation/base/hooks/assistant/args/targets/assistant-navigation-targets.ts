@@ -25,9 +25,7 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
   create: RoutePaths.createRecipe,
   importRecipe: RoutePaths.importRecipe,
   myRecipes: RoutePaths.myRecipes,
-  // The four My Recipes tabs are destinations in their own right — "open my
-  // saved ones" names one of them, and landing on the tab the screen happened
-  // to remember is not what was asked for.
+  // Each My Recipes tab is its own destination.
   saved: RoutePaths.myRecipesTab(TabType.Saved),
   liked: RoutePaths.myRecipesTab(TabType.Liked),
   created: RoutePaths.myRecipesTab(TabType.Created),

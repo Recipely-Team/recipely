@@ -30,10 +30,7 @@ export const useAssistantScroll = (
         const direction = machineLower(arg ?? AssistantScrollDirection.Down);
         if (!isDirection(direction)) return { ok: false, error: AssistantActionError.UnknownDirection };
 
-        // Reported success unconditionally until a user found the screens
-        // where nothing was attached to move: the feed's wide-layout and
-        // search branches both answered "kaydırdım" over a list that had not
-        // budged. The handler now says what happened.
+        // Fail when nothing is attached to scroll.
         if (!scrollBy(direction)) return { ok: false, error: AssistantActionError.NothingToScroll };
         return { ok: true };
       },

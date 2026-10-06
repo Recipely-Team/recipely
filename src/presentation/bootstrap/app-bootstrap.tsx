@@ -51,37 +51,20 @@ const initializeStores = (): StoresType => {
 const stores = initializeStores();
 
 export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element => {
-  // WHY hydration is kicked off but NOT rendered around: the requests are what
-  // must wait for the saved language, not the UI. Every request awaits the same
-  // hydration through the HTTP client's async `localeProvider`, so the device
-  // seed can never reach the backend — while the tree still renders on the
-  // server for the static web export (a render gate here would emit blank pages).
-  // Starting it early only means the UI re-renders in the saved language sooner.
+  // Start hydration early but do not gate rendering on it: requests await it, the static export must still render.
   useEffect(() => {
-    // Never rejects — a storage failure falls back to the device seed inside
-    // LocaleService, because a rejection here would hang every request.
-    // Fill the hole presentation declares: it may not reach into
-    // infrastructure itself (rule 17), so the composition root hands it the
-    // sink. Before this runs, reporting is a no-op — which is correct, since
-    // Firebase is not initialised yet either.
+    // Never rejects (falls back to the device seed). Presentation cannot import infrastructure, so the root hands it the sink.
     FailureReporter.setSink(recordCrash);
     FailureReporter.setTrailSink(logCrashBreadcrumb);
-    // Every failure the user is shown is also COUNTED, whether or not it is
-    // crash-worthy: a rise in handled network failures is a real signal, and it
-    // has nowhere to live in Crashlytics.
+    // Count every shown failure, crash-worthy or not.
     FailureReporter.setEventSink((code, context) => {
       void analyticsService.logEvent(AnalyticsEvent.failureShown, { code, context });
     });
     void hydrateLocale();
     void initFirebase();
-    // After Firebase, so the keys reach a live Crashlytics instance, and once
-    // per launch: what this session is running on, on every crash report it
-    // files and as one analytics event.
+    // After Firebase, once per launch.
     reportDeviceProfile();
     stores.authStore.getState().hydrate().catch((err: unknown) => {
-      // `recordCrash` is the production channel (Crashlytics); the console line
-      // only exists for local visibility, so it stays behind __DEV__ — an
-      // unguarded console.error also raises a LogBox over the app in dev builds.
       if (__DEV__) console.error('[AppBootstrap] hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.authStore.hydrate');
     });
@@ -94,17 +77,11 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       if (__DEV__) console.error('[AppBootstrap] timer hydrate failed:', err);
       recordCrash(err, 'AppBootstrap.timerStore.hydrate');
     });
-    // Restores whether the docked timers bar was left parked as a corner pill;
-    // it defaults to expanded, so a storage failure is not worth reporting.
     void timersBarStore.getState().hydrate().catch(() => undefined);
-    // Resolves the persisted "don't show onboarding again" choice so the launch
-    // redirect can decide whether native guests land on the onboarding gate.
     void onboardingStore.getState().hydrate();
   }, []);
 
-  // Register the device's push token once the user is authenticated (Android
-  // via expo-notifications' FCM token, web via the Firebase JS SDK when
-  // configured; iOS is still a no-op pending a native messaging module).
+  // Register the push token once signed in (Android FCM, web Firebase JS; iOS pending).
   useEffect(() => {
     let registered = false;
     const register = (): void => {
@@ -115,10 +92,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       );
       void registerPushToken((token, platform) => useCase.execute(token, platform));
     };
-    // Startup and sign-in run this once; the screen that PROMISES a
-    // notification can ask again, because registration gives up silently when
-    // permission has not been granted yet and granting it later would
-    // otherwise change nothing until the next cold start.
+    // Exposed so a screen that promises a notification can retry after permission is granted.
     const maybeRegister = (): void => {
       if (registered) return;
       register();

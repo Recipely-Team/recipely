@@ -46,8 +46,7 @@ export const configureNotificationsStore = (
       });
     },
     refreshUnread: async () => {
-      // Fetch the minimum page — the endpoint returns unreadCount regardless of
-      // page size, so we only pay for one item to keep the badge fresh.
+      // Minimum page: unreadCount comes regardless of page size.
       const result = await deps.listNotifications.execute({ limit: UNREAD_PROBE_LIMIT });
       if (!result.ok) return;
       set({ unreadCount: result.value.unreadCount });

@@ -42,11 +42,9 @@ export const FilterSortFab = ({
   onPress,
 }: FilterSortFabProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  // Natural extended width, measured once so the morph interpolates to the real
-  // localized label width rather than a guessed constant.
+  // Measured once so the morph uses the real localized width.
   const [extendedWidth, setExtendedWidth] = useState(ValueConstants.zero);
-  // Natural label width, measured once so the morph can collapse the label's
-  // occupied space to 0 (not just fade it) and keep the icon centered.
+  // Measured once so the label can collapse to 0 and keep the icon centred.
   const [labelWidth, setLabelWidth] = useState(ValueConstants.zero);
 
   const label = t().recipes.filtersAndSort;
@@ -79,9 +77,6 @@ export const FilterSortFab = ({
     return { width };
   });
 
-  // Collapse the label's occupied width and its leading margin to 0 over the
-  // same scroll range, so the icon ends up perfectly centered in the circle
-  // instead of being pushed off-screen by the still-laid-out label.
   const labelStyle = useAnimatedStyle(() => {
     if (reduceMotion || labelWidth === ValueConstants.zero) {
       return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
@@ -101,8 +96,7 @@ export const FilterSortFab = ({
         styles.container,
         containerStyle,
         {
-          // The page ends where the root TabBar begins (hosted in _layout,
-          // outside the Stack), so the FAB only needs its own breathing room.
+          // The TabBar sits outside the page, so only breathing room is needed.
           bottom: spacing.lg,
           backgroundColor: colors.primary,
           borderColor: colors.gradientBorder,

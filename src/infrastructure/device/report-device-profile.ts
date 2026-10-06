@@ -29,8 +29,6 @@ export const reportDeviceProfile = (): void => {
     setCrashAttributes({ ...profile });
     void analyticsService.logEvent(AnalyticsEvent.deviceProfile, { ...profile });
 
-    // Local visibility only — the production channels are the two above, and an
-    // unguarded console line raises a LogBox over the app in a dev build (rule 22).
     if (__DEV__) console.log('[device]', profile);
   } catch {
     // Nothing to report the failure to report with.

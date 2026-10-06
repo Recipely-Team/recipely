@@ -170,7 +170,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    stateless mappers/formatters are plain exported functions.
 3. **Comments live at the head of the thing they describe** — ONE doc block per class/hook/component/module
    with `@remarks` bullets and a bolded label; inline `//` only for the line a reader would otherwise break,
-   one short line. Trivial pass-throughs need nothing.
+   one short line (`check:structure` rule AM: no two consecutive indented `//` lines). Trivial pass-throughs need nothing.
 4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers; split complex screens
    into sub-components in the feature folder; no nested classes, no nesting > 2 levels.
 5. **No magic values** — named literals → `@core/constants` (`CharConstants.empty`, `ValueConstants.zero`,

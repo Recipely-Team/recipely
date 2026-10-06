@@ -63,9 +63,7 @@ export const MobileFilterSheet = ({
           ? { label: t().recipes.clearFilters, onPress: onReset }
           : undefined
       }
-      // Pinned, not the last child of the scroll: five chip sections are taller
-      // than the sheet's 78% cap, so a CTA in the body sat below the fold and
-      // went unnoticed — the user had to scroll the whole sheet to apply.
+      // Pinned: the chip sections exceed the sheet's height cap.
       footer={<PrimaryButton label={t().recipes.showResults} onPress={onApply} />}
     >
       <View style={styles.sheetSection}>

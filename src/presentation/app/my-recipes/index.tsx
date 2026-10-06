@@ -60,20 +60,11 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const draftsListState = draftsStore((s) => s.listState);
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
-  // Deep-linked tab: publishing a recipe lands here on `created`, so the thing
-  // the user just made is the thing they are looking at.
+  // Deep-linked tab: a publish lands on created.
   const params = useLocalSearchParams<{ tab?: string }>();
   const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
 
-  // Re-read the param whenever it CHANGES, not only on mount. This screen is a
-  // tab, so it stays mounted: after the first visit a `useState` initialiser
-  // never ran again, and navigating here with `?tab=drafts` left the user on
-  // whichever tab they had last — while the assistant, whose navigate had
-  // genuinely succeeded, said "taslaklar listeniz burada".
-  //
-  // Keyed on the raw param rather than the parsed tab so a user's own tap is
-  // not undone: tapping Saved changes `tab` but not `params.tab`, so this does
-  // not fire and drag them back.
+  // Re-read ?tab= when it changes: this tab screen stays mounted.
   const lastTabParam = useRef(params.tab);
   useEffect(() => {
     if (params.tab === lastTabParam.current) return;
@@ -82,17 +73,13 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   }, [params.tab]);
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
-  // Grid columns: 1 on a phone, auto-fill at RECIPE_CARD_MIN_WIDTH once the
-  // viewport is expanded — the web shell and the iPad alike.
   const gridColumns = useMemo<number>(() => {
     if (!isExpanded) return ValueConstants.one;
     const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
     return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 
-  // WHY on focus, not on mount: this screen stays mounted behind the create
-  // flow, so a mount-only load left a recipe the user had just published (or a
-  // draft they had just deleted) missing until a manual pull-to-refresh.
+  // On focus, not mount: the screen stays mounted behind the create flow.
   useFocusEffect(
     useCallback(() => {
       void savedRecipesStore.getState().loadSaved();
@@ -105,8 +92,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const items =
     tab === TabType.Saved ? savedRecipes : tab === TabType.Liked ? likedRecipes : createdRecipes;
 
-  // Each tab owns its own load, so both the skeleton branch and the error
-  // branch read the state of the tab actually being shown.
+  // Each tab owns its load, so skeleton and error read the shown tab.
   const activeState =
     tab === TabType.Saved
       ? savedListState
@@ -117,8 +103,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           : draftsListState;
   const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
   const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
-  // Two different questions: whether the rows can be believed, and whether the
-  // wait for them is over. A failed load ends the wait but is not an answer.
+  // Trustworthy rows vs. finished waiting: a failed load ends the wait but is not an answer.
   const tabListState =
     activeState.status === StoreStatus.Loaded
       ? ListState.Ready
@@ -126,8 +111,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
         ? ListState.Failed
         : ListState.Loading;
   const isTabSettled = activeState.status === StoreStatus.Loaded || activeState.status === StoreStatus.Error;
-  // A failed load must not read as "you have nothing" — that is the same lie
-  // the empty-state-while-loading bug told, just with a different cause.
+  // A failed load must not read as an empty list.
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
   useReportFailure(loadFailure, 'MyRecipesScreen');
 
@@ -155,8 +139,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     if (!result.ok) showErrorToast(result.failure);
   };
 
-  // Deleting a draft is unrecoverable work, so the assistant asks first — and
-  // the sheet takes a spoken answer, because the whole point is hands-free.
+  // Deleting a draft asks first; the sheet takes a spoken answer.
   const [draftPendingDelete, setDraftPendingDelete] = useState<string | null>(null);
   useAssistantMyRecipesActions({
     tab,
@@ -169,27 +152,17 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     onRefresh,
     isTabSettled,
   });
-  // The tab is half the answer: "delete the lentil soup" means a different
-  // collection on Saved than it does on Created, and the model cannot tell
-  // which list it is looking at from the route alone — they share one.
-  // Empty on Drafts: `items` falls through to the created recipes there, and a
-  // handler answering for rows the user cannot see is how "save that one" ends
-  // up saving something else entirely.
+  // The tab decides which list a name refers to; Drafts exposes no rows.
   useAssistantListRecipeActions(tab === TabType.Drafts ? EMPTY_ROWS : items);
-  // Four list branches, one set of props: whichever is on screen is the one
-  // that moves. Without this the screen with the longest lists in the app
-  // answered "aşağı kaydır" with `unavailable_here`.
+  // Whichever list branch is on screen is the one the assistant scrolls.
   const scrollable = useAssistantScrollable();
-  // `isTabLoaded` is half the line: "created=none" while the list is still on
-  // its way is a fact to a model, and it says it out loud to the user.
+  // Report rows only once the tab has loaded.
   useAssistantScreenContent(() =>
     tab === TabType.Drafts
       ? recipeRoster(TabType.Drafts, drafts.map(draftName), tabListState)
       : recipeRoster(tab, items.map((recipe) => recipe.name), tabListState),
   );
-  // The whole tab, for `readScreen`. The line above is bounded at eight rows
-  // because it rides on every turn; a reading is asked for once and should not
-  // stop halfway down a list the user cannot see.
+  // The whole tab for readScreen (the screen line above is capped at eight).
   useAssistantScreenReading(() =>
     tab === TabType.Drafts
       ? listReading(TabType.Drafts, drafts.map(draftName), tabListState)
@@ -268,8 +241,6 @@ const styles = StyleSheet.create({
   root: {
     flex: ValueConstants.one,
   },
-  // Web band + underlined tabs share the list's horizontal inset so they line
-  // up with the recipe grid below; top padding clears the web app header.
   webHeaderWrap: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,

@@ -50,8 +50,7 @@ export const useDraftAutosave = ({
   chatHistory,
   upsertDraft,
 }: UseDraftAutosaveArgs): { cancel: () => void; flush: () => Promise<void> } => {
-  // Keep the latest values in a ref so the timer always reads fresh data
-  // without re-arming on every keystroke beyond the debounce window.
+  // Latest values in a ref: the timer reads fresh data without re-arming.
   const latest = useRef({ prompt, recipe, carried, chatHistory });
   latest.current = { prompt, recipe, carried, chatHistory };
 

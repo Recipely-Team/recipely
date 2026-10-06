@@ -34,11 +34,9 @@ export const startTimer = async (
 ): Promise<void> => {
   if (minutes <= ValueConstants.zero) return;
   if (isBlockedByRunningTimer(recipeId, timerId)) return;
-  // Timer ids are deterministic (`<recipeId>:<slot>`), so a re-start must clear
-  // the "already alarmed" mark or this run would expire silently.
+  // Ids are deterministic, so clear the already-alarmed mark on restart.
   triggeredAlarms.release(timerId);
-  // Restarting the SAME timer would otherwise leave the previous run's
-  // notifications scheduled — `add()` overwrites the entry that held their ids.
+  // Stop the previous run first so its notifications are cancelled.
   if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
@@ -64,9 +62,6 @@ export const startTimer = async (
 /** Stops and removes a timer, cancelling all of its alarm notifications. */
 export const stopTimer = async (timerId: string): Promise<void> => {
   triggeredAlarms.release(timerId);
-  // A stopped timer must not stay in the alarm queue: whether it was stopped
-  // from its chip, from the notification's "dismiss" action or by the overlay
-  // itself, there is nothing left for that alarm to be about.
   alarmStore.getState().dismiss(timerId);
   const entry = timerStore.getState().timers[timerId];
   if (entry !== undefined) {
@@ -87,11 +82,8 @@ export const pauseTimer = async (timerId: string): Promise<void> => {
 export const resumeTimer = async (timerId: string): Promise<void> => {
   const entry = timerStore.getState().timers[timerId];
   if (entry === undefined || !entry.isPaused) return;
-  // Resuming is a start as far as the one-timer-per-recipe rule is concerned:
-  // the other phase may well have been started while this one sat paused.
+  // Resume counts as a start for the one-timer-per-recipe rule.
   if (isBlockedByRunningTimer(entry.recipeId, timerId)) return;
-  // Same reason as `startTimer`: this run gets a new end time, so the mark from
-  // an earlier expiry must not silence it.
   triggeredAlarms.release(timerId);
   const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
   const completionNotifIds = await getNotificationService().scheduleTimerComplete(

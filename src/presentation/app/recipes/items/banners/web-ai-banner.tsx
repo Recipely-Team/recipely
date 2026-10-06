@@ -145,8 +145,6 @@ const styles = StyleSheet.create({
     lineHeight: lineHeightFor(fontSizes.medium),
     opacity: opacities.onMediaSubtle,
   },
-  // Pinned to the bottom edge so the panel ends level with the cards beside it,
-  // whatever height the row settles at.
   foot: {
     marginTop: 'auto',
     alignSelf: 'stretch',
