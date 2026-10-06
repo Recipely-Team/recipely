@@ -1568,23 +1568,28 @@ function openingTag(src, at) {
 // framed (clickjacking), MIME-sniffed, and leaked full referrers. Every
 // hosting target must set these on `**`.
 {
-  const REQUIRED = [
-    'X-Content-Type-Options',
-    'X-Frame-Options',
-    'Content-Security-Policy',
-    'Referrer-Policy',
-    'Permissions-Policy',
-    'Cross-Origin-Opener-Policy',
-    'Strict-Transport-Security',
-  ];
+  // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
+  // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
+  const REQUIRED = {
+    'X-Content-Type-Options': (v) => v === 'nosniff',
+    'X-Frame-Options': (v) => v === 'SAMEORIGIN' || v === 'DENY',
+    'Content-Security-Policy': (v) => /frame-ancestors '(self|none)'/.test(v),
+    'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
+    'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
+    'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
+    'Strict-Transport-Security': (v) => /max-age=\d{7,}/.test(v),
+  };
   const firebase = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
   const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
   for (const target of targets) {
-    const all = (target.headers ?? []).find((h) => h.source === '**');
-    const keys = new Set((all?.headers ?? []).map((h) => h.key));
-    const missing = REQUIRED.filter((k) => !keys.has(k));
+    const sent = new Map(
+      (target.headers ?? []).filter((h) => h.source === '**').flatMap((h) => h.headers.map((x) => [x.key, x.value])),
+    );
+    const missing = Object.entries(REQUIRED)
+      .filter(([key, ok]) => !sent.has(key) || !ok(sent.get(key)))
+      .map(([key]) => key);
     if (missing.length > 0) {
-      errors.push(`firebase.json (${target.target}): missing security header(s) on "**" — ${missing.join(', ')}`);
+      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on "**" — ${missing.join(', ')}`);
     }
   }
 }

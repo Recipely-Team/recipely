@@ -2439,7 +2439,7 @@ the box you can hit, not the glyph you can see.**
 
 - **No security header at all** on either Firebase hosting target: the site could
   be framed by any origin (clickjacking), MIME-sniffed, and leaked full referrers.
-  *Now:* `**` carries nosniff, `X-Frame-Options: DENY` + `frame-ancestors 'none'`,
+  *Now:* `**` carries nosniff, `X-Frame-Options: SAMEORIGIN` + `frame-ancestors 'self'` (Firebase Auth frames its own host),
   `Referrer-Policy`, `Permissions-Policy` (camera/microphone self only), COOP
   `same-origin-allow-popups` (Google sign-in popups still work) and HSTS.
   *Guard:* `check:structure` rule AN fails when a target lacks any of them.

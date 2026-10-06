@@ -27,6 +27,8 @@ export const RegexConstants = {
   unsafeRedirectChar: /[\\\u0000-\u001f\u007f]/,
   /** An encoded slash or backslash — refused in a redirect's PATH (a query may carry one legitimately). */
   encodedSlash: /%(2f|5c)/i,
+  /** Where a URL's path ends: the query `?` or the fragment `#`. */
+  queryOrFragmentStart: /[?#]/,
   /** Contains at least one ASCII capital letter. */
   hasUppercase: /[A-Z]/,
   /** Contains at least one digit. */

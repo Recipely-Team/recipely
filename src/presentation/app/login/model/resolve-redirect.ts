@@ -15,7 +15,7 @@ export const resolveRedirect = (redirect: string | string[] | undefined): string
     redirect.startsWith('/') &&
     !redirect.startsWith('//') &&
     !RegexConstants.unsafeRedirectChar.test(redirect) &&
-    !RegexConstants.encodedSlash.test(redirect.split(CharConstants.questionMark)[ValueConstants.zero] ?? CharConstants.empty) &&
+    !RegexConstants.encodedSlash.test(redirect.split(RegexConstants.queryOrFragmentStart, ValueConstants.one)[ValueConstants.zero] ?? CharConstants.empty) &&
     redirect !== RoutePaths.login &&
     !redirect.startsWith(`${RoutePaths.login}?`)
   ) {
