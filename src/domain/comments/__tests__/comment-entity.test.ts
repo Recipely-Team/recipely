@@ -81,3 +81,12 @@ describe('CommentEntity.withLikeToggled', () => {
     expect(toggled.authorPhotoUrl).toBe(comment.authorPhotoUrl);
   });
 });
+
+describe('CommentEntity.isAuthoredBy', () => {
+  it('is true only for the author, never for a guest', () => {
+    const comment = build({ authorId: 'author-9' });
+    expect(comment.isAuthoredBy('author-9')).toBe(true);
+    expect(comment.isAuthoredBy('someone-else')).toBe(false);
+    expect(comment.isAuthoredBy(null)).toBe(false);
+  });
+});

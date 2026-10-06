@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { isString } from '@core/guards/type-guards';
 import { AuthField } from '@presentation/app/login/model/auth-field';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
@@ -6,9 +6,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import { ResetPasswordFormView } from '@presentation/app/reset-password/body/reset-password-form-view';
 import { ResetPasswordSuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
 import { ResetPasswordInvalidLinkView } from '@presentation/app/reset-password/body/reset-password-invalid-link-view';
@@ -20,9 +18,9 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
+import { useResetPasswordForm } from '@presentation/app/reset-password/hooks/use-reset-password-form';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
-const MIN_PASSWORD_LENGTH = 8;
 
 export const ResetPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -33,44 +31,14 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const { token } = useLocalSearchParams<{ token?: string }>();
   const tokenValue = isString(token) ? token.trim() : CharConstants.empty;
 
-  const { authStore } = useStores();
-  const resetPassword = authStore((s) => s.resetPassword);
-
-  const [newPassword, setNewPassword] = useState(CharConstants.empty);
-  const [confirmPassword, setConfirmPassword] = useState(CharConstants.empty);
+  const form = useResetPasswordForm(tokenValue);
+  const { newPassword, setNewPassword, confirmPassword, setConfirmPassword, loading, succeeded, error } = form;
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [focusField, setFocusField] = useState<AuthField | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [succeeded, setSucceeded] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
 
   const confirmRef = useRef<TextInput>(null);
-
-  const handleSubmit = useCallback(async (): Promise<void> => {
-    if (newPassword.length < MIN_PASSWORD_LENGTH) {
-      setError(t().resetPassword.tooShort);
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setError(t().resetPassword.mismatch);
-      return;
-    }
-    setError(undefined);
-    setLoading(true);
-    const failure = await resetPassword(tokenValue, newPassword);
-    setLoading(false);
-    if (failure === null) {
-      setSucceeded(true);
-    } else {
-      setError(
-        authFormMessage(failure, {
-          not_found: t().resetPassword.invalidOrExpired,
-          validation: t().resetPassword.invalidOrExpired,
-        }),
-      );
-    }
-  }, [newPassword, confirmPassword, resetPassword, tokenValue]);
+  const handleSubmit = form.submit;
 
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>

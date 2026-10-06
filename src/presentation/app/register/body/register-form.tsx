@@ -14,11 +14,11 @@ import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/password-rules';
-import { computeStrength } from '@presentation/app/register/model/compute-strength';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { Email } from '@domain/common/email';
+import { Password } from '@domain/auth/password';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -46,14 +46,14 @@ export const RegisterForm = (): React.JSX.Element => {
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
-  const emailValid = EMAIL_RE.test(email);
+  const emailValid = Email.create(email).ok;
   const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
-  const strength = useMemo(() => computeStrength(password), [password]);
+  const strength = useMemo(() => Password.strengthOf(password), [password]);
 
   const canSubmit =
     name.trim().length > ValueConstants.zero &&
     emailValid &&
-    password.length >= MIN_PASSWORD &&
+    Password.create(password).ok &&
     password === confirm &&
     agree;
 
@@ -66,7 +66,7 @@ export const RegisterForm = (): React.JSX.Element => {
       setLocalError(t().register.errorEmail);
       return;
     }
-    if (password.length < MIN_PASSWORD) {
+    if (!Password.create(password).ok) {
       setLocalError(t().register.errorPwdShort);
       return;
     }

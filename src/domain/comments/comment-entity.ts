@@ -40,6 +40,11 @@ export class CommentEntity extends BaseEntity<CommentEntityProps> {
     return this.props.authorId;
   }
 
+  /** Whether `userId` wrote this comment — a guest (`null`) never did. */
+  isAuthoredBy(userId: string | null): boolean {
+    return userId !== null && this.props.authorId === userId;
+  }
+
   get recipeId(): string {
     return this.props.recipeId;
   }

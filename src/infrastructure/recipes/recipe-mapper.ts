@@ -20,6 +20,7 @@ import { toNutritionSource } from '@domain/recipes/nutrition/to-nutrition-source
 import type { ImageCredit } from '@domain/recipes/media/image-credit';
 import type { NutritionSourceType } from '@domain/recipes/nutrition/nutrition-source';
 import { withoutDifficultyTags } from '@infrastructure/recipes/without-difficulty-tags';
+import { RecipeLimits } from '@domain/recipes/recipe-limits';
 
 /**
  * A server that predates private saves sends no `isPublished`; every recipe it
@@ -77,7 +78,7 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     instructions: dto.instructions,
     prepTimeMinutes: dto.prepTimeMinutes,
     cookTimeMinutes: dto.cookTimeMinutes,
-    servings: dto.servings ?? 1,
+    servings: dto.servings ?? RecipeLimits.servingsMin,
     caloriesPerServing: dto.caloriesPerServing ?? ValueConstants.zero,
     nutrition: dto.nutrition,
     image: dto.image,
