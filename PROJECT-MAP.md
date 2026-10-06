@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1742 source files.
+[architecture.md](architecture.md). 1743 source files.
 
 ## Layers
 
@@ -127,7 +127,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `responsive/` — breakpoints, LayoutProvider, viewport metrics _(8)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(5)_
-- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(50)_
+- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(51)_
 - `timers/` — timer control helpers _(7)_
 - `utils/` (diary, instagram) — small pure helpers _(28)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
@@ -136,7 +136,7 @@ locale list `application/i18n/locale-constants.ts`.
 ### Design tokens — `base/theme/tokens/`
 
   - `effects/` — color-alphas, durations, opacities, shadows, z-indices
-  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, brand-mark-sizes, control-sizes, decor-sizes, diary-sizes, icon-sizes, layout-sizes, media-sizes, radii, spacing
+  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, brand-mark-sizes, control-sizes, decor-sizes, diary-sizes, icon-sizes, layout-sizes, media-sizes, radii, spacing, target-sizes
   - `typography/` — font-sizes, font-weights, letter-spacings, line-height-for, line-heights, max-font-scales, use-text-line-height
 
 Consumed through the `@presentation/base/theme` barrel. `colors/` holds
@@ -164,4 +164,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: a5fb30482b3e1a6a -->
+<!-- fingerprint: 15fc69f6f9aa4b24 -->

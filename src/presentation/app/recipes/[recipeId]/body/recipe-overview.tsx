@@ -13,7 +13,7 @@ import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/mod
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows, targetSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
@@ -215,6 +215,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   statItem: {
+    minHeight: targetSizes.min,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,

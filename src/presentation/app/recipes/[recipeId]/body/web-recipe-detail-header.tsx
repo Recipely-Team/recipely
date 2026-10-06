@@ -8,7 +8,7 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -235,6 +235,7 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   statItem: {
+    minHeight: targetSizes.min,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,

@@ -42,9 +42,8 @@ export const FilterSortFab = ({
   onPress,
 }: FilterSortFabProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  // Measured once so the morph uses the real localized width.
+  // The widest layout seen: a web font loading after the first layout widens the label.
   const [extendedWidth, setExtendedWidth] = useState(ValueConstants.zero);
-  // Measured once so the label can collapse to 0 and keep the icon centred.
   const [labelWidth, setLabelWidth] = useState(ValueConstants.zero);
 
   const label = t().recipes.filtersAndSort;
@@ -53,12 +52,12 @@ export const FilterSortFab = ({
 
   const onMeasure = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > ValueConstants.zero && extendedWidth === ValueConstants.zero) setExtendedWidth(w);
+    if (w > extendedWidth) setExtendedWidth(w);
   };
 
   const onMeasureLabel = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > ValueConstants.zero && labelWidth === ValueConstants.zero) setLabelWidth(w);
+    if (w > labelWidth) setLabelWidth(w);
   };
 
   const morphRange: [number, number] = [
@@ -67,7 +66,8 @@ export const FilterSortFab = ({
   ];
 
   const containerStyle = useAnimatedStyle(() => {
-    if (reduceMotion || extendedWidth === ValueConstants.zero) return {};
+    // At rest the button takes its natural width, so a late font can still widen it.
+    if (reduceMotion || extendedWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) return {};
     const width = interpolate(
       scrollY.value,
       morphRange,
@@ -78,8 +78,8 @@ export const FilterSortFab = ({
   });
 
   const labelStyle = useAnimatedStyle(() => {
-    if (reduceMotion || labelWidth === ValueConstants.zero) {
-      return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
+    if (reduceMotion || labelWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) {
+      return { opacity: ValueConstants.one, marginLeft: spacing.xs2 };
     }
     const progress = interpolate(scrollY.value, morphRange, [ValueConstants.one, ValueConstants.zero], Extrapolation.CLAMP);
     return {

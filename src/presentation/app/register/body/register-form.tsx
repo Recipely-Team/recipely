@@ -12,7 +12,7 @@ import { PasswordStrengthMeter } from '@presentation/app/register/items/password
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
 import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -208,7 +208,7 @@ export const RegisterForm = (): React.JSX.Element => {
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
           {t().register.haveAccount}
         </ThemedText>
-        <Pressable accessibilityRole="link" onPress={() => router.back()}>
+        <Pressable accessibilityRole="link" onPress={() => router.back()} style={styles.linkTarget}>
           <ThemedText variant="caption" style={[styles.signInLink, { color: colors.primary }]}>
             {t().register.signIn}
           </ThemedText>
@@ -270,5 +270,9 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontWeight: fontWeights.semibold,
+  },
+  linkTarget: {
+    minHeight: targetSizes.min,
+    justifyContent: 'center',
   },
 });
