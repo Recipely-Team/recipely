@@ -4,7 +4,7 @@ import { CalorieStatus, type CalorieStatusType } from '@domain/diary/nutrition/c
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useDiaryTones } from '@presentation/base/theme/colors/tones/use-diary-tones';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { borderWidths, colorAlphas, diarySizes, fontSizes, fontWeights, opacities, spacing } from '@presentation/base/theme';
+import { borderWidths, colorAlphas, diarySizes, fontSizes, fontWeights, opacities, spacing, BrandColors } from '@presentation/base/theme';
 import { StatusMarker } from '@presentation/app/diary/shared/items/status-marker';
 import { statusMarkerFor } from '@presentation/app/diary/shared/model/status-marker-for';
 import { dayA11yLabel } from '@presentation/app/diary/shared/model/day-a11y-label';
@@ -45,7 +45,7 @@ export const MonthCell = ({ date, status, calories, isToday, isSelected, isFutur
         styles.cell,
         {
           minHeight: height,
-          backgroundColor: tone?.bg ?? 'transparent',
+          backgroundColor: tone?.bg ?? BrandColors.transparent,
           borderColor: tone === null ? colors.cardBorder : tone.fg + colorAlphas.light,
           opacity: isFuture ? opacities.disabledStrong : opacities.full,
         },
@@ -73,7 +73,7 @@ const styles = StyleSheet.create({
   },
   number: {
     borderBottomWidth: diarySizes.todayUnderline,
-    borderBottomColor: 'transparent',
+    borderBottomColor: BrandColors.transparent,
   },
   markerSpace: {
     height: diarySizes.marker,

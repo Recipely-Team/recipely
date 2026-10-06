@@ -14,6 +14,8 @@ export const durations = {
    * the time the eye arrives, long enough not to read as a jump.
    */
   hover: 160,
+  /** A small floating control fading in (the filter FAB). */
+  controlReveal: 150,
   /** Cross-fade when a cached or freshly decoded image appears. */
   imageFade: 180,
   /** Collapse / reveal of the scrolling header band. */

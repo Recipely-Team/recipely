@@ -5,7 +5,7 @@ import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-gro
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, controlSizes, layoutSizes, borderWidths, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -82,7 +82,7 @@ export const WebRecipeDetailSidebar = ({
                     styles.checkbox,
                     checked
                       ? { backgroundColor: colors.success, borderColor: colors.success }
-                      : { backgroundColor: 'transparent', borderColor: colors.border },
+                      : { backgroundColor: BrandColors.transparent, borderColor: colors.border },
                   ]}
                 >
                   {checked ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.onSuccess} /> : null}

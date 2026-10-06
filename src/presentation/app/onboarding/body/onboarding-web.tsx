@@ -17,7 +17,7 @@ import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 const LOGO_SIZE = 30;
-const COLUMN_MAX = 460;
+const COLUMN_MAX = layoutSizes.maxContentXl;
 const CONTENT_MAX = 1120;
 const TWO_COL_MIN = 900;
 const ARROW_SIZE = 40;

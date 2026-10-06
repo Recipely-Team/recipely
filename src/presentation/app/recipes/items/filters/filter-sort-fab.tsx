@@ -10,10 +10,11 @@ import Animated, {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors, durations } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
 /** Scroll distance past the resting header over which the FAB collapses to a circle. */
 const MORPH_DISTANCE = 64;
@@ -50,7 +51,7 @@ export const FilterSortFab = ({
 
   const label = t().recipes.filtersAndSort;
   const accessibilityLabel = activeCount > ValueConstants.zero ? `${label}, ${activeCount}` : label;
-  const badgeText = activeCount > 9 ? '9+' : String(activeCount);
+  const badgeText = countBadgeLabel(activeCount);
 
   const onMeasure = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
@@ -95,7 +96,7 @@ export const FilterSortFab = ({
 
   return (
     <Animated.View
-      entering={reduceMotion ? undefined : FadeIn.duration(150)}
+      entering={reduceMotion ? undefined : FadeIn.duration(durations.controlReveal)}
       style={[
         styles.container,
         containerStyle,

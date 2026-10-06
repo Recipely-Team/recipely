@@ -47,8 +47,12 @@ export const layoutSizes = {
   assistantTranscriptMaxHeight: 220,
   /** How wide the assistant pill's status label may run before it truncates. */
   assistantLabelMaxWidth: 160,
-  /** Cap on the centered auth card in the register/login split layout. */
-  authCardMaxWidth: 520,
+  /**
+   * Cap on the centered auth card on every auth screen (login, register,
+   * verify, forgot / reset password) — one width, so moving between them never
+   * resizes the card.
+   */
+  authCardMaxWidth: 460,
   /** Cap on a centered web modal. */
   webModalMaxWidth: 720,
   /** Cap on the web shell's content column. */

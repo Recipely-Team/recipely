@@ -19,7 +19,7 @@ import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
 import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();

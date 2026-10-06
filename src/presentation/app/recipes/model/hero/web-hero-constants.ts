@@ -1,3 +1,5 @@
+import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
+
 /**
  * rgba overlay constants for the web home hero cards. These cannot live in
  * `ThemeColors` (typed `string`, but semantically alpha overlays that must be
@@ -7,10 +9,10 @@
  */
 
 /** Darkest stop of the hero diagonal gradient (0% anchor, bottom-left). */
-export const HERO_OVERLAY_DEEP = 'rgba(15,23,42,0.9)';
+export const HERO_OVERLAY_DEEP = BrandColors.heroOverlayDeep;
 /** Mid stop (45%) of the hero diagonal gradient. */
-export const HERO_OVERLAY_MID = 'rgba(15,23,42,0.55)';
+export const HERO_OVERLAY_MID = BrandColors.heroOverlayMid;
 /** Fade stop (80–100%) of the hero gradient — no text sits here. */
-export const HERO_OVERLAY_FADE = 'rgba(15,23,42,0.05)';
+export const HERO_OVERLAY_FADE = BrandColors.heroOverlayFade;
 /** Translucent frosted background for the hero "Save" button. */
-export const HERO_SAVE_BG = 'rgba(255,255,255,0.14)';
+export const HERO_SAVE_BG = BrandColors.heroSaveFill;

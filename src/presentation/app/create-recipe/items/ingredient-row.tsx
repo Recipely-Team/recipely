@@ -3,7 +3,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -46,8 +46,8 @@ export const IngredientRow = ({
       style={[
         styles.root,
         {
-          backgroundColor: focused ? colors.chipBackground : 'transparent',
-          borderColor: focused ? colors.primary : 'transparent',
+          backgroundColor: focused ? colors.chipBackground : BrandColors.transparent,
+          borderColor: focused ? colors.primary : BrandColors.transparent,
         },
       ]}
     >

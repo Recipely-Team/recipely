@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
 import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/ingredients/parse-ingredient';
 import { ValueConstants } from '@core/constants';
 
@@ -41,7 +41,7 @@ export const IngredientCard = ({
           styles.checkbox,
           checked
             ? { backgroundColor: colors.success, borderColor: colors.success }
-            : { backgroundColor: 'transparent', borderColor: colors.border },
+            : { backgroundColor: BrandColors.transparent, borderColor: colors.border },
         ]}
       >
         {checked ? (

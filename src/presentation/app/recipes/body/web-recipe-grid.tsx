@@ -95,7 +95,7 @@ export const WebRecipeGrid = ({
       accessibilityLabel={label}
       style={[styles.segBtn, active ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
     >
-      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? '700' : '400' }]}>
+      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? fontWeights.bold : fontWeights.regular }]}>
         {label}
       </ThemedText>
     </Pressable>
