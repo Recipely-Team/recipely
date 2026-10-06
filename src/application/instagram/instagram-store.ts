@@ -10,8 +10,8 @@ import type { DisconnectInstagramUseCase } from '@application/instagram/connect/
 import { InstagramConnection } from '@domain/instagram/connect/instagram-connection';
 
 interface InstagramStoreDeps {
-  /** The `instagramAutomations` flag resolved for this build; off reports the feature unavailable. */
-  enabled: boolean;
+  /** The `instagramAutomations` flag (admin override, else build value); off reports the feature unavailable. */
+  isEnabled: () => Promise<boolean>;
   getConnection: GetInstagramConnectionUseCase;
   startLogin: StartInstagramLoginUseCase;
   finalize: FinalizeInstagramLinkUseCase;
@@ -35,10 +35,12 @@ export const configureInstagramStore = (deps: InstagramStoreDeps): BoundStore<In
   return create<InstagramStoreState>((set, get) => {
     const load = async (): Promise<void> => {
       generation += ValueConstants.one;
-      // Flagged off: report the feature unavailable without asking the server, which hides every entry point.
-      if (!deps.enabled) return void set({ connection: { status: StoreStatus.Loaded, connection: InstagramConnection.none() } });
       const requested = generation;
       if (get().connection.status !== StoreStatus.Loaded) set({ connection: { status: StoreStatus.Loading } });
+      const enabled = await deps.isEnabled();
+      if (requested !== generation) return;
+      // Flagged off: report the feature unavailable without asking the server, which hides every entry point.
+      if (!enabled) return void set({ connection: { status: StoreStatus.Loaded, connection: InstagramConnection.none() } });
       const result = await deps.getConnection.execute();
       if (requested !== generation) return;
       if (result.ok) set({ connection: { status: StoreStatus.Loaded, connection: result.value } });

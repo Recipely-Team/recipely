@@ -41,6 +41,7 @@ export const TOKENS = {
   RegisterDeviceTokenUseCase: Symbol.for('RegisterDeviceTokenUseCase'),
   GetUserProfileUseCase: Symbol.for('GetUserProfileUseCase'),
   FeedbackRepository: Symbol.for('FeedbackRepository'),
+  FeatureFlagRepository: Symbol.for('FeatureFlagRepository'),
   SubmitFeedbackUseCase: Symbol.for('SubmitFeedbackUseCase'),
   KeyValueStore: Symbol.for('KeyValueStore'),
   DeviceIdentity: Symbol.for('DeviceIdentity'),

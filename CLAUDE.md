@@ -255,8 +255,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 23e. **An ad needs a screen with something on it** — placements only on the recipe feed; the web shell
     (`+html.tsx`) never loads an ad script; the one AdSense unit's loader comes via `mountAdsenseUnit`.
     `check:structure` rule T (placement allowlist).
-23g. **Unfinished features hide behind ONE flag file** — `src/application/config/feature-flags.ts` (On / Off / DevOnly) is the only
-    switch; a flagged feature's entry points read it (directly or via the store feeding them) and render nothing when off.
+23g. **Unfinished features hide behind ONE flag file** — `src/application/config/feature-flags.ts` (On / Off / DevOnly) is the
+    build-time default; the admin panel's Feature Flag table may override it remotely. Entry points read flags only through
+    `FeatureFlagResolver` (via the store feeding them) and render nothing when off.
 23f. **Every route is publisher content or is hidden from crawlers** — each route is in `public/sitemap.xml`
     or `Disallow`ed in `public/robots.txt`, never neither or both; a `[param]` route needs its parent listed
     and a `firebase.json` rewrite. Enforced by `assert-crawlable-surface.mjs` in `check:structure`.
