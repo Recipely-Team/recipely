@@ -1,7 +1,7 @@
 import { ToolRunStatus, TranscriptEntryKind } from '@live-assistant/core';
 import type { TranscriptEntry } from '@live-assistant/core';
 import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -22,7 +22,7 @@ export function actionDetail(arg: unknown, response: Readonly<Record<string, unk
 }
 
 /** One controller entry as a panel line, or null for an entry the panel does not show. */
-function toLine(entry: TranscriptEntry): AssistantTranscriptLine | null {
+function toLine(entry: TranscriptEntry): AssistantTranscriptLineType | null {
   if (entry.kind === TranscriptEntryKind.Message) {
     return { kind: AssistantTranscriptLineKind.Speech, id: entry.id, speaker: entry.speaker, text: entry.text };
   }
@@ -55,9 +55,9 @@ function toLine(entry: TranscriptEntry): AssistantTranscriptLine | null {
  */
 export function toTranscriptLines(
   entries: readonly TranscriptEntry[],
-  extras: readonly { readonly after: number; readonly line: AssistantTranscriptLine }[],
-): AssistantTranscriptLine[] {
-  const lines: AssistantTranscriptLine[] = [];
+  extras: readonly { readonly after: number; readonly line: AssistantTranscriptLineType }[],
+): AssistantTranscriptLineType[] {
+  const lines: AssistantTranscriptLineType[] = [];
   let next = 0;
   const flushExtras = (upTo: number): void => {
     while (next < extras.length && (extras[next]?.after ?? ValueConstants.zero) <= upTo) {

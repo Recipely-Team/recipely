@@ -5,7 +5,7 @@ import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/context/theme-defaults';
 import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
 import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
@@ -27,7 +27,7 @@ export const ThemeContext = createContext<ThemeContextValue>({
  * `getThemeColors` throw on an undefined lookup, so callers must fall back to
  * the default rather than trusting storage blindly.
  */
-const isKnownThemeId = (value: string): value is ThemeId =>
+const isKnownThemeId = (value: string): value is ThemeIdType =>
   (ALL_THEMES as string[]).includes(value);
 
 export interface AppThemeProviderProps {
@@ -46,7 +46,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // them. Every screen consumes this context, so rebuilding the value on a
   // locale change re-renders each screen and re-evaluates its t() strings.
   const locale = useLocale();
-  const [themeId, setThemeIdState] = useState<ThemeId>(DEFAULT_THEME_ID);
+  const [themeId, setThemeIdState] = useState<ThemeIdType>(DEFAULT_THEME_ID);
   const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
 
   // Load persisted theme + preference on mount
@@ -66,7 +66,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     });
   }, []);
 
-  const setThemeId = useCallback((id: ThemeId) => {
+  const setThemeId = useCallback((id: ThemeIdType) => {
     setThemeIdState(id);
     void getKeyValueStore().setItem('theme_id', id);
   }, []);

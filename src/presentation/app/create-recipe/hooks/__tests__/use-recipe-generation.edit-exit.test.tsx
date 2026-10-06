@@ -22,7 +22,7 @@ import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-rec
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
@@ -74,7 +74,7 @@ const mount = () => {
     recipeListStore: unused<BoundStore<RecipeListStoreState>>(),
     recipeDetailStore,
   });
-  const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as Stores;
+  const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as StoresType;
 
   let latest!: ReturnType<typeof useRecipeGeneration>;
   let setRecipe!: (update: (prev: EditableRecipe) => EditableRecipe) => void;

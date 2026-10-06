@@ -10,7 +10,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
-import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/creator-account-row';
+import type { CreatorAccountRowType } from '@presentation/app/edit-profile/model/creator-account-row';
 import type { UseCreatorAccountResult } from '@presentation/app/edit-profile/model/use-creator-account-result';
 
 const PLATFORMS: readonly CreatorPlatformType[] = Object.values(CreatorPlatform);
@@ -65,7 +65,7 @@ export const useCreatorAccount = (): UseCreatorAccountResult => {
     }
   };
 
-  const rowFor = (platform: CreatorPlatformType): CreatorAccountRow => {
+  const rowFor = (platform: CreatorPlatformType): CreatorAccountRowType => {
     if (platform === formPlatform) return { kind: CreatorAccountRowKind.Form, platform, handle, error };
     const claim = claims.forPlatform(platform);
     return claim === null ? { kind: CreatorAccountRowKind.Add, platform } : { kind: CreatorAccountRowKind.Linked, claim };

@@ -8,7 +8,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAddFoodWrites } from '@presentation/base/hooks/diary/use-add-food-writes';
 import { useProductStep } from '@presentation/base/hooks/diary/use-product-step';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import type { AddFoodFlow } from '@presentation/base/widgets/diary/add-food/state/add-food-flow';
 import type { AddFoodState } from '@presentation/base/widgets/diary/add-food/state/add-food-state';
 import { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
@@ -31,7 +31,7 @@ const CLOSED: AddFoodState = { date: CalendarDate.today(), meal: MealSlot.Breakf
  *   it through `useProductStep`, so a late answer for another row never shows.
  * - **Steppers use functional updates**: two quick taps in one render both count.
  */
-export const useAddFoodFlow = (request: AddFoodRequest | null, onClose: () => void, onOpenDiary: (() => void) | undefined): AddFoodFlow => {
+export const useAddFoodFlow = (request: AddFoodRequestType | null, onClose: () => void, onOpenDiary: (() => void) | undefined): AddFoodFlow => {
   const { foodCatalogStore } = useStores();
   const [state, setState] = useState<AddFoodState | null>(() => (request === null ? null : initialAddFoodState(request, new Date())));
   const [seen, setSeen] = useState(request);

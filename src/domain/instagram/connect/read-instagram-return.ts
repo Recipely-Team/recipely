@@ -1,6 +1,6 @@
 import { CharConstants, ValueConstants } from '@core/constants';
 import { InstagramReturnKind } from '@domain/instagram/connect/instagram-return-kind';
-import type { InstagramReturn } from '@domain/instagram/connect/instagram-return';
+import type { InstagramReturnType } from '@domain/instagram/connect/instagram-return';
 
 const STATUS_AUTHORIZED = 'authorized';
 const STATUS_ERROR = 'error';
@@ -14,7 +14,7 @@ type ReturnParams = Readonly<Record<string, string | undefined>>;
  * or `?status=error&reason=denied|failed`, backend #374). A link without a
  * usable status or code is a failed login, never a silent success.
  */
-export const readInstagramReturn = (params: ReturnParams): InstagramReturn => {
+export const readInstagramReturn = (params: ReturnParams): InstagramReturnType => {
   const code = params.code?.trim() ?? CharConstants.empty;
   if (params.status === STATUS_AUTHORIZED && code.length > ValueConstants.zero) return { kind: InstagramReturnKind.Authorized, code };
   if (params.status === STATUS_ERROR && params.reason === REASON_DENIED) return { kind: InstagramReturnKind.Denied };

@@ -10,12 +10,12 @@ import { WaterCard } from '@presentation/app/diary/body/water-card';
 import { MealCard } from '@presentation/app/diary/body/meal-card';
 import { WelcomeCard } from '@presentation/app/diary/body/welcome-card';
 import { DaySkeleton } from '@presentation/app/diary/body/day-skeleton';
-import type { DiaryDayView } from '@presentation/app/diary/model/diary-day-view';
+import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface DiaryDayBodyProps {
-  view: DiaryDayView;
+  view: DiaryDayViewType;
   isFirstDay: boolean;
   wide: boolean;
   /** Meal cards per row: 2 on a wide web column, otherwise 1. */

@@ -3,7 +3,7 @@ import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import type { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
 
 /** One row of the creator card, by kind. */
-export type CreatorAccountRow =
+export type CreatorAccountRowType =
   | { kind: typeof CreatorAccountRowKind.Linked; claim: CreatorClaim }
   | { kind: typeof CreatorAccountRowKind.Add; platform: CreatorPlatformType }
   | {

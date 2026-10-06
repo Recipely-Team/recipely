@@ -2,8 +2,8 @@ import { CharConstants } from '@core/constants';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
-import type { FoodCandidate } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
+import type { FoodCandidateType } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
 import { FoodSource, type FoodSourceType } from '@presentation/base/hooks/assistant/args/diary/food-source';
 
 /** What a food search found, group by group — from the use case's first pages or the sheet's store. */
@@ -24,10 +24,10 @@ const PER = 'per';
  * products, Recipely — then recent foods (`GET /diary/foods/recent`, so a
  * recent product is a product, at the unit it was logged in).
  */
-export const buildFoodCandidates = (found: FoundFoods | null, recent: readonly RecentFood[]): FoodCandidate[] => {
-  const recipes = (hits: readonly RecipeFoodHit[], source: FoodSourceType): FoodCandidate[] =>
+export const buildFoodCandidates = (found: FoundFoods | null, recent: readonly RecentFoodType[]): FoodCandidateType[] => {
+  const recipes = (hits: readonly RecipeFoodHit[], source: FoodSourceType): FoodCandidateType[] =>
     hits.map((hit) => ({ kind: 'food', source, name: hit.name, kcal: hit.perServing.calories, per: PER_SERVING, food: hit.food }));
-  const recentCandidates = recent.map((item): FoodCandidate => {
+  const recentCandidates = recent.map((item): FoodCandidateType => {
     if (item.kind === RecentFoodKind.Food) {
       return { kind: 'food', source: FoodSource.Recent, name: item.food.name, kcal: item.food.perServing.calories, per: PER_SERVING, food: item.food };
     }
@@ -48,7 +48,7 @@ export const buildFoodCandidates = (found: FoundFoods | null, recent: readonly R
           ...recipes(found.saved, FoodSource.Saved),
           ...recipes(found.mine, FoodSource.Mine),
           ...found.products.map(
-            (product): FoodCandidate => ({
+            (product): FoodCandidateType => ({
               kind: 'product',
               source: FoodSource.Product,
               name: product.displayName,

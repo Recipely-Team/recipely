@@ -2,11 +2,11 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { FoodPickRow } from '@presentation/base/widgets/diary/add-food/pick/rows/food-pick-row';
 import { PickListHeading } from '@presentation/base/widgets/diary/add-food/pick/rows/pick-list-heading';
 import { LoadMoreRow } from '@presentation/base/widgets/diary/add-food/pick/rows/load-more-row';
-import type { PickRow } from '@presentation/base/widgets/diary/add-food/list/pick-row';
+import type { PickRowEntryType } from '@presentation/base/widgets/diary/add-food/list/pick-row';
 import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick-row-type';
 import { FoodThumbIcon } from '@presentation/base/widgets/diary/food-thumb-icon';
 import { productThumbIcon } from '@presentation/base/widgets/diary/product-thumb-icon';
@@ -16,10 +16,10 @@ import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-f
 import { t, useLocale } from '@presentation/i18n';
 
 export interface PickRowViewProps {
-  row: PickRow;
+  row: PickRowEntryType;
   onPickRecipe?: (hit: RecipeFoodHit) => void;
   onPickProduct?: (product: FoodProduct) => void;
-  onPickRecent?: (recent: RecentFood) => void;
+  onPickRecent?: (recent: RecentFoodType) => void;
   onRetryMore: (listKey: string) => void;
 }
 

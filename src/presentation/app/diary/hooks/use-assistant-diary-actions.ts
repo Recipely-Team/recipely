@@ -24,13 +24,13 @@ import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/d
 import { useAssistantDiaryEntryActions } from '@presentation/app/diary/hooks/use-assistant-diary-entry-actions';
 import { diaryDayReading } from '@presentation/app/diary/model/assistant/diary-day-reading';
 import { diaryScreenLine } from '@presentation/app/diary/model/assistant/diary-screen-line';
-import type { DiaryDayView } from '@presentation/app/diary/model/diary-day-view';
+import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
 import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-diary-sheets-result';
 import { useLocale } from '@presentation/i18n';
 
 /** What the Day view lends the assistant. */
 interface AssistantDiaryActionsDeps {
-  view: DiaryDayView;
+  view: DiaryDayViewType;
   selected: CalendarDate;
   today: CalendarDate;
   select: (date: CalendarDate) => void;

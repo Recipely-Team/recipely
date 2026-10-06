@@ -1,6 +1,6 @@
-import type { Translations } from '@presentation/i18n/translations';
+import type { TranslationsType } from '@presentation/i18n/translations';
 
-export const ko: Translations = {
+export const ko: TranslationsType = {
   common: {
     openSettings: '설정 열기',
     retry: '다시 시도',

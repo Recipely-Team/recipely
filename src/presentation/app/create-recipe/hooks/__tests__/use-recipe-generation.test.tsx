@@ -60,7 +60,7 @@ import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-cas
 import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
@@ -233,7 +233,7 @@ const makeStores = (
   getDraft?: RecipeDraft,
   hold?: Promise<void>,
   draftFailure?: Failure,
-): Stores => {
+): StoresType => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -266,9 +266,9 @@ const makeStores = (
   // the detail store by id. Nothing in these tests copies one, so it answers
   // with an empty cache rather than a stub that would have to be kept in step.
   const recipeDetailStore = ((select: (st: unknown) => unknown) =>
-    select({ byId: {}, load: async () => undefined })) as unknown as Stores['recipeDetailStore'];
+    select({ byId: {}, load: async () => undefined })) as unknown as StoresType['recipeDetailStore'];
 
-  return { createdRecipesStore, draftsStore, recipeDetailStore } as unknown as Stores;
+  return { createdRecipesStore, draftsStore, recipeDetailStore } as unknown as StoresType;
 };
 
 type Generation = ReturnType<typeof useRecipeGeneration>;

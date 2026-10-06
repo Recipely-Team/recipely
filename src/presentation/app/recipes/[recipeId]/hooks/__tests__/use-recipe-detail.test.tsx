@@ -49,7 +49,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { StoreStatus } from '@application/store/store-status';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
@@ -210,7 +210,7 @@ interface StoreOverrides {
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
 
-const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): Stores => {
+const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): StoresType => {
   const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
@@ -259,7 +259,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     commentsStore,
     likesStore,
     userProfileStore,
-  } as unknown as Stores;
+  } as unknown as StoresType;
 };
 
 /** Renders a probe that captures the live hook output on every render. */

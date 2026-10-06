@@ -1,4 +1,4 @@
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
 import type { ThemeDefinition } from '@presentation/base/theme/context/theme-definition';
 import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/variant-semantics';
@@ -182,7 +182,7 @@ const makeLight = (a: LightArgs): ThemeColors => {
   return makeColors(palette, lightSemantics, surface);
 };
 
-const themes: Record<ThemeId, ThemeDefinition> = {
+const themes: Record<ThemeIdType, ThemeDefinition> = {
   'pearl-white': {
     preferredVariant: ThemeVariant.Light,
     light: makeLight({
@@ -269,12 +269,12 @@ interface LightArgs {
   textMuted?: string;
 }
 
-export const ALL_THEMES: ThemeId[] = [
+export const ALL_THEMES: ThemeIdType[] = [
   'pearl-white', 'crimson-ember', 'emerald-garden', 'royal-purple',
 ];
 
-export const getThemeDefinition = (id: ThemeId): ThemeDefinition => themes[id];
+export const getThemeDefinition = (id: ThemeIdType): ThemeDefinition => themes[id];
 
-export const getThemeColors = (id: ThemeId, scheme: ThemeVariant): ThemeColors =>
+export const getThemeColors = (id: ThemeIdType, scheme: ThemeVariant): ThemeColors =>
   scheme === ThemeVariant.Dark ? themes[id].dark : themes[id].light;
 

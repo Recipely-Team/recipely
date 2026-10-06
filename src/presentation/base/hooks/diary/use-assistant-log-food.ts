@@ -15,7 +15,7 @@ import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE, FOOD_SEARCH_PAGE_SIZE } from '@infrast
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
-import type { FoodCandidate } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
+import type { FoodCandidateType } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
@@ -46,7 +46,7 @@ interface ResolvedFood {
 const asResolved = (food: LoggableFood): ResolvedFood => ({ name: food.name, entryFor: (date, meal, servings) => food.entryFor(date, meal, servings) });
 
 /** A candidate as something to log; a product's "servings" count its default amount (1 glass, or 100 g). */
-const fromCandidate = (candidate: FoodCandidate): ResolvedFood => {
+const fromCandidate = (candidate: FoodCandidateType): ResolvedFood => {
   if (candidate.kind === 'food') return asResolved(candidate.food);
   const product = candidate.product;
   const base = product.defaultQuantity();

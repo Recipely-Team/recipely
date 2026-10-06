@@ -5,11 +5,11 @@ import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { parseDecimalInput } from '@presentation/base/utils/diary/parse-decimal-input';
-import type { GoalField } from '@presentation/app/diary/model/goal-field';
+import type { GoalFieldType } from '@presentation/app/diary/model/goal-field';
 import type { GoalsForm } from '@presentation/app/diary/model/goals-form';
 import { t } from '@presentation/i18n';
 
-const toFields = (goals: NutritionGoals): Record<GoalField, string> => ({
+const toFields = (goals: NutritionGoals): Record<GoalFieldType, string> => ({
   calories: String(goals.calories),
   protein: String(goals.protein),
   carbs: String(goals.carbs),
@@ -38,7 +38,7 @@ export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm =
     if (visible) setValues(toFields(goals));
   }
 
-  const numbers = Object.fromEntries(Object.entries(values).map(([key, text]) => [key, parseDecimalInput(text)])) as Record<GoalField, number | null>;
+  const numbers = Object.fromEntries(Object.entries(values).map(([key, text]) => [key, parseDecimalInput(text)])) as Record<GoalFieldType, number | null>;
   const complete = Object.values(numbers).every((value) => value !== null);
   const built = complete
     ? NutritionGoals.create({
@@ -52,7 +52,7 @@ export const useGoalsForm = (visible: boolean, onSaved: () => void): GoalsForm =
     : null;
   const candidate = built?.ok === true ? built.value : null;
 
-  const setField = useCallback((field: GoalField, value: string) => setValues((v) => ({ ...v, [field]: value })), []);
+  const setField = useCallback((field: GoalFieldType, value: string) => setValues((v) => ({ ...v, [field]: value })), []);
 
   const stepCalories = useCallback((direction: number) => {
     setValues((v) => {

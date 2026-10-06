@@ -1,6 +1,6 @@
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { PagedList } from '@application/store/paging/paged-list';
 import type { FoodDetailState } from '@application/diary/foods/food-detail-state';
 
@@ -9,7 +9,7 @@ export interface FoodCatalogStoreState {
   /** The shelf `products` lists; null lists every shelf. */
   category: string | null;
   products: PagedList<FoodProduct>;
-  recent: PagedList<RecentFood>;
+  recent: PagedList<RecentFoodType>;
   detail: FoodDetailState;
   /** Loads the shelves and the products of the selected one, from their first pages. */
   loadProducts: () => Promise<void>;

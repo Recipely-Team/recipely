@@ -4,7 +4,7 @@ import {
   ALL_THEMES,
   getThemeColors,
 } from "@presentation/base/theme/colors/palette/themes";
-import type { ThemeId } from "@presentation/base/theme/context/theme-id";
+import type { ThemeIdType } from "@presentation/base/theme/context/theme-id";
 import type { ThemeVariant } from "@presentation/base/theme/context/theme-variant";
 
 interface ContrastPair {
@@ -173,7 +173,7 @@ describe("themes — backgrounds are distinct (regression)", () => {
   });
 });
 
-const themeVariantCases: { id: ThemeId; variant: ThemeVariant }[] =
+const themeVariantCases: { id: ThemeIdType; variant: ThemeVariant }[] =
   ALL_THEMES.flatMap((id) => VARIANTS.map((variant) => ({ id, variant })));
 
 describe.each(themeVariantCases)(

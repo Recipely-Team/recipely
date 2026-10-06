@@ -18,11 +18,11 @@ import { t } from '@presentation/i18n';
 import { RecipeChangeKind } from '@presentation/app/create-recipe/model/refine/recipe-change-kind';
 import { ValueConstants } from '@core/constants';
 
-import type { RecipeChange } from '@presentation/app/create-recipe/model/refine/recipe-change';
-import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import type { RecipeChangeType } from '@presentation/app/create-recipe/model/refine/recipe-change';
+import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
 
 export interface RefineProposalCardProps {
-  changes: readonly RecipeChange[];
+  changes: readonly RecipeChangeType[];
   onAccept: () => void;
   onReject: () => void;
 }
@@ -48,9 +48,9 @@ export const RefineProposalCard = ({
   const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
 
-  const fieldLabel = (field: CreateRecipeFieldKey): string => t().createRecipe.changeFields[field];
+  const fieldLabel = (field: CreateRecipeFieldKeyType): string => t().createRecipe.changeFields[field];
 
-  const valueLabel = (field: CreateRecipeFieldKey, value: string): string => {
+  const valueLabel = (field: CreateRecipeFieldKeyType, value: string): string => {
     if (value.length === ValueConstants.zero) return t().createRecipe.changeEmptyValue;
     if (field === 'cuisine') return cuisineLabel(value)?.name ?? value;
     if (field === 'category') return categoryLabel(value)?.name ?? value;

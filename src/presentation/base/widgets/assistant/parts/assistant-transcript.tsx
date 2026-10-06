@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { AssistantActionChip } from '@presentation/base/widgets/assistant/parts/assistant-action-chip';
 import { AssistantBubble } from '@presentation/base/widgets/assistant/parts/assistant-bubble';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { radii, spacing } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
@@ -12,7 +12,7 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface AssistantTranscriptProps {
-  lines: AssistantTranscriptLine[];
+  lines: AssistantTranscriptLineType[];
 }
 
 /**
@@ -32,7 +32,7 @@ export interface AssistantTranscriptProps {
  */
 export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const list = useRef<FlatList<AssistantTranscriptLine>>(null);
+  const list = useRef<FlatList<AssistantTranscriptLineType>>(null);
 
   const follow = useCallback(() => {
     list.current?.scrollToEnd({ animated: true });

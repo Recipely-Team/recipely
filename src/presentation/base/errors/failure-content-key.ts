@@ -6,7 +6,7 @@
 //      prompt vs. retry the AI vs. use an Instagram link vs. request a new code).
 //   2. code-tier — the coarse per-`code` buckets, the fallback for every key we
 //      have no dedicated copy for (and for any failure with no key at all).
-export type FailureContentKey =
+export type FailureContentKeyType =
   // ── code-tier ──────────────────────────────────────────────────────────────
   | 'network'
   | 'timeout'

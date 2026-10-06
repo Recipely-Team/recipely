@@ -9,7 +9,7 @@ import type { StoreStatus } from '@application/store/store-status';
  * so an error on one auth screen never bleeds into the next (page-scoped, like
  * a per-page Cubit). See `configure-auth-store.ts`.
  */
-export type AuthStatus =
+export type AuthStatusType =
   | { status: typeof StoreStatus.Idle }
   | { status: typeof StoreStatus.Loading }
   | { status: typeof StoreStatus.Authenticated; session: AuthSessionEntity }

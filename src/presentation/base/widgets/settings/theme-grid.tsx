@@ -5,7 +5,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import {
   spacing,
   radii,
@@ -21,8 +21,8 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ThemeGridProps {
-  selectedThemeId: ThemeId;
-  onSelect: (themeId: ThemeId) => void;
+  selectedThemeId: ThemeIdType;
+  onSelect: (themeId: ThemeIdType) => void;
 }
 
 const CHIP_WIDTH = 76;

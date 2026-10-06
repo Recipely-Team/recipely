@@ -36,10 +36,10 @@ import { pt } from '@presentation/i18n/locales/pt';
 import { ru } from '@presentation/i18n/locales/ru';
 import { tr } from '@presentation/i18n/locales/tr';
 import { zh } from '@presentation/i18n/locales/zh';
-import type { Translations } from '@presentation/i18n/translations';
+import type { TranslationsType } from '@presentation/i18n/translations';
 
 /** Every catalogue the app ships, by locale code. Add a language here when it lands. */
-const CATALOGUES: Readonly<Record<string, Translations>> = {
+const CATALOGUES: Readonly<Record<string, TranslationsType>> = {
   en, tr, es, pt, fr, de, it: itCatalogue, ru, id, ja, ar, zh, ko, hi,
 };
 

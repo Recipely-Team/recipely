@@ -1,6 +1,6 @@
-import type { Translations } from '@presentation/i18n/translations';
+import type { TranslationsType } from '@presentation/i18n/translations';
 
-export const hi: Translations = {
+export const hi: TranslationsType = {
   common: {
     openSettings: 'सेटिंग्स खोलें',
     retry: 'फिर कोशिश करें',

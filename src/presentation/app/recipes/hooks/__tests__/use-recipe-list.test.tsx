@@ -33,7 +33,7 @@ import { act, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
@@ -151,14 +151,14 @@ const makeSavedRecipesStore = () =>
     setSavedIds: jest.fn(),
   }) as unknown as SavedRecipesStoreState);
 
-const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): Stores =>
+const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): StoresType =>
   ({
     recipeListStore,
     authStore: makeAuthStore(),
     notificationsStore: makeNotificationsStore(),
     savedRecipesStore: makeSavedRecipesStore(),
     loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
-  }) as unknown as Stores;
+  }) as unknown as StoresType;
 
 /** One render of the hook: the spinner flag next to what the store reports. */
 interface RenderSnapshot {

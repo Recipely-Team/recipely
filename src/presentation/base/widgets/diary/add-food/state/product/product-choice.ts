@@ -8,6 +8,6 @@ import type { ProductChoiceKind } from '@presentation/base/widgets/diary/add-foo
  * catalogue store fetches, or a product logged before (a recent row, an
  * entry being edited) at the unit and quantity it was logged in.
  */
-export type ProductChoice =
+export type ProductChoiceType =
   | { kind: typeof ProductChoiceKind.Listed; row: FoodProduct }
   | { kind: typeof ProductChoiceKind.Logged; product: LoggableProduct; quantity: FoodQuantity };

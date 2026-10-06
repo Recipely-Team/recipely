@@ -1,6 +1,6 @@
 import { ValueConstants } from "@core/constants";
 import { isString } from "@core/guards/type-guards";
-import type { CommentNode } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
+import type { CommentNodeType } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
 import type { UseCommentHighlightResult } from "@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result";
 import { spacing } from "@presentation/base/theme";
 import { useStores } from "@presentation/bootstrap/use-stores";
@@ -84,7 +84,7 @@ export const useCommentHighlight = ({
   const [highlightedCommentId, setHighlightedCommentId] = useState<
     string | null
   >(null);
-  const nodeRef = useRef<CommentNode | null>(null);
+  const nodeRef = useRef<CommentNodeType | null>(null);
   // Bumped when the target card mounts, so the scroll effect re-runs with a node.
   const [nodeVersion, setNodeVersion] = useState(ValueConstants.zero);
   const attemptsRef = useRef(ValueConstants.zero);
@@ -94,7 +94,7 @@ export const useCommentHighlight = ({
   const scrollAttemptsRef = useRef(ValueConstants.zero);
   const lastYRef = useRef<number | null>(null);
 
-  const registerTargetNode = useCallback((node: CommentNode | null): void => {
+  const registerTargetNode = useCallback((node: CommentNodeType | null): void => {
     nodeRef.current = node;
     if (node !== null) setNodeVersion((v) => v + ValueConstants.one);
   }, []);
@@ -143,7 +143,7 @@ export const useCommentHighlight = ({
     scrollAttemptsRef.current++;
 
     node.measureLayout(
-      innerNode as Parameters<CommentNode["measureLayout"]>[0],
+      innerNode as Parameters<CommentNodeType["measureLayout"]>[0],
       (_x, y) => {
         // The user grabbed the scroller while we were measuring — their call.
         if (scrollDoneRef.current) return;

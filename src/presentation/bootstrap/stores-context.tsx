@@ -1,10 +1,10 @@
 import { createContext, type ReactNode } from 'react';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 
-export const StoresContext = createContext<Stores | null>(null);
+export const StoresContext = createContext<StoresType | null>(null);
 
 export interface StoresProviderProps {
-  value: Stores;
+  value: StoresType;
   children: ReactNode;
 }
 

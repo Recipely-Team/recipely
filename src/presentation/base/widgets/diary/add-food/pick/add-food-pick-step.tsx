@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import { FoodSearchField } from '@presentation/base/widgets/diary/add-food/pick/food-search-field';
@@ -22,7 +22,7 @@ export interface AddFoodPickStepProps {
   isSubmitting: boolean;
   onChoose: (food: LoggableFood) => void;
   onChooseProduct: (product: FoodProduct) => void;
-  onChooseRecent: (recent: RecentFood) => void;
+  onChooseRecent: (recent: RecentFoodType) => void;
   onQuickAdd: (food: LoggableFood, meal: MealSlotType) => void;
 }
 

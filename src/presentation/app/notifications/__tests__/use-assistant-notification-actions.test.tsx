@@ -4,7 +4,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 
@@ -37,7 +37,7 @@ function harness(items: NotifItem[] = ITEMS, unreadCount = 2) {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
       <Probe />
     </StoresProvider>,
   );
