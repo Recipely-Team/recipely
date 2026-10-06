@@ -6,10 +6,9 @@ import { ValueConstants } from '@core/constants';
 import { BaseValueObject } from '@core/value-object/base-value-object';
 import type { NutrientValues } from '@domain/diary/nutrition/nutrient-values';
 import { DiaryLimits } from '@domain/diary/diary-limits';
+import { AtwaterFactors } from '@domain/diary/nutrition/atwater-factors';
+import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
 
-const KCAL_PER_GRAM_PROTEIN = 4;
-const KCAL_PER_GRAM_CARBS = 4;
-const KCAL_PER_GRAM_FAT = 9;
 const FIELDS = ['calories', 'protein', 'carbs', 'fat', 'fiber'] as const;
 
 const addNullable = (a: number | null, b: number | null): number | null =>
@@ -87,9 +86,9 @@ export class Nutrients extends BaseValueObject<NutrientValues> {
   /** Kcal the known macros account for, at 4 / 4 / 9 kcal per gram. */
   get macroCalories(): number {
     return (
-      (this.protein ?? ValueConstants.zero) * KCAL_PER_GRAM_PROTEIN +
-      (this.carbs ?? ValueConstants.zero) * KCAL_PER_GRAM_CARBS +
-      (this.fat ?? ValueConstants.zero) * KCAL_PER_GRAM_FAT
+      (this.protein ?? ValueConstants.zero) * AtwaterFactors[NutritionMacro.Protein] +
+      (this.carbs ?? ValueConstants.zero) * AtwaterFactors[NutritionMacro.Carbs] +
+      (this.fat ?? ValueConstants.zero) * AtwaterFactors[NutritionMacro.Fat]
     );
   }
 

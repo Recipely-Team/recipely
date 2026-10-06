@@ -6,6 +6,7 @@ import { diarySizes, spacing } from '@presentation/base/theme';
 import { MacroBar } from '@presentation/app/diary/items/macro-bar';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
 
 export interface MacroBarsProps {
   day: DiaryDay;
@@ -29,10 +30,10 @@ export const MacroBars = ({ day, stacked }: MacroBarsProps): React.JSX.Element =
   const ink = (value: number | null, goal: number, canBeOver: boolean): string =>
     canBeOver && value !== null && value > goal ? tones.over.solid : colors.primary;
   const bars = [
-    { key: 'protein', label: strings.protein, value: totals.protein, goal: goals.protein, color: ink(totals.protein, goals.protein, true) },
-    { key: 'carbs', label: strings.carbs, value: totals.carbs, goal: goals.carbs, color: ink(totals.carbs, goals.carbs, true) },
-    { key: 'fat', label: strings.fat, value: totals.fat, goal: goals.fat, color: ink(totals.fat, goals.fat, true) },
-    { key: 'fiber', label: strings.fiber, value: totals.fiber, goal: goals.fiber, color: ink(totals.fiber, goals.fiber, false) },
+    { key: NutritionMacro.Protein, label: strings.protein, value: totals.protein, goal: goals.protein, color: ink(totals.protein, goals.protein, true) },
+    { key: NutritionMacro.Carbs, label: strings.carbs, value: totals.carbs, goal: goals.carbs, color: ink(totals.carbs, goals.carbs, true) },
+    { key: NutritionMacro.Fat, label: strings.fat, value: totals.fat, goal: goals.fat, color: ink(totals.fat, goals.fat, true) },
+    { key: NutritionMacro.Fiber, label: strings.fiber, value: totals.fiber, goal: goals.fiber, color: ink(totals.fiber, goals.fiber, false) },
   ];
   return (
     <View style={stacked ? styles.stack : styles.grid}>

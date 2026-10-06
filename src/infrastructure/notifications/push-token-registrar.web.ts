@@ -3,6 +3,7 @@ import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init.web';
 import { ValueConstants } from '@core/constants';
+import { DevicePlatform } from '@domain/notifications/device-platform';
 
 /** The global the browser exposes when it supports notifications at all. */
 const WEB_NOTIFICATION_API = 'Notification';
@@ -46,7 +47,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });
     if (token.length === ValueConstants.zero) return;
 
-    const result = await register(token, 'web');
+    const result = await register(token, DevicePlatform.Web);
     if (!result.ok && __DEV__) {
       console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
     }

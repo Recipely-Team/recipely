@@ -147,7 +147,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
       </View>
 
       <View style={styles.filterRow}>
-        {(['all', 'unread'] as const).map((f) => {
+        {Object.values(NotificationFilter).map((f) => {
           const isActive = filter === f;
           const label = f === NotificationFilter.All
             ? `${t().notifications.all} (${items.length})`

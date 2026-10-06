@@ -1,5 +1,5 @@
 import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import type { SeveritySurfaces } from '@presentation/base/theme/colors/surfaces/severity-surfaces';
 
 // WHY: these hexes are intentionally fixed per light/dark variant rather than
@@ -26,7 +26,7 @@ const TOAST_BG_DARK = '#1E1F24';
 
 /** Background of the floating toast pill for the active variant. */
 export const toastBackground = (variant: ThemeVariant): string =>
-  variant === 'dark' ? TOAST_BG_DARK : TOAST_BG_LIGHT;
+  variant === ThemeVariant.Dark ? TOAST_BG_DARK : TOAST_BG_LIGHT;
 
 /** Foreground text/icon color on the toast pill (always white). */
 export const TOAST_FOREGROUND = '#FFFFFF';
@@ -40,7 +40,7 @@ export const errorSurfaces = (
   variant: ThemeVariant,
   colors: ThemeColors,
 ): SeveritySurfaces => {
-  const base = variant === 'dark' ? DARK : LIGHT;
+  const base = variant === ThemeVariant.Dark ? DARK : LIGHT;
   return {
     ...base,
     neutral: {

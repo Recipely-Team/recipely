@@ -36,7 +36,7 @@ import type { AssistantMessengerInterface } from '@domain/assistant/session/assi
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import { ChatRole } from '@domain/drafts/chat-role';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants, ValueConstants, TimeConstants } from '@core/constants';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { Failure } from '@core/failure/failure';
 import { UnknownFailure } from '@core/failure/kinds/unknown-failure';
@@ -71,7 +71,7 @@ const HEARTBEAT_SECONDS = 15;
  * the threshold and skip it — the session used to end mid-sentence with only a
  * caption to explain it ("asistan bir anda kesildi").
  */
-const BUDGET_WARNING_SECONDS = 60 + HEARTBEAT_SECONDS;
+const BUDGET_WARNING_SECONDS = TimeConstants.secondsPerMinute + HEARTBEAT_SECONDS;
 /**
  * What the model is told when the budget is nearly gone: an instruction, not a
  * sentence to repeat — the session knows which language it is speaking.

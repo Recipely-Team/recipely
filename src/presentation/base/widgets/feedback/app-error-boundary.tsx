@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export interface AppErrorBoundaryProps {
   children: ReactNode;
@@ -55,7 +56,7 @@ export class AppErrorBoundary extends Component<AppErrorBoundaryProps, AppErrorB
     return (
       <View style={styles.root}>
         <ErrorState
-          severity="danger"
+          severity={SeverityType.Danger}
           icon="sad-outline"
           title={t().errors.unknown.title}
           body={t().errors.unknown.body}

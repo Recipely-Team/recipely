@@ -26,7 +26,7 @@ import {
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { IS_DEV_BUILD } from '@infrastructure/constants/build-variant';
+import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { t } from '@presentation/i18n';
 
 export interface AssistantPanelProps {

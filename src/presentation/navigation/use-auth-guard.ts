@@ -19,15 +19,15 @@ import { isString } from '@core/guards/type-guards';
  * settings, notifications, and the AI generator — remain guarded.
  */
 const PUBLIC_PATHS = new Set<string>([
-  '/',
-  '/onboarding',
-  '/login',
-  '/register',
-  '/verify-code',
-  '/forgot-password',
-  '/reset-password',
-  '/recipes',
-  '/creators',
+  RoutePaths.root,
+  RoutePaths.onboarding,
+  RoutePaths.login,
+  RoutePaths.register,
+  RoutePaths.verifyCode,
+  RoutePaths.forgotPassword,
+  RoutePaths.resetPassword,
+  RoutePaths.recipes,
+  RoutePaths.creators,
 ]);
 
 /**
@@ -37,7 +37,7 @@ const PUBLIC_PATHS = new Set<string>([
  * (`/recipes`, no trailing segment) is public via {@link PUBLIC_PATHS}, while
  * every other `/recipes/*` sub-route stays gated.
  */
-const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
+const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
 
 /**
  * A creator's page (`/creators/:userId`) is public too — `GET /users/:id` and

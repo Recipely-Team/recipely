@@ -10,7 +10,7 @@ import type { TimerEntry } from '@application/timers/timer-entry';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
-import { ValueConstants } from '@core/constants';
+import { ValueConstants, TimeConstants } from '@core/constants';
 
 interface TimerChipProps {
   entry: TimerEntry;
@@ -31,7 +31,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
     timerId: entry.id,
     recipeId: entry.recipeId,
     recipeName: entry.recipeName,
-    minutes: entry.durationSeconds / 60,
+    minutes: entry.durationSeconds / TimeConstants.secondsPerMinute,
   });
 
   const { remainingSeconds, isPaused, isDone } = timer;

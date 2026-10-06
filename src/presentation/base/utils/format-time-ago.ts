@@ -1,5 +1,5 @@
 import { t } from '@presentation/i18n';
-import { ValueConstants } from '@core/constants';
+import { TimeConstants, ValueConstants } from '@core/constants';
 
 /**
  * Formats a past date as a short relative "time ago" string in the active
@@ -8,12 +8,12 @@ import { ValueConstants } from '@core/constants';
  */
 export const formatTimeAgo = (date: Date): string => {
   const r = t().relativeTime;
-  const seconds = Math.max(ValueConstants.zero, Math.floor((Date.now() - date.getTime()) / 1000));
-  if (seconds < 60) return r.justNow;
-  const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return r.minutesAgo.replace('{n}', String(minutes));
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return r.hoursAgo.replace('{n}', String(hours));
-  const days = Math.floor(hours / 24);
+  const seconds = Math.max(ValueConstants.zero, Math.floor((Date.now() - date.getTime()) / TimeConstants.millisecondsPerSecond));
+  if (seconds < TimeConstants.secondsPerMinute) return r.justNow;
+  const minutes = Math.floor(seconds / TimeConstants.secondsPerMinute);
+  if (minutes < TimeConstants.minutesPerHour) return r.minutesAgo.replace('{n}', String(minutes));
+  const hours = Math.floor(minutes / TimeConstants.minutesPerHour);
+  if (hours < TimeConstants.hoursPerDay) return r.hoursAgo.replace('{n}', String(hours));
+  const days = Math.floor(hours / TimeConstants.hoursPerDay);
   return r.daysAgo.replace('{n}', String(days));
 };

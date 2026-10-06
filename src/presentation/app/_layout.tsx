@@ -26,6 +26,7 @@ import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { useWindowBackground } from '@presentation/navigation/use-window-background';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Full-screen overlay for the alarm at the head of the queue.
@@ -56,13 +57,13 @@ const AlarmOverlay = (): React.JSX.Element | null => {
  * route public.
  */
 const HEADERLESS_PATHS = new Set<string>([
-  '/',
-  '/onboarding',
-  '/login',
-  '/register',
-  '/verify-code',
-  '/forgot-password',
-  '/reset-password',
+  RoutePaths.root,
+  RoutePaths.onboarding,
+  RoutePaths.login,
+  RoutePaths.register,
+  RoutePaths.verifyCode,
+  RoutePaths.forgotPassword,
+  RoutePaths.resetPassword,
 ]);
 
 /**

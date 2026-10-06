@@ -1,6 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
+import type { DevicePlatform } from '@domain/notifications/device-platform';
 
 /** Repository contract for backend notification operations. */
 export interface NotificationRepositoryInterface {
@@ -9,6 +10,6 @@ export interface NotificationRepositoryInterface {
   markOneRead(id: string): Promise<Result<void, Failure>>;
   registerDeviceToken(
     token: string,
-    platform: 'ios' | 'android' | 'web',
+    platform: DevicePlatform,
   ): Promise<Result<void, Failure>>;
 }
