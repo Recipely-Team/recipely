@@ -1,5 +1,5 @@
-import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { StyleSheet, View } from 'react-native';
+import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { WebFilterChip } from '@presentation/app/recipes/items/filters/web-filter-chip';
@@ -8,10 +8,9 @@ import { useTaxonomyOptions } from '@presentation/app/recipes/hooks/use-taxonomy
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { TIME_OPTIONS } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
-import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, layoutSizes, borderWidths, opacities, shadows } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, layoutSizes } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -51,7 +50,6 @@ export const WebFilterModal = ({
   onReset,
   onClose,
 }: WebFilterModalProps): React.JSX.Element => {
-  const colors = useTheme().colors;
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
 
@@ -59,172 +57,87 @@ export const WebFilterModal = ({
     resultCount > ValueConstants.zero ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
 
   return (
-    <Modal
+    <BottomSheet
       visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent
+      title={t().recipes.filter}
+      onClose={onClose}
+      showCloseButton
+      rightAction={hasActiveFilters ? { label: t().recipes.clearFilters, onPress: onReset } : undefined}
+      dialogMaxWidth={layoutSizes.webModalMaxWidth}
+      footer={<PrimaryButton label={applyLabel} onPress={onApply} />}
     >
-      <Pressable
-        style={[styles.overlay, { backgroundColor: colors.scrim }]}
-        accessibilityRole="button"
-        accessibilityLabel={t().recipes.closeFilter}
-        onPress={onClose}
-      >
-        {/* Stop propagation so taps inside the card don't dismiss the modal. */}
-        <Pressable
-          style={[styles.card, { backgroundColor: colors.background }, shadows.lg]}
-          onPress={() => {}}
-        >
-          <View style={[styles.header, { borderBottomColor: colors.cardBorder }]}>
-            <Pressable
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel={t().recipes.closeFilter}
-              style={[styles.closeBtn, { backgroundColor: colors.surface }]}
-            >
-              <Ionicons name="close" size={iconSizes.xl} color={colors.text} />
-            </Pressable>
-            <ThemedText variant="subtitle" style={styles.title}>
-              {t().recipes.filter}
-            </ThemedText>
-            <Pressable
-              onPress={onReset}
-              disabled={!hasActiveFilters}
-              accessibilityRole="button"
-              accessibilityLabel={t().recipes.clearFilters}
-              accessibilityState={{ disabled: !hasActiveFilters }}
-              style={!hasActiveFilters ? styles.clearDisabled : null}
-            >
-              <ThemedText
-                variant="body"
-                style={[
-                  styles.clearLabel,
-                  { color: hasActiveFilters ? colors.primary : colors.textMuted },
-                ]}
-              >
-                {t().recipes.clearFilters}
-              </ThemedText>
-            </Pressable>
+      <View style={styles.body}>
+        <View style={styles.section}>
+          <ThemedText variant="caption" muted style={styles.sectionTitle}>
+            {upperCase(t().recipes.cuisine)}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {cuisineKeys.map((c) => (
+              <WebFilterChip
+                key={c}
+                label={cuisineLabel(c).name}
+                active={pending.cuisines.includes(c)}
+                onToggle={() => onToggleCuisine(c)}
+              />
+            ))}
           </View>
+        </View>
 
-          <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-            <View style={styles.section}>
-              <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {upperCase(t().recipes.cuisine)}
-              </ThemedText>
-              <View style={styles.chipsWrap}>
-                {cuisineKeys.map((c) => (
-                  <WebFilterChip
-                    key={c}
-                    label={cuisineLabel(c).name}
-                    active={pending.cuisines.includes(c)}
-                    onToggle={() => onToggleCuisine(c)}
-                  />
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {upperCase(t().recipes.category)}
-              </ThemedText>
-              <View style={styles.chipsWrap}>
-                {categoryKeys.map((c) => (
-                  <WebFilterChip
-                    key={c}
-                    label={categoryLabel(c).name}
-                    active={pending.categories.includes(c)}
-                    onToggle={() => onToggleCategory(c)}
-                  />
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {upperCase(t().recipes.difficulty)}
-              </ThemedText>
-              <View style={styles.chipsRow}>
-                {DIFFICULTY_VALUES.map((d) => (
-                  <WebFilterChip
-                    key={d}
-                    label={difficultyLabel(d)}
-                    active={pending.difficulties.includes(d)}
-                    onToggle={() => onToggleDifficulty(d)}
-                    grow
-                  />
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.section}>
-              <ThemedText variant="caption" muted style={styles.sectionTitle}>
-                {upperCase(t().recipes.maxTime)}
-              </ThemedText>
-              <View style={styles.chipsWrap}>
-                {TIME_OPTIONS.map((m) => (
-                  <WebFilterChip
-                    key={m}
-                    label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
-                    active={pending.maxTime === m}
-                    onToggle={() => onSetMaxTime(m)}
-                  />
-                ))}
-              </View>
-            </View>
-          </ScrollView>
-
-          <View style={[styles.footer, { borderTopColor: colors.cardBorder }]}>
-            <PrimaryButton label={applyLabel} onPress={onApply} />
+        <View style={styles.section}>
+          <ThemedText variant="caption" muted style={styles.sectionTitle}>
+            {upperCase(t().recipes.category)}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {categoryKeys.map((c) => (
+              <WebFilterChip
+                key={c}
+                label={categoryLabel(c).name}
+                active={pending.categories.includes(c)}
+                onToggle={() => onToggleCategory(c)}
+              />
+            ))}
           </View>
-        </Pressable>
-      </Pressable>
-    </Modal>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText variant="caption" muted style={styles.sectionTitle}>
+            {upperCase(t().recipes.difficulty)}
+          </ThemedText>
+          <View style={styles.chipsRow}>
+            {DIFFICULTY_VALUES.map((d) => (
+              <WebFilterChip
+                key={d}
+                label={difficultyLabel(d)}
+                active={pending.difficulties.includes(d)}
+                onToggle={() => onToggleDifficulty(d)}
+                grow
+              />
+            ))}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <ThemedText variant="caption" muted style={styles.sectionTitle}>
+            {upperCase(t().recipes.maxTime)}
+          </ThemedText>
+          <View style={styles.chipsWrap}>
+            {TIME_OPTIONS.map((m) => (
+              <WebFilterChip
+                key={m}
+                label={m === ValueConstants.zero ? t().recipes.any : `≤ ${m} ${t().recipes.minutes}`}
+                active={pending.maxTime === m}
+                onToggle={() => onSetMaxTime(m)}
+              />
+            ))}
+          </View>
+        </View>
+      </View>
+    </BottomSheet>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: ValueConstants.one,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: spacing.xl,
-  },
-  card: {
-    width: '100%',
-    maxWidth: layoutSizes.webModalMaxWidth,
-    maxHeight: '86%',
-    borderRadius: radii.xxl,
-    overflow: 'hidden',
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg2,
-    paddingVertical: spacing.lg,
-    borderBottomWidth: borderWidths.hairline,
-  },
-  closeBtn: {
-    width: controlSizes.webModalClose,
-    height: controlSizes.webModalClose,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  title: {
-    fontWeight: fontWeights.heavy,
-  },
-  clearDisabled: {
-    opacity: opacities.disabled,
-  },
-  clearLabel: {
-    fontWeight: fontWeights.bold,
-  },
   body: {
-    padding: spacing.xl,
     gap: spacing.lg2,
   },
   section: {
@@ -243,9 +156,5 @@ const styles = StyleSheet.create({
   chipsRow: {
     flexDirection: 'row',
     gap: spacing.sm,
-  },
-  footer: {
-    padding: spacing.lg,
-    borderTopWidth: borderWidths.hairline,
   },
 });
