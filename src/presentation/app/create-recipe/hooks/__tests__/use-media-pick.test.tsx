@@ -30,7 +30,8 @@ jest.mock('@presentation/base/utils/shrink-for-upload', () => ({
   shrinkForUpload: (...args: unknown[]) => mockShrink(...args),
 }));
 
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
+import { toastStore } from '@presentation/base/feedback/toast-store';
 import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useMediaPick } from '@presentation/app/create-recipe/hooks/use-media-pick';
@@ -104,33 +105,33 @@ describe('useMediaPick', () => {
   it('says a refused library out loud instead of doing nothing', async () => {
     mockAsk.mockResolvedValue(PickSource.Library);
     mockLibraryPermission.mockResolvedValue({ granted: false });
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const show = jest.spyOn(toastStore.getState(), 'show');
     const onAdd = jest.fn();
 
     await pick(onAdd);
 
     expect(mockLaunchLibrary).not.toHaveBeenCalled();
-    expect(alert).toHaveBeenCalledWith(t().recipes.photoPermissionDenied, undefined, expect.any(Array));
-    alert.mockRestore();
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({ message: t().recipes.photoPermissionDenied }));
+    show.mockRestore();
   });
 
   it('says a picker that throws out loud', async () => {
     mockAsk.mockResolvedValue(PickSource.Camera);
     mockLaunchCamera.mockRejectedValue(new Error('camera unavailable'));
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const show = jest.spyOn(toastStore.getState(), 'show');
     const onAdd = jest.fn();
 
     await pick(onAdd);
 
-    expect(alert).toHaveBeenCalledWith(t().recipes.photoAddFailed);
+    expect(show).toHaveBeenCalledWith(expect.objectContaining({ message: t().recipes.photoAddFailed }));
     expect(onAdd).not.toHaveBeenCalled();
-    alert.mockRestore();
+    show.mockRestore();
   });
 
   it('says a refused camera out loud and offers the way to Settings', async () => {
     mockAsk.mockResolvedValue(PickSource.Camera);
     mockCameraPermission.mockResolvedValue({ granted: false });
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    const show = jest.spyOn(toastStore.getState(), 'show');
     const openSettings = jest.spyOn(Linking, 'openSettings').mockResolvedValue(undefined);
     const onAdd = jest.fn();
 
@@ -138,12 +139,12 @@ describe('useMediaPick', () => {
 
     expect(mockLaunchCamera).not.toHaveBeenCalled();
     expect(onAdd).not.toHaveBeenCalled();
-    const buttons = alert.mock.calls[0]?.[2] ?? [];
-    const settings = buttons.find((b) => b.text === t().common.openSettings);
-    settings?.onPress?.();
+    const toast = show.mock.calls[0]?.[0];
+    expect(toast?.actionLabel).toBe(t().common.openSettings);
+    toast?.onAction?.();
     expect(openSettings).toHaveBeenCalledTimes(1);
 
-    alert.mockRestore();
+    show.mockRestore();
     openSettings.mockRestore();
   });
 });

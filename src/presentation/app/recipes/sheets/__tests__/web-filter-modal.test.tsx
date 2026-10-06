@@ -115,7 +115,10 @@ const renderModal = (
 /** Every button whose accessibilityLabel matches `label`. */
 const buttonsByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
-    (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label,
+    (node) =>
+      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityLabel === label &&
+      typeof node.props.onPress === 'function',
   );
 
 /** Fires the first button with the given accessibility label. */
@@ -189,7 +192,7 @@ describe('WebFilterModal', () => {
   it('calls onClose when the close button is tapped', () => {
     const { root, handlers } = renderModal({ visible: true });
 
-    pressByLabel(root, t().recipes.closeFilter);
+    pressByLabel(root, t().common.close);
 
     expect(handlers.onClose).toHaveBeenCalledTimes(1);
   });
