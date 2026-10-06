@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
 import { InstagramMediaType } from '@domain/instagram/instagram-media-type';
 import { ValueConstants } from '@core/constants';

@@ -1,5 +1,5 @@
 import { StyleSheet, TextInput, View, Pressable } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import type { Ionicons } from '@expo/vector-icons';
+import type Ionicons from '@expo/vector-icons/Ionicons';
 import { UnknownFailure } from '@core/failure';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {

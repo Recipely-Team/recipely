@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RefineTranscript } from '@presentation/app/create-recipe/body/refine-transcript';
 import { RefinePendingRow } from '@presentation/app/create-recipe/items/refine-pending-row';

@@ -23,7 +23,7 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ replace: jest.fn(), push: jest.fn() })),
 }));
 jest.mock('expo-linear-gradient', () => ({ LinearGradient: 'LinearGradient' }));
-jest.mock('@expo/vector-icons', () => ({ MaterialCommunityIcons: 'MaterialCommunityIcons' }));
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => 'MaterialCommunityIcons');
 jest.mock('expo-apple-authentication', () => ({
   AppleAuthenticationButton: 'AppleAuthenticationButton',
   AppleAuthenticationButtonType: { SIGN_IN: 'SIGN_IN' },

@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes, iconSizes, radii, spacing, zIndices } from '@presentation/base/theme';
 

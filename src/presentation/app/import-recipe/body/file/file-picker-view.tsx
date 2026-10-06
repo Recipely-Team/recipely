@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import { ProvenanceMark } from '@domain/recipes/provenance/provenance-mark';

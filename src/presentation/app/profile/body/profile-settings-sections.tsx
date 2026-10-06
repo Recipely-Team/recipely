@@ -3,7 +3,7 @@ import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-accou
 import { isWeb } from '@infrastructure/constants/platform';
 import { StyleSheet, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';

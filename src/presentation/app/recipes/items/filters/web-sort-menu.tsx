@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardKey } from '@presentation/base/constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';

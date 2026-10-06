@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { assistantGradient } from '@presentation/base/widgets/assistant/assistant-gradient';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';

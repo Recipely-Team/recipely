@@ -1,4 +1,5 @@
-import type { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import type Ionicons from '@expo/vector-icons/Ionicons';
+import type MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { TabIconFamily } from '@presentation/base/widgets/navigation/tab-icon-family';
 
 /**

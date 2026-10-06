@@ -9,10 +9,15 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { AppErrorBoundary } from '@presentation/base/widgets/feedback/app-error-boundary';
 import { t } from '@presentation/i18n';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text: RNText } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <RNText>{`icon:${props.name}`}</RNText>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text: RNText } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <RNText>{`icon:${props.name}`}</RNText>;
+  return Icon;
 });
 
 const Boom = (): React.JSX.Element => {

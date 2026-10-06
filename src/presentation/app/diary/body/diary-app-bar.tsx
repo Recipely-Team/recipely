@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';

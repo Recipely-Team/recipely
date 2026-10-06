@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

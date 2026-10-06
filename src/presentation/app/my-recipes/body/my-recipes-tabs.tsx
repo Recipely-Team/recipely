@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';

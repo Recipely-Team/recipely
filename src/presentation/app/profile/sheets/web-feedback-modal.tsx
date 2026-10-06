@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebFeedbackForm } from '@presentation/app/profile/sheets/web-feedback-form';
 import { WebFeedbackSuccess } from '@presentation/app/profile/sheets/web-feedback-success';

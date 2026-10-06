@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';

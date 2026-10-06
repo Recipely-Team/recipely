@@ -3,7 +3,7 @@ import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assist
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';

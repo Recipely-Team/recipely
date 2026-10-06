@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { borderWidths, controlSizes, iconSizes, radii } from '@presentation/base/theme';

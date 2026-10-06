@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
