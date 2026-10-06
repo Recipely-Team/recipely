@@ -18,6 +18,7 @@ import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/us
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What settings lends the assistant, named where it is consumed. */
 interface AssistantSettingsActionsDeps {
@@ -108,7 +109,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_key_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKeyEqualsValue };
 
         // "Language=tr" names the same preference as "language=tr".
         const key = resolveTargetName(parsed.key, [LANGUAGE, THEME, PALETTE]) ?? parsed.key;
@@ -127,7 +128,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
                 parsed.value,
               );
           if (locale === null || !SUPPORTED_LOCALE_LIST.includes(locale)) {
-            return { ok: false, error: 'unknown_language' };
+            return { ok: false, error: AssistantActionError.UnknownLanguage };
           }
           onSetLanguage(locale);
           return { ok: true };
@@ -141,18 +142,18 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
             parsed.value,
           );
           if (themeId === null || !(ALL_THEMES as string[]).includes(themeId)) {
-            return { ok: false, error: 'unknown_palette' };
+            return { ok: false, error: AssistantActionError.UnknownPalette };
           }
           onSetThemeId(themeId as ThemeId);
           return { ok: true };
         }
         if (key === THEME) {
           const preference = THEME_PREFERENCES.find((p) => p === value);
-          if (preference === undefined) return { ok: false, error: 'unknown_theme' };
+          if (preference === undefined) return { ok: false, error: AssistantActionError.UnknownTheme };
           onSetThemePreference(preference);
           return { ok: true };
         }
-        return { ok: false, error: 'unknown_preference' };
+        return { ok: false, error: AssistantActionError.UnknownPreference };
       },
       [onSetLanguage, onSetThemePreference, onSetThemeId],
     ),

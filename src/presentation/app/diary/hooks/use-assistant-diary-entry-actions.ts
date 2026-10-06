@@ -27,7 +27,7 @@ const findTarget = (day: DiaryDay | null, parsed: ArgParse<EntryTargetArgs>): Ta
   // Several: name them so the model asks "which one?". None: name the day's entries so it can retry with the right word.
   return matches.length > ValueConstants.one
     ? { ok: false, result: { ok: false, error: DiaryArgError.AmbiguousEntry, title: entryListLine(matches) } }
-    : { ok: false, result: { ok: false, error: 'not_found', title: day.entries.length === 0 ? 'no entries on this day' : entryListLine(day.entries) } };
+    : { ok: false, result: { ok: false, error: AssistantActionError.NotFound, title: day.entries.length === 0 ? 'no entries on this day' : entryListLine(day.entries) } };
 };
 
 /**

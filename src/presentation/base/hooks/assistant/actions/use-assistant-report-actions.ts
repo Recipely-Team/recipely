@@ -9,6 +9,7 @@ import { getLocale } from '@presentation/i18n';
 import { UnknownFailure } from '@core/failure';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What the developers see in the feedback list, so these sort together. */
 const REPORT_SUBJECT = 'Voice assistant report';
@@ -72,7 +73,7 @@ export const useAssistantReportActions = (): void => {
           subject: REPORT_SUBJECT,
           message,
         });
-        return sent ? { ok: true } : { ok: false, error: 'report_not_sent' };
+        return sent ? { ok: true } : { ok: false, error: AssistantActionError.ReportNotSent };
       },
       [registry, feedbackStore],
     ),

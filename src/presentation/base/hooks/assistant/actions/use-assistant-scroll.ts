@@ -7,6 +7,7 @@ import {
   AssistantScrollDirection,
   type AssistantScrollDirectionType,
 } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /**
  * Lets the assistant scroll whichever screen registered it.
@@ -27,13 +28,13 @@ export const useAssistantScroll = (
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const direction = machineLower(arg ?? AssistantScrollDirection.Down);
-        if (!isDirection(direction)) return { ok: false, error: 'unknown_direction' };
+        if (!isDirection(direction)) return { ok: false, error: AssistantActionError.UnknownDirection };
 
         // Reported success unconditionally until a user found the screens
         // where nothing was attached to move: the feed's wide-layout and
         // search branches both answered "kaydırdım" over a list that had not
         // budged. The handler now says what happened.
-        if (!scrollBy(direction)) return { ok: false, error: 'nothing_to_scroll' };
+        if (!scrollBy(direction)) return { ok: false, error: AssistantActionError.NothingToScroll };
         return { ok: true };
       },
       [scrollBy],

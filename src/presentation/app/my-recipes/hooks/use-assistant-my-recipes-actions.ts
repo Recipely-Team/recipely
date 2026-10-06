@@ -9,6 +9,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What this screen lends the assistant, named where it is consumed. */
 interface AssistantMyRecipesActionsDeps {
@@ -71,7 +72,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
       async (arg?: string): Promise<AssistantActionResultType> => {
         const wanted = machineLower(arg ?? CharConstants.empty);
         const match = Object.values(TabType).find((value) => value === wanted);
-        if (match === undefined) return { ok: false, error: 'unknown_tab' };
+        if (match === undefined) return { ok: false, error: AssistantActionError.UnknownTab };
 
         onSwitchTab(match);
         // Bounded, and abandoned the moment the screen goes: the tool queue is
@@ -115,7 +116,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(drafts.map(draftName), arg);
-        if (found === null) return { ok: false, error: 'not_found' };
+        if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
         onOpenDraft(drafts[found]!.id);
         return { ok: true, title: draftName(drafts[found]!) };
@@ -129,7 +130,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(drafts.map(draftName), arg);
-        if (found === null) return { ok: false, error: 'not_found' };
+        if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
         onRequestDeleteDraft(drafts[found]!.id);
         return { ok: true, awaiting: true, title: draftName(drafts[found]!) };

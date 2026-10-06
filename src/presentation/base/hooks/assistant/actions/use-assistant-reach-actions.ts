@@ -62,7 +62,7 @@ export const useAssistantReachActions = (): void => {
         // the subject. `unavailable_here` means "nothing here can do this, look
         // elsewhere", which invites exactly the second attempt this guard cuts.
         // This is the answer `run` would give with no fallback registered.
-        if (reaching.has(action)) return { ok: false, error: 'not_found' };
+        if (reaching.has(action)) return { ok: false, error: AssistantActionError.NotFound };
         reaching.add(action);
         try {
           return await carry(arg);
@@ -92,7 +92,7 @@ export const useAssistantReachActions = (): void => {
           // screen they chose, with no visible cause. `navigate` also reuses
           // an existing route, so going back from one it popped to lands
           // somewhere they were never standing.
-          return { ok: false, error: 'screen_did_not_open' };
+          return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
         }
 
         const first = await registry.run(action as AssistantActionType, arg);
