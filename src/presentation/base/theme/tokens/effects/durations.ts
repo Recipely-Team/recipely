@@ -18,6 +18,8 @@ export const durations = {
   imageFade: 180,
   /** Collapse / reveal of the scrolling header band. */
   headerCollapse: 220,
+  /** A bottom sheet's slide-out; navigate only after it, or the sheet is torn mid-flight. */
+  sheetDismiss: 300,
   /**
    * One breath of a waiting pulse. Long enough to read as "alive, not stuck"
    * without pulling the eye back every second of a two-minute wait.

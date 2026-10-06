@@ -15,10 +15,14 @@
  *   with the site on the end, and it is what stops two sites' pages looking
  *   identical in a list of results.
  */
+const APP_NAME = 'Recipely';
+
 export const SiteMetadata = {
+  /** The product's name as a wordmark, a label or a sender — never translated. */
+  appName: APP_NAME,
   title: 'Recipely — AI Recipe Generator & Cooking Community',
   description:
     'Discover, create, and share recipes with an AI sous-chef. Generate a full recipe from a craving, browse by cuisine, track nutrition, and cook smarter with Recipely.',
   /** Suffix for a page that names itself first, e.g. a recipe. */
-  titleSuffix: ' · Recipely',
+  titleSuffix: ` · ${APP_NAME}`,
 } as const;
