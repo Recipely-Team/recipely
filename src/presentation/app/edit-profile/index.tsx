@@ -15,6 +15,7 @@ import { EditProfileAvatar } from '@presentation/app/edit-profile/body/edit-prof
 import { EditProfileForm } from '@presentation/app/edit-profile/body/edit-profile-form';
 import { CreatorAccountSection } from '@presentation/app/edit-profile/body/creator/creator-account-section';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const EditProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -76,7 +77,7 @@ export const EditProfileScreen = (): React.JSX.Element => {
       </KeyboardAvoider>
 
       <FeedbackDialog
-        severity="danger"
+        severity={SeverityType.Danger}
         visible={vm.errorDialog !== null}
         title={t().errors.genericTitle}
         message={vm.errorDialog ?? CharConstants.empty}

@@ -15,6 +15,7 @@ import { ProfileAutomationsRow } from '@presentation/app/profile/body/profile-au
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -68,7 +69,7 @@ export const ProfileScreen = (): React.JSX.Element => {
       </ScrollView>
 
       <FeedbackDialog
-        severity="danger"
+        severity={SeverityType.Danger}
         visible={vm.uploadError !== null}
         title={t().errors.genericTitle}
         message={vm.uploadError ?? CharConstants.empty}

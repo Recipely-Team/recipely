@@ -24,17 +24,17 @@ const HEADER_HEIGHT = 68;
  * (e.g. /recipes/[id], /create-recipe, /creators/[id]) keep the parent tab highlighted.
  */
 const resolveActiveTab = (pathname: string): WebHeaderTabKey | null => {
-  if (pathname.startsWith('/my-recipes') || pathname.startsWith('/create-recipe')) {
-    return 'myRecipes';
+  if (pathname.startsWith(RoutePaths.myRecipes) || pathname.startsWith(RoutePaths.createRecipe)) {
+    return WebHeaderTabKey.MyRecipes;
   }
-  if (pathname.startsWith('/recipes')) return 'recipes';
-  if (pathname.startsWith(RoutePaths.creators)) return 'chefs';
-  if (pathname.startsWith(RoutePaths.diary)) return 'diary';
+  if (pathname.startsWith(RoutePaths.recipes)) return WebHeaderTabKey.Recipes;
+  if (pathname.startsWith(RoutePaths.creators)) return WebHeaderTabKey.Chefs;
+  if (pathname.startsWith(RoutePaths.diary)) return WebHeaderTabKey.Diary;
   return null;
 };
 
 const isProfileRoute = (pathname: string): boolean =>
-  pathname.startsWith('/profile') || pathname.startsWith('/settings');
+  pathname.startsWith(RoutePaths.profile) || pathname.startsWith(RoutePaths.settings);
 
 /**
  * Sticky desktop chrome that replaces the mobile bottom TabBar and per-screen

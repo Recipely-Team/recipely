@@ -8,6 +8,8 @@ import { EditProfileSection } from '@presentation/base/constants/edit-profile-se
  * used in `<Stack.Screen name=...>` or file/folder names.
  */
 export const RoutePaths = {
+  /** The app root — the launch gate that sends a visitor to onboarding or the feed. */
+  root: '/',
   onboarding: '/onboarding',
   login: '/login',
   register: '/register',
@@ -51,6 +53,8 @@ export const RoutePaths = {
   /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /** Matches exactly one segment after `/recipes` (the detail page); group 1 is the recipe id. */
+  recipeDetailPattern: /^\/recipes\/([^/]+)$/,
   /** One creator's public page; open to guests. */
   creatorProfile: (userId: string): string => `/creators/${encodeURIComponent(userId)}`,
   /**

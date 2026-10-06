@@ -34,7 +34,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `common/` _(2)_
 - `creators/` _(13)_
 - `device/` _(3)_
-- `diary/` — calendar, day, entry, foods, month, nutrition _(50)_
+- `diary/` — calendar, day, entry, foods, month, nutrition _(51)_
 - `drafts/` _(6)_
 - `favorites/` _(1)_
 - `feedback/` _(3)_
@@ -81,7 +81,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(26)_
 - `comments/` — dtos _(3)_
-- `constants/` — analytics, api _(22)_
+- `constants/` — analytics, api _(21)_
 - `creators/` — dtos _(14)_
 - `crypto/` _(3)_
 - `device/` _(8)_
@@ -164,4 +164,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: e5876926f948dc8e -->
+<!-- fingerprint: bd4faac973ffabfa -->

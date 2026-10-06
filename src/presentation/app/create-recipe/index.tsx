@@ -19,6 +19,7 @@ import { ExitSheet } from '@presentation/app/create-recipe/sheets/exit-sheet';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const CreateRecipeScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -188,7 +189,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
         onClose={vm.onCloseSaveError}
       />
       <FeedbackDialog
-        severity="danger"
+        severity={SeverityType.Danger}
         visible={vm.saveIssue !== null}
         title={t().createRecipe.saveErrorTitle}
         message={vm.saveIssue ?? CharConstants.empty}

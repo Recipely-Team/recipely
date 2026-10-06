@@ -6,6 +6,7 @@ import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/us
 import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, opacities, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 const SEVERITY_ICON = {
   success: 'checkmark',
@@ -19,7 +20,7 @@ export interface FeedbackDialogProps {
   primaryLabel: string;
   onPrimary: () => void;
   /** Visual tone of the disc + icon; success by default. */
-  severity?: 'success' | 'danger';
+  severity?: typeof SeverityType.Success | typeof SeverityType.Danger;
   /**
    * Optional SECOND action, shown beside the primary. Only for a real
    * alternative — "dismiss" is the ✕ and the backdrop, and a button that
@@ -47,7 +48,7 @@ export const FeedbackDialog = ({
   message,
   primaryLabel,
   onPrimary,
-  severity = 'success',
+  severity = SeverityType.Success,
   secondaryLabel,
   onSecondary,
   onClose,

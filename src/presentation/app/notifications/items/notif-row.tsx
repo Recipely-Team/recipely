@@ -17,21 +17,21 @@ import { creatorPlatformName } from '@presentation/base/widgets/creators/creator
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
   switch (n.kind) {
-    case 'comment': return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
-    case 'like': return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
-    case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
-    case 'ai_done': return labels.aiDoneLabel;
-    case 'import_done': return labels.importDoneLabel;
-    case 'import_failed': return labels.importFailedLabel;
-    case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
-    case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
-    case 'follow': return labels.followed;
+    case NotifKind.Comment: return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Like: return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Favorite: return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.AiDone: return labels.aiDoneLabel;
+    case NotifKind.ImportDone: return labels.importDoneLabel;
+    case NotifKind.ImportFailed: return labels.importFailedLabel;
+    case NotifKind.ModerationApproved: return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.ModerationPending: return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Follow: return labels.followed;
     case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
     case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
     // NEVER empty. An unknown type degrades to `generic`, and this used to
     // return '' for anything with no recipe behind it — which is how an
     // `import_done` the app did not know about rendered as a blank row.
-    case 'generic': return n.recipeName ?? labels.genericLabel;
+    case NotifKind.Generic: return n.recipeName ?? labels.genericLabel;
   }
 };
 

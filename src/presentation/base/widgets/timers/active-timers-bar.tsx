@@ -13,13 +13,14 @@ import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, zIn
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Matches the single-recipe detail route (`/recipes/:recipeId`) so this bar
  * can tell whether a timer belongs to the recipe currently on screen — see
  * {@link ActiveTimersBar}.
  */
-const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
+const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
 
 /**
  * Floating bar showing every active timer that isn't already visible inline

@@ -7,6 +7,8 @@ import { BaseValueObject } from '@core/value-object/base-value-object';
 import { DiaryLimits } from '@domain/diary/diary-limits';
 import { CalorieStatus, type CalorieStatusType } from '@domain/diary/nutrition/calorie-status';
 import type { NutritionGoalValues } from '@domain/diary/nutrition/nutrition-goal-values';
+import { AtwaterFactors } from '@domain/diary/nutrition/atwater-factors';
+import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
 
 const DEFAULTS: NutritionGoalValues = {
   calories: 2000,
@@ -21,9 +23,7 @@ const ON_TARGET_UP_TO = 1.1;
 const OVER_UP_TO = 1.25;
 /** The goals sheet warns once P/C/F kcal drift more than this share from the calorie goal. */
 const MACRO_DRIFT_TOLERANCE = 0.1;
-const KCAL_PER_GRAM_PROTEIN_OR_CARBS = 4;
-const KCAL_PER_GRAM_FAT = 9;
-const GRAM_FIELDS = ['protein', 'carbs', 'fat', 'fiber'] as const;
+const GRAM_FIELDS = Object.values(NutritionMacro);
 
 const inRange = (value: number, min: number, max: number): boolean =>
   Number.isFinite(value) && value >= min && value <= max;
@@ -116,13 +116,16 @@ export class NutritionGoals extends BaseValueObject<NutritionGoalValues> {
 
   /** Kcal the protein, carbs and fat goals add up to, at 4 / 4 / 9. */
   get macroCalories(): number {
-    return (this.protein + this.carbs) * KCAL_PER_GRAM_PROTEIN_OR_CARBS + this.fat * KCAL_PER_GRAM_FAT;
+    return (
+      this.protein * AtwaterFactors[NutritionMacro.Protein] +
+      this.carbs * AtwaterFactors[NutritionMacro.Carbs] +
+      this.fat * AtwaterFactors[NutritionMacro.Fat]
+    );
   }
 
   /** Share of the calorie goal (0–1, may exceed 1) one macro's gram goal accounts for, at 4 / 4 / 9 kcal per gram. */
-  calorieShare(macro: 'protein' | 'carbs' | 'fat'): number {
-    const kcalPerGram = macro === 'fat' ? KCAL_PER_GRAM_FAT : KCAL_PER_GRAM_PROTEIN_OR_CARBS;
-    return (this._value[macro] * kcalPerGram) / this.calories;
+  calorieShare(macro: keyof typeof AtwaterFactors): number {
+    return (this._value[macro] * AtwaterFactors[macro]) / this.calories;
   }
 
   /** True when the macro goals miss the calorie goal by more than 10 % — the sheet's warning. */

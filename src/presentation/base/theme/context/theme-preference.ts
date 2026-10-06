@@ -1,4 +1,4 @@
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 
 /**
  * What the user ASKED for — a superset of what can actually be rendered:
@@ -12,8 +12,14 @@ import type { ThemeVariant } from '@presentation/base/theme/context/theme-varian
  * the two were one type, `getThemeColors(id, 'system')` would compile and
  * silently fall through to the light branch — a wrong colour instead of a build
  * error. The narrowing in `theme-context.tsx`
- * (`preference === 'system' ? systemScheme : preference`) is the boundary that
+ * (`preference === ThemePreference.System ? systemScheme : preference`) is the boundary that
  * turns a request into something renderable, and only a narrower target type
  * forces that boundary to exist.
  */
-export type ThemePreference = ThemeVariant | 'system';
+export const ThemePreference = {
+  ...ThemeVariant,
+  System: 'system',
+} as const;
+
+// eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing
+export type ThemePreference = (typeof ThemePreference)[keyof typeof ThemePreference];

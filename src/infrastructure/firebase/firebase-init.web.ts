@@ -1,9 +1,9 @@
-import Constants from 'expo-constants';
 import { PROD_WEB_APP_DOMAIN } from '@infrastructure/constants/api/api-hosts';
 import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { type FirebaseApp, getApps, initializeApp } from 'firebase/app';
 import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import { ValueConstants } from '@core/constants';
+import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
 /**
  * Domain that serves the OAuth handler, and the name Google shows the user in
@@ -20,7 +20,6 @@ import { ValueConstants } from '@core/constants';
 const PROD_AUTH_DOMAIN = PROD_WEB_APP_DOMAIN;
 const DEV_AUTH_DOMAIN = 'recipely-c05fc.firebaseapp.com';
 
-const IS_DEV_VARIANT: boolean = Constants.expoConfig?.extra?.variant === 'development';
 
 // Web Firebase config is read from EXPO_PUBLIC_FIREBASE_* env vars at build
 // time. Firebase web config strings are technically public (they identify the
@@ -34,7 +33,7 @@ const IS_DEV_VARIANT: boolean = Constants.expoConfig?.extra?.variant === 'develo
 // deployment secret happens to hold.
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
-  authDomain: IS_DEV_VARIANT ? DEV_AUTH_DOMAIN : PROD_AUTH_DOMAIN,
+  authDomain: IS_DEV_BUILD ? DEV_AUTH_DOMAIN : PROD_AUTH_DOMAIN,
   projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,

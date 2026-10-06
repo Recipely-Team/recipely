@@ -8,14 +8,14 @@ import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/colors/pale
 import type { ThemeId } from '@presentation/base/theme/context/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/context/theme-defaults';
 import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
-import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import type { ThemeContextValue } from '@presentation/base/theme/context/theme-context-value';
 
 export const ThemeContext = createContext<ThemeContextValue>({
   themeId: DEFAULT_THEME_ID,
-  preference: 'system',
-  scheme: 'light',
+  preference: ThemePreference.System,
+  scheme: ThemeVariant.Light,
   colors: {} as ThemeColors,
   setThemeId: () => {},
   setPreference: () => {},
@@ -35,7 +35,7 @@ export interface AppThemeProviderProps {
 }
 
 const isThemePreference = (v: string): v is ThemePreference =>
-  v === 'system' || v === 'light' || v === 'dark';
+  (Object.values(ThemePreference) as unknown[]).includes(v);
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
@@ -47,7 +47,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // locale change re-renders each screen and re-evaluates its t() strings.
   const locale = useLocale();
   const [themeId, setThemeIdState] = useState<ThemeId>(DEFAULT_THEME_ID);
-  const [preference, setPreferenceState] = useState<ThemePreference>('system');
+  const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
 
   // Load persisted theme + preference on mount
   useEffect(() => {
@@ -86,10 +86,10 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
   // non-'dark' value collapses to the same branch.
   const ignoreSystemScheme = isWeb() && !hydrated;
   const effectiveSystemScheme: ThemeVariant =
-    !ignoreSystemScheme && systemScheme === 'dark' ? 'dark' : 'light';
+    !ignoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
 
   const scheme: ThemeVariant =
-    preference === 'system' ? effectiveSystemScheme : preference;
+    preference === ThemePreference.System ? effectiveSystemScheme : preference;
 
   // Memoize to ensure stable reference when themeId/scheme unchanged
   const colors = useMemo(() => getThemeColors(themeId, scheme), [themeId, scheme]);

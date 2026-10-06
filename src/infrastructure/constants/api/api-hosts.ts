@@ -1,4 +1,4 @@
-import Constants from "expo-constants";
+import { IS_DEV_BUILD } from "@infrastructure/constants/app-variant";
 
 /**
  * Which backend the app talks to, and the URLs that sit outside `/api/v1`.
@@ -15,12 +15,10 @@ import Constants from "expo-constants";
  *   one — `api-paging`, `api-timeouts`, `build-secrets` — so a reader looking
  *   for "how big is a page" is not scrolling past host resolution to find it.
  */
-const IS_DEV_VARIANT: boolean =
-  Constants.expoConfig?.extra?.variant === "development";
 
 const PROD_SERVER_URL = "https://api.recipely.net";
 const DEV_SERVER_URL = "https://dev-api.recipely.net";
-const DEFAULT_SERVER_URL = IS_DEV_VARIANT ? DEV_SERVER_URL : PROD_SERVER_URL;
+const DEFAULT_SERVER_URL = IS_DEV_BUILD ? DEV_SERVER_URL : PROD_SERVER_URL;
 
 const SERVER_URL: string =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
@@ -47,7 +45,7 @@ export const PROD_WEB_APP_BASE_URL = "https://recipely.net";
 /** The same origin without its scheme, which is the form Firebase auth wants. */
 export const PROD_WEB_APP_DOMAIN = PROD_WEB_APP_BASE_URL.replace('https://', '');
 const DEV_WEB_APP_BASE_URL = "https://app-recipely-dev.web.app";
-const DEFAULT_WEB_APP_BASE_URL = IS_DEV_VARIANT
+const DEFAULT_WEB_APP_BASE_URL = IS_DEV_BUILD
   ? DEV_WEB_APP_BASE_URL
   : PROD_WEB_APP_BASE_URL;
 

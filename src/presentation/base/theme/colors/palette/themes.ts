@@ -4,7 +4,7 @@ import type { ThemeDefinition } from '@presentation/base/theme/context/theme-def
 import type { VariantSemantics } from '@presentation/base/theme/colors/surfaces/variant-semantics';
 import type { Palette } from '@presentation/base/theme/colors/palette/palette';
 import { RadixConstants, RegexConstants, ValueConstants } from '@core/constants';
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import { contrastRatio } from '@presentation/base/theme/colors/contrast/contrast';
 
 /** Offsets of the R, G and B pairs inside `#RRGGBB` — index 0 is the '#'. */
@@ -187,7 +187,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     name: 'Pearl White',
     nameTr: 'İnci Beyazı',
     description: 'Clean, airy light mode with blue accents',
-    preferredVariant: 'light',
+    preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#1D4ED8', primaryText: '#FFFFFF', primaryLight: '#DBEAFE',
       gradientStart: '#3B82F6', gradientEnd: '#60A5FA',
@@ -203,7 +203,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     name: 'Crimson Ember',
     nameTr: 'Kırmızı Kor',
     description: 'Bold, passionate red for energy and urgency',
-    preferredVariant: 'light',
+    preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#B91C1C', primaryText: '#FFFFFF', primaryLight: '#FEE2E2',
       gradientStart: '#DC2626', gradientEnd: '#F87171',
@@ -221,7 +221,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     name: 'Emerald Garden',
     nameTr: 'Zümrüt Bahçe',
     description: 'Deep emerald green suggesting growth and balance',
-    preferredVariant: 'light',
+    preferredVariant: ThemeVariant.Light,
     light: makeLight({
       primary: '#053A29', primaryText: '#FFFFFF', primaryLight: '#D1FAE5',
       gradientStart: '#059669', gradientEnd: '#34D399',
@@ -239,7 +239,7 @@ const themes: Record<ThemeId, ThemeDefinition> = {
     name: 'Royal Purple',
     nameTr: 'Kraliyet Moru',
     description: 'Bold purple on dark surfaces for a regal mood',
-    preferredVariant: 'dark',
+    preferredVariant: ThemeVariant.Dark,
     light: makeLight({
       primary: '#7E22CE', primaryText: '#FFFFFF', primaryLight: '#F3E8FF',
       gradientStart: '#9333EA', gradientEnd: '#C084FC',
@@ -288,5 +288,5 @@ export const ALL_THEMES: ThemeId[] = [
 export const getThemeDefinition = (id: ThemeId): ThemeDefinition => themes[id];
 
 export const getThemeColors = (id: ThemeId, scheme: ThemeVariant): ThemeColors =>
-  scheme === 'dark' ? themes[id].dark : themes[id].light;
+  scheme === ThemeVariant.Dark ? themes[id].dark : themes[id].light;
 

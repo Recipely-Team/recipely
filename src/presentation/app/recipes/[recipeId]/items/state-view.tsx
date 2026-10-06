@@ -12,6 +12,7 @@ import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
 import { ValueConstants } from '@core/constants';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export interface StateViewProps {
   status: StateViewStatus;
@@ -52,13 +53,13 @@ export const StateView = ({
   children,
 }: StateViewProps): React.JSX.Element => {
   switch (status) {
-    case 'loading':
+    case StateViewStatus.Loading:
       return (
         <View style={styles.center}>
           <ActivityIndicator />
         </View>
       );
-    case 'error': {
+    case StateViewStatus.Error: {
       const f = failure ?? new UnknownFailure();
       const content = failureContent(f);
       return (
@@ -78,7 +79,7 @@ export const StateView = ({
     case StateViewStatus.Empty:
       return (
         <ErrorState
-          severity="neutral"
+          severity={SeverityType.Neutral}
           icon={emptyIcon ?? FALLBACK_EMPTY_ICON}
           title={emptyTitle ?? t().common.empty}
           body={emptyMessage}

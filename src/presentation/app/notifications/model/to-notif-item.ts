@@ -7,15 +7,15 @@ import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 /** The kinds this build knows how to draw; anything newer falls back to `generic`. */
 const KNOWN_KINDS = new Set<NotifKind>([
-  'comment',
-  'like',
-  'favorite',
-  'ai_done',
-  'import_done',
-  'import_failed',
-  'moderation_approved',
-  'moderation_pending',
-  'follow',
+  NotifKind.Comment,
+  NotifKind.Like,
+  NotifKind.Favorite,
+  NotifKind.AiDone,
+  NotifKind.ImportDone,
+  NotifKind.ImportFailed,
+  NotifKind.ModerationApproved,
+  NotifKind.ModerationPending,
+  NotifKind.Follow,
   NotifKind.CreatorApproved,
   NotifKind.CreatorRejected,
 ]);
