@@ -118,7 +118,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   const setSaved = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
-      if (userId === null) return { ok: false, error: 'signed_out' };
+      if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
       if (savedIds.has(recipeId) === wanted) {
         // An unloaded set answers "not saved" about every recipe in the app, so
         // this branch reported an unsave that never happened. It only misleads
@@ -139,14 +139,14 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   const setLiked = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
-      if (userId === null) return { ok: false, error: 'signed_out' };
+      if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
       // No early return on the render's `likeState`: an absent entry read as
       // "not liked", so the FIRST spoken "beğen" flipped nothing and said it
       // had. The store owns that question now and answers it truthfully.
       if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
       const result = await setLikedInStore(recipeId, wanted);
-      return result.ok ? { ok: true, title: recipeName } : { ok: false, error: 'failed' };
+      return result.ok ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, likeState, recipeId, recipeName, setLikedInStore],
   );
@@ -206,7 +206,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
       // The recipe's own cook timer, which is the one the screen shows and the
       // one a notification already exists for — not an arbitrary countdown the
       // user would have no way to see or stop.
-      if (cookTimeMinutes <= ValueConstants.zero) return { ok: false, error: 'no_cook_time' };
+      if (cookTimeMinutes <= ValueConstants.zero) return { ok: false, error: AssistantActionError.NoCookTime };
       onStartCookTimer();
       return { ok: true, title: recipeName, n: { min: cookTimeMinutes } };
     }, [cookTimeMinutes, onStartCookTimer, recipeName]),
@@ -216,7 +216,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.AddComment,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
         // The text goes with the call. Writing the field and posting in the
         // same tick meant the post read the previous render's value — empty —
         // and reported success anyway, so the model announced a comment that
@@ -237,7 +237,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(ingredients, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onToggleIngredient(index);
         return {
           ok: true,
@@ -256,7 +256,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(instructions, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onToggleStep(index);
         return {
           ok: true,
@@ -329,7 +329,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.DeleteRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      if (!isOwner) return { ok: false, error: 'not_yours' };
+      if (!isOwner) return { ok: false, error: AssistantActionError.NotYours };
       // Opens the confirm sheet and says so. Deleting on a model's say-so is
       // the one thing this assistant must never do, and answering `awaiting`
       // keeps the session moving while the user decides.

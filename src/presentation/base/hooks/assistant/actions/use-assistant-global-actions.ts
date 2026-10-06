@@ -11,6 +11,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { CharConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /**
  * The actions that work from anywhere, registered once beside the pill.
@@ -69,10 +70,10 @@ export const useAssistantGlobalActions = (): void => {
       // the whole point of naming them — the alternative was "sayfa
       // bulunamadı", which was untrue about a link the user was looking at.
       if (isAssistantExternalName(name)) {
-        return { ok: false, error: 'leaves_the_app' };
+        return { ok: false, error: AssistantActionError.LeavesTheApp };
       }
       const screen = resolveAssistantScreenName(name);
-      if (screen === null) return { ok: false, error: 'unknown_screen' };
+      if (screen === null) return { ok: false, error: AssistantActionError.UnknownScreen };
 
       // `navigate`, not `push`: asked to go somewhere the user is already
       // standing, `push` stacks a second copy of it and back stops leaving.
@@ -85,7 +86,7 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.Search,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       if (arg === undefined || arg === CharConstants.empty) {
-        return { ok: false, error: 'nothing_to_search' };
+        return { ok: false, error: AssistantActionError.NothingToSearch };
       }
       // Opening the feed WITH the query, rather than filling its store behind
       // its back: the field shows what was asked for and the user watches the
@@ -107,7 +108,7 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.GenerateRecipe,
     useCallback(async (arg?: string): Promise<AssistantActionResultType> => {
       if (arg === undefined || arg === CharConstants.empty) {
-        return { ok: false, error: 'empty_prompt' };
+        return { ok: false, error: AssistantActionError.EmptyPrompt };
       }
       // Same shape, and the flagship case: the create screen opens with the
       // prompt in place and the generating view runs in front of the user. The
@@ -123,7 +124,7 @@ export const useAssistantGlobalActions = (): void => {
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         if (arg === undefined || arg === CharConstants.empty) {
-          return { ok: false, error: 'not_found' };
+          return { ok: false, error: AssistantActionError.NotFound };
         }
         // Read at call time rather than subscribed: this hook lives in the
         // pill, which is mounted for the app's whole life, and subscribing
@@ -164,7 +165,7 @@ export const useAssistantGlobalActions = (): void => {
         // from a previous turn or a deep link still opens while a phrase that
         // matched nothing says so instead of opening a page that cannot exist.
         const id = match?.id ?? (looksLikeId(arg) ? arg : null);
-        if (id === null) return { ok: false, error: 'not_found' };
+        if (id === null) return { ok: false, error: AssistantActionError.NotFound };
 
         router.push(RoutePaths.recipeDetail(id) as Href);
         return { ok: true, ...(match !== undefined ? { title: match.name } : {}) };
@@ -179,7 +180,7 @@ export const useAssistantGlobalActions = (): void => {
       // The back gesture a thumb makes. `canGoBack` matters: popping an empty
       // stack on web leaves the app entirely, which is not what "go back"
       // means to anyone.
-      if (!router.canGoBack()) return { ok: false, error: 'nothing_behind' };
+      if (!router.canGoBack()) return { ok: false, error: AssistantActionError.NothingBehind };
       router.back();
       return { ok: true };
     }, []),

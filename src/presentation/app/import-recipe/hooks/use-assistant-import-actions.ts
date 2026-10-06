@@ -7,6 +7,7 @@ import type { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What the import screen lends the assistant. */
 interface AssistantImportActionsDeps {
@@ -61,7 +62,7 @@ export const useAssistantImportActions = (deps: AssistantImportActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const url = arg ?? sharedUrl ?? CharConstants.empty;
-        if (url === CharConstants.empty) return { ok: false, error: 'no_link' };
+        if (url === CharConstants.empty) return { ok: false, error: AssistantActionError.NoLink };
 
         onSubmitLink(url);
         return { ok: true };

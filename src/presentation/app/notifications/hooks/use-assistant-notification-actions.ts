@@ -84,7 +84,7 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const at = rowAt(items.map(rowName), arg);
-        if (at === null) return { ok: false, error: 'not_found' };
+        if (at === null) return { ok: false, error: AssistantActionError.NotFound };
 
         const item = items[at];
         // Already read is the outcome asked for, not a failure — and the tap

@@ -92,7 +92,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKindEqualsValue };
 
         switch (parsed.key) {
           case CUISINE: {
@@ -114,18 +114,18 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
           }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
-            if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
+            if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onDifficultyChange(difficulty);
             return { ok: true, n: filterCounts(filters) };
           }
           case MAX_TIME: {
             const minutes = Number.parseInt(parsed.value, 10);
-            if (!Number.isFinite(minutes)) return { ok: false, error: 'not_a_number' };
+            if (!Number.isFinite(minutes)) return { ok: false, error: AssistantActionError.NotANumber };
             onSetMaxTime(minutes);
             return { ok: true, n: filterCounts(filters) };
           }
           default:
-            return { ok: false, error: 'unknown_filter' };
+            return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
       [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime, cuisineOptions, categoryOptions],
@@ -137,13 +137,13 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKindEqualsValue };
 
         switch (parsed.key) {
           case CUISINE: {
             const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
-            if (!filters.cuisines.includes(key)) return { ok: false, error: 'not_applied' };
+            if (!filters.cuisines.includes(key)) return { ok: false, error: AssistantActionError.NotApplied };
             // The quick toggle is what the chip row calls, so removing looks
             // exactly like the user tapping the chip off.
             onToggleCuisineQuick(key);
@@ -157,7 +157,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
           }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
-            if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
+            if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onRemoveDifficulty(difficulty);
             return { ok: true, n: filterCounts(filters) };
           }
@@ -170,7 +170,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             onClearSearch();
             return { ok: true, n: filterCounts(filters) };
           default:
-            return { ok: false, error: 'unknown_filter' };
+            return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
       [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, onClearSearch, cuisineOptions, categoryOptions],
@@ -195,7 +195,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const key = asSortKey(arg ?? CharConstants.empty);
-        if (key === null) return { ok: false, error: 'unknown_sort' };
+        if (key === null) return { ok: false, error: AssistantActionError.UnknownSort };
         onChangeSort(key);
         return { ok: true };
       },

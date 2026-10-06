@@ -64,7 +64,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
   const save = useCallback(
     async (arg?: string): Promise<AssistantActionResultType> => {
       const { favourites: saved, isSignedIn } = latest.current;
-      if (!isSignedIn) return { ok: false, error: 'signed_out' };
+      if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
       // Already saved is a success, not a toggle: the user asked for an
@@ -79,7 +79,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
   /** Opens the recipe and lets its own screen answer, so the change is seen. */
   const runOnRecipe = useCallback(
     async (arg: string | undefined, action: AssistantActionType): Promise<AssistantActionResultType> => {
-      if (travelling.current) return { ok: false, error: 'not_found' };
+      if (travelling.current) return { ok: false, error: AssistantActionError.NotFound };
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
 
@@ -87,7 +87,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
       try {
         router.push(RoutePaths.recipeDetail(row.id) as Href);
         const arrived = await registry.waitForScreenHandler(action, SCREEN_ARRIVAL_TIMEOUT_MS);
-        if (!arrived) return { ok: false, error: 'screen_did_not_open' };
+        if (!arrived) return { ok: false, error: AssistantActionError.ScreenDidNotOpen };
         return await registry.run(action, arg);
       } finally {
         travelling.current = false;
@@ -99,7 +99,7 @@ export const useAssistantListRecipeActions = (rows: readonly AssistantRecipeRow[
   const setLiked = useCallback(
     async (arg: string | undefined, wanted: boolean): Promise<AssistantActionResultType> => {
       const { isSignedIn } = latest.current;
-      if (!isSignedIn) return { ok: false, error: 'signed_out' };
+      if (!isSignedIn) return { ok: false, error: AssistantActionError.SignedOut };
       const row = find(arg);
       if (row === null) return { ok: false, notMine: true };
 

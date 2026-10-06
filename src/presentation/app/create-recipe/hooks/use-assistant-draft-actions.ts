@@ -18,6 +18,7 @@ import { recipeReading } from '@presentation/base/hooks/assistant/args/describin
 import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** The draft-editing capability this hook needs, named where it is consumed. */
 interface AssistantDraftActionsDeps {
@@ -114,9 +115,7 @@ const SERVINGS_FIELD = 'servings';
 const TEXT_FIELDS = ['name'] as const;
 const DIFFICULTY_FIELD = 'difficulty';
 /** Named so the model can act on it: re-scaling goes to `refineDraft`. */
-const SERVINGS_NEEDS_REFINE = 'servings_needs_refine';
 /** A generate call with nothing to generate from; the same word the global handler uses. */
-const EMPTY_PROMPT = 'empty_prompt';
 const CUISINE_FIELD = 'cuisine';
 const CATEGORY_FIELD = 'category';
 
@@ -258,7 +257,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_field_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedFieldEqualsValue };
 
         const { value } = parsed;
         // "Prep Time Minutes=10" and "prep_time_minutes=10" name the same field.
@@ -267,11 +266,11 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
         // Before the numeric branch it used to sit in: the answer is a
         // redirect, not a write. The model reads the reason and asks the
         // refine to do it properly, quantities and all.
-        if (field === SERVINGS_FIELD) return { ok: false, error: SERVINGS_NEEDS_REFINE };
+        if (field === SERVINGS_FIELD) return { ok: false, error: AssistantActionError.ServingsNeedsRefine };
 
         if ((NUMERIC_FIELDS as readonly string[]).includes(field)) {
           const parsed = Number.parseInt(value, 10);
-          if (!Number.isFinite(parsed)) return { ok: false, error: 'not_a_number' };
+          if (!Number.isFinite(parsed)) return { ok: false, error: AssistantActionError.NotANumber };
           onUpdateField(field as (typeof NUMERIC_FIELDS)[number], parsed);
           return { ok: true, n: counts };
         }
@@ -279,7 +278,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           const difficulty = Object.values(Difficulty).find(
             (d) => d === machineUpper(value),
           );
-          if (difficulty === undefined) return { ok: false, error: 'unknown_difficulty' };
+          if (difficulty === undefined) return { ok: false, error: AssistantActionError.UnknownDifficulty };
           onUpdateField(DIFFICULTY_FIELD, difficulty);
           return { ok: true, title: recipe.name, n: counts };
         }
@@ -292,7 +291,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           // app has simply not loaded it yet, and telling the model the
           // cuisine does not exist would have it say something untrue out loud.
           if (options.length === ValueConstants.zero) {
-            return { ok: false, error: 'taxonomy_not_loaded' };
+            return { ok: false, error: AssistantActionError.TaxonomyNotLoaded };
           }
           const wanted = machineLower(value);
           const match = options.find(
@@ -307,7 +306,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
           onUpdateField(field as (typeof TEXT_FIELDS)[number], value);
           return { ok: true, title: recipe.name, n: counts };
         }
-        return { ok: false, error: 'unknown_field' };
+        return { ok: false, error: AssistantActionError.UnknownField };
       },
       [onUpdateField, counts, recipe.name, cuisines, categories],
     ),
@@ -318,7 +317,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     AssistantAction.AddIngredient,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
         // One state update, not an append followed by a write. Two additions in
         // one model turn run as microtasks — before React re-renders — so the
         // second still saw the old length and both wrote to the same row.
@@ -335,7 +334,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(recipe.ingredients, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onRemoveIngredient(index);
         return { ok: true, n: { ...counts, ing: counts.ing - ValueConstants.one } };
       },
@@ -348,7 +347,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     AssistantAction.AddStep,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
         onAppendStep(arg);
         return { ok: true, n: { ...counts, step: counts.step + ValueConstants.one } };
       },
@@ -362,7 +361,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(recipe.instructions, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onRemoveStep(index);
         return { ok: true, n: { ...counts, step: counts.step - ValueConstants.one } };
       },
@@ -386,7 +385,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     AssistantAction.RefineDraft,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
         onSubmitRefine(arg);
         // The refine answers with a PROPOSAL the user accepts or rejects, so
         // this is awaiting even though nothing was destroyed — telling the
@@ -427,7 +426,7 @@ export const useAssistantDraftActions = (deps: AssistantDraftActionsDeps): void 
     AssistantAction.GenerateRecipe,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: EMPTY_PROMPT };
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.EmptyPrompt };
         return onGenerateAnother(arg) ? { ok: true, awaiting: true } : { ok: true };
       },
       [onGenerateAnother],

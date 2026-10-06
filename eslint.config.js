@@ -22,6 +22,23 @@ module.exports = defineConfig([
     },
   },
   {
+    // An assistant action's failure reason is a vocabulary the model reads and
+    // the app branches on (AssistantActionError / DiaryArgError); spelled as a
+    // string at a call site, a typo was a silently different reason. Tests may
+    // still assert the wire value.
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__fixtures__/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Property[key.name='error'] > Literal[value=/^[a-z]+(_[a-z]+)*$/]",
+          message: 'Use AssistantActionError.* (or the feature vocabulary) instead of a string literal for an error reason.',
+        },
+      ],
+    },
+  },
+  {
     // Icon fonts are bundled per family IMPORTED, not per glyph used: the root
     // `@expo/vector-icons` index pulls in every family, so importing Ionicons
     // from it shipped all 19 fonts (4.1 MB in the iOS build; 0.4 MB are used).

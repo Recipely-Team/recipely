@@ -5,6 +5,7 @@ import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/
 import { StepCursor } from '@presentation/base/hooks/assistant/args/resolving/step-cursor';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** Joins ingredient lines into one spoken list. */
 const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
@@ -78,7 +79,7 @@ export const useAssistantReadActions = (
         await waitForContent(() => latest.current.instructions.length > ValueConstants.zero);
         const lines = latest.current.instructions;
         const step = lines[index];
-        if (step === undefined) return { ok: false, error: 'no_such_step' };
+        if (step === undefined) return { ok: false, error: AssistantActionError.NoSuchStep };
 
         stepCursor.current = index;
         // The step text is one of the few places a tool result carries content
@@ -100,7 +101,7 @@ export const useAssistantReadActions = (
     useCallback(async (): Promise<AssistantActionResultType> => {
       await waitForContent(() => latest.current.ingredients.length > ValueConstants.zero);
       const lines = latest.current.ingredients;
-      if (lines.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
+      if (lines.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NoIngredients };
       return {
         ok: true,
         title: lines.join(INGREDIENT_SEPARATOR),

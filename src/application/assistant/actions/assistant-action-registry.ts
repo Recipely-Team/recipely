@@ -3,6 +3,7 @@ import type { AssistantActionHandlerType } from '@domain/assistant/actions/assis
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** Between the route and what is on it — "screen=/recipes; recipes=1) Baklava". */
 const SCREEN_LINE_SEPARATOR = '; ';
@@ -248,7 +249,7 @@ export class AssistantActionRegistry {
 
   async run(action: string, arg?: string): Promise<AssistantActionResultType> {
     if (!isAssistantAction(action)) {
-      return this.withContext({ ok: false, error: 'unknown_action' });
+      return this.withContext({ ok: false, error: AssistantActionError.UnknownAction });
     }
 
     const stack = this.handlers.get(action) ?? [];
@@ -257,7 +258,7 @@ export class AssistantActionRegistry {
         const result = await stack[at]!(arg);
         if (result.notMine !== true) return this.withContext(result);
       } catch {
-        return this.withContext({ ok: false, error: 'failed' });
+        return this.withContext({ ok: false, error: AssistantActionError.Failed });
       }
     }
 
@@ -270,14 +271,14 @@ export class AssistantActionRegistry {
       try {
         return this.withContext(await fallback(arg));
       } catch {
-        return this.withContext({ ok: false, error: 'failed' });
+        return this.withContext({ ok: false, error: AssistantActionError.Failed });
       }
     }
 
     if (stack.length === ValueConstants.zero) {
-      return this.withContext({ ok: false, error: 'unavailable_here' });
+      return this.withContext({ ok: false, error: AssistantActionError.UnavailableHere });
     }
-    return this.withContext({ ok: false, error: 'not_found' });
+    return this.withContext({ ok: false, error: AssistantActionError.NotFound });
   }
 
   private withContext(result: AssistantActionResultType): AssistantActionResultType {

@@ -90,7 +90,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const query = (arg ?? CharConstants.empty).trim();
-        if (query.length === 0) return { ok: false, error: 'nothing_to_search' };
+        if (query.length === 0) return { ok: false, error: AssistantActionError.NothingToSearch };
         // The sheet opens on the same query; its search joins this one instead of repeating it.
         sheets.openSearch(query);
         const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE)]);

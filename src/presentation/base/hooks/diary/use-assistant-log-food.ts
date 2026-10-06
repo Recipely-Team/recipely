@@ -23,6 +23,7 @@ import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/
 import { resolveDiaryDate } from '@presentation/base/hooks/assistant/args/diary/resolve-diary-date';
 import { parseLogFoodArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-log-food-arg';
 import type { LogFoodArgs } from '@presentation/base/hooks/assistant/args/diary/parsing/log-food-args';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What the screen registering `logFood` lends it. */
 interface AssistantLogFoodOptions {
@@ -106,7 +107,7 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
     AssistantAction.LogFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (!signedIn) return { ok: false, error: 'signed_out' };
+        if (!signedIn) return { ok: false, error: AssistantActionError.SignedOut };
         const parsed = parseLogFoodArg(arg);
         if (!parsed.ok) return { ok: false, error: parsed.error };
         const args = parsed.value;
