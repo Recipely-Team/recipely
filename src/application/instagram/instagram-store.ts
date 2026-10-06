@@ -36,11 +36,11 @@ export const configureInstagramStore = (deps: InstagramStoreDeps): BoundStore<In
     const load = async (): Promise<void> => {
       generation += ValueConstants.one;
       const requested = generation;
+      if (get().connection.status !== StoreStatus.Loaded) set({ connection: { status: StoreStatus.Loading } });
       const enabled = await deps.isEnabled();
       if (requested !== generation) return;
       // Flagged off: report the feature unavailable without asking the server, which hides every entry point.
       if (!enabled) return void set({ connection: { status: StoreStatus.Loaded, connection: InstagramConnection.none() } });
-      if (get().connection.status !== StoreStatus.Loaded) set({ connection: { status: StoreStatus.Loading } });
       const result = await deps.getConnection.execute();
       if (requested !== generation) return;
       if (result.ok) set({ connection: { status: StoreStatus.Loaded, connection: result.value } });

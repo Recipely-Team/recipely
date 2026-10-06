@@ -2,7 +2,7 @@ import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-
 import { FeatureFlags } from '@application/config/feature-flags';
 import { isFeatureOn } from '@application/config/is-feature-on';
 
-type FeatureFlagName = keyof typeof FeatureFlags;
+type FeatureFlagNameType = keyof typeof FeatureFlags;
 
 /**
  * Answers "is this feature on?" — the admin panel's override if it set one,
@@ -22,7 +22,7 @@ export class FeatureFlagResolver {
     private readonly isDevBuild: boolean,
   ) {}
 
-  async isOn(name: FeatureFlagName): Promise<boolean> {
+  async isOn(name: FeatureFlagNameType): Promise<boolean> {
     const overrides = await this.loadOverrides();
     return overrides?.[name] ?? isFeatureOn(FeatureFlags[name], this.isDevBuild);
   }
