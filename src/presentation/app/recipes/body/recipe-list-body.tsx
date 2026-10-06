@@ -23,7 +23,7 @@ import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-re
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
 import { spacing, iconSizes, controlSizes, layoutSizes } from '@presentation/base/theme';
-import type { FeedRow } from '@presentation/app/recipes/model/ads/feed-row';
+import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
 import { FeedRowView } from '@presentation/app/recipes/items/feed-row-view';
 import { useFeedRows } from '@presentation/app/recipes/hooks/use-feed-rows';
 import { MOBILE_FEED_GUTTER } from '@presentation/app/recipes/model/feed-content-width';
@@ -82,7 +82,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   });
 
   const renderItem = useCallback(
-    ({ item }: { item: FeedRow }): React.JSX.Element => (
+    ({ item }: { item: FeedRowType }): React.JSX.Element => (
       // prettier-ignore
       <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} adWidth={adWidth} openRecipe={openRecipe} />
     ),

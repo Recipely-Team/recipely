@@ -27,7 +27,7 @@ import { showErrorToast } from "@presentation/base/feedback/show-toast";
 import { useSaveRecipe } from "@presentation/base/hooks/recipes/use-save-recipe";
 import type { UseSaveRecipeResult } from "@presentation/base/hooks/recipes/use-save-recipe-result";
 import { renderComponent } from "@presentation/base/test-support/render-component";
-import type { Stores } from "@presentation/bootstrap/stores";
+import type { StoresType } from "@presentation/bootstrap/stores";
 import { StoresProvider } from "@presentation/bootstrap/stores-context";
 import { act } from "react-test-renderer";
 import { create } from "zustand";
@@ -175,7 +175,7 @@ const driveHook = (
     savedRecipesStore,
     favoritesStore,
     authStore,
-  } as unknown as Stores;
+  } as unknown as StoresType;
 
   let latest: UseSaveRecipeResult = {
     isSaved: () => false,
@@ -372,7 +372,7 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
       savedRecipesStore,
       favoritesStore,
       authStore,
-    } as unknown as Stores;
+    } as unknown as StoresType;
 
     let latestResult: UseSaveRecipeResult = {
       isSaved: () => false,
@@ -430,7 +430,7 @@ describe("useSaveRecipe — error handling", () => {
       savedRecipesStore,
       favoritesStore,
       authStore,
-    } as unknown as Stores;
+    } as unknown as StoresType;
 
     let latestResult: UseSaveRecipeResult = {
       isSaved: () => false,

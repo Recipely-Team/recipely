@@ -6,12 +6,12 @@ import { LoggableFood } from '@domain/diary/entry/loggable-food';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { useAddFoodFlow } from '@presentation/base/hooks/diary/use-add-food-flow';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import type { AddFoodFlow } from '@presentation/base/widgets/diary/add-food/state/add-food-flow';
 import { StoreStatus } from '@application/store/store-status';
 import { configureFoodCatalogStore } from '@application/diary/foods/food-catalog-store';
@@ -41,7 +41,7 @@ const ayranDetail = () =>
     ],
   });
 
-const setup = (request: AddFoodRequest, onOpenDiary?: () => void, detail = ayranDetail()) => {
+const setup = (request: AddFoodRequestType, onOpenDiary?: () => void, detail = ayranDetail()) => {
   const actions = {
     addEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
     updateEntry: jest.fn().mockResolvedValue(ok(foodLogEntryOf())),
@@ -62,7 +62,7 @@ const setup = (request: AddFoodRequest, onOpenDiary?: () => void, detail = ayran
     flow.current = useAddFoodFlow(request, onClose, onOpenDiary);
     return null;
   };
-  renderComponent(<Probe />, { diaryStore, foodCatalogStore } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { diaryStore, foodCatalogStore } as unknown as Partial<StoresType>);
   const get = (): AddFoodFlow => {
     if (flow.current === null) throw new Error('not rendered');
     return flow.current;

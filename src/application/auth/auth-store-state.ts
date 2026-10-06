@@ -1,12 +1,12 @@
 import type { Failure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { RegistrationChallenge } from '@domain/auth/registration-challenge';
-import type { AuthStatus } from '@application/auth/auth-status';
+import type { AuthStatusType } from '@application/auth/auth-status';
 import type { RequestCreatorTagInput } from '@application/creators/claim/request-creator-tag-input';
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 
 export interface AuthStoreState {
-  state: AuthStatus;
+  state: AuthStatusType;
   /** Signs in with email + password. Returns `null` on success, or the `Failure` for the screen to surface. */
   signIn: (email: string, password: string) => Promise<Failure | null>;
   /**

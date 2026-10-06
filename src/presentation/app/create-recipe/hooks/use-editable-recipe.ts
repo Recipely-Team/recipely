@@ -4,7 +4,7 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
-import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
 import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -19,7 +19,7 @@ export const useEditableRecipe = () => {
   const [photosOpen, setPhotosOpen] = useState(false);
 
   // Clears a single field's inline validation error once the user edits it.
-  const clearFieldError = useCallback((key: CreateRecipeFieldKey): void => {
+  const clearFieldError = useCallback((key: CreateRecipeFieldKeyType): void => {
     setFieldErrors((prev) => {
       if (prev.fields[key] === undefined) return prev;
       const nextFields: CreateRecipeFieldErrors['fields'] = { ...prev.fields };
@@ -31,7 +31,7 @@ export const useEditableRecipe = () => {
   const onUpdateField = useCallback(
     <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]): void => {
       setRecipe((r) => ({ ...r, [key]: value }));
-      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKey);
+      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKeyType);
     },
     [clearFieldError],
   );

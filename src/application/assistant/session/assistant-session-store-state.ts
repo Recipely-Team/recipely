@@ -1,5 +1,5 @@
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
 import type { Failure } from '@core/failure';
@@ -26,7 +26,7 @@ export interface AssistantSessionStoreState {
    * hears silence rather than a conversation it was not meant to be part of.
    */
   isMuted: boolean;
-  transcript: AssistantTranscriptLine[];
+  transcript: AssistantTranscriptLineType[];
   /** Seconds of voice left today, as the server last reported them. */
   remainingSeconds: number;
   /**

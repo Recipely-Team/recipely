@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
+import type { NotificationTargetType } from '@domain/notifications/notification-target';
 import { RoutePaths } from '@presentation/base/constants';
 
 /**
@@ -17,10 +17,10 @@ import { RoutePaths } from '@presentation/base/constants';
  *   The cast: a dynamic recipe path can't be checked against expo-router's
  *   typed-routes union — same as `useRecipeDetail`.
  */
-export function useOpenNotificationTarget(): (target: NotificationTarget) => void {
+export function useOpenNotificationTarget(): (target: NotificationTargetType) => void {
   const router = useRouter();
   return useCallback(
-    (target: NotificationTarget): void => {
+    (target: NotificationTargetType): void => {
       if (target.kind === NotificationTargetKind.Draft) {
         router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
         return;

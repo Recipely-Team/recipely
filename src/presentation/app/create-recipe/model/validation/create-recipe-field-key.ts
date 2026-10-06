@@ -6,4 +6,4 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
  * gallery, not a single bindable field, and the backend's cover-image
  * requirement is already surfaced via the rejected-save dialog.
  */
-export type CreateRecipeFieldKey = Exclude<keyof EditableRecipe, 'media'>;
+export type CreateRecipeFieldKeyType = Exclude<keyof EditableRecipe, 'media'>;

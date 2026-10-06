@@ -3,7 +3,7 @@ import type { Failure } from '@core/failure';
 import type { AssistantDenialReasonType } from '@domain/assistant/session/assistant-denial-reason';
 import type { AssistantStatusType } from '@application/assistant/session/assistant-status';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { AssistantViewType } from '@application/assistant/session/assistant-view';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -14,7 +14,7 @@ interface AssistantSessionView {
   /** 0..1, already scaled for a bar — see the store. Scaling it again pins a whisper at the top. */
   level: number;
   isMuted: boolean;
-  transcript: AssistantTranscriptLine[];
+  transcript: AssistantTranscriptLineType[];
   remainingSeconds: number;
   /** True for an account the server does not meter — `remainingSeconds` is
    *  then a floor, not a balance, and never runs out. */

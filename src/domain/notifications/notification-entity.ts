@@ -5,7 +5,7 @@ import { NotificationTargetKind } from '@domain/notifications/notification-targe
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
+import type { NotificationTargetType } from '@domain/notifications/notification-target';
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import { ValueConstants } from '@core/constants';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
@@ -92,7 +92,7 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * route yet — so it has no destination and this returns `null`. A creator
    * decision opens the user's own creator account settings.
    */
-  get target(): NotificationTarget | null {
+  get target(): NotificationTargetType | null {
     const creatorPlatform = this.props.creatorPlatform ?? null;
     if (creatorPlatform !== null) {
       return { kind: NotificationTargetKind.CreatorAccount, platform: creatorPlatform };

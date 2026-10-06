@@ -1,9 +1,9 @@
 import type { ValidationFieldError } from '@core/failure';
-import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
 
-const KNOWN_FIELDS: ReadonlySet<string> = new Set<CreateRecipeFieldKey>([
+const KNOWN_FIELDS: ReadonlySet<string> = new Set<CreateRecipeFieldKeyType>([
   'name',
   'cuisine',
   'category',
@@ -15,7 +15,7 @@ const KNOWN_FIELDS: ReadonlySet<string> = new Set<CreateRecipeFieldKey>([
   'instructions',
 ]);
 
-const isKnownField = (value: string): value is CreateRecipeFieldKey => KNOWN_FIELDS.has(value);
+const isKnownField = (value: string): value is CreateRecipeFieldKeyType => KNOWN_FIELDS.has(value);
 
 export const NO_CREATE_RECIPE_FIELD_ERRORS: CreateRecipeFieldErrors = { fields: {}, unmatched: [] };
 
@@ -36,7 +36,7 @@ export const NO_CREATE_RECIPE_FIELD_ERRORS: CreateRecipeFieldErrors = { fields: 
 export const mapFieldErrorsToInputs = (
   fieldErrors: readonly ValidationFieldError[],
 ): CreateRecipeFieldErrors => {
-  const fields: Partial<Record<CreateRecipeFieldKey, string>> = {};
+  const fields: Partial<Record<CreateRecipeFieldKeyType, string>> = {};
   const unmatched: string[] = [];
   for (const entry of fieldErrors) {
     const base = entry.field?.split('.')[ValueConstants.zero];

@@ -21,10 +21,10 @@ import { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
 import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
@@ -39,7 +39,7 @@ const ayran = LoggableProduct.fromLogged(
   nutrientsOf({ calories: 52 }),
 );
 /** `/diary/foods/recent`: a quick-add apple and a glass and a half of ayran. */
-const recentFoods: RecentFood[] = [
+const recentFoods: RecentFoodType[] = [
   { kind: RecentFoodKind.Food, key: 'apple', food: apple },
   { kind: RecentFoodKind.Product, key: 'ayran', product: ayran, quantity: FoodQuantity.of({ key: 'glass', amount: 200 }, 1.5) },
 ];
@@ -92,7 +92,7 @@ const harness = (
     useAssistantDiaryActions({ view: { status: StoreStatus.Loaded, day }, selected: today, today, select, sheets });
     return null;
   };
-  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<StoresType>);
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction], arg?: string): Promise<AssistantActionResultType> => {
     let result!: AssistantActionResultType;
     await act(async () => {

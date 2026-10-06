@@ -6,7 +6,7 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import { useAssistantLogFood } from '@presentation/base/hooks/diary/use-assistant-log-food';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import type { UseAddToDiaryResult } from '@presentation/app/recipes/[recipeId]/model/use-add-to-diary-result';
@@ -34,7 +34,7 @@ export const useAddToDiary = (recipe: RecipeEntity): UseAddToDiaryResult => {
   const authState = authStore((s) => s.state);
   const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
-  const [request, setRequest] = useState<AddFoodRequest | null>(null);
+  const [request, setRequest] = useState<AddFoodRequestType | null>(null);
 
   const food = useMemo(() => {
     const built = buildLoggableFoodFromRecipe.execute(recipe);

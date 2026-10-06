@@ -42,13 +42,13 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
 } as const satisfies Readonly<Record<string, string>>;
 
 /** A screen the assistant can be asked for, by the name the model is given. */
-export type AssistantScreenName = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
+export type AssistantScreenNameType = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
 
-const SCREEN_NAMES = Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenName[];
+const SCREEN_NAMES = Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenNameType[];
 
 /**
  * The screen a word names, tolerating the case and spacing a model adds; `null`
  * when it names none. The model is given the list, but it is not held to it.
  */
-export const resolveAssistantScreenName = (name: string): AssistantScreenName | null =>
+export const resolveAssistantScreenName = (name: string): AssistantScreenNameType | null =>
   resolveTargetName(name, SCREEN_NAMES);

@@ -41,7 +41,7 @@ import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-cas
 import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
@@ -135,7 +135,7 @@ const noopCacheStore = <T,>(): T =>
  * Real createdRecipesStore + draftsStore, with create/update wired through the
  * real use cases down to a `FakeRecipeRepository` reading `config`.
  */
-const makeStores = (repo: FakeRecipeRepository): Stores => {
+const makeStores = (repo: FakeRecipeRepository): StoresType => {
   const recipeDetailStore = configureRecipeDetailStore({
     getRecipe: new GetRecipeUseCase(repo),
     addRecipePhoto: new AddRecipePhotoUseCase(repo),
@@ -168,7 +168,7 @@ const makeStores = (repo: FakeRecipeRepository): Stores => {
     deleteDraftUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteDraftUseCase,
   });
 
-  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as Stores;
+  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as StoresType;
 };
 
 type Save = ReturnType<typeof useRecipeSave>;

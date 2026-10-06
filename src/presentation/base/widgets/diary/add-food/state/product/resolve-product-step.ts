@@ -2,9 +2,9 @@ import { StoreStatus } from '@application/store/store-status';
 import type { FoodDetailState } from '@application/diary/foods/food-detail-state';
 import { ValueConstants } from '@core/constants';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import type { ProductChoice } from '@presentation/base/widgets/diary/add-food/state/product/product-choice';
+import type { ProductChoiceType } from '@presentation/base/widgets/diary/add-food/state/product/product-choice';
 import { ProductChoiceKind } from '@presentation/base/widgets/diary/add-food/state/product/product-choice-kind';
-import type { ProductStepModel } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
+import type { ProductStepModelType } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
 
 /**
  * The product step from the flow's choice and the catalogue store's detail.
@@ -19,11 +19,11 @@ import type { ProductStepModel } from '@presentation/base/widgets/diary/add-food
  *   variant also has; otherwise the new variant's default applies.
  */
 export const resolveProductStep = (
-  choice: ProductChoice,
+  choice: ProductChoiceType,
   detail: FoodDetailState,
   variantIndex: number | null,
   quantity: FoodQuantity | null,
-): ProductStepModel => {
+): ProductStepModelType => {
   if (choice.kind === ProductChoiceKind.Logged) {
     return { status: StoreStatus.Loaded, product: choice.product, variants: [], variantIndex: ValueConstants.zero, quantity: quantity ?? choice.quantity };
   }

@@ -24,7 +24,7 @@ import { AssistantView } from '@application/assistant/session/assistant-view';
 import { toAppFailure } from '@application/assistant/session/to-app-failure';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import type { AssistantSessionStoreState } from '@application/assistant/session/assistant-session-store-state';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import type { BoundStore } from '@application/store/bound-store';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import type { AssistantActionType } from '@domain/assistant/actions/assistant-action-type';
@@ -119,7 +119,7 @@ export const configureAssistantSessionStore = (
   const meter = new AssistantLevelMeter();
   let languageCode = CharConstants.empty;
   let overlay: AssistantStatusType | null = null;
-  let extras: { after: number; line: AssistantTranscriptLine }[] = [];
+  let extras: { after: number; line: AssistantTranscriptLineType }[] = [];
   let extraId = ValueConstants.zero;
   let typedEpoch = ValueConstants.zero;
   let typedQueue: Promise<void> = Promise.resolve();

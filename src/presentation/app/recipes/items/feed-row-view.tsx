@@ -5,10 +5,10 @@ import { AdSlot } from '@presentation/base/widgets/ads/ad-slot';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { FeedRowKind } from '@presentation/app/recipes/model/ads/feed-row-kind';
 
-import type { FeedRow } from '@presentation/app/recipes/model/ads/feed-row';
+import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
 
 export interface FeedRowViewProps {
-  row: FeedRow;
+  row: FeedRowType;
   /** > 1 puts each recipe in a grid cell; ads are only ever placed at 1. */
   gridColumns: number;
   adUnitId: string;

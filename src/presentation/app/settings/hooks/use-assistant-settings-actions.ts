@@ -3,7 +3,7 @@ import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resol
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
 import { ALL_THEMES } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import { t } from '@presentation/i18n';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
@@ -26,10 +26,10 @@ interface AssistantSettingsActionsDeps {
   /** Light, dark or follow-the-system. */
   preference: ThemePreference;
   /** Which palette is selected, by id; the reading says the name on the swatch. */
-  themeId: ThemeId;
+  themeId: ThemeIdType;
   onSetLanguage: (locale: string) => void;
   onSetThemePreference: (preference: ThemePreference) => void;
-  onSetThemeId: (themeId: ThemeId) => void;
+  onSetThemeId: (themeId: ThemeIdType) => void;
   onRequestSignOut: () => void;
 }
 
@@ -143,7 +143,7 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
           if (themeId === null || !(ALL_THEMES as string[]).includes(themeId)) {
             return { ok: false, error: AssistantActionError.UnknownPalette };
           }
-          onSetThemeId(themeId as ThemeId);
+          onSetThemeId(themeId as ThemeIdType);
           return { ok: true };
         }
         if (key === THEME) {
@@ -168,6 +168,6 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
 };
 
 /** The palette's name in the language the user is reading, as the swatch shows it. */
-function paletteName(id: ThemeId): string {
+function paletteName(id: ThemeIdType): string {
   return t().settings.themeNames[id];
 }

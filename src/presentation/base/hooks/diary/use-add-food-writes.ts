@@ -6,7 +6,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import { t } from '@presentation/i18n';
 
 /** The Add food sheet's writes, as `useAddFoodWrites` exposes them. */
@@ -25,7 +25,7 @@ interface AddFoodWrites {
  * outside the diary; the success toast then offers a "Diary" action.
  */
 export const useAddFoodWrites = (
-  request: AddFoodRequest | null,
+  request: AddFoodRequestType | null,
   onClose: () => void,
   onOpenDiary: (() => void) | undefined,
 ): AddFoodWrites => {

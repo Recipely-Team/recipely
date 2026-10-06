@@ -5,7 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -64,12 +64,12 @@ const SAFE_AREA_METRICS = {
  *   inside `element` — the inner provider wins, so existing suites are
  *   unaffected.
  */
-export const renderComponent = (element: ReactElement, stores?: Partial<Stores>): RenderResult => {
+export const renderComponent = (element: ReactElement, stores?: Partial<StoresType>): RenderResult => {
   let renderer!: ReactTestRenderer;
   const value = {
     assistantActionRegistry: new AssistantActionRegistry(),
     ...stores,
-  } as unknown as Stores;
+  } as unknown as StoresType;
 
   act(() => {
     renderer = create(

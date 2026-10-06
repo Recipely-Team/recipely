@@ -7,7 +7,7 @@ import type { FoodDetail } from '@domain/diary/foods/product/food-detail';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import type { FoodSearchResults } from '@domain/diary/foods/search/food-search-results';
 import type { RecipeHitGroupType } from '@domain/diary/foods/search/recipe-hit-group-type';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 
 /**
  * What the Add food sheet can log, from the server: the grouped search, the
@@ -25,5 +25,5 @@ export interface FoodCatalogRepositoryInterface {
   listProducts(category: string | null, page: number, pageSize: number): Promise<Result<Page<FoodProduct>, Failure>>;
   getProduct(foodId: string): Promise<Result<FoodDetail, Failure>>;
   getBrandedProduct(barcode: string): Promise<Result<FoodDetail, Failure>>;
-  listRecent(page: number, pageSize: number): Promise<Result<Page<RecentFood>, Failure>>;
+  listRecent(page: number, pageSize: number): Promise<Result<Page<RecentFoodType>, Failure>>;
 }

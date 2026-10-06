@@ -4,7 +4,7 @@ import { AddFoodPickStep } from '@presentation/base/widgets/diary/add-food/pick/
 import { AddFoodDetailStep } from '@presentation/base/widgets/diary/add-food/detail/add-food-detail-step';
 import { AddFoodProductStep } from '@presentation/base/widgets/diary/add-food/product/add-food-product-step';
 import { AddFoodFooter } from '@presentation/base/widgets/diary/add-food/add-food-footer';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import { CharConstants } from '@core/constants';
 import { diarySizes } from '@presentation/base/theme';
@@ -12,7 +12,7 @@ import { t } from '@presentation/i18n';
 
 export interface AddFoodSheetProps {
   /** What to open on; null closes the sheet. */
-  request: AddFoodRequest | null;
+  request: AddFoodRequestType | null;
   onClose: () => void;
   /** Given only outside the diary: the success toast then offers a "Diary" action that calls it. */
   onOpenDiary?: () => void;

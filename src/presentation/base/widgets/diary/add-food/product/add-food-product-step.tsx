@@ -13,7 +13,7 @@ import { ProductHeader } from '@presentation/base/widgets/diary/add-food/product
 import { VariantPicker } from '@presentation/base/widgets/diary/add-food/product/variant-picker';
 import { UnitChips } from '@presentation/base/widgets/diary/add-food/product/unit-chips';
 import { AmountStepper } from '@presentation/base/widgets/diary/add-food/product/amount-stepper';
-import type { ProductStepModel } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
+import type { ProductStepModelType } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
 import { formatOneDecimal } from '@presentation/base/utils/diary/format-one-decimal';
 import { formatFoodPortion } from '@presentation/base/utils/diary/units/format-food-portion';
 import { unitWord } from '@presentation/base/utils/diary/units/unit-word';
@@ -21,7 +21,7 @@ import { fontSizes, fontWeights, spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 
 export interface AddFoodProductStepProps {
-  model: ProductStepModel;
+  model: ProductStepModelType;
   date: CalendarDate;
   meal: MealSlotType;
   canGoBack: boolean;

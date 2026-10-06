@@ -2,7 +2,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { RecipeChangeKind } from '@presentation/app/create-recipe/model/refine/recipe-change-kind';
 
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import type { RecipeChange } from '@presentation/app/create-recipe/model/refine/recipe-change';
+import type { RecipeChangeType } from '@presentation/app/create-recipe/model/refine/recipe-change';
 
 /** The scalar fields, in the order the proposal card lists them. */
 const VALUE_FIELDS = [
@@ -35,8 +35,8 @@ const LIST_FIELDS = ['ingredients', 'instructions'] as const;
 export const diffEditableRecipes = (
   before: EditableRecipe,
   after: EditableRecipe,
-): readonly RecipeChange[] => {
-  const changes: RecipeChange[] = [];
+): readonly RecipeChangeType[] => {
+  const changes: RecipeChangeType[] = [];
 
   for (const field of VALUE_FIELDS) {
     const from = String(before[field] ?? CharConstants.empty);

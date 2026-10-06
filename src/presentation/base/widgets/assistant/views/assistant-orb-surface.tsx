@@ -6,7 +6,7 @@ import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts
 import { AssistantOrbMenu } from '@presentation/base/widgets/assistant/views/assistant-orb-menu';
 import { AssistantSheet } from '@presentation/base/widgets/assistant/views/assistant-sheet';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { assistantSheetGeometry } from '@presentation/base/widgets/assistant/assistant-sheet-geometry';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
@@ -17,7 +17,7 @@ export interface AssistantOrbSurfaceProps {
   status: AssistantStatusType;
   level: number;
   isMuted: boolean;
-  transcript: AssistantTranscriptLine[];
+  transcript: AssistantTranscriptLineType[];
   notice: string | null;
   /** How loudly to show it — see assistantNoticeTone. */
   noticeTone: SeverityType;

@@ -15,7 +15,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { CommentNodeType } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 
@@ -33,7 +33,7 @@ export interface CommentCardProps {
   /** When true the card flashes a primary tint once, then settles back. */
   highlighted?: boolean;
   /** Registers the card's root node so a deep link can scroll to it. */
-  nodeRef?: (node: CommentNode | null) => void;
+  nodeRef?: (node: CommentNodeType | null) => void;
 }
 
 const AVATAR_SIZE = avatarSizes.sm;

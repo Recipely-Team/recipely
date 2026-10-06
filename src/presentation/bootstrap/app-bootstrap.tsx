@@ -19,7 +19,7 @@ import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { StoresType } from '@presentation/bootstrap/stores';
 import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
 import { setPushRegistrationHandler } from '@application/notifications/ensure-push-registration';
@@ -37,7 +37,7 @@ export interface AppBootstrapProps {
 let onSessionExpired: () => void = () => {};
 
 // Initialize stores synchronously on module load
-const initializeStores = (): Stores => {
+const initializeStores = (): StoresType => {
   registerInfrastructure(container, {
     onUnauthorized: () => onSessionExpired(),
   });

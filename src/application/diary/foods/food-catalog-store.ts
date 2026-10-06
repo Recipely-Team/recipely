@@ -4,7 +4,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -38,7 +38,7 @@ export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): BoundStor
   return create<FoodCatalogStoreState>((set, get) => {
     const categories = new PagedListLoader<FoodCategory>(() => get().categories, (list) => set({ categories: list }), (c) => c.key);
     const products = new PagedListLoader<FoodProduct>(() => get().products, (list) => set({ products: list }), (p) => p.key);
-    const recent = new PagedListLoader<RecentFood>(() => get().recent, (list) => set({ recent: list }), (r) => r.key);
+    const recent = new PagedListLoader<RecentFoodType>(() => get().recent, (list) => set({ recent: list }), (r) => r.key);
     const shelf = (category: string | null): Promise<void> =>
       products.load((page) => deps.listProducts.execute(category, page, FOOD_LIST_PAGE_SIZE));
 

@@ -11,7 +11,7 @@ import { TOKENS } from '@application/di/tokens';
 import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/context/theme-defaults';
 
 // Register the shared in-memory key-value store under the DI token so the
@@ -27,8 +27,8 @@ const flushMicrotasks = async (): Promise<void> => {
   });
 };
 
-const renderThemeId = (): { latest: () => ThemeId } => {
-  let latest!: ThemeId;
+const renderThemeId = (): { latest: () => ThemeIdType } => {
+  let latest!: ThemeIdType;
   const Probe = (): null => {
     latest = useTheme().themeId;
     return null;

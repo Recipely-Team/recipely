@@ -8,7 +8,7 @@ import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { t } from '@presentation/i18n';
 import { useCreatorAccount } from '@presentation/app/edit-profile/hooks/use-creator-account';
 import { CreatorAccountRowKind } from '@presentation/app/edit-profile/model/creator-account-row-kind';
-import type { CreatorAccountRow } from '@presentation/app/edit-profile/model/creator-account-row';
+import type { CreatorAccountRowType } from '@presentation/app/edit-profile/model/creator-account-row';
 import { CreatorLinkedRow } from '@presentation/app/edit-profile/body/creator/creator-linked-row';
 import { CreatorLinkForm } from '@presentation/app/edit-profile/body/creator/creator-link-form';
 import { CreatorAddRow } from '@presentation/app/edit-profile/items/creator-add-row';
@@ -23,7 +23,7 @@ export interface CreatorAccountSectionProps {
   onLayout?: (event: LayoutChangeEvent) => void;
 }
 
-const platformOf = (row: CreatorAccountRow): CreatorPlatformType =>
+const platformOf = (row: CreatorAccountRowType): CreatorPlatformType =>
   row.kind === CreatorAccountRowKind.Linked ? row.claim.tag.platform : row.platform;
 
 /**
@@ -41,7 +41,7 @@ export const CreatorAccountSection = ({ onLayout }: CreatorAccountSectionProps):
   const ig = useInstagramAccount();
   const copy = t().instagram;
 
-  const renderRow = (row: CreatorAccountRow): React.JSX.Element => {
+  const renderRow = (row: CreatorAccountRowType): React.JSX.Element => {
     if (ig.connection.isAvailable && platformOf(row) === CreatorPlatform.Instagram) {
       if (ig.connection.isConnected) {
         return (

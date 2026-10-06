@@ -1,7 +1,7 @@
 import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
 import { CharConstants } from '@core/constants';
 import { FoodSearchGroup, type FoodSearchGroupType } from '@domain/diary/foods/search/food-search-group';
-import type { PickRow } from '@presentation/base/widgets/diary/add-food/list/pick-row';
+import type { PickRowEntryType } from '@presentation/base/widgets/diary/add-food/list/pick-row';
 import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick-row-type';
 import { pagedRows } from '@presentation/base/widgets/diary/add-food/list/paged-rows';
 
@@ -27,7 +27,7 @@ export const SEARCH_GROUP_ORDER: readonly FoodSearchGroupType[] = [
  *   unfiltered groups (backend #373), so a saved recipe of the user's own
  *   would otherwise show twice.
  */
-export const searchRows = (lists: SearchLists, titles: Readonly<Record<FoodSearchGroupType, string>>): PickRow[] => {
+export const searchRows = (lists: SearchLists, titles: Readonly<Record<FoodSearchGroupType, string>>): PickRowEntryType[] => {
   const shown = new Set<string>();
   return SEARCH_GROUP_ORDER.flatMap((group) => {
     const rows =

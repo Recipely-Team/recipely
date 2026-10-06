@@ -21,7 +21,7 @@
 import type { RecipeCommentsState } from "@application/comments/list/recipe-comments-state";
 import { CommentEntity } from "@domain/comments/comment-entity";
 import { useCommentHighlight } from "@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight";
-import type { CommentNode } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
+import type { CommentNodeType } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
 import type { UseCommentHighlightResult } from "@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result";
 import { renderComponent } from "@presentation/base/test-support/render-component";
 import { spacing } from "@presentation/base/theme";
@@ -88,7 +88,7 @@ const INNER_NODE = {};
 
 interface ScrollFakes {
   scrollTo: jest.Mock;
-  node: CommentNode;
+  node: CommentNodeType;
   scrollViewRef: { current: ScrollView | null };
 }
 
@@ -120,7 +120,7 @@ const makeScrollFakes = (ys: number[]): ScrollFakes => {
       pass++;
       onSuccess(0, y, 0, 0);
     },
-  } as unknown as CommentNode;
+  } as unknown as CommentNodeType;
 
   return { scrollTo, node, scrollViewRef };
 };
@@ -132,7 +132,7 @@ const scrolledYs = (scrollTo: jest.Mock): unknown[] =>
 interface Harness {
   latest: () => UseCommentHighlightResult;
   push: (state: RecipeCommentsState | undefined) => void;
-  register: (node: CommentNode) => void;
+  register: (node: CommentNodeType) => void;
   growContent: () => void;
   userScroll: (via: "onWheel" | "onTouchMove" | "onScrollBeginDrag") => void;
 }

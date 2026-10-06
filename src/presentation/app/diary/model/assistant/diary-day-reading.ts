@@ -3,7 +3,7 @@ import type { DiaryDay } from '@domain/diary/day/diary-day';
 import { StoreStatus } from '@application/store/store-status';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { datePart } from '@presentation/app/diary/model/assistant/date-part';
-import type { DiaryDayView } from '@presentation/app/diary/model/diary-day-view';
+import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
 
 const NEWLINE = CharConstants.newline;
 const round = (value: number): number => Math.round(value);
@@ -32,7 +32,7 @@ const dayLines = (day: DiaryDay): string[] => {
  * water, every meal with its entries, and the goals — what lets the assistant
  * comment on the user's day.
  */
-export const diaryDayReading = (view: DiaryDayView, selected: CalendarDate, today: CalendarDate, locale: string): string => {
+export const diaryDayReading = (view: DiaryDayViewType, selected: CalendarDate, today: CalendarDate, locale: string): string => {
   const head = [`screen=diary`, datePart('today', today, locale), datePart('selected', selected, locale)];
   switch (view.status) {
     case StoreStatus.Loaded:
