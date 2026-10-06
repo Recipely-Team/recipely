@@ -29,6 +29,7 @@ import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-rea
 import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
+import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
@@ -270,6 +271,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.FeedbackRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new FeedbackRepository(http);
+  });
+
+  container.register(TOKENS.FeatureFlagRepository, () => {
+    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
+    return new FeatureFlagRepository(http);
   });
 
   container.register(TOKENS.SubmitFeedbackUseCase, () => {

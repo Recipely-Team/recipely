@@ -134,8 +134,9 @@ import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-u
 import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-use-case';
 import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
 import { recordDeviceOnSessionRestore } from '@application/device/record-device-on-session-restore';
-import { FeatureFlags } from '@application/config/feature-flags';
-import { isFeatureOn } from '@application/config/is-feature-on';
+import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
+import { FeatureFlagName } from '@application/config/feature-flag-name';
+import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
 
@@ -260,8 +261,12 @@ export const registerApplication = (container: Container): ApplicationStores => 
     loadDetail: new LoadFoodDetailUseCase(foodCatalogRepo),
   });
   const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
+  const featureFlags = new FeatureFlagResolver(
+    container.resolve<FeatureFlagRepositoryInterface>(TOKENS.FeatureFlagRepository),
+    IS_DEV_BUILD,
+  );
   const instagramStore = configureInstagramStore({
-    enabled: isFeatureOn(FeatureFlags.instagramAutomations, IS_DEV_BUILD),
+    isEnabled: () => featureFlags.isOn(FeatureFlagName.InstagramAutomations),
     getConnection: new GetInstagramConnectionUseCase(instagramRepo),
     startLogin: new StartInstagramLoginUseCase(instagramRepo),
     finalize: new FinalizeInstagramLinkUseCase(instagramRepo),

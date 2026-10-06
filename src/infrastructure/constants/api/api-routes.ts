@@ -77,6 +77,8 @@ export const ApiRoutes = {
     follow: (userId: string): string => `/users/${encodeURIComponent(userId)}/follow`,
   },
   feedback: '/feedback',
+  /** The admin panel's on/off overrides of the app's feature flags; open to guests. */
+  flags: '/flags',
   /** The signed-in user's food diary; every route is scoped to the session's user. */
   diary: {
     day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,
