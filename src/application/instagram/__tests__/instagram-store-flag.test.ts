@@ -15,7 +15,7 @@ describe('isFeatureOn', () => {
 describe('instagramStore with the instagramAutomations flag off', () => {
   it('reports the feature unavailable without asking the server', async () => {
     const getConnection = { execute: jest.fn() };
-    const store = configureInstagramStore({ enabled: false, getConnection, startLogin: { execute: jest.fn() }, finalize: { execute: jest.fn() }, disconnect: { execute: jest.fn() } } as never);
+    const store = configureInstagramStore({ isEnabled: () => Promise.resolve(false), getConnection, startLogin: { execute: jest.fn() }, finalize: { execute: jest.fn() }, disconnect: { execute: jest.fn() } } as never);
     await store.getState().load();
     const connection = store.getState().connection;
     expect(getConnection.execute).not.toHaveBeenCalled();
