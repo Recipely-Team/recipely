@@ -8,7 +8,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
-import { failureContent, failureIcon } from '@presentation/base/errors/failure-lookups';
+import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { AutomationsBar } from '@presentation/app/automations/shared/items/automations-bar';
 import { useAutomationActivity } from '@presentation/app/automations/activity/hooks/use-automation-activity';
 import { ActivitySummary } from '@presentation/app/automations/activity/body/activity-summary';
@@ -39,7 +39,7 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
   const body = (): React.JSX.Element => {
     if (failed !== null) {
       const content = failureContent(failed);
-      return <ErrorState icon={failureIcon(failed)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />;
+      return <ErrorState icon={failureIcon(failed)} severity={failureSeverity(failed)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />;
     }
     if (vm.opened.status !== StoreStatus.Loaded) return <ActivityIndicator style={styles.spinner} color={colors.primary} />;
     const sends = vm.sends;

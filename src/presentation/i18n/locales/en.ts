@@ -544,7 +544,7 @@ export const en = {
     searchCuisine: 'Search a cuisine…',
     cuisinesSelected: '{n} cuisines selected',
     aiPromoSub: "Describe what you want — I'll handle the rest",
-    removeFilter: 'remove filter',
+    removeFilterNamed: "Remove {name} filter",
     removeTimeFilter: 'Remove time filter',
     closeFilter: 'Close filters',
     share: 'Share recipe',

@@ -65,6 +65,13 @@ export class DiaryDay {
     return Math.max(ValueConstants.zero, -this.remainingCalories);
   }
 
+  /** Share of the calorie goal eaten, 0..1 for the ring; 0 when no goal is set (never NaN or Infinity). */
+  get calorieProgress(): number {
+    const goal = this.props.goals.calories;
+    if (goal <= ValueConstants.zero) return ValueConstants.zero;
+    return Math.min(ValueConstants.one, Math.max(ValueConstants.zero, this.totals.calories / goal));
+  }
+
   get calorieStatus(): CalorieStatusType {
     return this.props.goals.calorieStatus(this.totals.calories, this.hasEntries);
   }

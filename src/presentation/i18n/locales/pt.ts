@@ -533,7 +533,7 @@ export const pt = {
     searchCuisine: 'Buscar cozinha…',
     cuisinesSelected: '{n} cozinhas selecionadas',
     aiPromoSub: 'Descreva o que você quer — eu cuido do resto',
-    removeFilter: 'remover filtro',
+    removeFilterNamed: "Remover o filtro {name}",
     removeTimeFilter: 'Remover filtro de tempo',
     closeFilter: 'Fechar filtros',
     share: 'Compartilhar receita',

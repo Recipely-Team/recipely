@@ -2,7 +2,7 @@ import type { ImportFileBatch } from '@domain/recipes/import-file/import-file-ba
 import { appendFilePart } from '@infrastructure/network/upload/append-file-part';
 
 /** The field the backend's `fileUpload.array('files', 5)` reads. */
-export const IMPORT_FILE_FIELD = 'files';
+const IMPORT_FILE_FIELD = 'files';
 
 /**
  * Builds the multipart body for `POST /recipes/import/file`.

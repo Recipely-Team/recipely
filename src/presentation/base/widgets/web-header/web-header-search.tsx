@@ -61,7 +61,7 @@ const styles = StyleSheet.create({
   wrap: {
     width: '100%',
     maxWidth: SEARCH_MAX_WIDTH,
-    height: controlSizes.searchBarSlim,
+    minHeight: controlSizes.searchBarSlim,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
@@ -71,7 +71,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: ValueConstants.one,
-    height: '100%',
+    alignSelf: 'stretch',
     fontSize: fontSizes.medium,
     outlineStyle: 'none',
   } as object,

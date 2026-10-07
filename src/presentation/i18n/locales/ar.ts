@@ -533,7 +533,7 @@ export const ar = {
     searchCuisine: "ابحث عن مطبخ…",
     cuisinesSelected: "{n} مطبخ محدد",
     aiPromoSub: "صف ما تريده — وسأتولى الباقي",
-    removeFilter: "إزالة عامل التصفية",
+    removeFilterNamed: "إزالة عامل التصفية {name}",
     removeTimeFilter: "إزالة تصفية الوقت",
     closeFilter: "إغلاق عوامل التصفية",
     share: "مشاركة الوصفة",

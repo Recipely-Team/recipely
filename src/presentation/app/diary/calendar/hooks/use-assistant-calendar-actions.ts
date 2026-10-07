@@ -45,7 +45,7 @@ export const useAssistantCalendarActions = ({ month, diaryMonth, selected, today
         if (!date.ok) return { ok: false, error: date.error };
         void diaryStore.getState().selectDate(date.value);
         showMonth(CalendarMonth.of(date.value));
-        return { ok: true, title: `selected ${date.value.value}` };
+        return { ok: true, title: date.value.value };
       },
       [diaryStore, showMonth],
     ),

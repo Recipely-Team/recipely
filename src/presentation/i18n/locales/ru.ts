@@ -533,7 +533,7 @@ export const ru = {
     searchCuisine: 'Поиск кухни…',
     cuisinesSelected: 'Выбрано кухонь: {n}',
     aiPromoSub: 'Опишите, чего хотите — остальное я сделаю',
-    removeFilter: 'убрать фильтр',
+    removeFilterNamed: "Убрать фильтр «{name}»",
     removeTimeFilter: 'Убрать фильтр по времени',
     closeFilter: 'Закрыть фильтры',
     share: 'Поделиться рецептом',

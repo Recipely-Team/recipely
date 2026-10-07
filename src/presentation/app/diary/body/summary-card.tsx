@@ -49,7 +49,7 @@ export const SummaryCard = ({ day, wide }: SummaryCardProps): React.JSX.Element 
 
   const ring = (
     <CalorieRing
-      progress={pastGoal ? ValueConstants.one : day.totals.calories / day.goals.calories}
+      progress={pastGoal ? ValueConstants.one : day.calorieProgress}
       color={pastGoal && tone !== null ? tone.solid : colors.primary}
       size={wide ? diarySizes.ringWeb : diarySizes.ringMobile}
       stroke={wide ? diarySizes.ringStrokeWeb : diarySizes.ringStrokeMobile}

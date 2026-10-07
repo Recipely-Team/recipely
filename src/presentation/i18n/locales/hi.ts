@@ -535,7 +535,7 @@ export const hi: TranslationsType = {
     searchCuisine: 'व्यंजन खोजें…',
     cuisinesSelected: '{n} व्यंजन चुने गए',
     aiPromoSub: 'बस बताइए क्या चाहिए — बाकी मैं संभाल लूँगा',
-    removeFilter: 'फ़िल्टर हटाएँ',
+    removeFilterNamed: "{name} फ़िल्टर हटाएँ",
     removeTimeFilter: 'समय का फ़िल्टर हटाएँ',
     closeFilter: 'फ़िल्टर बंद करें',
     share: 'रेसिपी शेयर करें',
