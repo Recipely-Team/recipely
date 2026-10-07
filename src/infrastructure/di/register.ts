@@ -30,6 +30,9 @@ import { RegisterDeviceTokenUseCase } from '@application/notifications/register-
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
+import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
+import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
+import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { SubmitFeedbackUseCase } from '@application/feedback/submit-feedback-use-case';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
@@ -268,6 +271,11 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new FeatureFlagRepository(http);
   });
+
+  container.register(TOKENS.FeatureFlagResolver, () => new FeatureFlagResolver(
+    container.resolve<FeatureFlagRepositoryInterface>(TOKENS.FeatureFlagRepository),
+    IS_DEV_BUILD,
+  ));
 
   container.register(TOKENS.SubmitFeedbackUseCase, () => {
     const repo = container.resolve<FeedbackRepository>(TOKENS.FeedbackRepository);

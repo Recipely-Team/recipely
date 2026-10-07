@@ -17,10 +17,8 @@ import { SetDmRuleEnabledUseCase } from '@application/instagram/rules/set-dm-rul
 import { DeleteDmRuleUseCase } from '@application/instagram/rules/delete-dm-rule-use-case';
 import { ListInstagramMediaUseCase } from '@application/instagram/rules/list-instagram-media-use-case';
 import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-sends-use-case';
-import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
+import type { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { FeatureFlagName } from '@application/config/feature-flag-name';
-import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
-import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 
 /**
  * **Instagram composition** — the account link and the DM automations, gated by the
@@ -31,10 +29,7 @@ export const registerInstagram = (
 ): Pick<ApplicationStores, 'instagramStore' | 'automationsStore'> => {
   const foodCatalogRepo = container.resolve<FoodCatalogRepositoryInterface>(TOKENS.FoodCatalogRepository);
   const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
-  const featureFlags = new FeatureFlagResolver(
-    container.resolve<FeatureFlagRepositoryInterface>(TOKENS.FeatureFlagRepository),
-    IS_DEV_BUILD,
-  );
+  const featureFlags = container.resolve<FeatureFlagResolver>(TOKENS.FeatureFlagResolver);
   const instagramStore = configureInstagramStore({
     isEnabled: () => featureFlags.isOn(FeatureFlagName.InstagramAutomations),
     getConnection: new GetInstagramConnectionUseCase(instagramRepo),
