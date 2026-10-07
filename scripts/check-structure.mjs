@@ -9,7 +9,8 @@
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
  *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
- *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines.
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines; a routed
+ *      app/.../index.tsx over 200.
  *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
  *      <TextInput multiline> outside the AutoGrowTextInput pair.
@@ -223,6 +224,8 @@ for (const file of files) {
     const lines = src.split('\n').length;
     if (lines > 300) {
       errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
+    } else if (/^presentation\/app\/(.+\/)?index\.tsx$/.test(file) && lines > 200) {
+      errors.push(`${file}: ${lines} lines — a routed index.tsx is composition only and stays under 200 lines (CLAUDE.md §18); move logic into hooks/ or body/`);
     }
   }
 
