@@ -777,6 +777,10 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
   const refocus = async (): Promise<void> => {
     const calls = (useFocusEffect as jest.Mock).mock.calls;
     const onFocus = calls[calls.length - 1][0] as () => void;
+    // Let the first load settle completely — its success is what stamps the feed fresh.
+    await act(async () => {
+      await new Promise((resolve) => setImmediate(resolve));
+    });
     await act(async () => {
       onFocus();
       await Promise.resolve();
