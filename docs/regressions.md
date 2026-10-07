@@ -2679,6 +2679,7 @@ separators are stable; the tick listens only while a timer runs; the poll skips 
 `use-unread-notifications-sync.test.tsx`, `use-recipe-list.test.tsx`.
 **Keep high-frequency state at the leaf that shows it, and give memoised rows nothing
 that is new on every render.**
+
 ## The web CSP blocked AdSense's ad-quality frame (2026-10-08)
 
 **Symptom:** with the new Content-Security-Policy (dev, #531), the feed's ad unit loaded and
@@ -2692,3 +2693,16 @@ for `securitypolicyviolation`.
 `*.doubleclick.net`, `*.adtrafficquality.google`, `*.google.com`) in BOTH `script-src` and
 `frame-src`; red without the fix. **An ad network loads scripts and frames from the same
 hosts: allow-list them in both directives.**
+
+## Failure states in red where the rest of the app shows amber (2026-10-08)
+
+**Symptom:** `ErrorState` defaults to the danger surface. The automations screens and the
+shopping list built their failure states from a `Failure` without passing a severity, so an
+offline error was red there and amber everywhere else; the EMPTY shopping list (not a
+failure at all) wore the red disc too. Found by the app-wide audit.
+
+**Fix:** `severity={failureSeverity(failure)}` on every failure state; `SeverityType.Neutral`
+for the empty list and "Instagram not configured". Covered by `shopping-list-screen.test.tsx`
+(the empty state is neutral) and `check:structure` rule AQ, which fails on any `ErrorState`
+built with `failureIcon(...)` but no `severity=`. **A state that is not an error says so; a
+failure state says how bad it is.**
