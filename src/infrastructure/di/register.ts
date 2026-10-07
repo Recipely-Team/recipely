@@ -15,8 +15,6 @@ import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { LikeRepository } from '@infrastructure/likes/like-repository';
 import { NotificationRepository } from '@infrastructure/notifications/notification-repository';
 import { UserProfileRepository } from '@infrastructure/user-profile/user-profile-repository';
-import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
-import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
@@ -184,16 +182,6 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.UserProfileRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
     return new UserProfileRepository(http);
-  });
-
-  container.register(TOKENS.RegisterDeviceTokenUseCase, () => {
-    const repo = container.resolve<NotificationRepository>(TOKENS.NotificationRepository);
-    return new RegisterDeviceTokenUseCase(repo);
-  });
-
-  container.register(TOKENS.GetUserProfileUseCase, () => {
-    const repo = container.resolve<UserProfileRepository>(TOKENS.UserProfileRepository);
-    return new GetUserProfileUseCase(repo);
   });
 
   container.register(TOKENS.FeedbackRepository, () => {

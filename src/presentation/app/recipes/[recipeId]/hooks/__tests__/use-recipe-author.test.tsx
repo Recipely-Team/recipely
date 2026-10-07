@@ -1,8 +1,7 @@
 import { act } from 'react-test-renderer';
 import { fail, ok } from '@core/result/result-helpers';
 import { NetworkFailure } from '@core/failure';
-import { container } from '@core/di/container';
-import { TOKENS } from '@application/di/tokens';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { UserProfileEntity } from '@domain/user-profile/user-profile-entity';
 import type { GetUserProfileInput } from '@application/user-profile/get-user-profile-input';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -40,7 +39,7 @@ const driveHook = (
   executeImpl: (input: GetUserProfileInput) => Promise<ReturnType<typeof ok> | ReturnType<typeof fail>>,
 ): { latest: () => RecipeAuthorState; execute: jest.Mock } => {
   const execute = jest.fn(executeImpl);
-  container.register(TOKENS.GetUserProfileUseCase, () => ({ execute }));
+  const stores = { getUserProfile: { execute } } as unknown as Partial<ApplicationStores>;
 
   let latest: RecipeAuthorState = { status: 'loading' };
   const Probe = (): null => {
@@ -48,13 +47,9 @@ const driveHook = (
     return null;
   };
 
-  renderComponent(<Probe />);
+  renderComponent(<Probe />, stores);
   return { latest: () => latest, execute };
 };
-
-afterEach(() => {
-  container.reset();
-});
 
 describe('useRecipeAuthor', () => {
   it('resolves immediately from the caller-supplied owner without fetching', () => {

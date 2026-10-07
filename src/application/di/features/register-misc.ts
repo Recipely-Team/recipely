@@ -9,6 +9,7 @@ import { ListNotificationsUseCase } from '@application/notifications/list/list-n
 import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
 import { configureNotificationsStore } from '@application/notifications/notifications-store';
+import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import { configureUserProfileStore } from '@application/user-profile/user-profile-store';
 import { LoadTaxonomyUseCase } from '@application/recipes/taxonomy/load-taxonomy-use-case';
@@ -24,7 +25,12 @@ export const registerMisc = (
   container: Container,
 ): Pick<
   ApplicationStores,
-  'notificationsStore' | 'userProfileStore' | 'taxonomyStore' | 'feedbackStore'
+  | 'notificationsStore'
+  | 'registerDeviceToken'
+  | 'userProfileStore'
+  | 'getUserProfile'
+  | 'taxonomyStore'
+  | 'feedbackStore'
 > => {
   const notificationRepo = container.resolve<NotificationRepositoryInterface>(TOKENS.NotificationRepository);
   const userProfileRepo = container.resolve<UserProfileRepositoryInterface>(TOKENS.UserProfileRepository);
@@ -36,10 +42,16 @@ export const registerMisc = (
     markAllRead: new MarkAllReadUseCase(notificationRepo),
     markOneRead: new MarkOneReadUseCase(notificationRepo),
   });
-  const userProfileStore = configureUserProfileStore({
-    getUserProfile: new GetUserProfileUseCase(userProfileRepo),
-  });
+  const getUserProfile = new GetUserProfileUseCase(userProfileRepo);
+  const userProfileStore = configureUserProfileStore({ getUserProfile });
   const taxonomyStore = configureTaxonomyStore({ loadTaxonomyUseCase: new LoadTaxonomyUseCase(taxonomyRepo) });
   const feedbackStore = configureFeedbackStore({ submitFeedbackUseCase: new SubmitFeedbackUseCase(feedbackRepo) });
-  return { notificationsStore, userProfileStore, taxonomyStore, feedbackStore };
+  return {
+    notificationsStore,
+    registerDeviceToken: new RegisterDeviceTokenUseCase(notificationRepo),
+    userProfileStore,
+    getUserProfile,
+    taxonomyStore,
+    feedbackStore,
+  };
 };
