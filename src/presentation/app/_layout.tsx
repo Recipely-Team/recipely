@@ -24,6 +24,7 @@ import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { navigationTheme } from '@presentation/navigation/navigation-theme';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { useWindowBackground } from '@presentation/navigation/use-window-background';
+import { useIconFonts } from '@presentation/navigation/use-icon-fonts';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -193,6 +194,7 @@ const styles = StyleSheet.create({
 });
 
 export const RootLayout = (): React.JSX.Element => {
+  useIconFonts();
   return (
     <ShareIntentProvider>
       <AppThemeProvider>

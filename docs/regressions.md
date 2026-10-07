@@ -165,6 +165,19 @@ they had just declined.
 *Guard:* `enterApp()` pops to the root before replacing. **"Land here" and "replace this
 screen" are different intentions**; only one of them is `router.replace`.
 
+**Every tab route on the web threw React error #418 (hydration mismatch).**
+An `@expo/vector-icons` glyph renders an empty `<Text />` until its font is registered,
+and nothing registered the icon fonts before render. The static export therefore drew
+every icon empty; in the browser the root TabBar (outside the lazily loaded screen)
+mounted first, injected the `@font-face`, and the screen's own icons then hydrated as
+real glyphs — on /recipes, /my-recipes, /settings and /diary, the routes with a TabBar.
+**Anything whose first render reads global, mutable state** (a font registry, storage,
+the viewport) differs between the prerender and the browser unless it is fixed up front.
+*Guard:* `useIconFonts()` at the top of the root layout registers every family, so the
+prerender draws the glyphs and ships the `@font-face` in `<head>`;
+`use-icon-fonts.test.tsx` fails on an imported icon family it does not register, and
+`scripts/assert-icon-fonts.mjs` (in `build:web`) fails on an app page without them.
+
 ## Parsing and display
 
 **A greedy quantifier ate half a word.**
