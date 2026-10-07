@@ -35,6 +35,7 @@ export const WEB_CONTENT_MAX_WIDTH = {
   /** A creator's header reads like a profile; their recipe grid below shares the cap. */
   creatorProfile: 980,
   notifications: 720,
+  shoppingList: 720,
   diary: 1200,
   settings: 720,
   forms: 480,

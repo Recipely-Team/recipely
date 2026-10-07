@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
+import { ShoppingListButton } from '@presentation/app/my-recipes/items/shopping-list-button';
 import { t } from '@presentation/i18n';
 
 export interface MyRecipesHeaderProps {
@@ -18,6 +19,7 @@ export const MyRecipesHeader = ({ onCreate }: MyRecipesHeaderProps): React.JSX.E
     <View style={styles.header}>
       <ThemedText variant="title">{t().myRecipes.title}</ThemedText>
       <View style={styles.headerActions}>
+        <ShoppingListButton />
         <Pressable
           onPress={onCreate}
           accessibilityRole="button"

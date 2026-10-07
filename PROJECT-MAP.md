@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1866 source files.
+[architecture.md](architecture.md). 1887 source files.
 
 ## Layers
 
@@ -16,7 +16,7 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `verify-code`
+`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
 
 Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f4dd1c57b6e84c5f -->
+<!-- fingerprint: 8443d60d58c6500e -->

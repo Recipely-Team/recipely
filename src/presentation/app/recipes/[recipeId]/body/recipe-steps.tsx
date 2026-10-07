@@ -12,6 +12,7 @@ import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
 import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 
 export interface RecipeStepsProps {
@@ -67,6 +68,7 @@ export const RecipeSteps = ({
             />
           ),
         )}
+        <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} />
       </View>
 
       <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />

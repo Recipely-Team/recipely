@@ -43,6 +43,8 @@ export const RoutePaths = {
   settings: '/settings',
   /** Instagram automations: the creator's comment-to-DM rules. */
   automations: '/automations',
+  /** The viewer's shopping list (an account page, not crawlable content). */
+  shoppingList: '/shopping-list',
   /** The rule editor; `ruleId` (absent for a new rule) and `step` ride the query. */
   automationEdit: '/automations/edit',
   /** One automation's Activity; `ruleId` rides the query (an account page, not crawlable content). */

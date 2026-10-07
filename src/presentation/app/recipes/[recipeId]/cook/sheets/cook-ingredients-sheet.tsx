@@ -3,10 +3,13 @@ import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, spacing } from '@presentation/base/theme';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
 import { t } from '@presentation/i18n';
 
 export interface CookIngredientsSheetProps {
   visible: boolean;
+  recipeId: string;
+  recipeName: string;
   ingredients: readonly string[];
   onClose: () => void;
 }
@@ -16,13 +19,19 @@ export interface CookIngredientsSheetProps {
  * a centred dialog on the web shell (both `BottomSheet`).
  *
  * The lines as the recipe holds them; ticking ingredients off stays on the
- * recipe page, where the shopping happens.
+ * recipe page; "Add to shopping list" puts the lines on the list as written.
  */
-export const CookIngredientsSheet = ({ visible, ingredients, onClose }: CookIngredientsSheetProps): React.JSX.Element => {
+export const CookIngredientsSheet = ({ visible, recipeId, recipeName, ingredients, onClose }: CookIngredientsSheetProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
   return (
-    <BottomSheet visible={visible} title={t().cookMode.ingredients} onClose={onClose} showCloseButton>
+    <BottomSheet
+      visible={visible}
+      title={t().cookMode.ingredients}
+      onClose={onClose}
+      showCloseButton
+      footer={<AddToShoppingButton source={{ recipeId, recipeName, lines: ingredients }} />}
+    >
       {ingredients.map((line, i) => (
         <View
           // Lines repeat ("salt"); position disambiguates in a list that never reorders.

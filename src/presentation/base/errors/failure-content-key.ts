@@ -68,6 +68,13 @@ export type FailureContentKeyType =
   | 'instagramAccountLinked'
   | 'instagramNotConnected'
   | 'instagramReturnInvalid'
+  // ── key-tier: shopping list ────────────────────────────────────────────────
+  | 'shoppingLabelInvalid'
+  | 'shoppingAmountInvalid'
+  | 'shoppingListFull'
+  | 'shoppingListChanged'
+  | 'shoppingItemGone'
+  | 'contentBlocked'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

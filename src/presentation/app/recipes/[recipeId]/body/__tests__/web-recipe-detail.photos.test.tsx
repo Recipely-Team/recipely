@@ -17,6 +17,9 @@
 jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
   AddToDiaryButton: () => null,
 }));
+jest.mock('@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button', () => ({
+  AddToShoppingButton: () => null,
+}));
 
 // The layout reads the router only to word its back link; a unit test about the
 // owner's photo controls has no navigator and does not need one.

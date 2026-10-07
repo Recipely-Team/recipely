@@ -70,6 +70,15 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.instagramNotConnected]: 'instagramNotConnected',
   [ErrorMessageKey.instagramReturnInvalid]: 'instagramReturnInvalid',
 
+  [ErrorMessageKey.shoppingLabelRequired]: 'shoppingLabelInvalid',
+  [ErrorMessageKey.shoppingLabelTooLong]: 'shoppingLabelInvalid',
+  [ErrorMessageKey.shoppingQuantityInvalid]: 'shoppingAmountInvalid',
+  [ErrorMessageKey.shoppingUnitTooLong]: 'shoppingAmountInvalid',
+  [ErrorMessageKey.shoppingListFull]: 'shoppingListFull',
+  [ErrorMessageKey.shoppingListChanged]: 'shoppingListChanged',
+  [ErrorMessageKey.shoppingItemNotFound]: 'shoppingItemGone',
+  [ErrorMessageKey.contentBlocked]: 'contentBlocked',
+
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',
   [ErrorMessageKey.codeExpired]: 'codeExpired',

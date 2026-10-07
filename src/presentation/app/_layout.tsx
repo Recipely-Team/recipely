@@ -178,6 +178,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="automations/edit/index" options={{ headerShown: false }} />
         <Stack.Screen name="automations/activity/index" options={{ headerShown: false }} />
         <Stack.Screen name="instagram-connected/index" options={{ headerShown: false }} />
+        <Stack.Screen name="shopping-list/index" options={{ headerShown: false }} />
       </Stack>
       <RootTabBar />
       <ActiveTimersBar />

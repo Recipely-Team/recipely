@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
+import { ShoppingListButton } from '@presentation/app/my-recipes/items/shopping-list-button';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -24,26 +25,30 @@ export const WebMyRecipesHeader = ({ onCreate }: WebMyRecipesHeaderProps): React
           {t().myRecipes.webSubtitle}
         </ThemedText>
       </View>
-      <Pressable
-        onPress={onCreate}
-        accessibilityRole="button"
-        accessibilityLabel={t().myRecipes.createNew}
-        style={({ pressed }) => [
-          styles.createBtn,
-          shadows.sm,
-          { backgroundColor: colors.primary, opacity: pressed ? opacities.pressedFaint : opacities.full },
-        ]}
-      >
-        <Ionicons name="add" size={iconSizes.xl} color={colors.primaryText} />
-        <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
-          {t().myRecipes.createNew}
-        </ThemedText>
-      </Pressable>
+      <View style={styles.actions}>
+        <ShoppingListButton />
+        <Pressable
+          onPress={onCreate}
+          accessibilityRole="button"
+          accessibilityLabel={t().myRecipes.createNew}
+          style={({ pressed }) => [
+            styles.createBtn,
+            shadows.sm,
+            { backgroundColor: colors.primary, opacity: pressed ? opacities.pressedFaint : opacities.full },
+          ]}
+        >
+          <Ionicons name="add" size={iconSizes.xl} color={colors.primaryText} />
+          <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
+            {t().myRecipes.createNew}
+          </ThemedText>
+        </Pressable>
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  actions: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   band: {
     flexDirection: 'row',
     alignItems: 'flex-end',
