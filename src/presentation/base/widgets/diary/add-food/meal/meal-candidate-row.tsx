@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
+import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { SuffixField } from '@presentation/base/widgets/diary/suffix-field';
 import { DraftTag } from '@presentation/base/widgets/diary/add-food/pick/rows/draft-tag';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
@@ -40,7 +40,7 @@ export const MealCandidateRow = ({ row, onToggle, onGramsChange }: MealCandidate
         accessibilityLabel={strings.mealLogInclude.replace('{name}', candidate.label)}
         style={styles.main}
       >
-        <Ionicons name={row.included ? 'checkbox' : 'square-outline'} size={controlSizes.checkbox} color={row.included ? colors.primary : colors.textMuted} />
+        <TickBox checked={row.included} />
         <View style={styles.text}>
           <View style={styles.title}>
             <SizedText size={fontSizes.body} weight={fontWeights.semibold} muted={!row.included} style={styles.label}>

@@ -53,7 +53,7 @@ export const MealLogBody = ({ log, meal, isSubmitting }: MealLogBodyProps): Reac
               ? null
               : action === MealFailureAction.Retry
                 ? { label: t().errors.retry, icon: 'refresh', onPress: log.retry }
-                : { label: strings.mealLogEdit, icon: 'refresh', onPress: log.edit }
+                : { label: strings.mealLogEdit, icon: 'create-outline', onPress: log.edit }
           }
         />
       );

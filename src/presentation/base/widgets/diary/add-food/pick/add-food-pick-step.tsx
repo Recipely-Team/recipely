@@ -14,6 +14,7 @@ import { RecentTabBody } from '@presentation/base/widgets/diary/add-food/pick/re
 import { QuickAddFormView } from '@presentation/base/widgets/diary/add-food/pick/quick-add-form-view';
 import { PickTab, type PickTabType } from '@presentation/base/widgets/diary/add-food/list/pick-tab';
 import { MealLogEntryButton } from '@presentation/base/widgets/diary/add-food/meal/meal-log-entry-button';
+import { MealLogBackRow } from '@presentation/base/widgets/diary/add-food/meal/meal-log-back-row';
 import { MealLogBody } from '@presentation/base/widgets/diary/add-food/meal/meal-log-body';
 import { useMealLog } from '@presentation/base/hooks/diary/use-meal-log';
 import { diarySizes, spacing } from '@presentation/base/theme';
@@ -44,7 +45,8 @@ export interface AddFoodPickStepProps {
  *   clearing the box brings back Recipes.
  * - **No results offers Quick add** with the query as the name.
  * - **"Describe or photograph your meal"** is a row above the tabs that opens
- *   the meal panel; typing a search leaves it, like Quick add. Its list lives
+ *   the meal panel, which swaps the tabs for a back row; typing a search leaves
+ *   it, like Quick add. Its list lives
  *   here, so peeking at another tab does not lose it.
  */
 export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element => {
@@ -103,7 +105,8 @@ export const AddFoodPickStep = (props: AddFoodPickStepProps): React.JSX.Element 
     <View style={styles.stack}>
       <FoodSearchField value={query} onChangeText={onChangeQuery} />
       {isSearching || tab === PickTab.Meal ? null : <MealLogEntryButton onPress={() => setTab(PickTab.Meal)} />}
-      {isSearching ? null : (
+      {!isSearching && tab === PickTab.Meal ? <MealLogBackRow onBack={() => setTab(PickTab.Recipes)} /> : null}
+      {isSearching || tab === PickTab.Meal ? null : (
         <SegmentedTabs
           options={[
             { key: PickTab.Recipes, label: strings.tabRecipes },

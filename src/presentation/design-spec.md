@@ -3710,8 +3710,10 @@ this section with the spec that comes out of it.
   mobile hero's floating cluster; a filled primary "Start cooking" pill first in the web header's action row.
 - **Layout:** top bar (outlined close circle, recipe name, "Ingredients" pill) → progress bar
   (`controlSizes.progressBar`, primary fill) → step pane ("STEP 3 OF 8" in primary, a "Done" checkbox pill, the step
-  at `fontSizes.title` with a relaxed line height, the step's timer when it names a duration) → Previous (outlined,
-  flex 1) / Next (primary, flex 2; success-green "Finish" on the last step), `controlSizes.fab` tall.
+  at `fontSizes.title` with a relaxed line height, the step's timer when it names a duration) → Previous (outlined) / Next
+  (primary; success-green "Finish" on the last step), split evenly (flex 1 / flex 1), `controlSizes.fab` min height,
+  labels wrap to a second line rather than truncate in long locales. The "Ingredients" and "Done" pills use sentence-case
+  `caption` semibold (like "Start cooking"), and "Done" is `controlSizes.touchTarget` tall.
 - **Widths:** full width on a phone; a centred column capped at `layoutSizes.webModalMaxWidth` on tablet and desktop.
 - **Ingredients:** `BottomSheet` (sheet on mobile, centred dialog on the web shell), one line per ingredient.
 

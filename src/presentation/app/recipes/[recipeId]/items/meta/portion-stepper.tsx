@@ -9,7 +9,8 @@ export interface PortionStepperProps {
   portions: PortionScaling;
   /**
    * Inside the mobile servings stat tile: the tile already prints the count, and
-   * a quarter-width tile only fits the smaller icon buttons (still past the 24pt minimum).
+   * a quarter-width tile only fits the smaller icon buttons, so their tap area is padded
+   * out to the 44pt touch target instead.
    */
   inTile?: boolean;
 }
@@ -23,12 +24,13 @@ export const PortionStepper = ({ portions, inTile = false }: PortionStepperProps
   const strings = t().recipes.portions;
   const size = inTile ? controlSizes.iconBtnSm : controlSizes.touchTarget;
   return (
-    <View style={styles.row}>
+    <View style={[styles.row, inTile && styles.rowInTile]}>
       <RoundIconButton
         icon="remove"
         accessibilityLabel={strings.decrease}
         onPress={portions.onDecrement}
         size={size}
+        padToTouchTarget={inTile}
         disabled={!portions.canDecrement}
       />
       {inTile ? null : (
@@ -41,6 +43,7 @@ export const PortionStepper = ({ portions, inTile = false }: PortionStepperProps
         accessibilityLabel={strings.increase}
         onPress={portions.onIncrement}
         size={size}
+        padToTouchTarget={inTile}
         disabled={!portions.canIncrement}
       />
     </View>
@@ -49,4 +52,6 @@ export const PortionStepper = ({ portions, inTile = false }: PortionStepperProps
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: spacing.xs },
+  /** Wide enough that the two padded tap areas do not overlap. */
+  rowInTile: { gap: spacing.md },
 });

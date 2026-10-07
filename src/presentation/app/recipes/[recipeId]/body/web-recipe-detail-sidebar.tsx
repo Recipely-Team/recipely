@@ -5,9 +5,10 @@ import { PortionStepper } from '@presentation/app/recipes/[recipeId]/items/meta/
 import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
 import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, controlSizes, layoutSizes, borderWidths, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -87,16 +88,7 @@ export const WebRecipeDetailSidebar = ({
                 accessibilityLabel={item}
                 style={styles.checkRow}
               >
-                <View
-                  style={[
-                    styles.checkbox,
-                    checked
-                      ? { backgroundColor: colors.success, borderColor: colors.success }
-                      : { backgroundColor: BrandColors.transparent, borderColor: colors.border },
-                  ]}
-                >
-                  {checked ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.onSuccess} /> : null}
-                </View>
+                <TickBox checked={checked} />
                 <ThemedText
                   variant="body"
                   style={[
@@ -113,7 +105,7 @@ export const WebRecipeDetailSidebar = ({
             );
           })}
         </View>
-        <AddToShoppingButton source={{ recipeId: recipe.id, recipeName: recipe.name, lines: portions.ingredients }} />
+        <AddToShoppingButton source={{ recipeId: recipe.id, recipeName: recipe.name, lines: portions.ingredients }} inCard />
       </View>
 
       <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
@@ -190,14 +182,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.xs,
-  },
-  checkbox: {
-    width: controlSizes.checkbox,
-    height: controlSizes.checkbox,
-    borderRadius: radii.sm,
-    borderWidth: borderWidths.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   checkText: {
     flex: ValueConstants.one,

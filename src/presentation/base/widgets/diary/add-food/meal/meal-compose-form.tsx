@@ -8,7 +8,7 @@ import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-t
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import type { MealLog } from '@presentation/base/widgets/diary/add-food/meal/state/meal-log';
-import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface MealComposeFormProps {
@@ -43,7 +43,7 @@ export const MealComposeForm = ({ log }: MealComposeFormProps): React.JSX.Elemen
           onPress={log.pickPhoto}
           accessibilityRole="button"
           accessibilityLabel={strings.mealLogPhoto}
-          style={[styles.photo, { backgroundColor: colors.chipBackground }]}
+          style={({ pressed }) => [styles.photo, { backgroundColor: colors.chipBackground, opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
         >
           <Ionicons name="camera-outline" size={iconSizes.lg} color={colors.chipText} />
           <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.chipText}>

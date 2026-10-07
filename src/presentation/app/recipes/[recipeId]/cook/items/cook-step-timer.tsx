@@ -51,7 +51,7 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, captio
   }
 
   return (
-    <View style={[styles.running, { backgroundColor: timer.isDone ? colors.successLight : colors.surface, borderColor: colors.cardBorder }]}>
+    <View style={[styles.running, { backgroundColor: timer.isDone ? colors.successLight : colors.surface, borderColor: timer.isDone ? colors.success : colors.border }]}>
       <Ionicons name="timer-outline" size={iconSizes.lg} color={timer.isDone ? colors.success : colors.text} />
       {caption !== undefined ? (
         <ThemedText variant="label" style={{ color: colors.textMuted }}>
@@ -66,7 +66,7 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, captio
           icon={timer.isPaused ? 'play' : 'pause'}
           accessibilityLabel={timer.isPaused ? t().timer.resume : t().timer.pause}
           onPress={() => void (timer.isPaused ? timer.resume() : timer.pause())}
-          size={controlSizes.iconBtn}
+          size={controlSizes.touchTarget}
           tone={RoundIconButtonTone.Outlined}
         />
       )}
@@ -74,7 +74,7 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, captio
         icon="stop"
         accessibilityLabel={t().timer.stop}
         onPress={() => void timer.stop()}
-        size={controlSizes.iconBtn}
+        size={controlSizes.touchTarget}
         tone={RoundIconButtonTone.Outlined}
       />
     </View>

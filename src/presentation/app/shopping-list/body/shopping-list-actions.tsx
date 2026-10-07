@@ -42,7 +42,7 @@ export const ShoppingListActions = ({ checkedCount, itemCount, onAsk }: Shopping
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'flex-end', gap: spacing.sm },
   pill: {
-    minHeight: controlSizes.iconBtn,
+    minHeight: controlSizes.touchTarget,
     paddingHorizontal: spacing.md,
     justifyContent: 'center',
     borderRadius: radii.round,
