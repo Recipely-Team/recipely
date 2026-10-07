@@ -2,9 +2,8 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
-import { FIRST_PAGE } from '@domain/common/first-page';
-import { PageSizes } from '@application/config/page-sizes';
-import { ValueConstants } from '@core/constants';
+import type { RecipeDraft } from '@domain/drafts/recipe-draft';
+import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -20,111 +19,50 @@ interface DraftsStoreDeps {
   deleteDraftUseCase: DeleteDraftUseCase;
 }
 
-export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStoreState> => {
-  /**
-   * Bumped by `clear()`. A page that started under an earlier session must not
-   * publish its answer — signing out mid-request put the previous account's
-   * drafts back into the list.
-   */
-  let session = ValueConstants.zero;
+/**
+ * **Drafts store** — the viewer's drafts list and the resume-card pointer.
+ *
+ * @remarks
+ * - **Paged through a `PagedListLoader`**: first page, next page on scroll,
+ *   refresh without a skeleton once loaded.
+ * - **Session-scoped**: `clear()` resets the loader, so a page that started
+ *   under the previous account never publishes — signing out mid-request had
+ *   put the previous account's drafts back into the list.
+ * - **Edits show without a reload**: a saved draft replaces its row or joins
+ *   the top; a deleted one leaves the list and, if it was the latest, the card.
+ */
+export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsStoreState> =>
+  create<DraftsStoreState>((set, get) => {
+    const loader = new PagedListLoader<RecipeDraft>(() => get().drafts, (drafts) => set({ drafts }), (draft) => draft.id);
+    const fetchPage = (page: number) => deps.listDraftsUseCase.execute(page);
 
-  return create<DraftsStoreState>((set, get) => ({
-    drafts: [],
-    listState: { status: StoreStatus.Idle },
-    latestDraft: null,
-    loadDrafts: async () => {
-      const requested = session;
-      // Only the first load shows a skeleton.
-      if (get().listState.status !== StoreStatus.Loaded) {
-        set({ listState: { status: StoreStatus.Loading } });
-      }
-      const result = await deps.listDraftsUseCase.execute({
-        page: FIRST_PAGE,
-        pageSize: PageSizes.drafts,
-      });
-      if (requested !== session) return;
-      if (!result.ok) {
-        set({ listState: { status: StoreStatus.Error, failure: result.failure } });
-        return;
-      }
-      const { items, total, page } = result.value;
-      set({
-        drafts: items,
-        listState: {
-          status: StoreStatus.Loaded,
-          page,
-          hasMore: items.length < total,
-        },
-      });
-    },
-    loadMoreDrafts: async () => {
-      const current = get().listState;
-      if (
-        current.status !== StoreStatus.Loaded ||
-        !current.hasMore ||
-        current.isLoadingMore === true
-      ) {
-        return;
-      }
-      set({ listState: { ...current, isLoadingMore: true } });
-      const result = await deps.listDraftsUseCase.execute({
-        page: current.page + ValueConstants.one,
-        pageSize: PageSizes.drafts,
-      });
-      if (!result.ok) {
-        // The rows already on screen stay; only the append failed.
-        set({ listState: { ...current, isLoadingMore: false } });
-        return;
-      }
-      const { items, total, page } = result.value;
-      const merged = [...get().drafts, ...items];
-      set({
-        drafts: merged,
-        listState: {
-          status: StoreStatus.Loaded,
-          page,
-          hasMore: merged.length < total,
-        },
-      });
-    },
-    loadLatestDraft: async () => {
-      const result = await deps.getLatestDraftUseCase.execute();
-      if (!result.ok) {
-        return;
-      }
-      set({ latestDraft: result.value });
-    },
-    upsertDraft: async (input) => {
-      const result = await deps.upsertDraftUseCase.execute(input);
-      if (!result.ok) {
-        return null;
-      }
-      const draft = result.value;
-      // Keep the list and the latest pointer in sync without a reload.
-      set((s) => {
-        const exists = s.drafts.some((d) => d.id === draft.id);
-        const drafts = exists
-          ? s.drafts.map((d) => (d.id === draft.id ? draft : d))
-          : [draft, ...s.drafts];
-        return { drafts, latestDraft: draft };
-      });
-      return draft;
-    },
-    deleteDraft: async (id) => {
-      const result = await deps.deleteDraftUseCase.execute(id);
-      if (!result.ok) {
+    return {
+      drafts: { status: StoreStatus.Idle },
+      latestDraft: null,
+      loadDrafts: () => loader.refresh(fetchPage),
+      loadMoreDrafts: () => loader.loadMore(),
+      loadLatestDraft: async () => {
+        const result = await deps.getLatestDraftUseCase.execute();
+        if (result.ok) set({ latestDraft: result.value });
+      },
+      upsertDraft: async (input) => {
+        const result = await deps.upsertDraftUseCase.execute(input);
+        if (!result.ok) return null;
+        loader.upsertItem(result.value);
+        set({ latestDraft: result.value });
+        return result.value;
+      },
+      deleteDraft: async (id) => {
+        const result = await deps.deleteDraftUseCase.execute(id);
+        if (!result.ok) return result;
+        loader.removeItem(id);
+        set((s) => ({ latestDraft: s.latestDraft?.id === id ? null : s.latestDraft }));
         return result;
-      }
-      set((s) => ({
-        drafts: s.drafts.filter((d) => d.id !== id),
-        latestDraft: s.latestDraft?.id === id ? null : s.latestDraft,
-      }));
-      return result;
-    },
-    getDraft: (id) => deps.getDraftUseCase.execute(id),
-    clear: () => {
-      session += ValueConstants.one;
-      set({ drafts: [], listState: { status: StoreStatus.Idle }, latestDraft: null });
-    },
-  }));
-};
+      },
+      getDraft: (id) => deps.getDraftUseCase.execute(id),
+      clear: () => {
+        loader.reset();
+        set({ latestDraft: null });
+      },
+    };
+  });

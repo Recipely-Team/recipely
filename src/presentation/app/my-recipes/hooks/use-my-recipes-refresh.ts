@@ -47,7 +47,8 @@ export const useMyRecipesRefresh = (tab: TabType): UseMyRecipesRefreshResult => 
         } else if (tab === TabType.Created) {
           await createdRecipesStore.getState().loadMyRecipes();
         } else {
-          await draftsStore.getState().loadDrafts();
+          const failure = await draftsStore.getState().loadDrafts();
+          if (failure !== null) showErrorToast(failure);
         }
       } catch {
         // Loads fold failures into state; swallow an unexpected throw anyway.

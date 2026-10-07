@@ -308,6 +308,17 @@ the use case owns `PageSizes.notifications`, `toNotificationsQuery` turns the pa
 scrolls to the end" (`notifications-store.test.ts`) and the paging cases in
 `notification-repository.test.ts`.
 
+**A delete that shifted the pages.** `PagedListLoader.removeItem` kept `page`, so the
+next page asked the old offset while every later server row had moved up one: delete
+a draft, scroll, and the draft that slid into the loaded page was never shown. The
+drafts store also had no session guard on `loadMoreDrafts`, so a next page landing
+after sign-out published the previous account's drafts. *Guard:* the loader counts
+removals and re-reads from the shifted offset (the overlap is de-duplicated by key) —
+"a next page after deleting rows does not skip the rows that moved up"
+(`paged-list-loader.test.ts`); the drafts store is now a `PagedListLoader`, whose
+`reset` drops answers in flight — "a next page that lands after sign-out does not
+publish" (`drafts-paging.test.ts`).
+
 ---
 
 ## A TODO comment that shipped as UI text

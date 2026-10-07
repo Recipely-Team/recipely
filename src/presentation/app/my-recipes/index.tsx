@@ -1,6 +1,7 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
 import { useCallback, useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { StyleSheet, View } from 'react-native';
 import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -42,8 +43,8 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const likedListState = likedRecipesStore((s) => s.listState);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const createdListState = createdRecipesStore((s) => s.myRecipesState);
-  const drafts = draftsStore((s) => s.drafts);
-  const draftsListState = draftsStore((s) => s.listState);
+  const draftsListState = draftsStore((s) => s.drafts);
+  const drafts = useMemo(() => loadedItems(draftsListState), [draftsListState]);
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
   const [tab, setTab] = useMyRecipesTab();
@@ -168,8 +169,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             isLoadingMoreDrafts={
-              draftsListState.status === StoreStatus.Loaded &&
-              draftsListState.isLoadingMore === true
+              draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}

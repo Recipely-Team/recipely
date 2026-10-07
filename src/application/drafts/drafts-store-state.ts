@@ -1,14 +1,18 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
-import type { DraftsListState } from '@application/drafts/list/drafts-list-state';
+import type { PagedList } from '@application/store/paging/paged-list';
 import type { UpsertDraftStoreInput } from '@application/drafts/write/upsert-draft-store-input';
 
 export interface DraftsStoreState {
-  drafts: readonly RecipeDraft[];
-  listState: DraftsListState;
+  /** The viewer's drafts, paged on scroll; `Loaded` carries the cursor and the next-page state. */
+  drafts: PagedList<RecipeDraft>;
   latestDraft: RecipeDraft | null;
-  loadDrafts: () => Promise<void>;
+  /**
+   * The first page. Only the first load shows a skeleton; a reload keeps the
+   * rows on screen and, when it fails, keeps them and returns why.
+   */
+  loadDrafts: () => Promise<Failure | null>;
   /** Appends the next page. No-op while one is in flight or the list is complete. */
   loadMoreDrafts: () => Promise<void>;
   loadLatestDraft: () => Promise<void>;
