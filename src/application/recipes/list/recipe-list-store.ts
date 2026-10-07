@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import type { RecipeFilters } from '@domain/recipes/list/recipe-filters';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { RequestEpoch } from '@application/store/request-epoch';
 
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
 
@@ -12,16 +13,17 @@ interface RecipeListStoreDeps {
 }
 
 export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<RecipeListStoreState> => {
-  // Sequence number of the latest load; older answers are dropped.
-  let latestRequest = ValueConstants.zero;
+  // Only the latest load may write; `isLatestLoad` is that load's check, which an append borrows.
+  const epoch = new RequestEpoch();
+  let isLatestLoad = epoch.start();
 
   return create<RecipeListStoreState>((set, get) => ({
     state: { status: StoreStatus.Idle },
     // A filter change re-fetches in place (isRefreshing) instead of blanking the list.
     load: async (filters?: RecipeFilters) => {
       // Responses can arrive out of order: only the latest request may write.
-      const requestId = latestRequest + ValueConstants.one;
-      latestRequest = requestId;
+      const isCurrent = epoch.start();
+      isLatestLoad = isCurrent;
 
       const current = get().state;
       if (current.status === StoreStatus.Loaded) {
@@ -30,7 +32,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
         set({ state: { status: StoreStatus.Loading } });
       }
       const result = await deps.listRecipes.execute(filters);
-      if (requestId !== latestRequest) return;
+      if (!isCurrent()) return;
       if (!result.ok) {
         set((s) => ({
           state:
@@ -54,8 +56,8 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
     /**
      * Appends the next page to what is already on screen.
      *
-     * Separate from `load` because it must NOT blank the list or move the
-     * sequence number that `load` guards with: an appending fetch is not a new
+     * Separate from `load` because it must NOT blank the list or start a
+     * new request epoch the way `load` does: an appending fetch is not a new
      * question, so a filter change landing mid-append should win, and this
      * one's answer is dropped if it does. A no-op unless a loaded page says
      * there is more and nothing is already appending.
@@ -64,12 +66,12 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
       const current = get().state;
       if (current.status !== StoreStatus.Loaded || !current.hasMore || current.isLoadingMore === true) return;
 
-      const appendingFor = latestRequest;
+      const isCurrent = isLatestLoad;
       const nextPage = current.page + ValueConstants.one;
       set({ state: { ...current, isLoadingMore: true } });
 
       const result = await deps.listRecipes.execute({ ...filters, page: nextPage });
-      if (appendingFor !== latestRequest) return;
+      if (!isCurrent()) return;
 
       const state = get().state;
       if (state.status !== StoreStatus.Loaded) return;

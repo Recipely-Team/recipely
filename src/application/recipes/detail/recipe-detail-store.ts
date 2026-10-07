@@ -5,16 +5,13 @@ import { ValueConstants } from '@core/constants';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
-import type { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
-import type { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import type { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 
 interface RecipeDetailStoreDeps {
   getRecipe: GetRecipeUseCase;
   addRecipePhoto: AddRecipePhotoUseCase;
-  removeRecipePhoto: RemoveRecipePhotoUseCase;
-  removeRecipeCover: RemoveRecipeCoverUseCase;
+  removeRecipeMedia: RemoveRecipeMediaUseCase;
 }
-
 
 export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
   return create<RecipeDetailStoreState>((set, get) => ({
@@ -59,23 +56,11 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
       const cached = get().byId[recipeId];
       const recipe = cached?.status === StoreStatus.Loaded ? cached.recipe : null;
       set({ isPhotoBusy: true });
-      if (recipe !== null && recipe.isCover(item)) {
-        const removal = await deps.removeRecipeCover.execute(recipeId);
-        set({ isPhotoBusy: false });
-        if (!removal.ok) return removal.failure;
-        // Show the server answer at once; the reload refreshes the rest.
-        get().put(recipe.withCoverRemoved(removal.value));
-      } else {
-        // A photo with no row is only on the device; there is nothing to ask the server.
-        if (item.id === undefined) {
-          set({ isPhotoBusy: false });
-          return null;
-        }
-        const result = await deps.removeRecipePhoto.execute(recipeId, item.id);
-        set({ isPhotoBusy: false });
-        if (!result.ok) return result.failure;
-      }
-
+      const result = await deps.removeRecipeMedia.execute(recipeId, recipe, item);
+      set({ isPhotoBusy: false });
+      if (!result.ok) return result.failure;
+      // Show the server answer at once; the reload refreshes the rest.
+      if (result.value !== null) get().put(result.value);
       await get().load(recipeId);
       return null;
     },
