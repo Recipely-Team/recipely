@@ -317,7 +317,8 @@ removals and re-reads from the shifted offset (the overlap is de-duplicated by k
 "a next page after deleting rows does not skip the rows that moved up"
 (`paged-list-loader.test.ts`); the drafts store is now a `PagedListLoader`, whose
 `reset` drops answers in flight — "a next page that lands after sign-out does not
-publish" (`drafts-paging.test.ts`).
+publish" (`drafts-paging.test.ts`). Covered only for lists on `PagedListLoader`: the
+comment threads still page by hand and keep this bug until they move onto it.
 
 ---
 

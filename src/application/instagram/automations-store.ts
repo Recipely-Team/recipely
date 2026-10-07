@@ -49,9 +49,8 @@ const replacing = (list: PagedList<DmRuleEntity>, rule: DmRuleEntity): PagedList
  * - **The switch is optimistic.** It flips in the list and the opened rule at
  *   once; a refusal puts back the old value — unless a later flip of the same
  *   rule is already on its way, whose answer then decides.
- * - **A delete drops the row in place** and keeps the loaded page number, so
- *   the next `loadMoreRules` may skip the one rule that shifted up a page;
- *   the list re-reads in full on its next `loadRules`.
+ * - **A delete drops the row in place**; the loader re-reads the next page from
+ *   the shifted offset, so no rule is skipped.
  * - **User-scoped**: cleared on sign-out.
  */
 export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStoreState> => {
