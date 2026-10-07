@@ -2648,7 +2648,7 @@ the grid is wide, without asking whether anyone is signed in.
 Covered by "does not ask a guest for their saved recipes" (`use-recipe-list.test.tsx`),
 red without the fix. **A `/me/*` read needs a signed-in user first.**
 
-### The web CSP blocked AdSense's ad-quality frame (2026-10-08)
+## The web CSP blocked AdSense's ad-quality frame (2026-10-08)
 
 **Symptom:** with the new Content-Security-Policy (dev, #531), the feed's ad unit loaded and
 requested an ad, but the browser refused `ep2.adtrafficquality.google/sodar/…/runner.html`
