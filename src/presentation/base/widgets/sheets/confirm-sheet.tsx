@@ -19,6 +19,8 @@ export interface ConfirmSheetProps {
   title: string;
   message: string;
   confirmLabel: string;
+  /** The dismiss action's label; "Cancel" when omitted. A question that is not a confirmation says "Not now". */
+  cancelLabel?: string;
   onConfirm: () => void;
   onClose: () => void;
   /** Renders the confirm action in the danger palette (delete / sign out). */
@@ -40,6 +42,7 @@ export const ConfirmSheet = ({
   title,
   message,
   confirmLabel,
+  cancelLabel,
   onConfirm,
   onClose,
   destructive = false,
@@ -49,6 +52,7 @@ export const ConfirmSheet = ({
   const colors = useTheme().colors;
   const confirmBackground = destructive ? colors.dangerLight : colors.primary;
   const confirmLabelColor = destructive ? colors.danger : colors.primaryText;
+  const dismissLabel = cancelLabel ?? t().common.cancel;
 
   return (
     <BottomSheet visible={visible} title={title} onClose={onClose}>
@@ -65,7 +69,7 @@ export const ConfirmSheet = ({
           onPress={onClose}
           disabled={loading}
           accessibilityRole="button"
-          accessibilityLabel={t().common.cancel}
+          accessibilityLabel={dismissLabel}
           style={({ pressed }) => [
             styles.button,
             {
@@ -75,7 +79,7 @@ export const ConfirmSheet = ({
           ]}
         >
           <ThemedText variant="body" style={styles.buttonLabel}>
-            {t().common.cancel}
+            {dismissLabel}
           </ThemedText>
         </Pressable>
         <Pressable

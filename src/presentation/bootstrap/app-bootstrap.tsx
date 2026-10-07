@@ -70,6 +70,8 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
       dismissAction: t().timer.notificationDismiss,
       channelName: t().timer.notificationChannel,
       timerDoneBody: t().timer.notificationBody,
+      warningChannelName: t().timer.warningChannel,
+      reminderChannelName: t().reminders.channel,
     });
     timerStore.getState().hydrate().catch((err: unknown) => {
       if (__DEV__) console.error('[AppBootstrap] timer hydrate failed:', err);

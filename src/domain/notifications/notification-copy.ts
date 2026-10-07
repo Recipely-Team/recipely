@@ -16,4 +16,8 @@ export interface NotificationCopy {
   channelName: string;
   /** Body of the timer-completion alarm. */
   timerDoneBody: string;
+  /** Android channel name of the quiet timer heads-ups. */
+  warningChannelName: string;
+  /** Android channel name of the come-back reminders. */
+  reminderChannelName: string;
 }

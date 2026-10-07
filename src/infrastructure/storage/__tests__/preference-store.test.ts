@@ -12,6 +12,8 @@ const SHIPPED_KEYS = [
   [PreferenceSlot.Timers, 'recipely.timers.v1'],
   [PreferenceSlot.Language, 'recipely.language.v1'],
   [PreferenceSlot.OnboardingSeen, 'recipely.onboarding.seen.v1'],
+  [PreferenceSlot.RemindersChoice, 'recipely.reminders.choice.v1'],
+  [PreferenceSlot.FirstOpenAt, 'recipely.first-open-at.v1'],
 ] as const;
 
 const memoryKv = (mem: Map<string, string>): KeyValueStoreInterface => ({

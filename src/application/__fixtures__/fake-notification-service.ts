@@ -1,6 +1,9 @@
 import type { ScheduleTimerCompleteCall } from "@application/__fixtures__/schedule-timer-complete-call";
 import { ValueConstants } from "@core/constants";
 import type { NotificationServiceInterface } from "@domain/notifications/notification-service-interface";
+import type { TimerWarningAlert } from "@domain/timers/timer-warning-alert";
+import type { ReminderNotification } from "@domain/notifications/reminders/reminder-notification";
+import type { ReminderOpened } from "@domain/notifications/reminders/reminder-opened";
 
 /**
  * Recording test double for `NotificationServiceInterface`. It performs no real
@@ -13,9 +16,12 @@ export class FakeNotificationService implements NotificationServiceInterface {
   requestPermissionsCount = ValueConstants.zero;
   scheduleCalls: ScheduleTimerCompleteCall[] = [];
   cancelCalls: string[][] = [];
+  warningCalls: (readonly TimerWarningAlert[])[] = [];
+  reminderCalls: (readonly ReminderNotification[])[] = [];
 
   permissionGranted = true;
   scheduledIds: string[] = ["notif-1", "notif-2", "notif-3"];
+  warningIds: string[] = [];
 
   init(): Promise<void> {
     this.initCount++;
@@ -25,6 +31,29 @@ export class FakeNotificationService implements NotificationServiceInterface {
   requestPermissions(): Promise<boolean> {
     this.requestPermissionsCount++;
     return Promise.resolve(this.permissionGranted);
+  }
+
+  hasPermission(): Promise<boolean> {
+    return Promise.resolve(this.permissionGranted);
+  }
+
+  scheduleTimerWarnings(_timerId: string, _recipeName: string, alerts: readonly TimerWarningAlert[]): Promise<string[]> {
+    this.warningCalls.push(alerts);
+    return Promise.resolve(this.warningIds);
+  }
+
+  reminderListeners: ((opened: ReminderOpened) => void)[] = [];
+
+  onReminderOpened(listener: (opened: ReminderOpened) => void): () => void {
+    this.reminderListeners.push(listener);
+    return () => {
+      this.reminderListeners = this.reminderListeners.filter((l) => l !== listener);
+    };
+  }
+
+  replaceReminders(reminders: readonly ReminderNotification[]): Promise<void> {
+    this.reminderCalls.push(reminders);
+    return Promise.resolve();
   }
 
   scheduleTimerComplete(
