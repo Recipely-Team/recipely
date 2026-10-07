@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { isWeb } from '@infrastructure/constants/platform';
+import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 
 interface RemindersOffer {
@@ -41,7 +42,12 @@ export const useRemindersOffer = (blocked: boolean): RemindersOffer => {
   const answer = useCallback(
     (yes: boolean): void => {
       setOffered(false);
-      void setRemindersChoice.execute(yes, t().reminders.messages, Date.now()).catch(() => undefined);
+      void setRemindersChoice
+        .execute(yes, t().reminders.messages, Date.now())
+        .then((on) => {
+          if (yes && !on) showWarningToast(t().reminders.permissionDenied);
+        })
+        .catch(() => undefined);
     },
     [setRemindersChoice],
   );

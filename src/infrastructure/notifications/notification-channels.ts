@@ -4,7 +4,7 @@ import { ALARM_VIBRATION_PATTERN, WARNING_VIBRATION_PATTERN } from '@infrastruct
 
 /** Timer alarm: loud, on the alarm stream. Channel properties are immutable, hence the version. */
 export const ALERT_CHANNEL = 'recipely-timer-alert-v4';
-/** Timer heads-ups: no sound, one short buzz; a watch mirrors it as a tap on the wrist. */
+/** Timer heads-ups: a silent pop-up with one short buzz; a watch mirrors it as a tap on the wrist. */
 export const WARNING_CHANNEL = 'recipely-timer-warning-v1';
 /** Come-back reminders: an ordinary notification, nothing alarm-like about it. */
 export const REMINDER_CHANNEL = 'recipely-reminders-v1';
@@ -36,7 +36,8 @@ export const registerNotificationChannels = async (
   });
   await notifications.setNotificationChannelAsync(WARNING_CHANNEL, {
     name: copy.warningChannelName,
-    importance: notifications.AndroidImportance.DEFAULT,
+    // HIGH so it pops up over the cook screen; with no sound it stays a nudge, not an alarm.
+    importance: notifications.AndroidImportance.HIGH,
     sound: null,
     enableVibrate: true,
     vibrationPattern: [...WARNING_VIBRATION_PATTERN],

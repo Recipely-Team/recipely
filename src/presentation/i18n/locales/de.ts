@@ -1012,6 +1012,7 @@ export const de = {
     offerMessage: "Wenn du ein paar Tage nicht mit uns kochst, schicken wir dir abends eine Rezeptidee. Höchstens eine pro Tag; in den Einstellungen abschaltbar.",
     offerConfirm: "Ja, erinnere mich",
     offerDecline: "Nicht jetzt",
+    permissionDenied: "Mitteilungen sind für Recipely deaktiviert. Aktiviere sie in den Einstellungen deines Telefons und versuche es erneut.",
     messages: [
       { title: "Was gibt es heute zum Abendessen?", body: "Finde das Rezept für heute Abend in einer Minute." },
       { title: "Lust auf etwas Neues?", body: "In deinem Feed warten frische Rezepte." },

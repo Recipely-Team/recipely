@@ -1,6 +1,7 @@
 import type { NotificationCopy } from '@domain/notifications/notification-copy';
 import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
 import type { ReminderNotification } from '@domain/notifications/reminders/reminder-notification';
+import type { ReminderOpened } from '@domain/notifications/reminders/reminder-opened';
 
 /**
  * Port for scheduling local notifications: timer alarms and heads-ups, and come-back reminders.
@@ -25,6 +26,8 @@ export interface NotificationServiceInterface {
   scheduleTimerWarnings(timerId: string, recipeName: string, alerts: readonly TimerWarningAlert[]): Promise<string[]>;
   /** Cancels every pending come-back reminder and schedules `reminders` in their place. */
   replaceReminders(reminders: readonly ReminderNotification[]): Promise<void>;
+  /** Calls `listener` once for each tapped come-back reminder; returns the unsubscribe. */
+  onReminderOpened(listener: (opened: ReminderOpened) => void): () => void;
   /** Cancels displayed and scheduled notifications by id. */
   cancel(notifIds: string[]): Promise<void>;
 }

@@ -1012,6 +1012,7 @@ export const fr = {
     offerMessage: "Si quelques jours passent sans cuisiner avec nous, nous t’enverrons une idée de recette en soirée. Une par jour au maximum ; désactivable dans les Réglages.",
     offerConfirm: "Oui, rappelle-moi",
     offerDecline: "Pas maintenant",
+    permissionDenied: "Les notifications de Recipely sont désactivées. Active-les dans les réglages du téléphone, puis réessaie.",
     messages: [
       { title: "Qu’est-ce qu’on mange ce soir ?", body: "Trouve la recette de ce soir en une minute." },
       { title: "Envie de nouveauté ?", body: "De nouvelles recettes t’attendent dans ton fil." },

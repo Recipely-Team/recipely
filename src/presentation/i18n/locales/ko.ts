@@ -1008,6 +1008,7 @@ export const ko: TranslationsType = {
     offerMessage: "며칠 동안 요리하지 않으면 저녁에 레시피 아이디어를 보내 드려요. 하루에 최대 한 번이며 설정에서 끌 수 있어요.",
     offerConfirm: "네, 알려 주세요",
     offerDecline: "나중에",
+    permissionDenied: "Recipely 알림이 꺼져 있어요. 휴대폰 설정에서 켠 뒤 다시 시도해 주세요.",
     messages: [
       { title: "저녁 메뉴는 뭘까요?", body: "오늘 저녁 레시피를 1분 만에 찾아보세요." },
       { title: "새로운 게 당기나요?", body: "피드에서 새 레시피가 기다리고 있어요." },

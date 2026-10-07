@@ -27,6 +27,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { t } from '@presentation/i18n';
+import { toastStore } from '@presentation/base/feedback/toast-store';
 
 // Rendered bare, without a StoresProvider: these cover the delete-account
 // sheet, not the assistant wiring. Both assistant hooks only register actions.
@@ -177,6 +178,7 @@ describe('SettingsScreen — recipe reminders', () => {
       (reminderSwitch(root)?.props.onValueChange as (v: boolean) => void)(true);
     });
     expect(reminderSwitch(root)?.props.value).toBe(false);
+    expect(toastStore.getState().toasts.map((x) => x.message)).toContain(t().reminders.permissionDenied);
   });
 });
 

@@ -12,6 +12,8 @@ import { TimeConstants, ValueConstants } from '@core/constants';
 import { TIMER_WARNING } from '@domain/timers/timer-warning-keys';
 import { ENGAGEMENT_REMINDER } from '@domain/notifications/reminders/reminder-notification-keys';
 import { replaceScheduledReminders } from '@infrastructure/notifications/replace-scheduled-reminders';
+import { listenReminderOpened } from '@infrastructure/notifications/listen-reminder-opened';
+import type { ReminderOpened } from '@domain/notifications/reminders/reminder-opened';
 import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
 import type { ReminderNotification } from '@domain/notifications/reminders/reminder-notification';
 import {
@@ -180,6 +182,11 @@ export class NotificationService implements NotificationServiceInterface {
   async replaceReminders(reminders: readonly ReminderNotification[]): Promise<void> {
     if (isWeb()) return;
     await replaceScheduledReminders(Notifications, reminders);
+  }
+
+  onReminderOpened(listener: (opened: ReminderOpened) => void): () => void {
+    if (isWeb()) return () => undefined;
+    return listenReminderOpened(Notifications, listener);
   }
 
   async cancel(notifIds: string[]): Promise<void> {

@@ -13,5 +13,6 @@ export const noopNotificationService: NotificationServiceInterface = {
   scheduleTimerComplete: async () => [],
   scheduleTimerWarnings: async () => [],
   replaceReminders: async () => {},
+  onReminderOpened: () => () => {},
   cancel: async () => {},
 };

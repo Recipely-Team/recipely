@@ -58,6 +58,24 @@ describe('RefreshRemindersUseCase', () => {
     expect(series.map((r) => r.title)).toEqual(['C', 'A', 'B', 'C', 'A', 'B']);
   });
 
+  it('runs overlapping refreshes one after another, so a launch never schedules two series', async () => {
+    const { notifications, prefs, refresh } = setup();
+    prefs.seed(PreferenceSlot.RemindersChoice, RemindersChoice.On);
+    let inFlight = 0;
+    let maxInFlight = 0;
+    const original = notifications.replaceReminders.bind(notifications);
+    notifications.replaceReminders = async (reminders) => {
+      inFlight++;
+      maxInFlight = Math.max(maxInFlight, inFlight);
+      await new Promise((r) => setTimeout(r, 5));
+      await original(reminders);
+      inFlight--;
+    };
+    await Promise.all([refresh.execute(COPIES, NOW), refresh.execute(COPIES, NOW), refresh.execute(COPIES, NOW)]);
+    expect(maxInFlight).toBe(1);
+    expect(notifications.reminderCalls).toHaveLength(3);
+  });
+
   it('starts the next day on a different line', async () => {
     const { notifications, prefs, refresh } = setup();
     prefs.seed(PreferenceSlot.RemindersChoice, RemindersChoice.On);

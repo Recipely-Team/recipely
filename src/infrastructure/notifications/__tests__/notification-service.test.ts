@@ -17,7 +17,9 @@ jest.mock('expo-notifications', () => ({
   dismissNotificationAsync: jest.fn((): Promise<void> => Promise.resolve()),
   cancelScheduledNotificationAsync: jest.fn((): Promise<void> => Promise.resolve()),
   getAllScheduledNotificationsAsync: jest.fn((): Promise<unknown[]> => Promise.resolve([])),
-  AndroidImportance: { MAX: 5, DEFAULT: 3 },
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  getLastNotificationResponseAsync: jest.fn((): Promise<unknown> => Promise.resolve(null)),
+  AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3 },
   SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval', DATE: 'date' },
 }));
 
@@ -151,6 +153,20 @@ describe('NotificationService', () => {
       await expect(of('timer-complete')).resolves.toMatchObject({ shouldPlaySound: true, shouldShowBanner: true });
       await expect(of('timer-warning')).resolves.toMatchObject({ shouldPlaySound: false, shouldShowBanner: true });
       await expect(of('engagement-reminder')).resolves.toMatchObject({ shouldPlaySound: false, shouldShowBanner: false });
+    });
+
+    it('reports a tapped reminder once, even when the launch tap arrives twice', async () => {
+      const tap = { notification: { request: { identifier: 'r-1', content: { data: { type: 'engagement-reminder', day: 4, variant: 2 } } } } };
+      notifications.getLastNotificationResponseAsync.mockResolvedValueOnce(tap as never);
+      const opened = jest.fn();
+      service.onReminderOpened(opened);
+      const [[deliver]] = notifications.addNotificationResponseReceivedListener.mock.calls as unknown as [[(r: unknown) => void]];
+      deliver(tap);
+      deliver({ notification: { request: { identifier: 't-1', content: { data: { type: 'timer-complete' } } } } });
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(opened).toHaveBeenCalledWith({ day: 4, variant: 2 });
     });
   });
 });

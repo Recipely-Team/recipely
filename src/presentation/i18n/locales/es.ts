@@ -1012,6 +1012,7 @@ export const es = {
     offerMessage: "Si pasan unos días sin cocinar con nosotros, te enviaremos una idea de receta por la tarde. Como máximo una al día; puedes desactivarlo en Ajustes.",
     offerConfirm: "Sí, recuérdamelo",
     offerDecline: "Ahora no",
+    permissionDenied: "Las notificaciones de Recipely están desactivadas. Actívalas en los ajustes del teléfono y vuelve a intentarlo.",
     messages: [
       { title: "¿Qué hay para cenar?", body: "Encuentra la receta de esta noche en un minuto." },
       { title: "¿Te apetece algo nuevo?", body: "Hay recetas nuevas esperándote en tu feed." },

@@ -1024,6 +1024,7 @@ export const en = {
     offerMessage: "If a few days pass without cooking with us, we'll send an evening recipe idea. At most one a day; you can turn it off in Settings.",
     offerConfirm: "Yes, remind me",
     offerDecline: "Not now",
+    permissionDenied: "Notifications are off for Recipely. Turn them on in your phone's settings, then try again.",
     messages: [
       { title: "What's for dinner?", body: "Find tonight's recipe in a minute." },
       { title: "Hungry for something new?", body: "Fresh recipes are waiting in your feed." },

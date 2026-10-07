@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 
 interface RemindersSetting {
@@ -14,7 +15,8 @@ interface RemindersSetting {
  * @remarks
  * - **Shows the truth:** on only with a stored yes and a granted OS permission, so a permission
  *   revoked in system settings shows as off here.
- * - **Turning on asks the OS:** a declined prompt snaps the switch back to off.
+ * - **Turning on asks the OS:** a declined prompt, or a permission already denied for good (no
+ *   prompt at all), snaps the switch back to off and says where to turn notifications on.
  */
 export const useRemindersSetting = (): RemindersSetting => {
   const { getRemindersEnabled, setRemindersChoice } = useStores();
@@ -37,7 +39,11 @@ export const useRemindersSetting = (): RemindersSetting => {
       setBusy(true);
       void setRemindersChoice
         .execute(next, t().reminders.messages, Date.now())
-        .then(setEnabled)
+        .then((on) => {
+          setEnabled(on);
+          if (next && !on) showWarningToast(t().reminders.permissionDenied);
+        })
+        .catch(() => setEnabled(false))
         .finally(() => setBusy(false));
     },
     [setRemindersChoice],

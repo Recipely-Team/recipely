@@ -1016,6 +1016,7 @@ export const zh = {
     offerMessage: "如果几天没和我们一起下厨，我们会在傍晚发送一个食谱灵感。每天最多一条，可在设置中关闭。",
     offerConfirm: "好的，提醒我",
     offerDecline: "以后再说",
+    permissionDenied: "Recipely 的通知已关闭。请在手机设置中开启后重试。",
     messages: [
       { title: "晚饭吃什么？", body: "一分钟找到今晚的食谱。" },
       { title: "想尝点新鲜的？", body: "新的食谱正在你的推荐里等你。" },

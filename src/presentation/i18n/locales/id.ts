@@ -1012,6 +1012,7 @@ export const id = {
     offerMessage: "Jika beberapa hari berlalu tanpa memasak bersama kami, kami akan mengirim ide resep di sore hari. Paling banyak satu sehari; bisa dimatikan di Pengaturan.",
     offerConfirm: "Ya, ingatkan saya",
     offerDecline: "Nanti saja",
+    permissionDenied: "Notifikasi Recipely nonaktif. Aktifkan di pengaturan ponsel, lalu coba lagi.",
     messages: [
       { title: "Makan malam apa hari ini?", body: "Temukan resep untuk malam ini dalam semenit." },
       { title: "Ingin sesuatu yang baru?", body: "Resep-resep baru menunggu di feed kamu." },

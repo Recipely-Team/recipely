@@ -3,6 +3,7 @@ import { ValueConstants } from "@core/constants";
 import type { NotificationServiceInterface } from "@domain/notifications/notification-service-interface";
 import type { TimerWarningAlert } from "@domain/timers/timer-warning-alert";
 import type { ReminderNotification } from "@domain/notifications/reminders/reminder-notification";
+import type { ReminderOpened } from "@domain/notifications/reminders/reminder-opened";
 
 /**
  * Recording test double for `NotificationServiceInterface`. It performs no real
@@ -39,6 +40,15 @@ export class FakeNotificationService implements NotificationServiceInterface {
   scheduleTimerWarnings(_timerId: string, _recipeName: string, alerts: readonly TimerWarningAlert[]): Promise<string[]> {
     this.warningCalls.push(alerts);
     return Promise.resolve(this.warningIds);
+  }
+
+  reminderListeners: ((opened: ReminderOpened) => void)[] = [];
+
+  onReminderOpened(listener: (opened: ReminderOpened) => void): () => void {
+    this.reminderListeners.push(listener);
+    return () => {
+      this.reminderListeners = this.reminderListeners.filter((l) => l !== listener);
+    };
   }
 
   replaceReminders(reminders: readonly ReminderNotification[]): Promise<void> {

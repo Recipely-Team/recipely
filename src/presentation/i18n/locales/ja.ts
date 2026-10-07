@@ -1009,9 +1009,10 @@ export const ja = {
     section: "通知",
     setting: "レシピのリマインダー",
     offerTitle: "ときどきお知らせしましょうか？",
-    offerMessage: "数日間お料理がない場合、夕方にレシピのアイデアをお届けします。1日1回まで。設定からオフにできます。",
-    offerConfirm: "はい、お知らせして",
+    offerMessage: "数日間お料理をされていないときは、夕方にレシピのアイデアをお届けします。1日1回まで。設定からオフにできます。",
+    offerConfirm: "はい、お願いします",
     offerDecline: "今はしない",
+    permissionDenied: "Recipely の通知がオフになっています。端末の設定でオンにしてから、もう一度お試しください。",
     messages: [
       { title: "今夜の夕食は？", body: "今夜のレシピを1分で見つけましょう。" },
       { title: "何か新しいものを食べたい？", body: "フィードに新しいレシピが届いています。" },

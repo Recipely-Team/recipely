@@ -1016,6 +1016,7 @@ export const tr: TranslationsType = {
     offerMessage: "Birkaç gün bizimle yemek yapmazsan akşamüstü bir tarif fikri göndeririz. Günde en fazla bir tane; Ayarlar’dan kapatabilirsin.",
     offerConfirm: "Evet, hatırlat",
     offerDecline: "Şimdi değil",
+    permissionDenied: "Recipely için bildirimler kapalı. Telefonunun ayarlarından açıp tekrar dene.",
     messages: [
       { title: "Akşam yemeğinde ne var?", body: "Bu akşamın tarifini bir dakikada bul." },
       { title: "Yeni bir şeyler mi canın çekti?", body: "Akışında taze tarifler seni bekliyor." },
