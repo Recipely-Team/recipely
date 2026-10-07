@@ -21,6 +21,9 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { durations } from '@presentation/base/theme';
 
+/** No step ticked yet: one shared empty list, so the selector result stays stable. */
+const NO_STEPS_DONE: readonly boolean[] = [];
+
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
  * author, likes, comments, and save/delete flows, and exposes guest-gated
@@ -52,7 +55,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
@@ -182,7 +185,9 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [userId, recipeId, commentsStore]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
+  // Shared with cook mode, so a step ticked there reads as done here.
+  const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
+  const toggleStoredStep = stepProgressStore((s) => s.toggleStep);
 
   // Local (user-created) recipes short-circuit the network store entirely.
   const isLocal = localRecipe !== undefined;
@@ -213,19 +218,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
-  const instructionCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.instructions.length : ValueConstants.zero;
 
   useEffect(() => {
     if (ingredientCount > ValueConstants.zero) {
       setCheckedIngredients(new Array(ingredientCount).fill(false) as boolean[]);
     }
   }, [ingredientCount]);
-
-  useEffect(() => {
-    if (instructionCount > ValueConstants.zero) {
-      setCompletedSteps(new Array(instructionCount).fill(false) as boolean[]);
-    }
-  }, [instructionCount]);
 
   const onRetry = useCallback(() => {
     if (recipeId.length > ValueConstants.zero) {
@@ -241,13 +239,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     });
   }, []);
 
-  const onToggleStep = useCallback((index: number) => {
-    setCompletedSteps((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-  }, []);
+  const onToggleStep = useCallback(
+    (index: number) => toggleStoredStep(recipeId, index),
+    [toggleStoredStep, recipeId],
+  );
 
   const current = recipeState ?? { status: StoreStatus.Loading };
   const status: StateViewStatus =

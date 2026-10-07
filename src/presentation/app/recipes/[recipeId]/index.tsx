@@ -99,6 +99,8 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           {!isExpanded ? (
             <RecipeFloatingActions
               insetsTop={insets.top}
+              recipeId={vm.recipeId}
+              canCook={vm.recipe.instructions.length > ValueConstants.zero}
               liked={vm.liked}
               isSaved={vm.isSaved}
               saveDisabled={vm.saveDisabled}

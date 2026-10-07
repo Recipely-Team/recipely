@@ -57,7 +57,7 @@ export interface WebRecipeDetailProps {
   checkedIngredients: boolean[];
   portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
   commentInput: string;

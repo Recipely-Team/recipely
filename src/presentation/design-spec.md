@@ -3682,3 +3682,20 @@ Source: the Recipely Prototype spec rev 3 (sections marked rev 2 / rev 3).
 - **Departures:** the review and rejection bodies keep the admin-review wording (no "add recipely.app/@username to
   your bio", no "up to 2 days"); Submit unlocks at each platform's minimum handle length; status-pill icons are
   14 (spec 13–14); half-point type sizes round to the ladder.
+
+## Cooking mode (Oct 2026 — interim, not from the prototype)
+
+TODO(design): cooking mode to be redesigned in Claude Design
+
+Claude Design was unavailable when cook mode shipped; the owner approved building it from existing base widgets
+and theme tokens. Nothing here is a design decision to preserve — redraw it in the prototype (rule 28) and replace
+this section with the spec that comes out of it.
+
+- **Route:** `app/recipes/[recipeId]/cook/` (full screen, header hidden). Entry: a `restaurant-outline` circle in the
+  mobile hero's floating cluster; a filled primary "Start cooking" pill first in the web header's action row.
+- **Layout:** top bar (outlined close circle, recipe name, "Ingredients" pill) → progress bar
+  (`controlSizes.progressBar`, primary fill) → step pane ("STEP 3 OF 8" in primary, a "Done" checkbox pill, the step
+  at `fontSizes.title` with a relaxed line height, the step's timer when it names a duration) → Previous (outlined,
+  flex 1) / Next (primary, flex 2; success-green "Finish" on the last step), `controlSizes.fab` tall.
+- **Widths:** full width on a phone; a centred column capped at `layoutSizes.webModalMaxWidth` on tablet and desktop.
+- **Ingredients:** `BottomSheet` (sheet on mobile, centred dialog on the web shell), one line per ingredient.

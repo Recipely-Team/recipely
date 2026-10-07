@@ -29,7 +29,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const misc = registerMisc(container);
   const creators = registerCreators(container);
   const assistant = registerAssistant(container);
-  const { savedRecipesStore, recipeDetailStore, createdRecipesStore, importJobStore, fileImportStore } = recipes;
+  const { savedRecipesStore, recipeDetailStore, createdRecipesStore, importJobStore, fileImportStore, stepProgressStore } = recipes;
   const { likedRecipesStore, likesStore } = likes;
   const { draftsStore } = drafts;
   const { diaryStore, foodSearchStore, foodCatalogStore } = diary;
@@ -45,6 +45,7 @@ export const registerApplication = (container: Container): ApplicationStores => 
     commentsStore.getState().clear();
     likesStore.getState().clear();
     recipeDetailStore.getState().clear();
+    stepProgressStore.getState().clear();
     notificationsStore.getState().clear();
     createdRecipesStore.getState().clear();
     draftsStore.getState().clear();

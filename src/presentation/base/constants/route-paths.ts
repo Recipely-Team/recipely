@@ -53,6 +53,10 @@ export const RoutePaths = {
   /** The Chefs tab: every approved creator, as cards. */
   creators: '/creators',
   recipeDetail: (recipeId: string): string => `/recipes/${recipeId}`,
+  /** Cook mode: the recipe's steps one at a time, full screen. */
+  recipeCook: (recipeId: string): string => `/recipes/${encodeURIComponent(recipeId)}/cook`,
+  /** Matches cook mode's path; group 1 is the recipe id. */
+  recipeCookPattern: /^\/recipes\/([^/]+)\/cook$/,
   /** A recipe page scrolled to one of its comments (a comment notification's target). */
   recipeComment: (recipeId: string, commentId: string): string =>
     `/recipes/${encodeURIComponent(recipeId)}?commentId=${encodeURIComponent(commentId)}`,

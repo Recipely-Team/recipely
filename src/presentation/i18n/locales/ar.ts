@@ -936,6 +936,21 @@ export const ar = {
     collapse: "إخفاء المؤقتات",
     expand: "إظهار المؤقتات"
   },
+  cookMode: {
+    start: "ابدأ الطهي",
+    exit: "الخروج من وضع الطهي",
+    stepOf: "الخطوة {n} من {total}",
+    next: "الخطوة التالية",
+    previous: "الخطوة السابقة",
+    finish: "إنهاء",
+    markDone: "وضع علامة على الخطوة كمكتملة",
+    markUndone: "إلغاء علامة اكتمال الخطوة",
+    stepDone: "تمت",
+    ingredients: "المكونات",
+    startTimer: "بدء مؤقت {min} دقيقة",
+    noSteps: "لا تحتوي هذه الوصفة على خطوات بعد.",
+    swipeHint: "اسحب يمينًا أو يسارًا لتغيير الخطوة.",
+  },
   alarm: {
     title: "انتهى الوقت!",
     dismiss: "تجاهل",

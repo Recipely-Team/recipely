@@ -32,6 +32,9 @@ Disallow: /create-recipe
 Disallow: /import-recipe
 Disallow: /ai-generate
 
+# Cook mode: the same recipe, one step at a time; the recipe page is the content.
+Disallow: /recipes/*/cook
+
 # The router's own debug index.
 Disallow: /_sitemap
 

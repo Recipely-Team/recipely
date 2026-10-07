@@ -20,6 +20,8 @@ const labelsOf = (isSaved: boolean): string[] =>
   renderComponent(
     <RecipeFloatingActions
       insetsTop={0}
+      recipeId="r1"
+      canCook={false}
       liked={false}
       isSaved={isSaved}
       saveDisabled={false}

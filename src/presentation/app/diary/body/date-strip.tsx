@@ -7,7 +7,7 @@ import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { controlSizes, diarySizes, fontSizes, fontWeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { DayCell } from '@presentation/app/diary/items/day-cell';
 import { formatLongDate } from '@presentation/app/diary/model/format-long-date';
-import { useWeekSwipe } from '@presentation/app/diary/hooks/use-week-swipe';
+import { useHorizontalSwipe } from '@presentation/base/hooks/interaction/use-horizontal-swipe';
 import { t, useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -33,7 +33,7 @@ export const DateStrip = ({ selected, today, canPageNext, dayLook, onSelect, onP
   const colors = useTheme().colors;
   const locale = useLocale();
   const strings = t().diary;
-  const swipe = useWeekSwipe(onPage);
+  const swipe = useHorizontalSwipe(onPage, diarySizes.swipeThreshold);
   const isToday = selected.equals(today);
   return (
     <View style={styles.stack}>
