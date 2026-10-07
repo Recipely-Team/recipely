@@ -17,6 +17,13 @@ const POLL_INTERVAL_MS = 30_000;
  * Keeps the notification bell badge fresh app-wide: refreshes the unread count
  * on mount, whenever the app returns to the foreground, and on a slow interval.
  * No-ops while the user is signed out so we never poll an unauthenticated API.
+ *
+ * @remarks
+ * **The interval polls only a foreground app.** It used to fire every 30 s
+ * whatever the app state, so a backgrounded app (or a hidden browser tab) kept
+ * asking for a badge nobody could see. A tick now checks
+ * `AppState.currentState` — which react-native-web derives from
+ * `document.visibilityState` — and the return to `active` catches up at once.
  */
 export const useUnreadNotificationsSync = (
   notificationsStore: BoundStore<NotificationsStoreState>,
@@ -27,9 +34,12 @@ export const useUnreadNotificationsSync = (
       if (authStore.getState().state.status !== StoreStatus.Authenticated) return;
       void notificationsStore.getState().refreshUnread();
     };
+    const pollTick = (): void => {
+      if (AppState.currentState === AppStateStatusValue.active) tick();
+    };
 
     tick();
-    const interval = setInterval(tick, POLL_INTERVAL_MS);
+    const interval = setInterval(pollTick, POLL_INTERVAL_MS);
     const subscription = AppState.addEventListener('change', (next: AppStateStatus) => {
       if (next === AppStateStatusValue.active) tick();
     });
