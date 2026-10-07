@@ -208,6 +208,7 @@ export const DiagnosticMessage = {
     intentTokenUndated: 'The intent token arrived without a usable expiry',
     likeStateNotLoaded: 'Like state for this recipe has not arrived yet',
     likeAlreadyInFlight: 'A like for this recipe is already in flight',
+    budgetUnreadable: 'The voice budget arrived without a usable number of seconds',
   },
 } as const;
 

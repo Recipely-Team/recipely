@@ -10,6 +10,8 @@ import { AssistantTranscriptLineKind } from '@application/assistant/session/assi
 import { AssistantView } from '@application/assistant/session/assistant-view';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
+import { AskAssistantUseCase } from '@application/assistant/session/ask-assistant-use-case';
+import { RunAssistantActionUseCase } from '@application/assistant/actions/run-assistant-action-use-case';
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -191,7 +193,15 @@ function harness(
   };
 
   const registry = new AssistantActionRegistry();
-  const store = configureAssistantSessionStore({ session, microphone, player, tokens, messenger, registry });
+  const store = configureAssistantSessionStore({
+    session,
+    microphone,
+    player,
+    tokens,
+    registry,
+    askAssistant: new AskAssistantUseCase(messenger),
+    runAction: new RunAssistantActionUseCase(registry),
+  });
   openStores.push(store);
   return { store, registry, calls, emit: (event: SessionEvent) => emit(event), release: () => release() };
 }
