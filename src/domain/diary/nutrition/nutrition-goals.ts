@@ -5,6 +5,7 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { ValueConstants } from '@core/constants';
 import { BaseValueObject } from '@core/value-object/base-value-object';
 import { DiaryLimits } from '@domain/diary/diary-limits';
+import { WaterGlasses } from '@domain/diary/day/water-glasses';
 import { CalorieStatus, type CalorieStatusType } from '@domain/diary/nutrition/calorie-status';
 import type { NutritionGoalValues } from '@domain/diary/nutrition/nutrition-goal-values';
 import { AtwaterFactors } from '@domain/diary/nutrition/atwater-factors';
@@ -54,9 +55,8 @@ export class NutritionGoals extends BaseValueObject<NutritionGoalValues> {
     }
     const badGram = GRAM_FIELDS.find((field) => !inRange(values[field], ValueConstants.zero, DiaryLimits.GoalMacroMax));
     if (badGram !== undefined) return invalid(badGram);
-    if (!Number.isInteger(values.waterGlasses) || !inRange(values.waterGlasses, DiaryLimits.GoalWaterMin, DiaryLimits.WaterGlassesMax)) {
-      return invalid('waterGlasses');
-    }
+    const water = WaterGlasses.create(values.waterGlasses);
+    if (!water.ok || water.value.value < DiaryLimits.GoalWaterMin) return invalid('waterGlasses');
     return ok(new NutritionGoals(values));
   }
 

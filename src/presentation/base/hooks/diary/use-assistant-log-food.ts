@@ -88,7 +88,7 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
       if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
       const [found, recent] = await Promise.all([
         searchFoods.execute(name, PageSizes.foodSearch),
-        listRecentFoods.execute(FIRST_PAGE, PageSizes.foodList),
+        listRecentFoods.execute(FIRST_PAGE),
       ]);
       const groups = found.ok
         ? { saved: found.value.saved.items, mine: found.value.mine.items, products: found.value.products.items, recipes: found.value.recipes.items }

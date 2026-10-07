@@ -83,6 +83,13 @@ export class Nutrients extends BaseValueObject<NutrientValues> {
     return this.calories <= DiaryLimits.EntryCaloriesMax && grams.every((g) => g === null || g <= DiaryLimits.EntryMacroMax);
   }
 
+  /** These nutrients, or the server's own failure when any figure is past the entry caps. */
+  requireWithinEntryCaps(): Result<Nutrients, ValidationFailure> {
+    return this.isWithinEntryCaps
+      ? ok(this)
+      : fail(new ValidationFailure(DiagnosticMessage.diary.nutrientTooHigh('calories'), 'calories', ErrorMessageKey.diaryNutrientInvalid));
+  }
+
   /** Kcal the known macros account for, at 4 / 4 / 9 kcal per gram. */
   get macroCalories(): number {
     return (
