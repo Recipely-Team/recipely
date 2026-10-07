@@ -6,6 +6,7 @@ import { AddCommentUseCase } from '@application/comments/add/add-comment-use-cas
 import { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
 import { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
+import { SetCommentLikeUseCase } from '@application/comments/like/set-comment-like-use-case';
 import { configureCommentsStore } from '@application/comments/comments-store';
 import type { CommentRepositoryInterface } from '@domain/comments/comment-repository-interface';
 
@@ -16,8 +17,10 @@ export const registerComments = (container: Container): Pick<ApplicationStores, 
     listComments: new ListCommentsUseCase(commentRepo),
     addComment: new AddCommentUseCase(commentRepo),
     deleteComment: new DeleteCommentUseCase(commentRepo),
-    likeComment: new LikeCommentUseCase(commentRepo),
-    unlikeComment: new UnlikeCommentUseCase(commentRepo),
+    setCommentLike: new SetCommentLikeUseCase(
+      new LikeCommentUseCase(commentRepo),
+      new UnlikeCommentUseCase(commentRepo),
+    ),
   });
   return { commentsStore };
 };

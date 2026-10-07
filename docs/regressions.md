@@ -481,6 +481,13 @@ answer that lands after sign-out does not refill the cleared feed or badge"
 (`notifications-store.test.ts`), red against the unfixed store. New store code guards
 with these instead of `let session` counters.
 
+**And in the comments store**, whose hand-rolled pager had neither guard: a thread
+answer landing after sign-out refilled the cleared `byRecipe`, and an older load
+answering after a newer one overwrote it. *Guard:* a `KeyedRequestEpoch` per recipe on
+`load` / `loadMore`, invalidated by `clear()`. Covered by "a load answering after
+sign-out does not bring the old thread back" and "an older load answering after a
+newer one does not overwrite it" (`comments-store.test.ts`), both red without it.
+
 ---
 
 ## Two timers, one effect, and a checklist that never moved

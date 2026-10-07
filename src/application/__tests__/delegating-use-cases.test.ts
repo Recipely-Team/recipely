@@ -1,7 +1,6 @@
 import { ok } from '@core/result/result-helpers';
 import { SignInWithAppleUseCase } from '@application/auth/sign-in/sign-in-with-apple-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in/sign-in-with-google-use-case';
-import { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
@@ -22,6 +21,7 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
+import { PageSizes } from '@application/config/page-sizes';
 
 /**
  * The use cases that are a single port call: each must reach the right
@@ -41,9 +41,8 @@ const filters = { cuisines: ['ITALIAN'] };
 const CASES: readonly Delegation[] = [
   { name: 'SignInWithApple', build: (r) => new SignInWithAppleUseCase(r), method: 'signInWithApple', args: [], forwarded: [] },
   { name: 'SignInWithGoogle', build: (r) => new SignInWithGoogleUseCase(r), method: 'signInWithGoogle', args: [], forwarded: [] },
-  { name: 'AddComment', build: (r) => new AddCommentUseCase(r), method: 'add', args: [{ recipeId: 'r1', body: 'yum' }], forwarded: ['r1', 'yum'] },
   { name: 'DeleteComment', build: (r) => new DeleteCommentUseCase(r), method: 'remove', args: [{ recipeId: 'r1', commentId: 'c1' }], forwarded: ['r1', 'c1'] },
-  { name: 'ListComments', build: (r) => new ListCommentsUseCase(r), method: 'listByRecipe', args: [{ recipeId: 'r1', page: 2, pageSize: 20 }], forwarded: ['r1', 2, 20] },
+  { name: 'ListComments', build: (r) => new ListCommentsUseCase(r), method: 'listByRecipe', args: ['r1', 2], forwarded: ['r1', 2, PageSizes.comments] },
   { name: 'SearchProducts', build: (r) => new SearchProductsUseCase(r), method: 'searchProducts', args: ['oat', 3, 20], forwarded: ['oat', 3, 20] },
   { name: 'AddFavorite', build: (r) => new AddFavoriteUseCase(r), method: 'addFavorite', args: ['u1', 'r1'], forwarded: ['u1', 'r1'] },
   { name: 'LoadFavorites', build: (r) => new LoadFavoritesUseCase(r), method: 'listFavorites', args: [], forwarded: [] },
