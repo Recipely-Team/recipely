@@ -1,7 +1,7 @@
 import type { StoreApi } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { UnknownFailure } from '@core/failure';
-import { COMMENTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import { defaultRecipeCommentsState } from '@application/comments/list/default-recipe-comments-state';
@@ -28,7 +28,7 @@ export const createLoadMoreCommentsAction = (
     }));
 
     try {
-      const result = await listComments.execute({ recipeId, page: nextPage, pageSize: COMMENTS_PAGE_SIZE });
+      const result = await listComments.execute({ recipeId, page: nextPage, pageSize: PageSizes.comments });
       if (!result.ok) {
         set((state) => ({
           byRecipe: mergeRecipeComments(state.byRecipe, recipeId, () => ({

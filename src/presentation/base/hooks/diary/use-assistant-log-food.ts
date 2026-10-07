@@ -11,7 +11,8 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
 import { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE, FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
@@ -86,8 +87,8 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
         rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
       if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
       const [found, recent] = await Promise.all([
-        searchFoods.execute(name, FOOD_SEARCH_PAGE_SIZE),
-        listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE),
+        searchFoods.execute(name, PageSizes.foodSearch),
+        listRecentFoods.execute(FIRST_PAGE, PageSizes.foodList),
       ]);
       const groups = found.ok
         ? { saved: found.value.saved.items, mine: found.value.mine.items, products: found.value.products.items, recipes: found.value.recipes.items }

@@ -2,7 +2,8 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
-import { DRAFTS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import { ValueConstants } from '@core/constants';
 
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
@@ -39,7 +40,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       }
       const result = await deps.listDraftsUseCase.execute({
         page: FIRST_PAGE,
-        pageSize: DRAFTS_PAGE_SIZE,
+        pageSize: PageSizes.drafts,
       });
       if (requested !== session) return;
       if (!result.ok) {
@@ -68,7 +69,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       set({ listState: { ...current, isLoadingMore: true } });
       const result = await deps.listDraftsUseCase.execute({
         page: current.page + ValueConstants.one,
-        pageSize: DRAFTS_PAGE_SIZE,
+        pageSize: PageSizes.drafts,
       });
       if (!result.ok) {
         // The rows already on screen stay; only the append failed.

@@ -13,7 +13,7 @@ import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import { toPage } from '@infrastructure/network/paging/to-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';

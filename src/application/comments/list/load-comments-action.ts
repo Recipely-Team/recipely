@@ -1,6 +1,7 @@
 import type { StoreApi } from 'zustand';
 import { UnknownFailure } from '@core/failure';
-import { COMMENTS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import { mergeRecipeComments } from '@application/comments/list/merge-recipe-comments';
@@ -24,7 +25,7 @@ export const createLoadCommentsAction = (
       const result = await listComments.execute({
         recipeId,
         page: FIRST_PAGE,
-        pageSize: COMMENTS_PAGE_SIZE,
+        pageSize: PageSizes.comments,
       });
       if (!result.ok) {
         set((state) => ({

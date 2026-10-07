@@ -5,7 +5,8 @@ import type { AssistantActionResultType } from '@domain/assistant/actions/assist
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -93,7 +94,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         if (query.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NothingToSearch };
         // The sheet opens on the same query; its search joins this one instead of repeating it.
         sheets.openSearch(query);
-        const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE)]);
+        const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, PageSizes.foodList)]);
         const s = foodSearchStore.getState();
         if (s.saved.status === StoreStatus.Error) return { ok: false, error: failureReason(s.saved.failure) };
         const found = { saved: loadedItems(s.saved), mine: loadedItems(s.mine), products: loadedItems(s.products), recipes: loadedItems(s.recipes) };

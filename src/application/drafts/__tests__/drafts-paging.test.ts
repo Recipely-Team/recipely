@@ -9,7 +9,7 @@ import { ok , fail } from '@core/result/result-helpers';
 import { UnknownFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { StoreStatus } from '@application/store/store-status';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 
 /**
  * The symptom: a user with more than one page of drafts saw the first 20 and
@@ -31,7 +31,7 @@ const draft = (id: string): RecipeDraft => ({
 });
 
 const page = (ids: string[], total: number, pageNumber: number) =>
-  ok({ items: ids.map(draft), total, page: pageNumber, pageSize: DRAFTS_PAGE_SIZE });
+  ok({ items: ids.map(draft), total, page: pageNumber, pageSize: PageSizes.drafts });
 
 const storeWithPages = () => {
   const requested: number[] = [];

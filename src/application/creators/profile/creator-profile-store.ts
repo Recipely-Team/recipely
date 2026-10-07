@@ -3,7 +3,8 @@ import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { ValueConstants } from '@core/constants';
 import { withFollowing } from '@domain/user-profile/with-following';
-import { CREATOR_RECIPES_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
 import type { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
 import type { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
@@ -50,7 +51,7 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
     };
 
     const loadFirstRecipes = async (userId: string, requested: number): Promise<void> => {
-      const result = await deps.listUserRecipes.execute({ userId, page: FIRST_PAGE, pageSize: CREATOR_RECIPES_PAGE_SIZE });
+      const result = await deps.listUserRecipes.execute({ userId, page: FIRST_PAGE, pageSize: PageSizes.creatorRecipes });
       if (requested !== generation) return;
       if (result.ok) {
         const { items, page, hasMore } = result.value;
@@ -97,7 +98,7 @@ export const configureCreatorProfileStore = (deps: CreatorProfileStoreDeps): Bou
         const result = await deps.listUserRecipes.execute({
           userId,
           page: current.page + ValueConstants.one,
-          pageSize: CREATOR_RECIPES_PAGE_SIZE,
+          pageSize: PageSizes.creatorRecipes,
         });
         if (requested !== generation) return;
         if (!result.ok) {

@@ -7,7 +7,7 @@ import { ValueConstants } from '@core/constants';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
-import { UNREAD_PROBE_LIMIT } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 
 interface NotificationsStoreDeps {
   listNotifications: ListNotificationsUseCase;
@@ -47,7 +47,7 @@ export const configureNotificationsStore = (
     },
     refreshUnread: async () => {
       // Minimum page: unreadCount comes regardless of page size.
-      const result = await deps.listNotifications.execute({ limit: UNREAD_PROBE_LIMIT });
+      const result = await deps.listNotifications.execute({ limit: PageSizes.unreadProbe });
       if (!result.ok) return;
       set({ unreadCount: result.value.unreadCount });
     },
