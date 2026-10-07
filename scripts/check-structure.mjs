@@ -1586,6 +1586,11 @@ function openingTag(src, at) {
 // hosting target must set these on `**`. The CSP's script-src is hash-based for
 // inline scripts (scripts/assert-csp-inline-scripts.mjs keeps the hashes true).
 {
+  // AdSense loads scripts AND frames from each of these; the CSP blocked the ad-quality frame
+  // (ep2.adtrafficquality.google) and the unit served unverified, so both directives must allow every one.
+  const ADSENSE_HOSTS = ['*.googlesyndication.com', '*.doubleclick.net', '*.adtrafficquality.google', '*.google.com'];
+  const directiveAllows = (csp, directive, host) =>
+    (csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${directive} `)) ?? '').split(' ').includes(`https://${host}`);
   // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
   // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
   const REQUIRED = {
@@ -1596,7 +1601,8 @@ function openingTag(src, at) {
       /default-src 'self'/.test(v) &&
       /object-src 'none'/.test(v) &&
       /script-src [^;]*'sha256-/.test(v) &&
-      !/script-src [^;]*'unsafe-(inline|eval)'/.test(v),
+      !/script-src [^;]*'unsafe-(inline|eval)'/.test(v) &&
+      ADSENSE_HOSTS.every((host) => directiveAllows(v, 'script-src', host) && directiveAllows(v, 'frame-src', host)),
     'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
     'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
     'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
