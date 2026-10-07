@@ -55,6 +55,8 @@
  *      values such as `IS_DEV_BUILD` reach it through DI (CLAUDE.md §17).
  *   AP. No annotation applied twice to one Kotlin declaration under modules/ —
  *      kotlinc rejects it, and no JS gate compiles native code (CLAUDE.md §24).
+ *   AQ. An ErrorState built from a Failure passes `severity=` — the default is
+ *      the red danger surface (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1680,6 +1682,24 @@ function openingTag(src, at) {
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
     for (const m of src.matchAll(ENGLISH_LABEL)) {
       errors.push(`${file}: maps a vocabulary value to the English word "${m[2]}" — label it through t() (CLAUDE.md §11)`);
+    }
+  }
+}
+
+// --- AQ: a failure state says how bad it is (CLAUDE.md §24) ----------------
+// `ErrorState` defaults to the red danger surface. Automations and the shopping
+// list rendered an offline failure in red while every other screen showed it
+// amber, and the empty shopping list wore the danger disc. A state built from a
+// Failure (`failureIcon(...)`) must pass `severity=` (usually `failureSeverity`).
+{
+  const FAILURE_STATE = /<ErrorState\b[^>]*?failureIcon\([^>]*?\/>/gs;
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(FAILURE_STATE)) {
+      if (m[0].includes('severity=')) continue;
+      const line = src.slice(0, m.index).split('\n').length;
+      errors.push(`${file}:${line}: an ErrorState built from a Failure has no severity= — pass failureSeverity(failure) (CLAUDE.md §24)`);
     }
   }
 }

@@ -1,4 +1,4 @@
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { CharConstants, TimeConstants, ValueConstants } from '@core/constants';
 import type { NotificationServiceInterface } from '@domain/notifications/notification-service-interface';
 import type { PreferenceStoreInterface } from '@domain/storage/preference-store-interface';
 import type { ReminderCopy } from '@domain/notifications/reminders/reminder-copy';
@@ -43,8 +43,8 @@ export class RefreshRemindersUseCase {
     const offset = Math.floor(nowMs / TimeConstants.millisecondsPerDay) % copies.length;
     const reminders = reminderSchedule(nowMs).map((slot, i): ReminderNotification => {
       const variant = (offset + i) % copies.length;
-      const copy = copies[variant] ?? copies[ValueConstants.zero]!;
-      return { ...slot, title: copy.title, body: copy.body, variant };
+      const copy = copies[variant];
+      return { ...slot, title: copy?.title ?? CharConstants.empty, body: copy?.body ?? CharConstants.empty, variant };
     });
     await this.notifications.replaceReminders(reminders);
   }
