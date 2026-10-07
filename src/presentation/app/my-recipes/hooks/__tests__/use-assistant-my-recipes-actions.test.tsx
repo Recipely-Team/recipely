@@ -6,7 +6,7 @@ import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import {
   TAB_SETTLE_MS,
@@ -54,7 +54,7 @@ function harness(
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

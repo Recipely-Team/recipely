@@ -5,7 +5,8 @@ import type { DevicePlatform } from '@domain/notifications/device-platform';
 
 /** Repository contract for backend notification operations. */
 export interface NotificationRepositoryInterface {
-  list(limit?: number, offset?: number): Promise<Result<NotificationListResult, Failure>>;
+  /** One 1-based page of the feed. */
+  list(page: number, pageSize: number): Promise<Result<NotificationListResult, Failure>>;
   markAllRead(): Promise<Result<void, Failure>>;
   markOneRead(id: string): Promise<Result<void, Failure>>;
   registerDeviceToken(

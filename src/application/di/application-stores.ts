@@ -33,6 +33,8 @@ import type { TrendingRecipesStoreState } from '@application/recipes/trending/tr
 import type { UserProfileStoreState } from '@application/user-profile/user-profile-store-state';
 import type { CreatorsStoreState } from '@application/creators/creators-store-state';
 import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
+import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
+import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
@@ -86,4 +88,8 @@ export interface ApplicationStores {
   /** Recipe → one serving the Add food sheet can log; synchronous, no I/O. */
   buildLoggableFoodFromRecipe: BuildLoggableFoodFromRecipeUseCase;
   loadFavoritesUseCase: LoadFavoritesUseCase;
+  /** Another user's public profile, for the recipe page's author card. */
+  getUserProfile: GetUserProfileUseCase;
+  /** Hands the push token to the backend once signed in. */
+  registerDeviceToken: RegisterDeviceTokenUseCase;
 }

@@ -11,6 +11,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
+import { ListConstants } from '@presentation/base/constants';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
@@ -38,6 +40,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const { notificationsStore } = useStores();
   const state = notificationsStore((s) => s.state);
   const load = notificationsStore((s) => s.load);
+  const loadMore = notificationsStore((s) => s.loadMore);
+  const unreadCount = notificationsStore((s) => s.unreadCount);
   const markAllRead = notificationsStore((s) => s.markAllRead);
   const markOneRead = notificationsStore((s) => s.markOneRead);
 
@@ -56,8 +60,6 @@ export const NotificationsScreen = (): React.JSX.Element => {
     return state.items.map(toNotifItem);
   }, [state]);
 
-  const unreadCount =
-    state.status === StoreStatus.Loaded ? state.unreadCount : ValueConstants.zero;
   const sections = buildSections(items, filter);
 
   const openTarget = useOpenNotificationTarget();
@@ -123,6 +125,9 @@ export const NotificationsScreen = (): React.JSX.Element => {
             </ThemedText>
           </View>
         }
+        onEndReached={() => void loadMore()}
+        onEndReachedThreshold={ListConstants.endReachedThreshold}
+        ListFooterComponent={<FeedFooter isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
         ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />}
       />

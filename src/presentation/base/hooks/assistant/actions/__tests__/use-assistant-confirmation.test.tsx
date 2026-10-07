@@ -3,7 +3,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 
 /**
@@ -23,7 +23,7 @@ describe('useAssistantConfirmation', () => {
     };
 
     const rendered = renderComponent(
-      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
+      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
         <Probe open={visible} />
       </StoresProvider>,
     );
@@ -31,7 +31,7 @@ describe('useAssistantConfirmation', () => {
     const setOpen = (open: boolean): void => {
       act(() => {
         (rendered.renderer as ReactTestRenderer).update(
-          <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
+          <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
             <Probe open={open} />
           </StoresProvider>,
         );

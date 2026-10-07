@@ -24,9 +24,10 @@ import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-re
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
 import { configureRecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store';
-import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
-import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
+import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
+import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
+import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
+import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { configureTrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store';
 import { configureRecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
@@ -59,31 +60,18 @@ export const registerRecipes = (
   | 'stepProgressStore'
 > => {
   const recipeRepo = container.resolve<RecipeRepositoryInterface>(TOKENS.RecipeRepository);
-  const listRecipes = new ListRecipesUseCase(recipeRepo);
-  const listTrendingRecipes = new ListTrendingRecipesUseCase(recipeRepo);
-  const getRecipe = new GetRecipeUseCase(recipeRepo);
-  const createRecipeUseCase = new CreateRecipeUseCase(recipeRepo);
-  const listMyRecipesUseCase = new ListMyRecipesUseCase(recipeRepo);
-  const generateRecipeUseCase = new GenerateRecipeUseCase(recipeRepo);
-  const importInstagramRecipeUseCase = new ImportInstagramRecipeUseCase(recipeRepo);
-  const enqueueInstagramImportUseCase = new EnqueueInstagramImportUseCase(recipeRepo);
-  const getImportJobUseCase = new GetImportJobUseCase(recipeRepo);
-  const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
-  const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
+  const favoritesRepo = container.resolve<FavoritesRepositoryInterface>(TOKENS.FavoritesRepository);
+  // Shared: the saved list loads with it and the auth store reloads it on sign-in.
+  const loadFavoritesUseCase = new LoadFavoritesUseCase(favoritesRepo);
 
-  const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
-  const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
-  const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
-
-  const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase });
-  const recipeListStore = configureRecipeListStore({ listRecipes });
-  const trendingRecipesStore = configureTrendingRecipesStore({ listTrendingRecipes });
-  const addRecipePhotoUseCase = new AddRecipePhotoUseCase(recipeRepo);
-  const removeRecipePhotoUseCase = new RemoveRecipePhotoUseCase(recipeRepo);
+  const recipeListStore = configureRecipeListStore({ listRecipes: new ListRecipesUseCase(recipeRepo) });
+  const trendingRecipesStore = configureTrendingRecipesStore({
+    listTrendingRecipes: new ListTrendingRecipesUseCase(recipeRepo),
+  });
   const recipeDetailStore = configureRecipeDetailStore({
-    getRecipe,
-    addRecipePhoto: addRecipePhotoUseCase,
-    removeRecipePhoto: removeRecipePhotoUseCase,
+    getRecipe: new GetRecipeUseCase(recipeRepo),
+    addRecipePhoto: new AddRecipePhotoUseCase(recipeRepo),
+    removeRecipePhoto: new RemoveRecipePhotoUseCase(recipeRepo),
     removeRecipeCover: new RemoveRecipeCoverUseCase(recipeRepo),
   });
   const recipePublishingStore = configureRecipePublishingStore({
@@ -92,24 +80,25 @@ export const registerRecipes = (
     editRecipe: new EditRecipeUseCase(recipeRepo),
     recipeDetailStore,
   });
+  const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase });
   const favoritesStore = configureFavoritesStore({
-    addFavoriteUseCase,
-    removeFavoriteUseCase,
+    addFavoriteUseCase: new AddFavoriteUseCase(favoritesRepo),
+    removeFavoriteUseCase: new RemoveFavoriteUseCase(favoritesRepo),
     savedRecipesStore,
   });
   const createdRecipesStore = configureCreatedRecipesStore({
-    createRecipeUseCase,
-    listMyRecipesUseCase,
-    generateRecipeUseCase,
-    importInstagramRecipeUseCase,
-    refineRecipeUseCase,
-    deleteRecipeUseCase,
+    createRecipeUseCase: new CreateRecipeUseCase(recipeRepo),
+    listMyRecipesUseCase: new ListMyRecipesUseCase(recipeRepo),
+    generateRecipeUseCase: new GenerateRecipeUseCase(recipeRepo),
+    importInstagramRecipeUseCase: new ImportInstagramRecipeUseCase(recipeRepo),
+    refineRecipeUseCase: new RefineRecipeUseCase(recipeRepo),
+    deleteRecipeUseCase: new DeleteRecipeUseCase(recipeRepo),
     recipeListStore,
     recipeDetailStore,
   });
   const importJobStore = configureImportJobStore({
-    enqueueInstagramImportUseCase,
-    getImportJobUseCase,
+    enqueueInstagramImportUseCase: new EnqueueInstagramImportUseCase(recipeRepo),
+    getImportJobUseCase: new GetImportJobUseCase(recipeRepo),
   });
   const fileImportStore = configureFileImportStore({
     importRecipeFromFilesUseCase: new ImportRecipeFromFilesUseCase(recipeRepo),

@@ -5,7 +5,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import { Difficulty } from '@domain/recipes/difficulty';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useAssistantFeedActions } from '@presentation/app/recipes/hooks/use-assistant-feed-actions';
 
@@ -26,7 +26,7 @@ function harness(filters: UiFilters = EMPTY, loaded = true) {
     selector({
       cuisines: loaded ? CUISINES : [],
       categories: loaded ? CATEGORIES : [],
-    })) as unknown as StoresType['taxonomyStore'];
+    })) as unknown as ApplicationStores['taxonomyStore'];
   const spies = {
     onToggleCuisineQuick: jest.fn(),
     onToggleCategory: jest.fn(),
@@ -47,7 +47,7 @@ function harness(filters: UiFilters = EMPTY, loaded = true) {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

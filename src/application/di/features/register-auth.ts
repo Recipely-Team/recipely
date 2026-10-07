@@ -39,25 +39,30 @@ export const registerAuth = (
   { savedRecipesStore, loadFavoritesUseCase, clearSessionCaches }: AuthCompositionDeps,
 ): ApplicationStores['authStore'] => {
   const authRepo = container.resolve<AuthRepositoryInterface>(TOKENS.AuthRepository);
-  const signIn = new SignInUseCase(authRepo);
-  const requestRegistration = new RequestRegistrationUseCase(authRepo);
-  const verifyRegistration = new VerifyRegistrationUseCase(authRepo);
-  const resendRegistrationCode = new ResendRegistrationCodeUseCase(authRepo);
-  const signOut = new SignOutUseCase(authRepo);
-  const getSession = new GetSessionUseCase(authRepo);
-  const signInWithGoogle = new SignInWithGoogleUseCase(authRepo);
-  const signInWithApple = new SignInWithAppleUseCase(authRepo);
-  const requestPasswordReset = new RequestPasswordResetUseCase(authRepo);
-  const resetPassword = new ResetPasswordUseCase(authRepo);
-  const uploadAvatar = new UploadAvatarUseCase(authRepo);
-  const updateProfile = new UpdateProfileUseCase(authRepo);
-  const deleteAccount = new DeleteAccountUseCase(authRepo);
-  const onSessionRestored = recordDeviceOnSessionRestore(
-    new RecordDeviceUseCase(
-      container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
-      container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
-    ),
+  const recordDevice = new RecordDeviceUseCase(
+    container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
+    container.resolve<DeviceRepositoryInterface>(TOKENS.DeviceRepository),
   );
-  const authStore = configureAuthStore({ signIn, requestRegistration, verifyRegistration, resendRegistrationCode, signOut, getSession, loadFavorites: loadFavoritesUseCase, savedRecipesStore, signInWithGoogle, signInWithApple, requestPasswordReset, resetPassword, uploadAvatar, updateProfile, deleteAccount, requestCreatorTag: new RequestCreatorTagUseCase(authRepo), removeCreatorTag: new RemoveCreatorTagUseCase(authRepo), refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo), clearSessionCaches, onSessionRestored });
-  return authStore;
+  return configureAuthStore({
+    signIn: new SignInUseCase(authRepo),
+    signInWithGoogle: new SignInWithGoogleUseCase(authRepo),
+    signInWithApple: new SignInWithAppleUseCase(authRepo),
+    requestRegistration: new RequestRegistrationUseCase(authRepo),
+    verifyRegistration: new VerifyRegistrationUseCase(authRepo),
+    resendRegistrationCode: new ResendRegistrationCodeUseCase(authRepo),
+    requestPasswordReset: new RequestPasswordResetUseCase(authRepo),
+    resetPassword: new ResetPasswordUseCase(authRepo),
+    getSession: new GetSessionUseCase(authRepo),
+    signOut: new SignOutUseCase(authRepo),
+    deleteAccount: new DeleteAccountUseCase(authRepo),
+    uploadAvatar: new UploadAvatarUseCase(authRepo),
+    updateProfile: new UpdateProfileUseCase(authRepo),
+    requestCreatorTag: new RequestCreatorTagUseCase(authRepo),
+    removeCreatorTag: new RemoveCreatorTagUseCase(authRepo),
+    refreshCreatorClaim: new RefreshCreatorClaimUseCase(authRepo),
+    loadFavorites: loadFavoritesUseCase,
+    savedRecipesStore,
+    clearSessionCaches,
+    onSessionRestored: recordDeviceOnSessionRestore(recordDevice),
+  });
 };

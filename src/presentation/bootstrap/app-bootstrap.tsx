@@ -14,12 +14,10 @@ import { analyticsService } from '@infrastructure/firebase/analytics-service';
 import { AnalyticsEvent } from '@infrastructure/constants/analytics/analytics-event';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { container } from '@core/di/container';
-import { TOKENS } from '@application/di/tokens';
 import { registerInfrastructure } from '@infrastructure/di/register';
 import { registerApplication } from '@application/di/register';
-import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { AppSyncs } from '@presentation/bootstrap/app-syncs';
 import { registerPushToken } from '@infrastructure/notifications/push-token-registrar';
 import { setPushRegistrationHandler } from '@application/notifications/ensure-push-registration';
@@ -37,7 +35,7 @@ export interface AppBootstrapProps {
 let onSessionExpired: () => void = () => {};
 
 // Initialize stores synchronously on module load
-const initializeStores = (): StoresType => {
+const initializeStores = (): ApplicationStores => {
   registerInfrastructure(container, {
     onUnauthorized: () => onSessionExpired(),
   });
@@ -87,10 +85,7 @@ export const AppBootstrap = ({ children }: AppBootstrapProps): React.JSX.Element
     const register = (): void => {
       if (stores.authStore.getState().state.status !== StoreStatus.Authenticated) return;
       registered = true;
-      const useCase = container.resolve<RegisterDeviceTokenUseCase>(
-        TOKENS.RegisterDeviceTokenUseCase,
-      );
-      void registerPushToken((token, platform) => useCase.execute(token, platform));
+      void registerPushToken((token, platform) => stores.registerDeviceToken.execute(token, platform));
     };
     // Exposed so a screen that promises a notification can retry after permission is granted.
     const maybeRegister = (): void => {

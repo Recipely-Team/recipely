@@ -12,7 +12,7 @@ import { ok } from '@core/result/result-helpers';
 import { StoreStatus } from '@application/store/store-status';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
 import { connectionOf } from '@application/instagram/__fixtures__/instagram-fixtures';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
@@ -24,7 +24,7 @@ const setup = (status: string) => {
   const instagram = instagramStoreOf(connectionOf({ connected: false, status: null }));
   instagram.repo.finalize.mockResolvedValue(ok({ connection: connectionOf(), creatorTag: CreatorTagOutcome.Approved }));
   const authStore = create(() => ({ state: { status }, refreshCreatorClaim: jest.fn().mockResolvedValue(null) }));
-  renderComponent(<InstagramConnectedScreen />, { instagramStore: instagram.store, authStore } as unknown as Partial<StoresType>);
+  renderComponent(<InstagramConnectedScreen />, { instagramStore: instagram.store, authStore } as unknown as Partial<ApplicationStores>);
   return { instagram, authStore };
 };
 

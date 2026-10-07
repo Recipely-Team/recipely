@@ -9,6 +9,8 @@ import type { NotificationRepositoryInterface } from '@domain/notifications/noti
 import type { NotificationListResult } from '@domain/notifications/notification-list-result';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+import { toPage } from '@infrastructure/network/paging/to-page';
+import { toNotificationsQuery } from '@infrastructure/notifications/to-notifications-query';
 import { toSourcePlatform } from '@domain/recipes/provenance/to-source-platform';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import type { NotificationItemDto } from '@infrastructure/notifications/dtos/notification-item-dto';
@@ -22,28 +24,16 @@ import type { RegisterDeviceTokenRequestDto } from '@infrastructure/notification
 export class NotificationRepository implements NotificationRepositoryInterface {
   constructor(private readonly http: HttpClient) {}
 
-  async list(limit?: number, offset?: number): Promise<Result<NotificationListResult, Failure>> {
-    const params: Record<string, number> = {};
-    if (limit !== undefined) params.limit = limit;
-    if (offset !== undefined) params.offset = offset;
-
-    const result = await this.http.get<NotificationsResponseDto>(ApiRoutes.me.notifications, { params });
+  async list(page: number, pageSize: number): Promise<Result<NotificationListResult, Failure>> {
+    const result = await this.http.get<NotificationsResponseDto>(ApiRoutes.me.notifications, {
+      params: toNotificationsQuery({ page, pageSize }),
+    });
     if (!result.ok) {
       return result;
     }
-
-    const items: NotificationEntity[] = [];
-    for (const dto of result.value.items) {
-      const mapped = mapDtoToNotification(dto);
-      if (mapped.ok) {
-        items.push(mapped.value);
-      }
-      // Skip an unmappable item rather than lose the list.
-    }
-
+    // The envelope has no page fields; the requested ones are what it answered.
     return ok({
-      items,
-      total: result.value.total,
+      page: toPage({ ...result.value, page, pageSize }, mapDtoToNotification),
       unreadCount: result.value.unreadCount,
     });
   }

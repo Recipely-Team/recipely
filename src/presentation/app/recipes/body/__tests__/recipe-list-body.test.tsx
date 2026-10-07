@@ -28,7 +28,7 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
@@ -88,7 +88,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 const RECIPES = [makeRecipe('r1')];
 
 /** An un-loaded taxonomy store: labels/options fall back to the bundled enums. */
-const makeStores = (): StoresType =>
+const makeStores = (): ApplicationStores =>
   ({
     taxonomyStore: create<TaxonomyStoreState>(() => ({
       cuisines: [],
@@ -98,7 +98,7 @@ const makeStores = (): StoresType =>
       load: jest.fn(),
       reload: jest.fn(),
     })),
-  }) as unknown as StoresType;
+  }) as unknown as ApplicationStores;
 
 /**
  * A vm on the mobile loaded-feed branch (`recipe-list-body.tsx:149-150`):

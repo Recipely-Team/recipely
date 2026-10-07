@@ -29,7 +29,7 @@ import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -124,7 +124,7 @@ const makeStores = (loaders: Loaders) => {
     savedRecipesStore,
     createdRecipesStore,
     draftsStore,
-  } as unknown as StoresType;
+  } as unknown as ApplicationStores;
 
   return { stores, recipeListStore, savedRecipesStore };
 };

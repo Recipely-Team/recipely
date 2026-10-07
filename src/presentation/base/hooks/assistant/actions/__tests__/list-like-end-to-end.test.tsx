@@ -5,7 +5,7 @@ import { configureLikesStore } from '@application/likes/likes-store';
 import { StoreStatus } from '@application/store/store-status';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
@@ -42,7 +42,7 @@ const mount = (seeded: { count: number; liked: boolean } | null) => {
       select({ savedIds: new Set<string>(), listState: { status: StoreStatus.Loaded } }),
     favoritesStore: (select: (s: unknown) => unknown) =>
       select({ addFavorite: async () => undefined, removeFavorite: async () => undefined }),
-  } as unknown as StoresType;
+  } as unknown as ApplicationStores;
 
   const Probe = (): null => {
     useAssistantListRecipeActions(ROWS);

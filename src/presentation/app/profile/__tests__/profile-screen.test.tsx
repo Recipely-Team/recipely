@@ -16,7 +16,7 @@ import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ProfileScreen } from '@presentation/app/profile';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
@@ -142,7 +142,7 @@ const renderProfile = (
     // registry call on mount — a bare object here crashes the render before
     // any of this file's assertions get to look at it.
     assistantActionRegistry: new AssistantActionRegistry(),
-  } as unknown as StoresType;
+  } as unknown as ApplicationStores;
 
   return renderComponent(
     <StoresProvider value={stores}>

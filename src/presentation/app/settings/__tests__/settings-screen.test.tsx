@@ -16,7 +16,7 @@ import { create } from 'zustand';
 import type { Failure } from '@core/failure';
 import { NetworkFailure } from '@core/failure';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import type { ConfirmSheetProps } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
@@ -119,7 +119,7 @@ afterEach(() => {
 const renderSettings = (
   deleteAccount: jest.Mock,
 ): RenderResult => {
-  const stores = { authStore: makeAuthStore(deleteAccount) } as unknown as StoresType;
+  const stores = { authStore: makeAuthStore(deleteAccount) } as unknown as ApplicationStores;
   const rendered = renderComponent(
     <StoresProvider value={stores}>
       <SettingsScreen />

@@ -12,17 +12,12 @@ import type { CommentRepositoryInterface } from '@domain/comments/comment-reposi
 /** **Comments composition** — the recipe comment thread store and its use cases. */
 export const registerComments = (container: Container): Pick<ApplicationStores, 'commentsStore'> => {
   const commentRepo = container.resolve<CommentRepositoryInterface>(TOKENS.CommentRepository);
-  const listCommentsUseCase = new ListCommentsUseCase(commentRepo);
-  const addCommentUseCase = new AddCommentUseCase(commentRepo);
-  const deleteCommentUseCase = new DeleteCommentUseCase(commentRepo);
-  const likeCommentUseCase = new LikeCommentUseCase(commentRepo);
-  const unlikeCommentUseCase = new UnlikeCommentUseCase(commentRepo);
   const commentsStore = configureCommentsStore({
-    listComments: listCommentsUseCase,
-    addComment: addCommentUseCase,
-    deleteComment: deleteCommentUseCase,
-    likeComment: likeCommentUseCase,
-    unlikeComment: unlikeCommentUseCase,
+    listComments: new ListCommentsUseCase(commentRepo),
+    addComment: new AddCommentUseCase(commentRepo),
+    deleteComment: new DeleteCommentUseCase(commentRepo),
+    likeComment: new LikeCommentUseCase(commentRepo),
+    unlikeComment: new UnlikeCommentUseCase(commentRepo),
   });
   return { commentsStore };
 };

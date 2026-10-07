@@ -7,6 +7,7 @@ import { FIRST_PAGE } from '@domain/common/first-page';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { loadedList } from '@application/store/paging/loaded-list';
 import { appendedList } from '@application/store/paging/appended-list';
+import { ListPosition, type ListPositionType } from '@application/store/paging/list-position';
 
 /** Fetches one 1-based page of a list. */
 type PageFetch<T> = (page: number) => Promise<Result<Page<T>, Failure>>;
@@ -24,6 +25,10 @@ type PageFetch<T> = (page: number) => Promise<Result<Page<T>, Failure>>;
  *   request); `load` is the two in a row.
  * - **A next page reuses the first page's fetch**, so it asks for the same
  *   query, shelf or group.
+ * - **`refresh` re-reads without a spinner**: a loaded list stays on screen
+ *   while it fetches and keeps its rows when the fetch fails.
+ * - **`removeItem` / `upsertItem` edit a loaded list in place**, keeping
+ *   `total` in step (never below zero); before a list loads they do nothing.
  */
 export class PagedListLoader<T> {
   private generation = ValueConstants.zero;
@@ -65,6 +70,40 @@ export class PagedListLoader<T> {
     const latest = this.read();
     if (latest.status !== StoreStatus.Loaded) return;
     this.write(result.ok ? appendedList(latest, result.value, this.keyOf) : { ...latest, isLoadingMore: false, moreFailure: result.failure });
+  }
+
+  /** The first page again; a loaded list keeps showing (and keeps its rows on failure) instead of a spinner. */
+  async refresh(fetchPage: PageFetch<T>): Promise<void> {
+    if (this.read().status !== StoreStatus.Loaded) return this.load(fetchPage);
+    this.generation += ValueConstants.one;
+    const token = this.generation;
+    this.fetchPage = fetchPage;
+    const result = await fetchPage(FIRST_PAGE);
+    if (token !== this.generation) return;
+    const latest = this.read();
+    if (result.ok) this.write(loadedList(result.value));
+    else if (latest.status === StoreStatus.Loaded) this.write({ ...latest, isLoadingMore: false });
+  }
+
+  removeItem(key: string): void {
+    const current = this.read();
+    if (current.status !== StoreStatus.Loaded) return;
+    const items = current.items.filter((item) => this.keyOf(item) !== key);
+    if (items.length === current.items.length) return;
+    this.write({ ...current, items, total: Math.max(ValueConstants.zero, current.total - ValueConstants.one) });
+  }
+
+  /** Replaces the row with the same key where it stands, or adds it at `position` and counts it. */
+  upsertItem(item: T, position: ListPositionType = ListPosition.Start): void {
+    const current = this.read();
+    if (current.status !== StoreStatus.Loaded) return;
+    const key = this.keyOf(item);
+    if (current.items.some((existing) => this.keyOf(existing) === key)) {
+      this.write({ ...current, items: current.items.map((existing) => (this.keyOf(existing) === key ? item : existing)) });
+      return;
+    }
+    const items = position === ListPosition.Start ? [item, ...current.items] : [...current.items, item];
+    this.write({ ...current, items, total: current.total + ValueConstants.one });
   }
 
   /** Back to idle; anything in flight is dropped. */
