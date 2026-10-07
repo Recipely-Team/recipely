@@ -1,0 +1,7 @@
+{
+  "name": "recipely-window-posture",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Reports the fold or hinge crossing the app's window (Jetpack WindowManager FoldingFeature) on Android. iOS has no foldables; the JavaScript half answers null there.",
+  "main": "index.ts"
+}

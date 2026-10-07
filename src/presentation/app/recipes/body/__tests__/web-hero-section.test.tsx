@@ -96,6 +96,7 @@ const layoutAt = (width: number): LayoutContextValue => ({
   isWebShell: true,
   isExpanded: true,
   isCompact: false,
+  fold: null,
 });
 
 const renderBand = (state: TrendingRecipesState): ReactTestInstance => {

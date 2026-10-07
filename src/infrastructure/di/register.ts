@@ -36,6 +36,7 @@ import { NotificationService } from '@infrastructure/notifications/notification-
 import { AlarmAudioService } from '@infrastructure/audio/alarm-audio-service';
 import { AdsService } from '@infrastructure/ads/ads-service';
 import { OsAssistantBridge } from '@infrastructure/assistant/os/os-assistant-bridge';
+import { WindowPostureBridge } from '@infrastructure/display/window-posture-bridge';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
 import { AssistantTokenRepository } from '@infrastructure/assistant/token/assistant-token-repository';
 import { GeminiLiveSession } from '@live-assistant/gemini';
@@ -91,6 +92,8 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   );
   // OS assistant integrations behind a port; the web half reports unavailable.
   container.register(TOKENS.OsAssistant, () => new OsAssistantBridge());
+  // Fold and hinge posture; the web half reads the Viewport Segments API.
+  container.register(TOKENS.WindowPosture, () => new WindowPostureBridge());
   container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
 
   // The single source of the active language.

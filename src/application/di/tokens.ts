@@ -57,4 +57,5 @@ export const TOKENS = {
   AssistantTokenRepository: Symbol.for('AssistantTokenRepository'),
   AssistantMessenger: Symbol.for('AssistantMessenger'),
   OsAssistant: Symbol.for('OsAssistant'),
+  WindowPosture: Symbol.for('WindowPosture'),
 } as const;

@@ -1,0 +1,23 @@
+plugins {
+  id 'com.android.library'
+  id 'expo-module-gradle-plugin'
+}
+
+group = 'net.recipely'
+version = '0.1.0'
+
+android {
+  namespace "net.recipely.windowposture"
+  defaultConfig {
+    versionCode 1
+    versionName "0.1.0"
+  }
+}
+
+dependencies {
+  // FoldingFeature: hinge bounds, orientation, state, isSeparating.
+  implementation "androidx.window:window:1.5.1"
+  // repeatOnLifecycle: collect the layout flow only while the activity is started.
+  implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.8.3"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0"
+}
