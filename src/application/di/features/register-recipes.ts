@@ -20,6 +20,7 @@ import { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-u
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
@@ -71,8 +72,10 @@ export const registerRecipes = (
   const recipeDetailStore = configureRecipeDetailStore({
     getRecipe: new GetRecipeUseCase(recipeRepo),
     addRecipePhoto: new AddRecipePhotoUseCase(recipeRepo),
-    removeRecipePhoto: new RemoveRecipePhotoUseCase(recipeRepo),
-    removeRecipeCover: new RemoveRecipeCoverUseCase(recipeRepo),
+    removeRecipeMedia: new RemoveRecipeMediaUseCase(
+      new RemoveRecipePhotoUseCase(recipeRepo),
+      new RemoveRecipeCoverUseCase(recipeRepo),
+    ),
   });
   const recipePublishingStore = configureRecipePublishingStore({
     publishRecipe: new PublishRecipeUseCase(recipeRepo),

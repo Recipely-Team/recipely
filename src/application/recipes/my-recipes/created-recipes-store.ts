@@ -1,9 +1,9 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
-import { UnknownFailure } from '@core/failure';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import type { Failure } from '@core/failure';
+import type { Result } from '@core/result/result';
+import { RequestEpoch } from '@application/store/request-epoch';
 import { create } from 'zustand';
-import { ValueConstants } from '@core/constants';
 import { recipeToSummary } from '@domain/recipes/recipe-to-summary';
 import type { CreatedRecipesStoreState } from '@application/recipes/my-recipes/created-recipes-store-state';
 import type { CreateRecipeUseCase } from '@application/recipes/create/create-recipe-use-case';
@@ -14,6 +14,10 @@ import type { RefineRecipeUseCase } from '@application/recipes/refine/refine-rec
 import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-recipe-use-case';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
+import type { CreateRecipeState } from '@application/recipes/create/create-recipe-state';
+import type { GenerateRecipeState } from '@application/recipes/generate/generate-recipe-state';
+import type { RefineRecipeState } from '@application/recipes/refine/refine-recipe-state';
+import type { DeleteRecipeState } from '@application/recipes/delete/delete-recipe-state';
 
 interface CreatedRecipesStoreDeps {
   createRecipeUseCase: CreateRecipeUseCase;
@@ -27,13 +31,33 @@ interface CreatedRecipesStoreDeps {
   recipeDetailStore: BoundStore<RecipeDetailStoreState>;
 }
 
+/** The failed variant every operation state in this store shares. */
+type OperationFailed = { status: typeof StoreStatus.Error; failure: Failure };
+
+/**
+ * One operation's state walk: busy, then the use case, then `Error` or what `onOk` builds
+ * from the value (after its side effects). Answers the value, or `null` on failure.
+ */
+const runOperation = async <S, T>(
+  write: (state: S | OperationFailed) => void,
+  busy: NoInfer<S>,
+  call: Promise<Result<T, Failure>>,
+  onOk: (value: T) => NoInfer<S>,
+): Promise<T | null> => {
+  write(busy);
+  const result = await call;
+  if (!result.ok) {
+    write({ status: StoreStatus.Error, failure: result.failure });
+    return null;
+  }
+  write(onOk(result.value));
+  return result.value;
+};
+
 export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): BoundStore<CreatedRecipesStoreState> => {
-  /**
-   * Bumped by `clear()`. A list load that started under an earlier session must
-   * not publish its answer — signing out mid-request put the previous account's
-   * recipes back into the grid.
-   */
-  let session = ValueConstants.zero;
+  // `clear()` invalidates it: a list load from an earlier session must not put that account's recipes back.
+  const listEpoch = new RequestEpoch();
+
 
   return create<CreatedRecipesStoreState>((set, get) => ({
     recipes: [],
@@ -60,94 +84,76 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
         recipes: s.recipes.filter((r) => r.id !== id),
       })),
     findById: (id) => get().localRecipes.find((r) => r.id === id),
-    // Any throw must still end in a terminal status, or the publish button stays busy.
     createRecipe: async (input, onProgress) => {
-      set({ createState: { status: StoreStatus.Creating } });
-      try {
-        const result = await deps.createRecipeUseCase.execute(input, onProgress);
-        if (!result.ok) {
-          set({ createState: { status: StoreStatus.Error, failure: result.failure } });
-          return;
-        }
-        const recipe = result.value;
-        get().add(recipe);
-        // The saved recipe's page opens next, and its status panel reads this cache.
-        deps.recipeDetailStore.getState().put(recipe);
-        set({ createState: { status: StoreStatus.Success, recipe } });
-      } catch (error) {
-        set({
-          createState: {
-            status: StoreStatus.Error,
-            failure: new UnknownFailure(DiagnosticMessage.recipeCreate.threw, error),
-          },
-        });
-      }
+      await runOperation(
+        (createState: CreateRecipeState) => set({ createState }),
+        { status: StoreStatus.Creating },
+        deps.createRecipeUseCase.execute(input, onProgress),
+        (recipe) => {
+          get().add(recipe);
+          // The saved recipe's page opens next, and its status panel reads this cache.
+          deps.recipeDetailStore.getState().put(recipe);
+          return { status: StoreStatus.Success, recipe };
+        },
+      );
     },
     loadMyRecipes: async () => {
-      const requested = session;
+      const isCurrent = listEpoch.start();
       // Only the first load shows a skeleton; reloads keep the rows.
       if (get().myRecipesState.status !== StoreStatus.Loaded) {
         set({ myRecipesState: { status: StoreStatus.Loading } });
       }
       const result = await deps.listMyRecipesUseCase.execute();
-      if (requested !== session) return;
+      if (!isCurrent()) return;
       if (!result.ok) {
         set({ myRecipesState: { status: StoreStatus.Error, failure: result.failure } });
         return;
       }
       set({ recipes: result.value.items, myRecipesState: { status: StoreStatus.Loaded } });
     },
+    // Generated and imported recipes are previews (not persisted): aiDraft only, never in the list.
     generateRecipe: async (prompt) => {
-      set({ generateState: { status: StoreStatus.Generating } });
-      const result = await deps.generateRecipeUseCase.execute({ prompt });
-      if (!result.ok) {
-        set({ generateState: { status: StoreStatus.Error, failure: result.failure } });
-        return;
-      }
-      const recipe = result.value;
-      // Generated recipes are previews (not persisted): aiDraft only, never in the list.
-      set({
-        generateState: { status: StoreStatus.Success, recipe },
-        aiDraft: recipe,
-      });
+      await runOperation(
+        (generateState: GenerateRecipeState) => set({ generateState }),
+        { status: StoreStatus.Generating },
+        deps.generateRecipeUseCase.execute({ prompt }),
+        (recipe) => {
+          set({ aiDraft: recipe });
+          return { status: StoreStatus.Success, recipe };
+        },
+      );
     },
     importInstagram: async (url) => {
-      set({ importState: { status: StoreStatus.Generating } });
-      const result = await deps.importInstagramRecipeUseCase.execute({ url });
-      if (!result.ok) {
-        set({ importState: { status: StoreStatus.Error, failure: result.failure } });
-        return;
-      }
-      const recipe = result.value;
-      // Imported recipes are previews too: aiDraft only.
-      set({
-        importState: { status: StoreStatus.Success, recipe },
-        aiDraft: recipe,
-      });
+      await runOperation(
+        (importState: GenerateRecipeState) => set({ importState }),
+        { status: StoreStatus.Generating },
+        deps.importInstagramRecipeUseCase.execute({ url }),
+        (recipe) => {
+          set({ aiDraft: recipe });
+          return { status: StoreStatus.Success, recipe };
+        },
+      );
     },
-    refineRecipe: async (currentRecipe, instruction, history) => {
-      set({ refineState: { status: StoreStatus.Refining } });
-      const result = await deps.refineRecipeUseCase.execute({ currentRecipe, instruction, history });
-      if (!result.ok) {
-        set({ refineState: { status: StoreStatus.Error, failure: result.failure } });
-        return null;
-      }
-      const refined = result.value;
-      // Refine returns a preview: refineState only.
-      set({ refineState: { status: StoreStatus.Success, recipe: refined.recipe } });
-      return refined;
-    },
+    // Refine returns a preview: refineState only.
+    refineRecipe: (currentRecipe, instruction, history) =>
+      runOperation(
+        (refineState: RefineRecipeState) => set({ refineState }),
+        { status: StoreStatus.Refining },
+        deps.refineRecipeUseCase.execute({ currentRecipe, instruction, history }),
+        (refined) => ({ status: StoreStatus.Success, recipe: refined.recipe }),
+      ),
     deleteRecipe: async (id) => {
-      set({ deleteState: { status: StoreStatus.Deleting } });
-      const result = await deps.deleteRecipeUseCase.execute(id);
-      if (!result.ok) {
-        set({ deleteState: { status: StoreStatus.Error, failure: result.failure } });
-        return;
-      }
-      get().remove(id);
-      deps.recipeListStore.getState().remove(id);
-      deps.recipeDetailStore.getState().remove(id);
-      set({ deleteState: { status: StoreStatus.Success } });
+      await runOperation(
+        (deleteState: DeleteRecipeState) => set({ deleteState }),
+        { status: StoreStatus.Deleting },
+        deps.deleteRecipeUseCase.execute(id),
+        () => {
+          get().remove(id);
+          deps.recipeListStore.getState().remove(id);
+          deps.recipeDetailStore.getState().remove(id);
+          return { status: StoreStatus.Success };
+        },
+      );
     },
     resetCreateState: () => set({ createState: { status: StoreStatus.Idle } }),
     resetGenerateState: () => set({ generateState: { status: StoreStatus.Idle } }),
@@ -156,7 +162,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     resetDeleteState: () => set({ deleteState: { status: StoreStatus.Idle } }),
     clearAiDraft: () => set({ aiDraft: null }),
     clear: () => {
-      session += ValueConstants.one;
+      listEpoch.invalidate();
       set({
         recipes: [],
         myRecipesState: { status: StoreStatus.Idle },

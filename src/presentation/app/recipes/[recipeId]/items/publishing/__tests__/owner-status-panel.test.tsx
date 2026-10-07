@@ -14,6 +14,7 @@ import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-cas
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
@@ -52,8 +53,7 @@ const render = (overrides: Partial<RecipeEntityProps> = {}) => {
   const recipeDetailStore = configureRecipeDetailStore({
     getRecipe: new GetRecipeUseCase(repo),
     addRecipePhoto: new AddRecipePhotoUseCase(repo),
-    removeRecipePhoto: new RemoveRecipePhotoUseCase(repo),
-    removeRecipeCover: new RemoveRecipeCoverUseCase(repo),
+    removeRecipeMedia: new RemoveRecipeMediaUseCase(new RemoveRecipePhotoUseCase(repo), new RemoveRecipeCoverUseCase(repo)),
   });
   recipeDetailStore.getState().put(recipe);
   const recipePublishingStore = configureRecipePublishingStore({

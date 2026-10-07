@@ -45,12 +45,12 @@ interface StubConfig {
   remove?: Result<void, Failure>;
 }
 
-const pageOf = (items: CommentView[], total = items.length, page = 1): Page<CommentView> => ({
+const pageOf = (items: CommentView[], total = items.length, page = 1, pageSize = 20): Page<CommentView> => ({
   items,
   total,
   page,
-  pageSize: 20,
-  hasMore: items.length < total,
+  pageSize,
+  hasMore: page * pageSize < total,
 });
 
 const makeStore = (config: StubConfig) => {
@@ -220,7 +220,7 @@ describe('commentsStore.load / loadMore', () => {
       seed: [],
       list: (_recipeId, page) => {
         requested.push(page);
-        return Promise.resolve(ok(pageOf(pages[page] ?? [], 2, page)));
+        return Promise.resolve(ok(pageOf(pages[page] ?? [], 2, page, 1)));
       },
     });
 
@@ -315,5 +315,57 @@ describe('commentsStore.addComment / deleteComment', () => {
     expect(deleted).toBe(true);
     expect(thread.items.map((c) => c.comment.id)).toEqual(['c2']);
     expect(thread.total).toBe(1);
+  });
+});
+
+/**
+ * A fake backend thread paged two at a time, newest first, that takes adds and
+ * deletes, so a page fetched after either sees the shifted offsets.
+ */
+const PAGE_SIZE = 2;
+const serverThread = (ids: string[]) => {
+  const rows = ids.map((id) => makeComment({ id }));
+  const list = (_recipeId: string, page: number): Promise<Result<Page<CommentView>, Failure>> => {
+    const start = (page - 1) * PAGE_SIZE;
+    return Promise.resolve(ok({
+      items: rows.slice(start, start + PAGE_SIZE),
+      total: rows.length,
+      page,
+      pageSize: PAGE_SIZE,
+      hasMore: start + PAGE_SIZE < rows.length,
+    }));
+  };
+  return { rows, list };
+};
+
+describe('commentsStore — a write before the next page', () => {
+  // Regression: loadMore asked for `page + 1` and appended without de-dup, so
+  // after posting a comment the row it pushed onto page 2 was shown twice.
+  it('a comment posted before "load more" does not show an older comment twice', async () => {
+    const server = serverThread(['c1', 'c2', 'c3', 'c4']);
+    const created = makeComment({ id: 'new' });
+    const { store } = makeStore({ seed: [], list: server.list, add: ok(created.comment) });
+    await store.getState().load(RECIPE_ID);
+
+    await store.getState().addComment(RECIPE_ID, 'Lovely');
+    server.rows.unshift(created);
+    await store.getState().loadMore(RECIPE_ID);
+
+    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['new', 'c1', 'c2', 'c3']);
+  });
+
+  // Regression: after a delete every later row moved up one on the server,
+  // so `page + 1` started one row too late and that comment was never shown.
+  it('a comment deleted before "load more" does not hide the next comment', async () => {
+    const server = serverThread(['c1', 'c2', 'c3', 'c4']);
+    const { store } = makeStore({ seed: [], list: server.list, remove: ok(undefined) });
+    await store.getState().load(RECIPE_ID);
+
+    await store.getState().deleteComment(RECIPE_ID, 'c1');
+    server.rows.shift();
+    await store.getState().loadMore(RECIPE_ID);
+    await store.getState().loadMore(RECIPE_ID);
+
+    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['c2', 'c3', 'c4']);
   });
 });

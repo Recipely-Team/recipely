@@ -13,10 +13,12 @@ import { RequestEpoch } from '@application/store/request-epoch';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
-import { PageSizes } from '@application/config/page-sizes';
+import type { CountUnreadNotificationsUseCase } from '@application/notifications/list/count-unread-notifications-use-case';
+import { NotificationInbox } from '@domain/notifications/notification-inbox';
 
 interface NotificationsStoreDeps {
   listNotifications: ListNotificationsUseCase;
+  countUnread: CountUnreadNotificationsUseCase;
   markAllRead: MarkAllReadUseCase;
   markOneRead: MarkOneReadUseCase;
 }
@@ -29,7 +31,7 @@ interface NotificationsStoreDeps {
  * - **The feed is paged**: `load` reads the first page, `loadMore` the next on
  *   scroll (`PagedListLoader`); every page also refreshes the badge.
  * - **`refreshUnread`** keeps the badge current without the feed (the app-wide poller).
- * - **Marks are optimistic**; on failure a loaded feed is re-read so the source of truth wins.
+ * - **Marks are optimistic** through a `NotificationInbox`; on failure a loaded feed is re-read so the source of truth wins.
  * - **Session guard**: `clear()` resets the loader and the badge epoch, so an
  *   answer in flight at sign-out never writes the old account back.
  */
@@ -52,6 +54,19 @@ export const configureNotificationsStore = (
       if (get().state.status === StoreStatus.Loaded) await feed.refresh(fetchPage);
     };
 
+    /** The loaded rows (none before the first page) with the badge, as one read model. */
+    const inbox = (): NotificationInbox => {
+      const { state, unreadCount } = get();
+      return NotificationInbox.of(state.status === StoreStatus.Loaded ? state.items : [], unreadCount);
+    };
+
+    const show = (next: NotificationInbox): void => {
+      const state = get().state;
+      set(state.status === StoreStatus.Loaded
+        ? { state: { ...state, items: next.items }, unreadCount: next.unreadCount }
+        : { unreadCount: next.unreadCount });
+    };
+
     return {
       state: { status: StoreStatus.Idle },
       unreadCount: ValueConstants.zero,
@@ -59,30 +74,25 @@ export const configureNotificationsStore = (
       loadMore: () => feed.loadMore(),
       refreshUnread: async () => {
         const isCurrent = badge.start();
-        const result = await deps.listNotifications.execute({ pageSize: PageSizes.unreadProbe });
-        if (result.ok && isCurrent()) set({ unreadCount: result.value.unreadCount });
+        const result = await deps.countUnread.execute();
+        if (result.ok && isCurrent()) set({ unreadCount: result.value });
       },
       markAllRead: async () => {
         badge.invalidate();
-        const current = get().state;
-        if (current.status === StoreStatus.Loaded) set({ state: { ...current, items: current.items.map((n) => n.asRead()) } });
-        set({ unreadCount: ValueConstants.zero });
+        const wasLoaded = get().state.status === StoreStatus.Loaded;
+        show(inbox().markAllRead());
         const result = await deps.markAllRead.execute();
         if (result.ok) return;
-        if (current.status === StoreStatus.Loaded) await reread();
+        if (wasLoaded) await reread();
         else await get().refreshUnread();
       },
       markOneRead: async (id: string) => {
-        const current = get().state;
-        if (current.status !== StoreStatus.Loaded) return;
-        const target = current.items.find((n) => n.id === id);
-        if (target === undefined || target.read) return;
+        const before = inbox();
+        const next = before.markRead(id);
+        if (next === before) return;
         // A poll already in flight carries the count from before this mark.
         badge.invalidate();
-        set({
-          state: { ...current, items: current.items.map((n) => (n.id === id ? n.asRead() : n)) },
-          unreadCount: Math.max(ValueConstants.zero, get().unreadCount - ValueConstants.one),
-        });
+        show(next);
         const result = await deps.markOneRead.execute(id);
         if (!result.ok) await reread();
       },

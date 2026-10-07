@@ -63,7 +63,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   ) {}
 
   async signIn(email: string, password: string): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.login, { email: email.trim(), password, ...(await this.deviceField()) } satisfies SignInRequestDto);
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.login, { email, password, ...(await this.deviceField()) } satisfies SignInRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -75,18 +75,18 @@ export class AuthRepository implements AuthRepositoryInterface {
     password: string,
     displayName: string,
   ): Promise<Result<RegistrationChallenge, Failure>> {
-    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.register, { email: email.trim(), password, displayName } satisfies RegisterRequestDto);
+    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.register, { email, password, displayName } satisfies RegisterRequestDto);
     if (!result.ok) {
       return result;
     }
-    return ok(toChallenge(email.trim(), result.value));
+    return ok(toChallenge(email, result.value));
   }
 
   async verifyRegistration(
     email: string,
     code: string,
   ): Promise<Result<AuthSessionEntity, Failure>> {
-    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email: email.trim(), code: code.trim(), ...(await this.deviceField()) } satisfies VerifyRegistrationRequestDto);
+    const result = await this.http.post<RecipelyAuthSessionDto>(ApiRoutes.auth.registerVerify, { email, code: code.trim(), ...(await this.deviceField()) } satisfies VerifyRegistrationRequestDto);
     if (!result.ok) {
       return result;
     }
@@ -96,11 +96,11 @@ export class AuthRepository implements AuthRepositoryInterface {
   async resendRegistrationCode(
     email: string,
   ): Promise<Result<RegistrationChallenge, Failure>> {
-    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.registerResend, { email: email.trim() } satisfies EmailOnlyRequestDto);
+    const result = await this.http.post<RegistrationChallengeDto>(ApiRoutes.auth.registerResend, { email } satisfies EmailOnlyRequestDto);
     if (!result.ok) {
       return result;
     }
-    return ok(toChallenge(email.trim(), result.value));
+    return ok(toChallenge(email, result.value));
   }
 
   async signInWithGoogle(): Promise<Result<AuthSessionEntity, Failure>> {
@@ -128,7 +128,7 @@ export class AuthRepository implements AuthRepositoryInterface {
   }
 
   async requestPasswordReset(email: string): Promise<Result<void, Failure>> {
-    const result = await this.http.post<void>(ApiRoutes.auth.forgotPassword, { email: email.trim() } satisfies EmailOnlyRequestDto);
+    const result = await this.http.post<void>(ApiRoutes.auth.forgotPassword, { email } satisfies EmailOnlyRequestDto);
     if (!result.ok) {
       return result;
     }

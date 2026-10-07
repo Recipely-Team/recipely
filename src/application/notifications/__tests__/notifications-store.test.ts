@@ -1,5 +1,6 @@
 import type { NotificationListResult as ListNotificationsResult } from "@domain/notifications/notification-list-result";
 import type { ListNotificationsUseCase } from "@application/notifications/list/list-notifications-use-case";
+import type { CountUnreadNotificationsUseCase } from "@application/notifications/list/count-unread-notifications-use-case";
 import { configureNotificationsStore } from "@application/notifications/notifications-store";
 import type { MarkAllReadUseCase } from "@application/notifications/read/mark-all-read-use-case";
 import type { MarkOneReadUseCase } from "@application/notifications/read/mark-one-read-use-case";
@@ -37,21 +38,32 @@ interface StubConfig {
 
 const makeStore = (config: StubConfig) => {
   const listResults = config.listResults ?? [];
-  const listInputs: { page?: number; pageSize?: number }[] = [];
+  const listInputs: { page?: number }[] = [];
   let listIndex = 0;
+  let countCalls = 0;
   let markCalls = 0;
   const markOneIds: string[] = [];
 
+  const nextList = (): Result<ListNotificationsResult, Failure> => {
+    const result = listResults[Math.min(listIndex, listResults.length - 1)];
+    listIndex++;
+    return result ?? fail(new NetworkFailure("not configured"));
+  };
+
   const listNotifications = {
-    execute: (input: { page?: number; pageSize?: number } = {}) => {
+    execute: (input: { page?: number } = {}) => {
       listInputs.push(input);
-      const result = listResults[Math.min(listIndex, listResults.length - 1)];
-      listIndex++;
-      return Promise.resolve(
-        result ?? fail(new NetworkFailure("not configured")),
-      );
+      return Promise.resolve(nextList());
     },
   } as unknown as ListNotificationsUseCase;
+
+  const countUnread = {
+    execute: () => {
+      countCalls++;
+      const result = nextList();
+      return Promise.resolve(result.ok ? ok(result.value.unreadCount) : result);
+    },
+  } as unknown as CountUnreadNotificationsUseCase;
 
   const markAllRead = {
     execute: () => {
@@ -69,10 +81,11 @@ const makeStore = (config: StubConfig) => {
 
   const store = configureNotificationsStore({
     listNotifications,
+    countUnread,
     markAllRead,
     markOneRead,
   });
-  return { store, listInputs, markCallCount: () => markCalls, markOneIds };
+  return { store, listInputs, countCallCount: () => countCalls, markCallCount: () => markCalls, markOneIds };
 };
 
 const loaded = (
@@ -96,15 +109,15 @@ describe("notifications store — load", () => {
 
 describe("notifications store — refreshUnread", () => {
   it("updates only the unreadCount and leaves the feed untouched", async () => {
-    const { store, listInputs } = makeStore({ listResults: [loaded([], 7)] });
+    const { store, listInputs, countCallCount } = makeStore({ listResults: [loaded([], 7)] });
 
     await store.getState().refreshUnread();
 
     expect(store.getState().unreadCount).toBe(7);
     // Feed was never loaded, so it must remain idle.
     expect(store.getState().state.status).toBe("idle");
-    // Should request the minimum page.
-    expect(listInputs[0]).toEqual({ pageSize: 1 });
+    expect(countCallCount()).toBe(1);
+    expect(listInputs).toEqual([]);
   });
 
   it("keeps the previous count when the refresh request fails", async () => {
@@ -237,6 +250,7 @@ describe("notifications store — sign-out", () => {
     const pending = new Promise<Result<ListNotificationsResult, Failure>>((r) => { resolve = r; });
     const store = configureNotificationsStore({
       listNotifications: { execute: () => pending } as unknown as ListNotificationsUseCase,
+      countUnread: {} as CountUnreadNotificationsUseCase,
       markAllRead: {} as MarkAllReadUseCase,
       markOneRead: {} as MarkOneReadUseCase,
     });

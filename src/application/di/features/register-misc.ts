@@ -6,6 +6,7 @@ import type { UserProfileRepositoryInterface } from '@domain/user-profile/user-p
 import type { TaxonomyRepositoryInterface } from '@domain/recipes/taxonomy/taxonomy-repository-interface';
 import type { FeedbackRepositoryInterface } from '@domain/feedback/feedback-repository-interface';
 import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
+import { CountUnreadNotificationsUseCase } from '@application/notifications/list/count-unread-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
 import { configureNotificationsStore } from '@application/notifications/notifications-store';
@@ -39,6 +40,7 @@ export const registerMisc = (
 
   const notificationsStore = configureNotificationsStore({
     listNotifications: new ListNotificationsUseCase(notificationRepo),
+    countUnread: new CountUnreadNotificationsUseCase(notificationRepo),
     markAllRead: new MarkAllReadUseCase(notificationRepo),
     markOneRead: new MarkOneReadUseCase(notificationRepo),
   });

@@ -3,8 +3,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { ok } from '@core/result/result-helpers';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
-import type { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
-import type { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import type { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 
 /** The viewer's like rides beside the recipe in store state, never inside the entity (rule 19). */
@@ -17,8 +16,7 @@ const storeWith = (likedByMe: boolean) =>
       execute: async (id: string) => ok({ recipe: recipeEntityOf({ id }), likedByMe }),
     } as unknown as GetRecipeUseCase,
     addRecipePhoto: {} as AddRecipePhotoUseCase,
-    removeRecipePhoto: {} as RemoveRecipePhotoUseCase,
-    removeRecipeCover: {} as RemoveRecipeCoverUseCase,
+    removeRecipeMedia: {} as RemoveRecipeMediaUseCase,
   });
 
 describe('recipeDetailStore — the viewer\'s like', () => {

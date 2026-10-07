@@ -1,4 +1,5 @@
 import { CreatorNotificationType } from '@domain/notifications/creator-notification-type';
+import { ImportNotificationType } from '@domain/notifications/import-notification-type';
 
 export const NotifKind = {
   Comment: 'comment',
@@ -6,7 +7,7 @@ export const NotifKind = {
   Favorite: 'favorite',
   AiDone: 'ai_done',
   /** A queued Instagram import finished; the row opens the draft it produced. */
-  ImportDone: 'import_done',
+  ImportDone: ImportNotificationType.Done,
   /** A queued import that produced nothing — the server sends it as `import_done` with no draft and no recipe. */
   ImportFailed: 'import_failed',
   ModerationApproved: 'moderation_approved',

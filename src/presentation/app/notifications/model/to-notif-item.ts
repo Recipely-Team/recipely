@@ -57,28 +57,14 @@ function importSourceOf(notification: NotificationEntity): { source?: ImportSour
   return { source: handle === null ? { platform } : { platform, handle } };
 }
 
-/**
- * The server sends a failed import as `import_done` too, with neither a draft
- * nor a recipe behind it; read as it came, the row told the user their recipe
- * was ready and then went nowhere when tapped.
- */
+/** A failed import is its own kind; a type this build cannot draw falls back to `generic`. */
 function resolveKind(notification: NotificationEntity): NotifKind {
+  if (notification.isFailedImport) return NotifKind.ImportFailed;
   const raw = notification.type;
-  if (raw === NotifKind.ImportDone && notification.target === null) return NotifKind.ImportFailed;
   return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : NotifKind.Generic;
 }
 
 /** Whole days, which is all the date grouping and the row's caption need. */
 function daysSince(createdAt: Date): number {
-  const ms = Date.now() - createdAt.getTime();
-  return Math.max(
-    ValueConstants.zero,
-    Math.floor(
-      ms /
-        (TimeConstants.millisecondsPerSecond *
-          TimeConstants.secondsPerMinute *
-          TimeConstants.minutesPerHour *
-          TimeConstants.hoursPerDay),
-    ),
-  );
+  return Math.max(ValueConstants.zero, Math.floor((Date.now() - createdAt.getTime()) / TimeConstants.millisecondsPerDay));
 }

@@ -1,7 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import { ValueConstants } from '@core/constants';
+import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
@@ -13,12 +13,13 @@ export const configureSavedRecipesStore = (
   deps: SavedRecipesStoreDeps,
 ): BoundStore<SavedRecipesStoreState> => {
   /**
-   * Bumped by `clear()`. A load that started under an earlier session must not
-   * publish its answer: signing out while a favourites request was in flight
+   * Invalidated by `clear()`; a newer load also wins. A load that started under
+   * an earlier session must not publish its answer: signing out while a
+   * favourites request was in flight
    * repopulated the previous account's rows — and `savedIds` drives the
    * bookmark on every recipe card in the app.
    */
-  let session = ValueConstants.zero;
+  const epoch = new RequestEpoch();
 
   return create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
@@ -57,13 +58,13 @@ export const configureSavedRecipesStore = (
         listState: { status: StoreStatus.Loaded },
       }),
     loadSaved: async () => {
-      const requested = session;
+      const isCurrent = epoch.start();
       // Only the first load shows a skeleton.
       if (get().listState.status !== StoreStatus.Loaded) {
         set({ listState: { status: StoreStatus.Loading } });
       }
       const result = await deps.loadFavoritesUseCase.execute();
-      if (requested !== session) return result;
+      if (!isCurrent()) return result;
       if (!result.ok) {
         // A failed reload keeps the rows.
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
@@ -73,7 +74,7 @@ export const configureSavedRecipesStore = (
       return result;
     },
     clear: () => {
-      session += ValueConstants.one;
+      epoch.invalidate();
       set({
         savedRecipes: [],
         savedIds: new Set<string>(),

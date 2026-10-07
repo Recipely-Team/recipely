@@ -1,6 +1,6 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { RequestPasswordResetUseCase } from '@application/auth/password-reset/request-password-reset-use-case';
-import { NetworkFailure } from '@core/failure';
+import { FailureCode, NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 
 describe('RequestPasswordResetUseCase', () => {
@@ -42,5 +42,35 @@ describe('RequestPasswordResetUseCase', () => {
     await useCase.execute('reset@example.com');
 
     expect(calls).toEqual(['reset@example.com']);
+  });
+
+  it('trims the address before it reaches the repository', async () => {
+    const calls: string[] = [];
+    const repo = new (class extends FakeAuthRepository {
+      override requestPasswordReset(email: string) {
+        calls.push(email);
+        return Promise.resolve(ok(undefined));
+      }
+    })();
+
+    await new RequestPasswordResetUseCase(repo).execute(' reset@example.com ');
+
+    expect(calls).toEqual(['reset@example.com']);
+  });
+
+  it('fails a malformed address client-side without a request', async () => {
+    const calls: string[] = [];
+    const repo = new (class extends FakeAuthRepository {
+      override requestPasswordReset(email: string) {
+        calls.push(email);
+        return Promise.resolve(ok(undefined));
+      }
+    })();
+
+    const result = await new RequestPasswordResetUseCase(repo).execute('not-an-email');
+
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.failure.code).toBe(FailureCode.Validation);
+    expect(calls).toEqual([]);
   });
 });
