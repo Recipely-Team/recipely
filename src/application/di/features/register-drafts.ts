@@ -12,17 +12,12 @@ import { configureDraftsStore } from '@application/drafts/drafts-store';
 /** **Drafts composition** — the recipe-draft store and its use cases. */
 export const registerDrafts = (container: Container): Pick<ApplicationStores, 'draftsStore'> => {
   const draftRepo = container.resolve<RecipeDraftRepositoryInterface>(TOKENS.RecipeDraftRepository);
-  const listDraftsUseCase = new ListDraftsUseCase(draftRepo);
-  const getLatestDraftUseCase = new GetLatestDraftUseCase(draftRepo);
-  const getDraftUseCase = new GetDraftUseCase(draftRepo);
-  const upsertDraftUseCase = new UpsertDraftUseCase(draftRepo);
-  const deleteDraftUseCase = new DeleteDraftUseCase(draftRepo);
   const draftsStore = configureDraftsStore({
-    listDraftsUseCase,
-    getLatestDraftUseCase,
-    getDraftUseCase,
-    upsertDraftUseCase,
-    deleteDraftUseCase,
+    listDraftsUseCase: new ListDraftsUseCase(draftRepo),
+    getLatestDraftUseCase: new GetLatestDraftUseCase(draftRepo),
+    getDraftUseCase: new GetDraftUseCase(draftRepo),
+    upsertDraftUseCase: new UpsertDraftUseCase(draftRepo),
+    deleteDraftUseCase: new DeleteDraftUseCase(draftRepo),
   });
   return { draftsStore };
 };
