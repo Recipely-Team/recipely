@@ -149,8 +149,9 @@ rest into ordinary integration work.
 
 ## 6. Voice assistant that drives the app (Gemini Live API)
 
-**Status:** `shaped` — full plan in
-[voice-assistant-plan.md](voice-assistant-plan.md) · **Extends:** the refine chat
+**Status:** `shipped` (dev, 2026-08) — the library is
+[Recipely-Team/live-assistant](https://github.com/Recipely-Team/live-assistant); one gap left on
+Android: [android-echo-cancellation.md](android-echo-cancellation.md) · **Extends:** the refine chat
 in §4, which already established propose-then-confirm
 
 A text **and** voice assistant that can do everything the app does — create,
@@ -238,6 +239,14 @@ of a blog link.
 A public `recipely.net/@handle` page listing a creator's recipes, with follow
 and a "new recipe" notification to followers. Creators verify their account
 and imported recipes from their own Reels are attributed to them.
+
+## 11. Recipely Kitchen: curated, copyright-free recipes
+
+**Status:** `building` — contract in [recipely-kitchen-contract.md](recipely-kitchen-contract.md);
+the first 33 recipes are in the backend's `data/curated-recipes/`.
+
+Recipes Recipely publishes itself under the official account, with original steps, USDA
+nutrition and freely licensed, credited photos.
 
 ## Adding to this file
 
