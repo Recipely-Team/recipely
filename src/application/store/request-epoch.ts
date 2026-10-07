@@ -9,6 +9,9 @@ import { ValueConstants } from '@core/constants';
  *   `start()` or an `invalidate()` makes every earlier check false.
  * - **`invalidate()` is the session guard**: a store's `clear()` on sign-out
  *   calls it, so nothing in flight writes the old account back.
+ * - **`current()` joins the epoch without opening a request**: writes that may
+ *   overlap (two saves, an add and a tick) each keep their check, and only an
+ *   `invalidate()` (or a `start()`) drops them.
  * - Replaces the hand-rolled `let session = 0; const requested = session;
  *   if (requested !== session) return` pattern.
  */
@@ -17,6 +20,11 @@ export class RequestEpoch {
 
   start(): () => boolean {
     this.epoch += ValueConstants.one;
+    const mine = this.epoch;
+    return () => mine === this.epoch;
+  }
+
+  current(): () => boolean {
     const mine = this.epoch;
     return () => mine === this.epoch;
   }

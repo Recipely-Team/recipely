@@ -1604,7 +1604,12 @@ function openingTag(src, at) {
   };
   // Every path except Firebase's reserved /__/ (its auth handler runs a per-request inline script our CSP cannot hash).
   const SITE_EXCEPT_RESERVED = '^/([^_].*|_[^_].*|_)?$';
-  const firebase = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
+  const firebaseText = fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8');
+  // RNFirebase's iOS build phase pastes firebase.json into a single-quoted Ruby string: one raw ' fails every iOS build.
+  if (firebaseText.includes("'")) {
+    errors.push("firebase.json: a raw apostrophe breaks the RNFirebase iOS build script — write it as \\u0027 (the CSP's 'self' etc.)");
+  }
+  const firebase = JSON.parse(firebaseText);
   const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
   for (const target of targets) {
     if ((target.headers ?? []).some((h) => h.source === '**' && h.headers.some((x) => x.key === 'Content-Security-Policy'))) {

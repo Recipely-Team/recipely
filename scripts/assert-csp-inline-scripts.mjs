@@ -88,7 +88,8 @@ for (const target of targets) {
 }
 
 if (write) {
-  fs.writeFileSync(FIREBASE, `${JSON.stringify(firebase, null, 2)}\n`);
+  // No raw apostrophe: the RNFirebase iOS build script pastes this file inside a single-quoted Ruby string (rule AN).
+  fs.writeFileSync(FIREBASE, `${JSON.stringify(firebase, null, 2).replaceAll("'", '\\u0027')}\n`);
   console.log(`assert-csp-inline-scripts: wrote ${String(hashes.size)} hash(es) into firebase.json`);
 }
 if (failures.length > 0) {

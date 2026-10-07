@@ -577,6 +577,18 @@ sign-out does not bring back the previous account's resume card"
 back" (`comments-store.test.ts`), all red without the fix. **Every write after an
 `await` in a user-scoped store needs the guard — not only the list loads.**
 
+**And in four more, found by review pass 2**: a draft save, a shopping add or tick or
+edit, and a like toggle each wrote their answer after sign-out (into the next account's
+list once it loaded), and a latest-draft answer in flight brought back the resume card
+of a draft just deleted. *Guard:* `RequestEpoch.current()` — a session check that
+overlapping writes share without cancelling each other, dropped by `clear()` — plus a
+per-session set of deleted draft ids. Covered by "a draft save that lands after sign-out
+does not join the next account's list", "a deleted draft's resume card does not come
+back from a latest-draft answer in flight" (`drafts-store.test.ts`), "an add that lands
+after sign-out does not join the next account's list" (`shopping-list-store.test.ts`)
+and "a like answer that lands after sign-out does not write the old account's like
+back" (`set-liked.test.ts`), all red without the fix.
+
 ---
 
 ## Two timers, one effect, and a checklist that never moved
@@ -2597,3 +2609,27 @@ hook also refuses `git add -A` / `.` / `-u` and `git commit -a`.
   `likes-store.sync.test.ts`.
 
 *The class:* **a rule written in three places drifts in one of them; give it one home.**
+
+---
+
+## Every iOS build failed after the web CSP and Firebase 26 landed
+
+**Symptom:** caught in the closing visual check, before any release. `pod install`
+refused the Podfile ("Use dynamic linkage … or Opt out of SPM"), and once past that,
+xcodebuild stopped at "Failed to parse firebase.json, check for syntax errors". CI does
+not build iOS on `dev`, so nothing went red; the next `main` push would have shipped no
+TestFlight build.
+
+**Root cause:** two at once. React Native Firebase 26 resolves Firebase through Swift
+Package Manager by default, which does not combine with our static frameworks. And its
+iOS build phase pastes `firebase.json` into a single-quoted Ruby string, so the CSP's
+`'self'` / `'sha256-…'` (full CSP, #531) ended the string early.
+
+**Fix:** `"disableSPM": true` on the `@react-native-firebase/app` plugin in `app.json`;
+`firebase.json` writes every apostrophe as `\u0027` (same parsed value), and
+`assert-csp-inline-scripts.mjs --write` keeps it that way.
+
+**Guard:** `check:structure` rule AN fails on a raw apostrophe in `firebase.json`.
+Native-affecting changes (dependency majors, `app.json` plugins, `firebase.json`) get a
+local iOS and Android build before merge — the CI on `dev` builds neither.
+

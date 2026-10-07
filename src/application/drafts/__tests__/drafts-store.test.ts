@@ -368,4 +368,31 @@ describe("draftsStore resume card after sign-out", () => {
 
     expect(store.getState().latestDraft).toBeNull();
   });
+
+  // Review pass 2: the save added its row to whatever list was loaded when it landed — the next account's.
+  it("a draft save that lands after sign-out does not join the next account's list", async () => {
+    let answer: (value: Result<RecipeDraft, Failure>) => void = () => undefined;
+    const pending = new Promise<Result<RecipeDraft, Failure>>((resolve) => { answer = resolve; });
+    const store = makeStore({ listResult: ok(makePage([makeDraft("b")])), upsertResult: pending as unknown as Result<RecipeDraft, Failure> });
+    const saving = store.getState().upsertDraft({ id: "old", prompt: "p", snapshot: { name: "x" }, chatHistory: [] });
+    store.getState().clear();
+    await store.getState().loadDrafts();
+    answer(ok(makeDraft("old")));
+    await saving;
+
+    expect(ids(store.getState())).toEqual(["b"]);
+  });
+
+  // Review pass 2: a latest-draft answer already in flight brought back the card of the draft just deleted.
+  it("a deleted draft's resume card does not come back from a latest-draft answer in flight", async () => {
+    let answer: (value: Result<RecipeDraft | null, Failure>) => void = () => undefined;
+    const pending = new Promise<Result<RecipeDraft | null, Failure>>((resolve) => { answer = resolve; });
+    const store = makeStore({ latestResult: pending as unknown as Result<RecipeDraft | null, Failure> });
+    const loading = store.getState().loadLatestDraft();
+    await store.getState().deleteDraft("a");
+    answer(ok(makeDraft("a")));
+    await loading;
+
+    expect(store.getState().latestDraft).toBeNull();
+  });
 });
