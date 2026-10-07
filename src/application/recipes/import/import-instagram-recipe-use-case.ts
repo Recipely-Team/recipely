@@ -1,10 +1,8 @@
-import { fail } from '@core/result/result-helpers';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { fail, flatMapResult } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
+import type { Failure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
-
 import type { ImportInstagramRecipeInput } from '@application/recipes/import/import-instagram-recipe-input';
 import { ImportLink } from '@domain/recipes/import/import-link';
 import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
@@ -21,20 +19,8 @@ import { SourcePlatform } from '@domain/recipes/provenance/source-platform';
 export class ImportInstagramRecipeUseCase {
   constructor(private readonly repo: RecipeRepositoryInterface) {}
 
-  execute(input: ImportInstagramRecipeInput): Promise<Result<RecipeEntity, Failure>> {
-    const link = ImportLink.create(input.url);
-    if (!link.ok) return Promise.resolve(fail(link.failure));
-    if (link.value.platform !== SourcePlatform.Instagram) {
-      return Promise.resolve(
-        fail(
-          new ValidationFailure(
-            DiagnosticMessage.recipeImport.unsupportedSite(input.url.trim()),
-            undefined,
-            ErrorMessageKey.importUnsupportedSource,
-          ),
-        ),
-      );
-    }
-    return this.repo.importInstagramRecipe(link.value.value);
+  async execute(input: ImportInstagramRecipeInput): Promise<Result<RecipeEntity, Failure>> {
+    const link = flatMapResult(ImportLink.create(input.url), (l) => l.requirePlatform(SourcePlatform.Instagram));
+    return link.ok ? this.repo.importInstagramRecipe(link.value.value) : fail(link.failure);
   }
 }
