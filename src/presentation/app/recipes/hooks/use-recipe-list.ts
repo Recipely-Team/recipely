@@ -187,13 +187,13 @@ export const useRecipeList = (): UseRecipeListResult => {
   const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
   const [sheetOpen, setSheetOpen] = useState<RecipeSheet | null>(null);
 
-  // The grid card shows a Save bookmark, so load the saved set wherever the grid renders.
+  // The grid card shows a Save bookmark, so load the signed-in viewer's saved set wherever the grid renders.
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded || userId === null) return;
     void loadFavoritesUseCase.execute().then((result) => {
       if (result.ok) savedRecipesStore.getState().setSaved(result.value);
     });
-  }, [isExpanded, loadFavoritesUseCase, savedRecipesStore]);
+  }, [isExpanded, userId, loadFavoritesUseCase, savedRecipesStore]);
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({

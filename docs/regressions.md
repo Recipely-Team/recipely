@@ -2633,3 +2633,17 @@ iOS build phase pastes `firebase.json` into a single-quoted Ruby string, so the 
 Native-affecting changes (dependency majors, `app.json` plugins, `firebase.json`) get a
 local iOS and Android build before merge — the CI on `dev` builds neither.
 
+
+---
+
+## A guest's wide web feed asked for their favorites and got a 401
+
+**Symptom:** found in the closing web check — every guest visit to the feed at desktop
+width logged `401 GET /me/favorites`.
+
+**Root cause:** `useRecipeList` loads the saved set for the grid cards' bookmark whenever
+the grid is wide, without asking whether anyone is signed in.
+
+**Fix:** the load waits for a signed-in user (and runs again when one signs in).
+Covered by "does not ask a guest for their saved recipes" (`use-recipe-list.test.tsx`),
+red without the fix. **A `/me/*` read needs a signed-in user first.**

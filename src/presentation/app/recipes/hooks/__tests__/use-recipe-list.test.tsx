@@ -78,6 +78,18 @@ jest.mock('@presentation/base/web-shell/use-web-shell-state', () => ({
   }),
 }));
 
+// The saved-set load runs on the wide grid only; null keeps the real layout.
+let mockExpanded: boolean | null = null;
+jest.mock('@presentation/base/responsive/use-layout', () => {
+  const actual = jest.requireActual<typeof import('@presentation/base/responsive/use-layout')>('@presentation/base/responsive/use-layout');
+  return {
+    useLayout: () => {
+      const layout = actual.useLayout();
+      return mockExpanded === null ? layout : { ...layout, isExpanded: mockExpanded };
+    },
+  };
+});
+
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
 }));
@@ -843,5 +855,39 @@ describe('useRecipeList — arriving with a search query', () => {
     });
 
     expect(vm.search).toBe('mercimek çorbası');
+  });
+});
+
+// A guest on the wide web grid asked for /me/favorites on every visit and got a 401.
+describe('useRecipeList — the saved set on the wide grid', () => {
+  const Probe = (): null => {
+    useRecipeList();
+    return null;
+  };
+
+  afterEach(() => {
+    mockExpanded = null;
+  });
+
+  it('does not ask a guest for their saved recipes', async () => {
+    mockExpanded = true;
+    const stores = makeStores(configureRecipeListStore({
+      listRecipes: { execute: jest.fn().mockResolvedValue(ok(recipePageOf([]))) } as unknown as ListRecipesUseCase,
+    }));
+
+    const { renderer } = renderComponent(
+      <StoresProvider value={stores}>
+        <Probe />
+      </StoresProvider>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(stores.loadFavoritesUseCase.execute).not.toHaveBeenCalled();
+    await act(async () => {
+      renderer.unmount();
+      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    });
   });
 });
