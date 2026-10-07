@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { CharConstants } from '@core/constants';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import { shoppingAmountText } from '@domain/shopping/items/shopping-amount-text';
@@ -22,6 +22,17 @@ export const useShoppingItemEditor = (): UseShoppingItemEditorResult => {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setSaving] = useState(false);
 
+  // Stable: the list's memoised rows take it as their edit handler.
+  const open = useCallback((item: ShoppingItemEntity): void => {
+    setEditing(item);
+    setError(null);
+    setFields({
+      label: item.label,
+      quantityText: shoppingAmountText(item.quantity, null, t().recipes.portions.decimalMark),
+      unit: item.unit ?? CharConstants.empty,
+    });
+  }, []);
+
   return {
     editing,
     fields,
@@ -31,15 +42,7 @@ export const useShoppingItemEditor = (): UseShoppingItemEditorResult => {
     },
     error,
     isSaving,
-    open: (item) => {
-      setEditing(item);
-      setError(null);
-      setFields({
-        label: item.label,
-        quantityText: shoppingAmountText(item.quantity, null, t().recipes.portions.decimalMark),
-        unit: item.unit ?? CharConstants.empty,
-      });
-    },
+    open,
     close: () => setEditing(null),
     save: () => {
       if (editing === null || isSaving) return;
