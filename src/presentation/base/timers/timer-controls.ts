@@ -7,6 +7,8 @@ import { TimerTimeConstants } from '@presentation/base/timers/timer-time-constan
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { timerWarnings } from '@domain/timers/timer-warnings';
+import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
 
 /**
  * True when this recipe already has a timer going, which makes starting a
@@ -25,7 +27,27 @@ const isBlockedByRunningTimer = (recipeId: string, startingTimerId: string): boo
   return true;
 };
 
-/** Starts a timer: schedules all alarm notifications and persists the entry. */
+/** "1 minute left" / "5 minutes left" in the user's language. */
+const minutesLeftCopy = (minutes: number): string =>
+  minutes === ValueConstants.one ? t().timer.oneMinuteLeft : t().timer.minutesLeft.replace('{n}', String(minutes));
+
+/**
+ * Schedules a countdown's alarm and its quiet heads-ups; the ids come back together so one
+ * `cancel` on stop or pause clears both.
+ */
+const scheduleAlerts = async (timerId: string, recipeName: string, endTimeMs: number): Promise<string[]> => {
+  const service = getNotificationService();
+  const alerts = timerWarnings(endTimeMs, Date.now()).map(
+    (w): TimerWarningAlert => ({ fireAtMs: w.fireAtMs, body: minutesLeftCopy(w.minutesLeft) }),
+  );
+  const [completion, warnings] = await Promise.all([
+    service.scheduleTimerComplete(timerId, recipeName, endTimeMs, t().timer.notificationBody),
+    service.scheduleTimerWarnings(timerId, recipeName, alerts),
+  ]);
+  return [...completion, ...warnings];
+};
+
+/** Starts a timer: schedules its alarm and heads-ups and persists the entry. */
 export const startTimer = async (
   timerId: string,
   recipeId: string,
@@ -34,21 +56,14 @@ export const startTimer = async (
 ): Promise<void> => {
   if (minutes <= ValueConstants.zero) return;
   if (isBlockedByRunningTimer(recipeId, timerId)) return;
-  // Timer ids are deterministic (`<recipeId>:<slot>`), so a re-start must clear
-  // the "already alarmed" mark or this run would expire silently.
+  // Ids are deterministic, so clear the already-alarmed mark on restart.
   triggeredAlarms.release(timerId);
-  // Restarting the SAME timer would otherwise leave the previous run's
-  // notifications scheduled — `add()` overwrites the entry that held their ids.
+  // Stop the previous run first so its notifications are cancelled.
   if (timerStore.getState().timers[timerId] !== undefined) await stopTimer(timerId);
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
   const endTimeMs = Date.now() + durationSeconds * TimerTimeConstants.msPerSecond;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
-    timerId,
-    recipeName,
-    endTimeMs,
-    t().timer.notificationBody,
-  );
+  const completionNotifIds = await scheduleAlerts(timerId, recipeName, endTimeMs);
   await timerStore.getState().add({
     id: timerId,
     recipeId,
@@ -64,9 +79,6 @@ export const startTimer = async (
 /** Stops and removes a timer, cancelling all of its alarm notifications. */
 export const stopTimer = async (timerId: string): Promise<void> => {
   triggeredAlarms.release(timerId);
-  // A stopped timer must not stay in the alarm queue: whether it was stopped
-  // from its chip, from the notification's "dismiss" action or by the overlay
-  // itself, there is nothing left for that alarm to be about.
   alarmStore.getState().dismiss(timerId);
   const entry = timerStore.getState().timers[timerId];
   if (entry !== undefined) {
@@ -87,19 +99,11 @@ export const pauseTimer = async (timerId: string): Promise<void> => {
 export const resumeTimer = async (timerId: string): Promise<void> => {
   const entry = timerStore.getState().timers[timerId];
   if (entry === undefined || !entry.isPaused) return;
-  // Resuming is a start as far as the one-timer-per-recipe rule is concerned:
-  // the other phase may well have been started while this one sat paused.
+  // Resume counts as a start for the one-timer-per-recipe rule.
   if (isBlockedByRunningTimer(entry.recipeId, timerId)) return;
-  // Same reason as `startTimer`: this run gets a new end time, so the mark from
-  // an earlier expiry must not silence it.
   triggeredAlarms.release(timerId);
   const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
-    timerId,
-    entry.recipeName,
-    newEndTimeMs,
-    t().timer.notificationBody,
-  );
+  const completionNotifIds = await scheduleAlerts(timerId, entry.recipeName, newEndTimeMs);
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;

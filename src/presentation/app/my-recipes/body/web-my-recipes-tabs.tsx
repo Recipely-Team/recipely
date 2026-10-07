@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, borderWidths, BrandColors } from '@presentation/base/theme';
 import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import type { TabType } from '@presentation/app/my-recipes/model/tab-type';
@@ -28,7 +28,7 @@ export const WebMyRecipesTabs = ({ tabs, active, onChange }: WebMyRecipesTabsPro
             accessibilityRole="tab"
             accessibilityState={{ selected: isActive }}
             accessibilityLabel={label}
-            style={[styles.tab, { borderBottomColor: isActive ? colors.primary : 'transparent' }]}
+            style={[styles.tab, { borderBottomColor: isActive ? colors.primary : BrandColors.transparent }]}
           >
             <MaterialCommunityIcons
               name={TabIcons[key]}

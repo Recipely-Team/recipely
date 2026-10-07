@@ -1,5 +1,5 @@
 import { ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 import type { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -97,8 +97,6 @@ export const ImportQueueView = ({
 };
 
 const styles = StyleSheet.create({
-  // flex:1 so the footer keeps its place at the bottom instead of being pushed
-  // off by the scroll body.
   scroll: {
     flex: ValueConstants.one,
   },

@@ -1,9 +1,9 @@
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { DiaryDay } from '@domain/diary/day/diary-day';
 import { StoreStatus } from '@application/store/store-status';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { datePart } from '@presentation/app/diary/model/assistant/date-part';
-import type { DiaryDayView } from '@presentation/app/diary/model/diary-day-view';
+import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
 
 const NEWLINE = CharConstants.newline;
 const round = (value: number): number => Math.round(value);
@@ -16,10 +16,10 @@ const dayLines = (day: DiaryDay): string[] => {
     `protein ${grams(totals.protein)}/${goals.protein} g; carbs ${grams(totals.carbs)}/${goals.carbs} g; fat ${grams(totals.fat)}/${goals.fat} g; fiber ${grams(totals.fiber)}/${goals.fiber} g`,
     `water ${day.waterGlasses}/${goals.waterGlasses} glasses`,
     ...day.mealGroups.map((group) =>
-      group.entries.length === 0
+      group.entries.length === ValueConstants.zero
         ? `${group.meal} 0 kcal: none`
         : `${group.meal} ${round(group.totals.calories)} kcal: ${group.entries
-            .map((entry, i) => `${i + 1}) ${entry.name}, ${entry.servings} serving(s), ${round(entry.nutrients.calories)} kcal`)
+            .map((entry, i) => `${i + ValueConstants.one}) ${entry.name}, ${entry.servings} serving(s), ${round(entry.nutrients.calories)} kcal`)
             .join(', ')}`,
     ),
     `goals: ${goals.calories} kcal, protein ${goals.protein} g, carbs ${goals.carbs} g, fat ${goals.fat} g, fiber ${goals.fiber} g, water ${goals.waterGlasses} glasses`,
@@ -32,7 +32,7 @@ const dayLines = (day: DiaryDay): string[] => {
  * water, every meal with its entries, and the goals — what lets the assistant
  * comment on the user's day.
  */
-export const diaryDayReading = (view: DiaryDayView, selected: CalendarDate, today: CalendarDate, locale: string): string => {
+export const diaryDayReading = (view: DiaryDayViewType, selected: CalendarDate, today: CalendarDate, locale: string): string => {
   const head = [`screen=diary`, datePart('today', today, locale), datePart('selected', selected, locale)];
   switch (view.status) {
     case StoreStatus.Loaded:

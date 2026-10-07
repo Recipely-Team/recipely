@@ -1,12 +1,12 @@
 import { create } from 'zustand';
-import { TIMERS_STORAGE_KEY } from '@infrastructure/constants/storage';
-import { getKeyValueStore } from '@application/storage/get-key-value-store';
+import { getPreferenceStore } from '@application/storage/get-preference-store';
+import { PreferenceSlot } from '@domain/storage/preference-slot';
 import type { TimerEntry } from '@application/timers/timer-entry';
 import type { TimerStoreState } from '@application/timers/timer-store-state';
 import { ValueConstants } from '@core/constants';
 
 const persist = async (timers: Record<string, TimerEntry>): Promise<void> => {
-  await getKeyValueStore().setItem(TIMERS_STORAGE_KEY, JSON.stringify(timers));
+  await getPreferenceStore().set(PreferenceSlot.Timers, JSON.stringify(timers));
 };
 
 export const timerStore = create<TimerStoreState>((set, get) => ({
@@ -14,7 +14,7 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
   hydrated: false,
 
   hydrate: async () => {
-    const read = await getKeyValueStore().getItem(TIMERS_STORAGE_KEY);
+    const read = await getPreferenceStore().get(PreferenceSlot.Timers);
     const raw = read.ok ? read.value : null;
     if (!raw) {
       set({ hydrated: true });
@@ -22,8 +22,7 @@ export const timerStore = create<TimerStoreState>((set, get) => ({
     }
     try {
       const stored = JSON.parse(raw) as Record<string, TimerEntry>;
-      // Keep ALL entries including expired ones. Expired timers are detected by
-      // useTimerNotificationSync which triggers the alarm then removes them.
+      // Keep expired entries: the notification sync alarms and removes them.
       set({ timers: stored, hydrated: true });
     } catch {
       set({ hydrated: true });

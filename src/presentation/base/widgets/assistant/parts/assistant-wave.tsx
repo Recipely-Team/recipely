@@ -44,8 +44,6 @@ export const AssistantWave = ({ level, active, color, bars, height }: AssistantW
     }).start();
   }, [animated, active, level]);
 
-  // Each bar's reach is fixed by its distance from the centre, so the weights
-  // are computed once per bar count rather than on every level change.
   const weights = useMemo(
     () =>
       Array.from({ length: bars }, (_, index) => {

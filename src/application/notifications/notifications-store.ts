@@ -3,94 +3,103 @@ import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import { ValueConstants } from '@core/constants';
-
+import type { Failure } from '@core/failure';
+import type { Result } from '@core/result/result';
+import { ok } from '@core/result/result-helpers';
+import type { Page } from '@domain/common/page';
+import type { NotificationEntity } from '@domain/notifications/notification-entity';
+import { PagedListLoader } from '@application/store/paging/paged-list-loader';
+import { RequestEpoch } from '@application/store/request-epoch';
 import type { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import type { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
 import type { MarkOneReadUseCase } from '@application/notifications/read/mark-one-read-use-case';
-import { UNREAD_PROBE_LIMIT } from '@infrastructure/constants/api/api-paging';
+import type { CountUnreadNotificationsUseCase } from '@application/notifications/list/count-unread-notifications-use-case';
+import { NotificationInbox } from '@domain/notifications/notification-inbox';
 
 interface NotificationsStoreDeps {
   listNotifications: ListNotificationsUseCase;
+  countUnread: CountUnreadNotificationsUseCase;
   markAllRead: MarkAllReadUseCase;
   markOneRead: MarkOneReadUseCase;
 }
 
 /**
- * Owns the in-memory notifications feed for the current session. The store is
- * idle until a screen first calls `load`. `refreshUnread` keeps the badge count
- * current without fetching the whole feed (used by the app-wide poller).
- * `markAllRead` / `markOneRead` perform optimistic updates; on failure the feed
- * is reloaded so the source of truth always wins.
+ * **Notifications store** — the in-memory feed and the app-wide unread badge
+ * for the current session.
+ *
+ * @remarks
+ * - **The feed is paged**: `load` reads the first page, `loadMore` the next on
+ *   scroll (`PagedListLoader`); every page also refreshes the badge.
+ * - **`refreshUnread`** keeps the badge current without the feed (the app-wide poller).
+ * - **Marks are optimistic** through a `NotificationInbox`; on failure a loaded feed is re-read so the source of truth wins.
+ * - **Session guard**: `clear()` resets the loader and the badge epoch, so an
+ *   answer in flight at sign-out never writes the old account back.
  */
 export const configureNotificationsStore = (
   deps: NotificationsStoreDeps,
-): BoundStore<NotificationsStoreState> => {
-  return create<NotificationsStoreState>((set, get) => ({
-    state: { status: StoreStatus.Idle },
-    unreadCount: ValueConstants.zero,
-    load: async () => {
-      set({ state: { status: StoreStatus.Loading } });
-      const result = await deps.listNotifications.execute();
-      if (!result.ok) {
-        set({ state: { status: StoreStatus.Error, failure: result.failure } });
-        return;
-      }
-      set({
-        state: {
-          status: StoreStatus.Loaded,
-          items: result.value.items,
-          total: result.value.total,
-          unreadCount: result.value.unreadCount,
-        },
-        unreadCount: result.value.unreadCount,
-      });
-    },
-    refreshUnread: async () => {
-      // Fetch the minimum page — the endpoint returns unreadCount regardless of
-      // page size, so we only pay for one item to keep the badge fresh.
-      const result = await deps.listNotifications.execute({ limit: UNREAD_PROBE_LIMIT });
-      if (!result.ok) return;
-      set({ unreadCount: result.value.unreadCount });
-    },
-    markAllRead: async () => {
-      const current = get().state;
-      if (current.status !== StoreStatus.Loaded) {
-        // List not loaded — still clear the badge optimistically and persist.
+): BoundStore<NotificationsStoreState> =>
+  create<NotificationsStoreState>((set, get) => {
+    const feed = new PagedListLoader<NotificationEntity>(() => get().state, (state) => set({ state }), (n) => n.id);
+    const badge = new RequestEpoch();
+
+    const fetchPage = async (page: number): Promise<Result<Page<NotificationEntity>, Failure>> => {
+      const isCurrent = badge.start();
+      const result = await deps.listNotifications.execute({ page });
+      if (!result.ok) return result;
+      if (isCurrent()) set({ unreadCount: result.value.unreadCount });
+      return ok(result.value.page);
+    };
+
+    const reread = async (): Promise<void> => {
+      if (get().state.status === StoreStatus.Loaded) await feed.refresh(fetchPage);
+    };
+
+    /** The loaded rows (none before the first page) with the badge, as one read model. */
+    const inbox = (): NotificationInbox => {
+      const { state, unreadCount } = get();
+      return NotificationInbox.of(state.status === StoreStatus.Loaded ? state.items : [], unreadCount);
+    };
+
+    const show = (next: NotificationInbox): void => {
+      const state = get().state;
+      set(state.status === StoreStatus.Loaded
+        ? { state: { ...state, items: next.items }, unreadCount: next.unreadCount }
+        : { unreadCount: next.unreadCount });
+    };
+
+    return {
+      state: { status: StoreStatus.Idle },
+      unreadCount: ValueConstants.zero,
+      load: () => feed.load(fetchPage),
+      loadMore: () => feed.loadMore(),
+      refreshUnread: async () => {
+        const isCurrent = badge.start();
+        const result = await deps.countUnread.execute();
+        if (result.ok && isCurrent()) set({ unreadCount: result.value });
+      },
+      markAllRead: async () => {
+        badge.invalidate();
+        const wasLoaded = get().state.status === StoreStatus.Loaded;
+        show(inbox().markAllRead());
+        const result = await deps.markAllRead.execute();
+        if (result.ok) return;
+        if (wasLoaded) await reread();
+        else await get().refreshUnread();
+      },
+      markOneRead: async (id: string) => {
+        const before = inbox();
+        const next = before.markRead(id);
+        if (next === before) return;
+        // A poll already in flight carries the count from before this mark.
+        badge.invalidate();
+        show(next);
+        const result = await deps.markOneRead.execute(id);
+        if (!result.ok) await reread();
+      },
+      clear: () => {
+        feed.reset();
+        badge.invalidate();
         set({ unreadCount: ValueConstants.zero });
-        const earlyResult = await deps.markAllRead.execute();
-        if (!earlyResult.ok) await get().refreshUnread();
-        return;
-      }
-      const optimisticItems = current.items.map((n) => n.asRead());
-      set({
-        state: {
-          ...current,
-          items: optimisticItems,
-          unreadCount: ValueConstants.zero,
-        },
-        unreadCount: ValueConstants.zero,
-      });
-      const result = await deps.markAllRead.execute();
-      if (!result.ok) {
-        await get().load();
-      }
-    },
-    markOneRead: async (id: string) => {
-      const current = get().state;
-      if (current.status !== StoreStatus.Loaded) return;
-      const target = current.items.find((n) => n.id === id);
-      if (target === undefined || target.read) return;
-      const optimisticItems = current.items.map((n) => (n.id === id ? n.asRead() : n));
-      const nextUnread = Math.max(ValueConstants.zero, current.unreadCount - ValueConstants.one);
-      set({
-        state: { ...current, items: optimisticItems, unreadCount: nextUnread },
-        unreadCount: nextUnread,
-      });
-      const result = await deps.markOneRead.execute(id);
-      if (!result.ok) {
-        await get().load();
-      }
-    },
-    clear: () => set({ state: { status: StoreStatus.Idle }, unreadCount: ValueConstants.zero }),
-  }));
-};
+      },
+    };
+  });

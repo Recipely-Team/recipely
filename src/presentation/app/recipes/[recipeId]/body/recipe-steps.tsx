@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { IngredientCard } from '@presentation/app/recipes/[recipeId]/items/steps/ingredient-card';
@@ -10,8 +10,10 @@ import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
-import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
+import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 
 export interface RecipeStepsProps {
   recipe: RecipeEntity;
@@ -19,8 +21,9 @@ export interface RecipeStepsProps {
   isOwner: boolean;
   isExpanded: boolean;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   onDelete: () => void;
 }
@@ -35,38 +38,37 @@ export const RecipeSteps = ({
   isOwner,
   isExpanded,
   checkedIngredients,
+  portions,
   onToggleIngredient,
   completedSteps,
   onToggleStep,
   onDelete,
 }: RecipeStepsProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const ingredients = IngredientList.of(portions.ingredients);
 
   return (
     <>
-      {/* The count is of INGREDIENTS: a recipe with three group headings does
-          not have three more things to buy. */}
-      <SectionHeader
-        title={t().recipes.ingredients}
-        count={recipe.ingredients.filter((line) => !isIngredientGroup(line)).length}
-      />
+      <SectionHeader title={t().recipes.ingredients} count={ingredients.filledCount} />
       <View style={styles.cardsList}>
-        {recipe.ingredients.map((item, i) =>
-          isIngredientGroup(item) ? (
+        <UnitSystemToggle portions={portions} />
+        {ingredients.lines.map((line, i) =>
+          line.isGroup ? (
             <IngredientGroupHeading
               key={i}
-              label={ingredientGroupLabel(item)}
+              label={line.groupLabel}
               isFirst={i === ValueConstants.zero}
             />
           ) : (
             <IngredientCard
               key={i}
-              raw={item}
+              raw={line.raw}
               checked={checkedIngredients[i] ?? false}
               onToggle={() => onToggleIngredient(i)}
             />
           ),
         )}
+        <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} inCard={false} />
       </View>
 
       <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />
@@ -84,8 +86,7 @@ export const RecipeSteps = ({
 
       {isOwner ? (
         isExpanded ? (
-          // WEB: design's header-cluster button language — a ghost
-          // "Delete" pill (danger-tinted).
+          // Web: ghost danger pill.
           <View style={styles.ownerActionsWeb}>
             <Pressable
               accessibilityRole="button"
@@ -103,8 +104,7 @@ export const RecipeSteps = ({
             </Pressable>
           </View>
         ) : (
-          // MOBILE: delete stays inline as a single danger button; the
-          // floating overlay cluster over the hero owns share/like/save.
+          // Mobile: inline danger button; the hero overlay owns share/like/save.
           <View style={styles.ownerActions}>
             <Pressable
               accessibilityRole="button"

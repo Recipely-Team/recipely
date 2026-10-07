@@ -16,8 +16,11 @@ jest.mock('expo-notifications', () => ({
   scheduleNotificationAsync: jest.fn((): Promise<string> => Promise.resolve('scheduled-id')),
   dismissNotificationAsync: jest.fn((): Promise<void> => Promise.resolve()),
   cancelScheduledNotificationAsync: jest.fn((): Promise<void> => Promise.resolve()),
-  AndroidImportance: { MAX: 5 },
-  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval' },
+  getAllScheduledNotificationsAsync: jest.fn((): Promise<unknown[]> => Promise.resolve([])),
+  addNotificationResponseReceivedListener: jest.fn(() => ({ remove: jest.fn() })),
+  getLastNotificationResponseAsync: jest.fn((): Promise<unknown> => Promise.resolve(null)),
+  AndroidImportance: { MAX: 5, HIGH: 4, DEFAULT: 3 },
+  SchedulableTriggerInputTypes: { TIME_INTERVAL: 'timeInterval', DATE: 'date' },
 }));
 
 import { Platform } from 'react-native';
@@ -45,6 +48,9 @@ describe('NotificationService', () => {
     expect(typeof service.requestPermissions).toBe('function');
     expect(typeof service.scheduleTimerComplete).toBe('function');
     expect(typeof service.cancel).toBe('function');
+    expect(typeof service.hasPermission).toBe('function');
+    expect(typeof service.scheduleTimerWarnings).toBe('function');
+    expect(typeof service.replaceReminders).toBe('function');
   });
 
   describe('on web', () => {
@@ -65,7 +71,7 @@ describe('NotificationService', () => {
     });
 
     it('init and cancel resolve without touching the platform API', async () => {
-      await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!' })).resolves.toBeUndefined();
+      await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!', warningChannelName: 'Heads-up', reminderChannelName: 'Ideas' })).resolves.toBeUndefined();
       await expect(service.cancel(['id'])).resolves.toBeUndefined();
       expect(notifications.dismissNotificationAsync).not.toHaveBeenCalled();
     });
@@ -108,6 +114,59 @@ describe('NotificationService', () => {
 
       expect(notifications.dismissNotificationAsync).toHaveBeenCalledTimes(2);
       expect(notifications.cancelScheduledNotificationAsync).toHaveBeenCalledTimes(2);
+    });
+
+    it('checks permission without ever prompting', async () => {
+      notifications.getPermissionsAsync.mockResolvedValueOnce({ status: 'undetermined' } as never);
+      await expect(service.hasPermission()).resolves.toBe(false);
+      expect(notifications.requestPermissionsAsync).not.toHaveBeenCalled();
+    });
+
+    it('schedules a silent heads-up per alert, tagged as a timer warning', async () => {
+      const ids = await service.scheduleTimerWarnings('t1', 'Pasta', [
+        { fireAtMs: Date.now() + 300_000, body: '5 minutes left' },
+        { fireAtMs: Date.now() + 540_000, body: '1 minute left' },
+      ]);
+      expect(ids).toEqual(['scheduled-id', 'scheduled-id']);
+      const [first] = notifications.scheduleNotificationAsync.mock.calls[0]!;
+      expect(first.content).toMatchObject({ body: '5 minutes left', data: { type: 'timer-warning', timerId: 't1' } });
+      expect(first.content.sound).toBeUndefined();
+    });
+
+    it('replaces only pending reminders, leaving timer alarms alone', async () => {
+      notifications.getAllScheduledNotificationsAsync.mockResolvedValueOnce([
+        { identifier: 'old-reminder', content: { data: { type: 'engagement-reminder' } } },
+        { identifier: 'timer-alarm', content: { data: { type: 'timer-complete' } } },
+      ] as never);
+      await service.replaceReminders([{ fireAtMs: Date.now() + 86_400_000, title: 'T', body: 'B', day: 2, variant: 0 }]);
+      expect(notifications.cancelScheduledNotificationAsync).toHaveBeenCalledTimes(1);
+      expect(notifications.cancelScheduledNotificationAsync).toHaveBeenCalledWith('old-reminder');
+      const [request] = notifications.scheduleNotificationAsync.mock.calls[0]!;
+      expect(request.trigger).toMatchObject({ type: 'date' });
+      expect(request.content.data).toEqual({ type: 'engagement-reminder', day: 2, variant: 0 });
+    });
+
+    it('keeps heads-ups quiet and reminders hidden while the app is open', async () => {
+      await service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!', warningChannelName: 'Heads-up', reminderChannelName: 'Ideas' });
+      const { handleNotification } = notifications.setNotificationHandler.mock.calls[0]![0]!;
+      const of = (type: string) => handleNotification({ request: { content: { data: { type } } } } as never);
+      await expect(of('timer-complete')).resolves.toMatchObject({ shouldPlaySound: true, shouldShowBanner: true });
+      await expect(of('timer-warning')).resolves.toMatchObject({ shouldPlaySound: false, shouldShowBanner: true });
+      await expect(of('engagement-reminder')).resolves.toMatchObject({ shouldPlaySound: false, shouldShowBanner: false });
+    });
+
+    it('reports a tapped reminder once, even when the launch tap arrives twice', async () => {
+      const tap = { notification: { request: { identifier: 'r-1', content: { data: { type: 'engagement-reminder', day: 4, variant: 2 } } } } };
+      notifications.getLastNotificationResponseAsync.mockResolvedValueOnce(tap as never);
+      const opened = jest.fn();
+      service.onReminderOpened(opened);
+      const [[deliver]] = notifications.addNotificationResponseReceivedListener.mock.calls as unknown as [[(r: unknown) => void]];
+      deliver(tap);
+      deliver({ notification: { request: { identifier: 't-1', content: { data: { type: 'timer-complete' } } } } });
+      await Promise.resolve();
+      await Promise.resolve();
+      expect(opened).toHaveBeenCalledTimes(1);
+      expect(opened).toHaveBeenCalledWith({ day: 4, variant: 2 });
     });
   });
 });

@@ -3,6 +3,7 @@ import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import { PermissionStatus } from 'expo-modules-core';
 import type { RegisterTokenFn } from '@infrastructure/notifications/register-token-fn';
+import { DevicePlatform } from '@domain/notifications/device-platform';
 
 /**
  * Native push registration. Android: `expo-notifications` (already in the
@@ -35,7 +36,7 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
     const token = await Notifications.getDevicePushTokenAsync();
     if (!isNonEmptyString(token.data)) return;
 
-    const result = await register(token.data, 'android');
+    const result = await register(token.data, DevicePlatform.Android);
     if (!result.ok && __DEV__) {
       console.warn(`${LogTag.pushTokenRegistrar} ${LogMessage.deviceTokenRejected}`, result.failure.code);
     }

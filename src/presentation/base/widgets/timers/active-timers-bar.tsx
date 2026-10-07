@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { usePathname } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -13,13 +13,16 @@ import { spacing, radii, fontWeights, iconSizes, controlSizes, borderWidths, zIn
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
+import { stepTimerPrefix } from '@presentation/base/timers/step-timer-prefix';
 
 /**
  * Matches the single-recipe detail route (`/recipes/:recipeId`) so this bar
  * can tell whether a timer belongs to the recipe currently on screen — see
  * {@link ActiveTimersBar}.
  */
-const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
+const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
+const RECIPE_COOK_PATH = RoutePaths.recipeCookPattern;
 
 /**
  * Floating bar showing every active timer that isn't already visible inline
@@ -32,7 +35,8 @@ const RECIPE_DETAIL_PATH = /^\/recipes\/([^/]+)$/;
  * one place. The one case it deliberately hides is a timer for the recipe
  * whose detail screen is currently open: that timer already has a live
  * inline countdown (the prep/cook stat segment, or the step's inline chip),
- * so repeating it here would be a literal on-screen duplicate.
+ * so repeating it here would be a literal on-screen duplicate. Cook mode is
+ * the same case for its recipe's STEP timers, which it lists inline.
  *
  * Being pinned over the content, it can cover whatever sits at the bottom of
  * the screen — the onboarding CTAs are directly underneath it, with no way to
@@ -51,16 +55,17 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { isWebShell } = useLayout();
-  // The bar sits above the tab bar where there is one. On routes without it
-  // (onboarding, auth, detail pages) reserving that height pushed the bar UP
-  // into the content instead of leaving it at the screen edge.
+  // Clear the tab bar only on routes that have one.
   const hasTabBar = useTabBarState() !== null && !isWebShell;
   const timers = timerStore((s) => s.timers);
   const collapsed = timersBarStore((s) => s.collapsed);
   const setCollapsed = timersBarStore((s) => s.setCollapsed);
-  const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[1] ?? null;
+  const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
+  const cookingRecipeId = RECIPE_COOK_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const entries = Object.values(timers).filter(
-    (entry) => entry.recipeId !== currentRecipeId,
+    (entry) =>
+      entry.recipeId !== currentRecipeId &&
+      (cookingRecipeId === null || !entry.id.startsWith(stepTimerPrefix(cookingRecipeId))),
   );
 
   if (entries.length === ValueConstants.zero) return null;
@@ -148,11 +153,6 @@ const styles = StyleSheet.create({
   chipScroll: {
     flex: ValueConstants.one,
   },
-  // A round button parked at the end of the row: it reads as a control the way
-  // the hairline grabber before it never did, without the uppercase caption
-  // that replaced the grabber and cluttered the bar with a second row. Sized as
-  // a shape (it holds a glyph, never text) and slopped out well past the 44pt
-  // minimum, because this is the control that gets the bar off the content.
   hideBtn: {
     width: controlSizes.floatingBtn,
     height: controlSizes.floatingBtn,
@@ -160,11 +160,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Parked in a corner so the widest possible span of whatever is underneath
-  // stays reachable — the LEFT one, because the bottom-right belongs to the
-  // feed's Filter & Sort FAB and the pill sat squarely on top of it. Its
-  // resting size is a full 44pt tall: collapsed is a state the bar can sit in
-  // for the whole cook, so the way back out cannot be a target you aim at.
+  // Parked bottom-left: bottom-right belongs to the Filter & Sort FAB.
   collapsedPill: {
     alignSelf: 'flex-start',
     flexDirection: 'row',

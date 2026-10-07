@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { act } from 'react-test-renderer';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useFoodSearchQuery } from '@presentation/base/hooks/diary/use-food-search-query';
 import { ADD_FOOD_SEARCH_DEBOUNCE_MS } from '@presentation/base/widgets/diary/add-food/list/search-debounce';
@@ -20,7 +20,7 @@ describe('useFoodSearchQuery', () => {
       useFoodSearchQuery(query);
       return null;
     };
-    renderComponent(<Probe />, { foodSearchStore } as unknown as Partial<Stores>);
+    renderComponent(<Probe />, { foodSearchStore } as unknown as Partial<ApplicationStores>);
     expect(search.mock.calls).toEqual([['']]);
     act(() => type('a'));
     act(() => jest.advanceTimersByTime(ADD_FOOD_SEARCH_DEBOUNCE_MS));

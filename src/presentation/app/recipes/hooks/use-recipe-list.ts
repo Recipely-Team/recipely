@@ -18,6 +18,7 @@ import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
+import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
@@ -70,6 +71,13 @@ const REVEAL_THRESHOLD = spacing.sm;
  * - **Initial load carries the sort** — a bare `load()` falls back to the
  *   backend's `createdAt desc`, so the first paint and the focus refetch
  *   disagreed and the list reshuffled on the first return from a detail page.
+ * - **Refocus refetches only a stale feed** — one older than
+ *   `FEED_STALE_AFTER_MS` since its last successful load. Every return from a
+ *   detail page used to re-request page 1. The first load and a pull are
+ *   unchanged; a deleted recipe already leaves the store via `remove`, and a
+ *   change to the user's own recipes (publish, create) or a different viewer
+ *   (sign-in, sign-out) makes the next focus refetch at once: the rows carry
+ *   the viewer's liked and saved state.
  * - **`buildApiFilters` takes the query as an argument** rather than closing
  *   over it: its identity is a dependency of the focus and locale effects, and
  *   a callback changing on every debounced keystroke made those refire and
@@ -86,7 +94,7 @@ type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore } = useStores();
+  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore, createdRecipesStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
   const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
@@ -98,7 +106,25 @@ export const useRecipeList = (): UseRecipeListResult => {
   const { cuisineLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
-  const load = recipeListStore((s) => s.load);
+  const loadFromStore = recipeListStore((s) => s.load);
+  // When the feed last loaded successfully — what the focus refetch's staleness reads.
+  const lastLoadedAtRef = useRef<number | null>(null);
+  // Who the feed was loaded for: its rows carry viewer state (liked, saved), so a sign-in makes it stale.
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
+  const loadedForRef = useRef<string | null>(null);
+  const load = useCallback(
+    async (next: RecipeFilters): Promise<void> => {
+      const loadingFor = userIdRef.current;
+      await loadFromStore(next);
+      const settled = recipeListStore.getState().state;
+      if (settled.status === StoreStatus.Loaded && settled.refreshFailure === undefined) {
+        lastLoadedAtRef.current = Date.now();
+        loadedForRef.current = loadingFor;
+      }
+    },
+    [loadFromStore, recipeListStore],
+  );
   const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
   const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
@@ -108,20 +134,13 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   const [search, setSearch] = useState(CharConstants.empty);
 
-  // The assistant searches by opening this screen with `?q=`, the way a person
-  // arrives from a link — so the query lands in the visible field and the user
-  // watches the search they asked for, rather than results appearing from a
-  // store nobody touched. Applied once per distinct query: re-applying on every
-  // render would fight the user the moment they edited the box.
+  // The assistant searches via ?q= so the query shows in the field; applied once per distinct query.
   const { q: queryParam } = useLocalSearchParams<{ q?: string }>();
   const appliedQuery = useRef<string | undefined>(undefined);
   useEffect(() => {
     if (queryParam === undefined || queryParam === appliedQuery.current) return;
     appliedQuery.current = queryParam;
-    // Both fields, because which one this screen READS depends on the shell —
-    // and writing only its own left the assistant's search doing nothing at
-    // all on the web, where the header's field is the one that counts. The
-    // action chip said "searched" and the feed never moved.
+    // Both fields: which one the screen reads depends on the shell (web header vs mobile).
     setSearch(queryParam);
     setWebSearchQuery(queryParam);
   }, [queryParam, setWebSearchQuery]);
@@ -133,10 +152,7 @@ export const useRecipeList = (): UseRecipeListResult => {
   const isSearching = trimmedSearch.length > ValueConstants.zero;
 
   const scrollY = useSharedValue(ValueConstants.zero);
-  // A plain ref of the shared handle shape, not `useAnimatedRef`: no worklet
-  // ever read it, and typing it to the mobile FlatList is what stopped the
-  // other four branches — the wide-layout feed, the grid and the search
-  // overlay — from being able to attach anything at all.
+  // A plain ref of the shared handle shape, so every feed branch can attach to it.
   const listRef = useRef<AssistantScrollHandleType>(null);
   const headerTranslateY = useSharedValue(ValueConstants.zero);
   const insets = useSafeAreaInsets();
@@ -185,11 +201,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
   }, [isExpanded, width]);
 
-  // The width ONE card may occupy. `numColumns` does not pad a short last row,
-  // so a `flex: 1` cell in a row holding fewer items than columns stretches to
-  // the whole row — one recipe left after a filter became a card the width of
-  // the feed. Derived from the same width and gap the column count is, because
-  // two constants that disagree is how this feed once shipped with no gutter.
+  // One card's width cap: numColumns does not pad a short last row.
   const gridCellMaxWidth = useMemo<number>(() => {
     const available = feedContentWidth(width);
     return (available - GRID_GAP * (gridColumns - ValueConstants.one)) / gridColumns;
@@ -201,14 +213,13 @@ export const useRecipeList = (): UseRecipeListResult => {
   const [pendingSort, setPendingSort] = useState<SortKey>(SortKey.Popular);
   const [sheetOpen, setSheetOpen] = useState<RecipeSheet | null>(null);
 
-  // The grid card carries a Save bookmark, so the saved set must be populated
-  // wherever the grid renders — which is now the iPad as well as the web.
+  // The grid card shows a Save bookmark, so load the signed-in viewer's saved set wherever the grid renders.
   useEffect(() => {
-    if (!isExpanded) return;
+    if (!isExpanded || userId === null) return;
     void loadFavoritesUseCase.execute().then((result) => {
       if (result.ok) savedRecipesStore.getState().setSaved(result.value);
     });
-  }, [isExpanded, loadFavoritesUseCase, savedRecipesStore]);
+  }, [isExpanded, userId, loadFavoritesUseCase, savedRecipesStore]);
 
   const buildApiFilters = useCallback(
     (f: UiFilters, sort: SortKey, query: string): RecipeFilters => ({
@@ -281,14 +292,27 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
   }, [debouncedSearch, reload, buildApiFilters]);
 
-  // Re-fetch quietly on focus so new/edited recipes appear; skip the mount focus.
+  // Re-fetch quietly on focus once the feed is stale; skip the mount focus.
   const didFocusRef = useRef(false);
+  const ownRecipesChangedRef = useRef(false);
+  useEffect(
+    () =>
+      createdRecipesStore.subscribe(() => {
+        ownRecipesChangedRef.current = true;
+      }),
+    [createdRecipesStore],
+  );
   useFocusEffect(
     useCallback(() => {
       if (!didFocusRef.current) {
         didFocusRef.current = true;
         return;
       }
+      const lastLoadedAt = lastLoadedAtRef.current;
+      const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
+      const sameViewer = loadedForRef.current === userIdRef.current;
+      if (fresh && sameViewer && !ownRecipesChangedRef.current) return;
+      ownRecipesChangedRef.current = false;
       void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),
   );
@@ -331,19 +355,13 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(emptyFilters, sortBy, debouncedSearch));
   };
 
-  // Both fields, for the reason the `?q=` effect writes both: which one this
-  // screen READS depends on the shell, and clearing only its own left the
-  // query in place on web. The debounced-search effect above reloads on the
-  // change, so this does not fetch for itself.
+  // Clear both fields (see the ?q= effect); the debounced effect reloads.
   const onClearSearch = (): void => {
     setSearch(CharConstants.empty);
     setWebSearchQuery(CharConstants.empty);
   };
 
-  // Everything narrowing the feed, in ONE reload with the values it will end
-  // up at. Clearing the query and resetting the filters separately fired two
-  // fetches, and the first one — still carrying the old query — could land
-  // second and leave the feed withholding rows that no longer answered it.
+  // Everything narrowing the feed in ONE reload, so a stale request cannot land last.
   const onClearAllFilters = (): void => {
     setFilters(emptyFilters);
     setPendingFilters(emptyFilters);
@@ -391,13 +409,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
     unreadCount,
-    // A callback, not the ref object: each branch attaches a different list
-    // class and only a callback ref accepts the wider shape they share.
-    // One object, so a caller cannot attach the ref and forget the offset.
-    // That is exactly what happened: the wide-layout feed took `attachList` and
-    // no `onScroll`, so `scrollY` stayed 0 there forever — "en alta kaydır"
-    // worked (a fixed target) and "biraz daha aşağı" did not (a relative one,
-    // measured from a zero that never moved).
+    // A callback ref (each branch attaches a different list class) bundled with onScroll so neither is forgotten.
     assistantScroll: {
       ref: (instance: AssistantScrollHandleType): void => {
         listRef.current = instance;
@@ -406,26 +418,19 @@ export const useRecipeList = (): UseRecipeListResult => {
         const { contentOffset, contentSize, layoutMeasurement } = event.nativeEvent;
         scrollY.value = contentOffset.y;
 
-        // The wide layout's grid is a FlatList INSIDE this ScrollView, and a
-        // nested list neither virtualises nor fires `onEndReached` — the parent
-        // owns the scrolling. So the page that actually scrolls is the one that
-        // has to ask for the next page, and the web feed had nothing asking at
-        // all: it showed the first page and stopped.
+        // The wide grid is nested in this ScrollView, so this scroll asks for the next page.
         const remaining = contentSize.height - (contentOffset.y + layoutMeasurement.height);
         if (remaining <= layoutMeasurement.height * ListConstants.endReachedThreshold) {
           onEndReached();
         }
       },
-      // Coarse: only the assistant reads this. The collapsing header on the
-      // phone runs off `scrollHandler` and needs every frame; this does not.
+      // Coarse: only the assistant reads this.
       scrollEventThrottle: scrollThrottleMs.coarse,
     },
     attachList: (instance: AssistantScrollHandleType): void => {
       listRef.current = instance;
     },
-    // A step is one viewport minus a sliver, so a line of the previous screen
-    // stays visible — scrolling a whole screen away loses the reader's place,
-    // which is exactly the complaint about page-down keys.
+    // One viewport minus a sliver, so the reader keeps their place.
     onAssistantScroll: (direction: AssistantScrollDirectionType): boolean =>
       moveScrollTo(listRef.current, scrollTargetFor(direction, scrollY.value, height)),
     scrollY,
@@ -447,9 +452,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     },
     onToggleCuisineQuick: (cuisine: string) => applyAndLoad(mutate.toggleCuisineQuick(filters, cuisine)),
     onDifficultyChange: (d: Difficulty | null) => applyAndLoad(mutate.setDifficultyQuick(filters, d)),
-    // Direct category / max-time setters, applied and loaded the same way the
-    // quick cuisine chip is. The sheet reaches these through its pending copy;
-    // the assistant asks for one change at a time and has no sheet to open.
+    // Direct setters for the assistant, applied like the quick cuisine chip.
     onToggleCategory: (c: string) => applyAndLoad(mutate.toggleCategory(filters, c)),
     onSetMaxTime: (minutes: number) => applyAndLoad(mutate.setMaxTime(filters, minutes)),
     onRemoveCategory: (c: string) => applyAndLoad(mutate.removeCategory(filters, c)),

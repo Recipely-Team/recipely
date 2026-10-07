@@ -1,4 +1,4 @@
-import type { MaterialCommunityIcons } from '@expo/vector-icons';
+import type MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
 type MaterialIconName = React.ComponentProps<typeof MaterialCommunityIcons>['name'];

@@ -15,8 +15,7 @@ export function rowNumberOf(arg: string | undefined): number | null {
 
   const trimmed = arg.trim();
   const position = Number.parseInt(trimmed, 10);
-  // The parsed value is compared back against the whole argument: `parseInt`
-  // reads "2 eggs" as 2, and acting on row two would be silently wrong.
+  // Round-trip check: parseInt reads "2 eggs" as 2.
   return Number.isFinite(position) && String(position) === trimmed ? position : null;
 }
 
@@ -49,9 +48,7 @@ export function rowAt(rows: readonly string[], arg: string | undefined): number 
     return index >= ValueConstants.zero && index < rows.length ? index : null;
   }
 
-  // Folded, not locale-lowercased: `toLocaleLowerCase` is the mirror of the
-  // taxonomy bug — on a Turkish device it turns "Italian" into "ıtalian", and
-  // it leaves "İ" as an i plus a combining dot that no spoken word carries.
+  // Folded, not locale-lowercased (Turkish İ/ı).
   const needle = foldForMatch(trimmed);
   const found = rows.findIndex((row) => foldForMatch(row).includes(needle));
   return found === ValueConstants.minusOne ? null : found;

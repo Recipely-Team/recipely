@@ -30,9 +30,7 @@ export function waitForRecipeListQuery(store: BoundStore<RecipeListStoreState>, 
   const wanted = query.trim();
   const hasRows = (state: RecipeListStoreState['state']): boolean =>
     state.status === StoreStatus.Loaded && state.query.trim() === wanted;
-  // Only for a load that happens WHILE we wait: a failure left over from an
-  // earlier one says nothing about the query we just asked for, and reading it
-  // in the first check would end the wait before the screen had even started.
+  // Only a failure that happens while waiting counts.
   const gaveUp = (state: RecipeListStoreState['state']): boolean =>
     state.status === StoreStatus.Error ||
     (state.status === StoreStatus.Loaded && state.refreshFailure !== undefined);
@@ -53,8 +51,7 @@ export function waitForRecipeListQuery(store: BoundStore<RecipeListStoreState>, 
       resolve();
     });
 
-    // A load that finished between the check above and the subscription would
-    // otherwise wait out the whole timeout.
+    // A load that finished before subscribing would otherwise wait out the timeout.
     if (hasRows(store.getState().state)) {
       clearTimeout(timer);
       unsubscribe();

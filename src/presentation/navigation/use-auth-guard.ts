@@ -4,6 +4,7 @@ import { type Href, useGlobalSearchParams, usePathname, useRouter } from 'expo-r
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { isString } from '@core/guards/type-guards';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Routes reachable without an authenticated session. Every other path is gated
@@ -19,15 +20,15 @@ import { isString } from '@core/guards/type-guards';
  * settings, notifications, and the AI generator — remain guarded.
  */
 const PUBLIC_PATHS = new Set<string>([
-  '/',
-  '/onboarding',
-  '/login',
-  '/register',
-  '/verify-code',
-  '/forgot-password',
-  '/reset-password',
-  '/recipes',
-  '/creators',
+  RoutePaths.root,
+  RoutePaths.onboarding,
+  RoutePaths.login,
+  RoutePaths.register,
+  RoutePaths.verifyCode,
+  RoutePaths.forgotPassword,
+  RoutePaths.resetPassword,
+  RoutePaths.recipes,
+  RoutePaths.creators,
 ]);
 
 /**
@@ -37,7 +38,7 @@ const PUBLIC_PATHS = new Set<string>([
  * (`/recipes`, no trailing segment) is public via {@link PUBLIC_PATHS}, while
  * every other `/recipes/*` sub-route stays gated.
  */
-const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
+const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
 
 /**
  * A creator's page (`/creators/:userId`) is public too — `GET /users/:id` and
@@ -45,8 +46,14 @@ const RECIPE_DETAIL_PATH = /^\/recipes\/[^/]+$/;
  */
 const CREATOR_PROFILE_PATH = /^\/creators\/[^/]+$/;
 
+/** Cook mode reads the same public recipe as its detail page, so a guest may cook too. */
+const RECIPE_COOK_PATH = RoutePaths.recipeCookPattern;
+
 const isPublicPath = (pathname: string): boolean =>
-  PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname) || CREATOR_PROFILE_PATH.test(pathname);
+  PUBLIC_PATHS.has(pathname) ||
+  RECIPE_DETAIL_PATH.test(pathname) ||
+  RECIPE_COOK_PATH.test(pathname) ||
+  CREATOR_PROFILE_PATH.test(pathname);
 
 /**
  * Rebuilds the path the user was actually on, query string included.
@@ -61,10 +68,10 @@ const isPublicPath = (pathname: string): boolean =>
 const withParams = (pathname: string, params: Record<string, unknown>): string => {
   const search = new URLSearchParams();
   for (const [key, value] of Object.entries(params)) {
-    if (isString(value) && value.length > 0) search.append(key, value);
+    if (isString(value) && value.length > ValueConstants.zero) search.append(key, value);
   }
   const query = search.toString();
-  return query.length > 0 ? `${pathname}?${query}` : pathname;
+  return query.length > ValueConstants.zero ? `${pathname}?${query}` : pathname;
 };
 
 /**
@@ -93,11 +100,7 @@ export const useAuthGuard = (): void => {
   useEffect(() => {
     if (status !== StoreStatus.Unauthenticated) return;
     if (isPublicPath(pathname)) return;
-    // `pathname` is guaranteed non-public here — the isPublicPath early return
-    // above already handled `/`, `/login`, and the other public routes — so it
-    // is always worth preserving as a post-login redirect target. Cast: the
-    // dynamic redirect param can't be statically verified against expo-router's
-    // typed-routes union.
+    // Non-public here, so always worth keeping as the post-login redirect.
     router.replace(RoutePaths.loginWithRedirect(withParams(pathname, params)) as Href);
   }, [status, pathname, params, router]);
 };

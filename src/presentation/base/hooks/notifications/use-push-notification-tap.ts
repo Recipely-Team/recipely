@@ -5,6 +5,7 @@ import { type Href, useRouter } from 'expo-router';
 import { isWeb } from '@infrastructure/constants/platform';
 import { isString } from '@core/guards/type-guards';
 import { RoutePaths } from '@presentation/base/constants';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Keys the backend puts in the FCM data payload. Mirrors
@@ -22,7 +23,7 @@ const TIMER_TYPE_PREFIX = 'timer';
 
 const readString = (data: Record<string, unknown> | undefined, key: string): string | null => {
   const value = data?.[key];
-  return isString(value) && value.length > 0 ? value : null;
+  return isString(value) && value.length > ValueConstants.zero ? value : null;
 };
 
 /**
@@ -62,8 +63,6 @@ export const usePushNotificationTap = (): void => {
       const type = readString(data, DataKey.Type);
       if (type === null || type.startsWith(TIMER_TYPE_PREFIX)) return;
 
-      // Checked first because it is the one target with no recipe behind it:
-      // a finished import produced something to finish, not something to read.
       const draftId = readString(data, DataKey.DraftId);
       if (draftId !== null) {
         router.push({ pathname: RoutePaths.createRecipe, params: { draftId } });
@@ -74,9 +73,7 @@ export const usePushNotificationTap = (): void => {
       if (recipeId === null) return;
       const path = RoutePaths.recipeDetail(encodeURIComponent(recipeId));
       const commentId = readString(data, DataKey.CommentId);
-      // Cast: a dynamic path cannot be statically verified against
-      // expo-router's typed-routes union — same pattern as the notifications
-      // screen next door.
+      // Cast: a runtime path is not in the typed-routes union.
       router.push(
         (commentId !== null ? `${path}?commentId=${encodeURIComponent(commentId)}` : path) as Href,
       );

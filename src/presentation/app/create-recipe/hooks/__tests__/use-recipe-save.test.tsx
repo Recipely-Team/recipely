@@ -41,7 +41,7 @@ import type { GetDraftUseCase } from '@application/drafts/read/get-draft-use-cas
 import type { UpsertDraftUseCase } from '@application/drafts/write/upsert-draft-use-case';
 import type { DeleteDraftUseCase } from '@application/drafts/write/delete-draft-use-case';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showDangerToast, showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { useRecipeSave } from '@presentation/app/create-recipe/hooks/use-recipe-save';
@@ -56,6 +56,7 @@ import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-cas
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-recipe-use-case';
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
@@ -104,7 +105,6 @@ const makeRecipe = (id: string): RecipeEntity => {
     mealType: [],
     ownerId: 'owner-1',
     likeCount: 0,
-    likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
     isPublished: true,
@@ -135,12 +135,11 @@ const noopCacheStore = <T,>(): T =>
  * Real createdRecipesStore + draftsStore, with create/update wired through the
  * real use cases down to a `FakeRecipeRepository` reading `config`.
  */
-const makeStores = (repo: FakeRecipeRepository): Stores => {
+const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
   const recipeDetailStore = configureRecipeDetailStore({
     getRecipe: new GetRecipeUseCase(repo),
     addRecipePhoto: new AddRecipePhotoUseCase(repo),
-    removeRecipePhoto: new RemoveRecipePhotoUseCase(repo),
-    removeRecipeCover: new RemoveRecipeCoverUseCase(repo),
+    removeRecipeMedia: new RemoveRecipeMediaUseCase(new RemoveRecipePhotoUseCase(repo), new RemoveRecipeCoverUseCase(repo)),
   });
   const recipePublishingStore = configureRecipePublishingStore({
     publishRecipe: new PublishRecipeUseCase(repo),
@@ -168,7 +167,7 @@ const makeStores = (repo: FakeRecipeRepository): Stores => {
     deleteDraftUseCase: { execute: () => Promise.resolve(ok(undefined)) } as unknown as DeleteDraftUseCase,
   });
 
-  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as Stores;
+  return { createdRecipesStore, draftsStore, recipeDetailStore, recipePublishingStore } as unknown as ApplicationStores;
 };
 
 type Save = ReturnType<typeof useRecipeSave>;

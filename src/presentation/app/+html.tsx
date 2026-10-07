@@ -2,6 +2,7 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 import { PROD_WEB_APP_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 import type { PropsWithChildren } from 'react';
 import { SiteMetadata } from '@presentation/base/constants/site-metadata';
+import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 
 const SITE_URL = PROD_WEB_APP_BASE_URL;
 
@@ -70,13 +71,13 @@ export const RootHtml = ({ children }: PropsWithChildren): React.ReactElement =>
       {/* Colours the OS/browser chrome around the app. Two, because the app
           follows the system scheme and a single value leaves the bar fighting
           the page it sits on in one of them. */}
-      <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)" />
-      <meta name="theme-color" content="#0B0B0D" media="(prefers-color-scheme: dark)" />
+      <meta name="theme-color" content={BrandColors.webChromeLight} media="(prefers-color-scheme: light)" />
+      <meta name="theme-color" content={BrandColors.webChromeDark} media="(prefers-color-scheme: dark)" />
       {/* `apple-` is the legacy spelling iOS still reads; the unprefixed one is
           what everything else does. Both, until iOS catches up. */}
       <meta name="mobile-web-app-capable" content="yes" />
       <meta name="apple-mobile-web-app-capable" content="yes" />
-      <meta name="apple-mobile-web-app-title" content="Recipely" />
+      <meta name="apple-mobile-web-app-title" content={SiteMetadata.appName} />
       <meta name="apple-mobile-web-app-status-bar-style" content="default" />
       <script dangerouslySetInnerHTML={{ __html: SERVICE_WORKER_REGISTRATION }} />
       <ScrollViewStyleReset />

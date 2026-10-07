@@ -24,9 +24,9 @@ const dto = (overrides: Partial<NotificationItemDto> = {}): NotificationItemDto 
 
 const listOf = async (item: NotificationItemDto) => {
   const http = { get: jest.fn().mockResolvedValue(ok({ items: [item], total: 1, unreadCount: 1 })) };
-  const result = await new NotificationRepository(http as unknown as HttpClient).list();
+  const result = await new NotificationRepository(http as unknown as HttpClient).list(1, 20);
   if (!result.ok) throw new Error('list failed');
-  const [first] = result.value.items;
+  const [first] = result.value.page.items;
   if (first === undefined) throw new Error('no item');
   return first;
 };
@@ -70,5 +70,25 @@ describe('NotificationRepository.list — creator decisions', () => {
 
     expect(n.sourcePlatform).toBe('INSTAGRAM');
     expect(n.creatorPlatform).toBeNull();
+  });
+});
+
+describe('NotificationRepository.list — paging', () => {
+  it('asks for the requested page as limit/offset and reports whether more remain', async () => {
+    const http = { get: jest.fn().mockResolvedValue(ok({ items: [dto()], total: 45, unreadCount: 3 })) };
+    const result = await new NotificationRepository(http as unknown as HttpClient).list(2, 20);
+
+    expect(http.get).toHaveBeenCalledWith(expect.any(String), { params: { limit: 20, offset: 20 } });
+    if (!result.ok) throw new Error('list failed');
+    expect(result.value.page).toMatchObject({ page: 2, pageSize: 20, total: 45, hasMore: true });
+    expect(result.value.unreadCount).toBe(3);
+  });
+
+  it('says the last page is the last', async () => {
+    const http = { get: jest.fn().mockResolvedValue(ok({ items: [dto()], total: 45, unreadCount: 0 })) };
+    const result = await new NotificationRepository(http as unknown as HttpClient).list(3, 20);
+
+    expect(http.get).toHaveBeenCalledWith(expect.any(String), { params: { limit: 20, offset: 40 } });
+    expect(result.ok && result.value.page.hasMore).toBe(false);
   });
 });

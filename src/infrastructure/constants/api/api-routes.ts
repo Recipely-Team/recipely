@@ -30,6 +30,15 @@ export const ApiRoutes = {
     notificationRead: (id: string): string =>
       `/me/notifications/${encodeURIComponent(id)}/read`,
   },
+  shopping: {
+    /** GET a page; DELETE empties the list. */
+    list: '/me/shopping-list',
+    /** POST a batch of lines. */
+    items: '/me/shopping-list/items',
+    /** DELETE every checked line. */
+    checked: '/me/shopping-list/items/checked',
+    item: (id: string): string => `/me/shopping-list/items/${encodeURIComponent(id)}`,
+  },
   recipes: {
     root: '/recipes',
     trending: '/recipes/trending',
@@ -77,6 +86,8 @@ export const ApiRoutes = {
     follow: (userId: string): string => `/users/${encodeURIComponent(userId)}/follow`,
   },
   feedback: '/feedback',
+  /** The admin panel's on/off overrides of the app's feature flags; open to guests. */
+  flags: '/flags',
   /** The signed-in user's food diary; every route is scoped to the session's user. */
   diary: {
     day: (date: string): string => `/diary/days/${encodeURIComponent(date)}`,
@@ -86,6 +97,8 @@ export const ApiRoutes = {
     entries: '/diary/entries',
     entry: (id: string): string => `/diary/entries/${encodeURIComponent(id)}`,
     goals: '/diary/goals',
+    /** Candidate diary items from a meal description (JSON) or photo (multipart). */
+    mealParse: '/diary/meal-parse',
     /** What the Add food sheet can log: grouped search, curated catalogue, branded packs, recent foods. */
     foods: {
       search: '/diary/foods/search',

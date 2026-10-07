@@ -1,15 +1,17 @@
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantFailureCode, SessionEventKind } from '@live-assistant/core';
 import type { AssistantFailure, AssistantMicrophone, AssistantPlayer, AssistantSession, Result, SessionEvent } from '@live-assistant/core';
-import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
+import { ApiLiveTool } from '@application/assistant/session/live-tool-contract';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { AssistantStatus } from '@application/assistant/session/assistant-status';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { AssistantView } from '@application/assistant/session/assistant-view';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
+import { AskAssistantUseCase } from '@application/assistant/session/ask-assistant-use-case';
+import { RunAssistantActionUseCase } from '@application/assistant/actions/run-assistant-action-use-case';
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { AssistantMessengerInterface } from '@domain/assistant/session/assistant-messenger-interface';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
@@ -191,15 +193,23 @@ function harness(
   };
 
   const registry = new AssistantActionRegistry();
-  const store = configureAssistantSessionStore({ session, microphone, player, tokens, messenger, registry });
+  const store = configureAssistantSessionStore({
+    session,
+    microphone,
+    player,
+    tokens,
+    registry,
+    askAssistant: new AskAssistantUseCase(messenger),
+    runAction: new RunAssistantActionUseCase(registry),
+  });
   openStores.push(store);
   return { store, registry, calls, emit: (event: SessionEvent) => emit(event), release: () => release() };
 }
 
-type SpeechLine = Extract<AssistantTranscriptLine, { kind: typeof AssistantTranscriptLineKind.Speech }>;
+type SpeechLine = Extract<AssistantTranscriptLineType, { kind: typeof AssistantTranscriptLineKind.Speech }>;
 
 /** The lines that were SAID. An action line carries a key, not words. */
-const spoken = (transcript: AssistantTranscriptLine[]): SpeechLine[] =>
+const spoken = (transcript: AssistantTranscriptLineType[]): SpeechLine[] =>
   transcript.filter((line): line is SpeechLine => line.kind === AssistantTranscriptLineKind.Speech);
 
 /** One capture frame, loud enough to move a waveform: RMS is `amplitude`. */

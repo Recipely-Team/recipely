@@ -8,8 +8,7 @@ export interface RecipeFilters {
    */
   page?: number;
   search?: string;
-  // Opaque taxonomy keys (backend owns the full catalog); not narrowed to the
-  // local enums so newer backend cuisines/categories can be filtered on.
+  // Opaque backend taxonomy keys.
   cuisines?: string[];
   categories?: string[];
   difficulties?: Difficulty[];

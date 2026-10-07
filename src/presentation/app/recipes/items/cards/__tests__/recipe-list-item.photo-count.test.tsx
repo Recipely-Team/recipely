@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -15,10 +15,15 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 const summary = (photoCount: number): RecipeSummaryEntity => {
@@ -46,16 +51,16 @@ const summary = (photoCount: number): RecipeSummaryEntity => {
   return result.value;
 };
 
-const stores = (): Partial<Stores> =>
+const stores = (): Partial<ApplicationStores> =>
   ({
     likesStore: create(() => ({ byRecipe: {}, seed: jest.fn(), toggle: jest.fn() })),
     authStore: create(() => ({ state: { status: 'unauthenticated' } })),
     taxonomyStore: create(() => ({ cuisines: [], categories: [], status: 'idle', failure: null })),
-  }) as unknown as Partial<Stores>;
+  }) as unknown as Partial<ApplicationStores>;
 
 describe('RecipeListItem — photo count', () => {
   it('shows the chip with the count a multi-photo recipe carries', () => {
-    const { root } = renderComponent(<RecipeListItem recipe={summary(4)} onPress={jest.fn()} />, stores());
+    const { root } = renderComponent(<RecipeListItem recipe={summary(4)} onOpen={jest.fn()} />, stores());
 
     const texts = textContent(root);
     expect(texts).toContain('icon:image');
@@ -63,7 +68,7 @@ describe('RecipeListItem — photo count', () => {
   });
 
   it('shows no chip for a recipe whose only photo is its cover', () => {
-    const { root } = renderComponent(<RecipeListItem recipe={summary(1)} onPress={jest.fn()} />, stores());
+    const { root } = renderComponent(<RecipeListItem recipe={summary(1)} onOpen={jest.fn()} />, stores());
 
     expect(textContent(root)).not.toContain('icon:image');
   });

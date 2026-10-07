@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
@@ -43,8 +43,6 @@ export const ImportStageList = ({ activeStage, labels, accent }: ImportStageList
               style={[
                 styles.marker,
                 {
-                  // The active step wears the ring's accent, so the whole
-                  // screen says where this came from.
                   backgroundColor: isDone ? colors.success : isActive ? accent : colors.skeleton,
                 },
               ]}

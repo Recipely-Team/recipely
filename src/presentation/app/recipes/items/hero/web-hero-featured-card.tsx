@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -116,11 +116,7 @@ export const WebHeroFeaturedCard = ({
 };
 
 const styles = StyleSheet.create({
-  // Ratio-sized, not height-pinned. The card takes its width from the row's
-  // flex, so a pinned height made the shape a function of the window: at 2000px
-  // the hero was a 2.8:1 letterbox strip with the photo cropped to a band, and
-  // it squared up again as the window narrowed. This ratio is now the whole
-  // band's height — the row states none of its own.
+  // Ratio-sized, not height-pinned, so the shape holds at any width.
   card: {
     aspectRatio: aspectRatios.heroWide,
     borderRadius: radii.xxl2,

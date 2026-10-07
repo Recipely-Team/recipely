@@ -2,10 +2,9 @@ import { ListState } from '@presentation/base/hooks/assistant/args/describing/li
 import { resolveTargetName } from '@presentation/base/hooks/assistant/args/resolving/resolve-target-name';
 import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/machine-case';
 import { resolveTaxonomyKey } from '@presentation/base/hooks/assistant/args/resolving/resolve-taxonomy-key';
-import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
-import { getLocale } from '@presentation/i18n';
-import { LocaleConstants } from '@application/i18n/locale-constants';
+import { ALL_THEMES } from '@presentation/base/theme/colors/palette/themes';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
+import { t } from '@presentation/i18n';
 import { parseKeyValue } from '@presentation/base/hooks/assistant/args/resolving/parse-key-value';
 import { useCallback } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
@@ -18,6 +17,7 @@ import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/us
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What settings lends the assistant, named where it is consumed. */
 interface AssistantSettingsActionsDeps {
@@ -26,10 +26,10 @@ interface AssistantSettingsActionsDeps {
   /** Light, dark or follow-the-system. */
   preference: ThemePreference;
   /** Which palette is selected, by id; the reading says the name on the swatch. */
-  themeId: ThemeId;
+  themeId: ThemeIdType;
   onSetLanguage: (locale: string) => void;
   onSetThemePreference: (preference: ThemePreference) => void;
-  onSetThemeId: (themeId: ThemeId) => void;
+  onSetThemeId: (themeId: ThemeIdType) => void;
   onRequestSignOut: () => void;
 }
 
@@ -84,16 +84,12 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
   const { language, preference, themeId, onSetLanguage, onSetThemePreference, onSetThemeId, onRequestSignOut } =
     deps;
 
-  // What the screen currently says, which the assistant could not read at all:
-  // asked which language the app was in, or what the theme was set to, it had
-  // only the route to go on and answered from the conversation instead.
+  // Current language/theme so the assistant can answer about them.
   useAssistantScreenContent(() =>
     [`language=${language}`, `theme=${preference}`, `palette=${themeId}`].join(SCREEN_PART_SEPARATOR),
   );
 
-  // The same three by the names they are shown under, plus what else is on the
-  // screen. `readScreen` is the accessibility path: someone who cannot see the
-  // rows still gets told what they are.
+  // Rows by their shown names, for readScreen (accessibility).
   useAssistantScreenReading(() =>
     [
       `language=${LANGUAGE_NAMES[language] ?? language}`,
@@ -108,18 +104,14 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_key_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKeyEqualsValue };
 
         // "Language=tr" names the same preference as "language=tr".
         const key = resolveTargetName(parsed.key, [LANGUAGE, THEME, PALETTE]) ?? parsed.key;
         const value = machineLower(parsed.value);
 
         if (key === LANGUAGE) {
-          // The code first, then the name the picker shows. "Almanca" reached
-          // here as a word and was compared against `de` — so German, Spanish
-          // and Russian were each refused as unavailable while all three are
-          // selectable. The model is told to send a code; matching the endonym
-          // as well means a spoken "Español" lands even when it does not.
+          // Code first, then the shown name ("Almanca" → de).
           const locale = SUPPORTED_LOCALE_LIST.includes(value)
             ? value
             : resolveTaxonomyKey(
@@ -127,32 +119,30 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
                 parsed.value,
               );
           if (locale === null || !SUPPORTED_LOCALE_LIST.includes(locale)) {
-            return { ok: false, error: 'unknown_language' };
+            return { ok: false, error: AssistantActionError.UnknownLanguage };
           }
           onSetLanguage(locale);
           return { ok: true };
         }
         if (key === PALETTE) {
-          // Matched by NAME, through the same resolver the cuisine chips use:
-          // the id is `pearl`, the swatch says "İnci Beyazı", and the user says
-          // what the swatch says.
+          // Matched by the swatch name the user sees.
           const themeId = resolveTaxonomyKey(
             ALL_THEMES.map((id) => ({ key: id, name: paletteName(id) })),
             parsed.value,
           );
           if (themeId === null || !(ALL_THEMES as string[]).includes(themeId)) {
-            return { ok: false, error: 'unknown_palette' };
+            return { ok: false, error: AssistantActionError.UnknownPalette };
           }
-          onSetThemeId(themeId as ThemeId);
+          onSetThemeId(themeId as ThemeIdType);
           return { ok: true };
         }
         if (key === THEME) {
           const preference = THEME_PREFERENCES.find((p) => p === value);
-          if (preference === undefined) return { ok: false, error: 'unknown_theme' };
+          if (preference === undefined) return { ok: false, error: AssistantActionError.UnknownTheme };
           onSetThemePreference(preference);
           return { ok: true };
         }
-        return { ok: false, error: 'unknown_preference' };
+        return { ok: false, error: AssistantActionError.UnknownPreference };
       },
       [onSetLanguage, onSetThemePreference, onSetThemeId],
     ),
@@ -168,7 +158,6 @@ export const useAssistantSettingsActions = (deps: AssistantSettingsActionsDeps):
 };
 
 /** The palette's name in the language the user is reading, as the swatch shows it. */
-function paletteName(id: ThemeId): string {
-  const def = getThemeDefinition(id);
-  return getLocale() === LocaleConstants.tr ? def.nameTr : def.name;
+function paletteName(id: ThemeIdType): string {
+  return t().settings.themeNames[id];
 }

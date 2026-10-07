@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { controlSizes, diarySizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
@@ -8,7 +8,7 @@ export interface PickMessageProps {
   title: string;
   hint: string | null;
   /** The chip under the text: "Quick add" for no results, "Try again" after a failure. */
-  action: { label: string; icon: 'flash' | 'refresh'; onPress: () => void } | null;
+  action: { label: string; icon: 'flash' | 'refresh' | 'create-outline'; onPress: () => void } | null;
 }
 
 /** The pick step's no-results and failed faces: a search disc, a line, a hint and one chip (Add food v2 spec §4). */

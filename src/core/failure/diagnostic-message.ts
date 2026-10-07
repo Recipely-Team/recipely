@@ -92,6 +92,7 @@ export const DiagnosticMessage = {
   },
   auth: {
     invalidEmail: 'Invalid email format',
+    passwordTooShort: 'Password is shorter than the minimum length',
     noActiveSession: 'No active session to update',
     sessionUserChanged: 'The signed-in user changed before the answer arrived',
     appleUnavailableInBuild: 'Apple Sign-In is not available in this build',
@@ -141,6 +142,13 @@ export const DiagnosticMessage = {
       focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
       imageCreditIncomplete: 'Image credit needs an author, a licence and an http(s) link',
     },
+    quantity: {
+      amountNotPositive: 'A quantity amount must be a positive finite number',
+      rangeInverted: 'A quantity range must end above where it starts',
+    },
+    recipeServings: {
+      outOfRange: 'Servings must be a whole number within the recipe limits',
+    },
   },
   creator: {
     handleInvalid: (platform: string): string => `Not a valid ${platform} handle`,
@@ -162,10 +170,18 @@ export const DiagnosticMessage = {
     foodNameTooLong: 'Food name is longer than the diary allows',
     nutrientTooHigh: (field: string): string => `Nutrient ${field} is past the diary's plausibility cap`,
     recipeWithoutCalories: 'A recipe without calories per serving cannot be logged',
+    mealTextRequired: 'A meal description must be non-empty',
+    mealTextTooLong: 'A meal description is longer than the meal parser accepts',
+    mealItemInvalid: 'A meal-parse item needs a label and a positive gram amount',
     foodWithoutVariants: 'A catalogue food arrived without any variant',
     foodUnitInvalid: (raw: string): string => `Not a food base unit (g or ml): ${raw}`,
     foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
     foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
+  },
+  shopping: {
+    idRequired: 'A shopping item id must be non-empty',
+    labelRequired: 'A shopping item needs a label',
+    quantityInvalid: 'A shopping quantity must be a positive finite number or none',
   },
   instagram: {
     keywordInvalid: 'A keyword must be 1–40 characters',
@@ -192,6 +208,7 @@ export const DiagnosticMessage = {
     intentTokenUndated: 'The intent token arrived without a usable expiry',
     likeStateNotLoaded: 'Like state for this recipe has not arrived yet',
     likeAlreadyInFlight: 'A like for this recipe is already in flight',
+    budgetUnreadable: 'The voice budget arrived without a usable number of seconds',
   },
 } as const;
 
@@ -203,6 +220,7 @@ export const DiagnosticMessage = {
 export const FailureField = {
   token: 'token',
   email: 'email',
+  password: 'password',
   focus: 'focus',
   imageCredit: 'imageCredit',
   creatorHandle: 'handle',

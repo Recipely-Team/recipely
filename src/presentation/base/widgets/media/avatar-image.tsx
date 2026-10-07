@@ -1,11 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontWeights, durations } from '@presentation/base/theme';
 import { AVATAR_INITIALS_FONT_RATIO } from '@presentation/base/widgets/media/avatar-initials-font-ratio';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface AvatarImageProps {
   uri?: string;
@@ -45,8 +46,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
         source={{ uri }}
         style={{ width: size, height: size, borderRadius }}
         contentFit="cover"
-        // Avatars repeat across every comment and every card in a list, so the
-        // same handful of photos was being fetched dozens of times per screen.
+        // Avatars repeat across a list; cache them.
         cachePolicy="memory-disk"
         transition={durations.imageFade}
         recyclingKey={uri}
@@ -54,8 +54,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
     );
   }
 
-  // Fallback uses the primary gradient so the avatar always lifts off the
-  // theme's pale light backgrounds (e.g. Crimson Ember bg ≈ primaryLight).
+  // The fallback uses the primary gradient so it lifts off pale backgrounds.
   return (
     <LinearGradient
       colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
@@ -64,7 +63,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
-        {name.trim().length === ValueConstants.zero ? (
+        {isBlank(name) ? (
           <Ionicons name="person" size={size * PERSON_ICON_RATIO} color={colors.primaryText} />
         ) : (
           <Text

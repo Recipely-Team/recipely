@@ -11,9 +11,7 @@ import type { PublishBlockerType } from '@domain/recipes/publishing/publish-bloc
 export interface RecipeEntityProps {
   id: string;
   name: string;
-  // Opaque taxonomy keys; the backend owns the full catalog and validates
-  // them. Kept as `string` rather than the local enums (which mirror only a
-  // curated subset) so recipes using newer backend keys round-trip intact.
+  // Opaque backend taxonomy keys, not the local curated enums.
   cuisine: string;
   category: string;
   difficulty: Difficulty;
@@ -37,7 +35,6 @@ export interface RecipeEntityProps {
   mealType: string[];
   ownerId: string;
   likeCount: number;
-  likedByMe: boolean;
   viewCount: number;
   /** Where the text came from; `User` for anything this app does not know. */
   origin: RecipeOriginType;

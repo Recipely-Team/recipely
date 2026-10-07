@@ -25,6 +25,8 @@ export const LEGACY_SESSION_STORAGE_KEY = 'layerly.session.v1';
 export const TIMERS_STORAGE_KEY = 'recipely.timers.v1';
 export const LANGUAGE_STORAGE_KEY = 'recipely.language.v1';
 export const ONBOARDING_SEEN_STORAGE_KEY = 'recipely.onboarding.seen.v1';
+export const REMINDERS_CHOICE_STORAGE_KEY = 'recipely.reminders.choice.v1';
+export const FIRST_OPEN_AT_STORAGE_KEY = 'recipely.first-open-at.v1';
 export const TIMERS_BAR_COLLAPSED_STORAGE_KEY = 'recipely.timers.bar.collapsed.v1';
 
 /**

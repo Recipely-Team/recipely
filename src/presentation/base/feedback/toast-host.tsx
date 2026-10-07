@@ -1,11 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { spacing, controlSizes, zIndices } from '@presentation/base/theme';
+import { spacing, controlSizes, zIndices, layoutSizes } from '@presentation/base/theme';
 import { Toast } from '@presentation/base/feedback/toast';
 import { toastStore } from '@presentation/base/feedback/toast-store';
 import { ValueConstants } from '@core/constants';
 
-const MAX_WIDTH = 460;
+const MAX_WIDTH = layoutSizes.maxContentXl;
 
 /**
  * Renders the global toast stack, anchored above the bottom safe area and tab

@@ -9,7 +9,18 @@ import {
   DISMISS_ALARM_ACTION,
 } from '@domain/notifications/timer-notification-keys';
 import { TimeConstants, ValueConstants } from '@core/constants';
-import { ALARM_VIBRATION_PATTERN } from '@infrastructure/constants/notifications';
+import { TIMER_WARNING } from '@domain/timers/timer-warning-keys';
+import { ENGAGEMENT_REMINDER } from '@domain/notifications/reminders/reminder-notification-keys';
+import { replaceScheduledReminders } from '@infrastructure/notifications/replace-scheduled-reminders';
+import { listenReminderOpened } from '@infrastructure/notifications/listen-reminder-opened';
+import type { ReminderOpened } from '@domain/notifications/reminders/reminder-opened';
+import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
+import type { ReminderNotification } from '@domain/notifications/reminders/reminder-notification';
+import {
+  ALERT_CHANNEL,
+  WARNING_CHANNEL,
+  registerNotificationChannels,
+} from '@infrastructure/notifications/notification-channels';
 
 if (__DEV__) {
   LogBox.ignoreLogs([
@@ -20,8 +31,6 @@ if (__DEV__) {
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const Notifications = require('expo-notifications') as typeof NotificationsType;
-
-const ALERT_CHANNEL = 'recipely-timer-alert-v4';
 
 // Notification category identifier — the "Kapat" dismiss action lives under it.
 const TIMER_ALERT_CATEGORY = 'TIMER_ALERT';
@@ -57,11 +66,11 @@ const ALARM_EMOJI = '⏰';
  *   `console.error` on Android Expo Go at module-load time, and an ES `import`
  *   is hoisted above any suppression. `import type` erases at runtime, so
  *   `LogBox.ignoreLogs` registers before `require` initialises the module.
- * - **Channel ID is v4.** Android channel properties are immutable once
- *   created: v3 shipped with a custom `sound:'alarm'` file that doesn't exist
- *   and was patched to the string `'default'`, which looks for `res/raw/default`
- *   — also missing, so the channel was silent. `sound: true` is the correct
- *   value for "the device's default sound".
+ * - **Channels:** alarm, quiet heads-up and reminder each have their own
+ *   (`notification-channels.ts`); the alarm's is v4 because v3 shipped silent.
+ * - **Quiet in the foreground:** a heads-up or reminder that arrives while the
+ *   app is open plays no sound, and a reminder shows nothing at all; the user is
+ *   already here.
  * - **One notification, not a series.** The in-app expo-audio loop is the
  *   continuous alert; the follow-up nudges exist only for a backgrounded app.
  */
@@ -70,52 +79,31 @@ export class NotificationService implements NotificationServiceInterface {
     if (isWeb()) return;
     try {
       Notifications.setNotificationHandler({
-        handleNotification: async () => ({
-          shouldShowBanner: true,
-          shouldShowList: true,
-          shouldPlaySound: true,
-          shouldSetBadge: false,
-        }),
+        handleNotification: async (n: NotificationsType.Notification) => {
+          const type = (n.request.content.data as Record<string, unknown> | undefined)?.['type'];
+          const isReminder = type === ENGAGEMENT_REMINDER;
+          return {
+            shouldShowBanner: !isReminder,
+            shouldShowList: !isReminder,
+            shouldPlaySound: type !== TIMER_WARNING && !isReminder,
+            shouldSetBadge: false,
+          };
+        },
       });
 
-      // Register the "Kapat" action button — shown on both iOS (long-press /
-      // expanded notification) and Android (notification action row).
       await Notifications.setNotificationCategoryAsync(TIMER_ALERT_CATEGORY, [
         {
           identifier: DISMISS_ALARM_ACTION,
           buttonTitle: copy.dismissAction,
           options: {
             isDestructive: true,
-            // opensAppToForeground: false lets the action run without bringing
-            // the app to the foreground. If the app is fully killed the OS may
-            // still open it briefly, but the intent is minimal interruption.
+            // Run the action without foregrounding the app.
             opensAppToForeground: false,
           },
         },
       ]);
 
-      if (isAndroid()) {
-        await Notifications.setNotificationChannelAsync(ALERT_CHANNEL, {
-          name: copy.channelName,
-          importance: Notifications.AndroidImportance.MAX,
-          // WHY: omitting `sound` causes the Android channel manager to set
-          // Settings.System.DEFAULT_NOTIFICATION_URI — the device's system
-          // notification sound. Passing 'default' (string) mistakenly calls
-          // mSoundResolver.resolve('default') which returns null (file not in
-          // res/raw) → silent channel. Passing `true` is a TypeScript error.
-          // So the only correct way for default sound is to omit the key.
-          enableVibrate: true,
-          // Copied: expo-notifications takes a mutable `number[]`, and the
-          // constant must not be mutable shared state.
-          vibrationPattern: [...ALARM_VIBRATION_PATTERN],
-          // Route audio through the Alarm volume stream so it rings loudly
-          // even when notification volume is turned down.
-          audioAttributes: {
-            usage: 4, // AudioUsage.ALARM
-            contentType: 4, // AudioContentType.SONIFICATION
-          },
-        });
-      }
+      if (isAndroid()) await registerNotificationChannels(Notifications, copy);
     } catch {
       // Notifications unavailable (e.g. Expo Go limitations). Timers still run.
     }
@@ -133,6 +121,16 @@ export class NotificationService implements NotificationServiceInterface {
     }
   }
 
+  async hasPermission(): Promise<boolean> {
+    if (isWeb()) return false;
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      return status === PermissionStatus.GRANTED;
+    } catch {
+      return false;
+    }
+  }
+
   /**
    * Schedules the timer completion notification.
    * Returns the scheduled notification ID(s) so they can be cancelled on dismiss.
@@ -144,18 +142,51 @@ export class NotificationService implements NotificationServiceInterface {
     body: string,
   ): Promise<string[]> {
     if (isWeb()) return [];
-    const ids: string[] = [];
     const all = [endTimeMs];
     for (let i = ValueConstants.one; i <= REMINDER_COUNT; i++) {
       all.push(endTimeMs + i * REMINDER_INTERVAL_MS);
     }
     const results = await Promise.all(
-      all.map((t) => this.scheduleSingle(timerId, recipeName, t, body)),
+      all.map((t) =>
+        this.scheduleIn(t, ALERT_CHANNEL, {
+          title: `${ALARM_EMOJI} ${recipeName}`,
+          body,
+          // iOS reads sound from content; Android from the channel.
+          sound: isIos() ? 'default' : undefined,
+          categoryIdentifier: TIMER_ALERT_CATEGORY,
+          data: { type: TIMER_COMPLETE, timerId, recipeName },
+        }),
+      ),
     );
-    for (const id of results) {
-      if (id !== null) ids.push(id);
-    }
-    return ids;
+    return results.filter((id): id is string => id !== null);
+  }
+
+  async scheduleTimerWarnings(
+    timerId: string,
+    recipeName: string,
+    alerts: readonly TimerWarningAlert[],
+  ): Promise<string[]> {
+    if (isWeb()) return [];
+    const results = await Promise.all(
+      alerts.map((alert) =>
+        this.scheduleIn(alert.fireAtMs, WARNING_CHANNEL, {
+          title: `${ALARM_EMOJI} ${recipeName}`,
+          body: alert.body,
+          data: { type: TIMER_WARNING, timerId, recipeName },
+        }),
+      ),
+    );
+    return results.filter((id): id is string => id !== null);
+  }
+
+  async replaceReminders(reminders: readonly ReminderNotification[]): Promise<void> {
+    if (isWeb()) return;
+    await replaceScheduledReminders(Notifications, reminders);
+  }
+
+  onReminderOpened(listener: (opened: ReminderOpened) => void): () => void {
+    if (isWeb()) return () => undefined;
+    return listenReminderOpened(Notifications, listener);
   }
 
   async cancel(notifIds: string[]): Promise<void> {
@@ -168,11 +199,11 @@ export class NotificationService implements NotificationServiceInterface {
     );
   }
 
-  private async scheduleSingle(
-    timerId: string,
-    recipeName: string,
+  /** Schedules one notification `fireAtMs` from now on `channelId`; `null` when the OS refuses it. */
+  private async scheduleIn(
     fireAtMs: number,
-    body: string,
+    channelId: string,
+    content: NotificationsType.NotificationContentInput,
   ): Promise<string | null> {
     const delaySeconds = Math.max(
       MIN_NOTIFICATION_DELAY_SECONDS,
@@ -180,19 +211,11 @@ export class NotificationService implements NotificationServiceInterface {
     );
     try {
       return await Notifications.scheduleNotificationAsync({
-        content: {
-          title: `${ALARM_EMOJI} ${recipeName}`,
-          body,
-          // iOS reads sound from content; Android ignores it (channel sets sound).
-          // Using 'default' until a native build bundles alarm.mp3 in the app.
-          sound: isIos() ? 'default' : undefined,
-          categoryIdentifier: TIMER_ALERT_CATEGORY,
-          data: { type: TIMER_COMPLETE, timerId, recipeName },
-        },
+        content,
         trigger: {
           type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
           seconds: delaySeconds,
-          ...(isAndroid() && { channelId: ALERT_CHANNEL }),
+          ...(isAndroid() && { channelId }),
         },
       });
     } catch {

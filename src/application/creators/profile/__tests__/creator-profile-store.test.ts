@@ -5,13 +5,13 @@ import { StoreStatus } from '@application/store/store-status';
 import { configureCreatorProfileStore } from '@application/creators/profile/creator-profile-store';
 import { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
 import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
-import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-use-case';
-import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
+import { SetFollowingUseCase } from '@application/user-profile/follow/set-following-use-case';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { FakeUserProfileRepository } from '@application/__fixtures__/fake-user-profile-repository';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { recipeSummaryOf } from '@application/__fixtures__/recipe-summary-of';
 import { viewedProfileOf } from '@application/__fixtures__/viewed-profile-of';
-import { CREATOR_RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { Page } from '@domain/common/page';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
@@ -19,8 +19,7 @@ const storeOver = (repo: FakeUserProfileRepository) =>
   configureCreatorProfileStore({
     getViewedProfile: new GetViewedUserProfileUseCase(repo),
     listUserRecipes: new ListUserRecipesUseCase(repo),
-    follow: new FollowUserUseCase(repo),
-    unfollow: new UnfollowUserUseCase(repo),
+    setFollowing: new SetFollowingUseCase(repo),
   });
 
 const deferred = <T>(): { promise: Promise<Result<T, Failure>>; resolve: (answer: Result<T, Failure>) => void } => {
@@ -46,11 +45,11 @@ describe('creator profile store', () => {
     await opening;
 
     expect(repo.viewedCalls).toEqual(['u-1']);
-    expect(repo.recipeCalls).toEqual([['u-1', 1, CREATOR_RECIPES_PAGE_SIZE]]);
-    const { profileState, recipes, recipesState } = store.getState();
+    expect(repo.recipeCalls).toEqual([['u-1', 1, PageSizes.creatorRecipes]]);
+    const { profileState, recipes } = store.getState();
     expect(profileState.status === StoreStatus.Loaded && profileState.viewed.profile.id).toBe('u-1');
-    expect(recipes.map((r) => r.id)).toEqual(['r-1']);
-    expect(recipesState).toEqual({ status: StoreStatus.Loaded, page: 1, hasMore: true });
+    expect(loadedItems(recipes).map((r) => r.id)).toEqual(['r-1']);
+    expect(recipes).toMatchObject({ status: StoreStatus.Loaded, page: 1, hasMore: true });
   });
 
   it('a failed profile read is an error state', async () => {
@@ -76,7 +75,7 @@ describe('creator profile store', () => {
     await reopening;
 
     expect(store.getState().profileState.status).toBe(StoreStatus.Loaded);
-    expect(store.getState().recipes.map((r) => r.id)).toEqual(['r-1']);
+    expect(loadedItems(store.getState().recipes).map((r) => r.id)).toEqual(['r-1']);
   });
 
   it('drops the answer for a user that is no longer open', async () => {
@@ -92,7 +91,7 @@ describe('creator profile store', () => {
     await first;
 
     expect(store.getState().userId).toBe('u-2');
-    expect(store.getState().recipes.map((r) => r.id)).toEqual(['r-2']);
+    expect(loadedItems(store.getState().recipes).map((r) => r.id)).toEqual(['r-2']);
   });
 
   it('loadMoreRecipes appends the next page and skips a repeat', async () => {
@@ -103,9 +102,9 @@ describe('creator profile store', () => {
 
     await store.getState().loadMoreRecipes();
 
-    expect(repo.recipeCalls[1]).toEqual(['u-1', 2, CREATOR_RECIPES_PAGE_SIZE]);
-    expect(store.getState().recipes.map((r) => r.id)).toEqual(['r-1', 'r-2']);
-    expect(store.getState().recipesState).toEqual({ status: StoreStatus.Loaded, page: 2, hasMore: false });
+    expect(repo.recipeCalls[1]).toEqual(['u-1', 2, PageSizes.creatorRecipes]);
+    expect(loadedItems(store.getState().recipes).map((r) => r.id)).toEqual(['r-1', 'r-2']);
+    expect(store.getState().recipes).toMatchObject({ status: StoreStatus.Loaded, page: 2, hasMore: false });
   });
 
   it('toggleFollow follows and counts the viewer in', async () => {
@@ -286,6 +285,6 @@ describe('creator profile store', () => {
 
     expect(store.getState().userId).toBeNull();
     expect(store.getState().profileState).toEqual({ status: StoreStatus.Idle });
-    expect(store.getState().recipes).toEqual([]);
+    expect(store.getState().recipes).toEqual({ status: StoreStatus.Idle });
   });
 });

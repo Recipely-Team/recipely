@@ -1,9 +1,10 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities, colorAlphas } from '@presentation/base/theme';
+import { t, useLocale } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
@@ -17,21 +18,19 @@ import { creatorPlatformName } from '@presentation/base/widgets/creators/creator
 const actionText = (n: NotifItem): string => {
   const labels = t().notifications;
   switch (n.kind) {
-    case 'comment': return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
-    case 'like': return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
-    case 'favorite': return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
-    case 'ai_done': return labels.aiDoneLabel;
-    case 'import_done': return labels.importDoneLabel;
-    case 'import_failed': return labels.importFailedLabel;
-    case 'moderation_approved': return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
-    case 'moderation_pending': return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
-    case 'follow': return labels.followed;
+    case NotifKind.Comment: return `${labels.commented} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Like: return `${labels.liked} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Favorite: return `${labels.saved} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.AiDone: return labels.aiDoneLabel;
+    case NotifKind.ImportDone: return labels.importDoneLabel;
+    case NotifKind.ImportFailed: return labels.importFailedLabel;
+    case NotifKind.ModerationApproved: return `${labels.modOk} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.ModerationPending: return `${labels.modPending} ${n.recipeName ?? CharConstants.empty}`;
+    case NotifKind.Follow: return labels.followed;
     case NotifKind.CreatorApproved: return creatorLine(labels.creatorApproved, n);
     case NotifKind.CreatorRejected: return creatorLine(labels.creatorRejected, n);
-    // NEVER empty. An unknown type degrades to `generic`, and this used to
-    // return '' for anything with no recipe behind it — which is how an
-    // `import_done` the app did not know about rendered as a blank row.
-    case 'generic': return n.recipeName ?? labels.genericLabel;
+    // Never empty: unknown kinds fall back to the generic label.
+    case NotifKind.Generic: return n.recipeName ?? labels.genericLabel;
   }
 };
 
@@ -40,7 +39,7 @@ const creatorLine = (template: string, n: NotifItem): string =>
   // A platform this build cannot name: the row still says something, never blank.
   n.creator === undefined ? t().notifications.genericLabel : template.replace('{platform}', creatorPlatformName(n.creator.platform));
 
-interface NotifRowProps {
+export interface NotifRowProps {
   item: NotifItem;
   onTap: (item: NotifItem) => void;
 }
@@ -53,8 +52,11 @@ const PRESSED_OPACITY = opacities.pressedLight;
  * follow — there is no public user-profile route) has nothing left to do: it
  * renders disabled, with no press feedback, and announces as text rather than
  * a button so assistive tech never offers an action that does nothing.
+ * Memoised: the screen passes one stable `onTap` to every row.
  */
-export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
+const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
+  // Memoised: subscribe to the language so a switch still re-renders the row's copy.
+  useLocale();
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
   const tappable = item.target !== null || !item.read;
@@ -80,8 +82,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
       ]}
       accessibilityRole={tappable ? 'button' : 'text'}
       accessibilityLabel={[item.actor, actionText(item), sourceLine].filter(Boolean).join(' ')}
-      // A target-less unread row's only action is "mark read" — say so, since
-      // the label alone gives assistive tech no cue what activating it does.
+      // Target-less unread rows only mark read; say so.
       accessibilityHint={
         item.target === null && !item.read ? t().notifications.markOneHint : undefined
       }
@@ -91,7 +92,7 @@ export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
           <ProvenanceSeal marks={[item.source.platform]} surface={SealSurface.Page} size={avatarSizes.md} decorative />
         </View>
       ) : (
-        <View style={[styles.iconCircle, { backgroundColor: meta.color + '20' }]}>
+        <View style={[styles.iconCircle, { backgroundColor: meta.color + colorAlphas.wash }]}>
           <Ionicons name={meta.icon} size={iconSizes.xl} color={meta.color} />
         </View>
       )}
@@ -152,3 +153,5 @@ const styles = StyleSheet.create({
     flexShrink: ValueConstants.zero,
   },
 });
+
+export const NotifRow = memo(NotifRowComponent);

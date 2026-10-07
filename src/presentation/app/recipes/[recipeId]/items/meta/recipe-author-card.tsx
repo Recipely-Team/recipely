@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { KitchenAvatar } from '@presentation/app/recipes/[recipeId]/items/meta/kitchen-avatar';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

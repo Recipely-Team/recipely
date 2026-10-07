@@ -6,7 +6,7 @@ import Animated, {
   withSpring,
   withTiming,
 } from 'react-native-reanimated';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   spacing,
@@ -33,6 +33,8 @@ import { RecipeCardRating } from '@presentation/base/widgets/cards/recipe-card-r
 
 /** How far the card dips under a press, and how long each half takes. */
 const PRESS_SCALE = 0.97;
+/** The like heart's pop: how big, and how bouncy (spring damping). */
+const HEART_POP = { scale: 1.4, damping: 4 } as const;
 const PRESS_IN_MS = 100;
 const PRESS_OUT_MS = 150;
 
@@ -104,8 +106,8 @@ export const RecipeCard = ({
   }));
 
   const handleLike = () => {
-    heartScale.value = withSpring(1.4, { damping: 4 }, () => {
-      heartScale.value = withSpring(1);
+    heartScale.value = withSpring(HEART_POP.scale, { damping: HEART_POP.damping }, () => {
+      heartScale.value = withSpring(ValueConstants.one);
     });
     onLike?.();
   };

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
@@ -14,12 +14,12 @@ import { ValueConstants } from '@core/constants';
 const RING_DELAY_MS = 40;
 const STEPS_DELAY_MS = 220;
 const RING_SIZE = 120;
-const RING_CENTER = RING_SIZE / 2;
+const RING_CENTER = RING_SIZE / ValueConstants.two;
 /** Rotates the arc so its zero point is at twelve o'clock; an SVG arc starts at three. */
 const RING_START_ROTATION = -90;
 const RING_RADIUS = 46;
 const RING_STROKE = 10;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const RING_CIRCUMFERENCE = ValueConstants.two * Math.PI * RING_RADIUS;
 const RING_PROGRESS = 0.68;
 const CHECK_DOT = 20;
 const CARD_WIDTH = 210;
@@ -67,7 +67,7 @@ export const HeroTimer = ({ active = true }: HeroProps): React.JSX.Element => {
               strokeLinecap="round"
               fill="none"
               strokeDasharray={RING_CIRCUMFERENCE}
-              strokeDashoffset={RING_CIRCUMFERENCE * (1 - RING_PROGRESS)}
+              strokeDashoffset={RING_CIRCUMFERENCE * (ValueConstants.one - RING_PROGRESS)}
               originX={RING_CENTER}
               originY={RING_CENTER}
               rotation={RING_START_ROTATION}
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
   checkDot: {
     width: CHECK_DOT,
     height: CHECK_DOT,
-    borderRadius: CHECK_DOT / 2,
+    borderRadius: CHECK_DOT / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },

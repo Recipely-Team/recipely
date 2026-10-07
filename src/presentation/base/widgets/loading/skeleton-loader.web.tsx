@@ -1,6 +1,7 @@
 import type { ViewStyle } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { radii } from '@presentation/base/theme';
+import { WebShimmer } from '@presentation/base/widgets/loading/web-shimmer';
 
 export interface SkeletonLoaderProps {
   width: number | string;
@@ -9,18 +10,7 @@ export interface SkeletonLoaderProps {
   style?: ViewStyle;
 }
 
-const SHIMMER_KEYFRAMES_ID = 'recipely-shimmer';
 
-/** Injects the shimmer keyframes into the document head once (web only). */
-const ensureShimmerKeyframes = (): void => {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(SHIMMER_KEYFRAMES_ID)) return;
-  const style = document.createElement('style');
-  style.id = SHIMMER_KEYFRAMES_ID;
-  style.textContent =
-    '@keyframes recipely-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
-  document.head.appendChild(style);
-};
 
 /**
  * Web shimmer placeholder. The native build animates a moving highlight block
@@ -35,7 +25,7 @@ export const SkeletonLoader = ({
   style,
 }: SkeletonLoaderProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  ensureShimmerKeyframes();
+  WebShimmer.ensureKeyframes();
 
   return (
     <div
@@ -43,9 +33,7 @@ export const SkeletonLoader = ({
         width,
         height,
         borderRadius,
-        background: `linear-gradient(90deg, ${colors.skeleton} 25%, ${colors.skeletonHighlight} 50%, ${colors.skeleton} 75%)`,
-        backgroundSize: '200% 100%',
-        animation: 'recipely-shimmer 1.4s linear infinite',
+        ...WebShimmer.style(colors.skeleton, colors.skeletonHighlight),
         ...(style as unknown as React.CSSProperties),
       }}
     />

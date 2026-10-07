@@ -1,12 +1,11 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
-import { LocaleConstants } from '@application/i18n/locale-constants';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { ALL_THEMES, getThemeDefinition } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import {
   spacing,
   radii,
@@ -18,12 +17,12 @@ import {
   lineHeights,
   lineHeightFor,
 } from '@presentation/base/theme';
-import { getLocale } from '@presentation/i18n';
+import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface ThemeGridProps {
-  selectedThemeId: ThemeId;
-  onSelect: (themeId: ThemeId) => void;
+  selectedThemeId: ThemeIdType;
+  onSelect: (themeId: ThemeIdType) => void;
 }
 
 const CHIP_WIDTH = 76;
@@ -41,7 +40,6 @@ export const ThemeGrid = ({
   onSelect,
 }: ThemeGridProps): React.JSX.Element => {
   const { scheme, colors } = useTheme();
-  const lang = getLocale() === LocaleConstants.tr ? LocaleConstants.tr : LocaleConstants.en;
 
   return (
     <ScrollView
@@ -53,11 +51,14 @@ export const ThemeGrid = ({
         const def = getThemeDefinition(id);
         const variant = scheme === ThemeVariant.Dark ? def.dark : def.light;
         const isActive = id === selectedThemeId;
-        const label = lang === LocaleConstants.tr ? def.nameTr : def.name;
+        const label = t().settings.themeNames[id];
 
         return (
           <Pressable
             key={id}
+            accessibilityRole="radio"
+            accessibilityLabel={label}
+            accessibilityState={{ selected: isActive, checked: isActive }}
             onPress={() => onSelect(id)}
             style={({ pressed }) => [
               styles.chip,
@@ -123,7 +124,7 @@ const styles = StyleSheet.create({
   swatch: {
     width: SWATCH_SIZE,
     height: SWATCH_SIZE,
-    borderRadius: SWATCH_SIZE / 2,
+    borderRadius: SWATCH_SIZE / ValueConstants.two,
     overflow: 'hidden',
   },
   checkBadge: {

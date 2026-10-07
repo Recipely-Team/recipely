@@ -141,3 +141,13 @@ describe('RecipeEntity.heroPhotos / photoCount', () => {
     expect(recipe.photoCount).toBe(0);
   });
 });
+
+describe('RecipeEntity.isOwnedBy', () => {
+  it('is true only for the owner, never for a guest', () => {
+    const result = RecipeEntity.create({ ...validProps, ownerId: 'o1' });
+    if (!result.ok) throw new Error('fixture');
+    expect(result.value.isOwnedBy('o1')).toBe(true);
+    expect(result.value.isOwnedBy('o2')).toBe(false);
+    expect(result.value.isOwnedBy(null)).toBe(false);
+  });
+});

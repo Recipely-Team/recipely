@@ -1,12 +1,12 @@
+import { useCallback } from 'react';
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ListConstants } from '@presentation/base/constants';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
-import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
+import { MyRecipeCell } from '@presentation/app/my-recipes/items/my-recipe-cell';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
@@ -25,6 +25,10 @@ import type { AssistantScrollableProps } from '@presentation/base/hooks/assistan
 import { ValueConstants } from '@core/constants';
 
 type DraftItem = React.ComponentProps<typeof DraftCard>['draft'];
+
+// Module-level so their identity is stable: an inline separator remounts on every render.
+const Separator = (): React.JSX.Element => <View style={styles.separator} />;
+const idKey = (row: { id: string }): string => row.id;
 
 /**
  * What each tab says when it has nothing. Read lazily: `t()` resolves against
@@ -79,6 +83,10 @@ export interface MyRecipesListProps {
  * The skeleton branch comes FIRST: an unanswered tab is not an empty one, and
  * rendering "you have saved nothing yet" while the request was still in flight
  * is what made every cold open flash an empty screen before filling in.
+ *
+ * Rows are memoised and get only the screen's stable id handlers (`FlatList`
+ * calls `renderItem` for every visible cell on each render, so a fresh arrow
+ * per row re-rendered them all); both lists are windowed with `ListConstants`.
  */
 export const MyRecipesList = ({
   tab,
@@ -100,8 +108,27 @@ export const MyRecipesList = ({
   scrollable,
 }: MyRecipesListProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  // `tintColor` is iOS-only and `colors` is Android-only; both are needed for the
-  // spinner to follow the theme on each platform.
+  const renderDraft = useCallback(
+    ({ item }: { item: DraftItem }): React.JSX.Element => (
+      <DraftCard draft={item} onOpen={onOpenDraft} onDelete={onDeleteDraft} />
+    ),
+    [onOpenDraft, onDeleteDraft],
+  );
+  const renderRecipe = useCallback(
+    ({ item }: { item: RecipeSummaryEntity }): React.JSX.Element => (
+      <MyRecipeCell
+        recipe={item}
+        gridColumns={gridColumns}
+        isExpanded={isExpanded}
+        saved={isSaved(item.id)}
+        ownedByMe={tab === TabType.Created}
+        onOpen={onOpenRecipe}
+        onToggleSave={onToggleSave}
+      />
+    ),
+    [gridColumns, isExpanded, isSaved, onOpenRecipe, onToggleSave, tab],
+  );
+  // tintColor (iOS) and colors (Android) both theme the spinner.
   const refreshControl = (
     <RefreshControl
       refreshing={isRefreshing}
@@ -115,8 +142,7 @@ export const MyRecipesList = ({
     return <MyRecipesSkeleton tab={tab} gridColumns={gridColumns} />;
   }
 
-  // Only when there is nothing to fall back on: a failed RELOAD leaves the rows
-  // the user was already reading exactly where they are.
+  // Only with nothing to fall back on; a failed reload keeps the rows.
   if (loadFailure !== null && (tab === TabType.Drafts ? drafts.length : items.length) === ValueConstants.zero) {
     const content = failureContent(loadFailure);
     return (
@@ -154,15 +180,12 @@ export const MyRecipesList = ({
         {...scrollable}
         refreshControl={refreshControl}
         data={drafts}
-        keyExtractor={(d) => d.id}
-        renderItem={({ item }) => (
-          <DraftCard
-            draft={item}
-            onOpen={() => onOpenDraft(item.id)}
-            onDelete={() => onDeleteDraft(item.id)}
-          />
-        )}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
+        keyExtractor={idKey}
+        renderItem={renderDraft}
+        ItemSeparatorComponent={Separator}
+        initialNumToRender={ListConstants.initialRows}
+        maxToRenderPerBatch={ListConstants.rowsPerBatch}
+        windowSize={ListConstants.windowSize}
         contentContainerStyle={styles.listContent}
         style={styles.list}
         onEndReached={onDraftsEndReached}
@@ -196,37 +219,14 @@ export const MyRecipesList = ({
       refreshControl={refreshControl}
       key={`grid-${gridColumns}`}
       data={items as RecipeSummaryEntity[]}
-      keyExtractor={(r) => r.id}
+      keyExtractor={idKey}
       numColumns={gridColumns}
-      renderItem={({ item }) => (
-        <View style={gridColumns > ValueConstants.one ? styles.gridCell : null}>
-          {isExpanded ? (
-            <WebRecipeListItem
-              recipe={item}
-              saved={isSaved(item.id)}
-              onOpen={onOpenRecipe}
-              onToggleSave={onToggleSave}
-              ownedByMe={tab === TabType.Created}
-            />
-          ) : (
-            <RecipeCard
-              name={item.name}
-              image={item.image}
-              imageFocus={item.imageFocus}
-              cuisine={item.cuisine}
-              difficulty={item.difficulty}
-              rating={item.rating}
-              photoCount={item.photoCount}
-              onPress={() => onOpenRecipe(item.id)}
-              {...(tab === TabType.Created
-                ? { ownerStatus: item.ownerStatus, onEditPhotos: () => onOpenRecipe(item.id) }
-                : {})}
-            />
-          )}
-        </View>
-      )}
+      renderItem={renderRecipe}
+      initialNumToRender={ListConstants.initialRows}
+      maxToRenderPerBatch={ListConstants.rowsPerBatch}
+      windowSize={ListConstants.windowSize}
       columnWrapperStyle={gridColumns > ValueConstants.one ? styles.gridRow : undefined}
-      ItemSeparatorComponent={gridColumns === ValueConstants.one ? () => <View style={styles.separator} /> : undefined}
+      ItemSeparatorComponent={gridColumns === ValueConstants.one ? Separator : undefined}
       contentContainerStyle={[styles.listContent, gridColumns > ValueConstants.one ? styles.gridContent : null]}
       style={styles.list}
     />
@@ -253,11 +253,7 @@ const styles = StyleSheet.create({
     paddingTop: spacing.md,
     gap: GRID_GAP,
   },
-  gridCell: {
-    flex: ValueConstants.one,
-  },
-  // flexGrow keeps the empty state pullable: the scroll content must fill the
-  // viewport so the gesture has a surface even with almost nothing rendered.
+  // flexGrow keeps the empty state pullable.
   emptyContent: {
     flexGrow: ValueConstants.one,
   },

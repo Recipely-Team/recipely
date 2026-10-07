@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react';
-import { Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import * as DocumentPicker from 'expo-document-picker';
 import type { ImportFile } from '@domain/recipes/import-file/import-file';
@@ -8,7 +7,8 @@ import { ImportFileMimeType } from '@domain/recipes/import-file/import-file-mime
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import type { PickImportFilesCallback } from '@presentation/app/import-recipe/model/file/pick-import-files';
-import { t } from '@presentation/i18n';
+import { ValueConstants } from '@core/constants';
+import { PhotoPickFeedback } from '@presentation/base/feedback/photo-pick-feedback';
 
 // No `quality`: `shrinkForUpload` owns the one re-encode.
 const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
@@ -20,13 +20,6 @@ const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
 const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
 const PAGE_FILE_PREFIX = 'page-';
 const JPEG_EXTENSION = '.jpg';
-
-const tellPermissionDenied = (): void => {
-  Alert.alert(t().recipes.photoPermissionDenied, undefined, [
-    { text: t().common.cancel, style: 'cancel' },
-    { text: t().common.openSettings, onPress: () => void Linking.openSettings().catch(() => undefined) },
-  ]);
-};
 
 /**
  * The phone's page picker: the camera, or photos from the library in the
@@ -50,7 +43,7 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
     try {
       if (source === PickSource.File) {
         const doc = await DocumentPicker.getDocumentAsync({ type: ImportFileMimeType.Pdf, copyToCacheDirectory: true, multiple: false });
-        const asset = doc.canceled ? undefined : doc.assets[0];
+        const asset = doc.canceled ? undefined : doc.assets[ValueConstants.zero];
         if (asset === undefined) return [];
         return [{ uri: asset.uri, fileName: asset.name, mimeType: ImportFileMimeType.Pdf, sizeBytes: asset.size ?? null }];
       }
@@ -59,7 +52,7 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
         ? await ImagePicker.requestCameraPermissionsAsync()
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        tellPermissionDenied();
+        PhotoPickFeedback.permissionDenied();
         return [];
       }
       const result = isCamera
@@ -78,7 +71,7 @@ export const usePickImportFiles = (): PickImportFilesCallback => {
         sizeBytes: null,
       }));
     } catch {
-      Alert.alert(t().recipes.photoAddFailed);
+      PhotoPickFeedback.failed();
       return [];
     } finally {
       busy.current = false;

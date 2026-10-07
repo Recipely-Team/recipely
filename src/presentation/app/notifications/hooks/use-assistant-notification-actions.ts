@@ -55,9 +55,7 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
     ),
   );
 
-  // Every row, for `readScreen` — the one screen where "read them to me" is
-  // the whole point of the screen and the eight-row line was never going to be
-  // the answer.
+  // Every row for readScreen.
   useAssistantScreenReading(() =>
     [listReading(ROSTER_LABEL, items.map(rowName), listState), `unread=${unreadCount}`].join(
       SCREEN_PART_SEPARATOR,
@@ -67,9 +65,7 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
   useAssistantAction(
     AssistantAction.MarkAllRead,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Zero unread and zero loaded look identical from here. Before the list
-      // arrives every count is zero, so "hepsini okundu yap" reported success
-      // over notifications it had never seen.
+      // Nothing loaded yet looks like nothing unread: report not-ready.
       if (items.length === ValueConstants.zero && unreadCount === ValueConstants.zero) {
         return { ok: false, error: AssistantActionError.NotReady };
       }
@@ -84,11 +80,10 @@ export const useAssistantNotificationActions = (deps: AssistantNotificationActio
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const at = rowAt(items.map(rowName), arg);
-        if (at === null) return { ok: false, error: 'not_found' };
+        if (at === null) return { ok: false, error: AssistantActionError.NotFound };
 
         const item = items[at];
-        // Already read is the outcome asked for, not a failure — and the tap
-        // path skips the request for the same reason.
+        // Already read is success.
         if (item.read) return { ok: true, title: rowName(item) };
 
         onMarkOneRead(item.id);

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
 import { Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -12,8 +12,8 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
 import { IngredientGroupCard } from '@presentation/app/create-recipe/items/ingredient-group-card';
-import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
-import { parseIngredientGroups } from '@presentation/app/create-recipe/model/ingredients/parse-ingredient-groups';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/app/create-recipe/sheets/taxonomy-picker-sheet';
@@ -25,6 +25,7 @@ import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/mo
 import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
 
 export interface RecipePreviewEditorProps {
   recipe: EditableRecipe;
@@ -78,17 +79,14 @@ export const RecipePreviewEditor = ({
   const scrollable = useAssistantScrollable();
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const [picker, setPicker] = useState<TaxonomyPickerKind | null>(null);
+  const stepKeys = useStableKeys(recipe.instructions);
   const cuisine = recipe.cuisine !== null ? cuisineLabel(recipe.cuisine) : null;
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
-  // Group headings are structure, not shopping: three groups do not mean three
-  // more things to buy, and the count sits next to the word "Ingredients".
-  const ingredientGroups = parseIngredientGroups(recipe.ingredients);
-  const ingredientCount = ingredientGroups.reduce(
-    (total, group) =>
-      total + group.items.filter((item) => item.value.trim().length > ValueConstants.zero).length,
-    ValueConstants.zero,
-  );
+  // Group headings are structure, not items.
+  const ingredientList = IngredientList.of(recipe.ingredients);
+  const ingredientGroups = ingredientList.groups();
+  const ingredientCount = ingredientList.filledCount;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
@@ -165,9 +163,7 @@ export const RecipePreviewEditor = ({
           count={ingredientCount}
           error={fieldErrors.ingredients}
           listGap={spacing.sm}
-          // Adding an ingredient belongs to a CARD now — a single button at the
-          // bottom could only ever append to the last group, which is what made
-          // adding to the right one a chore. The section keeps "add group".
+          // Ingredients are added per card; the section adds groups.
           onAdd={onAddIngredientGroup}
           addLabel={t().createRecipe.addGroup}
         >
@@ -187,7 +183,7 @@ export const RecipePreviewEditor = ({
                 )
               }
               onRenameGroup={(label) =>
-                onChangeIngredient(group.headerIndex, `${INGREDIENT_GROUP_PREFIX}${label}`)
+                onChangeIngredient(group.headerIndex, IngredientLine.heading(label))
               }
               onDeleteGroup={(keepItems) =>
                 onRemoveIngredientGroup(
@@ -211,7 +207,7 @@ export const RecipePreviewEditor = ({
         >
           {recipe.instructions.map((value, i) => (
             <StepRow
-              key={`step-${i}`}
+              key={stepKeys[i]}
               index={i}
               value={value}
               onChange={(v) => onChangeStep(i, v)}

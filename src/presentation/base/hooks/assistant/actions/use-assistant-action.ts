@@ -49,8 +49,7 @@ export const useAssistantAction = (
 
   useEffect(() => {
     if (!isEnabled || !isFocused) return;
-    // The stable wrapper is what gets registered; it forwards to whatever the
-    // latest render passed, so the registry is written once per mount.
+    // Register a stable wrapper once per mount; it forwards to the latest handler.
     return assistantActionRegistry.register(action, (arg) => handlerRef.current(arg));
   }, [action, assistantActionRegistry, isEnabled, isFocused]);
 };

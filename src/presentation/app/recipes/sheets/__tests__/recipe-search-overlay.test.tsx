@@ -15,10 +15,15 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { t } from '@presentation/i18n';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
@@ -26,12 +31,12 @@ jest.mock('@presentation/app/recipes/items/cards/recipe-list-item', () => {
   return {
     RecipeListItem: ({
       recipe,
-      onPress,
+      onOpen,
     }: {
       recipe: { id: string; name: string };
-      onPress: () => void;
+      onOpen: (id: string) => void;
     }): React.JSX.Element => (
-      <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={recipe.name}>
+      <Pressable onPress={() => onOpen(recipe.id)} accessibilityRole="button" accessibilityLabel={recipe.name}>
         <Text>{recipe.name}</Text>
       </Pressable>
     ),

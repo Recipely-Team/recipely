@@ -7,13 +7,14 @@ import Animated, {
   useAnimatedStyle,
   type SharedValue,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors, durations, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
 /** Scroll distance past the resting header over which the FAB collapses to a circle. */
 const MORPH_DISTANCE = 64;
@@ -41,25 +42,22 @@ export const FilterSortFab = ({
   onPress,
 }: FilterSortFabProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  // Natural extended width, measured once so the morph interpolates to the real
-  // localized label width rather than a guessed constant.
+  // The widest layout seen: a web font loading after the first layout widens the label.
   const [extendedWidth, setExtendedWidth] = useState(ValueConstants.zero);
-  // Natural label width, measured once so the morph can collapse the label's
-  // occupied space to 0 (not just fade it) and keep the icon centered.
   const [labelWidth, setLabelWidth] = useState(ValueConstants.zero);
 
   const label = t().recipes.filtersAndSort;
   const accessibilityLabel = activeCount > ValueConstants.zero ? `${label}, ${activeCount}` : label;
-  const badgeText = activeCount > 9 ? '9+' : String(activeCount);
+  const badgeText = countBadgeLabel(activeCount);
 
   const onMeasure = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > ValueConstants.zero && extendedWidth === ValueConstants.zero) setExtendedWidth(w);
+    if (w > extendedWidth) setExtendedWidth(w);
   };
 
   const onMeasureLabel = (e: LayoutChangeEvent): void => {
     const w = e.nativeEvent.layout.width;
-    if (w > ValueConstants.zero && labelWidth === ValueConstants.zero) setLabelWidth(w);
+    if (w > labelWidth) setLabelWidth(w);
   };
 
   const morphRange: [number, number] = [
@@ -68,7 +66,8 @@ export const FilterSortFab = ({
   ];
 
   const containerStyle = useAnimatedStyle(() => {
-    if (reduceMotion || extendedWidth === ValueConstants.zero) return {};
+    // At rest the button takes its natural width, so a late font can still widen it.
+    if (reduceMotion || extendedWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) return {};
     const width = interpolate(
       scrollY.value,
       morphRange,
@@ -78,14 +77,11 @@ export const FilterSortFab = ({
     return { width };
   });
 
-  // Collapse the label's occupied width and its leading margin to 0 over the
-  // same scroll range, so the icon ends up perfectly centered in the circle
-  // instead of being pushed off-screen by the still-laid-out label.
   const labelStyle = useAnimatedStyle(() => {
-    if (reduceMotion || labelWidth === ValueConstants.zero) {
-      return { opacity: 1, width: labelWidth || undefined, marginLeft: spacing.xs2 };
+    if (reduceMotion || labelWidth === ValueConstants.zero || scrollY.value <= morphRange[ValueConstants.zero]) {
+      return { opacity: ValueConstants.one, marginLeft: spacing.xs2 };
     }
-    const progress = interpolate(scrollY.value, morphRange, [1, ValueConstants.zero], Extrapolation.CLAMP);
+    const progress = interpolate(scrollY.value, morphRange, [ValueConstants.one, ValueConstants.zero], Extrapolation.CLAMP);
     return {
       opacity: progress,
       width: labelWidth * progress,
@@ -95,13 +91,12 @@ export const FilterSortFab = ({
 
   return (
     <Animated.View
-      entering={reduceMotion ? undefined : FadeIn.duration(150)}
+      entering={reduceMotion ? undefined : FadeIn.duration(durations.controlReveal)}
       style={[
         styles.container,
         containerStyle,
         {
-          // The page ends where the root TabBar begins (hosted in _layout,
-          // outside the Stack), so the FAB only needs its own breathing room.
+          // The TabBar sits outside the page, so only breathing room is needed.
           bottom: spacing.lg,
           backgroundColor: colors.primary,
           borderColor: colors.gradientBorder,
@@ -131,7 +126,7 @@ export const FilterSortFab = ({
 
       {activeCount > ValueConstants.zero ? (
         <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-          <ThemedText style={styles.badgeText} numberOfLines={ValueConstants.one}>
+          <ThemedText style={styles.badgeText} numberOfLines={ValueConstants.one} maxFontSizeMultiplier={maxFontScales.badge}>
             {badgeText}
           </ThemedText>
         </View>
@@ -185,7 +180,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: BrandColors.white,
     fontSize: fontSizes.nano,
-    lineHeight: fontSizes.nano,
+    lineHeight: decorSizes.notifBadgeLineHeight,
     fontWeight: fontWeights.bold,
     textAlign: 'center',
     includeFontPadding: false,

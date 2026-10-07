@@ -7,6 +7,6 @@ import type { FoodSourceType } from '@presentation/base/hooks/assistant/args/dia
  * (a recipe the search found, a recent food) or a catalogue product logged in
  * its own unit. `per` says what `kcal` is for, in the model's English.
  */
-export type FoodCandidate =
+export type FoodCandidateType =
   | { kind: 'food'; source: FoodSourceType; name: string; kcal: number; per: string; food: LoggableFood }
   | { kind: 'product'; source: FoodSourceType; name: string; kcal: number; per: string; product: LoggableProduct };

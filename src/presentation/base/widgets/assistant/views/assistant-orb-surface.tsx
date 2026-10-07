@@ -6,7 +6,7 @@ import { AssistantWaitingLine } from '@presentation/base/widgets/assistant/parts
 import { AssistantOrbMenu } from '@presentation/base/widgets/assistant/views/assistant-orb-menu';
 import { AssistantSheet } from '@presentation/base/widgets/assistant/views/assistant-sheet';
 import { AssistantStatus, type AssistantStatusType } from '@application/assistant/session/assistant-status';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { assistantIsLive } from '@application/assistant/session/assistant-is-live';
 import { assistantSheetGeometry } from '@presentation/base/widgets/assistant/assistant-sheet-geometry';
 import { useKeyboardHeight } from '@presentation/base/hooks/interaction/use-keyboard-height';
@@ -17,7 +17,7 @@ export interface AssistantOrbSurfaceProps {
   status: AssistantStatusType;
   level: number;
   isMuted: boolean;
-  transcript: AssistantTranscriptLine[];
+  transcript: AssistantTranscriptLineType[];
   notice: string | null;
   /** How loudly to show it — see assistantNoticeTone. */
   noticeTone: SeverityType;
@@ -63,16 +63,10 @@ export const AssistantOrbSurface = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const live = assistantIsLive(status);
 
-  // The sheet is an overlay pinned to the bottom edge, so the keyboard covers
-  // it rather than pushing it: what was said, and the box it is said into,
-  // both ended up underneath. It is moved by the measured height instead.
+  // The sheet is pinned to the bottom, so move it by the keyboard height.
   const keyboardHeight = useKeyboardHeight();
   const sheet = assistantSheetGeometry(height, keyboardHeight);
-  // The design floats it about an eighth up the screen; the floor is whatever
-  // the screen underneath has already claimed — its tab bar and its own
-  // floating control — because the orb landing on the button a screen exists
-  // to offer is the same mistake the launcher made. While typing it rides on
-  // top of the sheet, wherever the keyboard has left that.
+  // Floats about an eighth up, never below the tab bar or the screen's own floating control.
   const orbBottom = isTyping
     ? sheet.bottom + sheet.height + spacing.lg
     : Math.max(height * ORB_RESTING_SHARE, restingBottom);

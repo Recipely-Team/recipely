@@ -17,6 +17,9 @@
 jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
   AddToDiaryButton: () => null,
 }));
+jest.mock('@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button', () => ({
+  AddToShoppingButton: () => null,
+}));
 
 // The layout reads the router only to word its back link; a unit test about the
 // owner's photo controls has no navigator and does not need one.
@@ -42,6 +45,7 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
 
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { renderComponent } from '@presentation/base/test-support/render-component';
+import { portionScalingFixture } from '@presentation/app/recipes/[recipeId]/model/portions/__fixtures__/portion-scaling-fixture';
 import { t } from '@presentation/i18n';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
@@ -105,13 +109,12 @@ const baseProps = {
   onCopyToDraft: jest.fn(),
   onDelete: jest.fn(),
   checkedIngredients: [],
+  portions: portionScalingFixture(),
   onToggleIngredient: jest.fn(),
   completedSteps: [false],
   onToggleStep: jest.fn(),
   commentState: undefined,
-  commentInput: '',
   submitError: null,
-  onChangeCommentInput: jest.fn(),
   onAddComment: jest.fn(),
   onLoadMoreComments: jest.fn(),
   onToggleCommentLike: jest.fn(),

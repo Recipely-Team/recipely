@@ -4,8 +4,8 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
-import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
-import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
+import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -19,7 +19,7 @@ export const useEditableRecipe = () => {
   const [photosOpen, setPhotosOpen] = useState(false);
 
   // Clears a single field's inline validation error once the user edits it.
-  const clearFieldError = useCallback((key: CreateRecipeFieldKey): void => {
+  const clearFieldError = useCallback((key: CreateRecipeFieldKeyType): void => {
     setFieldErrors((prev) => {
       if (prev.fields[key] === undefined) return prev;
       const nextFields: CreateRecipeFieldErrors['fields'] = { ...prev.fields };
@@ -31,7 +31,7 @@ export const useEditableRecipe = () => {
   const onUpdateField = useCallback(
     <K extends keyof EditableRecipe>(key: K, value: EditableRecipe[K]): void => {
       setRecipe((r) => ({ ...r, [key]: value }));
-      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKey);
+      if (key !== 'media') clearFieldError(key as CreateRecipeFieldKeyType);
     },
     [clearFieldError],
   );
@@ -47,7 +47,7 @@ export const useEditableRecipe = () => {
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        ingredients: r.ingredients.length <= 1 ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
+        ingredients: r.ingredients.length <= ValueConstants.one ? [CharConstants.empty] : r.ingredients.filter((_, idx) => idx !== i),
       }));
       clearFieldError('ingredients');
     },
@@ -119,10 +119,9 @@ export const useEditableRecipe = () => {
     },
     [clearFieldError],
   );
-  // Appends the bare marker; the row it renders as edits the label. An unnamed
-  // group is dropped on save rather than published as a blank heading.
+  // An unnamed group is dropped on save.
   const onAddIngredientGroup = useCallback((): void => {
-    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, INGREDIENT_GROUP_PREFIX] }));
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, IngredientLine.heading()] }));
   }, []);
   const onChangeStep = useCallback(
     (i: number, value: string): void => {
@@ -135,7 +134,7 @@ export const useEditableRecipe = () => {
     (i: number): void => {
       setRecipe((r) => ({
         ...r,
-        instructions: r.instructions.length <= 1 ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
+        instructions: r.instructions.length <= ValueConstants.one ? [CharConstants.empty] : r.instructions.filter((_, idx) => idx !== i),
       }));
       clearFieldError('instructions');
     },
@@ -164,7 +163,7 @@ export const useEditableRecipe = () => {
   const onSetCover = useCallback((i: number): void => {
     setRecipe((r) => {
       const arr = [...r.media];
-      const [picked] = arr.splice(i, 1);
+      const [picked] = arr.splice(i, ValueConstants.one);
       if (picked === undefined) return r;
       return { ...r, media: [picked, ...arr] };
     });

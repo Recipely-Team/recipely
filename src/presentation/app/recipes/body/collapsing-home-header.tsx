@@ -6,7 +6,7 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
@@ -148,9 +148,7 @@ export const CollapsingHomeHeader = ({
 
 const styles = StyleSheet.create({
   band: {
-    // `top` is applied inline as `insets.top` (see the component body) rather
-    // than a static 0 — absolutely-positioned children ignore their parent
-    // SafeAreaView's top padding, so this must be set explicitly per-render.
+    // top is set inline from insets: absolute children ignore the SafeAreaView padding.
     position: 'absolute',
     left: ValueConstants.zero,
     right: ValueConstants.zero,
@@ -164,9 +162,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: spacing.sm,
   },
-  // The mark sits BESIDE the screen title, not stacked above it: two lines of
-  // branding pushed the search field down the band for no information the one
-  // line does not already carry.
   titles: {
     flex: ValueConstants.one,
     flexDirection: 'row',
@@ -192,9 +187,7 @@ const styles = StyleSheet.create({
     top: ValueConstants.zero,
     right: ValueConstants.zero,
   },
-  // Pinned to the bottom of the band. The title row got shorter when the mark
-  // moved beside the title, and letting the search rise with it would have
-  // moved the field the whole app's list padding is measured against.
+  // Pinned to the band's bottom: list padding is measured against the field.
   searchWrapper: {
     marginTop: 'auto',
     paddingBottom: spacing.sm,

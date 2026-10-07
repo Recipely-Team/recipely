@@ -12,7 +12,7 @@ import { pt } from '@presentation/i18n/locales/pt';
 import { ru } from '@presentation/i18n/locales/ru';
 import { tr } from '@presentation/i18n/locales/tr';
 import { zh } from '@presentation/i18n/locales/zh';
-import type { Translations } from '@presentation/i18n/translations';
+import type { TranslationsType } from '@presentation/i18n/translations';
 import { getLocaleService } from '@application/i18n/get-locale-service';
 
 /**
@@ -22,7 +22,7 @@ import { getLocaleService } from '@application/i18n/get-locale-service';
  * app has no RTL layout yet, and Arabic laid out left-to-right is harder to
  * read than English. The translation waits here for the day the layout lands.
  */
-const translations: Record<string, Translations> = {
+const translations: Record<string, TranslationsType> = {
   en, tr, es, pt, fr, de, it, ru, id, ja, ar, zh, ko, hi,
 };
 
@@ -32,7 +32,7 @@ const translations: Record<string, Translations> = {
  * the `Accept-Language` header — so what the user reads and what the backend is
  * asked for can never drift apart.
  */
-export const t = (): Translations => {
+export const t = (): TranslationsType => {
   return translations[getLocaleService().getLocale()] ?? en;
 };
 

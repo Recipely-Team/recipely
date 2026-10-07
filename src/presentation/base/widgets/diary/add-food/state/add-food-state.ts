@@ -4,7 +4,7 @@ import type { Servings } from '@domain/diary/entry/servings';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
 import type { AddFoodStep } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
-import type { ProductChoice } from '@presentation/base/widgets/diary/add-food/state/product/product-choice';
+import type { ProductChoiceType } from '@presentation/base/widgets/diary/add-food/state/product/product-choice';
 
 /** What every step shares. */
 interface AddFoodBase {
@@ -24,5 +24,5 @@ export type AddFoodState = AddFoodBase &
   (
     | { step: typeof AddFoodStep.Pick }
     | { step: typeof AddFoodStep.Detail; food: LoggableFood; servings: Servings }
-    | { step: typeof AddFoodStep.Product; choice: ProductChoice; variantIndex: number | null; quantity: FoodQuantity | null }
+    | { step: typeof AddFoodStep.Product; choice: ProductChoiceType; variantIndex: number | null; quantity: FoodQuantity | null }
   );

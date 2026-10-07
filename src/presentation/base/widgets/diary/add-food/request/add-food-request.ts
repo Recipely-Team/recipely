@@ -7,9 +7,11 @@ import type { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-fo
 /**
  * What the Add food sheet is asked to do (design spec → Food Diary §6,
  * payload `{ date, meal?, recipe?, entry? }`). `meal: null` defaults it from
- * the clock; `query` pre-fills the pick step's search (the assistant's `searchFood`).
+ * the clock; `query` pre-fills the pick step's search (the assistant's `searchFood`);
+ * `mealText` opens the meal panel and reads that description at once (the
+ * assistant's `logMeal`).
  */
-export type AddFoodRequest =
-  | { kind: typeof AddFoodRequestKind.Pick; date: CalendarDate; meal: MealSlotType | null; query?: string }
+export type AddFoodRequestType =
+  | { kind: typeof AddFoodRequestKind.Pick; date: CalendarDate; meal: MealSlotType | null; query?: string; mealText?: string }
   | { kind: typeof AddFoodRequestKind.Food; date: CalendarDate; meal: MealSlotType | null; food: LoggableFood }
   | { kind: typeof AddFoodRequestKind.Edit; entry: FoodLogEntryEntity };

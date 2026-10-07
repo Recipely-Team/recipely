@@ -2,7 +2,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantGlobalActions } from '@presentation/base/hooks/assistant/actions/use-assistant-global-actions';
 import { router } from 'expo-router';
 import { RoutePaths } from '@presentation/base/constants/route-paths';
@@ -45,7 +45,7 @@ function harness(recipeListStore: unknown = fakeRecipeList()) {
     assistantSessionStore: (select: (state: unknown) => unknown) =>
       select({ stopVoice: jest.fn() }),
     recipeListStore,
-  } as unknown as Stores;
+  } as unknown as ApplicationStores;
 
   const Probe = (): null => {
     useAssistantGlobalActions();

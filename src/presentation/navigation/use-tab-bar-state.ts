@@ -1,6 +1,6 @@
 import { usePathname, useRouter } from 'expo-router';
 import type { Href } from 'expo-router';
-import type { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
+import { TabBarKey } from '@presentation/base/widgets/navigation/tab-bar-key';
 import { RoutePaths } from '@presentation/base/constants';
 
 /**
@@ -10,22 +10,22 @@ import { RoutePaths } from '@presentation/base/constants';
  * create flows, auth screens, …) render no TabBar at all.
  */
 const TAB_BY_PATH = new Map<string, TabBarKey>([
-  ['/recipes', 'recipes'],
-  ['/my-recipes', 'myRecipes'],
-  [RoutePaths.creators, 'chefs'],
-  ['/diary', 'diary'],
+  [RoutePaths.recipes, TabBarKey.Recipes],
+  [RoutePaths.myRecipes, TabBarKey.MyRecipes],
+  [RoutePaths.creators, TabBarKey.Chefs],
+  [RoutePaths.diary, TabBarKey.Diary],
   // The month page is pushed inside the Diary tab, so the bar stays and keeps Diary lit.
-  ['/diary/calendar', 'diary'],
-  ['/profile', 'profile'],
-  ['/settings', 'profile'],
+  [RoutePaths.diaryCalendar, TabBarKey.Diary],
+  [RoutePaths.profile, TabBarKey.Profile],
+  [RoutePaths.settings, TabBarKey.Profile],
 ]);
 
 const PATH_BY_TAB: Readonly<Record<TabBarKey, Href>> = {
-  recipes: RoutePaths.recipes,
-  myRecipes: RoutePaths.myRecipes,
-  chefs: RoutePaths.creators,
-  diary: RoutePaths.diary,
-  profile: RoutePaths.profile,
+  [TabBarKey.Recipes]: RoutePaths.recipes,
+  [TabBarKey.MyRecipes]: RoutePaths.myRecipes,
+  [TabBarKey.Chefs]: RoutePaths.creators,
+  [TabBarKey.Diary]: RoutePaths.diary,
+  [TabBarKey.Profile]: RoutePaths.profile,
 };
 
 /**
@@ -47,9 +47,7 @@ export const useTabBarState = (): {
 
   const onChange = (key: TabBarKey): void => {
     const target = PATH_BY_TAB[key];
-    // No-op only when already ON the target page. Comparing against `active`
-    // would be wrong on /settings: it highlights the profile tab, yet pressing
-    // Profile there must still navigate back to /profile.
+    // Compare with the path, not the active tab (/settings lights Profile but must still navigate).
     if (target === pathname) return;
     router.replace(target);
   };

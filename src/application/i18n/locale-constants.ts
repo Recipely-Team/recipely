@@ -25,8 +25,5 @@ export const LocaleConstants = {
   it: 'it',
   ru: 'ru',
   id: 'id',
-  // Latin and Cyrillic only, deliberately. Everything else the app has been
-  // translated into is listed in `preview-locales.ts` with the reason it is not
-  // selectable yet — a complete catalogue is not the same as a screen that
-  // renders it correctly, and nobody has read those on a device.
+  // Latin and Cyrillic only; the rest are previews (preview-locales.ts).
 } as const;

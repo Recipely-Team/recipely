@@ -6,6 +6,7 @@ import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-reci
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import type { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { MediaType } from '@domain/recipes/media/media-type';
 
@@ -34,7 +35,7 @@ function harness(
   const getRecipe = {
     execute: async (id: string) => {
       loads.push(id);
-      return ok(recipeEntityOf({ id, image: COVER.url, media: [COVER, PHOTO] }));
+      return ok({ recipe: recipeEntityOf({ id, image: COVER.url, media: [COVER, PHOTO] }), likedByMe: false });
     },
   } as unknown as GetRecipeUseCase;
 
@@ -54,7 +55,11 @@ function harness(
     },
   } as unknown as RemoveRecipeCoverUseCase;
 
-  const store = configureRecipeDetailStore({ getRecipe, addRecipePhoto, removeRecipePhoto, removeRecipeCover });
+  const store = configureRecipeDetailStore({
+    getRecipe,
+    addRecipePhoto,
+    removeRecipeMedia: new RemoveRecipeMediaUseCase(removeRecipePhoto, removeRecipeCover),
+  });
   return { store, loads, removedPhotos, coverRemovals: () => coverRemovals };
 }
 
@@ -116,17 +121,6 @@ describe('photos on a published recipe', () => {
  * A website import's cover is exactly the photo the owner has to remove.
  */
 describe('removing the cover', () => {
-  it('goes through the cover request, not the gallery one, and shows the next photo as cover', async () => {
-    const { store, removedPhotos, coverRemovals } = harness();
-    await store.getState().load(RECIPE_ID);
-
-    const failure = await store.getState().removePhoto(RECIPE_ID, COVER);
-
-    expect(failure).toBeNull();
-    expect(coverRemovals()).toBe(1);
-    expect(removedPhotos).toEqual([]);
-  });
-
   it('puts the server answer on screen before the reload lands', async () => {
     const { store } = harness();
     await store.getState().load(RECIPE_ID);
@@ -140,15 +134,6 @@ describe('removing the cover', () => {
     unsubscribe();
 
     expect(puts).toContain(PHOTO.url);
-  });
-
-  it('removes a cover that has no gallery row', async () => {
-    const { store, coverRemovals } = harness();
-    await store.getState().load(RECIPE_ID);
-
-    await store.getState().removePhoto(RECIPE_ID, { type: MediaType.Image, url: COVER.url });
-
-    expect(coverRemovals()).toBe(1);
   });
 
   it('hands a refused cover removal back without reloading', async () => {

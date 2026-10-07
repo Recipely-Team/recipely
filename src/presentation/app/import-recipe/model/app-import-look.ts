@@ -1,7 +1,8 @@
 import type { ThemeColors } from '@presentation/base/theme';
 import type { ImportLook } from '@presentation/app/import-recipe/model/import-look';
+import { ValueConstants } from '@core/constants';
 
-const TWO_STOP_RING = [0, 1] as const;
+const TWO_STOP_RING = [ValueConstants.zero, ValueConstants.one] as const;
 
 /**
  * The import screen in the app's own palette: for a web page, which has no

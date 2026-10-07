@@ -1,7 +1,7 @@
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import type { DiaryMonth } from '@domain/diary/month/diary-month';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { datePart } from '@presentation/app/diary/model/assistant/date-part';
 import { formatMonthYear } from '@presentation/app/diary/shared/model/format-month-year';
 
@@ -28,7 +28,7 @@ export const calendarReading = (
   const stats = diaryMonth.stats(today);
   return [
     ...head,
-    logged.length === 0
+    logged.length === ValueConstants.zero
       ? 'logged days: none'
       : `logged days: ${logged.map((date) => `${date.value} ${Math.round(diaryMonth.caloriesOn(date))} kcal ${diaryMonth.statusFor(date)}`).join(', ')}`,
     `stats: daily average ${stats.dailyAverage === null ? 'none yet' : `${Math.round(stats.dailyAverage)} kcal`}, days on target ${stats.daysOnTarget}/${stats.daysLogged}, streak ${stats.streak} days`,

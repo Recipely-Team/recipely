@@ -1055,6 +1055,14 @@ For the recipe detail screen, hide the default header to allow the floating back
 
 ---
 
+### Portion stepper and unit toggle (recipe detail)
+
+TODO(design): portion stepper to be redesigned in Claude Design. Claude Design was unavailable when
+it shipped; the owner approved building it from existing widgets. Today: the servings stat tile
+(mobile meta card) carries a `− +` row of `RoundIconButton`s (`controlSizes.touchTarget`, as the
+diary's servings stepper) under its value; the web sidebar's Servings row shows `− n +`. The
+Original / Metric / US toggle above the ingredient list reuses `SegmentedTabs`.
+
 ## C. New Components Needed
 
 All new components live in `presentation/base/widgets/`.
@@ -3462,6 +3470,21 @@ portion; an unknown key shows its amount in g/ml.
 4. **Paging trigger:** `FlatList onEndReached` on mobile and web alike, not an IntersectionObserver
    sentinel; it pages the first group (in display order) that still has more.
 
+### Meal logging from text or a photo (Add food)
+
+TODO(design): meal logging to be redesigned in Claude Design. Claude Design was unavailable when it
+shipped; it is built from existing widgets. Today: a card-like row ("Describe or photograph your
+meal", `pickRowMinHeight`, chip-coloured sparkles disc) sits between the search field and the tabs
+of the pick step. It opens the meal panel in place of the tab body: an `AutoGrowTextInput`
+(`controlSizes.textArea`, 500 characters), a chip-styled photo button (camera or library via
+`askPickSource`) and a `PrimaryButton` "Find foods", with a muted line saying the values are
+estimates. While the parser reads, a spinner; a failure reuses `PickMessage` (retry, edit, or no
+action for the daily limit / unavailable). The confirm list: a `warningLight` note (estimates, and
+"some items are rough estimates" for `some_estimated`), one row per item — `checkbox` tick, label,
+`DraftTag` "Estimated" when the figures are the model's, kcal · macros for the current grams, and a
+`SuffixField` grams box (`diarySizes.mealGramsFieldWidth`) — then the `MealPicker` and
+"Add {n} to diary · {k} kcal". No health claims anywhere in the copy.
+
 ## Instagram connect + Automations (Oct 2026)
 
 **Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
@@ -3674,3 +3697,57 @@ Source: the Recipely Prototype spec rev 3 (sections marked rev 2 / rev 3).
 - **Departures:** the review and rejection bodies keep the admin-review wording (no "add recipely.app/@username to
   your bio", no "up to 2 days"); Submit unlocks at each platform's minimum handle length; status-pill icons are
   14 (spec 13–14); half-point type sizes round to the ladder.
+
+## Cooking mode (Oct 2026 — interim, not from the prototype)
+
+TODO(design): cooking mode to be redesigned in Claude Design
+
+Claude Design was unavailable when cook mode shipped; the owner approved building it from existing base widgets
+and theme tokens. Nothing here is a design decision to preserve — redraw it in the prototype (rule 28) and replace
+this section with the spec that comes out of it.
+
+- **Route:** `app/recipes/[recipeId]/cook/` (full screen, header hidden). Entry: a `restaurant-outline` circle in the
+  mobile hero's floating cluster; a filled primary "Start cooking" pill first in the web header's action row.
+- **Layout:** top bar (outlined close circle, recipe name, "Ingredients" pill) → progress bar
+  (`controlSizes.progressBar`, primary fill) → step pane ("STEP 3 OF 8" in primary, a "Done" checkbox pill, the step
+  at `fontSizes.title` with a relaxed line height, the step's timer when it names a duration) → Previous (outlined) / Next
+  (primary; success-green "Finish" on the last step), split evenly (flex 1 / flex 1), `controlSizes.fab` min height,
+  labels wrap to a second line rather than truncate in long locales. The "Ingredients" and "Done" pills use sentence-case
+  `caption` semibold (like "Start cooking"), and "Done" is `controlSizes.touchTarget` tall.
+- **Widths:** full width on a phone; a centred column capped at `layoutSizes.webModalMaxWidth` on tablet and desktop.
+- **Ingredients:** `BottomSheet` (sheet on mobile, centred dialog on the web shell), one line per ingredient.
+
+## Shopping list (Oct 2026 — interim, not from the prototype)
+
+TODO(design): shopping list to be redesigned in Claude Design
+
+Claude Design was unavailable when this shipped, so the screen is built from existing widgets and tokens only, with
+no new measurement or colour:
+
+- **Route:** `/shopping-list` (account page, `Disallow`ed in `robots.txt`). Entry points: Profile (a row under the
+  profile actions, every platform), My Recipes (a cart `RoundIconButton` beside "Create new" in both headers), and
+  the recipe page's "Add to shopping list" toast action.
+- **Screen:** a top bar (back + title; no inset or hairline in the web shell) → content capped at
+  `WEB_CONTENT_MAX_WIDTH.shoppingList` (720) on expanded viewports → the add field (`controlSizes.searchBar` min
+  height, `inputBackground` / `inputBorder`, a primary round + button) → "Clear completed" / "Clear all" pills
+  (each through `ConfirmSheet`) → "To buy (n)" then "Completed (n)" label headings → rows.
+- **Row:** card surface, hairline border, `radii.lg`; a tick (`checkmark-circle` in primary / `ellipse-outline`),
+  "amount · label" (line-through and muted when ticked), "From {recipe}" caption, edit and remove round buttons.
+  The whole left part is the tick's target.
+- **Edit:** `BottomSheet` (sheet on mobile, centred dialog on the web shell) with name, amount and unit fields and a
+  primary Save; a refusal shows the error's body copy in `danger` under the fields.
+- **Recipe page:** an outlined primary "Add to shopping list" button (`controlSizes.buttonSm`) under the
+  ingredient list on mobile, inside the ingredients card on the web sidebar, and in cook mode's ingredients sheet
+  footer. The toast counts added and merged lines and offers "View".
+
+## Notifications: timer heads-ups and come-back reminders
+
+TODO(design): the reminders opt-in sheet and the Settings "Notifications" section are to be redesigned in
+Claude Design. Claude Design was unavailable when they were built, so both reuse existing widgets:
+
+- **Opt-in:** the shared `ConfirmSheet` on the recipe feed, once, on a return visit a day after the first open.
+  Title, a message saying what is sent, how often and where to stop it, "Yes, remind me" (primary) and
+  "Not now" (the new `cancelLabel`).
+- **Settings:** a "Notifications" section under Appearance with one `SettingsRow` ("Recipe reminders",
+  `notifications-outline`) whose right element is the shared `SettingsSwitch` (primary track when on). Native only.
+- **Timer heads-ups** have no in-app surface: a quiet notification at 5 and 1 minute left.

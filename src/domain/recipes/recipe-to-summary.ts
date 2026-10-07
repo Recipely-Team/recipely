@@ -10,7 +10,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
  * `totalTimeMinutes` is derived by summing `prepTimeMinutes` +
  * `cookTimeMinutes`, since detail flows only carry those two fields.
  */
-export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntity, ValidationFailure> => {
+export const recipeToSummary = (recipe: RecipeEntity, likedByMe: boolean): Result<RecipeSummaryEntity, ValidationFailure> => {
   return RecipeSummaryEntity.create({
     id: recipe.id,
     name: recipe.name,
@@ -26,13 +26,10 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     isPublished: recipe.isPublished,
     moderationStatus: recipe.moderationStatus,
     likeCount: recipe.likeCount,
-    likedByMe: recipe.likedByMe,
+    likedByMe,
     commentCount: recipe.commentCount,
     viewCount: recipe.viewCount,
-    // Carried, not defaulted. This is the path a just-published recipe takes
-    // into the feed cache without a round-trip, so dropping it here would make
-    // the badge appear only after a refresh — present on the server, absent on
-    // the one screen that just created it.
+    // Carried, so a just-published recipe shows its badge without a refresh.
     origin: recipe.origin,
     sourcePlatform: recipe.sourcePlatform,
     aiWritten: recipe.aiWritten,

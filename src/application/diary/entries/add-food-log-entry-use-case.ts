@@ -1,7 +1,5 @@
 import type { Result } from '@core/result/result';
-import { fail } from '@core/result/result-helpers';
-import { ErrorMessageKey, type Failure, ValidationFailure } from '@core/failure';
-import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import type { Failure } from '@core/failure';
 import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import type { FoodDiaryRepositoryInterface } from '@domain/diary/food-diary-repository-interface';
@@ -15,11 +13,7 @@ export class AddFoodLogEntryUseCase {
   constructor(private readonly repo: FoodDiaryRepositoryInterface) {}
 
   execute(entry: NewFoodLogEntry): Promise<Result<FoodLogEntryEntity, Failure>> {
-    if (!entry.nutrients.isWithinEntryCaps) {
-      return Promise.resolve(
-        fail(new ValidationFailure(DiagnosticMessage.diary.nutrientTooHigh('calories'), 'calories', ErrorMessageKey.diaryNutrientInvalid)),
-      );
-    }
-    return this.repo.addEntry(entry);
+    const capped = entry.nutrients.requireWithinEntryCaps();
+    return capped.ok ? this.repo.addEntry(entry) : Promise.resolve(capped);
   }
 }

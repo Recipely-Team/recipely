@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { controlSizes, durations, iconSizes, radii, spacing } from '@presentation/base/theme';

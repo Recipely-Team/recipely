@@ -7,6 +7,7 @@ import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at'
 import { timerStore } from '@application/timers/timer-store';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { ValueConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /**
  * The timers, from wherever the user happens to be.
@@ -47,7 +48,7 @@ export const useAssistantTimerActions = (): void => {
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const timer = pick(arg);
-        if (timer === null) return { ok: false, error: 'no_timer' };
+        if (timer === null) return { ok: false, error: AssistantActionError.NoTimer };
         if (timer.isPaused) return { ok: true, title: timer.recipeName };
 
         await pauseTimer(timer.id);
@@ -62,7 +63,7 @@ export const useAssistantTimerActions = (): void => {
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const timer = pick(arg);
-        if (timer === null) return { ok: false, error: 'no_timer' };
+        if (timer === null) return { ok: false, error: AssistantActionError.NoTimer };
 
         await resumeTimer(timer.id);
         return { ok: true, title: timer.recipeName };
@@ -76,7 +77,7 @@ export const useAssistantTimerActions = (): void => {
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const timer = pick(arg);
-        if (timer === null) return { ok: false, error: 'no_timer' };
+        if (timer === null) return { ok: false, error: AssistantActionError.NoTimer };
 
         await stopTimer(timer.id);
         return { ok: true, title: timer.recipeName };

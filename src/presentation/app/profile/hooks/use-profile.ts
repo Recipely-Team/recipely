@@ -73,15 +73,15 @@ export const useProfile = (): UseProfileResult => {
 
   const stats = ((): ProfileStatsState => {
     switch (profileState.status) {
-      case 'loading':
+      case StoreStatus.Loading:
         return { status: StoreStatus.Loading };
-      case 'error':
+      case StoreStatus.Error:
         return {
           status: StoreStatus.Error,
           message: failureToastMessage(profileState.failure),
           onRetry: retry,
         };
-      case 'loaded':
+      case StoreStatus.Loaded:
         return {
           status: StoreStatus.Loaded,
           recipeCount: profileState.profile.recipeCount,

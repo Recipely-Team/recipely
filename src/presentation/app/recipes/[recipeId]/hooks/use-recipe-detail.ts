@@ -19,6 +19,10 @@ import { failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { durations } from '@presentation/base/theme';
+
+/** No step ticked yet: one shared empty list, so the selector result stays stable. */
+const NO_STEPS_DONE: readonly boolean[] = [];
 
 /**
  * Orchestrates the recipe-detail screen: resolves the recipe (local or network),
@@ -51,7 +55,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
@@ -63,12 +67,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
   const onGoToSignIn = useCallback(() => {
     closePrompt();
-    // Cast: the dynamic redirect param can't be statically verified against
-    // expo-router's typed-routes union — same pattern as useAuthGuard.
+    // Cast: a runtime path is not in the typed-routes union.
     router.push(RoutePaths.loginWithRedirect(pathname) as Href);
   }, [closePrompt, pathname, router]);
-  const recipeOwnerId = localRecipe?.ownerId ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe.ownerId : null);
-  const isOwner = userId !== null && recipeOwnerId !== null && recipeOwnerId === userId;
+  const shownRecipe = localRecipe ?? (networkState?.status === StoreStatus.Loaded ? networkState.recipe : null);
+  const recipeOwnerId = shownRecipe?.ownerId ?? null;
+  const isOwner = shownRecipe?.isOwnedBy(userId) ?? false;
   const ownProfileState = userProfileStore((s) => s.state);
   const loadOwnProfile = userProfileStore((s) => s.load);
   const owner: ResolvedAuthor | null =
@@ -101,7 +105,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [commentInput, setCommentInput] = useState(CharConstants.empty);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
@@ -114,7 +117,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       createdRecipesStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
-      setTimeout(() => router.back(), 300);
+      setTimeout(() => router.back(), durations.sheetDismiss);
     } else if (s.status === StoreStatus.Error) {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
@@ -133,26 +136,25 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   );
 
   /**
-   * Posts `text`, or the field's contents when called without one.
+   * Posts `text`; resolves true once the post lands.
    *
-   * The parameter exists for the assistant: writing the field and posting in
-   * the same tick meant the post read the PREVIOUS render's value — normally
-   * empty, which this drops — while still reporting success, so the model
-   * announced a comment that was never made. Same class as the append-then-
-   * write bug in the draft editor.
+   * The text always comes from the caller — the composer (which owns its
+   * draft, so typing does not re-render this screen) or the assistant. Writing
+   * the field and posting in the same tick used to read the PREVIOUS render's
+   * value — normally empty, which this drops — while still reporting success.
    */
-  const handleAddComment = useCallback(async (text?: string) => {
-    const trimmed = (text ?? commentInput).trim();
-    if (trimmed.length === ValueConstants.zero) return;
+  const handleAddComment = useCallback(async (text: string): Promise<boolean> => {
+    const trimmed = text.trim();
+    if (trimmed.length === ValueConstants.zero) return false;
     const ok = await commentsStore.getState().addComment(recipeId, trimmed);
     if (ok) {
-      setCommentInput(CharConstants.empty);
       setSubmitError(null);
     } else {
       const failure = commentsStore.getState().byRecipe[recipeId]?.error;
       setSubmitError(failure != null ? failureToastMessage(failure) : t().comments.error);
     }
-  }, [commentInput, commentsStore, recipeId]);
+    return ok;
+  }, [commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
@@ -181,13 +183,15 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [userId, recipeId, commentsStore]);
 
   const [checkedIngredients, setCheckedIngredients] = useState<boolean[]>([]);
-  const [completedSteps, setCompletedSteps] = useState<boolean[]>([]);
+  // Shared with cook mode, so a step ticked there reads as done here.
+  const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NO_STEPS_DONE;
+  const toggleStoredStep = stepProgressStore((s) => s.toggleStep);
 
   // Local (user-created) recipes short-circuit the network store entirely.
   const isLocal = localRecipe !== undefined;
   const recipeState =
     localRecipe !== undefined
-      ? ({ status: StoreStatus.Loaded, recipe: localRecipe, fetchedAt: ValueConstants.zero })
+      ? ({ status: StoreStatus.Loaded, recipe: localRecipe, likedByMe: false, fetchedAt: ValueConstants.zero })
       : networkState;
 
   useEffect(() => {
@@ -202,7 +206,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
   const syncLikeCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likeCount : null;
-  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likedByMe : null;
+  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
   const syncFetchedAt = recipeState?.status === StoreStatus.Loaded ? recipeState.fetchedAt : null;
 
   useEffect(() => {
@@ -212,19 +216,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [syncLikeCount, syncLikedByMe, syncFetchedAt, recipeId, likesStore]);
 
   const ingredientCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.ingredients.length : ValueConstants.zero;
-  const instructionCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.instructions.length : ValueConstants.zero;
 
   useEffect(() => {
     if (ingredientCount > ValueConstants.zero) {
       setCheckedIngredients(new Array(ingredientCount).fill(false) as boolean[]);
     }
   }, [ingredientCount]);
-
-  useEffect(() => {
-    if (instructionCount > ValueConstants.zero) {
-      setCompletedSteps(new Array(instructionCount).fill(false) as boolean[]);
-    }
-  }, [instructionCount]);
 
   const onRetry = useCallback(() => {
     if (recipeId.length > ValueConstants.zero) {
@@ -240,13 +237,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     });
   }, []);
 
-  const onToggleStep = useCallback((index: number) => {
-    setCompletedSteps((prev) => {
-      const next = [...prev];
-      next[index] = !next[index];
-      return next;
-    });
-  }, []);
+  const onToggleStep = useCallback(
+    (index: number) => toggleStoredStep(recipeId, index),
+    [toggleStoredStep, recipeId],
+  );
 
   const current = recipeState ?? { status: StoreStatus.Loading };
   const status: StateViewStatus =
@@ -261,12 +255,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const media: readonly MediaItem[] = recipe?.heroPhotos ?? [];
   const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
-  const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
+  const liked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
-  // A recipe with no figures may simply be newer than the backend's
-  // calculator; `useNutritionRecheck` asks once more before the screen calls
-  // them absent. Nothing to wait for until a recipe has actually arrived.
+  // Ask the calculator once more before calling nutrition absent.
   const isNutritionCalculating = useNutritionRecheck(
     recipeId,
     recipe === null || recipe.nutritionFacts.hasAny,
@@ -291,9 +283,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     userId,
     authorState,
     commentState,
-    commentInput,
     submitError,
-    onChangeCommentInput: setCommentInput,
     onFocusCommentInput: revealCommentInput,
     scrollViewRef,
     checkedIngredients,
@@ -302,7 +292,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleStep,
     onToggleLike: () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
     onToggleSave: () => requestGate(() => void handleToggleSave(), t().recipes.signInToSave),
-    onAddComment: () => requestGate(() => void handleAddComment(), t().comments.signInToComment),
+    onAddComment: (text: string, onPosted: () => void) =>
+      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t().comments.signInToComment),
     /** Posts text the caller already has — the assistant's path. */
     onPostComment: (text: string) =>
       requestGate(() => void handleAddComment(text), t().comments.signInToComment),
@@ -318,8 +309,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
      */
     onCopyToDraft: () =>
       requestGate(
-        // Cast for the same reason as `onGoToSignIn`: a path built at runtime
-        // cannot be checked against expo-router's typed-routes union.
+        // Cast: same as onGoToSignIn.
         () => router.push(RoutePaths.createRecipeFromRecipe(recipeId) as Href),
         t().recipes.signInToCopy,
       ),

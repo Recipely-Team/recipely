@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeightFor, iconSizes, decorSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
@@ -145,8 +145,6 @@ const styles = StyleSheet.create({
     lineHeight: lineHeightFor(fontSizes.medium),
     opacity: opacities.onMediaSubtle,
   },
-  // Pinned to the bottom edge so the panel ends level with the cards beside it,
-  // whatever height the row settles at.
   foot: {
     marginTop: 'auto',
     alignSelf: 'stretch',

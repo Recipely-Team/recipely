@@ -19,15 +19,9 @@ export const ErrorMessageKey = {
   aiUpstreamFailed: 'errors.ai.upstream_failed',
   aiCooldown: 'errors.too_many_requests.ai_cooldown',
   promptRequired: 'errors.validation.prompt_required',
-  // The backend rejects an over-long prompt or refine instruction with this key.
-  // It was missing here, so `failureKeyMessage` returned undefined and the
-  // generate screen fell through to its unnamed-4xx branch: "Yapay zekâ yanıt
-  // veremedi — tekrar dene". The server had said exactly what was wrong, and the
-  // app answered by telling the user to retry input that could never succeed.
+  // The backend's over-long prompt/refine key.
   promptTooLong: 'errors.validation.prompt_too_long',
-  // Client-raised only: refine has no server-side blank-instruction rule, and
-  // "describe the dish" is the wrong advice when a recipe already exists on
-  // screen — the user is asked what to CHANGE, not what to cook.
+  // Client-raised only: refine asks what to change, not what to cook.
   refineInstructionRequired: 'errors.ai.refine_instruction_required',
 
   // Link import: Instagram videos and recipe web pages
@@ -86,6 +80,19 @@ export const ErrorMessageKey = {
   /** Calories or grams past the plausibility cap (a mistyped extra zero). */
   diaryNutrientInvalid: 'errors.validation.nutrient_invalid',
   diaryGoalInvalid: 'errors.validation.goal_invalid',
+  // Meal logging from text or a photo (backend `POST /diary/meal-parse`)
+  mealParseInputRequired: 'errors.meal_parse.input_required',
+  mealParseTextTooLong: 'errors.meal_parse.text_too_long',
+  mealParseUnsupportedPhoto: 'errors.meal_parse.unsupported_photo',
+  mealParsePhotoRejected: 'errors.meal_parse.photo_rejected',
+  mealParsePhotoUnchecked: 'errors.meal_parse.photo_unchecked',
+  /** The day's meal-parse allowance (20) is used up. */
+  mealParseQuotaExceeded: 'errors.meal_parse.quota_exceeded',
+  mealParseUnavailable: 'errors.meal_parse.unavailable',
+  /** The moderation check refused the text or photo. */
+  contentBlocked: 'errors.validation.content_blocked',
+  /** No AI provider is configured on the server — to the user, the feature is unavailable. */
+  aiProviderNotConfigured: 'errors.ai.provider_not_configured',
 
   // Creator tag
   /** The handle breaks the contract's rules: charset, per-platform length, dots. */
@@ -100,6 +107,18 @@ export const ErrorMessageKey = {
   instagramAccountLinked: 'errors.conflict.instagram_account_linked',
   instagramNotConnected: 'errors.instagram.not_connected',
   instagramReturnInvalid: 'errors.validation.instagram_return_invalid',
+
+  // Shopping list
+  shoppingLabelRequired: 'errors.validation.shopping_label_required',
+  shoppingLabelTooLong: 'errors.validation.shopping_label_too_long',
+  shoppingQuantityInvalid: 'errors.validation.shopping_quantity_invalid',
+  shoppingUnitTooLong: 'errors.validation.shopping_unit_too_long',
+  shoppingItemInvalid: 'errors.validation.shopping_item_invalid',
+  shoppingBatchInvalid: 'errors.validation.shopping_batch_invalid',
+  shoppingItemNotFound: 'errors.not_found.shopping_item',
+  shoppingListFull: 'errors.conflict.shopping_list_full',
+  shoppingListChanged: 'errors.conflict.shopping_list_changed',
+  shoppingRateLimited: 'errors.too_many_requests.shopping_list',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

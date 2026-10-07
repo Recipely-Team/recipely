@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
@@ -110,17 +110,12 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.sm,
     paddingHorizontal: spacing.xxs,
   },
-  // Sized to the glyph so the badge has a corner to hang off; `overflow` is
-  // left visible (the default) on purpose — the badge is meant to escape it.
+  // Sized to the glyph; overflow stays visible so the badge can escape it.
   glyph: {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  // Anchored to the glyph's top-right CORNER — `bottom`/`left` at 100% put the
-  // badge's bottom-left there, so it grows up and to the right, away from the
-  // icon. Anchoring by `right` instead is what buried the icon: a two-digit
-  // count widens leftward, and "12" sat straight on top of the heart. The
-  // negative margins tuck it back a touch so it reads as attached.
+  // Anchored by bottom/left so a wider count grows away from the icon.
   badge: {
     bottom: '100%',
     left: '100%',
@@ -132,8 +127,6 @@ const styles = StyleSheet.create({
     letterSpacing: letterSpacings.tight,
     textAlign: 'center',
   },
-  // Sits on the container's own hairline, so the active column looks like it
-  // owns that stretch of the rule rather than drawing a second one under it.
   underline: {
     position: 'absolute',
     left: spacing.xs,

@@ -10,7 +10,6 @@ const makeProps = (overrides: Partial<CommentEntityProps> = {}): CommentEntityPr
   authorDisplayName: 'Ada Lovelace',
   authorPhotoUrl: 'https://cdn.recipely.io/avatars/ada.webp',
   likeCount: 5,
-  likedByMe: false,
   ...overrides,
 });
 
@@ -22,62 +21,48 @@ const build = (overrides: Partial<CommentEntityProps> = {}): CommentEntity => {
   return result.value;
 };
 
-describe('CommentEntity.withLikeToggled', () => {
-  it('marks an unliked comment as liked and increments the count', () => {
-    const comment = build({ likedByMe: false, likeCount: 5 });
-
-    const toggled = comment.withLikeToggled();
-
-    expect(toggled.likedByMe).toBe(true);
-    expect(toggled.likeCount).toBe(6);
+describe('CommentEntity.withViewerLike', () => {
+  it('adds the viewer\'s like to the count', () => {
+    expect(build({ likeCount: 5 }).withViewerLike(true).likeCount).toBe(6);
   });
 
-  it('marks a liked comment as unliked and decrements the count', () => {
-    const comment = build({ likedByMe: true, likeCount: 5 });
-
-    const toggled = comment.withLikeToggled();
-
-    expect(toggled.likedByMe).toBe(false);
-    expect(toggled.likeCount).toBe(4);
+  it('removes the viewer\'s like from the count', () => {
+    expect(build({ likeCount: 5 }).withViewerLike(false).likeCount).toBe(4);
   });
 
-  it('clamps the count at zero when un-liking a comment that already reads zero', () => {
-    const comment = build({ likedByMe: true, likeCount: 0 });
-
-    const toggled = comment.withLikeToggled();
-
-    expect(toggled.likedByMe).toBe(false);
-    expect(toggled.likeCount).toBe(0);
+  it('clamps the count at zero when removing a like from a comment that already reads zero', () => {
+    expect(build({ likeCount: 0 }).withViewerLike(false).likeCount).toBe(0);
   });
 
-  it('leaves the original instance unchanged', () => {
-    const comment = build({ likedByMe: false, likeCount: 5 });
+  it('returns a new instance and leaves the original unchanged', () => {
+    const comment = build({ likeCount: 5 });
 
-    comment.withLikeToggled();
+    const liked = comment.withViewerLike(true);
 
-    expect(comment.likedByMe).toBe(false);
+    expect(liked).not.toBe(comment);
     expect(comment.likeCount).toBe(5);
   });
 
-  it('returns a new instance, not the receiver', () => {
-    const comment = build();
-
-    const toggled = comment.withLikeToggled();
-
-    expect(toggled).not.toBe(comment);
-  });
-
   it('preserves every other field on the returned instance', () => {
-    const comment = build({ likedByMe: false, likeCount: 5 });
+    const comment = build({ likeCount: 5 });
 
-    const toggled = comment.withLikeToggled();
+    const liked = comment.withViewerLike(true);
 
-    expect(toggled.id).toBe(comment.id);
-    expect(toggled.body).toBe(comment.body);
-    expect(toggled.authorId).toBe(comment.authorId);
-    expect(toggled.recipeId).toBe(comment.recipeId);
-    expect(toggled.createdAt).toBe(comment.createdAt);
-    expect(toggled.authorDisplayName).toBe(comment.authorDisplayName);
-    expect(toggled.authorPhotoUrl).toBe(comment.authorPhotoUrl);
+    expect(liked.id).toBe(comment.id);
+    expect(liked.body).toBe(comment.body);
+    expect(liked.authorId).toBe(comment.authorId);
+    expect(liked.recipeId).toBe(comment.recipeId);
+    expect(liked.createdAt).toBe(comment.createdAt);
+    expect(liked.authorDisplayName).toBe(comment.authorDisplayName);
+    expect(liked.authorPhotoUrl).toBe(comment.authorPhotoUrl);
+  });
+});
+
+describe('CommentEntity.isAuthoredBy', () => {
+  it('is true only for the author, never for a guest', () => {
+    const comment = build({ authorId: 'author-9' });
+    expect(comment.isAuthoredBy('author-9')).toBe(true);
+    expect(comment.isAuthoredBy('someone-else')).toBe(false);
+    expect(comment.isAuthoredBy(null)).toBe(false);
   });
 });

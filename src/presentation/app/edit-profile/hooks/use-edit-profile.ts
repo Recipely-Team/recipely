@@ -12,7 +12,8 @@ import {
   EditProfileSaveOutcome,
   type EditProfileSaveOutcomeType,
 } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * Orchestrates the edit-profile form: seeds the display name / bio from the
@@ -46,8 +47,7 @@ export const useEditProfile = (): UseEditProfileResult => {
 
   const [displayName, setDisplayName] = useState(initialDisplayName);
   const [bio, setBio] = useState(initialBio);
-  // The write-through copy the save reads. Updated by the setters below rather
-  // than during render, because a render is exactly what has not happened yet.
+  // Write-through copy for save, updated in the setters (not in render).
   const latest = useRef({ displayName: initialDisplayName, bio: initialBio });
 
   const onChangeName = (value: string): void => {
@@ -61,7 +61,7 @@ export const useEditProfile = (): UseEditProfileResult => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  const canSave = displayName.trim().length > ValueConstants.zero;
+  const canSave = !isBlank(displayName);
   const dirty = displayName !== initialDisplayName || bio !== initialBio;
   const showNameError = dirty && !canSave;
   const bioAtLimit = bio.length >= BIO_MAX;
@@ -70,7 +70,7 @@ export const useEditProfile = (): UseEditProfileResult => {
   const onSave = async (): Promise<EditProfileSaveOutcomeType> => {
     const { displayName: name, bio: about } = latest.current;
     if (isSaving) return EditProfileSaveOutcome.Busy;
-    if (name.trim().length === ValueConstants.zero) return EditProfileSaveOutcome.NameRequired;
+    if (isBlank(name)) return EditProfileSaveOutcome.NameRequired;
     if (name === initialDisplayName && about === initialBio) return EditProfileSaveOutcome.Unchanged;
 
     setIsSaving(true);

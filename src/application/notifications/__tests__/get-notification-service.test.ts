@@ -34,7 +34,7 @@ describe('getNotificationService', () => {
   it('falls back to a service whose methods are inert and grant nothing', async () => {
     const service = getNotificationService();
 
-    await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!' })).resolves.toBeUndefined();
+    await expect(service.init({ dismissAction: 'Dismiss', channelName: 'Cooking timer', timerDoneBody: 'Timer is done!', warningChannelName: 'Heads-up', reminderChannelName: 'Ideas' })).resolves.toBeUndefined();
     await expect(service.requestPermissions()).resolves.toBe(false);
     await expect(
       service.scheduleTimerComplete('t1', 'Pasta', Date.now(), 'Timer is done!'),

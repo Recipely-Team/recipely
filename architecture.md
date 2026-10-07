@@ -98,8 +98,8 @@ Object-oriented design is the active paradigm of this codebase, not a formality:
   `private readonly` fields behind getters, no public setters, no mutation after construction except via
   intention-revealing methods that re-check invariants.
 - **Entities stay identity-intrinsic (p.67).** Props describe what the thing *is*, not who is looking at
-  it. Viewer-dependent flags (`likedByMe`-style) are tolerated where they already exist but must not be
-  extended — new viewer/session-relative data goes into a read model / store state, not entity props.
+  it. Viewer-dependent flags (`likedByMe`-style) go into a read model / store state, never entity props:
+  `RecipeDetail` and `CommentView` carry `likedByMe` beside the entity; `RecipeSummaryEntity` is itself a read model.
 - **Value Objects for conceptual wholes (p.71).** When a primitive carries rules (format, range, unit) or
   travels as a group (amount + unit, minutes prep + cook), promote it to an immutable VO with a validating
   factory (the `Email` pattern) instead of re-validating raw primitives at multiple call sites.
@@ -114,14 +114,15 @@ references are **by id only**.
 
 | Aggregate root | Members / notes |
 |---|---|
-| `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
-| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
+| `RecipeEntity` | Root. `RecipeSummaryEntity` and `RecipeDetail` (the recipe plus the viewer's like) are read models of it (not separate aggregates). `MediaItem`, `RecipeNutrition` are VO-shaped members. `IngredientList` / `IngredientLine` (with `Quantity`) are value objects over its `ingredients` lines; `RecipeServings` is the reader's chosen servings, a value object. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. `CommentView` (the comment plus the viewer's like) is a read model. |
 | `UserEntity` | Root (auth identity). Holds the user's own `CreatorClaim` (value object: `CreatorTag` + review status). |
 | `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. `CreatorSummaryEntity` (the Explore creators strip) is a read model of it, not a separate aggregate; `CreatorTag` / `CreatorHandle` are value objects. |
 | `AuthSessionEntity` | Root (token lifecycle). |
 | `NotificationEntity` | Own root; references related entities by id. |
 | `FoodLogEntryEntity` | Own root (the food diary); references its recipe by `recipeId`. `DiaryDay` / `DiaryMonth` are read models over a user's entries, water and `NutritionGoals`; `Nutrients`, `NutritionGoals`, `Servings`, `CalendarDate`, `CalendarMonth` are value objects; `LoggableFood` is a transient one-serving view. |
 | `DmRuleEntity` | Own root (Instagram comment-to-DM); references its post by `mediaId` and its recipe by `recipeId`. `InstagramConnection`, `InstagramMedia` and `DmSend` are read models; `DmKeywords` is a value object; `DmRuleDraft` is a validated, transient write model. |
+| `ShoppingItemEntity` | Own root (one line of the viewer's shopping list); references the recipe it came from by `recipeId` (its `recipeName` is a server-kept label, not a reference). `ShoppingItemDraft` / `ShoppingItemChanges` are transient write models; `ShoppingAddResult` is a read model of one add. |
 
 A PR that adds a domain entity MUST add a row here (root or member of which root) — the code-reviewer
 blocks otherwise.

@@ -1,4 +1,4 @@
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isNonEmptyString } from '@core/guards/type-guards';
 import type { ArgParse } from '@presentation/base/hooks/assistant/args/diary/arg-parse';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
@@ -12,7 +12,7 @@ export const parseEntryTargetArg = (arg: string | undefined): ArgParse<EntryTarg
   const raw = (arg ?? CharConstants.empty).trim();
   const json = parseJsonObject(raw);
   if (json === undefined) {
-    return raw.length === 0
+    return raw.length === ValueConstants.zero
       ? { ok: false, error: DiaryArgError.MissingName }
       : { ok: true, value: { name: raw, meal: null, servings: null, toMeal: null } };
   }

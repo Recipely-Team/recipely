@@ -10,9 +10,8 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import { ValueConstants } from '@core/constants';
+import { RecipeLimits } from '@domain/recipes/recipe-limits';
 
-const SERVINGS_MIN = 1;
-const SERVINGS_MAX = 50;
 const TIME_STEP = 5;
 
 const clamp = (value: number, min: number, max: number): number => Math.max(min, Math.min(max, value));
@@ -44,8 +43,8 @@ export const RecipeSpecCard = ({
           value={recipe.servings}
           decreaseLabel={t().createRecipe.servings}
           increaseLabel={t().createRecipe.servings}
-          onDecrement={() => onChangeServings(clamp(recipe.servings - ValueConstants.one, SERVINGS_MIN, SERVINGS_MAX))}
-          onIncrement={() => onChangeServings(clamp(recipe.servings + ValueConstants.one, SERVINGS_MIN, SERVINGS_MAX))}
+          onDecrement={() => onChangeServings(clamp(recipe.servings - ValueConstants.one, RecipeLimits.servingsMin, RecipeLimits.servingsMax))}
+          onIncrement={() => onChangeServings(clamp(recipe.servings + ValueConstants.one, RecipeLimits.servingsMin, RecipeLimits.servingsMax))}
         />
       </SpecRow>
       <SpecRow icon="speedometer" label={t().createRecipe.difficulty} error={fieldErrors.difficulty}>

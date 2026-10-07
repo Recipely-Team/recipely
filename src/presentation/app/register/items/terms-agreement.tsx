@@ -1,8 +1,8 @@
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeightFor, iconSizes, controlSizes, borderWidths, BrandColors, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
 import { ValueConstants } from '@core/constants';
@@ -27,7 +27,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
         style={[
           styles.termsBox,
           {
-            backgroundColor: agree ? colors.primary : 'transparent',
+            backgroundColor: agree ? colors.primary : BrandColors.transparent,
             borderColor: agree ? colors.primary : colors.border,
           },
         ]}
@@ -63,6 +63,7 @@ export const TermsAgreement = ({ agree, onToggle }: TermsAgreementProps): React.
 
 const styles = StyleSheet.create({
   termsRow: {
+    minHeight: targetSizes.min,
     flexDirection: 'row',
     alignItems: 'flex-start',
     gap: spacing.sm,

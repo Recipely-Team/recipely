@@ -1,5 +1,5 @@
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
-import type { RecipeChange } from '@presentation/app/create-recipe/model/refine/recipe-change';
+import type { RecipeChangeType } from '@presentation/app/create-recipe/model/refine/recipe-change';
 
 /**
  * A refinement waiting on the cook's answer: the recipe the assistant would
@@ -15,6 +15,6 @@ import type { RecipeChange } from '@presentation/app/create-recipe/model/refine/
  */
 export interface RefineProposal {
   readonly recipe: EditableRecipe;
-  readonly changes: readonly RecipeChange[];
+  readonly changes: readonly RecipeChangeType[];
   readonly reply: string;
 }

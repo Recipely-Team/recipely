@@ -1,7 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -16,6 +16,7 @@ import { FieldErrorText } from '@presentation/app/create-recipe/items/field-erro
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface PromptPhaseProps {
   insets: EdgeInsets;
@@ -51,7 +52,7 @@ export const PromptPhase = ({
 }: PromptPhaseProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const canGenerate = prompt.trim().length > ValueConstants.zero;
+  const canGenerate = !isBlank(prompt);
   const ideaChips = t().createRecipe.ideaChips;
   const draftName = latestDraft?.snapshot.name?.trim();
 

@@ -8,7 +8,7 @@
 import { act, type ReactTestInstance, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
@@ -27,14 +27,14 @@ jest.mock('@presentation/app/profile/sheets/feedback-sheet', () => ({
 
 const signOut = jest.fn<Promise<null>, []>(() => Promise.resolve(null));
 
-const makeStores = (): Stores =>
+const makeStores = (): ApplicationStores =>
   ({
     authStore: create<Partial<AuthStoreState>>(() => ({
       state: { status: 'unauthenticated' },
       signOut,
       deleteAccount: jest.fn<Promise<null>, []>(() => Promise.resolve(null)),
     })),
-  }) as unknown as Stores;
+  }) as unknown as ApplicationStores;
 
 /** The pressable carrying the given label, or undefined. */
 const pressableLabelled = (root: ReactTestInstance, label: string): ReactTestInstance | undefined =>

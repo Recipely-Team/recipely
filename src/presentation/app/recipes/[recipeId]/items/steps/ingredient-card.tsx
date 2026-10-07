@@ -1,9 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/ingredients/parse-ingredient';
+import { spacing, radii, fontSizes, fontWeights, borderWidths, opacities } from '@presentation/base/theme';
+import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
 import { ValueConstants } from '@core/constants';
 
 export interface IngredientCardProps {
@@ -19,7 +19,7 @@ export const IngredientCard = ({
   onToggle,
 }: IngredientCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { qty, name } = parseIngredient(raw);
+  const { qty, name } = IngredientLine.of(raw).split();
   const display = name.length > ValueConstants.zero ? name : raw;
 
   return (
@@ -36,18 +36,7 @@ export const IngredientCard = ({
         },
       ]}
     >
-      <View
-        style={[
-          styles.checkbox,
-          checked
-            ? { backgroundColor: colors.success, borderColor: colors.success }
-            : { backgroundColor: 'transparent', borderColor: colors.border },
-        ]}
-      >
-        {checked ? (
-          <Ionicons name="checkmark" size={iconSizes.sm} color={colors.onSuccess} />
-        ) : null}
-      </View>
+      <TickBox checked={checked} />
 
       {qty.length > ValueConstants.zero ? (
         <View style={[styles.qtyChip, { backgroundColor: colors.chipBackground }]}>
@@ -85,14 +74,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     borderRadius: radii.lg,
     borderWidth: borderWidths.hairline,
-  },
-  checkbox: {
-    width: controlSizes.checkbox,
-    height: controlSizes.checkbox,
-    borderRadius: radii.sm,
-    borderWidth: borderWidths.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   qtyChip: {
     paddingHorizontal: spacing.sm,

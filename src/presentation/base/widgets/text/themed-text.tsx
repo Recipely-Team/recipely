@@ -29,10 +29,7 @@ export const ThemedText = ({
   const { fontSize, ratio } = themedTextVariants[variant];
   const lineHeight = useTextLineHeight(fontSize, ratio);
   const color = muted ? colors.textMuted : colors.text;
-  // The `label` variant is upper-case by definition, and that casing is done
-  // HERE rather than with `textTransform` because the platform applies that
-  // style without knowing the app's language — which turns Turkish "Beğeni"
-  // into "BEĞENI". Non-string children are left alone; they carry their own.
+  // Upper-cased here with the app locale; textTransform ignores the language (Turkish i).
   const content =
     variant === 'label' && isString(children) ? upperCase(children) : children;
   return (

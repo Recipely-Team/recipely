@@ -8,7 +8,7 @@ import { buildFeedRows } from '@presentation/app/recipes/model/ads/build-feed-ro
 import { FeedRowKind } from '@presentation/app/recipes/model/ads/feed-row-kind';
 
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
-import type { FeedRow } from '@presentation/app/recipes/model/ads/feed-row';
+import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
 
 interface UseFeedRowsArgs {
   recipes: readonly RecipeSummaryEntity[];
@@ -46,7 +46,7 @@ export const useFeedRows = ({ recipes, isReloading, gridColumns }: UseFeedRowsAr
   );
 
   const keyExtractor = useCallback(
-    (row: FeedRow): string => (row.kind === FeedRowKind.Ad ? `ad-${row.ordinal}` : row.recipe.id),
+    (row: FeedRowType): string => (row.kind === FeedRowKind.Ad ? `ad-${row.ordinal}` : row.recipe.id),
     [],
   );
 

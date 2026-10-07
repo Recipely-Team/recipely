@@ -6,6 +6,7 @@ import type { FeedbackRepositoryInterface } from '@domain/feedback/feedback-repo
 import type { FeedbackSubmission } from '@domain/feedback/feedback-submission';
 import { toFeedbackRequestDto } from '@infrastructure/feedback/feedback-mapper';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Implements `FeedbackRepositoryInterface` against the Recipely backend.
@@ -22,6 +23,6 @@ export class FeedbackRepository implements FeedbackRepositoryInterface {
       return fail(result.failure);
     }
 
-    return ok(void 0);
+    return ok(void ValueConstants.zero);
   }
 }

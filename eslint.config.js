@@ -22,6 +22,81 @@ module.exports = defineConfig([
     },
   },
   {
+    // An assistant action's failure reason is a vocabulary the model reads and
+    // the app branches on (AssistantActionError / DiaryArgError); spelled as a
+    // string at a call site, a typo was a silently different reason. Tests may
+    // still assert the wire value.
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: ['**/__tests__/**', '**/__fixtures__/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: "Property[key.name='error'] > Literal[value=/^[a-z]+(_[a-z]+)*$/]",
+          message: 'Use AssistantActionError.* (or the feature vocabulary) instead of a string literal for an error reason.',
+        },
+      ],
+    },
+  },
+  {
+    // Rule 5: a number in code is a named value. Literals live only where values
+    // are DEFINED — theme tokens, constants modules, a page's model/, and files
+    // that are themselves a named table (*-metrics, *-sizes, *-geometry,
+    // *-limits, *-constants, *-defaults, *-animation). Everywhere else reads
+    // ValueConstants (zero / one / two / three / minusOne / percent) or a name.
+    files: ['src/**/*.ts', 'src/**/*.tsx'],
+    ignores: [
+      '**/__tests__/**',
+      '**/__fixtures__/**',
+      '**/__mocks__/**',
+      'src/presentation/i18n/locales/**',
+      'src/presentation/base/theme/**',
+      'src/core/constants/**',
+      'src/infrastructure/constants/**',
+      'src/presentation/base/constants/**',
+      '**/model/**',
+      '**/*-metrics.ts',
+      '**/*-sizes.ts',
+      '**/*-geometry.ts',
+      '**/*-limits.ts',
+      '**/*-constants.ts',
+      '**/*-defaults.ts',
+      '**/*-animation.ts',
+    ],
+    rules: {
+      '@typescript-eslint/no-magic-numbers': [
+        'error',
+        {
+          ignore: [],
+          ignoreEnums: true,
+          ignoreNumericLiteralTypes: true,
+          ignoreReadonlyClassProperties: true,
+          ignoreTypeIndexes: true,
+        },
+      ],
+    },
+  },
+  {
+    // Icon fonts are bundled per family IMPORTED, not per glyph used: the root
+    // `@expo/vector-icons` index pulls in every family, so importing Ionicons
+    // from it shipped all 19 fonts (4.1 MB in the iOS build; 0.4 MB are used).
+    // Import the family from its own path: `@expo/vector-icons/Ionicons`.
+    files: ['**/*.ts', '**/*.tsx'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            {
+              name: '@expo/vector-icons',
+              message: "Import the family's own path, e.g. '@expo/vector-icons/Ionicons' — the root index bundles every icon font.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     // The React Compiler inference rules that eslint-config-expo 57 newly turns
     // on. They are off until the compiler itself is on (app.json `experiments`
     // has only `typedRoutes`), because without it they report 244 findings and

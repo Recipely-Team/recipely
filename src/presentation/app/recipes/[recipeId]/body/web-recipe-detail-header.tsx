@@ -1,13 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebAuthorByline } from '@presentation/app/recipes/[recipeId]/items/meta/web-author-byline';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
@@ -15,6 +16,7 @@ import { formatRating } from '@presentation/base/utils/format-rating';
 import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
 import { OwnerStatusPanel } from '@presentation/app/recipes/[recipeId]/items/publishing/owner-status-panel';
+import { StartCookingPill } from '@presentation/app/recipes/[recipeId]/items/start-cooking-pill';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -134,6 +136,7 @@ export const WebRecipeDetailHeader = ({
       </View>
 
       <View style={styles.actions}>
+        {recipe.instructions.length > ValueConstants.zero ? <StartCookingPill recipeId={recipe.id} /> : null}
         {isOwner ? (
           <Pressable
             accessibilityRole="button"
@@ -234,6 +237,7 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   statItem: {
+    minHeight: targetSizes.min,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,

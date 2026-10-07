@@ -30,8 +30,7 @@ export const buildRequestInterceptor = (
     config.headers = headers;
     const common = await buildCommonHeaders(options);
     for (const [name, value] of Object.entries(common)) {
-      // WHY .set(): AxiosHeaders keeps its own normalized storage — a bare index
-      // assignment bypasses it (the same reason `delete` is wrong below).
+      // set(): AxiosHeaders has its own normalised storage.
       headers.set(name, value);
     }
 
@@ -39,28 +38,23 @@ export const buildRequestInterceptor = (
       isFormData(config.data);
 
     if (isFormDataPayload) {
-      // WHY: AxiosHeaders uses internal storage — plain JS `delete` on the cast
-      // Record does not call the class's delete() and leaves the header live.
+      // Plain delete would leave the AxiosHeaders entry live.
       if (config.headers instanceof AxiosHeaders) {
         config.headers.delete(HttpHeader.contentType);
       }
-      // WHY: identity transformRequest bypasses axios's default transformers so
-      // RN's polyfilled FormData is sent untouched instead of JSON-stringified.
+      // Identity transform: send RN's FormData untouched.
       config.transformRequest = [(data) => data];
-      // WHY: bump timeout to the upload budget — multipart uploads over cellular
-      // routinely exceed the 10s JSON default, surfacing as a "Network error".
+      // Uploads get the longer upload budget.
       config.timeout = MULTIPART_UPLOAD_TIMEOUT_MS;
       return config;
     }
 
     config.headers[HttpHeader.contentType] = HttpMediaType.json;
 
-    // Encrypt body for POST/PUT/PATCH. For requests with no data send an empty
-    // encrypted envelope so the backend's decryptBody middleware accepts it.
+    // Bodied methods are always encrypted (an empty envelope when there is no data).
     if (METHODS_WITH_BODY.includes((config.method?.toUpperCase() ?? CharConstants.empty) as HttpMethod)) {
       const bodyData = config.data ?? {};
-      // WHY: backend's decryptBody middleware expects plaintext `{ data: <T> }`
-      // (mirroring the response side). Wrap before encrypt so it is symmetric.
+      // Wrapped as { data } to mirror the response envelope.
       config.data = encryptEnvelope({ data: bodyData }, aesKey);
     }
     if (options.enableLogging) {

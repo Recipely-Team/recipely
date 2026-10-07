@@ -1,7 +1,7 @@
 import { act } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { StoreStatus } from '@application/store/store-status';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { EditProfileSaveOutcome } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
@@ -44,7 +44,7 @@ function harness(updateProfile: jest.Mock) {
         session: { user: { displayName: INITIAL_NAME, bio: 'eski', photoUrl: null } },
       },
       updateProfile,
-    })) as unknown as Stores['authStore'];
+    })) as unknown as ApplicationStores['authStore'];
 
   const captured: { vm: UseEditProfileResult | null } = { vm: null };
   const Probe = (): null => {
@@ -53,7 +53,7 @@ function harness(updateProfile: jest.Mock) {
   };
 
   renderComponent(
-    <StoresProvider value={{ authStore } as unknown as Stores}>
+    <StoresProvider value={{ authStore } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

@@ -10,7 +10,7 @@ import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { AutomationMetrics } from '@presentation/base/widgets/instagram/automation-metrics';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
-import { failureContent, failureIcon } from '@presentation/base/errors/failure-lookups';
+import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { AutomationsBar } from '@presentation/app/automations/shared/items/automations-bar';
 import { useRuleEditor } from '@presentation/app/automations/edit/hooks/use-rule-editor';
 import { EditorStep } from '@presentation/app/automations/edit/model/editor-step';
@@ -83,7 +83,7 @@ export const AutomationEditScreen = (): React.JSX.Element => {
     if (vm.loadFailure !== null) {
       const content = failureContent(vm.loadFailure);
       return (
-        <ErrorState icon={failureIcon(vm.loadFailure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.retryLoad} />
+        <ErrorState icon={failureIcon(vm.loadFailure)} severity={failureSeverity(vm.loadFailure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.retryLoad} />
       );
     }
     return vm.isLoading ? <ActivityIndicator color={colors.primary} /> : step();

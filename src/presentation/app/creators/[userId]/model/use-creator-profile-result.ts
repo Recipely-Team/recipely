@@ -1,12 +1,12 @@
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { CreatorProfileState } from '@application/creators/profile/creator-profile-state';
-import type { CreatorRecipesState } from '@application/creators/profile/creator-recipes-state';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 /** View model returned by {@link useCreatorProfile} for /creators/[userId]. */
 export interface UseCreatorProfileResult {
   profileState: CreatorProfileState;
   recipes: readonly RecipeSummaryEntity[];
-  recipesState: CreatorRecipesState;
+  recipesState: PagedList<RecipeSummaryEntity>;
   /** The signed-in user looking at their own page: no follow button. */
   isOwnProfile: boolean;
   isFollowPending: boolean;

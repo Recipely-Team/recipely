@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -12,13 +12,14 @@ import { PasswordStrengthMeter } from '@presentation/app/register/items/password
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
 import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { EMAIL_RE, MIN_PASSWORD } from '@presentation/app/register/model/password-rules';
-import { computeStrength } from '@presentation/app/register/model/compute-strength';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { Email } from '@domain/common/email';
+import { Password } from '@domain/auth/password';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -46,19 +47,19 @@ export const RegisterForm = (): React.JSX.Element => {
   const passwordRef = useRef<TextInput>(null);
   const confirmRef = useRef<TextInput>(null);
 
-  const emailValid = EMAIL_RE.test(email);
+  const emailValid = Email.create(email).ok;
   const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
-  const strength = useMemo(() => computeStrength(password), [password]);
+  const strength = useMemo(() => Password.strengthOf(password), [password]);
 
   const canSubmit =
-    name.trim().length > ValueConstants.zero &&
+    !isBlank(name) &&
     emailValid &&
-    password.length >= MIN_PASSWORD &&
+    Password.create(password).ok &&
     password === confirm &&
     agree;
 
   const handleRegister = useCallback(async () => {
-    if (name.trim().length === ValueConstants.zero) {
+    if (isBlank(name)) {
       setLocalError(t().register.errorName);
       return;
     }
@@ -66,7 +67,7 @@ export const RegisterForm = (): React.JSX.Element => {
       setLocalError(t().register.errorEmail);
       return;
     }
-    if (password.length < MIN_PASSWORD) {
+    if (!Password.create(password).ok) {
       setLocalError(t().register.errorPwdShort);
       return;
     }
@@ -185,6 +186,8 @@ export const RegisterForm = (): React.JSX.Element => {
       ) : null}
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: !canSubmit || isLoading, busy: isLoading }}
         onPress={() => { void handleRegister(); }}
         disabled={!canSubmit || isLoading}
         style={[
@@ -206,7 +209,7 @@ export const RegisterForm = (): React.JSX.Element => {
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
           {t().register.haveAccount}
         </ThemedText>
-        <Pressable onPress={() => router.back()}>
+        <Pressable accessibilityRole="link" onPress={() => router.back()} style={styles.linkTarget}>
           <ThemedText variant="caption" style={[styles.signInLink, { color: colors.primary }]}>
             {t().register.signIn}
           </ThemedText>
@@ -268,5 +271,9 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontWeight: fontWeights.semibold,
+  },
+  linkTarget: {
+    minHeight: targetSizes.min,
+    justifyContent: 'center',
   },
 });

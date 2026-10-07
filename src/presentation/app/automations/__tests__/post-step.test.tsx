@@ -12,7 +12,7 @@ import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-send
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import { fakeFoodCatalogRepository, pageOf } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { fakeInstagramRepository } from '@application/instagram/__fixtures__/instagram-fixtures';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { PostStep } from '@presentation/app/automations/edit/body/post-step';
 
@@ -38,7 +38,7 @@ const setup = () => {
   const mount = async () => {
     const view = renderComponent(<PostStep scrollable={scrollable} handle="@mert" selected={null} onSelect={jest.fn()} />, {
       automationsStore,
-    } as unknown as Partial<Stores>);
+    } as unknown as Partial<ApplicationStores>);
     await act(async () => undefined);
     return view;
   };

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -15,6 +15,7 @@ import {
 import { t } from '@presentation/i18n';
 import { COUNT_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
 import { FilePageThumb } from '@presentation/app/import-recipe/items/file-page-thumb';
+import { ValueConstants } from '@core/constants';
 
 export interface FilePageTileProps {
   file: ImportFile;
@@ -49,7 +50,7 @@ export const FilePageTile = ({
 }: FilePageTileProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().fileImport;
-  const label = copy.page.replace(COUNT_TOKEN, String(index + 1));
+  const label = copy.page.replace(COUNT_TOKEN, String(index + ValueConstants.one));
 
   return (
     <View style={{ width }}>
@@ -63,7 +64,7 @@ export const FilePageTile = ({
       </Pressable>
       {showNumber ? (
         <View pointerEvents="none" style={[styles.number, { backgroundColor: colors.primary }]}>
-          <ThemedText style={[styles.numberText, { color: colors.primaryText }]}>{index + 1}</ThemedText>
+          <ThemedText style={[styles.numberText, { color: colors.primaryText }]}>{index + ValueConstants.one}</ThemedText>
         </View>
       ) : null}
       <Pressable

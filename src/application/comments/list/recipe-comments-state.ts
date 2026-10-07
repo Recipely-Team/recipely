@@ -1,8 +1,8 @@
 import type { Failure } from '@core/failure';
-import type { CommentEntity } from '@domain/comments/comment-entity';
+import type { CommentView } from '@domain/comments/comment-view';
 
 export interface RecipeCommentsState {
-  items: CommentEntity[];
+  items: CommentView[];
   total: number;
   page: number;
   isLoading: boolean;

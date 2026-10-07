@@ -118,12 +118,9 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   const setSaved = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
-      if (userId === null) return { ok: false, error: 'signed_out' };
+      if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
       if (savedIds.has(recipeId) === wanted) {
-        // An unloaded set answers "not saved" about every recipe in the app, so
-        // this branch reported an unsave that never happened. It only misleads
-        // in that direction: reading "not saved" when asked to SAVE just means
-        // the save runs, which is what the user wanted anyway.
+        // An unloaded saved set reads every recipe as not saved; only unsave needs it loaded.
         if (!wanted && savedListState.status !== StoreStatus.Loaded) {
           return { ok: false, error: AssistantActionError.NotReady };
         }
@@ -139,14 +136,12 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
 
   const setLiked = useCallback(
     async (wanted: boolean): Promise<AssistantActionResultType> => {
-      if (userId === null) return { ok: false, error: 'signed_out' };
-      // No early return on the render's `likeState`: an absent entry read as
-      // "not liked", so the FIRST spoken "beğen" flipped nothing and said it
-      // had. The store owns that question now and answers it truthfully.
+      if (userId === null) return { ok: false, error: AssistantActionError.SignedOut };
+      // The store, not the render state, knows whether the recipe is liked.
       if (likeState === undefined) return { ok: false, error: AssistantActionError.NotReady };
 
       const result = await setLikedInStore(recipeId, wanted);
-      return result.ok ? { ok: true, title: recipeName } : { ok: false, error: 'failed' };
+      return result.ok ? { ok: true, title: recipeName } : { ok: false, error: AssistantActionError.Failed };
     },
     [userId, likeState, recipeId, recipeName, setLikedInStore],
   );
@@ -163,9 +158,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     ].join(SCREEN_PART_SEPARATOR),
   );
 
-  // What "bu tarifi oku" answers: the whole recipe, built only when it is
-  // asked for. The screen line above stays counts, because it is charged on
-  // every turn and this is not.
+  // The whole recipe, built only when asked; the screen line stays counts.
   useAssistantScreenReading(() =>
     recipeReading(recipeName, ingredients, instructions, [
       ...facts,
@@ -177,12 +170,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.Unsave,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Un-saving drops a recipe out of a collection the user curated and may
-      // not be able to find again, so it asks — unlike un-liking, which is a
-      // number they can restore with one tap.
-      // The same hole `setSaved` had, in a handler that does not go through it:
-      // an unloaded id set answers "not saved" about every recipe in the app, so
-      // a spoken "kaydı kaldır" reported success and never raised the sheet.
+      // Unsave asks first (a curated collection), and needs the saved set loaded.
       if (savedListState.status !== StoreStatus.Loaded) {
         return { ok: false, error: AssistantActionError.NotReady };
       }
@@ -194,19 +182,14 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(AssistantAction.Like, useCallback(() => setLiked(true), [setLiked]));
   useAssistantAction(AssistantAction.Unlike, useCallback(() => setLiked(false), [setLiked]));
 
-  // Walking the recipe hands-free, and the same two actions the draft editor
-  // registers — shared rather than owned here, because a draft has steps and
-  // ingredients too and being told to publish it before it could be read was
-  // the bug that moved them.
+  // Shared with the draft editor, which has steps and ingredients too.
   useAssistantReadActions(ingredients, instructions);
 
   useAssistantAction(
     AssistantAction.StartTimer,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // The recipe's own cook timer, which is the one the screen shows and the
-      // one a notification already exists for — not an arbitrary countdown the
-      // user would have no way to see or stop.
-      if (cookTimeMinutes <= ValueConstants.zero) return { ok: false, error: 'no_cook_time' };
+      // The recipe's own cook timer: the one the screen shows and can stop.
+      if (cookTimeMinutes <= ValueConstants.zero) return { ok: false, error: AssistantActionError.NoCookTime };
       onStartCookTimer();
       return { ok: true, title: recipeName, n: { min: cookTimeMinutes } };
     }, [cookTimeMinutes, onStartCookTimer, recipeName]),
@@ -216,11 +199,8 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     AssistantAction.AddComment,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: 'empty' };
-        // The text goes with the call. Writing the field and posting in the
-        // same tick meant the post read the previous render's value — empty —
-        // and reported success anyway, so the model announced a comment that
-        // was never made.
+        if (arg === undefined || arg === CharConstants.empty) return { ok: false, error: AssistantActionError.Empty };
+        // The text goes with the call; the field would still hold the previous render's value.
         onPostComment(arg);
         return { ok: true, title: recipeName };
       },
@@ -228,22 +208,19 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     ),
   );
 
-  // Checking things off is what a cook actually does with their hands, and it
-  // is the one thing they cannot do with them covered in flour. Both take a
-  // name or a 1-based position, because "the yoghurt" and "the second one" are
-  // the same request phrased two ways.
+  // Name or 1-based position ("the yoghurt" / "the second one").
   useAssistantAction(
     AssistantAction.ToggleIngredient,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(ingredients, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onToggleIngredient(index);
         return {
           ok: true,
           n: {
             ing: ingredients.length,
-            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? -1 : 1),
+            checked: checkedIngredients.filter(Boolean).length + (checkedIngredients[index] === true ? ValueConstants.minusOne : ValueConstants.one),
           },
         };
       },
@@ -256,13 +233,13 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const index = rowAt(instructions, arg);
-        if (index === null) return { ok: false, error: 'not_found' };
+        if (index === null) return { ok: false, error: AssistantActionError.NotFound };
         onToggleStep(index);
         return {
           ok: true,
           n: {
             step: instructions.length,
-            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? -1 : 1),
+            done: completedSteps.filter(Boolean).length + (completedSteps[index] === true ? ValueConstants.minusOne : ValueConstants.one),
           },
         };
       },
@@ -297,20 +274,9 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.DuplicateRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // The screen's own action, not a second copy of it — the same reason
-      // `onPostComment`, `onOpenShare` and `onOpenDelete` are handed over
-      // rather than rebuilt here. It carries the guest gate with it, so the
-      // spoken path and the tapped one cannot drift on who is allowed to copy.
-      //
-      // What it opens is the create screen seeded FROM this recipe, rather
-      // than the words being handed to the generator — which invented
-      // something adjacent and called it the same recipe. What the user gets
-      // is a copy they can then change, in the editor, where they can see it.
+      // The screen's own action, so the guest gate is shared with the tap path.
       onCopyToDraft();
-      // `awaiting`, because the copy is not made yet: the screen still has to
-      // fetch the recipe and lay it in, and a chip saying it was copied before
-      // that happened would be claiming something the user could look at and
-      // find untrue.
+      // awaiting: the copy is made once the create screen has loaded it.
       return { ok: true, awaiting: true, title: recipeName };
     }, [onCopyToDraft, recipeName]),
   );
@@ -318,9 +284,7 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.ShareRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Opens the app's own share sheet. The assistant does not choose WHERE a
-      // recipe goes — that names a person, and picking one on a model's say-so
-      // is the mistake nobody can take back.
+      // Opens the share sheet; the user picks the destination.
       onOpenShare();
       return { ok: true, awaiting: true, title: recipeName };
     }, [onOpenShare, recipeName]),
@@ -329,10 +293,8 @@ export const useAssistantRecipeActions = (deps: AssistantRecipeActionsDeps): voi
   useAssistantAction(
     AssistantAction.DeleteRecipe,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      if (!isOwner) return { ok: false, error: 'not_yours' };
-      // Opens the confirm sheet and says so. Deleting on a model's say-so is
-      // the one thing this assistant must never do, and answering `awaiting`
-      // keeps the session moving while the user decides.
+      if (!isOwner) return { ok: false, error: AssistantActionError.NotYours };
+      // Opens the confirm sheet; never deletes on the model's say-so.
       onOpenDelete();
       return { ok: true, awaiting: true, title: recipeName };
     }, [isOwner, onOpenDelete, recipeName]),

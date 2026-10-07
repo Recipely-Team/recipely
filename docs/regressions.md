@@ -165,6 +165,52 @@ they had just declined.
 *Guard:* `enterApp()` pops to the root before replacing. **"Land here" and "replace this
 screen" are different intentions**; only one of them is `router.replace`.
 
+**Every tab route on the web threw React error #418 (hydration mismatch).**
+An `@expo/vector-icons` glyph renders an empty `<Text />` until its font is registered,
+and nothing registered the icon fonts before render. The static export therefore drew
+every icon empty; in the browser the root TabBar (outside the lazily loaded screen)
+mounted first, injected the `@font-face`, and the screen's own icons then hydrated as
+real glyphs — on /recipes, /my-recipes, /settings and /diary, the routes with a TabBar.
+**Anything whose first render reads global, mutable state** (a font registry, storage,
+the viewport) differs between the prerender and the browser unless it is fixed up front.
+*Guard:* `useIconFonts()` at the top of the root layout registers every family, so the
+prerender draws the glyphs and ships the `@font-face` in `<head>`;
+`use-icon-fonts.test.tsx` fails on an imported icon family it does not register, and
+`scripts/assert-icon-fonts.mjs` (in `build:web`) fails on an app page without them.
+
+**Every Android build failed on a Kotlin module while every gate was green.**
+`@Volatile` was stacked twice on one field of the window-posture module; kotlinc rejects
+a repeated non-repeatable annotation, but lint, tsc, jest and `check:structure` never
+compile native code, so nothing ran it until a device build. **Native code under
+`modules/` has no gate unless one is written for it.**
+*Guard:* `check:structure` rule **AP** — no annotation applied twice to one Kotlin
+declaration under `modules/`; the fix was proven with a local prebuild + `assembleDebug`.
+
+**A back button that did nothing after a reload on the web.** Forgot-password called
+`router.back()` unconditionally; a direct visit has no history. *Guard:* `canGoBack()` or
+`replace(RoutePaths.login)` — "goes to login when there is no history to go back to"
+(`forgot-password-screen.test.tsx`). **Every back on a routable page needs a fallback.**
+
+**Swipe paging ignored right-to-left.** `useHorizontalSwipe` hard-coded "left is
+forward", so Arabic paged cook-mode steps and the diary week against the mirrored UI.
+*Guard:* `swipePageDirection(dx, I18nManager.isRTL)` (`swipe-page-direction.test.ts`).
+
+**State shown by colour only, and a back button announced as the title.** The
+notification All / Unread pills had no `accessibilityState.selected`; the header's back
+button was labelled with the screen title. *Guard:* `notifications-a11y.test.tsx`.
+
+**A text box pinned to a fixed `height`.** The auth hero (forgot / reset password) held
+its title and subtitle in a `height`-pinned box over a gradient of the same height; at a
+large font scale the subtitle spilled into the card. *Guard:* `minHeight`, with the
+gradient wrapping the hero so it grows too — "lets the hero … grow with its text"
+(`auth-hero-layout.test.tsx`); rule 6b.
+
+**Copy memoised without the locale.** The shopping list's section labels were baked into
+a `useMemo` keyed on the items only, so a language switch left them stale. *Guard:* the
+labels are memo dependencies and the hook subscribes with `useLocale()` — "renames the
+sections when the language changes" (`shopping-list-screen.test.tsx`). **A memo that
+reads `t()` depends on the strings it reads.**
+
 ## Parsing and display
 
 **A greedy quantifier ate half a word.**
@@ -189,6 +235,19 @@ without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `
 `isString` from `@core/guards/type-guards` before calling the domain; the malformed
 cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
 is not a check** — a reader that promises leniency narrows the shape itself.
+
+**Cook mode and the assistants showed different amounts from the recipe page.**
+The servings / units choice was page-local state on the detail page, so cook mode's
+ingredient sheet (and its "Add to shopping list"), the cook-mode assistant and the
+recipe-page assistant all used the raw lines — the recipe's own servings, and
+`# For the sauce` as an ordinary row or spoken word. *Guard:* the choice lives in a
+session-scoped `portionChoiceStore` (cleared on sign-out) read through
+`usePortionScaling` by every surface; assistants read `spokenIngredientLines`. Covered
+by "lists and reads the ingredients the recipe page shows …"
+(`cook-mode-screen.test.tsx`) and "reads the ingredients at the servings the reader
+chose …" (`use-recipe-detail-assistant.test.tsx`), both red without it. **What the
+cook sees, hears and buys is one set of lines** — a second surface derives from the
+same state, never from the entity again.
 
 ## Integration
 
@@ -286,6 +345,44 @@ against the unfixed store: four of the six go red.
 feed was fixed by moving paging into the repository's caller; nobody asked which
 *other* lists had the same shape. When a defect is found, grep for its shape
 before closing it — every list, every `page:`, every discarded envelope.
+
+**A third time: the notifications feed.** The store asked for one page (the backend's
+default 20) and had no `loadMore`; the repository took raw `limit` / `offset` and
+returned no `Page<T>`. *Guard:* the feed is a `PagedList` driven by `PagedListLoader`,
+the use case owns `PageSizes.notifications`, `toNotificationsQuery` turns the page into
+`limit` / `offset`. Covered by "shows notifications past the first 20 when the user
+scrolls to the end" (`notifications-store.test.ts`) and the paging cases in
+`notification-repository.test.ts`.
+
+**A delete that shifted the pages.** `PagedListLoader.removeItem` kept `page`, so the
+next page asked the old offset while every later server row had moved up one: delete
+a draft, scroll, and the draft that slid into the loaded page was never shown. The
+drafts store also had no session guard on `loadMoreDrafts`, so a next page landing
+after sign-out published the previous account's drafts. *Guard:* the loader counts
+removals and re-reads from the shifted offset (the overlap is de-duplicated by key) —
+"a next page after deleting rows does not skip the rows that moved up"
+(`paged-list-loader.test.ts`); the drafts store is now a `PagedListLoader`, whose
+`reset` drops answers in flight — "a next page that lands after sign-out does not
+publish" (`drafts-paging.test.ts`). Comment threads page through one loader per
+recipe — "a comment deleted before 'load more' does not hide the next comment" and "a
+comment posted before 'load more' does not show an older comment twice"
+(`comments-store.test.ts`).
+
+**The same skip, bypassing the loader.** The shopping list rewrote its own rows on a
+delete or a tick and never told its `PagedListLoader`, so `removed` stayed 0: delete a
+line on page 1 — or tick one, which the server moves to the checked tail — and the next
+page skipped the line that moved up. *Guard:* every edit goes through the loader
+(`removeItem`, or `rewriteItems`, which counts each row that leaves the window), and a
+line that now sorts past the last loaded row waits for its page, so the window stays a
+prefix of the server order. Covered by "a line deleted on page 1 does not hide the first
+line of page 2" and "a line ticked on page 1 …" (`shopping-list-paging.test.ts`, against
+a fake server that really moves rows), red without the fix. **A store that edits a
+paged list edits it through the loader** — never its own `set`.
+
+**A comment posted while its thread was loading vanished.** `upsertItem` does nothing
+before a list has loaded, and the first page then landed without it. *Guard:* a post
+into a thread that is not loaded reloads it — "a comment posted while the thread is
+still loading shows once it loads" (`comments-store.test.ts`).
 
 ---
 
@@ -450,6 +547,47 @@ session" (`auth-repository.creator.test.ts`), "does not put the previous user in
 session of whoever is signed in now" (`auth-repository.update-profile.test.ts`,
 `auth-repository.upload-avatar.test.ts`) and "a claim answer for the previous user does
 not land in the next user's session" (`auth-store.test.ts`).
+
+**Again in the notifications store**, which had no guard: a feed answer in flight at
+sign-out wrote the previous account's notifications and badge back after `clear()`.
+*Guard:* the shared toolkit, not another hand-rolled counter — `PagedListLoader.reset()`
+drops the list answer and a `RequestEpoch` (`application/store/request-epoch.ts`;
+`KeyedRequestEpoch` for per-id requests) drops the badge write. Covered by "a feed
+answer that lands after sign-out does not refill the cleared feed or badge"
+(`notifications-store.test.ts`), red against the unfixed store. New store code guards
+with these instead of `let session` counters.
+
+**And in the comments store**, whose hand-rolled pager had neither guard: a thread
+answer landing after sign-out refilled the cleared `byRecipe`, and an older load
+answering after a newer one overwrote it. *Guard:* a `KeyedRequestEpoch` per recipe on
+`load` / `loadMore`, invalidated by `clear()`. Covered by "a load answering after
+sign-out does not bring the old thread back" and "an older load answering after a
+newer one does not overwrite it" (`comments-store.test.ts`), both red without it.
+
+**And in three writes the earlier guards missed**: the recipe detail store's `load`
+(a late answer put the previous account's `likedByMe` back after `clear()`, and an
+older answer could overwrite a newer one), the drafts resume card (`loadLatestDraft` /
+`upsertDraft`), and a comment posted just before sign-out. *Guard:* a
+`KeyedRequestEpoch` per recipe id in the detail store, a `RequestEpoch` for the resume
+card, a session epoch in `addComment`. Covered by "a recipe answer that lands after
+sign-out does not bring back the previous account's like"
+(`recipe-detail-store-session.test.ts`), "a latest-draft answer that lands after
+sign-out does not bring back the previous account's resume card"
+(`drafts-store.test.ts`) and "a comment answer that lands after sign-out writes nothing
+back" (`comments-store.test.ts`), all red without the fix. **Every write after an
+`await` in a user-scoped store needs the guard — not only the list loads.**
+
+**And in four more, found by review pass 2**: a draft save, a shopping add or tick or
+edit, and a like toggle each wrote their answer after sign-out (into the next account's
+list once it loaded), and a latest-draft answer in flight brought back the resume card
+of a draft just deleted. *Guard:* `RequestEpoch.current()` — a session check that
+overlapping writes share without cancelling each other, dropped by `clear()` — plus a
+per-session set of deleted draft ids. Covered by "a draft save that lands after sign-out
+does not join the next account's list", "a deleted draft's resume card does not come
+back from a latest-draft answer in flight" (`drafts-store.test.ts`), "an add that lands
+after sign-out does not join the next account's list" (`shopping-list-store.test.ts`)
+and "a like answer that lands after sign-out does not write the old account's like
+back" (`set-liked.test.ts`), all red without the fix.
 
 ---
 
@@ -2415,3 +2553,156 @@ the accessible element and speaks the status). Rule AJ refuses any `accessib*` o
 *The class:* **a cross-platform library is only cross-platform for the props it
 declares.** Anything else falls through to the host element, and on the web the
 host element is HTML. Put behaviour props on a React Native view you own.
+
+## Targets too small to press, and a label measured before its font loaded
+
+The device-matrix suite (recipely-tests `tests/matrix`, 13 device shapes × 3 engines)
+found two classes on its first run:
+
+- **Pointer targets under 24×24 CSS px** (WCAG 2.2 AA 2.5.8) on every touch device:
+  the onboarding page dots (7×7), login "Create account" (22 tall), the register
+  terms row (23) and "Sign in" link (19), and the comment and recipe-stat Like
+  buttons (22). *Now:* each carries `targetSizes.min` (an unscaled 24, kept out of
+  the scaled ladders so a small screen never shrinks it).
+- **"Filter & S…" on a 344px Galaxy Z Fold cover screen**: the FAB measured its
+  width once, on the first layout — before the web font loaded — and pinned it.
+  *Now:* at rest the FAB takes its natural width and the morph uses the widest
+  layout seen.
+
+*Guard:* the matrix spec fails on any target under 24px (inline text links exempt, as
+WCAG exempts them), page overflow, off-screen content or the error screen.
+*The class:* **a size measured once is a size measured too early; and a target is
+the box you can hit, not the glyph you can see.**
+## A web app served with no security headers, and a redirect a backslash could bend
+
+- **No security header at all** on either Firebase hosting target: the site could
+  be framed by any origin (clickjacking), MIME-sniffed, and leaked full referrers.
+  *Now:* `**` carries nosniff, `X-Frame-Options: SAMEORIGIN` + `frame-ancestors 'self'` (Firebase Auth frames its own host),
+  `Referrer-Policy`, `Permissions-Policy` (camera/microphone self only), COOP
+  `same-origin-allow-popups` (Google sign-in popups still work) and HSTS.
+  *Guard:* `check:structure` rule AN fails when a target lacks any of them.
+- **`/login?redirect=` accepted `/\evil.com`**: the check refused `//` but browsers
+  normalise a backslash to a slash, and an encoded `%2F` / `%5C` or a control
+  character slipped past too. *Now:* `RegexConstants.unsafeRedirectChar` / `encodedSlash` (path only) reject them;
+  pinned by `resolve-redirect.test.ts` (a query may still carry an encoded slash).
+
+*The class:* **a check on a URL string must see it the way the browser will: decode
+and normalise first, or refuse what could normalise into something else.**
+
+## Secrets committed by staging everything
+
+**A copy of a real `.env` (`.env.bak.<timestamp>`) was committed to recipely-backend with `git add -A`
+(#376) and promoted to main,** because `.gitignore` named `.env` but not its copies.
+*Guard:* `scripts/guard-secrets.mjs` in both repos — pre-commit on staged files, `check:structure`
+(CI) on every tracked file — refuses env files and copies, key/certificate files, and text that looks
+like a private key or API token; `.gitignore` ignores every `.env.*` but `.env.example`. A Claude Code
+hook also refuses `git add -A` / `.` / `-u` and `git commit -a`.
+*The class:* **an ignore rule that names the exact file misses its copies; check what is going in.**
+
+## Three copies of "count me in", one without a floor
+
+- **An optimistic recipe unlike on a stale `0` would have shown `-1` likes**: `likesStore.toggle`
+  subtracted one with no floor, while the comment like and the follower count — the same rule
+  written twice more — clamped at zero. *Now:* all three go through the `ViewerReaction` value
+  object (`domain/common/viewer-reaction.ts`), which moves the count with the viewer and never
+  below zero. *Guard:* `viewer-reaction.test.ts`, and the count-floor case in
+  `likes-store.sync.test.ts`.
+
+*The class:* **a rule written in three places drifts in one of them; give it one home.**
+
+---
+
+## Every iOS build failed after the web CSP and Firebase 26 landed
+
+**Symptom:** caught in the closing visual check, before any release. `pod install`
+refused the Podfile ("Use dynamic linkage … or Opt out of SPM"), and once past that,
+xcodebuild stopped at "Failed to parse firebase.json, check for syntax errors". CI does
+not build iOS on `dev`, so nothing went red; the next `main` push would have shipped no
+TestFlight build.
+
+**Root cause:** two at once. React Native Firebase 26 resolves Firebase through Swift
+Package Manager by default, which does not combine with our static frameworks. And its
+iOS build phase pastes `firebase.json` into a single-quoted Ruby string, so the CSP's
+`'self'` / `'sha256-…'` (full CSP, #531) ended the string early.
+
+**Fix:** `"disableSPM": true` on the `@react-native-firebase/app` plugin in `app.json`;
+`firebase.json` writes every apostrophe as `\u0027` (same parsed value), and
+`assert-csp-inline-scripts.mjs --write` keeps it that way.
+
+**Guard:** `check:structure` rule AN fails on a raw apostrophe in `firebase.json`.
+Native-affecting changes (dependency majors, `app.json` plugins, `firebase.json`) get a
+local iOS and Android build before merge — the CI on `dev` builds neither.
+
+
+---
+
+## A guest's wide web feed asked for their favorites and got a 401
+
+**Symptom:** found in the closing web check — every guest visit to the feed at desktop
+width logged `401 GET /me/favorites`.
+
+**Root cause:** `useRecipeList` loads the saved set for the grid cards' bookmark whenever
+the grid is wide, without asking whether anyone is signed in.
+
+**Fix:** the load waits for a signed-in user (and runs again when one signs in).
+Covered by "does not ask a guest for their saved recipes" (`use-recipe-list.test.tsx`),
+red without the fix. **A `/me/*` read needs a signed-in user first.**
+
+---
+
+## Render storms: one keystroke or one tick re-rendered a whole screen
+
+**Symptom:** a running cook timer re-rendered the entire recipe detail every second;
+each character typed into the shopping "add" field or the comment box re-rendered every
+row of the list or the whole recipe; scrolling the feed re-rendered every visible card.
+In the background the one-second clock kept waking the JS thread with no timer running,
+the unread badge was polled twice a minute for a hidden app, and every return to the
+feed re-requested page 1.
+
+**Root cause:** state or subscriptions held one level too high, and identities minted per
+render. A hook subscribed to the tick only to reach start/stop; drafts lived in the
+screen hook instead of the field; a curried `openRecipe(id)` or an inline arrow handed a
+memoised row a new prop each render (outside `strictMode`, `FlatList` calls `renderItem`
+for every visible cell on each of its renders, so only a memoised row with stable props
+bails out); inline `ItemSeparatorComponent`s remounted; background work never asked
+whether anything needed it.
+
+**Fix:** state lives with the component that reads it (`useShoppingAddDraft`,
+`useCommentDraft`); rows are `memo` and take id handlers (`onOpen(id)`); renderers and
+separators are stable; the tick listens only while a timer runs; the poll skips unless
+`AppState` is active; the feed refetches on focus only after `FEED_STALE_AFTER_MS`.
+
+**Guard:** render-count and timer-count tests, each red without its fix —
+`use-recipe-detail-assistant.test.tsx`, `feed-row-view.test.tsx`,
+`shopping-add-field-typing.test.tsx`, `recipe-comments-section.typing.test.tsx`,
+`my-recipes-list.renders.test.tsx`, `use-timer-notification-sync.test.tsx`,
+`use-unread-notifications-sync.test.tsx`, `use-recipe-list.test.tsx`.
+**Keep high-frequency state at the leaf that shows it, and give memoised rows nothing
+that is new on every render.**
+
+## The web CSP blocked AdSense's ad-quality frame (2026-10-08)
+
+**Symptom:** with the new Content-Security-Policy (dev, #531), the feed's ad unit loaded and
+requested an ad, but the browser refused `ep2.adtrafficquality.google/sodar/…/runner.html`
+(`frame-src`). That frame is AdSense's traffic-quality check; without it the unit serves
+as unverified traffic. Found by loading the live page with dev's CSP injected and listening
+for `securitypolicyviolation`.
+
+**Fix:** `frame-src` allows `https://*.adtrafficquality.google` in both hosting targets.
+`check:structure` rule AN now requires every AdSense host (`*.googlesyndication.com`,
+`*.doubleclick.net`, `*.adtrafficquality.google`, `*.google.com`) in BOTH `script-src` and
+`frame-src`; red without the fix. **An ad network loads scripts and frames from the same
+hosts: allow-list them in both directives.**
+
+## Failure states in red where the rest of the app shows amber (2026-10-08)
+
+**Symptom:** `ErrorState` defaults to the danger surface. The automations screens and the
+shopping list built their failure states from a `Failure` without passing a severity, so an
+offline error was red there and amber everywhere else; the EMPTY shopping list (not a
+failure at all) wore the red disc too. Found by the app-wide audit.
+
+**Fix:** `severity={failureSeverity(failure)}` on every failure state; `SeverityType.Neutral`
+for the empty list and "Instagram not configured". Covered by `shopping-list-screen.test.tsx`
+(the empty state is neutral) and `check:structure` rule AQ, which fails on any `ErrorState`
+built with `failureIcon(...)` but no `severity=`. **A state that is not an error says so; a
+failure state says how bad it is.**

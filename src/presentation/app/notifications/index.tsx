@@ -1,18 +1,18 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
-import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
-import { NotificationTargetKind } from '@domain/notifications/notification-target-kind';
+import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 import { StoreStatus } from '@application/store/store-status';
-import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { type Href, useRouter } from 'expo-router';
+import { ActivityIndicator, SectionList, StyleSheet, View, type SectionListData } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
+import { ListConstants } from '@presentation/base/constants';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
@@ -20,39 +20,51 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
-import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { spacing, fontSizes, fontWeights, letterSpacings, avatarSizes } from '@presentation/base/theme';
+import { t, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
-import { RoutePaths } from '@presentation/base/constants';
 import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
+import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
+import { useOpenNotificationTarget } from '@presentation/app/notifications/hooks/use-open-notification-target';
 
+// Module-level so their identity is stable: an inline separator remounts on every render.
+const notifKey = (item: NotifItem): string => String(item.id);
+const NotifSeparator = (): React.JSX.Element => {
+  const colors = useTheme().colors;
+  return <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />;
+};
 
-
+/**
+ * The viewer's notifications, filtered and grouped into sections, paged on scroll.
+ *
+ * @remarks
+ * **Every list callback keeps its identity** (`useMemo` sections, `useCallback`
+ * renderers, a module-level key and separator) so the memoised rows re-render
+ * only when their own notification changes.
+ */
 export const NotificationsScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
-  const { isWebShell } = useLayout();
 
   const { notificationsStore } = useStores();
   const state = notificationsStore((s) => s.state);
   const load = notificationsStore((s) => s.load);
+  const loadMore = notificationsStore((s) => s.loadMore);
+  const unreadCount = notificationsStore((s) => s.unreadCount);
   const markAllRead = notificationsStore((s) => s.markAllRead);
   const markOneRead = notificationsStore((s) => s.markOneRead);
 
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [filter, setFilter] = useState<NotificationFilterType>(NotificationFilter.All);
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
 
-  // Load the latest feed once per mount. Notifications stay unread until the
-  // user taps them individually or presses the explicit "mark all read" button —
-  // opening the screen alone never clears the badge.
+  // Load once per mount; opening the screen never clears the badge.
   useEffect(() => {
     void load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -63,37 +75,14 @@ export const NotificationsScreen = (): React.JSX.Element => {
     return state.items.map(toNotifItem);
   }, [state]);
 
-  const unreadCount =
-    state.status === StoreStatus.Loaded ? state.unreadCount : ValueConstants.zero;
-  const sections = buildSections(items, filter);
+  const locale = useLocale();
+  // Section titles are translated: a language switch rebuilds them.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is read through t() inside buildSections
+  const sections = useMemo(() => buildSections(items, filter), [items, filter, locale]);
 
-  // Cast: a dynamic recipe path can't be statically verified against
-  // expo-router's typed-routes union — same pattern as useRecipeDetail.
-  const openTarget = (target: NotificationTarget): void => {
-    // A draft is the one target with no recipe behind it: the import produced
-    // something to finish, not something to read. It opens the editor the same
-    // way My Recipes does, so a resumed import and a resumed draft are the same
-    // screen in the same state.
-    if (target.kind === NotificationTargetKind.Draft) {
-      router.push({ pathname: RoutePaths.createRecipe, params: { draftId: target.draftId } });
-      return;
-    }
-    // A decision on a creator claim: the user acts on it where the claim lives.
-    if (target.kind === NotificationTargetKind.CreatorAccount) {
-      router.push(RoutePaths.editProfileCreatorAccount as Href);
-      return;
-    }
-    const path = RoutePaths.recipeDetail(encodeURIComponent(target.recipeId));
-    router.push(
-      (target.kind === NotificationTargetKind.Comment
-        ? `${path}?commentId=${encodeURIComponent(target.commentId)}`
-        : path) as Href,
-    );
-  };
+  const openTarget = useOpenNotificationTarget();
 
-  // Flattened in the order the sections render them, so "the second one" is
-  // the second row the user can see — not the second row of the raw feed,
-  // which the date grouping and the unread filter both reorder.
+  // In render order, so "the second one" is the second visible row.
   const visibleItems = useMemo(() => sections.flatMap((section) => section.data), [sections]);
   useAssistantNotificationActions({
     listState:
@@ -110,72 +99,31 @@ export const NotificationsScreen = (): React.JSX.Element => {
   });
   const scrollable = useAssistantScrollable();
 
-  const tap = (item: NotifItem): void => {
-    if (!item.read) void markOneRead(item.id);
-    if (item.target !== null) openTarget(item.target);
-  };
+  const tap = useCallback(
+    (item: NotifItem): void => {
+      if (!item.read) void markOneRead(item.id);
+      if (item.target !== null) openTarget(item.target);
+    },
+    [markOneRead, openTarget],
+  );
+  const renderItem = useCallback(({ item }: { item: NotifItem }) => <NotifRow item={item} onTap={tap} />, [tap]);
+  const sectionBackground = colors.background;
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: SectionListData<NotifItem, { title: string }> }) => (
+      <View style={[styles.sectionHeader, { backgroundColor: sectionBackground }]}>
+        <ThemedText variant="caption" muted style={styles.sectionTitle}>
+          {upperCase(section.title)}
+        </ThemedText>
+      </View>
+    ),
+    [sectionBackground],
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="notifications" gutter={false} fill>
-      <View style={[styles.header, { paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
-        <Pressable
-          onPress={() => router.back()}
-          style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().notifications.title}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
-        </Pressable>
-        <ThemedText variant="subtitle" style={styles.headerTitle}>
-          {t().notifications.title}
-        </ThemedText>
-        {unreadCount > ValueConstants.zero ? (
-          <Pressable
-            onPress={() => { void markAllRead(); }}
-            style={styles.markReadBtn}
-            accessibilityRole="button"
-            accessibilityLabel={t().notifications.markRead}
-          >
-            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-              {t().notifications.markRead}
-            </ThemedText>
-          </Pressable>
-        ) : (
-          <View style={styles.headerSpacer} />
-        )}
-      </View>
-
-      <View style={styles.filterRow}>
-        {(['all', 'unread'] as const).map((f) => {
-          const isActive = filter === f;
-          const label = f === NotificationFilter.All
-            ? `${t().notifications.all} (${items.length})`
-            : `${t().notifications.unread} (${unreadCount})`;
-          return (
-            <Pressable
-              key={f}
-              onPress={() => setFilter(f)}
-              style={[
-                styles.filterPill,
-                {
-                  backgroundColor: isActive ? colors.primary : colors.chipBackground,
-                  borderColor: isActive ? colors.primary : colors.cardBorder,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-            >
-              <ThemedText
-                variant="caption"
-                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: fontWeights.semibold }}
-              >
-                {label}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
-      </View>
+      <NotificationsHeader unreadCount={unreadCount} onBack={() => router.back()} onMarkAllRead={() => void markAllRead()} />
+      <NotificationFilterPills filter={filter} totalCount={items.length} unreadCount={unreadCount} onChange={setFilter} />
 
       {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
         <View style={styles.empty}>
@@ -194,15 +142,9 @@ export const NotificationsScreen = (): React.JSX.Element => {
       <SectionList
         {...scrollable}
         sections={sections}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <NotifRow item={item} onTap={tap} />}
-        renderSectionHeader={({ section }) => (
-          <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <ThemedText variant="caption" muted style={styles.sectionTitle}>
-              {upperCase(section.title)}
-            </ThemedText>
-          </View>
-        )}
+        keyExtractor={notifKey}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         ListEmptyComponent={
           <View style={styles.empty}>
             <ThemedText variant="body" muted style={{ textAlign: 'center' }}>
@@ -210,8 +152,11 @@ export const NotificationsScreen = (): React.JSX.Element => {
             </ThemedText>
           </View>
         }
+        onEndReached={() => void loadMore()}
+        onEndReachedThreshold={ListConstants.endReachedThreshold}
+        ListFooterComponent={<FeedFooter isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
-        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />}
+        ItemSeparatorComponent={NotifSeparator}
       />
       )}
       </ResponsiveContainer>
@@ -221,38 +166,6 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: { flex: ValueConstants.one },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backBtn: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: fontWeights.bold },
-  markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  headerSpacer: { width: controlSizes.iconBtn },
-  filterRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  filterPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.hairline,
-    minHeight: controlSizes.chip,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   sectionHeader: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,

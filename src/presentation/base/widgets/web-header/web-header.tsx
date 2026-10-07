@@ -24,17 +24,17 @@ const HEADER_HEIGHT = 68;
  * (e.g. /recipes/[id], /create-recipe, /creators/[id]) keep the parent tab highlighted.
  */
 const resolveActiveTab = (pathname: string): WebHeaderTabKey | null => {
-  if (pathname.startsWith('/my-recipes') || pathname.startsWith('/create-recipe')) {
-    return 'myRecipes';
+  if (pathname.startsWith(RoutePaths.myRecipes) || pathname.startsWith(RoutePaths.createRecipe)) {
+    return WebHeaderTabKey.MyRecipes;
   }
-  if (pathname.startsWith('/recipes')) return 'recipes';
-  if (pathname.startsWith(RoutePaths.creators)) return 'chefs';
-  if (pathname.startsWith(RoutePaths.diary)) return 'diary';
+  if (pathname.startsWith(RoutePaths.recipes)) return WebHeaderTabKey.Recipes;
+  if (pathname.startsWith(RoutePaths.creators)) return WebHeaderTabKey.Chefs;
+  if (pathname.startsWith(RoutePaths.diary)) return WebHeaderTabKey.Diary;
   return null;
 };
 
 const isProfileRoute = (pathname: string): boolean =>
-  pathname.startsWith('/profile') || pathname.startsWith('/settings');
+  pathname.startsWith(RoutePaths.profile) || pathname.startsWith(RoutePaths.settings);
 
 /**
  * Sticky desktop chrome that replaces the mobile bottom TabBar and per-screen
@@ -62,8 +62,7 @@ export const WebHeader = (): React.JSX.Element => {
   ];
 
   const user = authState.status === StoreStatus.Authenticated ? authState.session.user : null;
-  // Empty when nobody is signed in: the avatar then draws the person mark rather
-  // than initials of a placeholder name, which read as a signed-in account.
+  // Empty for guests, so the avatar shows the person mark.
   const displayName = user?.displayName ?? CharConstants.empty;
   const avatarUri = user?.photoUrl ?? undefined;
 
@@ -79,13 +78,11 @@ export const WebHeader = (): React.JSX.Element => {
   const goProfile = (): void => router.replace(RoutePaths.profile);
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
-  // The Discover entry to the welcome/onboarding screen is a guest-only affordance
-  // and — per the prototype — lives on the Recipes tab alone.
+  // Discover is guest-only and on the Recipes tab.
   const isAuthenticated = authState.status === StoreStatus.Authenticated;
   const showDiscover = activeTab === WebHeaderTabKey.Recipes && !isAuthenticated;
 
-  // Search input only appears on the Recipes listing — that's where the recipe
-  // list reads `useWebShellState().searchQuery` and folds it into its filter.
+  // Search only on the Recipes listing, which reads it.
   const showSearch = activeTab === WebHeaderTabKey.Recipes;
 
   return (

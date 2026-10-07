@@ -1,10 +1,11 @@
 import { Pressable, StyleSheet, View, type ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/steps/instruction-card';
 import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-comments';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -54,14 +55,13 @@ export interface WebRecipeDetailProps {
   onCopyToDraft: () => void;
   onDelete: () => void;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
-  onAddComment: () => void;
+  onAddComment: (text: string, onPosted: () => void) => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -149,9 +149,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           <WebRecipeDetailComments
             commentState={props.commentState}
             userId={props.userId}
-            commentInput={props.commentInput}
             submitError={props.submitError}
-            onChangeCommentInput={props.onChangeCommentInput}
             onAddComment={props.onAddComment}
             onLoadMore={props.onLoadMoreComments}
             onToggleCommentLike={props.onToggleCommentLike}
@@ -164,6 +162,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           <WebRecipeDetailSidebar
             recipe={recipe}
             checkedIngredients={props.checkedIngredients}
+            portions={props.portions}
             onToggleIngredient={props.onToggleIngredient}
             isNutritionCalculating={props.isNutritionCalculating}
           />

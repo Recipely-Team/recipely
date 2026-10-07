@@ -25,9 +25,7 @@ export const buildCreateRecipeFormData = async (
     });
   }
 
-  // The cover the importer already stored, handed back as a field. The route
-  // reads `req.body.image` only when no file was uploaded, so a photo the user
-  // picked still wins — which is the precedence we want.
+  // The importer's stored cover as a field; an uploaded file still wins.
   if (input.imageUrl !== undefined) {
     formData.append('image', input.imageUrl);
   }
@@ -54,8 +52,7 @@ export const buildCreateRecipeFormData = async (
   if (input.visibility !== undefined) {
     formData.append('visibility', input.visibility);
   }
-  // Travels as a field, not a file: it names the draft this publish came from
-  // so the server can retire it and repoint its notifications at the recipe.
+  // A field naming the source draft, so the server retires it.
   if (input.fromDraftId !== undefined) {
     formData.append('fromDraftId', input.fromDraftId);
   }

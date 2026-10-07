@@ -1,5 +1,4 @@
 import { ValueConstants } from '@core/constants';
-import { DiaryLimits } from '@domain/diary/diary-limits';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import { MealSlot, type MealSlotType } from '@domain/diary/meal-slot';
@@ -8,6 +7,7 @@ import type { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import type { CalorieStatusType } from '@domain/diary/nutrition/calorie-status';
 import type { MealGroup } from '@domain/diary/day/meal-group';
 import type { DiaryDayProps } from '@domain/diary/day/diary-day-props';
+import { WaterGlasses } from '@domain/diary/day/water-glasses';
 
 /**
  * One day of the diary as the Day view reads it — a read model over the day's
@@ -18,19 +18,22 @@ import type { DiaryDayProps } from '@domain/diary/day/diary-day-props';
  *   `totals`, so an optimistic `withoutEntry` stays consistent with itself.
  * - **Copies, never mutation.** `withWater` / `withoutEntry` / `withEntry` / `withGoals`
  *   return a new day; the store swaps it into its cache.
- * - Water is clamped to 0–12 glasses on the way in.
+ * - Water is held as `WaterGlasses`, clamped to 0–12 on the way in.
  */
 export class DiaryDay {
-  private constructor(private readonly props: DiaryDayProps) {}
+  private readonly water: WaterGlasses;
+
+  private constructor(private readonly props: DiaryDayProps) {
+    this.water = WaterGlasses.clamped(props.waterGlasses);
+  }
 
   /** Total: the entries were validated one by one, and water is clamped. */
   static of(props: DiaryDayProps): DiaryDay {
-    const waterGlasses = Math.min(DiaryLimits.WaterGlassesMax, Math.max(DiaryLimits.WaterGlassesMin, props.waterGlasses));
-    return new DiaryDay({ ...props, waterGlasses });
+    return new DiaryDay(props);
   }
 
   static empty(date: CalendarDate, goals: NutritionGoals): DiaryDay {
-    return new DiaryDay({ date, entries: [], waterGlasses: DiaryLimits.WaterGlassesMin, goals });
+    return new DiaryDay({ date, entries: [], waterGlasses: ValueConstants.zero, goals });
   }
 
   get date(): CalendarDate {
@@ -62,6 +65,13 @@ export class DiaryDay {
     return Math.max(ValueConstants.zero, -this.remainingCalories);
   }
 
+  /** Share of the calorie goal eaten, 0..1 for the ring; 0 when no goal is set (never NaN or Infinity). */
+  get calorieProgress(): number {
+    const goal = this.props.goals.calories;
+    if (goal <= ValueConstants.zero) return ValueConstants.zero;
+    return Math.min(ValueConstants.one, Math.max(ValueConstants.zero, this.totals.calories / goal));
+  }
+
   get calorieStatus(): CalorieStatusType {
     return this.props.goals.calorieStatus(this.totals.calories, this.hasEntries);
   }
@@ -79,23 +89,23 @@ export class DiaryDay {
   }
 
   get waterGlasses(): number {
-    return this.props.waterGlasses;
+    return this.water.value;
   }
 
   get waterLiters(): number {
-    return (this.props.waterGlasses * DiaryLimits.WaterGlassMilliliters) / DiaryLimits.MillilitersPerLiter;
+    return this.water.litres;
   }
 
   get canAddWater(): boolean {
-    return this.props.waterGlasses < DiaryLimits.WaterGlassesMax;
+    return this.water.canAdd;
   }
 
   get canRemoveWater(): boolean {
-    return this.props.waterGlasses > DiaryLimits.WaterGlassesMin;
+    return this.water.canRemove;
   }
 
   withWater(glasses: number): DiaryDay {
-    return DiaryDay.of({ ...this.props, waterGlasses: glasses });
+    return new DiaryDay({ ...this.props, waterGlasses: glasses });
   }
 
   withoutEntry(id: string): DiaryDay {

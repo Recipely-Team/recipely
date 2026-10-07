@@ -9,7 +9,8 @@
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
  *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
- *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines.
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines; a routed
+ *      app/.../index.tsx over 200.
  *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
  *      <TextInput multiline> outside the AutoGrowTextInput pair.
@@ -43,8 +44,19 @@
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
  *   AL. Every routed page is declared on the stack that owns it, header hidden.
+ *   AN. Every Firebase hosting target sends the web security headers on every path but /__/
+ *      (nosniff, frame denial, referrer / permissions policy, COOP, HSTS).
+ *   AM. Inline comments are one line (CLAUDE.md §3): no two consecutive indented
+ *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
  *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
+ *   AO. Application imports no infrastructure module, not even from its di/
+ *      wiring; storage keys sit behind `PreferenceStoreInterface` slots — build
+ *      values such as `IS_DEV_BUILD` reach it through DI (CLAUDE.md §17).
+ *   AP. No annotation applied twice to one Kotlin declaration under modules/ —
+ *      kotlinc rejects it, and no JS gate compiles native code (CLAUDE.md §24).
+ *   AQ. An ErrorState built from a Failure passes `severity=` — the default is
+ *      the red danger surface (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -107,6 +119,10 @@ for (const file of files) {
     }
     const target = LAYERS.map((l) => `@${l}`).find((a) => spec === a || spec.startsWith(a + '/'));
     if (!target) continue;
+    if (layer === 'application' && target === '@infrastructure') {
+      errors.push(`${file}: rule AO — application may not import '${spec}'; receive it through DI (CLAUDE.md §17)`);
+      continue;
+    }
     const allowed = ALLOWED_IMPORTS[layer] ?? [];
     if (allowed.includes(target)) continue;
     // Composition-root exception: DI wiring modules assemble across layers.
@@ -219,6 +235,8 @@ for (const file of files) {
     const lines = src.split('\n').length;
     if (lines > 300) {
       errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
+    } else if (/^presentation\/app\/(.+\/)?index\.tsx$/.test(file) && lines > 200) {
+      errors.push(`${file}: ${lines} lines — a routed index.tsx is composition only and stays under 200 lines (CLAUDE.md §18); move logic into hooks/ or body/`);
     }
   }
 
@@ -449,6 +467,11 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       if (liveAudio.androidForegroundService !== false) {
         errors.push(
           'app.json: react-native-audio-api must set "androidForegroundService": false — it defaults to true and declares a mediaPlayback foreground service the app has no feature for (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.disableFFmpeg !== true) {
+        errors.push(
+          'app.json: react-native-audio-api must set "disableFFmpeg": true — the assistant plays raw PCM and never decodes files, and FFmpeg adds ~6 MB of native libraries per ABI',
         );
       }
       const androidPermissions = liveAudio.androidPermissions;
@@ -1538,6 +1561,82 @@ function openingTag(src, at) {
   }
 }
 
+// --- AM: an inline comment is one line (CLAUDE.md §3) ------------------------
+// Multi-line `//` blocks inside function bodies had grown into incident
+// narratives (1853 lines in 257 files) that buried the code. The rule: one
+// short line where a reader would otherwise break; anything longer goes in the
+// unit's head doc block, the incident in docs/regressions.md.
+{
+  const DIRECTIVE = /^\s*\/\/\s*eslint-/;
+  const INDENTED_LINE_COMMENT = /^[ \t]+\/\//;
+  for (const file of files) {
+    if (isTest(file) || /\/__(fixtures|mocks)__\//.test(file) || file.includes(path.join('i18n', 'locales'))) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    for (let i = 1; i < lines.length; i += 1) {
+      const isComment = (l) => INDENTED_LINE_COMMENT.test(l) && !DIRECTIVE.test(l);
+      if (isComment(lines[i]) && isComment(lines[i - 1])) {
+        errors.push(`${file}:${i}: multi-line inline comment — keep it to one line; longer rationale goes in the head doc block (CLAUDE.md §3)`);
+        break;
+      }
+    }
+  }
+}
+
+// --- AN: the web app is served with its security headers -----------------
+// firebase.json shipped with no security header at all: the site could be
+// framed (clickjacking), MIME-sniffed, and leaked full referrers. Every
+// hosting target must set these on `**`. The CSP's script-src is hash-based for
+// inline scripts (scripts/assert-csp-inline-scripts.mjs keeps the hashes true).
+{
+  // AdSense loads scripts AND frames from each of these; the CSP blocked the ad-quality frame
+  // (ep2.adtrafficquality.google) and the unit served unverified, so both directives must allow every one.
+  const ADSENSE_HOSTS = ['*.googlesyndication.com', '*.doubleclick.net', '*.adtrafficquality.google', '*.google.com'];
+  const directiveAllows = (csp, directive, host) =>
+    (csp.split(';').map((d) => d.trim()).find((d) => d.startsWith(`${directive} `)) ?? '').split(' ').includes(`https://${host}`);
+  // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
+  // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
+  const REQUIRED = {
+    'X-Content-Type-Options': (v) => v === 'nosniff',
+    'X-Frame-Options': (v) => v === 'SAMEORIGIN' || v === 'DENY',
+    'Content-Security-Policy': (v) =>
+      /frame-ancestors '(self|none)'/.test(v) &&
+      /default-src 'self'/.test(v) &&
+      /object-src 'none'/.test(v) &&
+      /script-src [^;]*'sha256-/.test(v) &&
+      !/script-src [^;]*'unsafe-(inline|eval)'/.test(v) &&
+      ADSENSE_HOSTS.every((host) => directiveAllows(v, 'script-src', host) && directiveAllows(v, 'frame-src', host)),
+    'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
+    'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
+    'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
+    'Strict-Transport-Security': (v) => /max-age=\d{7,}/.test(v),
+  };
+  // Every path except Firebase's reserved /__/ (its auth handler runs a per-request inline script our CSP cannot hash).
+  const SITE_EXCEPT_RESERVED = '^/([^_].*|_[^_].*|_)?$';
+  const firebaseText = fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8');
+  // RNFirebase's iOS build phase pastes firebase.json into a single-quoted Ruby string: one raw ' fails every iOS build.
+  if (firebaseText.includes("'")) {
+    errors.push("firebase.json: a raw apostrophe breaks the RNFirebase iOS build script — write it as \\u0027 (the CSP's 'self' etc.)");
+  }
+  const firebase = JSON.parse(firebaseText);
+  const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
+  for (const target of targets) {
+    if ((target.headers ?? []).some((h) => h.source === '**' && h.headers.some((x) => x.key === 'Content-Security-Policy'))) {
+      errors.push(`firebase.json (${target.target}): the CSP is on "**", which also reaches /__/auth/ and blocks Firebase sign-in — use "regex": "${SITE_EXCEPT_RESERVED}"`);
+    }
+    const sent = new Map(
+      (target.headers ?? [])
+        .filter((h) => h.regex === SITE_EXCEPT_RESERVED)
+        .flatMap((h) => h.headers.map((x) => [x.key, x.value])),
+    );
+    const missing = Object.entries(REQUIRED)
+      .filter(([key, ok]) => !sent.has(key) || !ok(sent.get(key)))
+      .map(([key]) => key);
+    if (missing.length > 0) {
+      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on every page (regex ${SITE_EXCEPT_RESERVED}) — ${missing.join(', ')}`);
+    }
+  }
+}
+
 // --- AG: nothing speaks to the user through the global `alert` (§24) -------
 // The user's rule, after an App Store build stacked "Expo Head: Add the handoff
 // origin to the Expo Config" over onboarding and login: a person using the app
@@ -1587,6 +1686,24 @@ function openingTag(src, at) {
   }
 }
 
+// --- AQ: a failure state says how bad it is (CLAUDE.md §24) ----------------
+// `ErrorState` defaults to the red danger surface. Automations and the shopping
+// list rendered an offline failure in red while every other screen showed it
+// amber, and the empty shopping list wore the danger disc. A state built from a
+// Failure (`failureIcon(...)`) must pass `severity=` (usually `failureSeverity`).
+{
+  const FAILURE_STATE = /<ErrorState\b[^>]*?failureIcon\([^>]*?\/>/gs;
+  for (const file of files) {
+    if (isTest(file) || !file.endsWith('.tsx')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(FAILURE_STATE)) {
+      if (m[0].includes('severity=')) continue;
+      const line = src.slice(0, m.index).split('\n').length;
+      errors.push(`${file}:${line}: an ErrorState built from a Failure has no severity= — pass failureSeverity(failure) (CLAUDE.md §24)`);
+    }
+  }
+}
+
 // --- AE: the assistant registers by FOCUS, never by mount (CLAUDE.md §24) ---
 // Reported from production: the assistant refused to create a recipe, insisting
 // an open draft would be lost. There was no draft on screen, `readScreen`
@@ -1611,6 +1728,39 @@ function openingTag(src, at) {
     errors.push(
       `${file}: registers with the assistant directly — use useAssistantAction / useAssistantScreenContent / useAssistantScreenReading, which register only while the screen is focused; mounted is not visible (CLAUDE.md §24)`,
     );
+  }
+}
+
+// --- AP: no annotation twice on one Kotlin declaration (CLAUDE.md §24) -----
+// `@Volatile` stacked twice on one field shipped green: JS gates never compile
+// the native modules, and kotlinc rejects a repeated non-repeatable annotation,
+// so every Android build failed. This catches that class without a JVM.
+{
+  const MODULES = path.join(ROOT, 'modules');
+  const ANNOTATION = /@([A-Za-z_][\w.]*)(?:\([^)]*\))?/g;
+  const ANNOTATIONS_ONLY = /^\s*(?:@[A-Za-z_][\w.]*(?:\([^)]*\))?\s*)+$/;
+  const walkKotlin = (dir, out) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === 'build') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walkKotlin(full, out);
+      else if (entry.name.endsWith('.kt')) out.push(full);
+    }
+    return out;
+  };
+  for (const full of fs.existsSync(MODULES) ? walkKotlin(MODULES, []) : []) {
+    const rel = path.relative(ROOT, full);
+    let pending = [];
+    fs.readFileSync(full, 'utf8').split('\n').forEach((line, i) => {
+      const leading = line.match(/^\s*((?:@[A-Za-z_][\w.]*(?:\([^)]*\))?\s*)*)/)[1];
+      const names = [...leading.matchAll(ANNOTATION)].map((m) => m[1]);
+      const all = [...pending, ...names];
+      const repeated = all.find((name, k) => all.indexOf(name) !== k);
+      if (repeated) {
+        errors.push(`${rel}:${i + 1}: @${repeated} is applied twice to one declaration — kotlinc rejects it and the Android build fails (CLAUDE.md §24)`);
+      }
+      pending = ANNOTATIONS_ONLY.test(line) ? all : [];
+    });
   }
 }
 

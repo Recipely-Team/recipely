@@ -9,11 +9,11 @@ import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import type { FoodSearchResults } from '@domain/diary/foods/search/food-search-results';
 import type { RecipeHitGroupType } from '@domain/diary/foods/search/recipe-hit-group-type';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
-import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import { toPage } from '@infrastructure/network/paging/to-page';
 import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
@@ -85,7 +85,7 @@ export class FoodCatalogRepository implements FoodCatalogRepositoryInterface {
     return result.ok ? toFoodDetail(result.value) : result;
   }
 
-  async listRecent(page: number, pageSize: number): Promise<Result<Page<RecentFood>, Failure>> {
+  async listRecent(page: number, pageSize: number): Promise<Result<Page<RecentFoodType>, Failure>> {
     const params = toPageQuery({ page, pageSize });
     const result = await this.http.get<PageDto<RecentFoodDto>>(ApiRoutes.diary.foods.recent, { params });
     return result.ok ? ok(toPage(result.value, toRecentFood)) : result;

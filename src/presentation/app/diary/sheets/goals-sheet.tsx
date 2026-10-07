@@ -15,13 +15,14 @@ import { StatusMarkerKind } from '@presentation/app/diary/shared/model/status-ma
 import { useGoalsForm } from '@presentation/app/diary/hooks/use-goals-form';
 import { t, useLocale } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import type { AtwaterFactors } from '@domain/diary/nutrition/atwater-factors';
+import { NutritionMacro } from '@domain/recipes/nutrition/nutrition-macro';
 
 export interface GoalsSheetProps {
   visible: boolean;
   onClose: () => void;
 }
 
-const PERCENT = 100;
 
 /**
  * Daily goals (design spec → Food Diary §7): the calorie goal with ±50 steps,
@@ -36,8 +37,8 @@ export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Ele
   const strings = t().diary;
   const nutrition = t().nutrition;
   const { candidate } = form;
-  const share = (macro: 'protein' | 'carbs' | 'fat'): string | null =>
-    candidate === null ? null : strings.calorieShare.replace('{n}', formatWholeNumber(candidate.calorieShare(macro) * PERCENT, locale));
+  const share = (macro: keyof typeof AtwaterFactors): string | null =>
+    candidate === null ? null : strings.calorieShare.replace('{n}', formatWholeNumber(candidate.calorieShare(macro) * ValueConstants.percent, locale));
   const calories = parseDecimalInput(form.values.calories) ?? ValueConstants.zero;
 
   return (
@@ -78,10 +79,10 @@ export const GoalsSheet = ({ visible, onClose }: GoalsSheetProps): React.JSX.Ele
             disabled={!NutritionGoals.canStepCalories(calories, ValueConstants.one)}
           />
         </View>
-        <GoalMacroRow label={nutrition.protein} value={form.values.protein} onChange={(v) => form.setField('protein', v)} share={share('protein')} />
-        <GoalMacroRow label={nutrition.carbs} value={form.values.carbs} onChange={(v) => form.setField('carbs', v)} share={share('carbs')} />
-        <GoalMacroRow label={nutrition.fat} value={form.values.fat} onChange={(v) => form.setField('fat', v)} share={share('fat')} />
-        <GoalMacroRow label={nutrition.fiber} value={form.values.fiber} onChange={(v) => form.setField('fiber', v)} share={null} />
+        <GoalMacroRow label={nutrition.protein} value={form.values.protein} onChange={(v) => form.setField(NutritionMacro.Protein, v)} share={share(NutritionMacro.Protein)} />
+        <GoalMacroRow label={nutrition.carbs} value={form.values.carbs} onChange={(v) => form.setField(NutritionMacro.Carbs, v)} share={share(NutritionMacro.Carbs)} />
+        <GoalMacroRow label={nutrition.fat} value={form.values.fat} onChange={(v) => form.setField(NutritionMacro.Fat, v)} share={share(NutritionMacro.Fat)} />
+        <GoalMacroRow label={nutrition.fiber} value={form.values.fiber} onChange={(v) => form.setField(NutritionMacro.Fiber, v)} share={null} />
         {candidate === null ? null : (
           <SizedText size={fontSizes.small} muted ratio={lineHeights.normal}>
             {strings.goalsHint.replace('{n}', formatWholeNumber(candidate.macroCalories, locale))}

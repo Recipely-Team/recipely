@@ -8,8 +8,7 @@ import type { BoundStore } from '@application/store/bound-store';
  */
 
 import { configureLikesStore } from '@application/likes/likes-store';
-import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
-import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import { ok } from '@core/result/result-helpers';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import { configureLikedRecipesStore } from '@application/recipes/liked/liked-recipes-store';
@@ -19,8 +18,7 @@ const RECIPE_ID = 'r-1';
 
 const makeStore = (): BoundStore<LikesStoreState> =>
   configureLikesStore({
-    likeRecipe: { execute: () => Promise.resolve(ok(undefined)) } as unknown as LikeRecipeUseCase,
-    unlikeRecipe: { execute: () => Promise.resolve(ok(undefined)) } as unknown as UnlikeRecipeUseCase,
+    setRecipeLike: { execute: () => Promise.resolve(ok(undefined)) } as unknown as SetRecipeLikeUseCase,
     likedRecipesStore: configureLikedRecipesStore({
       loadLikedRecipesUseCase: { execute: () => Promise.resolve(ok([])) } as unknown as LoadLikedRecipesUseCase,
     }),
@@ -78,5 +76,18 @@ describe('likesStore.syncFromApi — freshness', () => {
     expect(store.getState().byRecipe[RECIPE_ID]?.likedByMe).toBe(true);
 
     await toggling;
+  });
+});
+
+describe('likesStore.toggle — count floor', () => {
+  // The optimistic unlike used to subtract one with no floor: a stale 0 showed "-1".
+  it('an unlike on a stale zero count never shows a negative like count', async () => {
+    const store = makeStore();
+    store.getState().seed(RECIPE_ID, 0, true);
+
+    await store.getState().toggle(RECIPE_ID);
+
+    expect(store.getState().byRecipe[RECIPE_ID]?.likedByMe).toBe(false);
+    expect(store.getState().byRecipe[RECIPE_ID]?.likeCount).toBe(0);
   });
 });

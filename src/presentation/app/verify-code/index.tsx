@@ -4,12 +4,12 @@ import { StoreStatus } from '@application/store/store-status';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
 import { VerifyCodeCard } from '@presentation/app/verify-code/body/verify-code-card';
-import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, iconSizes, controlSizes, mediaSizes, decorSizes, layoutSizes, zIndices } from '@presentation/base/theme';
@@ -17,15 +17,14 @@ import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
-import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = layoutSizes.maxContentXl;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
-  const { isExpanded, orientation } = useLayout();
-  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
+  const split = useTwoPaneSplit();
+  const isLandscapeShell = split.isSplit;
 
   const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
   const email = isString(params.email) ? params.email : CharConstants.empty;
@@ -36,9 +35,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
 
   useEffect(() => {
     if (state.status === StoreStatus.Authenticated) {
-    // The code has been accepted, so the whole sign-up detour behind this
-      // screen is spent. Landing on the feed with it still stacked let one back
-      // gesture return to a code entry that can no longer be used.
+    // The sign-up detour is spent: replace the stack.
       enterApp(router, RoutePaths.recipes);
     }
   }, [state.status, router]);
@@ -46,12 +43,12 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   if (isLandscapeShell) {
     return (
       <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
+        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={styles.splitHero}
+            style={[styles.splitHero, split.firstPaneStyle]}
           >
             <VerifyHero isLandscapeShell={isLandscapeShell} email={email} />
           </LinearGradient>

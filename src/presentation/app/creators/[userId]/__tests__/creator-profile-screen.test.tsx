@@ -11,8 +11,7 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { configureCreatorProfileStore } from '@application/creators/profile/creator-profile-store';
 import { GetViewedUserProfileUseCase } from '@application/user-profile/get-viewed-user-profile-use-case';
 import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
-import { FollowUserUseCase } from '@application/user-profile/follow/follow-user-use-case';
-import { UnfollowUserUseCase } from '@application/user-profile/follow/unfollow-user-use-case';
+import { SetFollowingUseCase } from '@application/user-profile/follow/set-following-use-case';
 import { FakeUserProfileRepository } from '@application/__fixtures__/fake-user-profile-repository';
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { viewedProfileOf } from '@application/__fixtures__/viewed-profile-of';
@@ -24,14 +23,14 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { create } from 'zustand';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 
 /** The saved set the web cards' bookmarks read; empty, since these tests are about following. */
-const savedStores = (): Partial<Stores> =>
+const savedStores = (): Partial<ApplicationStores> =>
   ({
     savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
     favoritesStore: create(() => ({ isLoading: false, error: null })),
-  }) as unknown as Partial<Stores>;
+  }) as unknown as Partial<ApplicationStores>;
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({
@@ -58,8 +57,7 @@ const renderScreen = async (viewer: UserEntity | null, standing: { followerCount
   const creatorProfileStore = configureCreatorProfileStore({
     getViewedProfile: new GetViewedUserProfileUseCase(repo),
     listUserRecipes: new ListUserRecipesUseCase(repo),
-    follow: new FollowUserUseCase(repo),
-    unfollow: new UnfollowUserUseCase(repo),
+    setFollowing: new SetFollowingUseCase(repo),
   });
   const rendered = renderComponent(<CreatorProfileScreen />, { ...savedStores(), creatorProfileStore, authStore: authStoreOf(viewer) });
   await act(async () => {

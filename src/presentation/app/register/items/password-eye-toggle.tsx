@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';

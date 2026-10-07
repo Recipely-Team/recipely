@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useTimerNotificationSync } from '@presentation/base/hooks/timers/use-timer-notification-sync';
 import { useUnreadNotificationsSync } from '@presentation/base/hooks/sync/use-unread-notifications-sync';
 import { useTaxonomySync } from '@presentation/base/hooks/sync/use-taxonomy-sync';
 import { useAdsWarmup } from '@presentation/base/hooks/ads/use-ads-warmup';
 import { useScreenTracking } from '@presentation/bootstrap/use-screen-tracking';
+import { useEngagementReminders } from '@presentation/bootstrap/use-engagement-reminders';
 
 export interface AppSyncsProps {
-  stores: Stores;
+  stores: ApplicationStores;
   children: ReactNode;
 }
 
@@ -28,6 +29,7 @@ export const AppSyncs = ({ stores, children }: AppSyncsProps): React.JSX.Element
   useTaxonomySync(stores.taxonomyStore, stores.authStore);
   useAdsWarmup();
   useScreenTracking();
+  useEngagementReminders(stores.refreshReminders);
 
   return <>{children}</>;
 };

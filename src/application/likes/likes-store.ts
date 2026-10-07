@@ -5,19 +5,26 @@ import { ConflictFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
-import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
-import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import { ValueConstants } from '@core/constants';
+import { ViewerReaction } from '@domain/common/viewer-reaction';
+import { RequestEpoch } from '@application/store/request-epoch';
 
 interface LikesStoreDeps {
-  likeRecipe: LikeRecipeUseCase;
-  unlikeRecipe: UnlikeRecipeUseCase;
+  setRecipeLike: SetRecipeLikeUseCase;
   likedRecipesStore: BoundStore<LikedRecipesStoreState>;
 }
 
-export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> =>
-  create<LikesStoreState>((set, get) => ({
+/**
+ * **Likes store** — like count and the viewer's like per recipe, toggled optimistically.
+ *
+ * @remarks
+ * - **Session guard**: `clear()` on sign-out drops a toggle answer still in
+ *   flight, so the previous account's like is never written back.
+ */
+export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> => {
+  const session = new RequestEpoch();
+  return create<LikesStoreState>((set, get) => ({
     byRecipe: {},
 
     seed: (recipeId, likeCount, likedByMe) => {
@@ -31,18 +38,12 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
     },
 
     syncFromApi: (recipeId, likeCount, likedByMe, fetchedAt) => {
-      // WHY: skip when an optimistic toggle is in-flight — we don't want a
-      // concurrent detail-fetch to clobber the count the user just changed.
+      // Skip while an optimistic toggle is in flight.
       const current = get().byRecipe[recipeId];
       if (current?.isLoading) return;
-      // WHY: skip a payload OLDER than what we hold. Re-entering a recipe
-      // re-renders it from the detail cache, and that cached copy was read
-      // before the user's like — publishing it would rewind the heart to empty
-      // and the user would find their like gone every time they came back.
+      // Skip a payload older than what we hold (the detail cache predates the like).
       if (current !== undefined && fetchedAt <= current.updatedAt) return;
-      // WHY: skip when values are identical — calling set() unconditionally
-      // triggers a re-render on every call, which feeds an infinite loop when
-      // the caller's useEffect has a non-primitive dependency on recipeState.
+      // Skip identical values: an unconditional set re-renders and can loop.
       if (
         current !== undefined &&
         current.likeCount === likeCount &&
@@ -62,20 +63,19 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       if (!current || current.isLoading) return ok(undefined);
 
       const wasLiked = current.likedByMe;
+      const next = ViewerReaction.of(current.likeCount, wasLiked).toggled();
       const optimistic: RecipeLikeState = {
-        likeCount: wasLiked ? current.likeCount - ValueConstants.one : current.likeCount + ValueConstants.one,
-        likedByMe: !wasLiked,
+        likeCount: next.count,
+        likedByMe: next.mine,
         isLoading: true,
-        // The user's own action is the newest truth there is until a response
-        // read AFTER it arrives.
         updatedAt: Date.now(),
       };
 
       set((s) => ({ byRecipe: { ...s.byRecipe, [recipeId]: optimistic } }));
 
-      const result = wasLiked
-        ? await deps.unlikeRecipe.execute(recipeId)
-        : await deps.likeRecipe.execute(recipeId);
+      const isSession = session.current();
+      const result = await deps.setRecipeLike.execute(recipeId, next.mine);
+      if (!isSession()) return result;
 
       set((s) => ({
         byRecipe: {
@@ -86,9 +86,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
         },
       }));
 
-      // Taking the heart off a recipe must take it out of the Liked grid too.
-      // Only on the way OUT: a new like has no list row to insert here, and the
-      // next load of that grid fetches it in like order anyway.
+      // Unlike removes the row from the Liked grid; a new like appears on its next load.
       if (result.ok && wasLiked) {
         deps.likedRecipesStore.getState().removeLocal(recipeId);
       }
@@ -99,10 +97,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
     setLiked: async (recipeId, wanted) => {
       const current = get().byRecipe[recipeId];
 
-      // Nothing to flip FROM is not the same as nothing to do. `toggle`
-      // answered ok here, so the assistant's first "beğen" reported success
-      // over an untouched heart and only the second one — after a detail fetch
-      // had filled this entry — actually liked anything.
+      // No entry means unknown, not "done": report not-ready.
       if (current === undefined) {
         return fail(new ConflictFailure(DiagnosticMessage.assistant.likeStateNotLoaded));
       }
@@ -115,5 +110,9 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       return get().toggle(recipeId);
     },
 
-    clear: () => set({ byRecipe: {} }),
+    clear: () => {
+      session.invalidate();
+      set({ byRecipe: {} });
+    },
   }));
+};

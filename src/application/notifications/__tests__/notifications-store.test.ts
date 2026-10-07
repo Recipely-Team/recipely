@@ -1,5 +1,6 @@
-import type { ListNotificationsResult } from "@application/notifications/list/list-notifications-result";
+import type { NotificationListResult as ListNotificationsResult } from "@domain/notifications/notification-list-result";
 import type { ListNotificationsUseCase } from "@application/notifications/list/list-notifications-use-case";
+import type { CountUnreadNotificationsUseCase } from "@application/notifications/list/count-unread-notifications-use-case";
 import { configureNotificationsStore } from "@application/notifications/notifications-store";
 import type { MarkAllReadUseCase } from "@application/notifications/read/mark-all-read-use-case";
 import type { MarkOneReadUseCase } from "@application/notifications/read/mark-one-read-use-case";
@@ -37,21 +38,32 @@ interface StubConfig {
 
 const makeStore = (config: StubConfig) => {
   const listResults = config.listResults ?? [];
-  const listInputs: { limit?: number; offset?: number }[] = [];
+  const listInputs: { page?: number }[] = [];
   let listIndex = 0;
+  let countCalls = 0;
   let markCalls = 0;
   const markOneIds: string[] = [];
 
+  const nextList = (): Result<ListNotificationsResult, Failure> => {
+    const result = listResults[Math.min(listIndex, listResults.length - 1)];
+    listIndex++;
+    return result ?? fail(new NetworkFailure("not configured"));
+  };
+
   const listNotifications = {
-    execute: (input: { limit?: number; offset?: number } = {}) => {
+    execute: (input: { page?: number } = {}) => {
       listInputs.push(input);
-      const result = listResults[Math.min(listIndex, listResults.length - 1)];
-      listIndex++;
-      return Promise.resolve(
-        result ?? fail(new NetworkFailure("not configured")),
-      );
+      return Promise.resolve(nextList());
     },
   } as unknown as ListNotificationsUseCase;
+
+  const countUnread = {
+    execute: () => {
+      countCalls++;
+      const result = nextList();
+      return Promise.resolve(result.ok ? ok(result.value.unreadCount) : result);
+    },
+  } as unknown as CountUnreadNotificationsUseCase;
 
   const markAllRead = {
     execute: () => {
@@ -69,17 +81,18 @@ const makeStore = (config: StubConfig) => {
 
   const store = configureNotificationsStore({
     listNotifications,
+    countUnread,
     markAllRead,
     markOneRead,
   });
-  return { store, listInputs, markCallCount: () => markCalls, markOneIds };
+  return { store, listInputs, countCallCount: () => countCalls, markCallCount: () => markCalls, markOneIds };
 };
 
 const loaded = (
   items: NotificationEntity[],
   unreadCount: number,
 ): Result<ListNotificationsResult, Failure> =>
-  ok({ items, total: items.length, unreadCount });
+  ok({ page: { items, total: items.length, page: 1, pageSize: 20, hasMore: false }, unreadCount });
 
 describe("notifications store — load", () => {
   it("sets the top-level unreadCount alongside the loaded state", async () => {
@@ -96,15 +109,15 @@ describe("notifications store — load", () => {
 
 describe("notifications store — refreshUnread", () => {
   it("updates only the unreadCount and leaves the feed untouched", async () => {
-    const { store, listInputs } = makeStore({ listResults: [loaded([], 7)] });
+    const { store, listInputs, countCallCount } = makeStore({ listResults: [loaded([], 7)] });
 
     await store.getState().refreshUnread();
 
     expect(store.getState().unreadCount).toBe(7);
     // Feed was never loaded, so it must remain idle.
     expect(store.getState().state.status).toBe("idle");
-    // Should request the minimum page.
-    expect(listInputs[0]).toEqual({ limit: 1 });
+    expect(countCallCount()).toBe(1);
+    expect(listInputs).toEqual([]);
   });
 
   it("keeps the previous count when the refresh request fails", async () => {
@@ -171,7 +184,6 @@ describe("notifications store — markOneRead", () => {
     expect(store.getState().unreadCount).toBe(1);
     const state = store.getState().state;
     if (state.status !== "loaded") throw new Error("expected loaded state");
-    expect(state.unreadCount).toBe(1);
     expect(state.items.find((n) => n.id === "n1")?.read).toBe(true);
     expect(state.items.find((n) => n.id === "n2")?.read).toBe(false);
   });
@@ -203,5 +215,52 @@ describe("notifications store — markOneRead", () => {
     if (state.status !== "loaded") throw new Error("expected loaded state");
     expect(state.items[0]?.read).toBe(false);
     expect(store.getState().unreadCount).toBe(1);
+  });
+});
+
+describe("notifications store — paging", () => {
+  // Regression: the store read one fixed page, so a user with more than 20 notifications
+  // never saw the older ones however far they scrolled.
+  it("shows notifications past the first 20 when the user scrolls to the end", async () => {
+    const firstPage = Array.from({ length: 20 }, (_, i) => makeNotification(`n${i}`, true));
+    const { store, listInputs } = makeStore({
+      listResults: [
+        ok({ page: { items: firstPage, total: 21, page: 1, pageSize: 20, hasMore: true }, unreadCount: 0 }),
+        ok({ page: { items: [makeNotification("n20", false)], total: 21, page: 2, pageSize: 20, hasMore: false }, unreadCount: 1 }),
+      ],
+    });
+
+    await store.getState().load();
+    await store.getState().loadMore();
+
+    expect(listInputs).toEqual([{ page: 1 }, { page: 2 }]);
+    const state = store.getState().state;
+    if (state.status !== "loaded") throw new Error("expected loaded state");
+    expect(state.items).toHaveLength(21);
+    expect(state.hasMore).toBe(false);
+    expect(store.getState().unreadCount).toBe(1);
+  });
+});
+
+describe("notifications store — sign-out", () => {
+  // Regression: `clear()` ran on sign-out, then a feed answer already in flight wrote the
+  // previous account's notifications and badge back into the cleared store.
+  it("a feed answer that lands after sign-out does not refill the cleared feed or badge", async () => {
+    let resolve: (value: Result<ListNotificationsResult, Failure>) => void = () => undefined;
+    const pending = new Promise<Result<ListNotificationsResult, Failure>>((r) => { resolve = r; });
+    const store = configureNotificationsStore({
+      listNotifications: { execute: () => pending } as unknown as ListNotificationsUseCase,
+      countUnread: {} as CountUnreadNotificationsUseCase,
+      markAllRead: {} as MarkAllReadUseCase,
+      markOneRead: {} as MarkOneReadUseCase,
+    });
+
+    const loading = store.getState().load();
+    store.getState().clear();
+    resolve(loaded([makeNotification("n1", false)], 4));
+    await loading;
+
+    expect(store.getState().state.status).toBe("idle");
+    expect(store.getState().unreadCount).toBe(0);
   });
 });

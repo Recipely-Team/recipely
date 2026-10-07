@@ -1,21 +1,13 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { StyleSheet, View } from 'react-native';
-import { type Href, useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { type Href, useFocusEffect, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
-import { useAssistantMyRecipesActions } from '@presentation/app/my-recipes/hooks/use-assistant-my-recipes-actions';
-import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
-import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
-import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
-import { listReading } from '@presentation/base/hooks/assistant/args/describing/list-reading';
-import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
-import { recipeRoster } from '@presentation/base/hooks/assistant/args/describing/recipe-roster';
-import { draftName } from '@presentation/app/my-recipes/model/draft-name';
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -24,24 +16,19 @@ import { WebMyRecipesTabs } from '@presentation/app/my-recipes/body/web-my-recip
 import { MyRecipesHeader } from '@presentation/app/my-recipes/body/my-recipes-header';
 import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs';
 import { MyRecipesList } from '@presentation/app/my-recipes/body/my-recipes-list';
+import { useMyRecipesTab } from '@presentation/app/my-recipes/hooks/use-my-recipes-tab';
+import { useMyRecipesAssistant } from '@presentation/app/my-recipes/hooks/use-my-recipes-assistant';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
-import { RECIPE_CARD_MIN_WIDTH, GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
-import { parseTabParam } from '@presentation/app/my-recipes/model/parse-tab-param';
+import { gridColumnsFor } from '@presentation/app/my-recipes/model/grid-columns-for';
 import { isFirstLoad } from '@presentation/app/my-recipes/model/is-first-load';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { useSaveRecipe } from '@presentation/base/hooks/recipes/use-save-recipe';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
-import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
-
-const WEB_CONTENT_MAX = WEB_CONTENT_MAX_WIDTH.myRecipes;
-
-/** Stable identity, so the Drafts tab does not hand the hook a new array a render. */
-const EMPTY_ROWS: readonly { id: string; name: string }[] = [];
 
 export const MyRecipesScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -56,43 +43,16 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const likedListState = likedRecipesStore((s) => s.listState);
   const createdRecipes = createdRecipesStore((s) => s.recipes);
   const createdListState = createdRecipesStore((s) => s.myRecipesState);
-  const drafts = draftsStore((s) => s.drafts);
-  const draftsListState = draftsStore((s) => s.listState);
+  const draftsListState = draftsStore((s) => s.drafts);
+  const drafts = useMemo(() => loadedItems(draftsListState), [draftsListState]);
   const loadMoreDrafts = draftsStore((s) => s.loadMoreDrafts);
 
-  // Deep-linked tab: publishing a recipe lands here on `created`, so the thing
-  // the user just made is the thing they are looking at.
-  const params = useLocalSearchParams<{ tab?: string }>();
-  const [tab, setTab] = useState<TabType>(() => parseTabParam(params.tab));
-
-  // Re-read the param whenever it CHANGES, not only on mount. This screen is a
-  // tab, so it stays mounted: after the first visit a `useState` initialiser
-  // never ran again, and navigating here with `?tab=drafts` left the user on
-  // whichever tab they had last — while the assistant, whose navigate had
-  // genuinely succeeded, said "taslaklar listeniz burada".
-  //
-  // Keyed on the raw param rather than the parsed tab so a user's own tap is
-  // not undone: tapping Saved changes `tab` but not `params.tab`, so this does
-  // not fire and drag them back.
-  const lastTabParam = useRef(params.tab);
-  useEffect(() => {
-    if (params.tab === lastTabParam.current) return;
-    lastTabParam.current = params.tab;
-    if (params.tab !== undefined) setTab(parseTabParam(params.tab));
-  }, [params.tab]);
+  const [tab, setTab] = useMyRecipesTab();
   const { isRefreshing, onRefresh } = useMyRecipesRefresh(tab);
 
-  // Grid columns: 1 on a phone, auto-fill at RECIPE_CARD_MIN_WIDTH once the
-  // viewport is expanded — the web shell and the iPad alike.
-  const gridColumns = useMemo<number>(() => {
-    if (!isExpanded) return ValueConstants.one;
-    const available = Math.min(width, WEB_CONTENT_MAX) - spacing.xl * ValueConstants.two;
-    return Math.max(ValueConstants.one, Math.floor((available + GRID_GAP) / (RECIPE_CARD_MIN_WIDTH + GRID_GAP)));
-  }, [isExpanded, width]);
+  const gridColumns = useMemo(() => gridColumnsFor(isExpanded, width), [isExpanded, width]);
 
-  // WHY on focus, not on mount: this screen stays mounted behind the create
-  // flow, so a mount-only load left a recipe the user had just published (or a
-  // draft they had just deleted) missing until a manual pull-to-refresh.
+  // On focus, not mount: the screen stays mounted behind the create flow.
   useFocusEffect(
     useCallback(() => {
       void savedRecipesStore.getState().loadSaved();
@@ -105,8 +65,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   const items =
     tab === TabType.Saved ? savedRecipes : tab === TabType.Liked ? likedRecipes : createdRecipes;
 
-  // Each tab owns its own load, so both the skeleton branch and the error
-  // branch read the state of the tab actually being shown.
+  // Each tab owns its load, so skeleton and error read the shown tab.
   const activeState =
     tab === TabType.Saved
       ? savedListState
@@ -117,8 +76,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
           : draftsListState;
   const activeCount = tab === TabType.Drafts ? drafts.length : items.length;
   const isTabFirstLoad = isFirstLoad(activeState.status, activeCount);
-  // Two different questions: whether the rows can be believed, and whether the
-  // wait for them is over. A failed load ends the wait but is not an answer.
+  // Trustworthy rows vs. finished waiting: a failed load ends the wait but is not an answer.
   const tabListState =
     activeState.status === StoreStatus.Loaded
       ? ListState.Ready
@@ -126,8 +84,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
         ? ListState.Failed
         : ListState.Loading;
   const isTabSettled = activeState.status === StoreStatus.Loaded || activeState.status === StoreStatus.Error;
-  // A failed load must not read as "you have nothing" — that is the same lie
-  // the empty-state-while-loading bug told, just with a different cause.
+  // A failed load must not read as an empty list.
   const loadFailure = activeState.status === StoreStatus.Error ? activeState.failure : null;
   useReportFailure(loadFailure, 'MyRecipesScreen');
 
@@ -138,85 +95,46 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
   ];
 
-  const openRecipe = (id: string): void => {
-    router.push(RoutePaths.recipeDetail(id) as Href);
-  };
+  // Stable handlers, so the list's memoised rows and `renderItem` hold across renders.
+  const openRecipe = useCallback((id: string): void => router.push(RoutePaths.recipeDetail(id) as Href), [router]);
 
   const openCreate = (): void => {
     router.push(RoutePaths.createRecipe);
   };
 
-  const openDraft = (id: string): void => {
-    router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } });
-  };
+  const openDraft = useCallback(
+    (id: string): void => router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } }),
+    [router],
+  );
 
-  const deleteDraft = async (id: string): Promise<void> => {
+  const deleteDraft = useCallback(async (id: string): Promise<void> => {
     const result = await draftsStore.getState().deleteDraft(id);
     if (!result.ok) showErrorToast(result.failure);
-  };
+  }, [draftsStore]);
 
-  // Deleting a draft is unrecoverable work, so the assistant asks first — and
-  // the sheet takes a spoken answer, because the whole point is hands-free.
-  const [draftPendingDelete, setDraftPendingDelete] = useState<string | null>(null);
-  useAssistantMyRecipesActions({
+  const assistant = useMyRecipesAssistant({
     tab,
     items,
     drafts,
-    onSwitchTab: setTab,
-    onOpenRecipe: openRecipe,
-    onOpenDraft: openDraft,
-    onRequestDeleteDraft: setDraftPendingDelete,
-    onRefresh,
+    tabListState,
     isTabSettled,
+    setTab,
+    openRecipe,
+    openDraft,
+    deleteDraft,
+    onRefresh,
   });
-  // The tab is half the answer: "delete the lentil soup" means a different
-  // collection on Saved than it does on Created, and the model cannot tell
-  // which list it is looking at from the route alone — they share one.
-  // Empty on Drafts: `items` falls through to the created recipes there, and a
-  // handler answering for rows the user cannot see is how "save that one" ends
-  // up saving something else entirely.
-  useAssistantListRecipeActions(tab === TabType.Drafts ? EMPTY_ROWS : items);
-  // Four list branches, one set of props: whichever is on screen is the one
-  // that moves. Without this the screen with the longest lists in the app
-  // answered "aşağı kaydır" with `unavailable_here`.
-  const scrollable = useAssistantScrollable();
-  // `isTabLoaded` is half the line: "created=none" while the list is still on
-  // its way is a fact to a model, and it says it out loud to the user.
-  useAssistantScreenContent(() =>
-    tab === TabType.Drafts
-      ? recipeRoster(TabType.Drafts, drafts.map(draftName), tabListState)
-      : recipeRoster(tab, items.map((recipe) => recipe.name), tabListState),
-  );
-  // The whole tab, for `readScreen`. The line above is bounded at eight rows
-  // because it rides on every turn; a reading is asked for once and should not
-  // stop halfway down a list the user cannot see.
-  useAssistantScreenReading(() =>
-    tab === TabType.Drafts
-      ? listReading(TabType.Drafts, drafts.map(draftName), tabListState)
-      : listReading(tab, items.map((recipe) => recipe.name), tabListState),
-  );
-  useAssistantConfirmation(
-    draftPendingDelete !== null,
-    () => {
-      if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
-      setDraftPendingDelete(null);
-    },
-    () => setDraftPendingDelete(null),
-  );
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ConfirmSheet
-        visible={draftPendingDelete !== null}
+        visible={assistant.isDraftDeletePending}
         title={t().assistant.deleteDraftTitle}
         message={t().assistant.deleteDraftMessage}
         confirmLabel={t().myRecipes.deleteRecipe}
         destructive
-        onConfirm={() => {
-          if (draftPendingDelete !== null) void deleteDraft(draftPendingDelete);
-          setDraftPendingDelete(null);
-        }}
-        onClose={() => setDraftPendingDelete(null)}
+        onConfirm={assistant.confirmDraftDelete}
+        onClose={assistant.cancelDraftDelete}
       />
       <ScreenContainer scrollable={false} padded={false}>
         <ResponsiveContainer route="myRecipes" gutter={false} fill>
@@ -243,20 +161,19 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             gridColumns={gridColumns}
             isExpanded={isExpanded}
             isSaved={isSaved}
-            onToggleSave={(id) => void toggleSave(id)}
+            onToggleSave={toggleSave}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
-            onDeleteDraft={(id) => void deleteDraft(id)}
+            onDeleteDraft={deleteDraft}
             isFirstLoad={isTabFirstLoad}
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             isLoadingMoreDrafts={
-              draftsListState.status === StoreStatus.Loaded &&
-              draftsListState.isLoadingMore === true
+              draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
-            scrollable={scrollable}
+            scrollable={assistant.scrollable}
           />
         </ResponsiveContainer>
       </ScreenContainer>
@@ -268,8 +185,6 @@ const styles = StyleSheet.create({
   root: {
     flex: ValueConstants.one,
   },
-  // Web band + underlined tabs share the list's horizontal inset so they line
-  // up with the recipe grid below; top padding clears the web app header.
   webHeaderWrap: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.lg,

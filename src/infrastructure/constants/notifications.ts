@@ -12,3 +12,6 @@
  * make an alarm distinguishable from an ordinary notification.
  */
 export const ALARM_VIBRATION_PATTERN: readonly number[] = [0, 500, 300, 500, 300, 500];
+
+/** Heads-up channel vibration: one short tap, so "5 minutes left" never reads as the alarm. */
+export const WARNING_VIBRATION_PATTERN: readonly number[] = [0, 150];

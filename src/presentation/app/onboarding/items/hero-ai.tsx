@@ -1,18 +1,18 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, fontWeights, iconSizes } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { OnboardingReveal } from '@presentation/app/onboarding/items/onboarding-reveal';
 import type { HeroProps } from '@presentation/app/onboarding/model/hero-props';
+import { ValueConstants } from '@core/constants';
 
 const CARD_WIDTH = 264;
 const HEADER_ICON = 30;
 const BULLET = 16;
-const CREATE_BTN_HEIGHT = 40;
 const CARD_DELAY_MS = 40;
 const CHIPS_DELAY_MS = 200;
 const RESULT_DELAY_MS = 420;
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   bullet: {
     width: BULLET,
     height: BULLET,
-    borderRadius: BULLET / 2,
+    borderRadius: BULLET / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -137,7 +137,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.xs,
   },
   createBtn: {
-    height: CREATE_BTN_HEIGHT,
+    minHeight: controlSizes.floatingBtn,
     borderRadius: radii.lg,
     flexDirection: 'row',
     alignItems: 'center',

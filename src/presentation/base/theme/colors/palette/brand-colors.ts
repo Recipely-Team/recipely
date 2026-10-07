@@ -6,6 +6,8 @@
  * bare hex on a brand surface.
  */
 export const BrandColors = {
+  /** No fill at all — an unselected chip, a borderless control. */
+  transparent: 'transparent',
   /** Neutral fixed white for brand surfaces and marks (never theme-tinted). */
   white: '#FFFFFF',
   /** Apple sign-in button surface. */
@@ -78,4 +80,41 @@ export const BrandColors = {
   nutritionCarbs: '#F59E0B',
   nutritionFat: '#EF4444',
   nutritionFiber: '#10B981',
+  /**
+   * The full-colour Recipely logo (`RecipelyLogo`), from the brand SVG: the
+   * hat's warm gradient, the book's grey gradient, the orange of the cover and
+   * cutlery, the off-white hat, the cream pages and the grey page edges.
+   */
+  logoHatGradientStart: '#EC7B41',
+  logoHatGradientEnd: '#F9B050',
+  logoBookGradientStart: '#97999A',
+  logoBookGradientEnd: '#C4C2C0',
+  logoOrange: '#EE8941',
+  logoOffWhite: '#F0F3F1',
+  logoCream: '#F8E9D4',
+  logoGrey: '#BEC0C3',
+  /**
+   * What the browser paints its own chrome with around the web app
+   * (`<meta name="theme-color">` in `+html.tsx`), one per system scheme —
+   * the default theme's page background in each.
+   */
+  webChromeLight: '#FFFFFF',
+  webChromeDark: '#0B0B0D',
+  /** The assistant mascot (`AssistantMascot`): skin gradient, cheeks, eyes, mouth, chef hat, hat-band shade. */
+  mascotFaceTop: '#F8DCBB',
+  mascotFaceBottom: '#EFC08F',
+  mascotCheek: '#E98A6A',
+  mascotEye: '#3B2A1E',
+  mascotMouth: '#B4483C',
+  mascotHat: '#FFFFFF',
+  mascotBandShade: '#000000',
+  /**
+   * The web home hero's photo gradient, deep → mid → fade, in the same slate as
+   * the modal scrim, and the frosted fill of its Save button. Fixed across
+   * themes: they sit on a photograph, not on a theme surface.
+   */
+  heroOverlayDeep: 'rgba(15,23,42,0.9)',
+  heroOverlayMid: 'rgba(15,23,42,0.55)',
+  heroOverlayFade: 'rgba(15,23,42,0.05)',
+  heroSaveFill: 'rgba(255,255,255,0.14)',
 } as const;

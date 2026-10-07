@@ -5,11 +5,11 @@ import { NotificationTargetKind } from '@domain/notifications/notification-targe
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import type { NotificationTarget } from '@domain/notifications/notification-target';
+import type { NotificationTargetType } from '@domain/notifications/notification-target';
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import { ValueConstants } from '@core/constants';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
-
+import { ImportNotificationType } from '@domain/notifications/import-notification-type';
 
 /**
  * Domain entity representing a backend notification (comment, like, follow,
@@ -92,7 +92,7 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
    * route yet — so it has no destination and this returns `null`. A creator
    * decision opens the user's own creator account settings.
    */
-  get target(): NotificationTarget | null {
+  get target(): NotificationTargetType | null {
     const creatorPlatform = this.props.creatorPlatform ?? null;
     if (creatorPlatform !== null) {
       return { kind: NotificationTargetKind.CreatorAccount, platform: creatorPlatform };
@@ -100,20 +100,24 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
     if (this.props.commentId !== null && this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Comment, recipeId: this.props.recipeId, commentId: this.props.commentId };
     }
-    // A recipe outranks a draft when both are present. An import announces the
-    // draft it produced, and publishing that draft turns it into a recipe — at
-    // which point the server sets `recipeId` on the same notification. The
-    // draft pointer is the older claim of the two, so the newer one wins;
-    // checking the draft first sent the user to a row that no longer existed.
+    // A recipe outranks a draft: publishing an imported draft sets recipeId on the same notification.
     if (this.props.recipeId !== null) {
       return { kind: NotificationTargetKind.Recipe, recipeId: this.props.recipeId };
     }
-    // Only reachable while the import's draft is still unpublished: there is
-    // no recipe yet, just something to finish.
+    // Only while the imported draft is unpublished.
     if (this.props.draftId !== null) {
       return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
     }
     return null;
+  }
+
+  /**
+   * A queued import that produced nothing. The server sends it as `import_done`
+   * too, with neither a draft nor a recipe behind it; read as it came, the row
+   * told the user their recipe was ready and then went nowhere when tapped.
+   */
+  get isFailedImport(): boolean {
+    return this.props.type === ImportNotificationType.Done && this.target === null;
   }
 
   /**

@@ -1,9 +1,9 @@
 import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import type { ImportLink } from '@domain/recipes/import/import-link';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
-import type { Translations } from '@presentation/i18n/translations';
+import type { TranslationsType } from '@presentation/i18n/translations';
 
-type ImportCopy = Translations['importRecipe'];
+type ImportCopy = TranslationsType['importRecipe'];
 
 const VIDEO_LABEL: Record<Exclude<SourcePlatformType, typeof SourcePlatform.Web>, (copy: ImportCopy) => string> = {
   [SourcePlatform.Instagram]: (copy) => copy.pasteDetectedInstagram,

@@ -1,3 +1,4 @@
+import { BrandColors } from '@presentation/base/theme/colors/palette/brand-colors';
 /**
  * The chef, as coordinates.
  *
@@ -25,13 +26,13 @@ export const mascotGeometry = {
     { cx: 32, cy: 15, r: 11.5 },
   ],
   hatBand: { x: 19, y: 25, width: 26, height: 8, rx: 4 },
-  faceTop: '#F8DCBB',
-  faceBottom: '#EFC08F',
-  cheek: '#E98A6A',
-  eye: '#3B2A1E',
-  mouthFill: '#B4483C',
-  hat: '#FFFFFF',
-  bandShade: '#000000',
+  faceTop: BrandColors.mascotFaceTop,
+  faceBottom: BrandColors.mascotFaceBottom,
+  cheek: BrandColors.mascotCheek,
+  eye: BrandColors.mascotEye,
+  mouthFill: BrandColors.mascotMouth,
+  hat: BrandColors.mascotHat,
+  bandShade: BrandColors.mascotBandShade,
   cheekOpacity: 0.4,
   bandShadeOpacity: 0.06,
   smileWidth: 2,

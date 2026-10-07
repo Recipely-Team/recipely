@@ -9,6 +9,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What this screen lends the assistant, named where it is consumed. */
 interface AssistantMyRecipesActionsDeps {
@@ -51,8 +52,7 @@ const TAB_POLL_MS = 100;
 export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps): void => {
   const { tab, items, drafts, onSwitchTab, onOpenRecipe, onOpenDraft, onRequestDeleteDraft, onRefresh } =
     deps;
-  // Read after the await, when the screen has moved on: the closure's own
-  // `tab` and `isTabSettled` are the ones from before the switch.
+  // Read after the await: the closure holds pre-switch values.
   const latest = useRef(deps);
   const isMounted = useRef(true);
   useEffect(() => {
@@ -71,21 +71,16 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
       async (arg?: string): Promise<AssistantActionResultType> => {
         const wanted = machineLower(arg ?? CharConstants.empty);
         const match = Object.values(TabType).find((value) => value === wanted);
-        if (match === undefined) return { ok: false, error: 'unknown_tab' };
+        if (match === undefined) return { ok: false, error: AssistantActionError.UnknownTab };
 
         onSwitchTab(match);
-        // Bounded, and abandoned the moment the screen goes: the tool queue is
-        // serialised, so a wait that outlives its screen holds up the
-        // conversation for nothing.
+        // Bounded and abandoned on unmount: the tool queue is serialised.
         const until = Date.now() + TAB_SETTLE_MS;
         const settled = (): boolean => latest.current.tab === match && latest.current.isTabSettled;
         while (!settled() && isMounted.current && Date.now() < until) {
           await new Promise((resolve) => setTimeout(resolve, TAB_POLL_MS));
         }
-        // No `ctx` of its own even when the rows never came: the registry's
-        // screen line already says `loading` for a tab that has not answered,
-        // and a ctx here would replace that line — costing the model the route
-        // on the very turn it is least sure about.
+        // No ctx: the registry's screen line already says loading.
         return { ok: true };
       },
       [onSwitchTab],
@@ -97,10 +92,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(items.map((r) => r.name), arg);
-        // Declining rather than failing: the recipe may be one the user knows
-        // from the feed, and the always-mounted handler underneath can open it
-        // by name or by id. This tab only answers for the rows it is showing —
-        // on Drafts, that is not even the same collection.
+        // Decline, not fail: the global handler can open it by name or id.
         if (found === null) return { ok: false, notMine: true };
 
         onOpenRecipe(items[found]!.id);
@@ -115,7 +107,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(drafts.map(draftName), arg);
-        if (found === null) return { ok: false, error: 'not_found' };
+        if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
         onOpenDraft(drafts[found]!.id);
         return { ok: true, title: draftName(drafts[found]!) };
@@ -129,7 +121,7 @@ export const useAssistantMyRecipesActions = (deps: AssistantMyRecipesActionsDeps
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const found = rowAt(drafts.map(draftName), arg);
-        if (found === null) return { ok: false, error: 'not_found' };
+        if (found === null) return { ok: false, error: AssistantActionError.NotFound };
 
         onRequestDeleteDraft(drafts[found]!.id);
         return { ok: true, awaiting: true, title: draftName(drafts[found]!) };

@@ -25,7 +25,7 @@ import { fakeFoodCatalogRepository } from '@application/diary/foods/__fixtures__
 import { connectionOf, dmRuleOf, fakeInstagramRepository } from '@application/instagram/__fixtures__/instagram-fixtures';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 import { NotFoundFailure } from '@core/failure';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRuleEditor } from '@presentation/app/automations/edit/hooks/use-rule-editor';
 import type { UseRuleEditorResult } from '@presentation/app/automations/edit/model/use-rule-editor-result';
@@ -52,7 +52,7 @@ const setup = (connection = connectionOf(), ruleAnswer: Parameters<ReturnType<ty
     hook.current = useRuleEditor();
     return null;
   };
-  renderComponent(<Probe />, { automationsStore, instagramStore: instagramStoreOf(connection).store } as unknown as Partial<Stores>);
+  renderComponent(<Probe />, { automationsStore, instagramStore: instagramStoreOf(connection).store } as unknown as Partial<ApplicationStores>);
   const vm = (): UseRuleEditorResult => {
     if (hook.current === null) throw new Error('not rendered');
     return hook.current;

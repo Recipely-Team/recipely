@@ -1,5 +1,5 @@
 import type { AssistantTool } from '@live-assistant/core';
-import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
+import { ApiLiveTool } from '@application/assistant/session/live-tool-contract';
 import type { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { CharConstants } from '@core/constants';
 import { isNonEmptyString, isString } from '@core/guards/type-guards';

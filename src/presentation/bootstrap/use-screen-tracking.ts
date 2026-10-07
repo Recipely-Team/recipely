@@ -25,6 +25,7 @@ const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.editProfile, AnalyticsScreen.editProfile],
   [RoutePaths.settings, AnalyticsScreen.settings],
   [RoutePaths.automations, AnalyticsScreen.automations],
+  [RoutePaths.shoppingList, AnalyticsScreen.shoppingList],
   [RoutePaths.automationEdit, AnalyticsScreen.automationEdit],
   [RoutePaths.automationActivityPath, AnalyticsScreen.automationActivity],
   [RoutePaths.instagramConnected, AnalyticsScreen.instagramConnected],
@@ -49,6 +50,7 @@ const CREATOR_PROFILE_PREFIX = `${RoutePaths.creators}${CharConstants.slash}`;
 const resolveScreen = (pathname: string): string | null => {
   const exact = SCREEN_BY_PATH.get(pathname);
   if (exact !== undefined) return exact;
+  if (RoutePaths.recipeCookPattern.test(pathname)) return AnalyticsScreen.cookMode;
   if (pathname.startsWith(RECIPE_DETAIL_PREFIX)) return AnalyticsScreen.recipeDetail;
   if (pathname.startsWith(CREATOR_PROFILE_PREFIX)) return AnalyticsScreen.creatorProfile;
   return null;

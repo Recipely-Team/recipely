@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, lineHeightFor, lineHeights } from '@presentation/base/theme';
 
 export interface StepperProps {
   value: number;
@@ -75,7 +75,7 @@ const styles = StyleSheet.create({
   sign: {
     fontSize: fontSizes.subtitle,
     fontWeight: fontWeights.semibold,
-    lineHeight: fontSizes.title,
+    lineHeight: lineHeightFor(fontSizes.subtitle, lineHeights.tight),
   },
   valueWrap: {
     minWidth: controlSizes.floatingBtn,

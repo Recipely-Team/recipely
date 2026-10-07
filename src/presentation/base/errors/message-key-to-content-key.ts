@@ -1,5 +1,5 @@
 import { ErrorMessageKey } from '@core/failure';
-import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
+import type { FailureContentKeyType } from '@presentation/base/errors/failure-content-key';
 
 /**
  * The ONLY place a backend error key is turned into user copy.
@@ -22,7 +22,7 @@ import type { FailureContentKey } from '@presentation/base/errors/failure-conten
  * code — which is exactly what an older backend (no `messageKey` on the wire)
  * produces, so the fallback path is the one that must always work.
  */
-export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
+export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> = {
   [ErrorMessageKey.aiPromptRejected]: 'aiPromptRejected',
   [ErrorMessageKey.aiInvalidResponse]: 'aiInvalidResponse',
   [ErrorMessageKey.aiUpstreamFailed]: 'aiUpstreamFailed',
@@ -60,6 +60,14 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.diaryFoodNameTooLong]: 'diaryFoodNameTooLong',
   [ErrorMessageKey.diaryNutrientInvalid]: 'diaryNutrientInvalid',
   [ErrorMessageKey.diaryGoalInvalid]: 'diaryGoalInvalid',
+  [ErrorMessageKey.mealParseInputRequired]: 'mealParseInputRequired',
+  [ErrorMessageKey.mealParseTextTooLong]: 'mealParseTextTooLong',
+  [ErrorMessageKey.mealParseUnsupportedPhoto]: 'mealParseUnsupportedPhoto',
+  [ErrorMessageKey.mealParsePhotoRejected]: 'mealParsePhotoRejected',
+  [ErrorMessageKey.mealParsePhotoUnchecked]: 'mealParsePhotoUnchecked',
+  [ErrorMessageKey.mealParseQuotaExceeded]: 'mealParseQuotaExceeded',
+  [ErrorMessageKey.mealParseUnavailable]: 'mealParseUnavailable',
+  [ErrorMessageKey.contentBlocked]: 'contentBlocked',
 
   [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
   [ErrorMessageKey.creatorHandleTaken]: 'creatorHandleTaken',
@@ -69,6 +77,14 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKey> = {
   [ErrorMessageKey.instagramAccountLinked]: 'instagramAccountLinked',
   [ErrorMessageKey.instagramNotConnected]: 'instagramNotConnected',
   [ErrorMessageKey.instagramReturnInvalid]: 'instagramReturnInvalid',
+
+  [ErrorMessageKey.shoppingLabelRequired]: 'shoppingLabelInvalid',
+  [ErrorMessageKey.shoppingLabelTooLong]: 'shoppingLabelInvalid',
+  [ErrorMessageKey.shoppingQuantityInvalid]: 'shoppingAmountInvalid',
+  [ErrorMessageKey.shoppingUnitTooLong]: 'shoppingAmountInvalid',
+  [ErrorMessageKey.shoppingListFull]: 'shoppingListFull',
+  [ErrorMessageKey.shoppingListChanged]: 'shoppingListChanged',
+  [ErrorMessageKey.shoppingItemNotFound]: 'shoppingItemGone',
 
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',

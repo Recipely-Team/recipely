@@ -3,7 +3,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantSettingsActions } from '@presentation/app/settings/hooks/use-assistant-settings-actions';
 
 function harness() {
@@ -21,7 +21,7 @@ function harness() {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

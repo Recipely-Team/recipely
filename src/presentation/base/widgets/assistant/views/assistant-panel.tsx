@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { assistantNoticeTone } from '@presentation/base/widgets/assistant/assistant-notice-tone';
-import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
-import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View, useWindowDimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AssistantComposer } from '@presentation/base/widgets/assistant/views/assistant-composer';
 import { AssistantMascot } from '@presentation/base/widgets/assistant/parts/assistant-mascot';
@@ -23,13 +21,12 @@ import {
   controlSizes,
   fontWeights,
   iconSizes,
-  opacities,
   radii,
   spacing,
 } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { IS_DEV_BUILD } from '@infrastructure/constants/build-variant';
+import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { t } from '@presentation/i18n';
 
 export interface AssistantPanelProps {
@@ -88,10 +85,7 @@ export const AssistantPanel = ({
   const [isTyping, setIsTyping] = useState(false);
 
   const live = assistantIsLive(status);
-  // In the dev build the diagnostic rides along with the line. Two rounds of
-  // "it errors and we do not know why" went by with the screen able to say
-  // exactly which step failed and choosing not to; the message is a diagnostic
-  // and never reaches anyone outside an internal build.
+  // Dev builds append the diagnostic to the notice.
   const notice =
     error !== null
       ? t().assistant.requestFailed + (IS_DEV_BUILD ? CharConstants.middotSpaced + error.message : CharConstants.empty)
@@ -111,12 +105,7 @@ export const AssistantPanel = ({
         isExpanded
           ? {
               width: assistantMetrics.panelWebWidth,
-              // Capped, not stretched. Given the whole viewport the column put
-              // the name chip against the top edge and the controls against
-              // the bottom, seven hundred pixels of unrelated page between
-              // them — two floating objects rather than one conversation. The
-              // cap is what keeps them close enough to read as one thing; the
-              // available height is only the ceiling.
+              // Capped, not stretched, so header and controls read as one conversation.
               height: Math.min(
                 assistantMetrics.panelWebMaxHeight,
                 Math.max(
@@ -129,10 +118,7 @@ export const AssistantPanel = ({
             }
           : {
               width: '100%',
-              // A height, not a cap: the pieces inside are anchored to its two
-              // ends, and shrink-wrapped there is no slack for the clear band
-              // to take. The floor is what keeps the controls on screen when a
-              // large accessibility font grows the header past the share.
+              // A height, not a cap: the pieces are anchored to its ends; the floor survives large fonts.
               height: Math.max(
                 assistantMetrics.panelMinHeight,
                 height * assistantMetrics.panelSheetHeightShare,
@@ -213,8 +199,7 @@ export const AssistantPanel = ({
 };
 
 const styles = StyleSheet.create({
-  // No surface of its own: the conversation floats over the screen it is
-  // driving, and only the pieces carrying text take a background.
+  // No surface: the conversation floats over the screen it drives.
   overlay: { gap: spacing.sm },
   header: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
   headerSpacer: { flex: ValueConstants.one },
@@ -249,12 +234,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
     borderRadius: radii.round,
   },
-  // The clear band between the name chip and the conversation. It takes the
-  // slack so the turns sit against the control bar, and it takes no touches, so
-  // the screen underneath keeps working where there is nothing to read.
+  // Takes the slack and no touches, so the screen underneath stays usable.
   gap: { flex: ValueConstants.one },
-  // Shrinks rather than grows: the turns bound it, and when they outgrow the
-  // overlay this is what gives way, not the header or the controls.
   transcript: { flexShrink: ValueConstants.one, minHeight: ValueConstants.zero },
   stage: {
     padding: spacing.md,

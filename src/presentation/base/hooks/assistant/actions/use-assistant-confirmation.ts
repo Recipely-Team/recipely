@@ -47,8 +47,7 @@ export const useAssistantConfirmation = (
   }, []);
 
   useEffect(() => {
-    // Focus as well as `visible`: a sheet left open on a screen the user has
-    // navigated away from would otherwise still take the spoken "yes".
+    // Focus too: a sheet on a screen the user left must not take the answer.
     if (!visible || !isFocused) return;
 
     const unregisterConfirm = assistantActionRegistry.register(AssistantAction.Confirm, confirm);

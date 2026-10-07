@@ -11,11 +11,12 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import { Servings } from '@domain/diary/entry/servings';
 import { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE, FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { buildFoodCandidates } from '@presentation/base/hooks/assistant/args/diary/build-food-candidates';
-import type { FoodCandidate } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
+import type { FoodCandidateType } from '@presentation/base/hooks/assistant/args/diary/food-candidate';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { failureReason } from '@presentation/base/hooks/assistant/args/diary/failure-reason';
 import { rankByName } from '@presentation/base/hooks/assistant/args/diary/rank-by-name';
@@ -23,6 +24,7 @@ import { foldForMatch } from '@presentation/base/hooks/assistant/args/resolving/
 import { resolveDiaryDate } from '@presentation/base/hooks/assistant/args/diary/resolve-diary-date';
 import { parseLogFoodArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-log-food-arg';
 import type { LogFoodArgs } from '@presentation/base/hooks/assistant/args/diary/parsing/log-food-args';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What the screen registering `logFood` lends it. */
 interface AssistantLogFoodOptions {
@@ -45,7 +47,7 @@ interface ResolvedFood {
 const asResolved = (food: LoggableFood): ResolvedFood => ({ name: food.name, entryFor: (date, meal, servings) => food.entryFor(date, meal, servings) });
 
 /** A candidate as something to log; a product's "servings" count its default amount (1 glass, or 100 g). */
-const fromCandidate = (candidate: FoodCandidate): ResolvedFood => {
+const fromCandidate = (candidate: FoodCandidateType): ResolvedFood => {
   if (candidate.kind === 'food') return asResolved(candidate.food);
   const product = candidate.product;
   const base = product.defaultQuantity();
@@ -85,8 +87,8 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
         rankByName(items, (c) => c.name, name).find((c) => !exactOnly || foldForMatch(c.name) === foldForMatch(name));
       if (openRecipeFood !== null && pick([openRecipeFood]) !== undefined) return asResolved(openRecipeFood);
       const [found, recent] = await Promise.all([
-        searchFoods.execute(name, FOOD_SEARCH_PAGE_SIZE),
-        listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE),
+        searchFoods.execute(name, PageSizes.foodSearch),
+        listRecentFoods.execute(FIRST_PAGE),
       ]);
       const groups = found.ok
         ? { saved: found.value.saved.items, mine: found.value.mine.items, products: found.value.products.items, recipes: found.value.recipes.items }
@@ -106,7 +108,7 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
     AssistantAction.LogFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        if (!signedIn) return { ok: false, error: 'signed_out' };
+        if (!signedIn) return { ok: false, error: AssistantActionError.SignedOut };
         const parsed = parseLogFoodArg(arg);
         if (!parsed.ok) return { ok: false, error: parsed.error };
         const args = parsed.value;

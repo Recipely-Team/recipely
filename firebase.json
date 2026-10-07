@@ -34,11 +34,48 @@
           "destination": "/index.html"
         },
         {
+          "source": "/recipes/*/cook",
+          "destination": "/index.html"
+        },
+        {
           "source": "/creators/*",
           "destination": "/index.html"
         }
       ],
       "headers": [
+        {
+          "regex": "^/([^_].*|_[^_].*|_)?$",
+          "headers": [
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src \u0027self\u0027; script-src \u0027self\u0027 https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com https://www.googletagservices.com https://partner.googleadservices.com \u0027sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=\u0027 \u0027sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=\u0027 \u0027sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=\u0027 \u0027sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=\u0027 \u0027sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI=\u0027; style-src \u0027self\u0027 \u0027unsafe-inline\u0027 https://fonts.googleapis.com; font-src \u0027self\u0027 data: https://fonts.gstatic.com; img-src \u0027self\u0027 data: blob: https:; media-src \u0027self\u0027 data: blob: https:; connect-src \u0027self\u0027 https: wss://generativelanguage.googleapis.com; frame-src \u0027self\u0027 https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.apple.com; worker-src \u0027self\u0027 blob:; manifest-src \u0027self\u0027; form-action \u0027self\u0027 https://appleid.apple.com; frame-ancestors \u0027self\u0027; base-uri \u0027self\u0027; object-src \u0027none\u0027; upgrade-insecure-requests"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin-allow-popups"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000"
+            }
+          ]
+        },
         {
           "source": "/.well-known/apple-app-site-association",
           "headers": [
@@ -125,17 +162,49 @@
           "destination": "/index.html"
         },
         {
+          "source": "/recipes/*/cook",
+          "destination": "/index.html"
+        },
+        {
           "source": "/creators/*",
           "destination": "/index.html"
         }
       ],
       "headers": [
         {
-          "source": "**",
+          "regex": "^/([^_].*|_[^_].*|_)?$",
           "headers": [
             {
               "key": "X-Robots-Tag",
               "value": "noindex, nofollow"
+            },
+            {
+              "key": "X-Content-Type-Options",
+              "value": "nosniff"
+            },
+            {
+              "key": "X-Frame-Options",
+              "value": "SAMEORIGIN"
+            },
+            {
+              "key": "Content-Security-Policy",
+              "value": "default-src \u0027self\u0027; script-src \u0027self\u0027 https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com https://www.googletagservices.com https://partner.googleadservices.com \u0027sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=\u0027 \u0027sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=\u0027 \u0027sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=\u0027 \u0027sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=\u0027 \u0027sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI=\u0027; style-src \u0027self\u0027 \u0027unsafe-inline\u0027 https://fonts.googleapis.com; font-src \u0027self\u0027 data: https://fonts.gstatic.com; img-src \u0027self\u0027 data: blob: https:; media-src \u0027self\u0027 data: blob: https:; connect-src \u0027self\u0027 https: wss://generativelanguage.googleapis.com; frame-src \u0027self\u0027 https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.apple.com; worker-src \u0027self\u0027 blob:; manifest-src \u0027self\u0027; form-action \u0027self\u0027 https://appleid.apple.com; frame-ancestors \u0027self\u0027; base-uri \u0027self\u0027; object-src \u0027none\u0027; upgrade-insecure-requests"
+            },
+            {
+              "key": "Referrer-Policy",
+              "value": "strict-origin-when-cross-origin"
+            },
+            {
+              "key": "Permissions-Policy",
+              "value": "camera=(self), microphone=(self), geolocation=(), payment=(), usb=()"
+            },
+            {
+              "key": "Cross-Origin-Opener-Policy",
+              "value": "same-origin-allow-popups"
+            },
+            {
+              "key": "Strict-Transport-Security",
+              "value": "max-age=31536000"
             }
           ]
         },

@@ -23,7 +23,7 @@ import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-send
 import { SearchRecipeGroupUseCase } from '@application/diary/foods/search/search-recipe-group-use-case';
 import { fakeFoodCatalogRepository } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { connectionOf, dmRuleOf, fakeInstagramRepository } from '@application/instagram/__fixtures__/instagram-fixtures';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 import { useAutomations } from '@presentation/app/automations/hooks/use-automations';
@@ -42,10 +42,10 @@ const stores = (instagram = instagramStoreOf(connectionOf())) => {
     listSends: new ListDmSendsUseCase(repo),
     searchMyRecipes: new SearchRecipeGroupUseCase(fakeFoodCatalogRepository()),
   });
-  return { repo, instagram, value: { automationsStore, instagramStore: instagram.store } as unknown as Partial<Stores> };
+  return { repo, instagram, value: { automationsStore, instagramStore: instagram.store } as unknown as Partial<ApplicationStores> };
 };
 
-const probe = <T,>(hook: () => T, value: Partial<Stores>): { current: () => T } => {
+const probe = <T,>(hook: () => T, value: Partial<ApplicationStores>): { current: () => T } => {
   const box: { value: T | null } = { value: null };
   const Probe = (): null => {
     box.value = hook();

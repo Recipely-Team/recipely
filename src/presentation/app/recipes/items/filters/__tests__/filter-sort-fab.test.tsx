@@ -9,10 +9,15 @@ import type { RenderResult } from '@presentation/base/test-support/render-result
 import { FilterSortFab } from '@presentation/app/recipes/items/filters/filter-sort-fab';
 import { t } from '@presentation/i18n';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 interface FabCase {

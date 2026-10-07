@@ -40,8 +40,7 @@ import type { AddCommentUseCase } from '@application/comments/add/add-comment-us
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
-import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
+import type { SetCommentLikeUseCase } from '@application/comments/like/set-comment-like-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -49,12 +48,13 @@ import { UserEntity } from '@domain/auth/user-entity';
 import { Email } from '@domain/common/email';
 import { StoreStatus } from '@application/store/store-status';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { t } from '@presentation/i18n';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
 
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
@@ -116,7 +116,6 @@ const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity
     authorDisplayName: 'Ada Lovelace',
     authorPhotoUrl: null,
     likeCount: 0,
-    likedByMe: false,
     ...overrides,
   });
   if (!result.ok) throw new Error('Test setup expected a valid Comment');
@@ -145,17 +144,16 @@ const buildSession = (userId: string): AuthSessionEntity => {
 /**
  * Builds a real comments store whose `addComment` is backed by the given fake
  * use-case result — so `byRecipe[id].error` is written by the production
- * `createAddCommentAction`, not by the test.
+ * `addComment` action, not by the test.
  */
 const makeRealCommentsStore = (
   execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
 ): BoundStore<CommentsStoreState> =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,
-    listComments: { execute: jest.fn() } as unknown as ListCommentsUseCase,
+    listComments: { execute: jest.fn().mockResolvedValue(fail(new NetworkFailure('not stubbed'))) } as unknown as ListCommentsUseCase,
     deleteComment: { execute: jest.fn() } as unknown as DeleteCommentUseCase,
-    likeComment: { execute: jest.fn() } as unknown as LikeCommentUseCase,
-    unlikeComment: { execute: jest.fn() } as unknown as UnlikeCommentUseCase,
+    setCommentLike: { execute: jest.fn() } as unknown as SetCommentLikeUseCase,
   });
 
 /**
@@ -168,7 +166,7 @@ const makeRealCommentsStore = (
  * A loaded recipe whose server-side like state is caller-supplied, for the
  * single-source-of-truth tests below.
  */
-const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
+const buildRecipe = (cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
   const result = RecipeEntity.create({
     origin: RecipeOrigin.User,
     id: RECIPE_ID,
@@ -189,7 +187,6 @@ const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklav
     mealType: [],
     ownerId: 'someone-else',
     likeCount: 7,
-    likedByMe,
     viewCount: 60,
     moderationStatus: 'approved',
     isPublished: true,
@@ -210,7 +207,7 @@ interface StoreOverrides {
   likesByRecipe?: Record<string, { likeCount: number; likedByMe: boolean; isLoading: boolean }>;
 }
 
-const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): Stores => {
+const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: StoreOverrides = {}): ApplicationStores => {
   const recipeDetailStore = create<RecipeDetailStoreState>(() => ({
     byId: { [RECIPE_ID]: overrides.detailState ?? { status: 'loading' } },
     load: jest.fn(),
@@ -249,6 +246,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     syncFromApi: jest.fn(),
   }));
   const userProfileStore = create(() => ({ state: { status: 'idle' as const }, load: jest.fn() }));
+  const stepProgressStore = configureStepProgressStore();
 
   return {
     recipeDetailStore,
@@ -259,7 +257,8 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     commentsStore,
     likesStore,
     userProfileStore,
-  } as unknown as Stores;
+    stepProgressStore,
+  } as unknown as ApplicationStores;
 };
 
 /** Renders a probe that captures the live hook output on every render. */
@@ -297,15 +296,16 @@ const driveHook = (
  */
 let mounted: ReactTestRenderer | null = null;
 
-/** Types a comment body into the input, then submits it and flushes the post. */
-const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<void> => {
+/**
+ * Submits a comment body the way the composer does and flushes the post; returns the
+ * `onPosted` callback, which clears the composer's field when (and only when) the post lands.
+ */
+const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<jest.Mock> => {
+  const onPosted = jest.fn();
   await act(async () => {
-    latest().onChangeCommentInput(body);
+    latest().onAddComment(body, onPosted);
   });
-
-  await act(async () => {
-    latest().onAddComment();
-  });
+  return onPosted;
 };
 
 afterEach(async () => {
@@ -339,9 +339,9 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
     const execute = jest.fn().mockResolvedValue(fail(new NetworkFailure('offline')));
     const { latest } = driveHook(makeRealCommentsStore(execute));
 
-    await typeAndSubmit(latest, 'Great recipe!');
+    const onPosted = await typeAndSubmit(latest, 'Great recipe!');
 
-    expect(latest().commentInput).toBe('Great recipe!');
+    expect(onPosted).not.toHaveBeenCalled();
   });
 
   it('falls back to the generic error when the store records no failure', async () => {
@@ -379,12 +379,10 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
     await typeAndSubmit(latest, 'Great recipe!');
     expect(latest().submitError).toBe(t().errors.network.short);
 
-    await act(async () => {
-      latest().onAddComment();
-    });
+    const onPosted = await typeAndSubmit(latest, 'Great recipe!');
 
     expect(latest().submitError).toBeNull();
-    expect(latest().commentInput).toBe('');
+    expect(onPosted).toHaveBeenCalledTimes(1);
   });
 
   it('does not post a whitespace-only comment', async () => {
@@ -413,7 +411,7 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
  */
 describe('useRecipeDetail — liked is the single source of truth', () => {
   const loaded = (likedByMe: boolean): StoreOverrides => ({
-    detailState: { status: 'loaded', recipe: buildRecipe(likedByMe), fetchedAt: Date.now() },
+    detailState: { status: 'loaded', recipe: buildRecipe(), likedByMe, fetchedAt: Date.now() },
   });
 
   it("reports the server's likedByMe before the likes store has any entry", () => {
@@ -496,7 +494,7 @@ describe('useRecipeDetail — copying a recipe to drafts', () => {
  */
 describe('useRecipeDetail — the hero photos', () => {
   const loadedWithCover = (cover: string): StoreOverrides => ({
-    detailState: { status: 'loaded', recipe: buildRecipe(false, cover), fetchedAt: Date.now() },
+    detailState: { status: 'loaded', recipe: buildRecipe(cover), likedByMe: false, fetchedAt: Date.now() },
   });
 
   it('an owner\'s recipe with no photo showed a blank frame with a Remove button instead of the add-first-photo state', () => {

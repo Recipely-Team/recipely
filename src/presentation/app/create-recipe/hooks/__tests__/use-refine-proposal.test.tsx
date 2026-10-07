@@ -32,7 +32,7 @@ import type { DeleteRecipeUseCase } from '@application/recipes/delete/delete-rec
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRefineProposal } from '@presentation/app/create-recipe/hooks/use-refine-proposal';
 import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/empty-editable';
@@ -83,7 +83,6 @@ const refinedEntity = (): RecipeEntity => {
     mealType: [],
     ownerId: 'owner-1',
     likeCount: 0,
-    likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
     isPublished: true,
@@ -101,7 +100,7 @@ const unusedUseCase = <T,>(): T =>
 const noopCacheStore = <T,>(): T =>
   ({ getState: () => ({ replace: () => undefined, remove: () => undefined }) }) as unknown as T;
 
-const makeStores = (repo: FakeRecipeRepository): Stores => {
+const makeStores = (repo: FakeRecipeRepository): ApplicationStores => {
   const createdRecipesStore = configureCreatedRecipesStore({
     createRecipeUseCase: unusedUseCase<CreateRecipeUseCase>(),
     listMyRecipesUseCase: unusedUseCase<ListMyRecipesUseCase>(),
@@ -112,7 +111,7 @@ const makeStores = (repo: FakeRecipeRepository): Stores => {
     recipeListStore: noopCacheStore<BoundStore<RecipeListStoreState>>(),
     recipeDetailStore: noopCacheStore<BoundStore<RecipeDetailStoreState>>(),
   });
-  return { createdRecipesStore } as unknown as Stores;
+  return { createdRecipesStore } as unknown as ApplicationStores;
 };
 
 // ─── probe ───────────────────────────────────────────────────────────────────
@@ -318,7 +317,6 @@ describe('useRefineProposal — an answer with nothing in it', () => {
       mealType: [],
       ownerId: 'owner-1',
       likeCount: 0,
-      likedByMe: false,
       viewCount: 0,
       moderationStatus: 'approved',
       isPublished: true,

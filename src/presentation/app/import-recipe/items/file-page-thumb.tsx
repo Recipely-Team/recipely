@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ImportFileMimeType } from '@domain/recipes/import-file/import-file-mime-type';
 import type { ImportFile } from '@domain/recipes/import-file/import-file';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

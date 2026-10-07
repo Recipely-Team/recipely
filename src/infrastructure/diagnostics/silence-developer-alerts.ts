@@ -1,4 +1,5 @@
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import { ValueConstants } from '@core/constants';
 
 /** Enough of the message to recognise it in a report; not enough to be a payload. */
 const REPORTED_LENGTH = 300;
@@ -35,6 +36,6 @@ export const silenceDeveloperAlerts = (): void => {
   if (typeof scope.alert !== 'function') return;
 
   scope.alert = (message?: unknown): void => {
-    recordCrash(new Error(`alert() reached a release build: ${String(message).slice(0, REPORTED_LENGTH)}`), ORIGIN);
+    recordCrash(new Error(`alert() reached a release build: ${String(message).slice(ValueConstants.zero, REPORTED_LENGTH)}`), ORIGIN);
   };
 };

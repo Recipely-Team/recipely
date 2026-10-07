@@ -1,7 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import { ValueConstants } from '@core/constants';
+import { RequestEpoch } from '@application/store/request-epoch';
 import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
 
@@ -13,12 +13,13 @@ export const configureSavedRecipesStore = (
   deps: SavedRecipesStoreDeps,
 ): BoundStore<SavedRecipesStoreState> => {
   /**
-   * Bumped by `clear()`. A load that started under an earlier session must not
-   * publish its answer: signing out while a favourites request was in flight
+   * Invalidated by `clear()`; a newer load also wins. A load that started under
+   * an earlier session must not publish its answer: signing out while a
+   * favourites request was in flight
    * repopulated the previous account's rows — and `savedIds` drives the
    * bookmark on every recipe card in the app.
    */
-  let session = ValueConstants.zero;
+  const epoch = new RequestEpoch();
 
   return create<SavedRecipesStoreState>((set, get) => ({
     savedRecipes: [],
@@ -30,8 +31,7 @@ export const configureSavedRecipesStore = (
         const next = new Set(s.savedIds);
         if (next.has(id)) {
           next.delete(id);
-          // Unsaving from the saved grid must take the card with it, or the row
-          // sits there un-bookmarked until the next load.
+          // Unsaving removes the card from the saved grid.
           return { savedIds: next, savedRecipes: s.savedRecipes.filter((r) => r.id !== id) };
         }
         next.add(id);
@@ -58,18 +58,15 @@ export const configureSavedRecipesStore = (
         listState: { status: StoreStatus.Loaded },
       }),
     loadSaved: async () => {
-      const requested = session;
-      // Only the FIRST load announces itself: a reload of a grid that is
-      // already on screen keeps its `Loaded` state, or every re-focus — and
-      // every pull-to-refresh — would swap the rows for a skeleton.
+      const isCurrent = epoch.start();
+      // Only the first load shows a skeleton.
       if (get().listState.status !== StoreStatus.Loaded) {
         set({ listState: { status: StoreStatus.Loading } });
       }
       const result = await deps.loadFavoritesUseCase.execute();
-      if (requested !== session) return result;
+      if (!isCurrent()) return result;
       if (!result.ok) {
-        // The rows already on screen stay: a failed reload must not blank the
-        // grid the user is looking at.
+        // A failed reload keeps the rows.
         set({ listState: { status: StoreStatus.Error, failure: result.failure } });
         return result;
       }
@@ -77,7 +74,7 @@ export const configureSavedRecipesStore = (
       return result;
     },
     clear: () => {
-      session += ValueConstants.one;
+      epoch.invalidate();
       set({
         savedRecipes: [],
         savedIds: new Set<string>(),

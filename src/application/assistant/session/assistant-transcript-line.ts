@@ -17,7 +17,7 @@ import type { ChatRole } from '@domain/drafts/chat-role';
  *   its label — the query that was searched, the title that was written — and
  *   is absent whenever the argument was longer or more structured than that.
  */
-export type AssistantTranscriptLine =
+export type AssistantTranscriptLineType =
   | {
       readonly kind: typeof AssistantTranscriptLineKind.Speech;
       readonly id: string;

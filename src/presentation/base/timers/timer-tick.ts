@@ -10,9 +10,7 @@ let nowMs = Date.now();
 
 const publish = (): void => {
   nowMs = Date.now();
-  // Snapshot the set and isolate each listener: a subscriber that throws (or
-  // unsubscribes mid-round) must not stop every countdown behind it in
-  // insertion order from updating.
+  // Snapshot and isolate listeners: one throwing must not stop the rest.
   for (const listener of [...listeners]) {
     try {
       listener();
@@ -32,13 +30,11 @@ const publish = (): void => {
  * at the same time. Here one callback notifies every listener, so React batches
  * them into a single commit, and the cost stops scaling with the timer count.
  *
- * The interval itself runs for as long as anything is subscribed, which in
- * practice is the app's lifetime: `useTimerNotificationSync` is mounted at the
- * root and has to keep sweeping for expired timers.
+ * The interval itself runs only while something is subscribed: the countdowns
+ * on screen, and `useTimerNotificationSync` while at least one timer is
+ * running. With no timer running, nothing wakes the JS thread.
  */
 export const subscribeToTick = (listener: TickListener): (() => void) => {
-  // Refreshed on subscribe so a countdown that mounts mid-second renders the
-  // current value rather than the previous tick's.
   nowMs = Date.now();
   listeners.add(listener);
   if (handle === null) {

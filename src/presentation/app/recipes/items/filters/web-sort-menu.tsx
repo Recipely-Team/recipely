@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { KeyboardKey } from '@presentation/base/constants';
 import { isWeb } from '@infrastructure/constants/platform';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
@@ -33,10 +33,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
   const labels = sortKeyLabels();
   const [open, setOpen] = useState(false);
 
-  // Outside-press + Escape close on web. The popover only renders on the web
-  // shell, so the native branch is a no-op (document is unavailable there).
-  // The anchor's DOM id (RN-web maps `nativeID` → `id`) scopes the outside
-  // check without reaching into the View's host node.
+  // Web only: close on outside press and Escape.
   useEffect(() => {
     if (!open || !isWeb()) return;
     const onKeyDown = (event: KeyboardEvent): void => {
@@ -111,7 +108,7 @@ export const WebSortMenu = ({ current, onChange }: WebSortMenuProps): React.JSX.
                     styles.optionLabel,
                     {
                       color: selected ? colors.chipText : colors.text,
-                      fontWeight: selected ? '700' : '500',
+                      fontWeight: selected ? fontWeights.bold : fontWeights.medium,
                     },
                   ]}
                 >

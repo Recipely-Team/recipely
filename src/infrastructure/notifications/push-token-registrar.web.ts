@@ -3,6 +3,7 @@ import { LogTag, LogMessage } from '@infrastructure/constants/log-tag';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 import { getFirebaseApp } from '@infrastructure/firebase/firebase-init.web';
 import { ValueConstants } from '@core/constants';
+import { DevicePlatform } from '@domain/notifications/device-platform';
 
 /** The global the browser exposes when it supports notifications at all. */
 const WEB_NOTIFICATION_API = 'Notification';
@@ -39,14 +40,11 @@ export const registerPushToken = async (register: RegisterTokenFn): Promise<void
         : await Notification.requestPermission();
     if (permission !== 'granted') return;
 
-    // Firebase v10 deprecates this signature in favour of passing
-    // `{ serviceWorkerRegistration }`. Expo's web runtime does not register the
-    // messaging service worker for us, so the replacement has nothing to hand
-    // it yet; revisit when it does.
+    // Deprecated signature kept: Expo web does not register the messaging service worker.
     const token = await getToken(getMessaging(app), { vapidKey: VAPID_KEY });
     if (token.length === ValueConstants.zero) return;
 
-    const result = await register(token, 'web');
+    const result = await register(token, DevicePlatform.Web);
     if (!result.ok && __DEV__) {
       console.warn('[push-token-registrar] backend rejected device token:', result.failure.code);
     }

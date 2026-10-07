@@ -4,7 +4,7 @@ import { spacing, radii, fontSizes, fontWeights, controlSizes } from '@presentat
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
-import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
+import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
 
 export interface ThemeToggleProps {
   value: ThemePreference;
@@ -12,9 +12,9 @@ export interface ThemeToggleProps {
 }
 
 const options: { key: ThemePreference; labelKey: 'themeSystem' | 'themeLight' | 'themeDark' }[] = [
-  { key: 'system', labelKey: 'themeSystem' },
-  { key: 'light', labelKey: 'themeLight' },
-  { key: 'dark', labelKey: 'themeDark' },
+  { key: ThemePreference.System, labelKey: 'themeSystem' },
+  { key: ThemePreference.Light, labelKey: 'themeLight' },
+  { key: ThemePreference.Dark, labelKey: 'themeDark' },
 ];
 
 /** Three-segment toggle for selecting system, light, or dark colour scheme. */
@@ -28,6 +28,8 @@ export const ThemeToggle = ({ value, onChange }: ThemeToggleProps): React.JSX.El
         return (
           <Pressable
             key={opt.key}
+            accessibilityRole="radio"
+            accessibilityState={{ selected: active, checked: active }}
             onPress={() => onChange(opt.key)}
             style={[
               styles.segment,

@@ -4,6 +4,7 @@ import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, decorSizes, borderWidths, maxFontScales, BrandColors } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
 /**
  * Where each tone stops counting, and what it shows instead.
@@ -13,11 +14,6 @@ import { ValueConstants } from '@core/constants';
  * "you have 43 drafts" at "9+" throws away the answer they opened the screen
  * for — so it only rounds off where the digits would burst the shape.
  */
-const OVERFLOW = {
-  [CountBadgeTone.Alert]: { max: 9, label: '9+' },
-  [CountBadgeTone.Tally]: { max: 99, label: '99+' },
-} as const;
-
 export interface CountBadgeProps {
   count: number;
   /** What the number means. Defaults to {@link CountBadgeTone.Alert}. */
@@ -59,7 +55,6 @@ export const CountBadge = ({
   if (count <= ValueConstants.zero) return null;
 
   const isAlert = tone === CountBadgeTone.Alert;
-  const { max, label } = OVERFLOW[tone];
 
   return (
     <View
@@ -68,9 +63,7 @@ export const CountBadge = ({
         {
           backgroundColor: isAlert ? colors.danger : colors.chipBackground,
           borderColor: colors.background,
-          // The ring cuts the badge out of the glyph beneath it. A tally sits
-          // beside its glyph rather than on it, so the ring would only be
-          // 2pt of extra disc crowding the row.
+          // Only an alert badge sits on its glyph and needs the cut-out ring.
           borderWidth: isAlert ? borderWidths.medium : ValueConstants.zero,
         },
         style,
@@ -80,7 +73,7 @@ export const CountBadge = ({
         style={[styles.badgeText, { color: isAlert ? BrandColors.white : colors.chipText }]}
         maxFontSizeMultiplier={maxFontScales.badge}
       >
-        {count > max ? label : String(count)}
+        {countBadgeLabel(count, tone)}
       </ThemedText>
     </View>
   );
@@ -99,9 +92,7 @@ const styles = StyleSheet.create({
   badgeText: {
     fontSize: fontSizes.nano,
     fontWeight: fontWeights.bold,
-    // A badge is a fixed disc: the digits inside it cannot reflow, so the line
-    // box is pinned and the OS font multiplier is capped rather than allowed to
-    // push the number out of its circle.
+    // A fixed disc: pinned line box, capped font scale.
     lineHeight: decorSizes.notifBadgeLineHeight,
     includeFontPadding: false,
   },

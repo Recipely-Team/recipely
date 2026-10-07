@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react';
-import { Alert, Linking } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import type { MediaItem } from '@domain/recipes/media/media-item';
 import { MediaType } from '@domain/recipes/media/media-type';
@@ -9,6 +8,7 @@ import { PickSource } from '@presentation/base/utils/pick-source';
 import { shrinkForUpload } from '@presentation/base/utils/shrink-for-upload';
 import { t } from '@presentation/i18n';
 import { photoPickLimits } from '@presentation/app/create-recipe/model/photos/photo-pick-limits';
+import { PhotoPickFeedback } from '@presentation/base/feedback/photo-pick-feedback';
 
 /** A picked file the editor takes: a size the picker could not report is given the benefit of the doubt. */
 const withinLimit = (asset: ImagePicker.ImagePickerAsset): boolean =>
@@ -20,16 +20,6 @@ const LIBRARY_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
 };
 const CAMERA_OPTIONS: ImagePicker.ImagePickerOptions = { mediaTypes: 'images' };
-
-const tellPermissionDenied = (): void => {
-  Alert.alert(t().recipes.photoPermissionDenied, undefined, [
-    { text: t().common.cancel, style: 'cancel' },
-    {
-      text: t().common.openSettings,
-      onPress: () => void Linking.openSettings().catch(() => undefined),
-    },
-  ]);
-};
 
 /**
  * The editor's "add photos" action: camera or library, then shrunk, then handed
@@ -70,7 +60,7 @@ export const useMediaPick = (
         ? await ImagePicker.requestCameraPermissionsAsync()
         : await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (!permission.granted) {
-        tellPermissionDenied();
+        PhotoPickFeedback.permissionDenied();
         return;
       }
 
@@ -88,7 +78,7 @@ export const useMediaPick = (
         onAdd(shrunk.map((url) => ({ type: MediaType.Image, url })));
       }
     } catch {
-      Alert.alert(t().recipes.photoAddFailed);
+      PhotoPickFeedback.failed();
     } finally {
       busy.current = false;
     }

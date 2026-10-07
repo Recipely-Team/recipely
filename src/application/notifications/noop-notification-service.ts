@@ -9,6 +9,10 @@ import type { NotificationServiceInterface } from '@domain/notifications/notific
 export const noopNotificationService: NotificationServiceInterface = {
   init: async () => {},
   requestPermissions: async () => false,
+  hasPermission: async () => false,
   scheduleTimerComplete: async () => [],
+  scheduleTimerWarnings: async () => [],
+  replaceReminders: async () => {},
+  onReminderOpened: () => () => {},
   cancel: async () => {},
 };

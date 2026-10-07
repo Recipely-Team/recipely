@@ -3,7 +3,7 @@ import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actio
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 
 /**
  * A screen that let the assistant scroll it could no longer be rendered in a
@@ -31,7 +31,7 @@ describe('renderComponent — a component that registers an assistant action', (
       return null;
     };
 
-    renderComponent(<Probe />, { assistantActionRegistry: registry } as unknown as Partial<Stores>);
+    renderComponent(<Probe />, { assistantActionRegistry: registry } as unknown as Partial<ApplicationStores>);
 
     await expect(registry.run(AssistantAction.Scroll, 'down')).resolves.toMatchObject({ ok: true });
   });
@@ -45,7 +45,7 @@ describe('renderComponent — a component that registers an assistant action', (
     };
 
     renderComponent(
-      <StoresProvider value={{ assistantActionRegistry: inner } as unknown as Stores}>
+      <StoresProvider value={{ assistantActionRegistry: inner } as unknown as ApplicationStores}>
         <Probe />
       </StoresProvider>,
     );

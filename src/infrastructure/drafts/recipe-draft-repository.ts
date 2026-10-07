@@ -7,7 +7,6 @@ import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
 import type { HttpClient } from '@infrastructure/network/http/http-client';
-import { DRAFTS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
@@ -25,7 +24,7 @@ export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
 
   async listDrafts(
     page: number,
-    pageSize: number = DRAFTS_PAGE_SIZE,
+    pageSize: number,
   ): Promise<Result<Page<RecipeDraft>, Failure>> {
     const result = await this.http.get<PageDto<RecipeDraftDto>>(ApiRoutes.recipes.drafts, {
       params: toPageQuery({ page, pageSize }),

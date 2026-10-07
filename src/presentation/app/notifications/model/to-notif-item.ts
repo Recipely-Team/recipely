@@ -3,24 +3,25 @@ import type { NotifItem } from '@presentation/app/notifications/model/notif-item
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { TimeConstants, ValueConstants } from '@core/constants';
 import type { ImportSource } from '@presentation/app/notifications/model/import-source';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 /** The kinds this build knows how to draw; anything newer falls back to `generic`. */
 const KNOWN_KINDS = new Set<NotifKind>([
-  'comment',
-  'like',
-  'favorite',
-  'ai_done',
-  'import_done',
-  'import_failed',
-  'moderation_approved',
-  'moderation_pending',
-  'follow',
+  NotifKind.Comment,
+  NotifKind.Like,
+  NotifKind.Favorite,
+  NotifKind.AiDone,
+  NotifKind.ImportDone,
+  NotifKind.ImportFailed,
+  NotifKind.ModerationApproved,
+  NotifKind.ModerationPending,
+  NotifKind.Follow,
   NotifKind.CreatorApproved,
   NotifKind.CreatorRejected,
 ]);
 
 /** What a notification with no sender is attributed to. */
-const SYSTEM_ACTOR = 'Recipely';
+const SYSTEM_ACTOR = SiteMetadata.appName;
 
 /**
  * One notification, as the list renders it.
@@ -56,28 +57,14 @@ function importSourceOf(notification: NotificationEntity): { source?: ImportSour
   return { source: handle === null ? { platform } : { platform, handle } };
 }
 
-/**
- * The server sends a failed import as `import_done` too, with neither a draft
- * nor a recipe behind it; read as it came, the row told the user their recipe
- * was ready and then went nowhere when tapped.
- */
+/** A failed import is its own kind; a type this build cannot draw falls back to `generic`. */
 function resolveKind(notification: NotificationEntity): NotifKind {
+  if (notification.isFailedImport) return NotifKind.ImportFailed;
   const raw = notification.type;
-  if (raw === NotifKind.ImportDone && notification.target === null) return NotifKind.ImportFailed;
   return KNOWN_KINDS.has(raw as NotifKind) ? (raw as NotifKind) : NotifKind.Generic;
 }
 
 /** Whole days, which is all the date grouping and the row's caption need. */
 function daysSince(createdAt: Date): number {
-  const ms = Date.now() - createdAt.getTime();
-  return Math.max(
-    ValueConstants.zero,
-    Math.floor(
-      ms /
-        (TimeConstants.millisecondsPerSecond *
-          TimeConstants.secondsPerMinute *
-          TimeConstants.minutesPerHour *
-          TimeConstants.hoursPerDay),
-    ),
-  );
+  return Math.max(ValueConstants.zero, Math.floor((Date.now() - createdAt.getTime()) / TimeConstants.millisecondsPerDay));
 }

@@ -3,10 +3,11 @@ import type { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { Servings } from '@domain/diary/entry/servings';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { FoodUnit } from '@domain/diary/foods/units/food-unit';
+import type { MealCandidate } from '@domain/diary/meal/meal-candidate';
 import type { AddFoodStepType } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
-import type { ProductStepModel } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
+import type { ProductStepModelType } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
 
 /** The Add food sheet's state and intents, as `useAddFoodFlow` exposes them. */
 export interface AddFoodFlow {
@@ -21,12 +22,12 @@ export interface AddFoodFlow {
   food: LoggableFood | null;
   servings: Servings;
   /** The product step; null on the other steps. */
-  product: ProductStepModel | null;
+  product: ProductStepModelType | null;
   /** Kcal of the chosen amount, for the footer; null when there is nothing to add yet. */
   footerCalories: number | null;
   choose: (food: LoggableFood) => void;
   chooseProduct: (row: FoodProduct) => void;
-  chooseRecent: (recent: RecentFood) => void;
+  chooseRecent: (recent: RecentFoodType) => void;
   back: () => void;
   increment: () => void;
   decrement: () => void;
@@ -41,5 +42,7 @@ export interface AddFoodFlow {
   submit: () => Promise<void>;
   /** Logs a quick add straight away, skipping the detail step. */
   submitQuickAdd: (food: LoggableFood, meal: MealSlotType) => Promise<void>;
+  /** Logs the meal panel's ticked candidates on the sheet's day; one flag per candidate, true when saved. */
+  logMeal: (candidates: readonly MealCandidate[], meal: MealSlotType) => Promise<readonly boolean[]>;
   remove: () => Promise<void>;
 }

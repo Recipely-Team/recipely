@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
@@ -95,7 +95,7 @@ export const WebRecipeGrid = ({
       accessibilityLabel={label}
       style={[styles.segBtn, active ? [shadows.sm, { backgroundColor: colors.cardBackground }] : null]}
     >
-      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? '700' : '400' }]}>
+      <ThemedText style={[styles.segText, { color: colors.text, fontWeight: active ? fontWeights.bold : fontWeights.regular }]}>
         {label}
       </ThemedText>
     </Pressable>
@@ -150,8 +150,7 @@ export const WebRecipeGrid = ({
       <View style={styles.headRow}>
         <WebSectionHead
           title={title}
-          // Suppress the count while reloading — the previous list is gone and
-          // a stale "0 recipes" would be misleading until the fetch resolves.
+          // No count while reloading.
           sub={isLoading ? undefined : t().recipes.webRecipesCount.replace('{n}', String(recipes.length))}
           right={right}
         />
@@ -197,8 +196,7 @@ export const WebRecipeGrid = ({
 };
 
 const styles = StyleSheet.create({
-  // Establishes a stacking context above the grid so the sort dropdown popover
-  // (absolutely positioned inside the head) is not painted over by the cards.
+  // Own stacking context so the sort popover paints over the cards.
   headRow: {
     position: 'relative',
     zIndex: zIndices.raised,
@@ -260,9 +258,7 @@ const styles = StyleSheet.create({
     gap: GRID_GAP,
     paddingBottom: spacing.xxl,
   },
-  // Skeleton rows are plain Views (no FlatList numColumns), so they must lay
-  // their cells out horizontally themselves — otherwise the cards stack into a
-  // single column like the mobile skeleton.
+  // Skeleton rows lay their cells out themselves (no numColumns).
   skeletonRow: {
     flexDirection: 'row',
     gap: GRID_GAP,

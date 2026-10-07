@@ -5,6 +5,7 @@ import { machineLower } from '@presentation/base/hooks/assistant/args/resolving/
 import { StepCursor } from '@presentation/base/hooks/assistant/args/resolving/step-cursor';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** Joins ingredient lines into one spoken list. */
 const INGREDIENT_SEPARATOR = CharConstants.commaSpace;
@@ -54,8 +55,7 @@ export const useAssistantReadActions = (
   isEnabled = true,
 ): void => {
   const stepCursor = useRef(ValueConstants.minusOne);
-  // The lines as they are NOW: a read that waited must not answer from the
-  // empty arrays its callback closed over while the screen was loading.
+  // Current lines, not the ones captured while loading.
   const latest = useRef({ ingredients, instructions });
   useEffect(() => {
     latest.current = { ingredients, instructions };
@@ -78,12 +78,10 @@ export const useAssistantReadActions = (
         await waitForContent(() => latest.current.instructions.length > ValueConstants.zero);
         const lines = latest.current.instructions;
         const step = lines[index];
-        if (step === undefined) return { ok: false, error: 'no_such_step' };
+        if (step === undefined) return { ok: false, error: AssistantActionError.NoSuchStep };
 
         stepCursor.current = index;
-        // The step text is one of the few places a tool result carries content
-        // rather than a count, and it has to: the model is about to read it
-        // aloud and has no other way to know what it says.
+        // The step text itself: the model reads it aloud.
         return {
           ok: true,
           title: step,
@@ -100,7 +98,7 @@ export const useAssistantReadActions = (
     useCallback(async (): Promise<AssistantActionResultType> => {
       await waitForContent(() => latest.current.ingredients.length > ValueConstants.zero);
       const lines = latest.current.ingredients;
-      if (lines.length === ValueConstants.zero) return { ok: false, error: 'no_ingredients' };
+      if (lines.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NoIngredients };
       return {
         ok: true,
         title: lines.join(INGREDIENT_SEPARATOR),

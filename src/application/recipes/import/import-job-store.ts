@@ -1,7 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
+import { isImportJobPending } from '@domain/recipes/import/is-import-job-pending';
 import { ValueConstants } from '@core/constants';
 import type { EnqueueInstagramImportUseCase } from '@application/recipes/import/enqueue-instagram-import-use-case';
 import type { GetImportJobUseCase } from '@application/recipes/import/get-import-job-use-case';
@@ -50,16 +50,14 @@ export const configureImportJobStore = (deps: ImportJobStoreDeps): BoundStore<Im
       const current = get().state;
       if (isPolling || current.status !== StoreStatus.Loaded) return;
       const { job } = current;
-      if (job.status !== ImportJobStatus.Queued && job.status !== ImportJobStatus.Running) return;
+      if (!isImportJobPending(job)) return;
 
       const requested = session;
       isPolling = true;
       try {
         const result = await deps.getImportJobUseCase.execute(job.id);
         if (requested !== session || !result.ok) {
-          // A failed poll is not a failed import: the job is still on the
-          // worker, and the notification remains the promise. Keep the last
-          // good answer.
+          // A failed poll is not a failed import: keep the last answer.
           return;
         }
         set({ state: { status: StoreStatus.Loaded, job: result.value } });

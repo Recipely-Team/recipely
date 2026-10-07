@@ -3,6 +3,7 @@ import {
   MEDIA_UPLOAD_MAX_EDGE,
   MEDIA_UPLOAD_QUALITY,
 } from '@infrastructure/constants/media-upload';
+import { ValueConstants } from '@core/constants';
 
 /** What the picker knows about a chosen photo, and all this needs. */
 interface PickedPhoto {
@@ -41,12 +42,12 @@ export const shrinkForUpload = async (
 ): Promise<string> => {
   const longestEdge = Math.max(photo.width, photo.height);
   const isWide = photo.width >= photo.height;
-  const scale = longestEdge > maxEdge ? maxEdge / longestEdge : 1;
+  const scale = longestEdge > maxEdge ? maxEdge / longestEdge : ValueConstants.one;
 
   try {
     const result = await manipulateAsync(
       photo.uri,
-      scale < 1
+      scale < ValueConstants.one
         ? [
             {
               resize: isWide ? { width: maxEdge } : { height: maxEdge },

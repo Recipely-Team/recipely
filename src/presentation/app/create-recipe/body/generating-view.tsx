@@ -1,12 +1,12 @@
 import { StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated from 'react-native-reanimated';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities, fontWeights, BrandColors } from '@presentation/base/theme';
 import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -22,7 +22,8 @@ const CORE = 104;
 const ORBIT_RADIUS = 90;
 const ORBIT_COUNT = 6;
 /** Even spacing of the orbiting dots around the full circle. */
-const ORBIT_STEP_DEG = 360 / ORBIT_COUNT;
+const FULL_TURN_DEG = 360;
+const ORBIT_STEP_DEG = FULL_TURN_DEG / ORBIT_COUNT;
 /** Faintest orbiting dot, and the step that fans the rest brighter. */
 const ORBIT_DOT_MIN_OPACITY = 0.35;
 const ORBIT_DOT_OPACITY_STEP = 0.22;
@@ -108,7 +109,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
                 style={[
                   styles.checkBadge,
                   {
-                    backgroundColor: done ? colors.primary : 'transparent',
+                    backgroundColor: done ? colors.primary : BrandColors.transparent,
                     borderColor: active ? colors.primary : colors.border,
                     borderWidth: done ? ValueConstants.zero : borderWidths.thin,
                   },
@@ -125,7 +126,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
                   styles.checkLabel,
                   {
                     color: active || done ? colors.text : colors.textMuted,
-                    fontWeight: active ? '700' : '500',
+                    fontWeight: active ? fontWeights.bold : fontWeights.medium,
                   },
                 ]}
               >
@@ -139,7 +140,7 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.zero }}
-            style={[styles.progressFill, { width: `${progress * 100}%` }]}
+            style={[styles.progressFill, { width: `${progress * ValueConstants.percent}%` }]}
           />
         </View>
       </View>
@@ -168,8 +169,8 @@ const styles = StyleSheet.create({
     height: STAGE,
     borderRadius: STAGE / ValueConstants.two,
     borderWidth: borderWidths.thick,
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
+    borderRightColor: BrandColors.transparent,
+    borderBottomColor: BrandColors.transparent,
   },
   orbit: {
     position: 'absolute',

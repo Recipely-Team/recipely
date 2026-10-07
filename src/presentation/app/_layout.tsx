@@ -11,6 +11,7 @@ import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { zIndices } from '@presentation/base/theme';
 import { LayoutProvider } from '@presentation/base/responsive/layout-context';
+import { resolveWindowPosture } from '@presentation/bootstrap/resolve-window-posture';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WebShellStateProvider } from '@presentation/base/web-shell/web-shell-state';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
@@ -24,8 +25,10 @@ import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { navigationTheme } from '@presentation/navigation/navigation-theme';
 import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { useWindowBackground } from '@presentation/navigation/use-window-background';
+import { useIconFonts } from '@presentation/navigation/use-icon-fonts';
 import { alarmStore } from '@application/timers/alarm-store';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
 
 /**
  * Full-screen overlay for the alarm at the head of the queue.
@@ -56,13 +59,13 @@ const AlarmOverlay = (): React.JSX.Element | null => {
  * route public.
  */
 const HEADERLESS_PATHS = new Set<string>([
-  '/',
-  '/onboarding',
-  '/login',
-  '/register',
-  '/verify-code',
-  '/forgot-password',
-  '/reset-password',
+  RoutePaths.root,
+  RoutePaths.onboarding,
+  RoutePaths.login,
+  RoutePaths.register,
+  RoutePaths.verifyCode,
+  RoutePaths.forgotPassword,
+  RoutePaths.resetPassword,
 ]);
 
 /**
@@ -135,10 +138,7 @@ const RootStack = (): React.JSX.Element => {
           headerStyle: { backgroundColor: headerBg },
           headerTintColor: headerTint,
           headerShadowVisible: false,
-          // Belt and braces with the theme above: `contentStyle` is what the
-          // native stack paints a scene with, and a screen that renders nothing
-          // on its first frame (a detail page waiting on its fetch) shows it
-          // bare. Both must be the app's background or that frame is a flash.
+          // contentStyle paints the scene before a screen's first frame.
           contentStyle: { backgroundColor: colors.background },
         }}
       >
@@ -159,6 +159,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recipes/[recipeId]/cook/index" options={{ headerShown: false }} />
         <Stack.Screen name="creators/index" options={{ headerShown: false }} />
         <Stack.Screen name="creators/[userId]/index" options={{ headerShown: false }} />
         <Stack.Screen name="my-recipes/index" options={TAB_SCREEN_OPTIONS} />
@@ -177,6 +178,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="automations/edit/index" options={{ headerShown: false }} />
         <Stack.Screen name="automations/activity/index" options={{ headerShown: false }} />
         <Stack.Screen name="instagram-connected/index" options={{ headerShown: false }} />
+        <Stack.Screen name="shopping-list/index" options={{ headerShown: false }} />
       </Stack>
       <RootTabBar />
       <ActiveTimersBar />
@@ -195,10 +197,11 @@ const styles = StyleSheet.create({
 });
 
 export const RootLayout = (): React.JSX.Element => {
+  useIconFonts();
   return (
     <ShareIntentProvider>
       <AppThemeProvider>
-        <LayoutProvider>
+        <LayoutProvider postureSource={resolveWindowPosture()}>
           <WebShellStateProvider>
             <AppBootstrap>
               <RootStack />

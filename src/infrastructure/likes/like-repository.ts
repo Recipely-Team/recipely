@@ -10,6 +10,7 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 import { LIKED_RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
+import { ValueConstants } from '@core/constants';
 
 /** Implements `LikeRepositoryInterface` against the Recipely backend. */
 export class LikeRepository implements LikeRepositoryInterface {
@@ -18,13 +19,13 @@ export class LikeRepository implements LikeRepositoryInterface {
   async like(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.post(ApiRoutes.recipes.like(recipeId), undefined);
     if (!result.ok) return fail(result.failure);
-    return ok(void 0);
+    return ok(void ValueConstants.zero);
   }
 
   async unlike(recipeId: string): Promise<Result<void, Failure>> {
     const result = await this.http.delete(ApiRoutes.recipes.like(recipeId));
     if (!result.ok) return fail(result.failure);
-    return ok(void 0);
+    return ok(void ValueConstants.zero);
   }
 
   async listLiked(): Promise<Result<RecipeSummaryEntity[], Failure>> {

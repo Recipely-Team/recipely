@@ -25,9 +25,7 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
   create: RoutePaths.createRecipe,
   importRecipe: RoutePaths.importRecipe,
   myRecipes: RoutePaths.myRecipes,
-  // The four My Recipes tabs are destinations in their own right — "open my
-  // saved ones" names one of them, and landing on the tab the screen happened
-  // to remember is not what was asked for.
+  // Each My Recipes tab is its own destination.
   saved: RoutePaths.myRecipesTab(TabType.Saved),
   liked: RoutePaths.myRecipesTab(TabType.Liked),
   created: RoutePaths.myRecipesTab(TabType.Created),
@@ -42,13 +40,13 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
 } as const satisfies Readonly<Record<string, string>>;
 
 /** A screen the assistant can be asked for, by the name the model is given. */
-export type AssistantScreenName = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
+export type AssistantScreenNameType = keyof typeof ASSISTANT_NAVIGATION_TARGETS;
 
-const SCREEN_NAMES = Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenName[];
+const SCREEN_NAMES = Object.keys(ASSISTANT_NAVIGATION_TARGETS) as AssistantScreenNameType[];
 
 /**
  * The screen a word names, tolerating the case and spacing a model adds; `null`
  * when it names none. The model is given the list, but it is not held to it.
  */
-export const resolveAssistantScreenName = (name: string): AssistantScreenName | null =>
+export const resolveAssistantScreenName = (name: string): AssistantScreenNameType | null =>
   resolveTargetName(name, SCREEN_NAMES);

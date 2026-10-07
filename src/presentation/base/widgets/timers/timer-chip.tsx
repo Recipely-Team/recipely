@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { type Href, useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
@@ -10,7 +10,7 @@ import type { TimerEntry } from '@application/timers/timer-entry';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { RoutePaths } from '@presentation/base/constants';
-import { ValueConstants } from '@core/constants';
+import { ValueConstants, TimeConstants } from '@core/constants';
 
 interface TimerChipProps {
   entry: TimerEntry;
@@ -31,7 +31,7 @@ export const TimerChip = ({ entry }: TimerChipProps): React.JSX.Element => {
     timerId: entry.id,
     recipeId: entry.recipeId,
     recipeName: entry.recipeName,
-    minutes: entry.durationSeconds / 60,
+    minutes: entry.durationSeconds / TimeConstants.secondsPerMinute,
   });
 
   const { remainingSeconds, isPaused, isDone } = timer;
@@ -134,9 +134,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: spacing.sm,
   },
-  // A round button is a shape, so a pinned size is correct here — it holds a
-  // glyph, never text. Was an 18pt box with an 11pt glyph, which testers could
-  // not reliably hit; `controlSizes.iconBtn` + hit slop is a real target.
+  // A round glyph button: pinned size with hit slop.
   actionBtn: {
     width: controlSizes.iconBtn,
     height: controlSizes.iconBtn,

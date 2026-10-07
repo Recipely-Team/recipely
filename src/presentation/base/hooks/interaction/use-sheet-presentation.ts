@@ -66,8 +66,7 @@ export const useSheetPresentation = (
         easing: Easing.out(Easing.quad),
         useNativeDriver: false,
       }).start();
-      // One layout pass behind on the first open, and never again: the panel
-      // is parked off-screen until it knows how tall it is.
+      // Parked off-screen until its height is known (first open only).
       if (panelHeight === null) return;
       Animated.timing(away, {
         toValue: ValueConstants.zero,
@@ -78,8 +77,7 @@ export const useSheetPresentation = (
       return;
     }
 
-    // The one line this hook exists for: the dimming goes in the frame the
-    // sheet is dismissed, rather than riding the panel off the bottom.
+    // The scrim goes in the dismiss frame instead of riding the panel down.
     scrim.setValue(ValueConstants.zero);
     const exit = Animated.timing(away, {
       toValue: ValueConstants.one,
@@ -93,10 +91,7 @@ export const useSheetPresentation = (
     return () => exit.stop();
   }, [visible, scrim, away, panelHeight]);
 
-  // The dialog has nowhere to slide to, so it arrives and leaves by fading;
-  // the sheet travels its own height. The drag offset is ADDED rather than
-  // replaced, so a sheet released mid-drag continues from where the finger
-  // left it instead of snapping back to open and then closing.
+  // The dialog fades; the sheet travels its height plus the live drag offset.
   const panelMotion = isExpanded
     ? {
         opacity: away.interpolate({

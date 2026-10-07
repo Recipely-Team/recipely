@@ -92,13 +92,11 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKindEqualsValue };
 
         switch (parsed.key) {
           case CUISINE: {
-            // The model says "Italian"; the feed filters on the backend's key.
-            // Passing the word through produced a filter that matched nothing,
-            // an empty feed, and `ok: true` reported to the model.
+            // Map the spoken name to the backend key.
             const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
             if (filters.cuisines.includes(key)) return { ok: true, n: filterCounts(filters) };
@@ -114,18 +112,18 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
           }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
-            if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
+            if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onDifficultyChange(difficulty);
             return { ok: true, n: filterCounts(filters) };
           }
           case MAX_TIME: {
             const minutes = Number.parseInt(parsed.value, 10);
-            if (!Number.isFinite(minutes)) return { ok: false, error: 'not_a_number' };
+            if (!Number.isFinite(minutes)) return { ok: false, error: AssistantActionError.NotANumber };
             onSetMaxTime(minutes);
             return { ok: true, n: filterCounts(filters) };
           }
           default:
-            return { ok: false, error: 'unknown_filter' };
+            return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
       [filters, onToggleCuisineQuick, onToggleCategory, onDifficultyChange, onSetMaxTime, cuisineOptions, categoryOptions],
@@ -137,15 +135,14 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const parsed = parseKeyValue(arg);
-        if (parsed === null) return { ok: false, error: 'expected_kind_equals_value' };
+        if (parsed === null) return { ok: false, error: AssistantActionError.ExpectedKindEqualsValue };
 
         switch (parsed.key) {
           case CUISINE: {
             const key = resolveTaxonomyKey(cuisineOptions, parsed.value);
             if (key === null) return { ok: false, error: taxonomyError(cuisineOptions, CUISINE) };
-            if (!filters.cuisines.includes(key)) return { ok: false, error: 'not_applied' };
-            // The quick toggle is what the chip row calls, so removing looks
-            // exactly like the user tapping the chip off.
+            if (!filters.cuisines.includes(key)) return { ok: false, error: AssistantActionError.NotApplied };
+            // Same path as tapping the chip off.
             onToggleCuisineQuick(key);
             return { ok: true, n: filterCounts(filters, CUISINE, ValueConstants.minusOne) };
           }
@@ -157,7 +154,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
           }
           case DIFFICULTY: {
             const difficulty = asDifficulty(parsed.value);
-            if (difficulty === null) return { ok: false, error: 'unknown_difficulty' };
+            if (difficulty === null) return { ok: false, error: AssistantActionError.UnknownDifficulty };
             onRemoveDifficulty(difficulty);
             return { ok: true, n: filterCounts(filters) };
           }
@@ -165,12 +162,11 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
             onRemoveMaxTime();
             return { ok: true, n: filterCounts(filters) };
           case SEARCH:
-            // The value is ignored: there is one query box, so "remove the
-            // search" is unambiguous however the model spells the subject.
+            // One query box: the value is irrelevant.
             onClearSearch();
             return { ok: true, n: filterCounts(filters) };
           default:
-            return { ok: false, error: 'unknown_filter' };
+            return { ok: false, error: AssistantActionError.UnknownFilter };
         }
       },
       [filters, onToggleCuisineQuick, onRemoveCategory, onRemoveDifficulty, onRemoveMaxTime, onClearSearch, cuisineOptions, categoryOptions],
@@ -180,11 +176,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
   useAssistantAction(
     AssistantAction.ClearFilters,
     useCallback(async (): Promise<AssistantActionResultType> => {
-      // Unconditional, and it clears the query too. Both halves were bugs the
-      // user watched: a count read from the previous render is zero for a
-      // filter this same turn had just applied, so the clear was skipped and
-      // reported done — and a feed narrowed only by a search was "cleared"
-      // without anything moving at all.
+      // Unconditional and clears the query too (a stale count would skip it).
       onClearAllFilters();
       return { ok: true, n: { filters: ValueConstants.zero } };
     }, [onClearAllFilters]),
@@ -195,7 +187,7 @@ export const useAssistantFeedActions = (deps: AssistantFeedActionsDeps): void =>
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const key = asSortKey(arg ?? CharConstants.empty);
-        if (key === null) return { ok: false, error: 'unknown_sort' };
+        if (key === null) return { ok: false, error: AssistantActionError.UnknownSort };
         onChangeSort(key);
         return { ok: true };
       },

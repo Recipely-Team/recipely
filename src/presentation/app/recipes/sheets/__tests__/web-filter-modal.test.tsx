@@ -21,7 +21,7 @@ import {
 } from '@presentation/base/test-support/render-component';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
@@ -32,10 +32,15 @@ import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { t } from '@presentation/i18n';
 
 // Render the icon as plain text so query helpers never trip over the native mock.
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 /**
@@ -90,7 +95,7 @@ const renderModal = (
     onClose: jest.fn(),
   };
 
-  const stores = { taxonomyStore: makeTaxonomyStore() } as unknown as Stores;
+  const stores = { taxonomyStore: makeTaxonomyStore() } as unknown as ApplicationStores;
 
   const { root } = renderComponent(
     <StoresProvider value={stores}>
@@ -110,7 +115,10 @@ const renderModal = (
 /** Every button whose accessibilityLabel matches `label`. */
 const buttonsByLabel = (root: RenderResult['root'], label: string) =>
   root.findAll(
-    (node) => node.props.accessibilityRole === 'button' && node.props.accessibilityLabel === label,
+    (node) =>
+      node.props.accessibilityRole === 'button' &&
+      node.props.accessibilityLabel === label &&
+      typeof node.props.onPress === 'function',
   );
 
 /** Fires the first button with the given accessibility label. */
@@ -184,7 +192,7 @@ describe('WebFilterModal', () => {
   it('calls onClose when the close button is tapped', () => {
     const { root, handlers } = renderModal({ visible: true });
 
-    pressByLabel(root, t().recipes.closeFilter);
+    pressByLabel(root, t().common.close);
 
     expect(handlers.onClose).toHaveBeenCalledTimes(1);
   });

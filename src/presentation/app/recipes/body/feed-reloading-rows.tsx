@@ -34,19 +34,12 @@ export const FeedReloadingRows = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  // Fills what is left of the list below the feed header and centres in THAT
-  // space, so the indicator sits where the cards were — not tucked directly
-  // under the filter chips, which read as the filters loading, not the list.
-  // The list's `contentContainerStyle` carries `flexGrow: 1`, which is what
-  // gives this box a remainder to claim.
+  // Fills and centres in the space below the header, where the cards were.
   container: {
     flex: ValueConstants.one,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: spacing.xl,
-    // Keeps the box visible in any layout that cannot hand it a remainder to
-    // claim (a plain ScrollView on web); where `flex` works, this is just the
-    // gap between the indicator and the rows' edges.
     paddingVertical: spacing.xxxl,
     gap: spacing.md,
   },

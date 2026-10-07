@@ -17,6 +17,8 @@ const WAITING: readonly AssistantStatusType[] = [
 ];
 const DOTS = [ValueConstants.zero, ValueConstants.one, ValueConstants.two];
 const DOT_STAGGER_MS = 160;
+/** Each dot's pulse: how long its peak lasts (share of a cycle) and how dim it rests. */
+const DOT_PULSE = { peakSpan: 0.3, restOpacity: 0.6 } as const;
 
 export interface AssistantWaitingLineProps {
   status: AssistantStatusType;
@@ -49,9 +51,7 @@ export const AssistantWaitingLine = ({
   const { colors } = useTheme();
   const reduceMotion = useReduceMotion();
   const pulse = useRef(new Animated.Value(ValueConstants.zero)).current;
-  // Muted outranks the rest: it is the one state where the assistant looks
-  // alive and is deliberately not hearing anything, and the slash on the orb
-  // is the only thing that has been saying so.
+  // Muted outranks the other states.
   const isMutedLive = isMuted && status !== AssistantStatus.Idle;
   const isWaiting = WAITING.includes(status) || isMutedLive;
 
@@ -89,8 +89,6 @@ export const AssistantWaitingLine = ({
                 opacity: reduceMotion
                   ? opacities.inactive
                   : pulse.interpolate({
-                      // Each dot leads the next, so the row reads left to right
-                      // rather than blinking as one block.
                       inputRange: [ValueConstants.zero, ValueConstants.one],
                       outputRange: [ValueConstants.zero, ValueConstants.one],
                     }),
@@ -100,10 +98,10 @@ export const AssistantWaitingLine = ({
                       inputRange: [
                         ValueConstants.zero,
                         (index * DOT_STAGGER_MS) / durations.pulse,
-                        (index * DOT_STAGGER_MS) / durations.pulse + 0.3,
+                        (index * DOT_STAGGER_MS) / durations.pulse + DOT_PULSE.peakSpan,
                         ValueConstants.one,
                       ],
-                      outputRange: [0.6, 0.6, 1, 0.6],
+                      outputRange: [DOT_PULSE.restOpacity, DOT_PULSE.restOpacity, ValueConstants.one, DOT_PULSE.restOpacity],
                       extrapolate: 'clamp',
                     }),
                   },

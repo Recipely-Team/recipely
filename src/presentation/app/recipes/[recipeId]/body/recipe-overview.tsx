@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { RecipeMetaCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card';
@@ -8,11 +9,12 @@ import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutri
 import { AddToDiaryButton } from '@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button';
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, avatarSizes, borderWidths, shadows, targetSizes } from '@presentation/base/theme';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { formatRating } from '@presentation/base/utils/format-rating';
@@ -32,6 +34,7 @@ export interface RecipeOverviewProps {
   isNutritionCalculating: boolean;
   /** The owner's photo controls; present only for the owner, who also gets the status panel. */
   photos: GalleryOwnerControls | undefined;
+  portions: PortionScaling;
 }
 
 /**
@@ -48,6 +51,7 @@ export const RecipeOverview = ({
   onToggleLike,
   isNutritionCalculating,
   photos,
+  portions,
 }: RecipeOverviewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -149,7 +153,7 @@ export const RecipeOverview = ({
       <RecipeMetaCard
         prepTimeMinutes={recipe.prepTimeMinutes}
         cookTimeMinutes={recipe.cookTimeMinutes}
-        servings={recipe.servings}
+        portions={portions}
         difficulty={recipe.difficulty}
         recipeId={recipeId}
         recipeName={recipe.name}
@@ -214,6 +218,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
   },
   statItem: {
+    minHeight: targetSizes.min,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,

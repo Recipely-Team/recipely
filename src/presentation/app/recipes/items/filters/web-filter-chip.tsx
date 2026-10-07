@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, iconSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, borderWidths, fontWeights } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
 export interface WebFilterChipProps {
@@ -53,7 +53,7 @@ export const WebFilterChip = ({
         variant="caption"
         style={[
           styles.label,
-          { color: active ? colors.primaryText : colors.text, fontWeight: active ? '700' : '500' },
+          { color: active ? colors.primaryText : colors.text, fontWeight: active ? fontWeights.bold : fontWeights.medium },
         ]}
       >
         {label}

@@ -2,6 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeDetail } from '@domain/recipes/recipe-detail';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
@@ -81,12 +82,14 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return toRecipePage(result.value);
   }
 
-  async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {
+  async getRecipe(id: string): Promise<Result<RecipeDetail, Failure>> {
     const result = await this.http.get<RecipeDto>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
-    return this.mapRecipe(result.value);
+    const recipe = this.mapRecipe(result.value);
+    if (!recipe.ok) return recipe;
+    return ok({ recipe: recipe.value, likedByMe: result.value.likedByMe ?? false });
   }
 
   async createRecipe(
@@ -191,12 +194,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return ok(undefined);
   }
 
-  // WHY: locale is intentionally not in the body — HttpClient already attaches
-  // the `Accept-Language` header via its localeProvider, and the backend reads
-  // `req.locale` from that header. Keeping it off the wire avoids two sources of
-  // truth for the request locale. The per-request `timeout` override is required
-  // because the synchronous Gemini call routinely exceeds the client's default
-  // 10s JSON timeout, which would abort a request the backend then completes.
+  // Locale rides Accept-Language (HttpClient), not the body.
   async generateRecipe(prompt: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.generate, { prompt } satisfies GenerateRecipeRequestDto, { timeout: AI_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
@@ -205,13 +203,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return this.mapRecipe(result.value);
   }
 
-  // WHY: like generateRecipe, the import returns a NOT-persisted preview Recipe
-  // and the locale rides Accept-Language (kept off the body to avoid two sources
-  // of truth). The per-request `timeout` override is required because the
-  // backend can take up to ~120s (download + transcription + vision) — the
-  // client's default 10s JSON timeout would abort the request first. The request
-  // interceptor only overrides config.timeout for FormData payloads, so this
-  // JSON override is honoured untouched.
+  // Preview only; locale via Accept-Language; long per-request timeout for the import.
   async importInstagramRecipe(url: string): Promise<Result<RecipeEntity, Failure>> {
     const result = await this.http.post<RecipeDto>(ApiRoutes.recipes.import, { url } satisfies ImportRecipeRequestDto, { timeout: IMPORT_REQUEST_TIMEOUT_MS });
     if (!result.ok) {
@@ -239,13 +231,7 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return toImportJob(result.value);
   }
 
-  // WHY: like generateRecipe, refine returns a NOT-persisted preview recipe —
-  // wrapped in a RefinedRecipe read model because the wire response flattens
-  // the AI's `summary` / `suggestion` on top of the recipe DTO fields. The
-  // locale rides Accept-Language (kept off the body to avoid two sources of
-  // truth). The current in-progress recipe is sent as a DraftRecipeSnapshot. The
-  // per-request `timeout` override is required for the same reason as generate —
-  // the synchronous Gemini call routinely exceeds the default 10s JSON timeout.
+  // Preview only, wrapped with the AI summary/suggestion.
   async refineRecipe(
     currentRecipe: DraftRecipeSnapshot,
     instruction: string,

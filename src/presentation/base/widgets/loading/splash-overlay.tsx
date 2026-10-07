@@ -24,7 +24,7 @@ const LOGO_SIZE = 96;
 export const SplashOverlay = (): React.JSX.Element | null => {
   const colors = useTheme().colors;
   const [visible, setVisible] = useState(true);
-  const opacity = useRef(new Animated.Value(1)).current;
+  const opacity = useRef(new Animated.Value(ValueConstants.one)).current;
 
   const dismiss = useCallback((): void => {
     Animated.timing(opacity, {

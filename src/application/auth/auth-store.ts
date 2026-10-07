@@ -1,8 +1,8 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
-import { ValueConstants } from '@core/constants';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
+import { ClaimWriteQueue } from '@application/auth/claim-write-queue';
 import type { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
 import type { RequestRegistrationUseCase } from '@application/auth/registration/request-registration-use-case';
 import type { VerifyRegistrationUseCase } from '@application/auth/registration/verify-registration-use-case';
@@ -83,21 +83,38 @@ interface AuthStoreDeps {
  *   next user's session. A refresh is dropped when a request or remove was
  *   still in flight as it started or started while it ran: it read the claim
  *   from before the change. Writes run one at a time, in order, so writing
- *   both platforms together cannot lose one.
+ *   both platforms together cannot lose one ({@link ClaimWriteQueue}).
  */
 export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreState> => {
-  // Bumped by each request / remove, so a refresh can tell it was overtaken.
-  let claimWrites = ValueConstants.zero;
-  // Requests / removes not answered yet: a refresh started under one read the claim from before it.
-  let claimWritesInFlight = ValueConstants.zero;
-  // The tail of the claim-write queue; each write starts when the one before it has settled.
-  let claimQueue: Promise<void> = Promise.resolve();
+  const claims = new ClaimWriteQueue();
 
   return create<AuthStoreState>((set, get) => {
+    type SessionCall = () => Promise<Result<AuthSessionEntity, Failure>>;
+
     /** The signed-in user's id, or `null` — read when a claim call starts. */
     const sessionUserId = (): string | null => {
       const { state } = get();
       return state.status === StoreStatus.Authenticated ? state.session.user.id : null;
+    };
+
+    /** Loading, then the session the call answers with — or back to logged out and its failure. */
+    const authenticate = async (call: SessionCall): Promise<Failure | null> => {
+      set({ state: { status: StoreStatus.Loading } });
+      const result = await call();
+      if (!result.ok) {
+        set({ state: { status: StoreStatus.Unauthenticated } });
+        return result.failure;
+      }
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+      return null;
+    };
+
+    /** Replaces the signed-in session with the call's answer; a failure keeps the old one. */
+    const updateSession = async (call: SessionCall): Promise<Failure | null> => {
+      const result = await call();
+      if (!result.ok) return result.failure;
+      set({ state: { status: StoreStatus.Authenticated, session: result.value } });
+      return null;
     };
 
     /**
@@ -107,7 +124,7 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
      * dropped, failure and all.
      */
     const applyClaimResult = async (
-      call: () => Promise<Result<AuthSessionEntity, Failure>>,
+      call: SessionCall,
       isCurrent: () => boolean = () => true,
     ): Promise<Failure | null> => {
       const issuer = sessionUserId();
@@ -117,27 +134,6 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       if (!result.ok) return result.failure;
       set({ state: { status: StoreStatus.Authenticated, session: result.value } });
       return null;
-    };
-
-    /** Runs a request / remove, counted from its start until its answer is handled. */
-    /**
-     * Runs claim writes one at a time, in the order they were asked for: two
-     * platforms written together would otherwise each answer with a session
-     * built before the other's write, and the later answer would drop one.
-     * Counted as in flight from the moment it is queued, so a refresh started
-     * meanwhile knows it was overtaken.
-     */
-    const writeClaim = (call: () => Promise<Result<AuthSessionEntity, Failure>>): Promise<Failure | null> => {
-      claimWrites += ValueConstants.one;
-      claimWritesInFlight += ValueConstants.one;
-      const run = claimQueue.then(() => applyClaimResult(call)).finally(() => {
-        claimWritesInFlight -= ValueConstants.one;
-      });
-      claimQueue = run.then(
-        () => undefined,
-        () => undefined,
-      );
-      return run;
     };
 
     return {
@@ -155,69 +151,39 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
       hydrate: async () => {
         set({ state: { status: StoreStatus.Loading } });
         const result = await deps.getSession.execute();
-        if (!result.ok) {
-          set({ state: { status: StoreStatus.Unauthenticated } });
-          return;
-        }
-        if (result.value === null || result.value.isExpired()) {
+        if (!result.ok || result.value === null) {
           set({ state: { status: StoreStatus.Unauthenticated } });
           return;
         }
         set({ state: { status: StoreStatus.Authenticated, session: result.value } });
         deps.onSessionRestored();
         // Background pre-load; nothing waits on it.
-        try {
-          const favResult = await deps.loadFavorites.execute();
-          if (favResult.ok) {
-            deps.savedRecipesStore.getState().setSaved(favResult.value);
-          }
-        } catch {
-          // Ignored: nothing is listening.
+        const favorites = await deps.loadFavorites.execute();
+        if (favorites.ok) {
+          deps.savedRecipesStore.getState().setSaved(favorites.value);
         }
       },
 
-      signIn: async (email: string, password: string) => {
-        set({ state: { status: StoreStatus.Loading } });
-        const result = await deps.signIn.execute(email, password);
-        if (!result.ok) {
-          set({ state: { status: StoreStatus.Unauthenticated } });
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      signIn: (email: string, password: string) => authenticate(() => deps.signIn.execute(email, password)),
 
       register: async (email: string, password: string, displayName: string) => {
         set({ state: { status: StoreStatus.Loading } });
         const result = await deps.requestRegistration.execute(email, password, displayName);
-        // Account is not created yet — the user must confirm the emailed code.
-        // On failure the Result carries the failure back to the screen; either
-        // way the session stays unauthenticated.
+        // Not created until the emailed code is confirmed; the session stays unauthenticated.
         set({ state: { status: StoreStatus.Unauthenticated } });
         return result;
       },
 
-      verifyRegistration: async (email: string, code: string) => {
-        set({ state: { status: StoreStatus.Loading } });
-        const result = await deps.verifyRegistration.execute(email, code);
-        if (!result.ok) {
-          set({ state: { status: StoreStatus.Unauthenticated } });
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      verifyRegistration: (email: string, code: string) =>
+        authenticate(() => deps.verifyRegistration.execute(email, code)),
 
       resendRegistrationCode: async (email: string) => {
-        // No global state change — the verify-code screen stays put; the Result
-        // carries either the refreshed challenge or the failure back to it.
+        // The verify-code screen handles the result; no global state change.
         return deps.resendRegistrationCode.execute(email);
       },
 
       signOut: async () => {
-        // No `loading` transition: it would clobber the authenticated session,
-        // and on failure we want to leave the user signed in. Mirrors
-        // deleteAccount — the screen shows the returned failure and can retry.
+        // No loading state: a failed sign-out leaves the user signed in.
         const result = await deps.signOut.execute();
         if (!result.ok) {
           return result.failure;
@@ -227,73 +193,31 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return null;
       },
 
-      signInWithGoogle: async () => {
-        set({ state: { status: StoreStatus.Loading } });
-        const result = await deps.signInWithGoogle.execute();
-        if (!result.ok) {
-          set({ state: { status: StoreStatus.Unauthenticated } });
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      signInWithGoogle: () => authenticate(() => deps.signInWithGoogle.execute()),
 
-      signInWithApple: async () => {
-        set({ state: { status: StoreStatus.Loading } });
-        const result = await deps.signInWithApple.execute();
-        if (!result.ok) {
-          set({ state: { status: StoreStatus.Unauthenticated } });
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      signInWithApple: () => authenticate(() => deps.signInWithApple.execute()),
 
       requestPasswordReset: async (email: string) => {
         const result = await deps.requestPasswordReset.execute(email);
-        if (!result.ok) {
-          return result.failure;
-        }
-        return null;
+        return result.ok ? null : result.failure;
       },
 
       resetPassword: async (token: string, newPassword: string) => {
+        // Page-scoped error: the reset screen owns it.
         const result = await deps.resetPassword.execute(token, newPassword);
-        if (!result.ok) {
-          // The reset screen owns its own error (page-scoped) — return the
-          // failure without touching the global session state.
-          return result.failure;
-        }
-        return null;
+        return result.ok ? null : result.failure;
       },
 
-      uploadAvatar: async (fileUri: string, fileName: string, mimeType: string) => {
-        const result = await deps.uploadAvatar.execute(fileUri, fileName, mimeType);
-        if (!result.ok) {
-          // The user is still authenticated — surface the failure to the screen
-          // without clobbering the session state.
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      uploadAvatar: (fileUri: string, fileName: string, mimeType: string) =>
+        updateSession(() => deps.uploadAvatar.execute(fileUri, fileName, mimeType)),
 
-      updateProfile: async (input: { displayName?: string; bio?: string }) => {
-        const result = await deps.updateProfile.execute(input);
-        if (!result.ok) {
-          // The user is still authenticated — surface the failure to the screen
-          // without clobbering the session state.
-          return result.failure;
-        }
-        set({ state: { status: StoreStatus.Authenticated, session: result.value } });
-        return null;
-      },
+      updateProfile: (input: { displayName?: string; bio?: string }) =>
+        updateSession(() => deps.updateProfile.execute(input)),
 
       deleteAccount: async () => {
         const result = await deps.deleteAccount.execute();
         if (!result.ok) {
-          // The account was not deleted — keep the user signed in and surface the
-          // failure to the screen without clobbering the session state.
+          // Not deleted: keep the session, return the failure.
           return result.failure;
         }
         set({ state: { status: StoreStatus.Unauthenticated } });
@@ -301,18 +225,14 @@ export const configureAuthStore = (deps: AuthStoreDeps): BoundStore<AuthStoreSta
         return null;
       },
 
-      requestCreatorTag: (input) => writeClaim(() => deps.requestCreatorTag.execute(input)),
+      requestCreatorTag: (input) =>
+        claims.write(() => applyClaimResult(() => deps.requestCreatorTag.execute(input))),
 
-      removeCreatorTag: (platform) => writeClaim(() => deps.removeCreatorTag.execute(platform)),
+      removeCreatorTag: (platform) =>
+        claims.write(() => applyClaimResult(() => deps.removeCreatorTag.execute(platform))),
 
-      refreshCreatorClaim: () => {
-        const startedAfter = claimWrites;
-        const startedIdle = claimWritesInFlight === ValueConstants.zero;
-        return applyClaimResult(
-          () => deps.refreshCreatorClaim.execute(),
-          () => startedIdle && claimWrites === startedAfter,
-        );
-      },
+      refreshCreatorClaim: () =>
+        claims.refresh((isCurrent) => applyClaimResult(() => deps.refreshCreatorClaim.execute(), isCurrent)),
     };
   });
 };

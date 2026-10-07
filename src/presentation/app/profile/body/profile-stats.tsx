@@ -3,22 +3,16 @@ import { StoreStatus } from '@application/store/store-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { getLocale, t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
 import { ValueConstants } from '@core/constants';
+import { formatCompactCount } from '@presentation/base/utils/format-compact-count';
 
 const STAT_VALUE_SIZE = fontSizes.subtitle;
 const STAT_VALUE_LINE = lineHeightFor(STAT_VALUE_SIZE, lineHeights.tight);
 const STAT_LABEL_SIZE = fontSizes.tiny;
 const STAT_LABEL_TRACKING = letterSpacings.wide;
-
-/** Compact-notation display formatter for large stat counts (1.2K, 3.4M). */
-const formatStat = (n: number): string => {
-  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
-  return String(n);
-};
 
 export interface ProfileStatsProps {
   stats: ProfileStatsState;
@@ -60,8 +54,8 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
   if (stats.status === StoreStatus.Loaded) {
     const cells = [
       { value: String(stats.recipeCount), label: t().profile.recipes },
-      { value: formatStat(stats.totalLikes), label: t().profile.likes },
-      { value: formatStat(stats.totalViews), label: t().profile.views },
+      { value: formatCompactCount(stats.totalLikes, getLocale()), label: t().profile.likes },
+      { value: formatCompactCount(stats.totalViews, getLocale()), label: t().profile.views },
       { value: String(stats.savedCount), label: t().profile.saved },
     ];
 

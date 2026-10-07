@@ -5,6 +5,8 @@ import { StoreStatus } from '@application/store/store-status';
 import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
+import { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
+import { DmKeywords } from '@domain/instagram/dm/dm-keywords';
 import { configureInstagramStore } from '@application/instagram/instagram-store';
 import { configureAutomationsStore } from '@application/instagram/automations-store';
 import { GetInstagramConnectionUseCase } from '@application/instagram/connect/get-instagram-connection-use-case';
@@ -46,8 +48,8 @@ const enabledIn = (store: ReturnType<typeof automations>['store']): boolean | nu
 describe('instagramStore', () => {
   const setup = () => {
     const repo = fakeInstagramRepository();
-    const store = configureInstagramStore({ enabled: true,
-      getConnection: new GetInstagramConnectionUseCase(repo),
+    const store = configureInstagramStore({
+      getConnection: new GetInstagramConnectionUseCase(repo, () => Promise.resolve(true)),
       startLogin: new StartInstagramLoginUseCase(repo),
       finalize: new FinalizeInstagramLinkUseCase(repo),
       disconnect: new DisconnectInstagramUseCase(repo),
@@ -152,6 +154,15 @@ describe('automationsStore', () => {
     await store.getState().loadSends('r1');
     await store.getState().loadMoreSends();
     expect(repo.listSends.mock.calls).toEqual([['r1', 1, 8], ['r1', 2, 8]]);
+  });
+
+  it('saves an edit to an existing rule without its post', async () => {
+    const { repo, store } = automations();
+    repo.updateRule.mockResolvedValue(ok(dmRuleOf()));
+    const draft = DmRuleDraft.validate({ mediaId: 'm1', keywords: DmKeywords.of(['tarif']), recipeId: 'rec1', dmText: ' Here {link} ', publicReplyText: null });
+    if (!draft.ok) throw new Error('invalid draft');
+    await store.getState().saveRule(draft.value, 'r1');
+    expect(repo.updateRule).toHaveBeenCalledWith('r1', { keywords: ['tarif'], recipeId: 'rec1', dmText: 'Here {link}', publicReplyText: null });
   });
 
   it('removes a deleted rule from the list', async () => {

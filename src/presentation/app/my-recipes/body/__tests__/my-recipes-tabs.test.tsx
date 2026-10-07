@@ -13,10 +13,15 @@ import { MyRecipesTabs } from '@presentation/app/my-recipes/body/my-recipes-tabs
 import type { MyRecipesTab } from '@presentation/app/my-recipes/model/my-recipes-tab';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 const TABS: readonly MyRecipesTab[] = [

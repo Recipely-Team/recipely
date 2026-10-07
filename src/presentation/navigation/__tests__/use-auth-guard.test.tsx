@@ -55,6 +55,16 @@ describe('useAuthGuard', () => {
     expect(mockReplace).not.toHaveBeenCalled();
   });
 
+  // A guest tapping "Start cooking" on a public recipe was bounced to the sign-in page.
+  it('does not redirect a guest cooking a public recipe in cook mode', () => {
+    mockPathname = '/recipes/abc123/cook';
+    mockStatus = 'unauthenticated';
+
+    renderGuard();
+
+    expect(mockReplace).not.toHaveBeenCalled();
+  });
+
   it('redirects a guest on a trailing-slash detail path (not exactly one segment)', () => {
     mockPathname = '/recipes/abc123/';
     mockStatus = 'unauthenticated';

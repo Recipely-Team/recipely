@@ -2,7 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { AuthField } from '@presentation/app/login/model/auth-field';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -24,9 +24,10 @@ import {
   iconSizes,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -47,14 +48,12 @@ export const LoginForm = (): React.JSX.Element => {
   const [password, setPassword] = useState(CharConstants.empty);
   const [focusField, setFocusField] = useState<AuthField | null>(null);
   const [showPassword, setShowPassword] = useState(false);
-  // Page-scoped error: it lives with this screen and dies when it unmounts, so
-  // a failed sign-in never bleeds onto register / other auth screens.
+  // Page-scoped error: dies with the screen.
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
   const passwordRef = useRef<TextInput>(null);
 
-  // Closing the Google / Apple sheet without finishing is an answer, not an
-  // error — the form stays exactly as the user left it and says nothing.
+  // Closing the provider sheet is an answer, not an error.
   const runSocial = useCallback(
     async (signInWith: () => Promise<Failure | null>) => {
       setErrorMessage(undefined);
@@ -66,10 +65,10 @@ export const LoginForm = (): React.JSX.Element => {
     [],
   );
 
-  const fieldsEmpty = email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero;
+  const fieldsEmpty = isBlank(email) || isBlank(password);
 
   const handleSignIn = useCallback(async () => {
-    if (email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero) {
+    if (isBlank(email) || isBlank(password)) {
       return;
     }
     setErrorMessage(undefined);
@@ -180,6 +179,8 @@ export const LoginForm = (): React.JSX.Element => {
       </Pressable>
 
       <Pressable
+        accessibilityRole="button"
+        accessibilityState={{ disabled: fieldsEmpty || isLoading, busy: isLoading }}
         onPress={() => { void handleSignIn(); }}
         disabled={fieldsEmpty || isLoading}
         style={[

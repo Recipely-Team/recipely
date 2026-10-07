@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import * as ImagePicker from 'expo-image-picker';
-import { DEFAULT_IMAGE_MIME, MIME_BY_EXTENSION } from '@infrastructure/constants/image-mime';
 import { failureKeyMessage } from '@presentation/base/errors/failure-lookups';
 import { PickSource } from '@presentation/base/utils/pick-source';
 import { askPickSource } from '@presentation/base/utils/ask-pick-source';
@@ -10,6 +9,7 @@ import { t } from '@presentation/i18n';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ValueConstants } from '@core/constants';
 import type { MediaItem } from '@domain/recipes/media/media-item';
+import { uploadFileMeta } from '@presentation/base/utils/upload-file-meta';
 
 /**
  * No `allowsEditing`, unlike the avatar.
@@ -18,26 +18,13 @@ import type { MediaItem } from '@domain/recipes/media/media-item';
  * recipe photo is shown at the picture's own shape, and forcing a crop on the
  * way in would ask the cook to throw away the edges of a dish they framed.
  */
+const RECIPE_FILE_PREFIX = 'recipe';
+
 const PICKER_OPTIONS: ImagePicker.ImagePickerOptions = {
   mediaTypes: 'images',
   quality: 0.85,
 };
 
-const FALLBACK_EXTENSION = 'jpg';
-const MAX_EXTENSION_LENGTH = 4;
-
-/** A multipart-friendly name and type, derived from the picked asset's uri. */
-const toUploadMeta = (uri: string): { fileName: string; mimeType: string } => {
-  const ext = uri.split('.').pop()?.toLowerCase() ?? FALLBACK_EXTENSION;
-  const safeExt =
-    ext.length > ValueConstants.zero && ext.length <= MAX_EXTENSION_LENGTH
-      ? ext
-      : FALLBACK_EXTENSION;
-  return {
-    fileName: `recipe-${Date.now()}.${safeExt}`,
-    mimeType: MIME_BY_EXTENSION[safeExt] ?? DEFAULT_IMAGE_MIME,
-  };
-};
 
 /**
  * Adding and removing photos on a recipe the user owns.
@@ -80,7 +67,7 @@ export const useRecipePhotoUpload = (recipeId: string): RecipePhotoUpload => {
       const asset = result.canceled ? undefined : result.assets[ValueConstants.zero];
       if (asset === undefined) return;
 
-      const { fileName, mimeType } = toUploadMeta(asset.uri);
+      const { fileName, mimeType } = uploadFileMeta(asset.uri, RECIPE_FILE_PREFIX, String(Date.now()));
       const failure = await addPhoto(recipeId, asset.uri, fileName, mimeType);
       if (failure !== null) {
         setError(failureKeyMessage(failure) ?? t().recipes.photoAddFailed);

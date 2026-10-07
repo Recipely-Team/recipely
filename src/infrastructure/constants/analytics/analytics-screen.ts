@@ -22,6 +22,7 @@
 export const AnalyticsScreen = {
   recipeList: 'RecipeListScreen',
   recipeDetail: 'RecipeDetailScreen',
+  cookMode: 'CookModeScreen',
   creators: 'CreatorsScreen',
   creatorProfile: 'CreatorProfileScreen',
   myRecipes: 'MyRecipesScreen',
@@ -34,6 +35,7 @@ export const AnalyticsScreen = {
   editProfile: 'EditProfileScreen',
   settings: 'SettingsScreen',
   automations: 'AutomationsScreen',
+  shoppingList: 'ShoppingListScreen',
   automationEdit: 'AutomationEditScreen',
   automationActivity: 'AutomationActivityScreen',
   instagramConnected: 'InstagramConnectedScreen',

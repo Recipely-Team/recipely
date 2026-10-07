@@ -4,8 +4,8 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
-import { CharConstants } from '@core/constants';
-import { FIRST_PAGE, FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { CharConstants, ValueConstants } from '@core/constants';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -22,15 +22,16 @@ import { parseMealArg } from '@presentation/base/hooks/assistant/args/diary/pars
 import { parseWaterArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-water-arg';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { useAssistantDiaryEntryActions } from '@presentation/app/diary/hooks/use-assistant-diary-entry-actions';
+import { useAssistantMealLogAction } from '@presentation/app/diary/hooks/use-assistant-meal-log-action';
 import { diaryDayReading } from '@presentation/app/diary/model/assistant/diary-day-reading';
 import { diaryScreenLine } from '@presentation/app/diary/model/assistant/diary-screen-line';
-import type { DiaryDayView } from '@presentation/app/diary/model/diary-day-view';
+import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
 import type { UseDiarySheetsResult } from '@presentation/app/diary/model/use-diary-sheets-result';
 import { useLocale } from '@presentation/i18n';
 
 /** What the Day view lends the assistant. */
 interface AssistantDiaryActionsDeps {
-  view: DiaryDayView;
+  view: DiaryDayViewType;
   selected: CalendarDate;
   today: CalendarDate;
   select: (date: CalendarDate) => void;
@@ -71,6 +72,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     ),
   });
   useAssistantDiaryEntryActions();
+  useAssistantMealLogAction(sheets.openMealLog);
 
   useAssistantAction(
     AssistantAction.SelectDate,
@@ -90,20 +92,20 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const query = (arg ?? CharConstants.empty).trim();
-        if (query.length === 0) return { ok: false, error: 'nothing_to_search' };
+        if (query.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NothingToSearch };
         // The sheet opens on the same query; its search joins this one instead of repeating it.
         sheets.openSearch(query);
-        const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE, FOOD_LIST_PAGE_SIZE)]);
+        const [, recent] = await Promise.all([foodSearchStore.getState().search(query), listRecentFoods.execute(FIRST_PAGE)]);
         const s = foodSearchStore.getState();
         if (s.saved.status === StoreStatus.Error) return { ok: false, error: failureReason(s.saved.failure) };
         const found = { saved: loadedItems(s.saved), mine: loadedItems(s.mine), products: loadedItems(s.products), recipes: loadedItems(s.recipes) };
         const matches = rankByName(buildFoodCandidates(found, recent.ok ? recent.value.items : []), (c) => c.name, query);
-        if (matches.length === 0) return { ok: true, title: 'no matches', n: { matches: 0 } };
+        if (matches.length === ValueConstants.zero) return { ok: true, title: 'no matches', n: { matches: 0 } };
         return {
           ok: true,
           n: { matches: matches.length },
           title: matches
-            .slice(0, SEARCH_ANSWER_LIMIT)
+            .slice(ValueConstants.zero, SEARCH_ANSWER_LIMIT)
             .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal ${c.per}, ${c.source}`)
             .join(SCREEN_PART_SEPARATOR),
         };
@@ -165,7 +167,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     AssistantAction.OpenAddFood,
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
-        const meal = parseMealArg(arg === undefined || arg.trim().length === 0 ? undefined : arg);
+        const meal = parseMealArg(arg === undefined || arg.trim().length === ValueConstants.zero ? undefined : arg);
         if (!meal.ok) return { ok: false, error: meal.error };
         sheets.openAdd(meal.value);
         return { ok: true };

@@ -29,7 +29,7 @@ import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useMyRecipesRefresh } from '@presentation/app/my-recipes/hooks/use-my-recipes-refresh';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -73,7 +73,7 @@ interface Loaders {
   loadRecipes: jest.Mock<Promise<void>, []>;
   loadSaved: jest.Mock<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>;
   loadMyRecipes: jest.Mock<Promise<void>, []>;
-  loadDrafts: jest.Mock<Promise<void>, []>;
+  loadDrafts: jest.Mock<Promise<Failure | null>, []>;
 }
 
 const makeLoaders = (): Loaders => ({
@@ -82,7 +82,7 @@ const makeLoaders = (): Loaders => ({
     .fn<Promise<Result<readonly RecipeSummaryEntity[], Failure>>, []>()
     .mockResolvedValue(ok([])),
   loadMyRecipes: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
-  loadDrafts: jest.fn<Promise<void>, []>().mockResolvedValue(undefined),
+  loadDrafts: jest.fn<Promise<Failure | null>, []>().mockResolvedValue(null),
 });
 
 const IDLE_STATE: RecipeListState = { status: 'idle' };
@@ -115,7 +115,7 @@ const makeStores = (loaders: Loaders) => {
   }) as unknown as CreatedRecipesStoreState);
 
   const draftsStore = create<DraftsStoreState>(() => ({
-    drafts: [],
+    drafts: { status: 'idle' },
     loadDrafts: loaders.loadDrafts,
   }) as unknown as DraftsStoreState);
 
@@ -124,7 +124,7 @@ const makeStores = (loaders: Loaders) => {
     savedRecipesStore,
     createdRecipesStore,
     draftsStore,
-  } as unknown as Stores;
+  } as unknown as ApplicationStores;
 
   return { stores, recipeListStore, savedRecipesStore };
 };
@@ -322,7 +322,7 @@ describe('useMyRecipesRefresh', () => {
 
       // Non-vacuity: the same probe DOES report true for a real pull, so the
       // assertions above are about the trigger, not a flag that never flips.
-      const load = makeDeferred<void>();
+      const load = makeDeferred<Failure | null>();
       loaders.loadDrafts.mockReturnValueOnce(load.promise);
       const beforePull = renders.length;
 
@@ -333,21 +333,21 @@ describe('useMyRecipesRefresh', () => {
       expect(rendersSince(beforePull).some((r) => r.isRefreshing)).toBe(true);
 
       await act(async () => {
-        load.resolve();
+        load.resolve(null);
         await load.promise;
       });
     });
 
     it('does not leave the spinner latched on when a store refresh follows a pull', async () => {
       const { loaders, recipeListStore } = mount('drafts');
-      const load = makeDeferred<void>();
+      const load = makeDeferred<Failure | null>();
       loaders.loadDrafts.mockReturnValueOnce(load.promise);
 
       act(() => {
         vm.onRefresh();
       });
       await act(async () => {
-        load.resolve();
+        load.resolve(null);
         await load.promise;
       });
       expect(vm.isRefreshing).toBe(false);
@@ -434,6 +434,19 @@ describe('useMyRecipesRefresh', () => {
       });
 
       // The store keeps the rows it already had; the hook's job is to say so.
+      expect(showErrorToastMock).toHaveBeenCalledWith(failure);
+    });
+
+    it('shows an error toast when a drafts reload fails', async () => {
+      const { loaders } = mount('drafts');
+      const failure = new NetworkFailure('offline');
+      loaders.loadDrafts.mockResolvedValueOnce(failure);
+
+      await act(async () => {
+        vm.onRefresh();
+        await Promise.resolve();
+      });
+
       expect(showErrorToastMock).toHaveBeenCalledWith(failure);
     });
 

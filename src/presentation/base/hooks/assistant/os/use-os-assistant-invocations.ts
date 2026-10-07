@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 import { AppStateStatusValue } from '@infrastructure/constants/app-state-status';
 import { AssistantView } from '@application/assistant/session/assistant-view';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { OsIntentId } from '@domain/assistant/os/os-intent-id';
 import { isStaleInvocation } from '@domain/assistant/os/is-stale-invocation';
 import type { OsIntentInvocation } from '@domain/assistant/os/os-intent-invocation';
@@ -84,7 +84,7 @@ export const useOsAssistantInvocations = (): void => {
         const { setView, sendText } = assistantSessionStore.getState();
         setView(AssistantView.Open);
         const question = request.arg ?? CharConstants.empty;
-        if (question.length > 0) sendText(question, locale);
+        if (question.length > ValueConstants.zero) sendText(question, locale);
       }
     },
     [assistantSessionStore, locale, registry],
@@ -95,9 +95,7 @@ export const useOsAssistantInvocations = (): void => {
       try {
         if (!isStaleInvocation(invocation, Date.now())) await perform(invocation);
       } finally {
-        // Swallowed deliberately: the bridge failing to forget a request is not
-        // something a screen can act on, and letting it escape would strand
-        // every entry behind this one.
+        // Swallowed: a failed acknowledge must not strand the rest of the queue.
         await osAssistant.acknowledge(invocation.invocationId).catch(() => undefined);
       }
     },
@@ -117,8 +115,7 @@ export const useOsAssistantInvocations = (): void => {
         await dispatch(invocation);
       }
     } catch {
-      // The queue could not be read. The next foreground tries again, and the
-      // entries are still there because nothing acknowledged them.
+      // Unreadable queue: the next foreground retries.
     } finally {
       isDraining.current = false;
     }

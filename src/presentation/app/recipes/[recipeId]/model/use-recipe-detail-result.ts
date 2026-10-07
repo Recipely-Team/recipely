@@ -39,20 +39,19 @@ export interface UseRecipeDetailResult {
   authorState: RecipeAuthorState;
 
   commentState: RecipeCommentsState | undefined;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
   onFocusCommentInput: () => void;
   scrollViewRef: RefObject<ScrollView | null>;
 
   checkedIngredients: boolean[];
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleIngredient: (index: number) => void;
   onToggleStep: (index: number) => void;
 
   onToggleLike: () => void;
   onToggleSave: () => void;
-  onAddComment: () => void;
+  /** Sends the composer's text; `onPosted` runs once the post lands (it clears the field). */
+  onAddComment: (text: string, onPosted: () => void) => void;
   /** Posts text the caller already has — the assistant does not type into the field. */
   onPostComment: (text: string) => void;
   /** Opens the create screen seeded from this recipe; gated for guests. */

@@ -1,5 +1,5 @@
 import type { RecipeChangeKind } from '@presentation/app/create-recipe/model/refine/recipe-change-kind';
-import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
+import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
 
 /**
  * One field the assistant proposes to change, as the proposal card shows it.
@@ -13,15 +13,15 @@ import type { CreateRecipeFieldKey } from '@presentation/app/create-recipe/model
  *   otherwise report every following step as changed, which is true of the
  *   indices and useless to a cook.
  */
-export type RecipeChange =
+export type RecipeChangeType =
   | {
-      readonly field: CreateRecipeFieldKey;
+      readonly field: CreateRecipeFieldKeyType;
       readonly kind: typeof RecipeChangeKind.Value;
       readonly before: string;
       readonly after: string;
     }
   | {
-      readonly field: CreateRecipeFieldKey;
+      readonly field: CreateRecipeFieldKeyType;
       readonly kind: typeof RecipeChangeKind.List;
       readonly added: readonly string[];
       readonly removed: readonly string[];

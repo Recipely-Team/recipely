@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 /**
  * The narrowing questions this app asks about values it did not create —
  * response bodies, decoded JWT payloads, platform globals.
@@ -18,7 +19,10 @@ export const isString = (value: unknown): value is string => typeof value === 's
 
 /** True for a string with something in it — the check a required field needs. */
 export const isNonEmptyString = (value: unknown): value is string =>
-  isString(value) && value.length > 0;
+  isString(value) && value.length > ValueConstants.zero;
+
+/** True for text with nothing but whitespace in it — what a person typing "nothing" leaves behind. */
+export const isBlank = (value: string): boolean => value.trim().length === ValueConstants.zero;
 
 /** True when `value` is an object carrying `key`, narrowed so the key can be read. */
 export const hasKey = <K extends string>(

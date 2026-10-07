@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, controlSizes, borderWidths, BrandColors } from '@presentation/base/theme';
 import { DIFFICULTY_VALUES, type Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -33,7 +33,7 @@ export const DifficultyToggle = ({
               {
                 borderLeftWidth: index > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero,
                 borderLeftColor: colors.border,
-                backgroundColor: active ? colors.primary : 'transparent',
+                backgroundColor: active ? colors.primary : BrandColors.transparent,
               },
             ]}
           >

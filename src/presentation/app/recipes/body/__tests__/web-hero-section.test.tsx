@@ -16,7 +16,7 @@ import { ValueConstants } from '@core/constants';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { BREAKPOINTS } from '@presentation/base/responsive/breakpoints';
 import { LayoutContext } from '@presentation/base/responsive/layout-context';
 import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';
@@ -79,13 +79,13 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
   return result.value;
 };
 
-const makeStores = (state: TrendingRecipesState): Stores =>
+const makeStores = (state: TrendingRecipesState): ApplicationStores =>
   ({
     trendingRecipesStore: create<TrendingRecipesStoreState>(() => ({
       state,
       load: jest.fn(async () => undefined),
     })),
-  }) as unknown as Stores;
+  }) as unknown as ApplicationStores;
 
 const layoutAt = (width: number): LayoutContextValue => ({
   width,
@@ -96,6 +96,7 @@ const layoutAt = (width: number): LayoutContextValue => ({
   isWebShell: true,
   isExpanded: true,
   isCompact: false,
+  fold: null,
 });
 
 const renderBand = (state: TrendingRecipesState): ReactTestInstance => {

@@ -5,7 +5,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { AppThemeProvider } from '@presentation/base/theme/context/theme-context';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
+import type { ApplicationStores } from '@application/di/application-stores';
 import type { RenderResult } from '@presentation/base/test-support/render-result';
 import { CharConstants, ValueConstants } from '@core/constants';
 
@@ -25,7 +26,7 @@ const mounted: ReactTestRenderer[] = [];
 if (typeof afterEach === 'function') {
   afterEach(async () => {
     await act(async () => undefined);
-    for (const renderer of mounted.splice(0)) act(() => renderer.unmount());
+    for (const renderer of mounted.splice(ValueConstants.zero)) act(() => renderer.unmount());
   });
 }
 
@@ -62,14 +63,16 @@ const SAFE_AREA_METRICS = {
  *   caller pass more.
  * - **A test wanting specific stores still wraps its own `StoresProvider`**
  *   inside `element` — the inner provider wins, so existing suites are
- *   unaffected.
+ *   unaffected. The in-memory `portionChoiceStore` is supplied too: every
+ *   recipe surface reads its servings from it.
  */
-export const renderComponent = (element: ReactElement, stores?: Partial<Stores>): RenderResult => {
+export const renderComponent = (element: ReactElement, stores?: Partial<ApplicationStores>): RenderResult => {
   let renderer!: ReactTestRenderer;
   const value = {
     assistantActionRegistry: new AssistantActionRegistry(),
+    portionChoiceStore: configurePortionChoiceStore(),
     ...stores,
-  } as unknown as Stores;
+  } as unknown as ApplicationStores;
 
   act(() => {
     renderer = create(

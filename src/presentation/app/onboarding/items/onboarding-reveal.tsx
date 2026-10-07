@@ -11,7 +11,9 @@ const ENTER_DURATION_MS = 520;
 const FLOAT_HALF_DURATION_MS = 2000;
 const USE_NATIVE_DRIVER = !isWeb();
 // cubic-bezier(.2,.7,.3,1) — the prototype's `obRise` easing.
-const ENTER_EASING = Easing.bezier(0.2, 0.7, 0.3, 1);
+/** Ease-out control points: a quick start that settles softly. */
+const ENTER_CURVE = { x1: 0.2, y1: 0.7, x2: 0.3, y2: 1 } as const;
+const ENTER_EASING = Easing.bezier(ENTER_CURVE.x1, ENTER_CURVE.y1, ENTER_CURVE.x2, ENTER_CURVE.y2);
 
 export interface OnboardingRevealProps {
   children: ReactNode;

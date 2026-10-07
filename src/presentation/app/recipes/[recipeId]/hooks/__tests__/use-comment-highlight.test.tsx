@@ -20,8 +20,9 @@
 
 import type { RecipeCommentsState } from "@application/comments/list/recipe-comments-state";
 import { CommentEntity } from "@domain/comments/comment-entity";
+import type { CommentView } from "@domain/comments/comment-view";
 import { useCommentHighlight } from "@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight";
-import type { CommentNode } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
+import type { CommentNodeType } from "@presentation/app/recipes/[recipeId]/model/comments/comment-node";
 import type { UseCommentHighlightResult } from "@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result";
 import { renderComponent } from "@presentation/base/test-support/render-component";
 import { spacing } from "@presentation/base/theme";
@@ -50,7 +51,7 @@ jest.mock("@presentation/bootstrap/use-stores", () => ({
   })),
 }));
 
-const makeComment = (id: string): CommentEntity => {
+const makeComment = (id: string): CommentView => {
   const result = CommentEntity.create({
     id,
     body: "Looks great",
@@ -60,10 +61,9 @@ const makeComment = (id: string): CommentEntity => {
     authorDisplayName: "Ada",
     authorPhotoUrl: null,
     likeCount: 0,
-    likedByMe: false,
   });
   if (!result.ok) throw new Error("Test setup expected a valid Comment");
-  return result.value;
+  return { comment: result.value, likedByMe: false };
 };
 
 const makeState = (
@@ -80,7 +80,7 @@ const makeState = (
 });
 
 /** A page of `count` comments whose ids never match the deep-linked target. */
-const decoyItems = (count: number): CommentEntity[] =>
+const decoyItems = (count: number): CommentView[] =>
   Array.from({ length: count }, (_, i) => makeComment(`c-decoy-${String(i)}`));
 
 /** Stands in for the ScrollView's inner content node; only identity matters. */
@@ -88,7 +88,7 @@ const INNER_NODE = {};
 
 interface ScrollFakes {
   scrollTo: jest.Mock;
-  node: CommentNode;
+  node: CommentNodeType;
   scrollViewRef: { current: ScrollView | null };
 }
 
@@ -120,7 +120,7 @@ const makeScrollFakes = (ys: number[]): ScrollFakes => {
       pass++;
       onSuccess(0, y, 0, 0);
     },
-  } as unknown as CommentNode;
+  } as unknown as CommentNodeType;
 
   return { scrollTo, node, scrollViewRef };
 };
@@ -132,7 +132,7 @@ const scrolledYs = (scrollTo: jest.Mock): unknown[] =>
 interface Harness {
   latest: () => UseCommentHighlightResult;
   push: (state: RecipeCommentsState | undefined) => void;
-  register: (node: CommentNode) => void;
+  register: (node: CommentNodeType) => void;
   growContent: () => void;
   userScroll: (via: "onWheel" | "onTouchMove" | "onScrollBeginDrag") => void;
 }

@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { type Href, useFocusEffect, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -44,8 +45,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
 
   const { creatorProfileStore, authStore } = useStores();
   const profileState = creatorProfileStore((s) => s.profileState);
-  const recipes = creatorProfileStore((s) => s.recipes);
-  const recipesState = creatorProfileStore((s) => s.recipesState);
+  const recipesState = creatorProfileStore((s) => s.recipes);
   const isFollowPending = creatorProfileStore((s) => s.isFollowPending);
   const open = creatorProfileStore((s) => s.open);
   const refresh = creatorProfileStore((s) => s.refresh);
@@ -75,7 +75,7 @@ export const useCreatorProfile = (): UseCreatorProfileResult => {
 
   return {
     profileState,
-    recipes,
+    recipes: loadedItems(recipesState),
     recipesState,
     isOwnProfile: viewerId !== null && viewerId === userId,
     isFollowPending,

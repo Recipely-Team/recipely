@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { borderWidths, iconSizes, opacities, radii } from '@presentation/base/theme';
+import { borderWidths, controlSizes, iconSizes, opacities, radii } from '@presentation/base/theme';
+import { ValueConstants } from '@core/constants';
 import {
   RoundIconButtonTone,
   type RoundIconButtonToneType,
@@ -17,6 +18,11 @@ export interface RoundIconButtonProps {
   tone?: RoundIconButtonToneType;
   disabled?: boolean;
   iconSize?: number;
+  /**
+   * Grows the tap area (not the drawn circle) to `controlSizes.touchTarget`, for a
+   * small button in a tight row that must still meet the 44pt mobile target.
+   */
+  padToTouchTarget?: boolean;
 }
 
 /**
@@ -31,11 +37,16 @@ export const RoundIconButton = ({
   tone = RoundIconButtonTone.Outlined,
   disabled = false,
   iconSize = iconSizes.lg,
+  padToTouchTarget = false,
 }: RoundIconButtonProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const isPrimary = tone === RoundIconButtonTone.Primary;
+  const slop = padToTouchTarget
+    ? Math.max(ValueConstants.zero, (controlSizes.touchTarget - size) / ValueConstants.two)
+    : undefined;
   return (
     <Pressable
+      hitSlop={slop}
       onPress={onPress}
       disabled={disabled}
       accessibilityRole="button"

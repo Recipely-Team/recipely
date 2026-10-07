@@ -28,7 +28,7 @@ import Animated, { useAnimatedScrollHandler, useSharedValue } from 'react-native
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body';
 import { emptyFilters } from '@presentation/app/recipes/model/filtering/ui-filter-defaults';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
@@ -43,10 +43,15 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
-jest.mock('@expo/vector-icons', () => {
+jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
-  return { Ionicons: Icon, MaterialCommunityIcons: Icon };
+  return Icon;
+});
+jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
+  const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
+  const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
+  return Icon;
 });
 
 
@@ -83,7 +88,7 @@ const makeRecipe = (id: string): RecipeSummaryEntity => {
 const RECIPES = [makeRecipe('r1')];
 
 /** An un-loaded taxonomy store: labels/options fall back to the bundled enums. */
-const makeStores = (): Stores =>
+const makeStores = (): ApplicationStores =>
   ({
     taxonomyStore: create<TaxonomyStoreState>(() => ({
       cuisines: [],
@@ -93,7 +98,7 @@ const makeStores = (): Stores =>
       load: jest.fn(),
       reload: jest.fn(),
     })),
-  }) as unknown as Stores;
+  }) as unknown as ApplicationStores;
 
 /**
  * A vm on the mobile loaded-feed branch (`recipe-list-body.tsx:149-150`):

@@ -24,7 +24,7 @@ import { FailureReporter } from "@presentation/base/errors/failure-reporter";
 import { ImportTrail } from "@presentation/base/errors/import-trail";
 import { showWarningToast } from "@presentation/base/feedback/show-toast";
 import { renderComponent } from "@presentation/base/test-support/render-component";
-import type { Stores } from "@presentation/bootstrap/stores";
+import type { ApplicationStores } from "@application/di/application-stores";
 import { StoresProvider } from "@presentation/bootstrap/stores-context";
 import { en } from "@presentation/i18n/locales/en";
 import { act } from "react-test-renderer";
@@ -111,7 +111,7 @@ const makeStores = (
   }));
 
   return {
-    stores: { importJobStore } as unknown as Stores,
+    stores: { importJobStore } as unknown as ApplicationStores,
     pollCount: () => polls,
   };
 };

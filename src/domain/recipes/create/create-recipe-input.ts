@@ -4,9 +4,7 @@ import type { RecipeVisibilityType } from '@domain/recipes/publishing/recipe-vis
 
 export interface CreateRecipeInput {
   name: Record<string, string>;
-  // Opaque taxonomy key validated by the backend (the source of truth for the
-  // full catalog); not narrowed to the local `CuisineKey`/`RecipeCategory`
-  // enums, which only mirror a curated subset.
+  // Opaque backend taxonomy key.
   cuisine: string;
   category: string;
   difficulty: Difficulty;

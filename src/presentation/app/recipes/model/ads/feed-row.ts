@@ -11,6 +11,6 @@ import type { FeedRowKind } from '@presentation/app/recipes/model/ads/feed-row-k
  * remounts the banner and re-requests the ad. The ordinal is stable because ads
  * are only ever appended after the recipes already on screen.
  */
-export type FeedRow =
+export type FeedRowType =
   | { readonly kind: typeof FeedRowKind.Recipe; readonly recipe: RecipeSummaryEntity }
   | { readonly kind: typeof FeedRowKind.Ad; readonly ordinal: number };

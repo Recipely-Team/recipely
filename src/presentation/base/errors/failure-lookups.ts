@@ -2,8 +2,8 @@ import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
 import { t } from '@presentation/i18n';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import type { IoniconName } from '@presentation/base/errors/ionicon-name';
-import type { FailureContentKey } from '@presentation/base/errors/failure-content-key';
+import type { IoniconNameType } from '@presentation/base/errors/ionicon-name';
+import type { FailureContentKeyType } from '@presentation/base/errors/failure-content-key';
 import type { FailureContent } from '@presentation/base/errors/failure-content';
 import { MESSAGE_KEY_TO_CONTENT_KEY } from '@presentation/base/errors/message-key-to-content-key';
 
@@ -26,7 +26,7 @@ import { MESSAGE_KEY_TO_CONTENT_KEY } from '@presentation/base/errors/message-ke
 // Exhaustive by construction: `FailureCode` is a closed union, so a new code
 // that arrives without copy here is a compile error rather than a silent
 // fall-through to the "unknown" wording.
-const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
+const CODE_TO_KEY: Record<FailureCode, FailureContentKeyType> = {
   [FailureCode.Network]: 'network',
   [FailureCode.Timeout]: 'timeout',
   [FailureCode.Server]: 'server',
@@ -40,11 +40,10 @@ const CODE_TO_KEY: Record<FailureCode, FailureContentKey> = {
   [FailureCode.Unknown]: 'unknown',
 };
 
-const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
+const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   notFound: SeverityType.Neutral,
   rateLimit: SeverityType.Warning,
-  // Nothing is broken and nothing was refused — the user just has to wait, look
-  // elsewhere, or start the step again. Danger red would overstate all of these.
+  // Waiting or retrying, not an error: neutral.
   cancelled: SeverityType.Neutral,
   aiCooldown: SeverityType.Warning,
   codeCooldown: SeverityType.Warning,
@@ -62,9 +61,15 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKey, SeverityType>> = {
   creatorNotPending: SeverityType.Neutral,
   instagramNotConfigured: SeverityType.Neutral,
   instagramLinkInvalid: SeverityType.Warning,
+  shoppingListFull: SeverityType.Warning,
+  shoppingListChanged: SeverityType.Neutral,
+  shoppingItemGone: SeverityType.Neutral,
+  mealParseQuotaExceeded: SeverityType.Warning,
+  mealParseUnavailable: SeverityType.Neutral,
+  mealParsePhotoUnchecked: SeverityType.Warning,
 };
 
-const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
+const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   network: 'cloud-offline-outline',
   timeout: 'time-outline',
   server: 'warning-outline',
@@ -108,6 +113,10 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   instagramAccountLinked: 'person-circle-outline',
   instagramNotConnected: 'logo-instagram',
   instagramReturnInvalid: 'link-outline',
+  shoppingListFull: 'cart-outline',
+  shoppingListChanged: 'refresh-outline',
+  shoppingItemGone: 'cart-outline',
+  contentBlocked: 'hand-left-outline',
 
   emailExists: 'mail-outline',
   codeInvalid: 'keypad-outline',
@@ -125,15 +134,23 @@ const KEY_TO_ICON: Partial<Record<FailureContentKey, IoniconName>> = {
   resetLinkExpired: 'time-outline',
   resetLinkUsed: 'checkmark-done-outline',
   passwordTooShort: 'key-outline',
+
+  mealParseInputRequired: 'create-outline',
+  mealParseTextTooLong: 'cut-outline',
+  mealParseUnsupportedPhoto: 'image-outline',
+  mealParsePhotoRejected: 'image-outline',
+  mealParsePhotoUnchecked: 'time-outline',
+  mealParseQuotaExceeded: 'hourglass-outline',
+  mealParseUnavailable: 'cloud-offline-outline',
 };
 
-const FALLBACK_ICON: IoniconName = 'sad-outline';
+const FALLBACK_ICON: IoniconNameType = 'sad-outline';
 
 /** The dedicated content key for a failure's `messageKey`, if we have copy for it. */
-const dedicatedKeyFor = (failure: Failure): FailureContentKey | undefined =>
+const dedicatedKeyFor = (failure: Failure): FailureContentKeyType | undefined =>
   failure.messageKey === undefined ? undefined : MESSAGE_KEY_TO_CONTENT_KEY[failure.messageKey];
 
-const keyFor = (failure: Failure): FailureContentKey =>
+const keyFor = (failure: Failure): FailureContentKeyType =>
   dedicatedKeyFor(failure) ?? CODE_TO_KEY[failure.code] ?? 'unknown';
 
 /** The semantic severity a failure should be rendered with (defaults to danger). */
@@ -163,5 +180,5 @@ export const failureKeyMessage = (failure: Failure): string | undefined => {
 };
 
 /** The illustration icon for a failure's full-screen / section state. */
-export const failureIcon = (failure: Failure): IoniconName =>
+export const failureIcon = (failure: Failure): IoniconNameType =>
   KEY_TO_ICON[keyFor(failure)] ?? FALLBACK_ICON;

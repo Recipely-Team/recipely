@@ -67,4 +67,4 @@ export const setDifficultyQuick = (f: UiFilters, difficulty: Difficulty | null):
 
 /** Sum of applied filters, used for the active-filter badge/count. */
 export const countActiveFilters = (f: UiFilters): number =>
-  f.cuisines.length + f.categories.length + f.difficulties.length + (f.maxTime > ValueConstants.zero ? 1 : ValueConstants.zero);
+  f.cuisines.length + f.categories.length + f.difficulties.length + (f.maxTime > ValueConstants.zero ? ValueConstants.one : ValueConstants.zero);

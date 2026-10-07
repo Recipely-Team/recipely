@@ -6,7 +6,6 @@ import { ValueConstants } from '@core/constants';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import type { DiaryDay } from '@domain/diary/day/diary-day';
-import { DiaryLimits } from '@domain/diary/diary-limits';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { DiaryConcern, type DiaryConcernType } from '@application/diary/diary-concern';
 import type { DiaryStoreState } from '@application/diary/diary-store-state';
@@ -141,7 +140,7 @@ export const configureDiaryStore = (deps: DiaryStoreDeps): BoundStore<DiaryStore
       loadRecent: async () => {
         const requested = session;
         mark(DiaryConcern.Recent, true);
-        const result = await deps.loadRecent.execute(DiaryLimits.RecentFoods);
+        const result = await deps.loadRecent.execute();
         if (requested !== session) return;
         if (!result.ok) return mark(DiaryConcern.Recent, false, result.failure);
         set({ recent: result.value });

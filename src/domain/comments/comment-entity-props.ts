@@ -7,5 +7,4 @@ export interface CommentEntityProps {
   authorDisplayName: string;
   authorPhotoUrl: string | null;
   likeCount: number;
-  likedByMe: boolean;
 }

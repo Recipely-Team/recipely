@@ -5,7 +5,7 @@ import type { CreatorPlatformType } from '@domain/creators/creator-platform';
  * `Notification.target`; `null` means the notification has no destination
  * (e.g. a follow notification, which carries no `recipeId`).
  */
-export type NotificationTarget =
+export type NotificationTargetType =
   | { readonly kind: typeof NotificationTargetKind.Recipe; readonly recipeId: string }
   | {
       readonly kind: typeof NotificationTargetKind.Comment;

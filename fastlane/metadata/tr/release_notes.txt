@@ -1,7 +1,9 @@
-Ne yediğini takip et, her yiyeceği hızla bul ve şeflerle tanış.
+Elin hamurdayken de rahat pişir: pişirme modu, porsiyon ölçekleme ve alışveriş listesi.
 
-• Yemek Günlüğü: öğünlerini ve suyunu kaydet, günlük kalori ve besinleri gör, aylık takvime göz at.
-• Yemek ekle tüm tarifleri arıyor — önce kaydettiklerin ve kendi taslakların — ayran, kola gibi ürünler de her çeşidiyle.
-• Yeni Şefler sekmesi: Instagram ve TikTok'tan içerik üreticileri, iki platformda onaylı hesaplar.
-• Fotoğraf kaynağı ve USDA besin değerleriyle Recipely Mutfağı tarifleri.
-• Sesli asistan yediklerini kaydedebiliyor.
+• Pişirme modu: adımlar tek tek ve büyük, zamanlayıcılarla; ekran kapanmaz.
+• Tarifi porsiyonuna göre ölçekle, birimleri dönüştür.
+• Alışveriş listesi: tarifin malzemelerini tek dokunuşla ekle.
+• Öğününü yazarak ya da fotoğrafını çekerek kaydet.
+• Zamanlayıcılar 5 ve 1 dakika kala sessizce uyarır, saatinde de.
+• İsteğe bağlı tarif hatırlatmaları: Ayarlar'dan aç.
+• Daha akıcı kaydırma, daha iyi erişilebilirlik ve pek çok düzeltme.

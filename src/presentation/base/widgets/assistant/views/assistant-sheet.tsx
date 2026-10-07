@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { AssistantTranscript } from '@presentation/base/widgets/assistant/parts/assistant-transcript';
 import { AutoGrowTextInput } from '@presentation/base/widgets/inputs/auto-grow-text-input';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
@@ -32,7 +32,7 @@ export interface AssistantSheetProps {
    * an overlay at the root of the app, so nothing above it can pad it up.
    */
   bottom: number;
-  transcript: AssistantTranscriptLine[];
+  transcript: AssistantTranscriptLineType[];
   notice: string | null;
   /**
    * How loudly to show it. A failure used to render as the same muted caption

@@ -1,6 +1,6 @@
 import { FakeAuthRepository } from '@application/__fixtures__/fake-auth-repository';
 import { SignInUseCase } from '@application/auth/sign-in/sign-in-use-case';
-import { UnauthorizedFailure } from '@core/failure';
+import { FailureCode, UnauthorizedFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import { UserEntity } from '@domain/auth/user-entity';
@@ -27,7 +27,7 @@ describe('SignInUseCase', () => {
     const repo = new FakeAuthRepository({ signInResult: ok(session) });
     const useCase = new SignInUseCase(repo);
 
-    const r = await useCase.execute('emilys', 'emilyspass');
+    const r = await useCase.execute('emilys@example.com', 'emilyspass');
 
     expect(r.ok).toBe(true);
     if (r.ok) expect(r.value).toBe(session);
@@ -38,9 +38,39 @@ describe('SignInUseCase', () => {
     const repo = new FakeAuthRepository({ signInResult: fail(failure) });
     const useCase = new SignInUseCase(repo);
 
-    const r = await useCase.execute('bad', 'creds');
+    const r = await useCase.execute('bad@example.com', 'creds');
 
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.failure).toBe(failure);
+  });
+
+  it('trims the address before it reaches the repository', async () => {
+    const calls: string[] = [];
+    const repo = new (class extends FakeAuthRepository {
+      override signIn(email: string, _password: string) {
+        calls.push(email);
+        return Promise.resolve(ok(buildSession()));
+      }
+    })();
+
+    await new SignInUseCase(repo).execute(' u@example.com ', 'pw');
+
+    expect(calls).toEqual(['u@example.com']);
+  });
+
+  it('fails a malformed address client-side as a ValidationFailure, without a request', async () => {
+    const calls: string[] = [];
+    const repo = new (class extends FakeAuthRepository {
+      override signIn(email: string, _password: string) {
+        calls.push(email);
+        return Promise.resolve(ok(buildSession()));
+      }
+    })();
+
+    const r = await new SignInUseCase(repo).execute('emilys', 'pw');
+
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.failure.code).toBe(FailureCode.Validation);
+    expect(calls).toEqual([]);
   });
 });

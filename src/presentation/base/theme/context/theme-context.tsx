@@ -5,17 +5,17 @@ import { getKeyValueStore } from '@application/storage/get-key-value-store';
 import { useLocale } from '@presentation/i18n/use-locale';
 import { useIsHydrated } from '@presentation/base/responsive/use-is-hydrated';
 import { ALL_THEMES, getThemeColors } from '@presentation/base/theme/colors/palette/themes';
-import type { ThemeId } from '@presentation/base/theme/context/theme-id';
+import type { ThemeIdType } from '@presentation/base/theme/context/theme-id';
 import { DEFAULT_THEME_ID } from '@presentation/base/theme/context/theme-defaults';
 import type { ThemeColors } from '@presentation/base/theme/colors/palette/theme-colors';
-import type { ThemePreference } from '@presentation/base/theme/context/theme-preference';
-import type { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
+import { ThemePreference } from '@presentation/base/theme/context/theme-preference';
+import { ThemeVariant } from '@presentation/base/theme/context/theme-variant';
 import type { ThemeContextValue } from '@presentation/base/theme/context/theme-context-value';
 
 export const ThemeContext = createContext<ThemeContextValue>({
   themeId: DEFAULT_THEME_ID,
-  preference: 'system',
-  scheme: 'light',
+  preference: ThemePreference.System,
+  scheme: ThemeVariant.Light,
   colors: {} as ThemeColors,
   setThemeId: () => {},
   setPreference: () => {},
@@ -27,7 +27,7 @@ export const ThemeContext = createContext<ThemeContextValue>({
  * `getThemeColors` throw on an undefined lookup, so callers must fall back to
  * the default rather than trusting storage blindly.
  */
-const isKnownThemeId = (value: string): value is ThemeId =>
+const isKnownThemeId = (value: string): value is ThemeIdType =>
   (ALL_THEMES as string[]).includes(value);
 
 export interface AppThemeProviderProps {
@@ -35,27 +35,21 @@ export interface AppThemeProviderProps {
 }
 
 const isThemePreference = (v: string): v is ThemePreference =>
-  v === 'system' || v === 'light' || v === 'dark';
+  (Object.values(ThemePreference) as unknown[]).includes(v);
 
 export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX.Element => {
   const systemScheme = useColorScheme();
   const hydrated = useIsHydrated();
-  // Locale is part of this provider on purpose: react-navigation blocks
-  // parent-driven re-renders of mounted screens, so a language switch would
-  // otherwise only show after something else (e.g. a theme change) re-rendered
-  // them. Every screen consumes this context, so rebuilding the value on a
-  // locale change re-renders each screen and re-evaluates its t() strings.
+  // Locale lives here so a language switch re-renders mounted screens (react-navigation blocks parent re-renders).
   const locale = useLocale();
-  const [themeId, setThemeIdState] = useState<ThemeId>(DEFAULT_THEME_ID);
-  const [preference, setPreferenceState] = useState<ThemePreference>('system');
+  const [themeId, setThemeIdState] = useState<ThemeIdType>(DEFAULT_THEME_ID);
+  const [preference, setPreferenceState] = useState<ThemePreference>(ThemePreference.System);
 
   // Load persisted theme + preference on mount
   useEffect(() => {
     void getKeyValueStore().getItem('theme_id').then((read) => {
       const stored = read.ok ? read.value : null;
-      // A previously-persisted theme may no longer be part of the palette
-      // (e.g. after trimming it down) — fall back to the default instead of
-      // handing an unknown id to `getThemeColors`, which would crash.
+      // Fall back when a stored theme id no longer exists.
       setThemeIdState(stored !== null && isKnownThemeId(stored) ? stored : DEFAULT_THEME_ID);
     });
     void getKeyValueStore().getItem('theme_preference').then((read) => {
@@ -66,7 +60,7 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     });
   }, []);
 
-  const setThemeId = useCallback((id: ThemeId) => {
+  const setThemeId = useCallback((id: ThemeIdType) => {
     setThemeIdState(id);
     void getKeyValueStore().setItem('theme_id', id);
   }, []);
@@ -76,28 +70,20 @@ export const AppThemeProvider = ({ children }: AppThemeProviderProps): React.JSX
     void getKeyValueStore().setItem('theme_preference', pref);
   }, []);
 
-  // On web the static export prerenders without `prefers-color-scheme`, so the
-  // server HTML is always light. Ignore the live system scheme until after
-  // hydration so the first client render matches and React can hydrate cleanly
-  // (React error #418). `preference` itself loads from storage in an effect, so
-  // it is already at its SSR default ('system') on the first render.
-  // React Native 0.83 widened `ColorSchemeName` with 'unspecified' (the system
-  // reports no preference); like a null scheme it resolves to light, so every
-  // non-'dark' value collapses to the same branch.
+  // Web static export renders light; ignore the system scheme until hydrated (React #418).
   const ignoreSystemScheme = isWeb() && !hydrated;
   const effectiveSystemScheme: ThemeVariant =
-    !ignoreSystemScheme && systemScheme === 'dark' ? 'dark' : 'light';
+    !ignoreSystemScheme && systemScheme === ThemeVariant.Dark ? ThemeVariant.Dark : ThemeVariant.Light;
 
   const scheme: ThemeVariant =
-    preference === 'system' ? effectiveSystemScheme : preference;
+    preference === ThemePreference.System ? effectiveSystemScheme : preference;
 
   // Memoize to ensure stable reference when themeId/scheme unchanged
   const colors = useMemo(() => getThemeColors(themeId, scheme), [themeId, scheme]);
 
   const value = useMemo(
     () => ({ themeId, preference, scheme, colors, setThemeId, setPreference }),
-    // `locale` is a deliberate extra dependency: a new value identity per
-    // locale re-renders every useTheme consumer (see comment above).
+    // locale is a deliberate extra dependency (see above).
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [themeId, preference, scheme, colors, setThemeId, setPreference, locale],
   );

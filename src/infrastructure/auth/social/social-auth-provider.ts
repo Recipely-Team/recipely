@@ -37,23 +37,14 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
     return fail(new UnknownFailure(DiagnosticMessage.auth.googleUnavailableInBuild));
   }
   const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = googleSigninMod;
-  const auth = firebaseAuthMod.default;
+  const { getAuth, signInWithCredential, GoogleAuthProvider } = firebaseAuthMod;
   if (!googleConfigured) {
     GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
     googleConfigured = true;
   }
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
-    // Clear the SDK's cached account before asking, so the chooser always
-    // appears. Without this `signIn()` silently reuses whichever account was
-    // used last: someone with a personal and a work Google account cannot pick,
-    // and anyone who signed in with the wrong one the first time has no way
-    // back — the app just logs them straight into it again, every time.
-    //
-    // This is a LOCAL cache clear, not a revoke: no consent is withdrawn and
-    // the next sign-in still skips the permission screen. Failing here must not
-    // block sign-in — nothing cached is not an error, it is the normal state on
-    // a fresh install.
+    // Sign out of the SDK first so the account chooser always appears.
     await GoogleSignin.signOut().catch(() => undefined);
     const response = await GoogleSignin.signIn();
     if (!isSuccessResponse(response)) {
@@ -63,8 +54,8 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
     if (!idToken) {
       return fail(new UnknownFailure(DiagnosticMessage.socialAuth.googleNoIdToken));
     }
-    const credential = auth.GoogleAuthProvider.credential(idToken);
-    const { user } = await auth().signInWithCredential(credential);
+    const credential = GoogleAuthProvider.credential(idToken);
+    const { user } = await signInWithCredential(getAuth(), credential);
     return ok(await user.getIdToken());
   } catch (e) {
     if (isErrorWithCode(e) && e.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -89,7 +80,7 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
   if (firebaseAuthMod === null) {
     return fail(new UnknownFailure(DiagnosticMessage.auth.appleUnavailableInBuild));
   }
-  const auth = firebaseAuthMod.default;
+  const { getAuth, signInWithCredential, AppleAuthProvider } = firebaseAuthMod;
   try {
     const available = await AppleAuthentication.isAvailableAsync();
     if (!available) {
@@ -108,8 +99,8 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     if (!identityToken) {
       return fail(new UnknownFailure(DiagnosticMessage.socialAuth.appleNoIdentityToken));
     }
-    const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
-    const { user } = await auth().signInWithCredential(credential);
+    const credential = AppleAuthProvider.credential(identityToken, rawNonce);
+    const { user } = await signInWithCredential(getAuth(), credential);
     return ok(await user.getIdToken());
   } catch (e) {
     if (isCancellationError(e)) {

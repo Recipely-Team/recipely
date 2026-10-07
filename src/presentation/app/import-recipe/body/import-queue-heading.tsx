@@ -1,6 +1,6 @@
 import { HOST_TOKEN } from '@presentation/app/import-recipe/model/host-token';
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { SourcePlatform, type SourcePlatformType } from '@domain/recipes/provenance/source-platform';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';

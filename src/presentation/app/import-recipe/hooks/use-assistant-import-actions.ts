@@ -7,6 +7,7 @@ import type { ImportJobStatus } from '@domain/recipes/import/import-job-status';
 import { useAssistantScreenContent } from '@presentation/base/hooks/assistant/use-assistant-screen-content';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 import { Answer, SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 
 /** What the import screen lends the assistant. */
 interface AssistantImportActionsDeps {
@@ -39,9 +40,7 @@ const NO_JOB = 'none';
 export const useAssistantImportActions = (deps: AssistantImportActionsDeps): void => {
   const { sharedUrl, jobStatus, activeStage, stageCount, queuePosition, isDone, onSubmitLink, onOpenDraft } = deps;
 
-  // A wait screen still has something to say, and this one is asked about more
-  // than most: "ne durumda" during an import had no answer at all, because the
-  // model was told the route and nothing else.
+  // The wait screen reports the import status.
   const describe = (): string =>
     [
       `import=${jobStatus ?? NO_JOB}`,
@@ -50,9 +49,7 @@ export const useAssistantImportActions = (deps: AssistantImportActionsDeps): voi
       `done=${isDone ? Answer.yes : Answer.no}`,
     ].join(SCREEN_PART_SEPARATOR);
 
-  // The same words either way: the screen is four ticked boxes and a status,
-  // so a reading of it is the status. Registering both is what keeps
-  // `readScreen` from falling through to the bare route here.
+  // Same text for content and reading: the screen is its status.
   useAssistantScreenContent(describe);
   useAssistantScreenReading(describe);
 
@@ -61,7 +58,7 @@ export const useAssistantImportActions = (deps: AssistantImportActionsDeps): voi
     useCallback(
       async (arg?: string): Promise<AssistantActionResultType> => {
         const url = arg ?? sharedUrl ?? CharConstants.empty;
-        if (url === CharConstants.empty) return { ok: false, error: 'no_link' };
+        if (url === CharConstants.empty) return { ok: false, error: AssistantActionError.NoLink };
 
         onSubmitLink(url);
         return { ok: true };

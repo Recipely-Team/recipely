@@ -19,10 +19,11 @@ import { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-cas
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
+import { RemoveRecipeMediaUseCase } from '@application/recipes/photos/remove-recipe-media-use-case';
 import { configureCreatedRecipesStore } from '@application/recipes/my-recipes/created-recipes-store';
 import { configureDraftsStore } from '@application/drafts/drafts-store';
 import type { RecipeListStoreState } from '@application/recipes/list/recipe-list-store-state';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { useRecipeGeneration } from '@presentation/app/create-recipe/hooks/use-recipe-generation';
@@ -53,8 +54,7 @@ const mount = () => {
   const recipeDetailStore = configureRecipeDetailStore({
     getRecipe: new GetRecipeUseCase(repo),
     addRecipePhoto: new AddRecipePhotoUseCase(repo),
-    removeRecipePhoto: new RemoveRecipePhotoUseCase(repo),
-    removeRecipeCover: new RemoveRecipeCoverUseCase(repo),
+    removeRecipeMedia: new RemoveRecipeMediaUseCase(new RemoveRecipePhotoUseCase(repo), new RemoveRecipeCoverUseCase(repo)),
   });
   const deleteDraft = jest.fn(() => Promise.resolve(ok(undefined)));
   const draftsStore = configureDraftsStore({
@@ -74,7 +74,7 @@ const mount = () => {
     recipeListStore: unused<BoundStore<RecipeListStoreState>>(),
     recipeDetailStore,
   });
-  const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as Stores;
+  const stores = { recipeDetailStore, draftsStore, createdRecipesStore } as unknown as ApplicationStores;
 
   let latest!: ReturnType<typeof useRecipeGeneration>;
   let setRecipe!: (update: (prev: EditableRecipe) => EditableRecipe) => void;

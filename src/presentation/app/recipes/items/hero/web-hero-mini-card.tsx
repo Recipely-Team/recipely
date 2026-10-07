@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeImage } from '@presentation/base/widgets/media/recipe-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -71,9 +71,7 @@ export const WebHeroMiniCard = ({ recipe, rank, onPress }: WebHeroMiniCardProps)
 };
 
 const styles = StyleSheet.create({
-  // No height of its own: the row is one rectangle whose height the featured
-  // card's ratio sets, and the two minis split it. A minHeight here made the
-  // column taller than the featured and left the row ragged along the bottom.
+  // No height: the featured card's ratio sets the row.
   card: {
     flex: ValueConstants.one,
     borderRadius: radii.xxl,

@@ -1,11 +1,16 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
+import { useOpenCookMode } from '@presentation/app/recipes/[recipeId]/hooks/use-open-cook-mode';
 import { spacing, radii, iconSizes, controlSizes, opacities } from '@presentation/base/theme';
 
 export interface RecipeFloatingActionsProps {
   insetsTop: number;
+  recipeId: string;
+  /** False for a recipe with no steps: there is nothing to cook through. */
+  canCook: boolean;
   /** Server-confirmed like state, overlaid by any in-flight optimistic toggle. */
   liked: boolean;
   isSaved: boolean;
@@ -17,11 +22,13 @@ export interface RecipeFloatingActionsProps {
 }
 
 /**
- * Floating overlay cluster (share / like / save) pinned to the top-right
+ * Floating overlay cluster (cook / share / copy / like / save) pinned to the top-right
  * of the native recipe-detail hero image. Rendered only on the mobile shell.
  */
 export const RecipeFloatingActions = ({
   insetsTop,
+  recipeId,
+  canCook,
   liked,
   isSaved,
   saveDisabled,
@@ -31,9 +38,20 @@ export const RecipeFloatingActions = ({
   onToggleSave,
 }: RecipeFloatingActionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const openCookMode = useOpenCookMode(recipeId);
 
   return (
     <View style={[styles.floatingActions, { top: insetsTop + spacing.sm }]}>
+      {canCook ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t().cookMode.start}
+          onPress={openCookMode}
+          style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
+        >
+          <Ionicons name="restaurant-outline" size={iconSizes.xl} color={colors.onOverlay} />
+        </Pressable>
+      ) : null}
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={t().recipes.share}

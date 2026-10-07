@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -14,9 +14,10 @@ import { OnboardingDots } from '@presentation/app/onboarding/items/onboarding-do
 import { OnboardingActions } from '@presentation/app/onboarding/items/onboarding-actions';
 import type { OnboardingSlide as OnboardingSlideModel } from '@presentation/app/onboarding/model/onboarding-slide';
 import type { UseOnboardingResult } from '@presentation/app/onboarding/model/use-onboarding-result';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 const LOGO_SIZE = 30;
-const COLUMN_MAX = 460;
+const COLUMN_MAX = layoutSizes.maxContentXl;
 const CONTENT_MAX = 1120;
 const TWO_COL_MIN = 900;
 const ARROW_SIZE = 40;
@@ -52,7 +53,7 @@ export const OnboardingWeb = ({ slides, actions }: OnboardingWebProps): React.JS
         <View style={[styles.copyCol, stacked ? styles.copyColStacked : null]}>
           <View style={styles.brand}>
             <RecipelyLogo size={LOGO_SIZE} />
-            <ThemedText style={styles.wordmark}>Recipely</ThemedText>
+            <ThemedText style={styles.wordmark}>{SiteMetadata.appName}</ThemedText>
           </View>
 
           <OnboardingReveal key={index} style={styles.copyBlock}>
@@ -180,7 +181,7 @@ const styles = StyleSheet.create({
   arrowBtn: {
     width: ARROW_SIZE,
     height: ARROW_SIZE,
-    borderRadius: ARROW_SIZE / 2,
+    borderRadius: ARROW_SIZE / ValueConstants.two,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',

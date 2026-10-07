@@ -1,14 +1,14 @@
 import type { Failure } from '@core/failure';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
+import type { PagedList } from '@application/store/paging/paged-list';
 import type { CreatorProfileState } from '@application/creators/profile/creator-profile-state';
-import type { CreatorRecipesState } from '@application/creators/profile/creator-recipes-state';
 
 export interface CreatorProfileStoreState {
   /** Whose page is loaded; `null` before the first `open`. */
   userId: string | null;
   profileState: CreatorProfileState;
-  recipes: RecipeSummaryEntity[];
-  recipesState: CreatorRecipesState;
+  /** The creator's recipe grid, paged on scroll. */
+  recipes: PagedList<RecipeSummaryEntity>;
   /** True while a follow or unfollow is on its way; the button waits for it. */
   isFollowPending: boolean;
   /**

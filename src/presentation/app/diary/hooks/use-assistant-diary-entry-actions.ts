@@ -23,11 +23,11 @@ const findTarget = (day: DiaryDay | null, parsed: ArgParse<EntryTargetArgs>): Ta
   if (!parsed.ok) return { ok: false, result: { ok: false, error: parsed.error } };
   if (day === null) return { ok: false, result: { ok: false, error: AssistantActionError.NotReady } };
   const matches = matchEntries(day.entries, parsed.value.name, parsed.value.meal);
-  if (matches.length === ValueConstants.one && matches[0] !== undefined) return { ok: true, entry: matches[0], args: parsed.value };
+  if (matches.length === ValueConstants.one && matches[ValueConstants.zero] !== undefined) return { ok: true, entry: matches[ValueConstants.zero], args: parsed.value };
   // Several: name them so the model asks "which one?". None: name the day's entries so it can retry with the right word.
   return matches.length > ValueConstants.one
     ? { ok: false, result: { ok: false, error: DiaryArgError.AmbiguousEntry, title: entryListLine(matches) } }
-    : { ok: false, result: { ok: false, error: 'not_found', title: day.entries.length === 0 ? 'no entries on this day' : entryListLine(day.entries) } };
+    : { ok: false, result: { ok: false, error: AssistantActionError.NotFound, title: day.entries.length === ValueConstants.zero ? 'no entries on this day' : entryListLine(day.entries) } };
 };
 
 /**

@@ -1,21 +1,21 @@
 import { FlatList, StyleSheet } from 'react-native';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { ListConstants } from '@presentation/base/constants/list-constants';
-import type { PickRow } from '@presentation/base/widgets/diary/add-food/list/pick-row';
+import type { PickRowEntryType } from '@presentation/base/widgets/diary/add-food/list/pick-row';
 import { PickRowView } from '@presentation/base/widgets/diary/add-food/pick/rows/pick-row-view';
 import { ValueConstants } from '@core/constants';
 
 export interface FoodPickListProps {
-  rows: readonly PickRow[];
+  rows: readonly PickRowEntryType[];
   /** Above the rows, scrolling with them (the Products tab's shelves). */
   header?: React.ReactElement;
   /** The end of the list is near: load the next page of whatever pages next. */
   onEndReached: () => void;
   onPickRecipe?: (hit: RecipeFoodHit) => void;
   onPickProduct?: (product: FoodProduct) => void;
-  onPickRecent?: (recent: RecentFood) => void;
+  onPickRecent?: (recent: RecentFoodType) => void;
   onRetryMore: (listKey: string) => void;
 }
 

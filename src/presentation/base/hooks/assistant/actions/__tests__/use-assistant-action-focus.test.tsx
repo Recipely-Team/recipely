@@ -5,7 +5,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantAction } from '@presentation/base/hooks/assistant/actions/use-assistant-action';
 import { useAssistantScreenReading } from '@presentation/base/hooks/assistant/use-assistant-screen-reading';
 
@@ -61,7 +61,7 @@ describe('a screen that is mounted but not looked at', () => {
       return null;
     };
     renderComponent(
-      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
         <Pill />
         <NavigationContext.Provider value={navigation}>
           <CreateScreen />
@@ -93,7 +93,7 @@ describe('a screen that is mounted but not looked at', () => {
       return null;
     };
     renderComponent(
-      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
         <NavigationContext.Provider value={left.navigation}>
           <LeftBehind />
         </NavigationContext.Provider>
@@ -118,7 +118,7 @@ describe('a screen that is mounted but not looked at', () => {
     };
 
     renderComponent(
-      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as Stores}>
+      <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
         <Pill />
       </StoresProvider>,
     );

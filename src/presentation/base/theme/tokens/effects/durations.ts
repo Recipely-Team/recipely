@@ -14,10 +14,14 @@ export const durations = {
    * the time the eye arrives, long enough not to read as a jump.
    */
   hover: 160,
+  /** A small floating control fading in (the filter FAB). */
+  controlReveal: 150,
   /** Cross-fade when a cached or freshly decoded image appears. */
   imageFade: 180,
   /** Collapse / reveal of the scrolling header band. */
   headerCollapse: 220,
+  /** A bottom sheet's slide-out; navigate only after it, or the sheet is torn mid-flight. */
+  sheetDismiss: 300,
   /**
    * One breath of a waiting pulse. Long enough to read as "alive, not stuck"
    * without pulling the eye back every second of a two-minute wait.

@@ -22,6 +22,8 @@ import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
 import type { PublishOutcome } from '@domain/recipes/publishing/publish-outcome';
 import type { CoverRemoval } from '@domain/recipes/publishing/cover-removal';
 import { MediaType } from '@domain/recipes/media/media-type';
+import { RecipeLimits } from '@domain/recipes/recipe-limits';
+import { isBlank } from '@core/guards/type-guards';
 
 
 /**
@@ -39,16 +41,16 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   }
 
   static create(props: RecipeEntityProps): Result<RecipeEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }
-    if (props.name.trim().length === ValueConstants.zero) {
+    if (isBlank(props.name)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.nameRequired, 'name'));
     }
     if (props.caloriesPerServing < ValueConstants.zero) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.caloriesNegative, 'caloriesPerServing'));
     }
-    if (props.servings < 1) {
+    if (props.servings < RecipeLimits.servingsMin) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.servingsTooLow, 'servings'));
     }
     return ok(new RecipeEntity(props));
@@ -120,7 +122,7 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get heroPhotos(): readonly MediaItem[] {
     const images = this.props.media.filter((m) => m.type === MediaType.Image);
     if (images.length > ValueConstants.zero) return images;
-    if (this.props.image.trim().length === ValueConstants.zero) return [];
+    if (isBlank(this.props.image)) return [];
     const focus = this.props.imageFocus;
     return [{ type: MediaType.Image, url: this.props.image, ...(focus !== undefined ? { focus } : {}) }];
   }
@@ -140,11 +142,13 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get ownerId(): string {
     return this.props.ownerId;
   }
+
+  /** Whether `userId` owns this recipe — a guest (`null`) never does. */
+  isOwnedBy(userId: string | null): boolean {
+    return userId !== null && this.props.ownerId === userId;
+  }
   get likeCount(): number {
     return this.props.likeCount;
-  }
-  get likedByMe(): boolean {
-    return this.props.likedByMe;
   }
 
   get viewCount(): number {

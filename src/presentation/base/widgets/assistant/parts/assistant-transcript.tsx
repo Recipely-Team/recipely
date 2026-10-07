@@ -3,7 +3,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { AssistantActionChip } from '@presentation/base/widgets/assistant/parts/assistant-action-chip';
 import { AssistantBubble } from '@presentation/base/widgets/assistant/parts/assistant-bubble';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { radii, spacing } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
@@ -12,7 +12,7 @@ import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 export interface AssistantTranscriptProps {
-  lines: AssistantTranscriptLine[];
+  lines: AssistantTranscriptLineType[];
 }
 
 /**
@@ -32,7 +32,7 @@ export interface AssistantTranscriptProps {
  */
 export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.JSX.Element => {
   const { colors } = useTheme();
-  const list = useRef<FlatList<AssistantTranscriptLine>>(null);
+  const list = useRef<FlatList<AssistantTranscriptLineType>>(null);
 
   const follow = useCallback(() => {
     list.current?.scrollToEnd({ animated: true });
@@ -52,8 +52,6 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
     <FlatList
       ref={list}
       data={lines}
-      // Ids are minted per line and never reused, so this is stable across the
-      // re-render every incoming transcript fragment causes.
       keyExtractor={(line) => line.id}
       style={styles.list}
       contentContainerStyle={styles.content}
@@ -70,16 +68,11 @@ export const AssistantTranscript = ({ lines }: AssistantTranscriptProps): React.
 };
 
 const styles = StyleSheet.create({
-  // A scrolling list cannot be transparent to touches in its own gaps, and
-  // ScrollView's base style is `flexGrow: 1` — so left to itself it filled the
-  // whole overlay and intercepted every tap meant for the screen underneath,
-  // including the empty space above the conversation. Sized to its turns, it
-  // covers only where there is something to read.
+  // flexGrow 0, or the list fills the overlay and swallows taps meant for the screen.
   list: { flexGrow: ValueConstants.zero },
   content: { gap: spacing.sm, paddingVertical: spacing.sm },
   emptyRow: { alignItems: 'center' },
-  // It floats over the app like everything else here, so it needs its own
-  // ground: laid bare over a recipe photo the invitation was unreadable.
+  // Own background: it floats over arbitrary content.
   empty: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm,

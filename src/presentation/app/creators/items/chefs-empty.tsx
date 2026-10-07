@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { avatarSizes, borderWidths, fontSizes, fontWeights, iconSizes, spacing } from '@presentation/base/theme';

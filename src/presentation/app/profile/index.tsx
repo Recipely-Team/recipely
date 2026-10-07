@@ -12,9 +12,11 @@ import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
 import { ProfileSettingsSections } from '@presentation/app/profile/body/profile-settings-sections';
 import { ProfileAutomationsRow } from '@presentation/app/profile/body/profile-automations-row';
+import { ProfileShoppingListRow } from '@presentation/app/profile/body/profile-shopping-list-row';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { useAssistantProfileScreenActions } from '@presentation/app/profile/hooks/use-assistant-profile-screen-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export const ProfileScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -38,8 +40,6 @@ export const ProfileScreen = (): React.JSX.Element => {
         {...scrollable}
         contentContainerStyle={{
           paddingTop: isWebShell ? ValueConstants.zero : insets.top + spacing.sm,
-          // Mobile: the root TabBar (hosted in _layout) sits below the page,
-          // so only breathing room is needed; web keeps its former whitespace.
           paddingBottom: isWebShell ? controlSizes.tabBar + spacing.xxl : spacing.xxl,
         }}
         showsVerticalScrollIndicator={false}
@@ -59,6 +59,7 @@ export const ProfileScreen = (): React.JSX.Element => {
           <ProfileStats stats={vm.stats} />
 
           <ProfileActions onEditProfile={vm.onEditProfile} />
+          <ProfileShoppingListRow />
           <ProfileAutomationsRow />
 
           <View style={styles.settingsSections}>
@@ -68,7 +69,7 @@ export const ProfileScreen = (): React.JSX.Element => {
       </ScrollView>
 
       <FeedbackDialog
-        severity="danger"
+        severity={SeverityType.Danger}
         visible={vm.uploadError !== null}
         title={t().errors.genericTitle}
         message={vm.uploadError ?? CharConstants.empty}

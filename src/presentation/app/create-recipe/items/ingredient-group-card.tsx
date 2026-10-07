@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { IngredientRow } from '@presentation/app/create-recipe/items/ingredient-row';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -15,8 +15,9 @@ import {
 } from '@presentation/base/theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { t } from '@presentation/i18n';
-import type { IngredientGroup } from '@presentation/app/create-recipe/model/ingredients/ingredient-group';
+import type { IngredientGroup } from '@domain/recipes/ingredients/ingredient-group';
 import { ValueConstants } from '@core/constants';
+import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
 
 export interface IngredientGroupCardProps {
   group: IngredientGroup;
@@ -58,10 +59,11 @@ export const IngredientGroupCard = ({
   const copy = t().createRecipe;
   const [confirming, setConfirming] = useState(false);
   const titleLineHeight = useTextLineHeight(fontSizes.medium);
+  const rowKeys = useStableKeys(group.items.map((item) => item.value));
 
   const rows = group.items.map((item, position) => (
     <IngredientRow
-      key={item.index}
+      key={rowKeys[position]}
       value={item.value}
       onChange={(next) => onChangeItem(item.index, next)}
       onRemove={() => onRemoveItem(item.index)}

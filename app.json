@@ -105,7 +105,6 @@
         }
       ],
       "expo-localization",
-      "expo-video",
       [
         "expo-audio",
         {
@@ -119,7 +118,8 @@
         {
           "iosBackgroundMode": false,
           "androidForegroundService": false,
-          "androidPermissions": []
+          "androidPermissions": [],
+          "disableFFmpeg": true
         }
       ],
       [
@@ -140,7 +140,14 @@
           "cameraPermission": "Recipely accesses your camera to take photos and videos for recipes."
         }
       ],
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
       "@react-native-firebase/crashlytics",
       "@react-native-firebase/auth",
       "expo-apple-authentication",
@@ -166,6 +173,7 @@
       [
         "react-native-google-mobile-ads",
         {
+          "androidSdk": "classic",
           "androidAppId": "ca-app-pub-3940256099942544~3347511713",
           "iosAppId": "ca-app-pub-3940256099942544~1458002511",
           "skAdNetworkItems": [

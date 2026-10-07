@@ -99,8 +99,6 @@ const styles = StyleSheet.create({
     letterSpacing: letterSpacings.wide,
   },
   input: {
-    // minHeight, not height: a wrapped value or a larger OS font scale has to
-    // be able to push the field taller instead of clipping inside it.
     minHeight: controlSizes.inputSm,
     borderRadius: radii.lg,
     borderWidth: borderWidths.thin,

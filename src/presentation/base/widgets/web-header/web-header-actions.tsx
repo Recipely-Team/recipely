@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -15,11 +15,12 @@ import {
   opacities,
   iconSizes,
   BrandColors,
+  avatarSizes,
 } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { countBadgeLabel } from '@presentation/base/widgets/text/count-badge-label';
 
 const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
-const AVATAR_SIZE = 36;
 
 export interface WebHeaderActionsProps {
   createLabel: string;
@@ -53,7 +54,7 @@ export const WebHeaderActions = ({
   onDiscover,
 }: WebHeaderActionsProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const badgeText = unreadCount > 9 ? '9+' : String(unreadCount);
+  const badgeText = countBadgeLabel(unreadCount);
   const showDiscover = discoverLabel !== undefined && onDiscover !== undefined;
 
   return (
@@ -140,7 +141,7 @@ export const WebHeaderActions = ({
           },
         ]}
       >
-        <AvatarImage name={avatarName} uri={avatarUri} size={AVATAR_SIZE - 4} />
+        <AvatarImage name={avatarName} uri={avatarUri} size={avatarSizes.xs} />
       </Pressable>
     </View>
   );
@@ -168,7 +169,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
     borderWidth: borderWidths.hairline,
-    backgroundColor: 'transparent',
+    backgroundColor: BrandColors.transparent,
   },
   createLabel: {
     fontSize: fontSizes.caption,
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
   avatarBtn: {
     width: NOTIF_BTN_SIZE,
     height: NOTIF_BTN_SIZE,
-    borderRadius: NOTIF_BTN_SIZE / 2,
+    borderRadius: NOTIF_BTN_SIZE / ValueConstants.two,
     borderWidth: borderWidths.medium,
     alignItems: 'center',
     justifyContent: 'center',

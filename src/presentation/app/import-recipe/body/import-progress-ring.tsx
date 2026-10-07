@@ -9,7 +9,7 @@ import Animated, {
   withTiming,
   Easing,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import {
   radii,
@@ -39,7 +39,7 @@ const RING_SIZE = 152;
 const RING_CENTER = RING_SIZE / ValueConstants.two;
 const RING_RADIUS = 62;
 const RING_STROKE = 6;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const RING_CIRCUMFERENCE = ValueConstants.two * Math.PI * RING_RADIUS;
 const DISH_INSET = 18;
 const RIM_WIDTH = 3;
 const CHECK_BADGE = 38;
@@ -163,13 +163,7 @@ export const ImportProgressRing = ({ progress, done, look, dish }: ImportProgres
 };
 
 const styles = StyleSheet.create({
-  // The bloom is positioned OUTSIDE this box — `BLOOM_SPREAD` past every edge —
-  // so the box alone understates what the ring occupies by 10pt on each side.
-  // The screen's own `spacing.md` gaps are 12, which left the glow 2pt from the
-  // safe-area edge above it and 2pt from the status pill below: the ring read as
-  // stuck to the top of the screen and the pill as stuck to the ring. The margin
-  // is what makes the reserved space match the drawn thing, so every gap the
-  // layout asks for is the gap that appears.
+  // The bloom extends BLOOM_SPREAD past the box, so the box reserves it.
   root: {
     width: RING_SIZE,
     height: RING_SIZE,

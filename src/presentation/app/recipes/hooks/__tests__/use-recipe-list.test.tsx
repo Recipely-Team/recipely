@@ -33,9 +33,11 @@ import { act, type ReactTestRenderer } from 'react-test-renderer';
 import { create } from 'zustand';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
+import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
+import { useFocusEffect } from 'expo-router';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
@@ -77,6 +79,18 @@ jest.mock('@presentation/base/web-shell/use-web-shell-state', () => ({
     setSearchQuery: (globalThis as never as { __setWebSearch: (q: string) => void }).__setWebSearch,
   }),
 }));
+
+// The saved-set load runs on the wide grid only; null keeps the real layout.
+let mockExpanded: boolean | null = null;
+jest.mock('@presentation/base/responsive/use-layout', () => {
+  const actual = jest.requireActual<typeof import('@presentation/base/responsive/use-layout')>('@presentation/base/responsive/use-layout');
+  return {
+    useLayout: () => {
+      const layout = actual.useLayout();
+      return mockExpanded === null ? layout : { ...layout, isExpanded: mockExpanded };
+    },
+  };
+});
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
@@ -151,14 +165,22 @@ const makeSavedRecipesStore = () =>
     setSavedIds: jest.fn(),
   }) as unknown as SavedRecipesStoreState);
 
-const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): Stores =>
+/** The user's own recipes; a change to it means the feed may be missing a just-published recipe. */
+const ownRecipes = create<{ version: number }>(() => ({ version: 0 }));
+
+/** The viewer the feed hook reads; a test signs in by setting it. Reset before each test. */
+const viewer = makeAuthStore();
+beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStoreState));
+
+const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): ApplicationStores =>
   ({
     recipeListStore,
-    authStore: makeAuthStore(),
+    authStore: viewer,
     notificationsStore: makeNotificationsStore(),
     savedRecipesStore: makeSavedRecipesStore(),
     loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
-  }) as unknown as Stores;
+    createdRecipesStore: ownRecipes,
+  }) as unknown as ApplicationStores;
 
 /** One render of the hook: the spinner flag next to what the store reports. */
 interface RenderSnapshot {
@@ -758,6 +780,91 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       process.off('unhandledRejection', unhandled);
     }
   });
+
+  /** Re-runs the screen's focus callback, as returning to the feed tab would. */
+  const refocus = async (): Promise<void> => {
+    const calls = (useFocusEffect as jest.Mock).mock.calls;
+    const onFocus = calls[calls.length - 1][0] as () => void;
+    // Let the first load settle completely — its success is what stamps the feed fresh.
+    await act(async () => {
+      await new Promise((resolve) => setImmediate(resolve));
+    });
+    await act(async () => {
+      onFocus();
+      await Promise.resolve();
+    });
+  };
+
+  // Every return from a recipe detail re-requested page 1 of a feed loaded seconds earlier.
+  it('does not refetch the feed when it regains focus within a minute of loading', async () => {
+    const execute = jest.fn();
+    // The clock is frozen from the first load, so the gap to the refocus is exact.
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
+    await mountLoaded(execute);
+    now.mockReturnValue(loadedAt + FEED_STALE_AFTER_MS - 1);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(1);
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  it('refetches at once on focus after the user published a recipe, however fresh the feed', async () => {
+    const execute = jest.fn();
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
+    await mountLoaded(execute);
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('mine')]))));
+    act(() => ownRecipes.setState((st) => ({ version: st.version + 1 })));
+    now.mockReturnValue(loadedAt + 1_000);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  // A guest's rows carry likedByMe: false; after sign-in they must not be reused for a minute.
+  it('refetches at once on focus after the viewer signed in, however fresh the feed', async () => {
+    const execute = jest.fn();
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
+    await mountLoaded(execute);
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r1')]))));
+    act(() =>
+      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStoreState),
+    );
+    now.mockReturnValue(loadedAt + 1_000);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  it('refetches the feed quietly on focus once it is older than a minute', async () => {
+    const execute = jest.fn();
+    // The clock is frozen from the first load, so the gap to the refocus is exact.
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
+    await mountLoaded(execute);
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
+    now.mockReturnValue(loadedAt + FEED_STALE_AFTER_MS + 1);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+    }
+  });
 });
 
 // The assistant searches by opening this screen with `?q=`, the way a person
@@ -843,5 +950,39 @@ describe('useRecipeList — arriving with a search query', () => {
     });
 
     expect(vm.search).toBe('mercimek çorbası');
+  });
+});
+
+// A guest on the wide web grid asked for /me/favorites on every visit and got a 401.
+describe('useRecipeList — the saved set on the wide grid', () => {
+  const Probe = (): null => {
+    useRecipeList();
+    return null;
+  };
+
+  afterEach(() => {
+    mockExpanded = null;
+  });
+
+  it('does not ask a guest for their saved recipes', async () => {
+    mockExpanded = true;
+    const stores = makeStores(configureRecipeListStore({
+      listRecipes: { execute: jest.fn().mockResolvedValue(ok(recipePageOf([]))) } as unknown as ListRecipesUseCase,
+    }));
+
+    const { renderer } = renderComponent(
+      <StoresProvider value={stores}>
+        <Probe />
+      </StoresProvider>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(stores.loadFavoritesUseCase.execute).not.toHaveBeenCalled();
+    await act(async () => {
+      renderer.unmount();
+      jest.advanceTimersByTime(SEARCH_DEBOUNCE_MS);
+    });
   });
 });

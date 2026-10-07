@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import { Animated, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import {
@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   iconChip: {
     width: ICON_CHIP_SIZE,
     height: ICON_CHIP_SIZE,
-    borderRadius: ICON_CHIP_SIZE / 2,
+    borderRadius: ICON_CHIP_SIZE / ValueConstants.two,
     alignItems: 'center',
     justifyContent: 'center',
   },

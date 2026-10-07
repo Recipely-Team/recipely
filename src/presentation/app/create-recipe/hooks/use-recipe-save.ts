@@ -6,7 +6,7 @@ import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ValidationFailure, type Failure } from '@core/failure';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
 import { buildEditInput } from '@presentation/app/create-recipe/model/saving/build-edit-input';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
@@ -65,18 +65,10 @@ export const useRecipeSave = ({
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveIssue, setSaveIssue] = useState<string | null>(null);
 
-  // WHY: every rejected save surfaces as a dialog — a positional banner/toast can
-  // sit off-screen on a long scrolling editor, and a dialog cannot be missed. A
-  // `ValidationFailure` additionally binds its per-field breakdown to inputs
-  // (red border + inline message). The dialog copy comes from the localized
-  // key/code tiers, NEVER from the backend's raw `message` (which may be
-  // unlocalised English). Non-validation failures get the retry dialog instead.
+  // Every rejected save is a dialog (a toast can sit off-screen); validation also marks the fields.
   const surfaceSaveFailure = useCallback(
     (failure: Failure): void => {
-      // Reported as well as shown. A refused publish was the one user-visible
-      // failure in the app that reached neither analytics nor the crash list,
-      // so "kaydedemedim" was all anyone — the user, the assistant asked to
-      // report it, or us — ever had to go on.
+      // Reported as well as shown.
       FailureReporter.report(failure, PUBLISH_CONTEXT);
       if (!(failure instanceof ValidationFailure)) {
         setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
@@ -89,8 +81,6 @@ export const useRecipeSave = ({
     [setFieldErrors],
   );
 
-  // Clears the previous rejection dialog and every inline field error at the
-  // start of a save attempt so it doesn't linger over a fresh submission.
   const clearSaveFeedback = (): void => {
     setSaveIssue(null);
     setFieldErrors(NO_CREATE_RECIPE_FIELD_ERRORS);
@@ -98,11 +88,8 @@ export const useRecipeSave = ({
 
   const hasRequiredText = (): boolean => {
     const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
-    // A recipe of nothing but group headings has no ingredients: "# Şerbet"
-    // names a part, it does not put anything in it.
-    const ingredientsEmpty = recipe.ingredients.every(
-      (s) => s.trim().length === ValueConstants.zero || isIngredientGroup(s),
-    );
+    // A recipe of group headings only has no ingredients.
+    const ingredientsEmpty = IngredientList.of(recipe.ingredients).filledCount === ValueConstants.zero;
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;
@@ -140,8 +127,7 @@ export const useRecipeSave = ({
       stopAutosave();
       createdRecipesStore.getState().resetCreateState();
       createdRecipesStore.getState().clearAiDraft();
-      // The server retires the draft itself (`fromDraftId`); this delete is the
-      // fallback for an older backend, and a 404 from a current one is fine.
+      // Fallback for an older backend; the server retires the draft itself (fromDraftId).
       await draftsStore.getState().deleteDraft(activeDraftId);
       return newRecipeId;
     }
@@ -155,8 +141,7 @@ export const useRecipeSave = ({
 
   const openSaved = useCallback(
     (recipeId: string): void => {
-      // An edit was opened from the recipe's own page, which is still below
-      // the editor: go back to it rather than stacking a second copy.
+      // Opened from the recipe page: go back rather than stack a copy.
       if (editRecipeId !== undefined && router.canGoBack()) {
         router.back();
         return;
@@ -175,8 +160,6 @@ export const useRecipeSave = ({
     })();
   }, [persist, openSaved]);
 
-  // The assistant's "publish": the same private save, then the publish request,
-  // whose toast says where the recipe landed.
   const onSaveAndPublish = useCallback((): void => {
     void (async () => {
       const recipeId = await persist();

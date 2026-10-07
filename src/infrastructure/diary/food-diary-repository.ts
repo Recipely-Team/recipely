@@ -29,6 +29,14 @@ import { toUpdateFoodLogEntryRequest } from '@infrastructure/diary/write/to-upda
 import { toSetDayWaterRequest } from '@infrastructure/diary/write/to-set-day-water-request';
 import { toRecentFoodsQuery } from '@infrastructure/diary/write/to-recent-foods-query';
 import { toNutritionGoalsRequest } from '@infrastructure/diary/write/to-nutrition-goals-request';
+import type { MealParseInputType } from '@domain/diary/meal/meal-parse-input';
+import { MealParseInputKind } from '@domain/diary/meal/meal-parse-input-kind';
+import type { MealParseResult } from '@domain/diary/meal/meal-parse-result';
+import type { MealParseDto } from '@infrastructure/diary/meal/dtos/meal-parse-dto';
+import { toMealParseResult } from '@infrastructure/diary/meal/read/to-meal-parse-result';
+import { toMealParseTextRequest } from '@infrastructure/diary/meal/write/to-meal-parse-text-request';
+import { toMealParsePhotoForm } from '@infrastructure/diary/meal/write/to-meal-parse-photo-form';
+import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 
 /**
  * Implements `FoodDiaryRepositoryInterface` against `/diary` on the Recipely
@@ -36,6 +44,8 @@ import { toNutritionGoalsRequest } from '@infrastructure/diary/write/to-nutritio
  * `write/` request mappers, responses go through the `read/` mappers.
  *
  * @remarks
+ * - **A meal parse is an AI call**: the AI timeout, not the default; a
+ *   description goes as JSON, a photo as multipart (`photo` + `locale`).
  * - **A recent food that fails mapping is skipped**, not fatal: the list is a
  *   convenience, and one bad row should not empty the tab. A day or month
  *   that fails mapping fails whole — its totals would otherwise be wrong.
@@ -87,5 +97,13 @@ export class FoodDiaryRepository implements FoodDiaryRepositoryInterface {
   async saveGoals(goals: NutritionGoals): Promise<Result<NutritionGoals, Failure>> {
     const result = await this.http.put<NutritionGoalsDto>(ApiRoutes.diary.goals, toNutritionGoalsRequest(goals));
     return result.ok ? toNutritionGoals(result.value) : result;
+  }
+
+  async parseMeal(input: MealParseInputType): Promise<Result<MealParseResult, Failure>> {
+    const result =
+      input.kind === MealParseInputKind.Text
+        ? await this.http.post<MealParseDto>(ApiRoutes.diary.mealParse, toMealParseTextRequest(input), { timeout: AI_REQUEST_TIMEOUT_MS })
+        : await this.http.uploadMultipart<MealParseDto>(ApiRoutes.diary.mealParse, await toMealParsePhotoForm(input), undefined, AI_REQUEST_TIMEOUT_MS);
+    return result.ok ? toMealParseResult(result.value) : result;
   }
 }

@@ -23,8 +23,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
   const draftId = isString(params.draftId) ? params.draftId : undefined;
   const editRecipeId = isString(params.editRecipeId) ? params.editRecipeId : undefined;
 
-  // A stable draft id for the lifetime of a NEW draft. A real UUID is required
-  // by the backend; resumed drafts reuse their own id.
+  // Stable UUID for a new draft; resumed drafts keep their own id.
   const newDraftId = useRef(Crypto.randomUUID()).current;
   const activeDraftId = draftId ?? newDraftId;
 
@@ -103,8 +102,7 @@ export const useCreateRecipe = (): UseCreateRecipeResult => {
     onRemoveMedia: editable.onRemoveMedia,
     onSetCover: editable.onSetCover,
     exitOpen: generation.exitOpen,
-    // Editing a saved recipe: the exit sheet's "save" is the PATCH save, which
-    // opens the recipe on success and keeps the editor up with its dialog on failure.
+    // Editing a saved recipe: the exit sheet's save is the PATCH save.
     onSaveDraftAndExit:
       editRecipeId === undefined
         ? generation.onSaveDraftAndExit

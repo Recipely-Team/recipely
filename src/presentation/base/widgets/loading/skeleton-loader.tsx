@@ -9,6 +9,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { radii, opacities, durations } from '@presentation/base/theme';
+import { WebShimmer } from '@presentation/base/widgets/loading/web-shimmer';
+import { ValueConstants } from '@core/constants';
 
 /**
  * A pixel count or a percentage — the two the shimmer can actually be given.
@@ -27,19 +29,8 @@ export interface SkeletonLoaderProps {
   style?: ViewStyle;
 }
 
-const SHIMMER_KEYFRAMES_ID = 'recipely-shimmer';
 const SHIMMER_SWEEP_WIDTH = 120;
 
-/** Injects the shimmer keyframes into the document head once (web only). */
-const ensureShimmerKeyframes = (): void => {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(SHIMMER_KEYFRAMES_ID)) return;
-  const style = document.createElement('style');
-  style.id = SHIMMER_KEYFRAMES_ID;
-  style.textContent =
-    '@keyframes recipely-shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}';
-  document.head.appendChild(style);
-};
 
 /**
  * Shimmer placeholder block used while content is loading.
@@ -63,7 +54,7 @@ export const SkeletonLoader = ({
     if (isWeb()) return;
     translateX.value = withRepeat(
       withTiming(SHIMMER_SWEEP_WIDTH, { duration: durations.shimmer }),
-      -1,
+      ValueConstants.minusOne,
       false,
     );
   }, [translateX]);
@@ -73,16 +64,14 @@ export const SkeletonLoader = ({
   }));
 
   if (isWeb()) {
-    ensureShimmerKeyframes();
+    WebShimmer.ensureKeyframes();
     return (
       <div
         style={{
           width,
           height,
           borderRadius,
-          background: `linear-gradient(90deg, ${colors.skeleton} 25%, ${colors.skeletonHighlight} 50%, ${colors.skeleton} 75%)`,
-          backgroundSize: '200% 100%',
-          animation: 'recipely-shimmer 1.4s linear infinite',
+          ...WebShimmer.style(colors.skeleton, colors.skeletonHighlight),
           ...(style as unknown as React.CSSProperties),
         }}
       />

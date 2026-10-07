@@ -8,14 +8,14 @@ import Animated, {
   withSequence,
   withTiming,
 } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, avatarSizes, borderWidths, opacities, targetSizes } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
 import { t } from '@presentation/i18n';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { CommentNodeType } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
 
@@ -33,7 +33,7 @@ export interface CommentCardProps {
   /** When true the card flashes a primary tint once, then settles back. */
   highlighted?: boolean;
   /** Registers the card's root node so a deep link can scroll to it. */
-  nodeRef?: (node: CommentNode | null) => void;
+  nodeRef?: (node: CommentNodeType | null) => void;
 }
 
 const AVATAR_SIZE = avatarSizes.sm;
@@ -63,13 +63,11 @@ export const CommentCard = ({
   useEffect(() => {
     if (!highlighted) return;
     flash.value = withSequence(
-      withTiming(1, { duration: FLASH_IN_MS }),
+      withTiming(ValueConstants.one, { duration: FLASH_IN_MS }),
       withDelay(FLASH_HOLD_MS, withTiming(ValueConstants.zero, { duration: FLASH_OUT_MS })),
     );
   }, [highlighted, flash]);
 
-  // At rest (flash = 0) this resolves to exactly the normal card colors, so a
-  // non-highlighted card is visually unchanged.
   const flashStyle = useAnimatedStyle(() => ({
     backgroundColor: interpolateColor(
       flash.value,
@@ -168,9 +166,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    paddingVertical: spacing.xxs,
+    minHeight: targetSizes.min,
   },
   deleteBtn: {
-    padding: spacing.xxs,
+    minWidth: targetSizes.min,
+    minHeight: targetSizes.min,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

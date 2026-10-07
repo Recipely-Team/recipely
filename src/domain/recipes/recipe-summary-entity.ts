@@ -15,6 +15,7 @@ import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 import type { OwnerStatusType } from '@domain/recipes/publishing/owner-status';
 import { toOwnerStatus } from '@domain/recipes/publishing/to-owner-status';
+import { isBlank } from '@core/guards/type-guards';
 
 
 /**
@@ -30,10 +31,10 @@ export class RecipeSummaryEntity extends BaseEntity<RecipeSummaryEntityProps> {
   }
 
   static create(props: RecipeSummaryEntityProps): Result<RecipeSummaryEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.idRequired, 'id'));
     }
-    if (props.name.trim().length === ValueConstants.zero) {
+    if (isBlank(props.name)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.recipe.nameRequired, 'name'));
     }
     return ok(new RecipeSummaryEntity(props));

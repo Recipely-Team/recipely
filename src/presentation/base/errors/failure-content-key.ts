@@ -6,7 +6,7 @@
 //      prompt vs. retry the AI vs. use an Instagram link vs. request a new code).
 //   2. code-tier — the coarse per-`code` buckets, the fallback for every key we
 //      have no dedicated copy for (and for any failure with no key at all).
-export type FailureContentKey =
+export type FailureContentKeyType =
   // ── code-tier ──────────────────────────────────────────────────────────────
   | 'network'
   | 'timeout'
@@ -17,9 +17,7 @@ export type FailureContentKey =
   | 'conflict'
   | 'rateLimit'
   | 'validation'
-  // Copy of last resort: a cancellation is meant to be swallowed by the screen
-  // (see `CancelledFailure`), so these words exist only so a caller that forgets
-  // cannot fall through to "something went wrong".
+  // Last-resort copy for a cancellation a screen forgot to swallow.
   | 'cancelled'
   | 'unknown'
   // ── key-tier: AI generation ────────────────────────────────────────────────
@@ -61,6 +59,14 @@ export type FailureContentKey =
   | 'diaryFoodNameTooLong'
   | 'diaryNutrientInvalid'
   | 'diaryGoalInvalid'
+  // ── key-tier: meal logging from text or a photo ────────────────────────────
+  | 'mealParseInputRequired'
+  | 'mealParseTextTooLong'
+  | 'mealParseUnsupportedPhoto'
+  | 'mealParsePhotoRejected'
+  | 'mealParsePhotoUnchecked'
+  | 'mealParseQuotaExceeded'
+  | 'mealParseUnavailable'
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'
@@ -70,6 +76,13 @@ export type FailureContentKey =
   | 'instagramAccountLinked'
   | 'instagramNotConnected'
   | 'instagramReturnInvalid'
+  // ── key-tier: shopping list ────────────────────────────────────────────────
+  | 'shoppingLabelInvalid'
+  | 'shoppingAmountInvalid'
+  | 'shoppingListFull'
+  | 'shoppingListChanged'
+  | 'shoppingItemGone'
+  | 'contentBlocked'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

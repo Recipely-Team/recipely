@@ -39,7 +39,7 @@ const HAPTIC_INTERVAL_MS = 1500;
 export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JSX.Element => {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const scale = useRef(new Animated.Value(1)).current;
+  const scale = useRef(new Animated.Value(ValueConstants.one)).current;
 
   useEffect(() => {
     // Pulse animation
@@ -64,10 +64,7 @@ export const AlarmScreen = ({ timerId, recipeName }: AlarmScreenProps): React.JS
     // Looping alarm tone — bypasses silent switch on iOS.
     void getAlarmAudioService().start();
 
-    // Repeating haptic so the phone buzzes even when on silent mode. An
-    // interval rather than a self-scheduling async loop: the loop could only be
-    // asked to stop and then had to wait out its own sleep, so it kept buzzing
-    // (and held a live timer) past the dismiss that was meant to end it.
+    // Interval haptic so the phone buzzes on silent and stops at once on dismiss.
     const buzz = (): void => {
       void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
     };
@@ -135,9 +132,6 @@ const styles = StyleSheet.create({
     flex: ValueConstants.one,
     paddingHorizontal: spacing.xl,
   },
-  // One centred block instead of `space-between` on the whole screen: with
-  // three loose children the bell was pinned to the top edge and the labels
-  // floated in the middle of an otherwise empty screen.
   content: {
     flex: ValueConstants.one,
     alignItems: 'center',
@@ -146,8 +140,7 @@ const styles = StyleSheet.create({
   },
   bell: {
     fontSize: mediaSizes.heroSquare,
-    // An emoji is still text: without a line box sized to it the glyph is
-    // clipped to the platform default line height.
+    // An emoji needs a line box sized to it.
     lineHeight: lineHeightFor(mediaSizes.heroSquare, lineHeights.snug),
     textAlign: 'center',
     marginBottom: spacing.lg,

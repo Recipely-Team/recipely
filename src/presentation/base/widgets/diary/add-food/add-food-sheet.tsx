@@ -4,7 +4,7 @@ import { AddFoodPickStep } from '@presentation/base/widgets/diary/add-food/pick/
 import { AddFoodDetailStep } from '@presentation/base/widgets/diary/add-food/detail/add-food-detail-step';
 import { AddFoodProductStep } from '@presentation/base/widgets/diary/add-food/product/add-food-product-step';
 import { AddFoodFooter } from '@presentation/base/widgets/diary/add-food/add-food-footer';
-import type { AddFoodRequest } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
+import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import { CharConstants } from '@core/constants';
 import { diarySizes } from '@presentation/base/theme';
@@ -12,7 +12,7 @@ import { t } from '@presentation/i18n';
 
 export interface AddFoodSheetProps {
   /** What to open on; null closes the sheet. */
-  request: AddFoodRequest | null;
+  request: AddFoodRequestType | null;
   onClose: () => void;
   /** Given only outside the diary: the success toast then offers a "Diary" action that calls it. */
   onOpenDiary?: () => void;
@@ -70,12 +70,14 @@ export const AddFoodSheet = ({ request, onClose, onOpenDiary }: AddFoodSheetProp
     return (
       <AddFoodPickStep
         initialQuery={request?.kind === AddFoodRequestKind.Pick ? (request.query ?? CharConstants.empty) : CharConstants.empty}
+        initialMealText={request?.kind === AddFoodRequestKind.Pick ? (request.mealText ?? null) : null}
         meal={flow.meal}
         isSubmitting={flow.isSubmitting}
         onChoose={flow.choose}
         onChooseProduct={flow.chooseProduct}
         onChooseRecent={flow.chooseRecent}
         onQuickAdd={(quick, meal) => void flow.submitQuickAdd(quick, meal)}
+        onLogMeal={flow.logMeal}
       />
     );
   };

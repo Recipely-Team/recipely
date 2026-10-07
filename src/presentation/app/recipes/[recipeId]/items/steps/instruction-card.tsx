@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, decorSizes, borderWidths, maxFontScales } from '@presentation/base/theme';
@@ -99,8 +99,6 @@ const styles = StyleSheet.create({
     borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
-    // A long step must grow the card downwards, never squeeze the badge into
-    // an ellipse to make room for itself.
     flexShrink: ValueConstants.zero,
   },
   numberText: {

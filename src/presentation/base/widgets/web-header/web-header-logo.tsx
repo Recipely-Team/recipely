@@ -4,6 +4,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
+import { SiteMetadata } from '@presentation/base/constants/site-metadata';
 
 export interface WebHeaderLogoProps {
   onPress: () => void;
@@ -19,7 +20,7 @@ export const WebHeaderLogo = ({ onPress }: WebHeaderLogoProps): React.JSX.Elemen
     <Pressable
       onPress={onPress}
       accessibilityRole="link"
-      accessibilityLabel="Recipely"
+      accessibilityLabel={SiteMetadata.appName}
       style={({ pressed }) => [styles.root, pressed && styles.pressed]}
     >
       <View
@@ -32,7 +33,7 @@ export const WebHeaderLogo = ({ onPress }: WebHeaderLogoProps): React.JSX.Elemen
         <RecipelyLogo size={LOGO_SIZE} />
       </View>
       <View>
-        <ThemedText style={[styles.wordmark, { color: colors.text }]}>Recipely</ThemedText>
+        <ThemedText style={[styles.wordmark, { color: colors.text }]}>{SiteMetadata.appName}</ThemedText>
       </View>
     </Pressable>
   );

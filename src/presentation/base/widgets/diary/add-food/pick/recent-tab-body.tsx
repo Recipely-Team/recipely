@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import type { RecentFood } from '@domain/diary/foods/search/recent-food';
+import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { FoodPickList } from '@presentation/base/widgets/diary/add-food/pick/food-pick-list';
 import { PickSkeleton } from '@presentation/base/widgets/diary/add-food/pick/pick-skeleton';
@@ -11,7 +11,7 @@ import { PickRowType } from '@presentation/base/widgets/diary/add-food/list/pick
 import { t } from '@presentation/i18n';
 
 export interface RecentTabBodyProps {
-  onChooseRecent: (recent: RecentFood) => void;
+  onChooseRecent: (recent: RecentFoodType) => void;
 }
 
 const RECENT = 'recent';

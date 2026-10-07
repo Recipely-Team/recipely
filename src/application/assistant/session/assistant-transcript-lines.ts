@@ -1,10 +1,10 @@
 import { ToolRunStatus, TranscriptEntryKind } from '@live-assistant/core';
 import type { TranscriptEntry } from '@live-assistant/core';
-import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
-import type { AssistantTranscriptLine } from '@application/assistant/session/assistant-transcript-line';
+import { ApiLiveTool } from '@application/assistant/session/live-tool-contract';
+import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';
-import { CharConstants } from '@core/constants';
+import { CharConstants, ValueConstants } from '@core/constants';
 import { isString } from '@core/guards/type-guards';
 
 /** Longer than a phrase is not a chip: it wraps, and the transcript stops being scannable. */
@@ -22,7 +22,7 @@ export function actionDetail(arg: unknown, response: Readonly<Record<string, unk
 }
 
 /** One controller entry as a panel line, or null for an entry the panel does not show. */
-function toLine(entry: TranscriptEntry): AssistantTranscriptLine | null {
+function toLine(entry: TranscriptEntry): AssistantTranscriptLineType | null {
   if (entry.kind === TranscriptEntryKind.Message) {
     return { kind: AssistantTranscriptLineKind.Speech, id: entry.id, speaker: entry.speaker, text: entry.text };
   }
@@ -55,23 +55,23 @@ function toLine(entry: TranscriptEntry): AssistantTranscriptLine | null {
  */
 export function toTranscriptLines(
   entries: readonly TranscriptEntry[],
-  extras: readonly { readonly after: number; readonly line: AssistantTranscriptLine }[],
-): AssistantTranscriptLine[] {
-  const lines: AssistantTranscriptLine[] = [];
+  extras: readonly { readonly after: number; readonly line: AssistantTranscriptLineType }[],
+): AssistantTranscriptLineType[] {
+  const lines: AssistantTranscriptLineType[] = [];
   let next = 0;
   const flushExtras = (upTo: number): void => {
-    while (next < extras.length && (extras[next]?.after ?? 0) <= upTo) {
+    while (next < extras.length && (extras[next]?.after ?? ValueConstants.zero) <= upTo) {
       const extra = extras[next];
       if (extra !== undefined) lines.push(extra.line);
-      next += 1;
+      next += ValueConstants.one;
     }
   };
 
-  flushExtras(0);
+  flushExtras(ValueConstants.zero);
   entries.forEach((entry, index) => {
     const line = toLine(entry);
     if (line !== null) lines.push(line);
-    flushExtras(index + 1);
+    flushExtras(index + ValueConstants.one);
   });
   flushExtras(Number.POSITIVE_INFINITY);
   return lines;

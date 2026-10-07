@@ -8,23 +8,22 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { LoginHero } from '@presentation/app/login/body/login-hero';
 import { LoginForm } from '@presentation/app/login/body/login-form';
-import { useLayout } from '@presentation/base/responsive/use-layout';
+import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii } from '@presentation/base/theme';
+import { spacing, radii, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
 import { ValueConstants } from '@core/constants';
-import { OrientationType } from '@presentation/base/responsive/orientation-type';
 
-const AUTH_CARD_MAX_WIDTH = 460;
+const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const LoginScreen = (): React.JSX.Element => {
   const router = useRouter();
   const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
-  const { isExpanded, orientation } = useLayout();
-  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
+  const split = useTwoPaneSplit();
+  const isLandscapeShell = split.isSplit;
 
   const { authStore } = useStores();
   const state = authStore((s) => s.state);
@@ -38,12 +37,12 @@ export const LoginScreen = (): React.JSX.Element => {
   if (isLandscapeShell) {
     return (
       <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
+        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={styles.splitHero}
+            style={[styles.splitHero, split.firstPaneStyle]}
           >
             <LoginHero isLandscapeShell={isLandscapeShell} />
           </LinearGradient>

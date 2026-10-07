@@ -2,6 +2,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { AuthSessionEntity } from '@domain/auth/auth-session-entity';
 import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-interface';
+import { Email } from '@domain/common/email';
 
 /**
  * Confirms the emailed registration code and, on success, creates the account
@@ -10,7 +11,9 @@ import type { AuthRepositoryInterface } from '@domain/auth/auth-repository-inter
 export class VerifyRegistrationUseCase {
   constructor(private readonly repo: AuthRepositoryInterface) {}
 
-  execute(email: string, code: string): Promise<Result<AuthSessionEntity, Failure>> {
-    return this.repo.verifyRegistration(email, code);
+  async execute(email: string, code: string): Promise<Result<AuthSessionEntity, Failure>> {
+    const address = Email.create(email);
+    if (!address.ok) return address;
+    return this.repo.verifyRegistration(address.value.value, code);
   }
 }

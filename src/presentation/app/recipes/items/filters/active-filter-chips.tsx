@@ -1,5 +1,5 @@
 import { Pressable, ScrollView, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { formatLabel } from '@presentation/app/recipes/model/format-label';
@@ -52,7 +52,7 @@ export const ActiveFilterChips = ({
           onPress={() => onRemoveCategory(c)}
           style={[styles.activeChip, { backgroundColor: colors.primary + colorAlphas.faint, borderColor: colors.primary + colorAlphas.soft }]}
           accessibilityRole="button"
-          accessibilityLabel={`${categoryLabel(c).name} ${t().recipes.removeFilter}`}
+          accessibilityLabel={t().recipes.removeFilterNamed.replace('{name}', categoryLabel(c).name)}
         >
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {categoryLabel(c).name}
@@ -66,7 +66,7 @@ export const ActiveFilterChips = ({
           onPress={() => onRemoveDifficulty(d)}
           style={[styles.activeChip, { backgroundColor: colors.primary + colorAlphas.faint, borderColor: colors.primary + colorAlphas.soft }]}
           accessibilityRole="button"
-          accessibilityLabel={`${formatLabel(d)} ${t().recipes.removeFilter}`}
+          accessibilityLabel={t().recipes.removeFilterNamed.replace('{name}', formatLabel(d))}
         >
           <ThemedText variant="caption" style={[styles.activeChipText, { color: colors.primary }]}>
             {formatLabel(d)}

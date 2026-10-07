@@ -1,6 +1,7 @@
 import { Failure } from '@core/failure/failure';
 import { FailureCode } from '@core/failure/failure-code';
 import type { ValidationFieldError } from '@core/failure/validation-field-error';
+import { ValueConstants } from '@core/constants';
 
 /**
  * Failure produced when user-supplied input does not pass domain or API
@@ -38,12 +39,12 @@ export class ValidationFailure extends Failure {
   get fieldErrors(): ValidationFieldError[] {
     return this.message.split('; ').map((segment) => {
       const separatorIndex = segment.indexOf(': ');
-      if (separatorIndex === -1) {
+      if (separatorIndex === ValueConstants.minusOne) {
         return { message: segment };
       }
       return {
-        field: segment.slice(0, separatorIndex),
-        message: segment.slice(separatorIndex + 2),
+        field: segment.slice(ValueConstants.zero, separatorIndex),
+        message: segment.slice(separatorIndex + ValueConstants.two),
       };
     });
   }

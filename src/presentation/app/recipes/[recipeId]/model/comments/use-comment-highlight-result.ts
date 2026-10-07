@@ -1,5 +1,5 @@
 import type { ScrollViewProps } from 'react-native';
-import type { CommentNode } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
+import type { CommentNodeType } from '@presentation/app/recipes/[recipeId]/model/comments/comment-node';
 
 /** View state returned by {@link useCommentHighlight} for the comment sections. */
 export interface UseCommentHighlightResult {
@@ -15,7 +15,7 @@ export interface UseCommentHighlightResult {
    */
   highlightedCommentId: string | null;
   /** Ref callback the target `CommentCard` registers its root node with. */
-  registerTargetNode: (node: CommentNode | null) => void;
+  registerTargetNode: (node: CommentNodeType | null) => void;
   /**
    * Spread onto the detail `ScrollView`. Carries the content-size listener that
    * re-measures the target as the page grows, plus the user-took-over listeners

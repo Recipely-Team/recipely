@@ -7,6 +7,7 @@ import { ValueConstants } from '@core/constants';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import type { CreatorSummaryEntityProps } from '@domain/creators/creator-summary-entity-props';
 import { hasOnePerPlatform } from '@domain/creators/has-one-per-platform';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * One card of the Chefs tab: an approved creator with at least one published
@@ -26,10 +27,10 @@ export class CreatorSummaryEntity extends BaseEntity<CreatorSummaryEntityProps> 
   }
 
   static create(props: CreatorSummaryEntityProps): Result<CreatorSummaryEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.creatorSummary.idRequired, 'id'));
     }
-    if (props.displayName.trim().length === ValueConstants.zero) {
+    if (isBlank(props.displayName)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.creatorSummary.displayNameRequired, 'displayName'));
     }
     if (props.creatorTags.length === ValueConstants.zero) {

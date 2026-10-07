@@ -170,7 +170,7 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
    stateless mappers/formatters are plain exported functions.
 3. **Comments live at the head of the thing they describe** — ONE doc block per class/hook/component/module
    with `@remarks` bullets and a bolded label; inline `//` only for the line a reader would otherwise break,
-   one short line. Trivial pass-throughs need nothing.
+   one short line (`check:structure` rule AM: no two consecutive indented `//` lines). Trivial pass-throughs need nothing.
 4. **Files must stay focused** — ~80 lines for entities, ~120 for use cases / mappers; split complex screens
    into sub-components in the feature folder; no nested classes, no nesting > 2 levels.
 5. **No magic values** — named literals → `@core/constants` (`CharConstants.empty`, `ValueConstants.zero`,
@@ -213,7 +213,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     `check:structure` rule I; `architecture.md` §4a.
 15. **Imports** — always the `@layer/...` alias; `./` only inside barrel `index.ts`. Presentation → application/
     domain/core, never infrastructure (except `src/infrastructure/constants/*`, `src/presentation/bootstrap/`,
-    `*/di/` wiring). `check:structure` rules B and C.
+    `*/di/` wiring). Application imports no infrastructure.
+    `check:structure` rules B, C and AO.
 15b. **Keep the map fresh** — after adding/moving/deleting files run `npm run map`; never hand-edit
     `PROJECT-MAP.md`. `check:structure` rule J.
 16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It enforces rules 1,
@@ -255,8 +256,9 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 23e. **An ad needs a screen with something on it** — placements only on the recipe feed; the web shell
     (`+html.tsx`) never loads an ad script; the one AdSense unit's loader comes via `mountAdsenseUnit`.
     `check:structure` rule T (placement allowlist).
-23g. **Unfinished features hide behind ONE flag file** — `src/application/config/feature-flags.ts` (On / Off / DevOnly) is the only
-    switch; a flagged feature's entry points read it (directly or via the store feeding them) and render nothing when off.
+23g. **Unfinished features hide behind ONE flag file** — `src/application/config/feature-flags.ts` (On / Off / DevOnly) is the
+    build-time default; the admin panel's Feature Flag table may override it remotely. Entry points read flags only through
+    `FeatureFlagResolver` (via the store feeding them) and render nothing when off.
 23f. **Every route is publisher content or is hidden from crawlers** — each route is in `public/sitemap.xml`
     or `Disallow`ed in `public/robots.txt`, never neither or both; a `[param]` route needs its parent listed
     and a `firebase.json` rewrite. Enforced by `assert-crawlable-surface.mjs` in `check:structure`.

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { container } from '@core/di/container';
-import { TOKENS } from '@application/di/tokens';
-import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { RecipeAuthorInput } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-input';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -19,7 +17,7 @@ const KITCHEN_AUTHOR: ResolvedAuthor = {
 /**
  * Resolves the public profile of a recipe's author for the detail-screen author
  * card. The owner case is resolved by the caller and passed via `owner`; any
- * other author is fetched here through {@link GetUserProfileUseCase} keyed by
+ * other author is fetched here through the bag's `getUserProfile` use case keyed by
  * `ownerId`. A failed lookup yields `unavailable` so the screen can omit the
  * card rather than show a broken author. A Recipely Kitchen recipe is credited
  * to the Kitchen itself, with no lookup.
@@ -30,6 +28,7 @@ export const useRecipeAuthor = ({
   isOwner,
   isKitchen = false,
 }: RecipeAuthorInput): RecipeAuthorState => {
+  const { getUserProfile } = useStores();
   const [state, setState] = useState<RecipeAuthorState>({ status: StoreStatus.Loading });
 
   useEffect(() => {
@@ -41,8 +40,7 @@ export const useRecipeAuthor = ({
       setState({ status: StoreStatus.Resolved, author: owner });
       return;
     }
-    // Owned recipe whose own profile has not resolved yet: hold on loading
-    // instead of fetching — the signed-in user's profile is the caller's job.
+    // Own recipe: wait for the caller to resolve the signed-in profile.
     if (isOwner) {
       setState({ status: StoreStatus.Loading });
       return;
@@ -54,10 +52,7 @@ export const useRecipeAuthor = ({
 
     let active = true;
     setState({ status: StoreStatus.Loading });
-    const useCase = container.resolve<GetUserProfileUseCase>(
-      TOKENS.GetUserProfileUseCase,
-    );
-    void useCase.execute({ userId: ownerId }).then((result) => {
+    void getUserProfile.execute({ userId: ownerId }).then((result) => {
       if (!active) return;
       if (!result.ok) {
         setState({ status: StoreStatus.Unavailable });
@@ -77,7 +72,7 @@ export const useRecipeAuthor = ({
     return () => {
       active = false;
     };
-  }, [ownerId, owner, isOwner, isKitchen]);
+  }, [ownerId, owner, isOwner, isKitchen, getUserProfile]);
 
   return state;
 };

@@ -1,13 +1,13 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, fontSizes, fontWeights, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
-import type { IoniconName } from '@presentation/base/errors/ionicon-name';
+import type { IoniconNameType } from '@presentation/base/errors/ionicon-name';
 
 export interface PanelActionProps {
   label: string;
-  icon: IoniconName;
+  icon: IoniconNameType;
   onPress: () => void;
   /** The one action the panel leads with (Publish); filled rather than outlined. */
   primary?: boolean;

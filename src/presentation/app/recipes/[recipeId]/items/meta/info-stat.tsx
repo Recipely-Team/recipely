@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { StatTileText } from '@presentation/app/recipes/[recipeId]/items/meta/stat-tile-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, decorSizes } from '@presentation/base/theme';
@@ -8,10 +8,12 @@ export interface InfoStatProps {
   icon: keyof typeof Ionicons.glyphMap;
   value: string;
   label: string;
+  /** Rendered under the label — the servings tile's stepper. */
+  footer?: React.ReactNode;
 }
 
 /** A stat tile that only states a fact: servings, difficulty, prep time. */
-export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Element => {
+export const InfoStat = ({ icon, value, label, footer }: InfoStatProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <View style={styles.stat}>
@@ -19,6 +21,7 @@ export const InfoStat = ({ icon, value, label }: InfoStatProps): React.JSX.Eleme
         <Ionicons name={icon} size={iconSizes.lg} color={colors.primary} />
       </View>
       <StatTileText value={value} label={label} />
+      {footer}
     </View>
   );
 };

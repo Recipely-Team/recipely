@@ -18,7 +18,7 @@ import { NetworkFailure, type Failure } from '@core/failure';
 import { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import { DiaryDay } from '@domain/diary/day/diary-day';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
-import type { Stores } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showErrorToast } from '@presentation/base/feedback/show-toast';
 import { useDiaryDay } from '@presentation/app/diary/hooks/use-diary-day';
@@ -48,7 +48,7 @@ const setup = (selected: CalendarDate) => {
     useDiaryDay();
     return null;
   };
-  const mount = () => renderComponent(<Probe />, { diaryStore } as unknown as Partial<Stores>);
+  const mount = () => renderComponent(<Probe />, { diaryStore } as unknown as Partial<ApplicationStores>);
   return { diaryStore, mount };
 };
 

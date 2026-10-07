@@ -29,7 +29,6 @@ const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]
     mealType: ['Dinner'],
     ownerId: 'owner-1',
     likeCount: 0,
-    likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
     isPublished: true,

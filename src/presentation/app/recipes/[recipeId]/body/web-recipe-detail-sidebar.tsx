@@ -1,44 +1,55 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
-import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
+import { PortionStepper } from '@presentation/app/recipes/[recipeId]/items/meta/portion-stepper';
+import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, controlSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, letterSpacings, lineHeights, iconSizes, layoutSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
 import { AddToDiaryButton } from '@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   /** The backend is still computing nutrition; the empty state says so. */
   isNutritionCalculating: boolean;
 }
 
-/** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and the nutrition panel. */
+/**
+ * Sticky-column sidebar for the web recipe detail: ingredients checklist (with
+ * the unit toggle), a meta grid whose servings row is the portion stepper, and
+ * the nutrition panel.
+ */
 export const WebRecipeDetailSidebar = ({
   recipe,
   checkedIngredients,
+  portions,
   onToggleIngredient,
   isNutritionCalculating,
 }: WebRecipeDetailSidebarProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const strings = t();
   const checkedCount = checkedIngredients.filter(Boolean).length;
+  const ingredients = IngredientList.of(portions.ingredients);
 
   const headingLineHeight = useTextLineHeight(fontSizes.body, lineHeights.snug);
 
-  const metaRows = [
+  const metaRows: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; control?: React.JSX.Element }[] = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
     { icon: 'flame-outline' as const, label: strings.recipes.cookTime, value: `${String(recipe.cookTimeMinutes)} ${strings.createRecipe.minShort}` },
     { icon: 'speedometer-outline' as const, label: strings.recipes.difficulty, value: difficultyLabel(recipe.difficulty) },
-    { icon: 'people-outline' as const, label: strings.recipes.servings, value: String(recipe.servings) },
+    { icon: 'people-outline' as const, label: strings.recipes.servings, value: String(portions.servings), control: <PortionStepper portions={portions} /> },
   ];
 
   return (
@@ -47,15 +58,15 @@ export const WebRecipeDetailSidebar = ({
         <View style={styles.cardHeader}>
           <ThemedText variant="subtitle">{strings.recipes.ingredients}</ThemedText>
           <ThemedText variant="caption" muted>
-            {`${String(checkedCount)}/${String(recipe.ingredients.filter((line) => !isIngredientGroup(line)).length)}`}
+            {`${String(checkedCount)}/${String(ingredients.filledCount)}`}
           </ThemedText>
         </View>
         <View style={styles.checklist}>
-          {recipe.ingredients.map((item, i) => {
-            // A group heading names one component of the recipe — a syrup, a
-            // filling. There is nothing to tick off, so it must not carry a
-            // checkbox that does nothing when tapped.
-            if (isIngredientGroup(item)) {
+          <UnitSystemToggle portions={portions} />
+          {ingredients.lines.map((line, i) => {
+            const item = line.raw;
+            // Group headings get no checkbox.
+            if (line.isGroup) {
               return (
                 <ThemedText
                   key={i}
@@ -63,7 +74,7 @@ export const WebRecipeDetailSidebar = ({
                   accessibilityRole="header"
                   style={[styles.groupHeading, { color: colors.primary }]}
                 >
-                  {ingredientGroupLabel(item)}
+                  {line.groupLabel}
                 </ThemedText>
               );
             }
@@ -77,16 +88,7 @@ export const WebRecipeDetailSidebar = ({
                 accessibilityLabel={item}
                 style={styles.checkRow}
               >
-                <View
-                  style={[
-                    styles.checkbox,
-                    checked
-                      ? { backgroundColor: colors.success, borderColor: colors.success }
-                      : { backgroundColor: 'transparent', borderColor: colors.border },
-                  ]}
-                >
-                  {checked ? <Ionicons name="checkmark" size={iconSizes.sm} color={colors.onSuccess} /> : null}
-                </View>
+                <TickBox checked={checked} />
                 <ThemedText
                   variant="body"
                   style={[
@@ -103,6 +105,7 @@ export const WebRecipeDetailSidebar = ({
             );
           })}
         </View>
+        <AddToShoppingButton source={{ recipeId: recipe.id, recipeName: recipe.name, lines: portions.ingredients }} inCard />
       </View>
 
       <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
@@ -120,9 +123,11 @@ export const WebRecipeDetailSidebar = ({
                 {meta.label}
               </ThemedText>
             </View>
-            <ThemedText variant="body" style={styles.metaValue}>
-              {meta.value}
-            </ThemedText>
+            {meta.control ?? (
+              <ThemedText variant="body" style={styles.metaValue}>
+                {meta.value}
+              </ThemedText>
+            )}
           </View>
         ))}
       </View>
@@ -177,14 +182,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     paddingVertical: spacing.xs,
-  },
-  checkbox: {
-    width: controlSizes.checkbox,
-    height: controlSizes.checkbox,
-    borderRadius: radii.sm,
-    borderWidth: borderWidths.medium,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   checkText: {
     flex: ValueConstants.one,

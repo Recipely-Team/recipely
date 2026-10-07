@@ -4,10 +4,9 @@ import type { Result } from '@core/result/result';
 import { StoreStatus } from '@application/store/store-status';
 import { configureCreatorsStore } from '@application/creators/creators-store';
 import type { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
-import type { ListCreatorsInput } from '@application/creators/list/list-creators-input';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
-import { CREATORS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
 import type { Page } from '@domain/common/page';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 
@@ -15,11 +14,11 @@ type Answer = Result<Page<CreatorSummaryEntity>, Failure>;
 
 /** A list use case whose answers the test releases one by one. */
 const deferredList = () => {
-  const calls: ListCreatorsInput[] = [];
+  const calls: number[] = [];
   const pending: ((answer: Answer) => void)[] = [];
   const listCreators = {
-    execute: (input: ListCreatorsInput) => {
-      calls.push(input);
+    execute: (page: number) => {
+      calls.push(page);
       return new Promise<Answer>((resolve) => pending.push(resolve));
     },
   } as unknown as ListCreatorsUseCase;
@@ -27,10 +26,10 @@ const deferredList = () => {
 };
 
 const immediateList = (...answers: Answer[]) => {
-  const calls: ListCreatorsInput[] = [];
+  const calls: number[] = [];
   const listCreators = {
-    execute: (input: ListCreatorsInput) => {
-      calls.push(input);
+    execute: (page: number) => {
+      calls.push(page);
       return Promise.resolve(answers[Math.min(calls.length - 1, answers.length - 1)]);
     },
   } as unknown as ListCreatorsUseCase;
@@ -38,13 +37,12 @@ const immediateList = (...answers: Answer[]) => {
 };
 
 const ids = (store: ReturnType<typeof configureCreatorsStore>): string[] =>
-  store.getState().creators.map((c) => c.id);
+  loadedItems(store.getState().creators).map((c) => c.id);
 
 describe('creators store', () => {
   it('starts idle and empty', () => {
     const store = configureCreatorsStore(immediateList(ok(creatorPageOf([]))));
-    expect(store.getState().listState).toEqual({ status: StoreStatus.Idle });
-    expect(store.getState().creators).toEqual([]);
+    expect(store.getState().creators).toEqual({ status: StoreStatus.Idle });
   });
 
   it('load shows Loading, then the first page', async () => {
@@ -52,13 +50,13 @@ describe('creators store', () => {
     const store = configureCreatorsStore(list);
 
     const loading = store.getState().load();
-    expect(store.getState().listState.status).toBe(StoreStatus.Loading);
+    expect(store.getState().creators.status).toBe(StoreStatus.Loading);
     list.answer(0, ok(creatorPageOf([creatorSummaryOf('1'), creatorSummaryOf('2')], { total: 30, pageSize: 20 })));
     await loading;
 
-    expect(list.calls).toEqual([{ page: 1, pageSize: CREATORS_PAGE_SIZE }]);
+    expect(list.calls).toEqual([1]);
     expect(ids(store)).toEqual(['1', '2']);
-    expect(store.getState().listState).toEqual({ status: StoreStatus.Loaded, page: 1, hasMore: true });
+    expect(store.getState().creators).toMatchObject({ status: StoreStatus.Loaded, page: 1, hasMore: true });
   });
 
   it('load is a no-op once loaded', async () => {
@@ -77,7 +75,7 @@ describe('creators store', () => {
 
     await store.getState().load();
 
-    expect(store.getState().listState).toEqual({ status: StoreStatus.Error, failure });
+    expect(store.getState().creators).toEqual({ status: StoreStatus.Error, failure });
   });
 
   it('refresh replaces the rows without showing Loading over a loaded strip', async () => {
@@ -88,7 +86,7 @@ describe('creators store', () => {
     await first;
 
     const refreshing = store.getState().refresh();
-    expect(store.getState().listState.status).toBe(StoreStatus.Loaded);
+    expect(store.getState().creators.status).toBe(StoreStatus.Loaded);
     list.answer(1, ok(creatorPageOf([creatorSummaryOf('9')])));
     await refreshing;
 
@@ -104,7 +102,7 @@ describe('creators store', () => {
     await store.getState().refresh();
 
     expect(ids(store)).toEqual(['1']);
-    expect(store.getState().listState.status).toBe(StoreStatus.Loaded);
+    expect(store.getState().creators.status).toBe(StoreStatus.Loaded);
   });
 
   it('loadMore asks for the next page and appends it', async () => {
@@ -117,9 +115,9 @@ describe('creators store', () => {
 
     await store.getState().loadMore();
 
-    expect(list.calls[1]).toEqual({ page: 2, pageSize: CREATORS_PAGE_SIZE });
+    expect(list.calls[1]).toBe(2);
     expect(ids(store)).toEqual(['1', '2']);
-    expect(store.getState().listState).toEqual({ status: StoreStatus.Loaded, page: 2, hasMore: false });
+    expect(store.getState().creators).toMatchObject({ status: StoreStatus.Loaded, page: 2, hasMore: false });
   });
 
   it('loadMore does nothing when there is no next page', async () => {
@@ -144,12 +142,7 @@ describe('creators store', () => {
     await store.getState().loadMore();
 
     expect(ids(store)).toEqual(['1']);
-    expect(store.getState().listState).toEqual({
-      status: StoreStatus.Loaded,
-      page: 1,
-      hasMore: true,
-      isLoadingMore: false,
-    });
+    expect(store.getState().creators).toMatchObject({ status: StoreStatus.Loaded, page: 1, hasMore: true, isLoadingMore: false });
   });
 
   it('drops a next page that lands after a refresh started', async () => {
@@ -167,6 +160,6 @@ describe('creators store', () => {
     await more;
 
     expect(ids(store)).toEqual(['7']);
-    expect(store.getState().listState).toEqual({ status: StoreStatus.Loaded, page: 1, hasMore: true });
+    expect(store.getState().creators).toMatchObject({ status: StoreStatus.Loaded, page: 1, hasMore: true, isLoadingMore: false });
   });
 });

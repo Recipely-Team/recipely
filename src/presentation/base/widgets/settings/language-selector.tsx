@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { ALL_LOCALE_LIST, isPreviewLocale } from '@application/i18n/supported-locales';
 import { BottomSheet } from '@presentation/base/widgets/sheets/bottom-sheet';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -50,8 +50,7 @@ export const LanguageSelector = ({ value, onChange }: LanguageSelectorProps): Re
         <ScrollView contentContainerStyle={styles.list}>
           {ALL_LOCALE_LIST.map((locale) => {
             const active = locale === value;
-            // Translated but not yet verified on a device: shown, so a user
-            // finds their language and learns it is coming, but not selectable.
+            // Translated but unverified: shown, not selectable.
             const preview = isPreviewLocale(locale);
             return (
               <Pressable

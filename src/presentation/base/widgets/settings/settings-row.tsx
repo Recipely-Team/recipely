@@ -1,6 +1,6 @@
 import { type ReactNode } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, controlSizes, iconSizes, opacities } from '@presentation/base/theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -31,8 +31,6 @@ export const SettingsRow = ({
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      // A row with a handler is a button; without one it is plain text. Saying
-      // so is what lets assistive tech (and a test) tell the two apart.
       accessibilityRole={onPress !== undefined ? 'button' : 'text'}
       accessibilityLabel={label}
       style={({ pressed }) => [
