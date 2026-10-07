@@ -536,7 +536,7 @@ export const tr: TranslationsType = {
     searchCuisine: 'Mutfak ara…',
     cuisinesSelected: '{n} mutfak seçili',
     aiPromoSub: 'Ne istediğini anlat — gerisini ben hallederim',
-    removeFilter: 'Filtreyi kaldır',
+    removeFilterNamed: "{name} filtresini kaldır",
     removeTimeFilter: 'Süre filtresini kaldır',
     closeFilter: 'Filtreleri kapat',
     share: 'Tarifi paylaş',

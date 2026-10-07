@@ -535,7 +535,7 @@ export const ko: TranslationsType = {
     searchCuisine: '요리 검색…',
     cuisinesSelected: '{n}개 선택됨',
     aiPromoSub: '원하는 요리를 말해 주세요 — 나머지는 제가 도와드릴게요',
-    removeFilter: '필터 제거',
+    removeFilterNamed: "{name} 필터 삭제",
     removeTimeFilter: '시간 필터 제거',
     closeFilter: '필터 닫기',
     share: '레시피 공유',

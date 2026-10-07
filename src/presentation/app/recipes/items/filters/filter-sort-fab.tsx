@@ -10,7 +10,7 @@ import Animated, {
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors, durations } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, decorSizes, layoutSizes, borderWidths, zIndices, opacities, BrandColors, durations, maxFontScales } from '@presentation/base/theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -126,7 +126,7 @@ export const FilterSortFab = ({
 
       {activeCount > ValueConstants.zero ? (
         <View style={[styles.badge, { backgroundColor: colors.danger, borderColor: colors.background }]}>
-          <ThemedText style={styles.badgeText} numberOfLines={ValueConstants.one}>
+          <ThemedText style={styles.badgeText} numberOfLines={ValueConstants.one} maxFontSizeMultiplier={maxFontScales.badge}>
             {badgeText}
           </ThemedText>
         </View>
@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   badgeText: {
     color: BrandColors.white,
     fontSize: fontSizes.nano,
-    lineHeight: fontSizes.nano,
+    lineHeight: decorSizes.notifBadgeLineHeight,
     fontWeight: fontWeights.bold,
     textAlign: 'center',
     includeFontPadding: false,

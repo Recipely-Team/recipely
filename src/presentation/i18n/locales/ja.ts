@@ -533,7 +533,7 @@ export const ja = {
     searchCuisine: '料理を検索…',
     cuisinesSelected: '{n} 件選択中',
     aiPromoSub: '作りたいものを教えてください — あとはお任せください',
-    removeFilter: 'フィルターを削除',
+    removeFilterNamed: "{name}のフィルターを解除",
     removeTimeFilter: '時間フィルターを削除',
     closeFilter: 'フィルターを閉じる',
     share: 'レシピを共有',

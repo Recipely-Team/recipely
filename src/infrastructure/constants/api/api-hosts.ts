@@ -24,8 +24,6 @@ const SERVER_URL: string =
   process.env.EXPO_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ??
   DEFAULT_SERVER_URL;
 
-/** Unversioned on the backend — mounted on the Express app, not under /api/v1. */
-export const HEALTH_URL: string = `${SERVER_URL}/health`;
 
 /** `HttpClient.baseURL`: every relative `url:` in a repository resolves under here. */
 export const API_BASE_URL: string = `${SERVER_URL}/api/v1`;

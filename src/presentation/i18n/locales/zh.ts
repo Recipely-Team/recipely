@@ -536,7 +536,7 @@ export const zh = {
     searchCuisine: '搜索菜系…',
     cuisinesSelected: '已选 {n} 个菜系',
     aiPromoSub: '告诉我你想吃什么，剩下的交给我',
-    removeFilter: '移除筛选',
+    removeFilterNamed: "移除“{name}”筛选",
     removeTimeFilter: '移除时间筛选',
     closeFilter: '关闭筛选',
     share: '分享食谱',
