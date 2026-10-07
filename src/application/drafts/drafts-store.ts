@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
+import { RequestEpoch } from '@application/store/request-epoch';
 
 import type { ListDraftsUseCase } from '@application/drafts/list/list-drafts-use-case';
 import type { GetLatestDraftUseCase } from '@application/drafts/read/get-latest-draft-use-case';
@@ -27,7 +28,9 @@ interface DraftsStoreDeps {
  *   refresh without a skeleton once loaded.
  * - **Session-scoped**: `clear()` resets the loader, so a page that started
  *   under the previous account never publishes — signing out mid-request had
- *   put the previous account's drafts back into the list.
+ *   put the previous account's drafts back into the list. The resume card is
+ *   guarded the same way: a latest-draft answer (or a save) that lands after
+ *   `clear()` does not put the previous account's card back.
  * - **Edits show without a reload**: a saved draft replaces its row or joins
  *   the top; a deleted one leaves the list and, if it was the latest, the card.
  */
@@ -35,6 +38,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
   create<DraftsStoreState>((set, get) => {
     const loader = new PagedListLoader<RecipeDraft>(() => get().drafts, (drafts) => set({ drafts }), (draft) => draft.id);
     const fetchPage = (page: number) => deps.listDraftsUseCase.execute(page);
+    const latest = new RequestEpoch();
 
     return {
       drafts: { status: StoreStatus.Idle },
@@ -42,14 +46,16 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       loadDrafts: () => loader.refresh(fetchPage),
       loadMoreDrafts: () => loader.loadMore(),
       loadLatestDraft: async () => {
+        const isCurrent = latest.start();
         const result = await deps.getLatestDraftUseCase.execute();
-        if (result.ok) set({ latestDraft: result.value });
+        if (result.ok && isCurrent()) set({ latestDraft: result.value });
       },
       upsertDraft: async (input) => {
+        const isCurrent = latest.start();
         const result = await deps.upsertDraftUseCase.execute(input);
         if (!result.ok) return null;
         loader.upsertItem(result.value);
-        set({ latestDraft: result.value });
+        if (isCurrent()) set({ latestDraft: result.value });
         return result.value;
       },
       deleteDraft: async (id) => {
@@ -62,6 +68,7 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       getDraft: (id) => deps.getDraftUseCase.execute(id),
       clear: () => {
         loader.reset();
+        latest.invalidate();
         set({ latestDraft: null });
       },
     };

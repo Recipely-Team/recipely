@@ -65,7 +65,7 @@ describe('ShoppingListStore', () => {
 
   it('shows added and merged lines without a reload, counting only the new ones', async () => {
     const { repo, store } = await loaded();
-    repo.add.mockResolvedValue(ok({ items: [shoppingItemOf({ id: 'n', label: 'Milk' }), shoppingItemOf({ id: 'b', quantity: 5, position: 1 })], added: 1, merged: 1 }));
+    repo.add.mockResolvedValue(ok({ items: [shoppingItemOf({ id: 'n', label: 'Milk', position: -1 }), shoppingItemOf({ id: 'b', quantity: 5, position: 1 })], added: 1, merged: 1 }));
     const r = await store.getState().addFromRecipe(['1 cup milk', '3 cups flour'], { id: 'r1', name: 'Pancakes' });
     expect(r.ok && [r.value.added, r.value.merged]).toEqual([1, 1]);
     expect(ids(store)).toEqual(['n', 'a', 'b', 'c+']);

@@ -330,6 +330,22 @@ recipe — "a comment deleted before 'load more' does not hide the next comment"
 comment posted before 'load more' does not show an older comment twice"
 (`comments-store.test.ts`).
 
+**The same skip, bypassing the loader.** The shopping list rewrote its own rows on a
+delete or a tick and never told its `PagedListLoader`, so `removed` stayed 0: delete a
+line on page 1 — or tick one, which the server moves to the checked tail — and the next
+page skipped the line that moved up. *Guard:* every edit goes through the loader
+(`removeItem`, or `rewriteItems`, which counts each row that leaves the window), and a
+line that now sorts past the last loaded row waits for its page, so the window stays a
+prefix of the server order. Covered by "a line deleted on page 1 does not hide the first
+line of page 2" and "a line ticked on page 1 …" (`shopping-list-paging.test.ts`, against
+a fake server that really moves rows), red without the fix. **A store that edits a
+paged list edits it through the loader** — never its own `set`.
+
+**A comment posted while its thread was loading vanished.** `upsertItem` does nothing
+before a list has loaded, and the first page then landed without it. *Guard:* a post
+into a thread that is not loaded reloads it — "a comment posted while the thread is
+still loading shows once it loads" (`comments-store.test.ts`).
+
 ---
 
 ## A TODO comment that shipped as UI text
@@ -509,6 +525,19 @@ answering after a newer one overwrote it. *Guard:* a `KeyedRequestEpoch` per rec
 `load` / `loadMore`, invalidated by `clear()`. Covered by "a load answering after
 sign-out does not bring the old thread back" and "an older load answering after a
 newer one does not overwrite it" (`comments-store.test.ts`), both red without it.
+
+**And in three writes the earlier guards missed**: the recipe detail store's `load`
+(a late answer put the previous account's `likedByMe` back after `clear()`, and an
+older answer could overwrite a newer one), the drafts resume card (`loadLatestDraft` /
+`upsertDraft`), and a comment posted just before sign-out. *Guard:* a
+`KeyedRequestEpoch` per recipe id in the detail store, a `RequestEpoch` for the resume
+card, a session epoch in `addComment`. Covered by "a recipe answer that lands after
+sign-out does not bring back the previous account's like"
+(`recipe-detail-store-session.test.ts`), "a latest-draft answer that lands after
+sign-out does not bring back the previous account's resume card"
+(`drafts-store.test.ts`) and "a comment answer that lands after sign-out writes nothing
+back" (`comments-store.test.ts`), all red without the fix. **Every write after an
+`await` in a user-scoped store needs the guard — not only the list loads.**
 
 ---
 

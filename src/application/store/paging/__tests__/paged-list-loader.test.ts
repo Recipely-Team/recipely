@@ -145,10 +145,28 @@ describe('PagedListLoader', () => {
     expect(read()).toMatchObject({ hasMore: false });
   });
 
+  it('a next page after rows moved out of the window does not skip the rows that moved up', async () => {
+    const server = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const fetch = (page: number) =>
+      Promise.resolve(pageOf(page, server.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), server.length));
+    const { loader, read } = makeLoader();
+    await loader.load(fetch);
+    server.splice(0, 1);
+    server.push('a');
+    loader.rewriteItems((items) => items.filter((row) => row.id !== 'a'));
+    await loader.loadMore();
+    await loader.loadMore();
+    await loader.loadMore();
+
+    expect(ids(read())).toEqual(['b', 'c', 'd', 'e', 'f', 'a']);
+    expect(read()).toMatchObject({ total: 6, hasMore: false });
+  });
+
   it('edits nothing before the list has loaded', () => {
     const { loader, read } = makeLoader();
     loader.upsertItem({ id: 'a' });
     loader.removeItem('a');
+    loader.rewriteItems(() => [{ id: 'b' }]);
 
     expect(read().status).toBe('idle');
   });
