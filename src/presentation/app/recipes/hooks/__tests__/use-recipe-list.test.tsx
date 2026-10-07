@@ -790,8 +790,11 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
   // Every return from a recipe detail re-requested page 1 of a feed loaded seconds earlier.
   it('does not refetch the feed when it regains focus within a minute of loading', async () => {
     const execute = jest.fn();
+    // The clock is frozen from the first load, so the gap to the refocus is exact.
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
     await mountLoaded(execute);
-    const now = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + FEED_STALE_AFTER_MS - 1);
+    now.mockReturnValue(loadedAt + FEED_STALE_AFTER_MS - 1);
 
     try {
       await refocus();
@@ -803,9 +806,12 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
 
   it('refetches the feed quietly on focus once it is older than a minute', async () => {
     const execute = jest.fn();
+    // The clock is frozen from the first load, so the gap to the refocus is exact.
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
     await mountLoaded(execute);
     execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
-    const now = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + FEED_STALE_AFTER_MS + 1);
+    now.mockReturnValue(loadedAt + FEED_STALE_AFTER_MS + 1);
 
     try {
       await refocus();
