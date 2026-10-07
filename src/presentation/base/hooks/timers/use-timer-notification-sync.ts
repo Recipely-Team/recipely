@@ -3,6 +3,7 @@ import { AppStateStatusValue } from '@infrastructure/constants/app-state-status'
 import { isWeb } from '@infrastructure/constants/platform';
 import { AppState, type AppStateStatus } from 'react-native';
 import { timerStore } from '@application/timers/timer-store';
+import type { TimerEntry } from '@application/timers/timer-entry';
 import { alarmStore } from '@application/timers/alarm-store';
 import {
   TIMER_COMPLETE,
@@ -30,6 +31,9 @@ const checkForCompletedTimers = (): void => {
   }
 };
 
+const hasRunningTimer = (timers: Record<string, TimerEntry>): boolean =>
+  Object.values(timers).some((entry) => !entry.isPaused);
+
 const handleNotificationResponse = (
   response: NotificationsType.NotificationResponse | null,
 ): void => {
@@ -51,14 +55,32 @@ const handleNotificationResponse = (
 /**
  * App-global timer bridge, mounted once at the app root.
  *
- * - Checks for completed timers on the shared one-second clock while the app
- *   is in the foreground.
+ * - Checks for completed timers on the shared one-second clock — but listens
+ *   to it ONLY while at least one timer is running. It used to subscribe for
+ *   the app's whole lifetime, which kept the clock's `setInterval` waking the
+ *   JS thread every second with nothing to count down. `timerStore.subscribe`
+ *   attaches the listener when a timer starts or resumes and detaches it once
+ *   none is left running.
  * - Re-checks immediately when the app returns to the foreground.
  * - Handles "timer done" notification taps (warm-start and cold-start).
  */
 export const useTimerNotificationSync = (): void => {
   useEffect(() => {
-    const unsubscribeTick = subscribeToTick(checkForCompletedTimers);
+    let unsubscribeTick: (() => void) | null = null;
+    const syncTick = (): void => {
+      const running = hasRunningTimer(timerStore.getState().timers);
+      if (running && unsubscribeTick === null) unsubscribeTick = subscribeToTick(checkForCompletedTimers);
+      if (!running && unsubscribeTick !== null) {
+        unsubscribeTick();
+        unsubscribeTick = null;
+      }
+    };
+    syncTick();
+    const unsubscribeStore = timerStore.subscribe(syncTick);
+    const stopTicking = (): void => {
+      unsubscribeStore();
+      unsubscribeTick?.();
+    };
 
     const handleAppState = (nextState: AppStateStatus): void => {
       if (nextState === AppStateStatusValue.active) checkForCompletedTimers();
@@ -70,7 +92,7 @@ export const useTimerNotificationSync = (): void => {
 
     if (isWeb()) {
       return () => {
-        unsubscribeTick();
+        stopTicking();
         appStateSub.remove();
       };
     }
@@ -86,7 +108,7 @@ export const useTimerNotificationSync = (): void => {
     );
 
     return () => {
-      unsubscribeTick();
+      stopTicking();
       appStateSub.remove();
       responseSub.remove();
     };
