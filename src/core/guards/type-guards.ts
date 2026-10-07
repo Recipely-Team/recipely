@@ -21,6 +21,9 @@ export const isString = (value: unknown): value is string => typeof value === 's
 export const isNonEmptyString = (value: unknown): value is string =>
   isString(value) && value.length > ValueConstants.zero;
 
+/** True for text with nothing but whitespace in it — what a person typing "nothing" leaves behind. */
+export const isBlank = (value: string): boolean => value.trim().length === ValueConstants.zero;
+
 /** True when `value` is an object carrying `key`, narrowed so the key can be read. */
 export const hasKey = <K extends string>(
   value: unknown,

@@ -11,6 +11,7 @@ import { spacing, radii, iconSizes, controlSizes, borderWidths, opacities } from
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface RecipeCommentsSectionProps {
   commentState: RecipeCommentsState | undefined;
@@ -118,7 +119,7 @@ export const RecipeCommentsSection = ({
         />
         <Pressable
           onPress={onAddComment}
-          disabled={commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero}
+          disabled={commentState?.isSubmitting === true || isBlank(commentInput)}
           accessibilityRole="button"
           accessibilityLabel={t().comments.send}
           style={({ pressed }) => [
@@ -126,7 +127,7 @@ export const RecipeCommentsSection = ({
             {
               backgroundColor: colors.primary,
               opacity:
-                pressed || commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero
+                pressed || commentState?.isSubmitting === true || isBlank(commentInput)
                   ? opacities.disabledFaint
                   : opacities.full,
             },

@@ -14,6 +14,7 @@ import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-cha
 import type { FoodLogProduct } from '@domain/diary/entry/food-log-product';
 import { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * One food the user logged on a day, in a meal — the food diary's aggregate
@@ -32,10 +33,10 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
   }
 
   static create(props: FoodLogEntryEntityProps): Result<FoodLogEntryEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.diaryEntry.idRequired, 'id'));
     }
-    if (props.name.trim().length === ValueConstants.zero) {
+    if (isBlank(props.name)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.diaryEntry.nameRequired, 'name'));
     }
     const max = props.product === null ? DiaryLimits.ServingsMax : DiaryLimits.ProductQuantityMax;

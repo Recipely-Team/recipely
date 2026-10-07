@@ -17,6 +17,7 @@ import {
 } from '@presentation/base/theme';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface AssistantComposerProps {
   onSend: (text: string) => void;
@@ -38,7 +39,7 @@ export interface AssistantComposerProps {
 export const AssistantComposer = ({ onSend, onSwitchToVoice }: AssistantComposerProps): React.JSX.Element => {
   const { colors } = useTheme();
   const [draft, setDraft] = useState(CharConstants.empty);
-  const ready = draft.trim() !== CharConstants.empty;
+  const ready = !isBlank(draft);
 
   const submit = (): void => {
     if (!ready) return;

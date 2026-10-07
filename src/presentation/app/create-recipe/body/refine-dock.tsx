@@ -19,6 +19,7 @@ import type { ChatMessage } from '@domain/drafts/chat-message';
 import type { RefineProposal } from '@presentation/app/create-recipe/model/refine/refine-proposal';
 import { useKeyboardVisible } from '@presentation/app/create-recipe/hooks/use-keyboard-visible';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface RefineDockProps {
   chatHistory: readonly ChatMessage[];
@@ -61,7 +62,7 @@ export const RefineDock = ({
   bottomInset,
 }: RefineDockProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const canSend = chatInput.trim().length > ValueConstants.zero && !refining;
+  const canSend = !isBlank(chatInput) && !refining;
   // The keyboard already covers the home indicator, so drop the bottom inset while it is up.
   const keyboardVisible = useKeyboardVisible();
   const resolvedBottomInset = keyboardVisible ? ValueConstants.zero : bottomInset;

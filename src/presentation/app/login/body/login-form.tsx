@@ -24,9 +24,10 @@ import {
   iconSizes,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * Login form (email / password) with inline error, forgot-password link, submit,
@@ -64,10 +65,10 @@ export const LoginForm = (): React.JSX.Element => {
     [],
   );
 
-  const fieldsEmpty = email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero;
+  const fieldsEmpty = isBlank(email) || isBlank(password);
 
   const handleSignIn = useCallback(async () => {
-    if (email.trim().length === ValueConstants.zero || password.trim().length === ValueConstants.zero) {
+    if (isBlank(email) || isBlank(password)) {
       return;
     }
     setErrorMessage(undefined);

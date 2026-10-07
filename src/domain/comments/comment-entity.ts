@@ -4,8 +4,8 @@ import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
-import { ValueConstants } from '@core/constants';
 import { ViewerReaction } from '@domain/common/viewer-reaction';
+import { isBlank } from '@core/guards/type-guards';
 
 
 /**
@@ -18,16 +18,16 @@ export class CommentEntity extends BaseEntity<CommentEntityProps> {
   }
 
   static create(props: CommentEntityProps): Result<CommentEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.comment.idRequired, 'id'));
     }
-    if (props.body.trim().length === ValueConstants.zero) {
+    if (isBlank(props.body)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.comment.bodyRequired, 'body'));
     }
-    if (props.authorId.trim().length === ValueConstants.zero) {
+    if (isBlank(props.authorId)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.comment.authorIdRequired, 'authorId'));
     }
-    if (props.recipeId.trim().length === ValueConstants.zero) {
+    if (isBlank(props.recipeId)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.comment.recipeIdRequired, 'recipeId'));
     }
     return ok(new CommentEntity(props));

@@ -7,6 +7,7 @@ import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import type { CreatorTag } from '@domain/creators/creator-tag';
 import { hasOnePerPlatform } from '@domain/creators/has-one-per-platform';
+import { isBlank } from '@core/guards/type-guards';
 
 
 /**
@@ -19,10 +20,10 @@ export class UserProfileEntity extends BaseEntity<UserProfileEntityProps> {
   }
 
   static create(props: UserProfileEntityProps): Result<UserProfileEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.userProfile.idRequired, 'id'));
     }
-    if (props.displayName.trim().length === ValueConstants.zero) {
+    if (isBlank(props.displayName)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.userProfile.displayNameRequired, 'displayName'));
     }
     if (!hasOnePerPlatform(props.creatorTags)) {

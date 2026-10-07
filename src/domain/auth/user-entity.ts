@@ -5,8 +5,8 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { Email } from '@domain/common/email';
-import { ValueConstants } from '@core/constants';
 import { CreatorClaims } from '@domain/creators/creator-claims';
+import { isBlank } from '@core/guards/type-guards';
 
 /** One shared empty collection, so a user without claims answers the same reference each read. */
 const NO_CLAIMS = CreatorClaims.empty();
@@ -28,10 +28,10 @@ export class UserEntity extends BaseEntity<UserEntityProps> {
   }
 
   static create(props: UserEntityProps): Result<UserEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.user.idRequired, 'id'));
     }
-    if (props.displayName.trim().length === ValueConstants.zero) {
+    if (isBlank(props.displayName)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.user.displayNameRequired, 'displayName'));
     }
     return ok(new UserEntity(props));
