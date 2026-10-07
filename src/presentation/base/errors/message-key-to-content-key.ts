@@ -60,6 +60,14 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.diaryFoodNameTooLong]: 'diaryFoodNameTooLong',
   [ErrorMessageKey.diaryNutrientInvalid]: 'diaryNutrientInvalid',
   [ErrorMessageKey.diaryGoalInvalid]: 'diaryGoalInvalid',
+  [ErrorMessageKey.mealParseInputRequired]: 'mealParseInputRequired',
+  [ErrorMessageKey.mealParseTextTooLong]: 'mealParseTextTooLong',
+  [ErrorMessageKey.mealParseUnsupportedPhoto]: 'mealParseUnsupportedPhoto',
+  [ErrorMessageKey.mealParsePhotoRejected]: 'mealParsePhotoRejected',
+  [ErrorMessageKey.mealParsePhotoUnchecked]: 'mealParsePhotoUnchecked',
+  [ErrorMessageKey.mealParseQuotaExceeded]: 'mealParseQuotaExceeded',
+  [ErrorMessageKey.mealParseUnavailable]: 'mealParseUnavailable',
+  [ErrorMessageKey.contentBlocked]: 'contentBlocked',
 
   [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
   [ErrorMessageKey.creatorHandleTaken]: 'creatorHandleTaken',
@@ -77,7 +85,6 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.shoppingListFull]: 'shoppingListFull',
   [ErrorMessageKey.shoppingListChanged]: 'shoppingListChanged',
   [ErrorMessageKey.shoppingItemNotFound]: 'shoppingItemGone',
-  [ErrorMessageKey.contentBlocked]: 'contentBlocked',
 
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',

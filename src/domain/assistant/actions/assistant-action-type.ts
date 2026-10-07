@@ -121,6 +121,8 @@ export const AssistantAction = {
    * `toggleIngredient`, and reading the list is `readScreen`.
    */
   AddToShoppingList: 'addToShoppingList',
+  /** Reads a described meal into Add food's confirm list; the user ticks and adds. */
+  LogMeal: 'logMeal',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];

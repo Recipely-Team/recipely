@@ -22,6 +22,7 @@ import { parseMealArg } from '@presentation/base/hooks/assistant/args/diary/pars
 import { parseWaterArg } from '@presentation/base/hooks/assistant/args/diary/parsing/parse-water-arg';
 import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/describing/screen-line';
 import { useAssistantDiaryEntryActions } from '@presentation/app/diary/hooks/use-assistant-diary-entry-actions';
+import { useAssistantMealLogAction } from '@presentation/app/diary/hooks/use-assistant-meal-log-action';
 import { diaryDayReading } from '@presentation/app/diary/model/assistant/diary-day-reading';
 import { diaryScreenLine } from '@presentation/app/diary/model/assistant/diary-screen-line';
 import type { DiaryDayViewType } from '@presentation/app/diary/model/diary-day-view';
@@ -71,6 +72,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
     ),
   });
   useAssistantDiaryEntryActions();
+  useAssistantMealLogAction(sheets.openMealLog);
 
   useAssistantAction(
     AssistantAction.SelectDate,

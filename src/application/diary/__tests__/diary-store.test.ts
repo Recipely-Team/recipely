@@ -41,6 +41,7 @@ const makeRepo = (overrides: Partial<FoodDiaryRepositoryInterface> = {}): jest.M
   setWater: jest.fn().mockImplementation((_d: CalendarDate, glasses: number) => Promise.resolve(ok(glasses))),
   getGoals: jest.fn().mockResolvedValue(ok(goals)),
   saveGoals: jest.fn().mockImplementation((g: NutritionGoals) => Promise.resolve(ok(g))),
+  parseMeal: jest.fn().mockResolvedValue(ok({ items: [], note: null })),
   ...overrides,
 }) as jest.Mocked<FoodDiaryRepositoryInterface>;
 

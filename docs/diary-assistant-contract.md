@@ -29,6 +29,7 @@ whose right rail shows the calendar).
 | `setGoals` | JSON partial `{ "calories"?, "protein"?, "carbs"?, "fat"?, "fiber"?, "water"? }` | diary | Merges with the current goals, validates through `NutritionGoals`, saves. Result states the saved goals. |
 | `openGoals` | none | diary | Opens the Daily goals sheet. |
 | `openAddFood` | optional meal | diary | Opens the Add food sheet (on that meal). |
+| `logMeal` | the meal described in words, e.g. `menemen and 2 slices of bread` | diary | Opens Add food on its meal panel and reads the description (`POST /diary/meal-parse`) into the confirm list. Logs nothing itself: the user checks the items and taps "Add to diary"; the answer says so. **App side only so far** — the backend enum and persona must learn the word before the model can call it. |
 
 `readScreen` on `diary` answers: today's date and the selected date (ISO and
 spoken), eaten/goal/remaining kcal, the calorie status, each macro eaten/goal,

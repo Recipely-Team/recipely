@@ -119,6 +119,7 @@ export const useAddFoodFlow = (request: AddFoodRequestType | null, onClose: () =
     },
     submit,
     submitQuickAdd: (food, meal) => writes.add(food.entryFor(current.date, meal, Servings.one())),
+    logMeal: (candidates, meal) => writes.addMany(candidates.map((candidate) => candidate.entryFor(current.date, meal))),
     remove: writes.remove,
   };
 };

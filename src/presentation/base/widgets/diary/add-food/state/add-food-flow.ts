@@ -5,6 +5,7 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import type { FoodUnit } from '@domain/diary/foods/units/food-unit';
+import type { MealCandidate } from '@domain/diary/meal/meal-candidate';
 import type { AddFoodStepType } from '@presentation/base/widgets/diary/add-food/state/add-food-step';
 import type { ProductStepModelType } from '@presentation/base/widgets/diary/add-food/state/product/product-step-model';
 
@@ -41,5 +42,7 @@ export interface AddFoodFlow {
   submit: () => Promise<void>;
   /** Logs a quick add straight away, skipping the detail step. */
   submitQuickAdd: (food: LoggableFood, meal: MealSlotType) => Promise<void>;
+  /** Logs the meal panel's ticked candidates on the sheet's day; one flag per candidate, true when saved. */
+  logMeal: (candidates: readonly MealCandidate[], meal: MealSlotType) => Promise<readonly boolean[]>;
   remove: () => Promise<void>;
 }

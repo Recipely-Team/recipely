@@ -66,6 +66,8 @@ export const diarySizes = {
   variantSegmentsMax: 4,
   segmentHeight: scale(38),
   goalInputWidth: scale(104),
+  /** The meal confirm list's grams box. */
+  mealGramsFieldWidth: scale(104),
   legendSwatch: scale(22),
   legendColumnMin: scale(150),
   welcomeTile: scale(44),

@@ -59,6 +59,15 @@ export type FailureContentKeyType =
   | 'diaryFoodNameTooLong'
   | 'diaryNutrientInvalid'
   | 'diaryGoalInvalid'
+  // ── key-tier: meal logging from text or a photo ────────────────────────────
+  | 'mealParseInputRequired'
+  | 'mealParseTextTooLong'
+  | 'mealParseUnsupportedPhoto'
+  | 'mealParsePhotoRejected'
+  | 'mealParsePhotoUnchecked'
+  | 'mealParseQuotaExceeded'
+  | 'mealParseUnavailable'
+  | 'contentBlocked'
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'

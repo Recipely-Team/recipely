@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1887 source files.
+[architecture.md](architecture.md). 1918 source files.
 
 ## Layers
 
@@ -34,7 +34,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `common/` _(5)_
 - `creators/` _(13)_
 - `device/` _(3)_
-- `diary/` — calendar, day, entry, foods, month, nutrition _(52)_
+- `diary/` — calendar, day, entry, foods, meal, month, nutrition _(60)_
 - `display/` _(5)_
 - `drafts/` _(6)_
 - `favorites/` _(1)_
@@ -60,7 +60,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
 - `di/` — features _(15)_
-- `diary/` — day, entries, foods, goals, month _(26)_
+- `diary/` — day, entries, foods, goals, meal, month _(27)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
@@ -89,7 +89,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `device/` _(8)_
 - `di/` _(1)_
 - `diagnostics/` _(1)_
-- `diary/` — dtos, foods, read, write _(55)_
+- `diary/` — dtos, foods, meal, read, write _(62)_
 - `display/` _(4)_
 - `drafts/` — dtos _(5)_
 - `favorites/` _(1)_
@@ -127,7 +127,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(98)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(100)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(5)_
@@ -135,7 +135,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram) — small pure helpers _(28)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(185)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(197)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 8443d60d58c6500e -->
+<!-- fingerprint: d7ddca53645f6bbc -->

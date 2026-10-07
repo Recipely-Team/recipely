@@ -8,7 +8,7 @@ import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { showErrorToast, showSuccessToast, showWarningToast } from '@presentation/base/feedback/show-toast';
 import { useAddFoodFlow } from '@presentation/base/hooks/diary/use-add-food-flow';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
@@ -21,10 +21,13 @@ import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-
 import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
 import { fakeFoodCatalogRepository, productOf } from '@application/diary/foods/__fixtures__/food-fixtures';
 import { FoodDetail } from '@domain/diary/foods/product/food-detail';
+import { MealMatchKind } from '@domain/diary/meal/meal-match-kind';
+import { mealCandidateOf } from '@domain/diary/__fixtures__/meal-candidate-of';
 
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showErrorToast: jest.fn(),
   showSuccessToast: jest.fn(),
+  showWarningToast: jest.fn(),
 }));
 
 const date = CalendarDate.of(2026, 9, 29);
@@ -72,6 +75,35 @@ const setup = (request: AddFoodRequestType, onOpenDiary?: () => void, detail = a
 
 describe('useAddFoodFlow', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('logMeal adds each ticked meal item to the sheet’s day and meal through the diary store, then closes', async () => {
+    const { actions, onClose, get } = setup({ kind: AddFoodRequestKind.Pick, date, meal: null });
+    const quick = mealCandidateOf({ label: 'Salad', match: { kind: MealMatchKind.None, id: null, name: null }, estimated: true });
+    let saved: readonly boolean[] = [];
+    await act(async () => {
+      saved = await get().logMeal([mealCandidateOf().withGrams(300), quick], MealSlot.Lunch);
+    });
+    expect(saved).toEqual([true, true]);
+    const [food, salad] = actions.addEntry.mock.calls.map((call) => call[0]);
+    expect([food.date.value, food.meal, food.servings, food.product?.foodVariantId, food.product?.unitKey, food.nutrients.calories]).toEqual([
+      '2026-09-29', MealSlot.Lunch, 300, 'v1', 'g', 400,
+    ]);
+    expect([salad.name, salad.servings, salad.product]).toEqual(['Salad', 1, null]);
+    expect(onClose).toHaveBeenCalled();
+    expect(showSuccessToast).toHaveBeenCalled();
+  });
+
+  it('logMeal keeps the sheet open and warns when only some items were saved', async () => {
+    const { actions, onClose, get } = setup({ kind: AddFoodRequestKind.Pick, date, meal: null });
+    actions.addEntry.mockResolvedValueOnce(ok(foodLogEntryOf())).mockResolvedValueOnce(fail(new NetworkFailure('offline')));
+    let saved: readonly boolean[] = [];
+    await act(async () => {
+      saved = await get().logMeal([mealCandidateOf(), mealCandidateOf({ label: 'Tea' })], MealSlot.Dinner);
+    });
+    expect(saved).toEqual([true, false]);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(showWarningToast).toHaveBeenCalled();
+  });
 
   it('logs the chosen amount to the request’s day and meal, then closes with a "Diary" action', async () => {
     const openDiary = jest.fn();

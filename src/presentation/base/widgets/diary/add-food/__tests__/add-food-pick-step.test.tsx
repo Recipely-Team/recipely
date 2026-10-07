@@ -47,12 +47,14 @@ const setup = async (initialQuery = 'tomato') => {
   const view = renderComponent(
     <AddFoodPickStep
       initialQuery={initialQuery}
+      initialMealText={null}
       meal={MealSlot.Lunch}
       isSubmitting={false}
       onChoose={onChoose}
       onChooseProduct={onChooseProduct}
       onChooseRecent={jest.fn()}
       onQuickAdd={jest.fn()}
+      onLogMeal={jest.fn()}
     />,
     { foodSearchStore, foodCatalogStore } as unknown as Partial<ApplicationStores>,
   );

@@ -97,6 +97,8 @@ export const ApiRoutes = {
     entries: '/diary/entries',
     entry: (id: string): string => `/diary/entries/${encodeURIComponent(id)}`,
     goals: '/diary/goals',
+    /** Candidate diary items from a meal description (JSON) or photo (multipart). */
+    mealParse: '/diary/meal-parse',
     /** What the Add food sheet can log: grouped search, curated catalogue, branded packs, recent foods. */
     foods: {
       search: '/diary/foods/search',

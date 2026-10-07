@@ -80,6 +80,19 @@ export const ErrorMessageKey = {
   /** Calories or grams past the plausibility cap (a mistyped extra zero). */
   diaryNutrientInvalid: 'errors.validation.nutrient_invalid',
   diaryGoalInvalid: 'errors.validation.goal_invalid',
+  // Meal logging from text or a photo (backend `POST /diary/meal-parse`)
+  mealParseInputRequired: 'errors.meal_parse.input_required',
+  mealParseTextTooLong: 'errors.meal_parse.text_too_long',
+  mealParseUnsupportedPhoto: 'errors.meal_parse.unsupported_photo',
+  mealParsePhotoRejected: 'errors.meal_parse.photo_rejected',
+  mealParsePhotoUnchecked: 'errors.meal_parse.photo_unchecked',
+  /** The day's meal-parse allowance (20) is used up. */
+  mealParseQuotaExceeded: 'errors.meal_parse.quota_exceeded',
+  mealParseUnavailable: 'errors.meal_parse.unavailable',
+  /** The moderation check refused the text or photo. */
+  contentBlocked: 'errors.validation.content_blocked',
+  /** No AI provider is configured on the server — to the user, the feature is unavailable. */
+  aiProviderNotConfigured: 'errors.ai.provider_not_configured',
 
   // Creator tag
   /** The handle breaks the contract's rules: charset, per-platform length, dots. */
@@ -106,7 +119,6 @@ export const ErrorMessageKey = {
   shoppingListFull: 'errors.conflict.shopping_list_full',
   shoppingListChanged: 'errors.conflict.shopping_list_changed',
   shoppingRateLimited: 'errors.too_many_requests.shopping_list',
-  contentBlocked: 'errors.validation.content_blocked',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

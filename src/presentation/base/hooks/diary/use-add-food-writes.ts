@@ -2,8 +2,10 @@ import { useCallback, useState } from 'react';
 import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
 import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-changes';
+import type { Failure } from '@core/failure';
+import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
-import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
+import { showErrorToast, showSuccessToast, showWarningToast } from '@presentation/base/feedback/show-toast';
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
 import type { AddFoodRequestType } from '@presentation/base/widgets/diary/add-food/request/add-food-request';
@@ -13,6 +15,8 @@ import { t } from '@presentation/i18n';
 interface AddFoodWrites {
   isSubmitting: boolean;
   add: (entry: NewFoodLogEntry) => Promise<void>;
+  /** Adds one after another; resolves one flag per entry, true when it was saved. */
+  addMany: (entries: readonly NewFoodLogEntry[]) => Promise<readonly boolean[]>;
   /** Saves an edit; `null` changes (nothing changed) just closes. */
   update: (changes: FoodLogEntryChanges | null) => Promise<void>;
   remove: () => Promise<void>;
@@ -23,6 +27,11 @@ interface AddFoodWrites {
  * close and toast on success, keep the sheet open and toast the failure's
  * own copy otherwise (design spec §6). `onOpenDiary` is passed only from
  * outside the diary; the success toast then offers a "Diary" action.
+ *
+ * @remarks
+ * - **`addMany` (the meal panel) saves in order** through the same store
+ *   action: all saved closes and toasts the count; a partial save keeps the
+ *   sheet open and says how many went in; none saved toasts the failure.
  */
 export const useAddFoodWrites = (
   request: AddFoodRequestType | null,
@@ -52,6 +61,33 @@ export const useAddFoodWrites = (
     [diaryStore, logged],
   );
 
+  const addMany = useCallback(
+    async (entries: readonly NewFoodLogEntry[]): Promise<readonly boolean[]> => {
+      setSubmitting(true);
+      const saved: boolean[] = [];
+      let failure: Failure | null = null;
+      for (const entry of entries) {
+        const result = await diaryStore.getState().addEntry(entry);
+        saved.push(result.ok);
+        if (!result.ok && failure === null) failure = result.failure;
+      }
+      setSubmitting(false);
+      const count = String(saved.filter(Boolean).length);
+      const meal = entries[ValueConstants.zero]?.meal;
+      if (failure === null && meal !== undefined) {
+        onClose();
+        const message = t().diary.mealLogAdded.replace('{n}', count).replace('{meal}', mealLabel(meal));
+        showSuccessToast(message, onOpenDiary === undefined ? undefined : { label: t().diary.toastAction, onRetry: onOpenDiary });
+      } else if (failure !== null && saved.some(Boolean)) {
+        showWarningToast(t().diary.mealLogPartial.replace('{n}', count));
+      } else if (failure !== null) {
+        showErrorToast(failure);
+      }
+      return saved;
+    },
+    [diaryStore, onClose, onOpenDiary],
+  );
+
   const update = useCallback(
     async (changes: FoodLogEntryChanges | null): Promise<void> => {
       if (request?.kind !== AddFoodRequestKind.Edit) return;
@@ -75,5 +111,5 @@ export const useAddFoodWrites = (
     else showErrorToast(result.failure);
   }, [diaryStore, onClose, request]);
 
-  return { isSubmitting, add, update, remove };
+  return { isSubmitting, add, addMany, update, remove };
 };
