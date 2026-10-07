@@ -108,7 +108,8 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "/.expo/",
-      "/dist/"
+      "/dist/",
+      "<rootDir>/.claude/"
     ],
     "moduleNameMapper": {
       "^@assets/(.*)$": "<rootDir>/assets/$1",
@@ -156,7 +157,10 @@
         "branches": 90,
         "functions": 87
       }
-    }
+    },
+    "modulePathIgnorePatterns": [
+      "<rootDir>/.claude/"
+    ]
   },
   "lint-staged": {
     "*.{ts,tsx}": [
