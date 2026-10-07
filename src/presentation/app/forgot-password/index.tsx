@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layout';
 import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
 import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
 import { t } from '@presentation/i18n';
+import { RoutePaths } from '@presentation/base/constants';
 import { CharConstants } from '@core/constants';
 import { isBlank } from '@core/guards/type-guards';
 
@@ -18,6 +19,9 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | undefined>(undefined);
+
+  // A reload or a direct visit leaves no history on the web: go to login instead of nowhere.
+  const goBack = (): void => (router.canGoBack() ? router.back() : router.replace(RoutePaths.login as Href));
 
   const handleSend = async (): Promise<void> => {
     if (isBlank(email)) return;
@@ -38,12 +42,12 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
       title={t().forgotPassword.title}
       subtitle={t().forgotPassword.subtitle}
       backLabel={t().forgotPassword.backToLogin}
-      onBack={() => router.back()}
+      onBack={goBack}
     >
       {sent ? (
         <ForgotPasswordSuccessView
           email={email}
-          onBack={() => router.back()}
+          onBack={goBack}
           onTryDifferent={() => setSent(false)}
         />
       ) : (
@@ -55,7 +59,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
           onBlur={() => setFocused(false)}
           loading={loading}
           onSend={() => { void handleSend(); }}
-          onBack={() => router.back()}
+          onBack={goBack}
           error={sendError}
         />
       )}

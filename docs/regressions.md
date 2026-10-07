@@ -186,6 +186,31 @@ compile native code, so nothing ran it until a device build. **Native code under
 *Guard:* `check:structure` rule **AP** — no annotation applied twice to one Kotlin
 declaration under `modules/`; the fix was proven with a local prebuild + `assembleDebug`.
 
+**A back button that did nothing after a reload on the web.** Forgot-password called
+`router.back()` unconditionally; a direct visit has no history. *Guard:* `canGoBack()` or
+`replace(RoutePaths.login)` — "goes to login when there is no history to go back to"
+(`forgot-password-screen.test.tsx`). **Every back on a routable page needs a fallback.**
+
+**Swipe paging ignored right-to-left.** `useHorizontalSwipe` hard-coded "left is
+forward", so Arabic paged cook-mode steps and the diary week against the mirrored UI.
+*Guard:* `swipePageDirection(dx, I18nManager.isRTL)` (`swipe-page-direction.test.ts`).
+
+**State shown by colour only, and a back button announced as the title.** The
+notification All / Unread pills had no `accessibilityState.selected`; the header's back
+button was labelled with the screen title. *Guard:* `notifications-a11y.test.tsx`.
+
+**A text box pinned to a fixed `height`.** The auth hero (forgot / reset password) held
+its title and subtitle in a `height`-pinned box over a gradient of the same height; at a
+large font scale the subtitle spilled into the card. *Guard:* `minHeight`, with the
+gradient wrapping the hero so it grows too — "lets the hero … grow with its text"
+(`auth-hero-layout.test.tsx`); rule 6b.
+
+**Copy memoised without the locale.** The shopping list's section labels were baked into
+a `useMemo` keyed on the items only, so a language switch left them stale. *Guard:* the
+labels are memo dependencies and the hook subscribes with `useLocale()` — "renames the
+sections when the language changes" (`shopping-list-screen.test.tsx`). **A memo that
+reads `t()` depends on the strings it reads.**
+
 ## Parsing and display
 
 **A greedy quantifier ate half a word.**
