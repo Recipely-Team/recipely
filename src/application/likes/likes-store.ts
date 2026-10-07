@@ -8,14 +8,23 @@ import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import { ViewerReaction } from '@domain/common/viewer-reaction';
+import { RequestEpoch } from '@application/store/request-epoch';
 
 interface LikesStoreDeps {
   setRecipeLike: SetRecipeLikeUseCase;
   likedRecipesStore: BoundStore<LikedRecipesStoreState>;
 }
 
-export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> =>
-  create<LikesStoreState>((set, get) => ({
+/**
+ * **Likes store** — like count and the viewer's like per recipe, toggled optimistically.
+ *
+ * @remarks
+ * - **Session guard**: `clear()` on sign-out drops a toggle answer still in
+ *   flight, so the previous account's like is never written back.
+ */
+export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStoreState> => {
+  const session = new RequestEpoch();
+  return create<LikesStoreState>((set, get) => ({
     byRecipe: {},
 
     seed: (recipeId, likeCount, likedByMe) => {
@@ -64,7 +73,9 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
 
       set((s) => ({ byRecipe: { ...s.byRecipe, [recipeId]: optimistic } }));
 
+      const isSession = session.current();
       const result = await deps.setRecipeLike.execute(recipeId, next.mine);
+      if (!isSession()) return result;
 
       set((s) => ({
         byRecipe: {
@@ -99,5 +110,9 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       return get().toggle(recipeId);
     },
 
-    clear: () => set({ byRecipe: {} }),
+    clear: () => {
+      session.invalidate();
+      set({ byRecipe: {} });
+    },
   }));
+};

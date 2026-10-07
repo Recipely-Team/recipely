@@ -140,7 +140,14 @@
           "cameraPermission": "Recipely accesses your camera to take photos and videos for recipes."
         }
       ],
-      "@react-native-firebase/app",
+      [
+        "@react-native-firebase/app",
+        {
+          "ios": {
+            "disableSPM": true
+          }
+        }
+      ],
       "@react-native-firebase/crashlytics",
       "@react-native-firebase/auth",
       "expo-apple-authentication",

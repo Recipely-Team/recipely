@@ -30,7 +30,7 @@ interface DraftsStoreDeps {
  *   under the previous account never publishes — signing out mid-request had
  *   put the previous account's drafts back into the list. The resume card is
  *   guarded the same way: a latest-draft answer (or a save) that lands after
- *   `clear()` does not put the previous account's card back.
+ *   `clear()` does not put the previous account's card back, nor a save its row.
  * - **Edits show without a reload**: a saved draft replaces its row or joins
  *   the top; a deleted one leaves the list and, if it was the latest, the card.
  */
@@ -39,6 +39,9 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
     const loader = new PagedListLoader<RecipeDraft>(() => get().drafts, (drafts) => set({ drafts }), (draft) => draft.id);
     const fetchPage = (page: number) => deps.listDraftsUseCase.execute(page);
     const latest = new RequestEpoch();
+    const session = new RequestEpoch();
+    /** Deleted this session: a latest-draft answer already in flight may still name one. */
+    const deleted = new Set<string>();
 
     return {
       drafts: { status: StoreStatus.Idle },
@@ -48,19 +51,21 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       loadLatestDraft: async () => {
         const isCurrent = latest.start();
         const result = await deps.getLatestDraftUseCase.execute();
-        if (result.ok && isCurrent()) set({ latestDraft: result.value });
+        if (result.ok && isCurrent() && (result.value === null || !deleted.has(result.value.id))) set({ latestDraft: result.value });
       },
       upsertDraft: async (input) => {
         const isCurrent = latest.start();
+        const isSession = session.current();
         const result = await deps.upsertDraftUseCase.execute(input);
         if (!result.ok) return null;
-        loader.upsertItem(result.value);
+        if (isSession()) loader.upsertItem(result.value);
         if (isCurrent()) set({ latestDraft: result.value });
         return result.value;
       },
       deleteDraft: async (id) => {
         const result = await deps.deleteDraftUseCase.execute(id);
         if (!result.ok) return result;
+        deleted.add(id);
         loader.removeItem(id);
         set((s) => ({ latestDraft: s.latestDraft?.id === id ? null : s.latestDraft }));
         return result;
@@ -69,6 +74,8 @@ export const configureDraftsStore = (deps: DraftsStoreDeps): BoundStore<DraftsSt
       clear: () => {
         loader.reset();
         latest.invalidate();
+        session.invalidate();
+        deleted.clear();
         set({ latestDraft: null });
       },
     };

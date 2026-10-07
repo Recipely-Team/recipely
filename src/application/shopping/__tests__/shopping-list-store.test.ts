@@ -1,6 +1,7 @@
 import { ConflictFailure, type Failure, NetworkFailure, ValidationFailure } from '@core/failure';
 import type { Result } from '@core/result/result';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
+import type { ShoppingAddResult } from '@domain/shopping/items/shopping-add-result';
 import { fail, ok } from '@core/result/result-helpers';
 import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
@@ -128,6 +129,19 @@ describe('ShoppingListStore', () => {
     await store.getState().refresh();
     answerDelete(fail(new NetworkFailure('offline')));
     await removing;
+    expect(ids(store)).toEqual(['a', 'b', 'c+']);
+  });
+
+  // Review pass 2: an add that landed after sign-out put the old account's lines into the next list.
+  it('an add that lands after sign-out does not join the next account\'s list', async () => {
+    const { repo, store } = await loaded();
+    let answer: (value: Result<ShoppingAddResult, Failure>) => void = () => undefined;
+    repo.add.mockReturnValueOnce(new Promise<Result<ShoppingAddResult, Failure>>((resolve) => { answer = resolve; }));
+    const adding = store.getState().addText('milk');
+    store.getState().clear();
+    await store.getState().load();
+    answer(ok({ items: [shoppingItemOf({ id: 'old', position: 3 })], added: 1, merged: 0 }));
+    await adding;
     expect(ids(store)).toEqual(['a', 'b', 'c+']);
   });
 

@@ -10,6 +10,7 @@ import { compareShoppingItems } from '@domain/shopping/items/compare-shopping-it
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
+import { RequestEpoch } from '@application/store/request-epoch';
 import { PageSizes } from '@application/config/page-sizes';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -64,11 +65,13 @@ const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
  *   checked, by position): a line ticked, added or put back past the last
  *   loaded row waits for its page, and every row that leaves goes through the
  *   loader, so the next page re-reads from the shifted offset instead of skipping.
- * - **User-scoped**: cleared on sign-out (`clearSessionCaches`).
+ * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer that
+ *   lands after that is dropped, so the old account's lines never come back.
  */
 export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStoreState> => {
   const ticks = new Map<string, number>();
   const removals = new KeyedRequestEpoch();
+  const session = new RequestEpoch();
 
   return create<ShoppingListStoreState>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
@@ -77,8 +80,8 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
     const place = (touched: Items, totalDelta?: number): void => loader.rewriteItems((items) => placed(items, touched, hasMore()), totalDelta);
     /** Refreshes a line already on screen; one that has left the window stays with its page. */
     const show = (item: ShoppingItemEntity): void => { if (hasItem(get().list, item.id)) place([item]); };
-    const added = (result: Result<ShoppingAddResult, Failure>): Result<ShoppingAddResult, Failure> => {
-      if (result.ok) place(result.value.items, result.value.added);
+    const added = (result: Result<ShoppingAddResult, Failure>, isSession: () => boolean): Result<ShoppingAddResult, Failure> => {
+      if (result.ok && isSession()) place(result.value.items, result.value.added);
       return result;
     };
 
@@ -93,24 +96,26 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
         set({ isRefreshing: false });
         return failure;
       },
-      addText: async (text) => added(await deps.addText.execute(text)),
-      addFromRecipe: async (lines, recipe) => added(await deps.addFromRecipe.execute(lines, recipe)),
+      addText: async (text) => { const isSession = session.current(); return added(await deps.addText.execute(text), isSession); },
+      addFromRecipe: async (lines, recipe) => { const isSession = session.current(); return added(await deps.addFromRecipe.execute(lines, recipe), isSession); },
 
       setChecked: async (item, checked) => {
         const tick = (ticks.get(item.id) ?? ValueConstants.zero) + ValueConstants.one;
         ticks.set(item.id, tick);
+        const isSession = session.current();
         const wasShown = hasItem(get().list, item.id);
         if (wasShown) place([item.withChecked(checked)]);
         const result = await deps.setChecked.execute(item.id, checked);
-        if (ticks.get(item.id) !== tick) return ok(undefined);
+        if (ticks.get(item.id) !== tick || !isSession()) return ok(undefined);
         if (result.ok) show(result.value);
         else if (wasShown) place([item]);
         return result.ok ? ok(undefined) : result;
       },
 
       edit: async (id, edit) => {
+        const isSession = session.current();
         const result = await deps.edit.execute(id, edit);
-        if (result.ok) show(result.value);
+        if (result.ok && isSession()) show(result.value);
         return result;
       },
 
@@ -138,6 +143,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
 
       clear: () => {
         removals.invalidate();
+        session.invalidate();
         ticks.clear();
         loader.reset();
         set({ isRefreshing: false });
