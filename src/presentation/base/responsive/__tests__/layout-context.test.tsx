@@ -12,6 +12,10 @@ import { useContext } from 'react';
 import { LayoutContext, LayoutProvider } from '@presentation/base/responsive/layout-context';
 import type { LayoutContextValue } from '@presentation/base/responsive/layout-context-value';
 import { renderComponent } from '@presentation/base/test-support/render-component';
+import { FoldOrientation } from '@domain/display/fold-orientation';
+import { FoldState } from '@domain/display/fold-state';
+import type { WindowPosture } from '@domain/display/window-posture';
+import type { WindowPostureInterface } from '@domain/display/window-posture-interface';
 
 let mockWidth = 390;
 let mockHeight = 844;
@@ -26,7 +30,12 @@ jest.mock('@infrastructure/constants/platform', () => ({
   isWeb: (): boolean => mockIsWeb,
 }));
 
-const readLayout = (width: number, height: number, isWeb: boolean): LayoutContextValue => {
+const readLayout = (
+  width: number,
+  height: number,
+  isWeb: boolean,
+  postureSource?: WindowPostureInterface,
+): LayoutContextValue => {
   mockWidth = width;
   mockHeight = height;
   mockIsWeb = isWeb;
@@ -38,7 +47,7 @@ const readLayout = (width: number, height: number, isWeb: boolean): LayoutContex
   };
 
   renderComponent(
-    <LayoutProvider>
+    <LayoutProvider postureSource={postureSource}>
       <Probe />
     </LayoutProvider>,
   );
@@ -80,5 +89,26 @@ describe('LayoutProvider — width and chrome are separate questions', () => {
 
     expect(layout.isExpanded).toBe(false);
     expect(layout.isCompact).toBe(true);
+  });
+});
+
+describe('LayoutProvider — the fold posture', () => {
+  const duoSpanned: WindowPosture = {
+    isSeparating: true,
+    orientation: FoldOrientation.Vertical,
+    state: FoldState.Flat,
+    hinge: { x: 540, y: 0, width: 34, height: 720 },
+  };
+  const source = (posture: WindowPosture | null): WindowPostureInterface => ({
+    current: () => posture,
+    subscribe: () => () => undefined,
+  });
+
+  it('publishes the hinge a spanned Duo reports', () => {
+    expect(readLayout(1114, 720, false, source(duoSpanned)).fold).toEqual(duoSpanned);
+  });
+
+  it('publishes no fold without a posture source', () => {
+    expect(readLayout(1114, 720, false).fold).toBeNull();
   });
 });

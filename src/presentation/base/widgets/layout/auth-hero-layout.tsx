@@ -4,8 +4,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { useLayout } from '@presentation/base/responsive/use-layout';
-import { OrientationType } from '@presentation/base/responsive/orientation-type';
+import { useTwoPaneSplit } from '@presentation/base/responsive/fold/use-two-pane-split';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontWeights, iconSizes, controlSizes, avatarSizes, mediaSizes, decorSizes, layoutSizes, zIndices, opacities } from '@presentation/base/theme';
@@ -29,13 +28,15 @@ export interface AuthHeroLayoutProps {
  * @remarks
  * - **Landscape on a wide screen splits in two** — hero left, card right — instead of a
  *   short hero squashed above a card the keyboard then covers.
+ * - **A separating vertical hinge splits exactly at the hinge** (spanned Duo,
+ *   half-opened Fold), whatever the width — see `useTwoPaneSplit`.
  * - **The back button lives only in the stacked layout**; the split layout's card carries
  *   its own back link.
  */
 export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, children }: AuthHeroLayoutProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { isExpanded, orientation } = useLayout();
-  const isLandscapeShell = isExpanded && orientation === OrientationType.Landscape;
+  const split = useTwoPaneSplit();
+  const isLandscapeShell = split.isSplit;
 
   const hero = (
     <View style={[styles.gradientCenter, isLandscapeShell ? styles.heroLandscape : null]}>
@@ -56,12 +57,12 @@ export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, child
   if (isLandscapeShell) {
     return (
       <KeyboardAvoider style={styles.flex}>
-        <View style={[styles.splitRoot, { backgroundColor: colors.background }]}>
+        <View style={[styles.splitRoot, split.rowStyle, { backgroundColor: colors.background }]}>
           <LinearGradient
             colors={[colors.primaryGradientStart, colors.primaryGradientEnd]}
             start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
             end={{ x: ValueConstants.one, y: ValueConstants.one }}
-            style={styles.splitHero}
+            style={[styles.splitHero, split.firstPaneStyle]}
           >
             {hero}
           </LinearGradient>

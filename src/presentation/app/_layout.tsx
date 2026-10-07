@@ -11,6 +11,7 @@ import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { zIndices } from '@presentation/base/theme';
 import { LayoutProvider } from '@presentation/base/responsive/layout-context';
+import { resolveWindowPosture } from '@presentation/bootstrap/resolve-window-posture';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WebShellStateProvider } from '@presentation/base/web-shell/web-shell-state';
 import { ActiveTimersBar } from '@presentation/base/widgets/timers/active-timers-bar';
@@ -198,7 +199,7 @@ export const RootLayout = (): React.JSX.Element => {
   return (
     <ShareIntentProvider>
       <AppThemeProvider>
-        <LayoutProvider>
+        <LayoutProvider postureSource={resolveWindowPosture()}>
           <WebShellStateProvider>
             <AppBootstrap>
               <RootStack />

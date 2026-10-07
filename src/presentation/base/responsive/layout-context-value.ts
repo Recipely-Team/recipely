@@ -2,6 +2,8 @@ import type { BreakpointType } from '@presentation/base/responsive/breakpoint-ty
 
 import type { OrientationType } from '@presentation/base/responsive/orientation-type';
 
+import type { WindowPosture } from '@domain/display/window-posture';
+
 export interface LayoutContextValue {
   width: number;
   height: number;
@@ -23,4 +25,10 @@ export interface LayoutContextValue {
   isExpanded: boolean;
   /** True for portrait phones and any narrow viewport regardless of platform. */
   isCompact: boolean;
+  /**
+   * The fold or hinge crossing the window — a spanned Surface Duo, a half-opened
+   * Galaxy Z Fold or Pixel Fold — or `null`. Two-pane layouts read it through
+   * `useTwoPaneSplit` rather than doing the pane arithmetic themselves.
+   */
+  fold: WindowPosture | null;
 }
