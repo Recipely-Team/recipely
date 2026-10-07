@@ -60,7 +60,7 @@ const stores = (): Partial<ApplicationStores> =>
 
 describe('RecipeListItem — photo count', () => {
   it('shows the chip with the count a multi-photo recipe carries', () => {
-    const { root } = renderComponent(<RecipeListItem recipe={summary(4)} onPress={jest.fn()} />, stores());
+    const { root } = renderComponent(<RecipeListItem recipe={summary(4)} onOpen={jest.fn()} />, stores());
 
     const texts = textContent(root);
     expect(texts).toContain('icon:image');
@@ -68,7 +68,7 @@ describe('RecipeListItem — photo count', () => {
   });
 
   it('shows no chip for a recipe whose only photo is its cover', () => {
-    const { root } = renderComponent(<RecipeListItem recipe={summary(1)} onPress={jest.fn()} />, stores());
+    const { root } = renderComponent(<RecipeListItem recipe={summary(1)} onOpen={jest.fn()} />, stores());
 
     expect(textContent(root)).not.toContain('icon:image');
   });

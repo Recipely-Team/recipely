@@ -65,12 +65,8 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const colors = useTheme().colors;
   const { state, recipes, isExpanded, isSearching, gridColumns } = vm;
 
-  // Stable across renders so the row memo holds.
+  // Stable across renders so the row memo holds; each row binds its own id.
   const { onOpenRecipe } = vm;
-  const openRecipe = useCallback(
-    (id: string) => () => onOpenRecipe(id),
-    [onOpenRecipe],
-  );
 
   const { rows, keyExtractor, adUnitId, adWidth } = useFeedRows({
     recipes,
@@ -81,9 +77,9 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
   const renderItem = useCallback(
     ({ item }: { item: FeedRowType }): React.JSX.Element => (
       // prettier-ignore
-      <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} adWidth={adWidth} openRecipe={openRecipe} />
+      <FeedRowView row={item} gridColumns={gridColumns} adUnitId={adUnitId} adWidth={adWidth} onOpenRecipe={onOpenRecipe} />
     ),
-    [gridColumns, openRecipe, adUnitId, adWidth],
+    [gridColumns, onOpenRecipe, adUnitId, adWidth],
   );
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'RecipeListBody');
