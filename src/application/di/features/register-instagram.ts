@@ -31,8 +31,7 @@ export const registerInstagram = (
   const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
   const featureFlags = container.resolve<FeatureFlagResolver>(TOKENS.FeatureFlagResolver);
   const instagramStore = configureInstagramStore({
-    isEnabled: () => featureFlags.isOn(FeatureFlagName.InstagramAutomations),
-    getConnection: new GetInstagramConnectionUseCase(instagramRepo),
+    getConnection: new GetInstagramConnectionUseCase(instagramRepo, () => featureFlags.isOn(FeatureFlagName.InstagramAutomations)),
     startLogin: new StartInstagramLoginUseCase(instagramRepo),
     finalize: new FinalizeInstagramLinkUseCase(instagramRepo),
     disconnect: new DisconnectInstagramUseCase(instagramRepo),

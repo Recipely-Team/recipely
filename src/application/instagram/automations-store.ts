@@ -2,13 +2,15 @@ import { create } from 'zustand';
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { ok } from '@core/result/result-helpers';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants } from '@core/constants';
 import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
 import { PageSizes } from '@application/config/page-sizes';
+import { RequestEpoch } from '@application/store/request-epoch';
+import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
@@ -47,11 +49,14 @@ const replacing = (list: PagedList<DmRuleEntity>, rule: DmRuleEntity): PagedList
  * - **The switch is optimistic.** It flips in the list and the opened rule at
  *   once; a refusal puts back the old value — unless a later flip of the same
  *   rule is already on its way, whose answer then decides.
+ * - **A delete drops the row in place** and keeps the loaded page number, so
+ *   the next `loadMoreRules` may skip the one rule that shifted up a page;
+ *   the list re-reads in full on its next `loadRules`.
  * - **User-scoped**: cleared on sign-out.
  */
 export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStore<AutomationsStoreState> => {
-  const flips = new Map<string, number>();
-  let openRequests = ValueConstants.zero;
+  const flips = new KeyedRequestEpoch();
+  const opening = new RequestEpoch();
 
   return create<AutomationsStoreState>((set, get) => {
     const rules = new PagedListLoader<DmRuleEntity>(() => get().rules, (list) => set({ rules: list }), (r) => r.id);
@@ -64,7 +69,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         rules: replacing(s.rules, rule),
         ...(s.opened.status === StoreStatus.Loaded && s.opened.rule.id === rule.id ? { opened: { status: StoreStatus.Loaded, rule } } : {}),
       }));
-    const loadRules = (): Promise<void> => rules.load((page) => deps.listRules.execute(page, PageSizes.dmRules));
+    const loadRules = (): Promise<void> => rules.load((page) => deps.listRules.execute(page));
 
     return {
       rules: { status: StoreStatus.Idle },
@@ -78,12 +83,11 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
       loadMoreRules: () => rules.loadMore(),
 
       setEnabled: async (rule, enabled) => {
-        const flip = (flips.get(rule.id) ?? ValueConstants.zero) + ValueConstants.one;
-        flips.set(rule.id, flip);
+        const isLatestFlip = flips.start(rule.id);
         show(rule.withEnabled(enabled));
         const result = await deps.setEnabled.execute(rule.id, enabled);
         // A later flip overtook this one: its answer decides, and this one has nothing to report.
-        if (flips.get(rule.id) !== flip) return ok(undefined);
+        if (!isLatestFlip()) return ok(undefined);
         if (result.ok) {
           show(result.value);
           return ok(undefined);
@@ -92,7 +96,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         return result;
       },
 
-      loadMedia: () => media.load((page) => deps.listMedia.execute(page, PageSizes.instagramMedia)),
+      loadMedia: () => media.load((page) => deps.listMedia.execute(page)),
       loadMoreMedia: () => media.loadMore(),
 
       searchRecipes: (raw) => {
@@ -103,18 +107,17 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
       loadMoreRecipes: () => recipes.loadMore(),
 
       openRule: async (id) => {
-        openRequests += ValueConstants.one;
-        const requested = openRequests;
+        const isCurrent = opening.start();
         const listed = get().rules;
         const cached = listed.status === StoreStatus.Loaded ? listed.items.find((rule) => rule.id === id) : undefined;
         set({ opened: cached === undefined ? { status: StoreStatus.Loading, id } : { status: StoreStatus.Loaded, rule: cached } });
         const result = await deps.getRule.execute(id);
-        if (requested !== openRequests) return;
+        if (!isCurrent()) return;
         if (result.ok) set({ opened: { status: StoreStatus.Loaded, rule: result.value } });
         else if (cached === undefined) set({ opened: { status: StoreStatus.Error, id, failure: result.failure } });
       },
 
-      loadSends: (ruleId) => sends.load((page) => deps.listSends.execute(ruleId, page, PageSizes.dmSends)),
+      loadSends: (ruleId) => sends.load((page) => deps.listSends.execute(ruleId, page)),
       loadMoreSends: () => sends.loadMore(),
 
       saveRule: async (draft, ruleId) => {
@@ -129,17 +132,16 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
       deleteRule: async (id) => {
         const result = await deps.deleteRule.execute(id);
         if (result.ok) {
-          set((s) => ({
-            rules: s.rules.status === StoreStatus.Loaded ? { ...s.rules, items: s.rules.items.filter((r) => r.id !== id), total: s.rules.total - ValueConstants.one } : s.rules,
-            ...(s.opened.status === StoreStatus.Loaded && s.opened.rule.id === id ? { opened: { status: StoreStatus.Idle } } : {}),
-          }));
+          rules.removeItem(id);
+          const opened = get().opened;
+          if (opened.status === StoreStatus.Loaded && opened.rule.id === id) set({ opened: { status: StoreStatus.Idle } });
         }
         return result;
       },
 
       clear: () => {
-        flips.clear();
-        openRequests += ValueConstants.one;
+        flips.invalidate();
+        opening.invalidate();
         [rules, media, recipes, sends].forEach((loader) => loader.reset());
         set({ recipeQuery: CharConstants.empty, opened: { status: StoreStatus.Idle } });
       },
