@@ -1,4 +1,4 @@
-import { TimeConstants, ValueConstants } from '@core/constants';
+import { CharConstants , TimeConstants, ValueConstants } from '@core/constants';
 
 /** A number, optionally a range ("10-15", "10 to 15"): group 1 is its first value. */
 const AMOUNT = String.raw`(\d+(?:[.,]\d+)?)(?:\s*(?:-|–|to|bis|ila|a|à)\s*\d+(?:[.,]\d+)?)?\s*`;
@@ -32,7 +32,7 @@ export const stepDurationMinutes = (step: string): number | null => {
   const amount = match?.[ValueConstants.one];
   if (match === null || amount === undefined) return null;
 
-  const value = Number.parseFloat(amount.replace(',', '.'));
+  const value = Number.parseFloat(amount.replace(CharConstants.comma, CharConstants.dot));
   const isHours = match.groups?.latinHour !== undefined || match.groups?.gluedHour !== undefined;
   const minutes = Math.round(isHours ? value * TimeConstants.minutesPerHour : value);
   return minutes > ValueConstants.zero ? minutes : null;

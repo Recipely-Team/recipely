@@ -50,6 +50,13 @@ describe('reading the amount', () => {
 });
 
 describe('scaling a line', () => {
+  // "1.000 gr" read as 1 became "2 gr" at double servings: a grouped amount is ambiguous, so it is left alone.
+  it('never scales an amount written with a thousands separator', () => {
+    expect(scaled('1.000 gr un', 2)).toBe('1.000 gr un');
+    expect(scaled('1,000 ml water', 2)).toBe('1,000 ml water');
+    expect(converted('1.000 g flour', UnitSystem.Imperial)).toBe('1.000 g flour');
+  });
+
   it('keeps the unit as written and rewrites only the amount', () => {
     expect(scaled('2 su bardağı un', 1.5)).toBe('3 su bardağı un');
     expect(scaled('200 g tavuk göğsü', 2)).toBe('400 g tavuk göğsü');

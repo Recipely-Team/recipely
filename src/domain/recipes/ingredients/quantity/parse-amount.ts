@@ -28,8 +28,11 @@ const PATTERNS: readonly { re: RegExp; read: (m: RegExpMatchArray) => number }[]
 ];
 
 const RANGE_DASH = /^\s*[-–]\s*/;
+// "1.000" / "1,000": a thousands group or a decimal, depending on who wrote it — not read at all.
+const GROUPED_THOUSANDS = /^\d{1,3}(?:[.,]\d{3})+(?!\d)/;
 
 const readOne = (text: string): { value: number; length: number } | null => {
+  if (GROUPED_THOUSANDS.test(text)) return null;
   for (const { re, read } of PATTERNS) {
     const match = text.match(re);
     if (match === null) continue;
