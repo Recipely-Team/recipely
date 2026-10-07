@@ -28,6 +28,13 @@ if (dist === undefined) {
 
 /** The `font` keys of the icon families `use-icon-fonts.ts` registers. */
 const ICON_FONT_FAMILIES = ['ionicons', 'material-community'];
+// One family per icon set the hook registers: adding a set there without its family here fails the build.
+const HOOK = fs.readFileSync(path.join(process.cwd(), 'src/presentation/navigation/use-icon-fonts.ts'), 'utf8');
+const registeredSets = (HOOK.match(/from '@expo\/vector-icons\/[A-Za-z]+'/g) ?? []).length;
+if (registeredSets !== ICON_FONT_FAMILIES.length) {
+  console.error(`assert-icon-fonts: use-icon-fonts.ts registers ${String(registeredSets)} icon set(s) but this check knows ${String(ICON_FONT_FAMILIES.length)} family name(s) — add the new family to ICON_FONT_FAMILIES`);
+  process.exit(1);
+}
 const APP_BUNDLE = /<script src="\/_expo\/static\/js\//;
 const FONT_STYLE = /<style id="expo-generated-fonts">([\s\S]*?)<\/style>/;
 

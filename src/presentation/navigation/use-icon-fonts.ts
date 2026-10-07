@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { useFonts } from 'expo-font';
+import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 
@@ -23,5 +25,11 @@ const ICON_FONTS = { ...Ionicons.font, ...MaterialCommunityIcons.font };
  *   `scripts/assert-icon-fonts.mjs` checks the exported HTML.
  */
 export const useIconFonts = (): void => {
-  useFonts(ICON_FONTS);
+  const [, error] = useFonts(ICON_FONTS);
+  useEffect(() => {
+    if (error === null) return;
+    // Icons stay blank without their font; leave a trace instead of failing silently.
+    FailureReporter.trail('icon fonts failed to load');
+    if (__DEV__) console.warn('useIconFonts', error);
+  }, [error]);
 };

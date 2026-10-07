@@ -30,7 +30,7 @@ private const val STATE_HALF_OPENED = "halfOpened"
  */
 class RecipelyWindowPostureModule : Module() {
   @Volatile
-  private var latest: Map<String, Any>? = null
+  @Volatile private var latest: Map<String, Any>? = null
   private var job: Job? = null
 
   override fun definition() = ModuleDefinition {
@@ -44,12 +44,17 @@ class RecipelyWindowPostureModule : Module() {
 
     OnActivityEntersForeground { startCollecting() }
 
-    OnDestroy {
-      job?.cancel()
-      job = null
-    }
+    OnDestroy { stopCollecting() }
   }
 
+  // Synchronized: OnCreate and the first foreground can arrive together on different threads.
+  @Synchronized
+  private fun stopCollecting() {
+    job?.cancel()
+    job = null
+  }
+
+  @Synchronized
   private fun startCollecting() {
     if (job?.isActive == true) return
     val activity = appContext.currentActivity ?: return
