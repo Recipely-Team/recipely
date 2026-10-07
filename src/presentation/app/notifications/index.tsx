@@ -22,7 +22,7 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights, letterSpacings, avatarSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
@@ -75,7 +75,10 @@ export const NotificationsScreen = (): React.JSX.Element => {
     return state.items.map(toNotifItem);
   }, [state]);
 
-  const sections = useMemo(() => buildSections(items, filter), [items, filter]);
+  const locale = useLocale();
+  // Section titles are translated: a language switch rebuilds them.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is read through t() inside buildSections
+  const sections = useMemo(() => buildSections(items, filter), [items, filter, locale]);
 
   const openTarget = useOpenNotificationTarget();
 

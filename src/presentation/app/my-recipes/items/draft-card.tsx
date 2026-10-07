@@ -7,7 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
@@ -29,6 +29,8 @@ const THUMB = mediaSizes.draftThumb;
  * Memoised, and takes id handlers so the list can pass the same two to every row.
  */
 const DraftCardComponent = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
+  // Memoised: subscribe to the language so a switch still re-renders the row's copy.
+  useLocale();
   const colors = useTheme().colors;
   const name = draft.snapshot.name?.trim();
   const cover = draft.snapshot.media?.find((m) => m.type === MediaType.Image);

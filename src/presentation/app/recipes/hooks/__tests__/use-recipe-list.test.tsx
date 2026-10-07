@@ -168,10 +168,14 @@ const makeSavedRecipesStore = () =>
 /** The user's own recipes; a change to it means the feed may be missing a just-published recipe. */
 const ownRecipes = create<{ version: number }>(() => ({ version: 0 }));
 
+/** The viewer the feed hook reads; a test signs in by setting it. Reset before each test. */
+const viewer = makeAuthStore();
+beforeEach(() => viewer.setState({ state: { status: 'unauthenticated' } } as unknown as AuthStoreState));
+
 const makeStores = (recipeListStore: BoundStore<RecipeListStoreState>): ApplicationStores =>
   ({
     recipeListStore,
-    authStore: makeAuthStore(),
+    authStore: viewer,
     notificationsStore: makeNotificationsStore(),
     savedRecipesStore: makeSavedRecipesStore(),
     loadFavoritesUseCase: { execute: jest.fn().mockResolvedValue(ok([])) },
@@ -815,6 +819,26 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
     await mountLoaded(execute);
     execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('mine')]))));
     act(() => ownRecipes.setState((st) => ({ version: st.version + 1 })));
+    now.mockReturnValue(loadedAt + 1_000);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  // A guest's rows carry likedByMe: false; after sign-in they must not be reused for a minute.
+  it('refetches at once on focus after the viewer signed in, however fresh the feed', async () => {
+    const execute = jest.fn();
+    const loadedAt = Date.now();
+    const now = jest.spyOn(Date, 'now').mockReturnValue(loadedAt);
+    await mountLoaded(execute);
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r1')]))));
+    act(() =>
+      viewer.setState({ state: { status: 'authenticated', session: { user: { id: 'u1' } } } } as unknown as AuthStoreState),
+    );
     now.mockReturnValue(loadedAt + 1_000);
 
     try {

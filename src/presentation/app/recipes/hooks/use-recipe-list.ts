@@ -75,8 +75,9 @@ const REVEAL_THRESHOLD = spacing.sm;
  *   `FEED_STALE_AFTER_MS` since its last successful load. Every return from a
  *   detail page used to re-request page 1. The first load and a pull are
  *   unchanged; a deleted recipe already leaves the store via `remove`, and a
- *   change to the user's own recipes (publish, create) makes the next focus
- *   refetch at once, so a just-published recipe never waits for the clock.
+ *   change to the user's own recipes (publish, create) or a different viewer
+ *   (sign-in, sign-out) makes the next focus refetch at once: the rows carry
+ *   the viewer's liked and saved state.
  * - **`buildApiFilters` takes the query as an argument** rather than closing
  *   over it: its identity is a dependency of the focus and locale effects, and
  *   a callback changing on every debounced keystroke made those refire and
@@ -108,11 +109,19 @@ export const useRecipeList = (): UseRecipeListResult => {
   const loadFromStore = recipeListStore((s) => s.load);
   // When the feed last loaded successfully — what the focus refetch's staleness reads.
   const lastLoadedAtRef = useRef<number | null>(null);
+  // Who the feed was loaded for: its rows carry viewer state (liked, saved), so a sign-in makes it stale.
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
+  const loadedForRef = useRef<string | null>(null);
   const load = useCallback(
     async (next: RecipeFilters): Promise<void> => {
+      const loadingFor = userIdRef.current;
       await loadFromStore(next);
       const settled = recipeListStore.getState().state;
-      if (settled.status === StoreStatus.Loaded && settled.refreshFailure === undefined) lastLoadedAtRef.current = Date.now();
+      if (settled.status === StoreStatus.Loaded && settled.refreshFailure === undefined) {
+        lastLoadedAtRef.current = Date.now();
+        loadedForRef.current = loadingFor;
+      }
     },
     [loadFromStore, recipeListStore],
   );
@@ -301,7 +310,8 @@ export const useRecipeList = (): UseRecipeListResult => {
       }
       const lastLoadedAt = lastLoadedAtRef.current;
       const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
-      if (fresh && !ownRecipesChangedRef.current) return;
+      const sameViewer = loadedForRef.current === userIdRef.current;
+      if (fresh && sameViewer && !ownRecipesChangedRef.current) return;
       ownRecipesChangedRef.current = false;
       void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),

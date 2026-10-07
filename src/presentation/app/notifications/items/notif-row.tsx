@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, iconSizes, avatarSizes, borderWidths, opacities, colorAlphas } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
 import { useKindMeta } from '@presentation/app/notifications/hooks/use-kind-meta';
@@ -55,6 +55,8 @@ const PRESSED_OPACITY = opacities.pressedLight;
  * Memoised: the screen passes one stable `onTap` to every row.
  */
 const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
+  // Memoised: subscribe to the language so a switch still re-renders the row's copy.
+  useLocale();
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
   const tappable = item.target !== null || !item.read;
