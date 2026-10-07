@@ -30,6 +30,15 @@ export const ApiRoutes = {
     notificationRead: (id: string): string =>
       `/me/notifications/${encodeURIComponent(id)}/read`,
   },
+  shopping: {
+    /** GET a page; DELETE empties the list. */
+    list: '/me/shopping-list',
+    /** POST a batch of lines. */
+    items: '/me/shopping-list/items',
+    /** DELETE every checked line. */
+    checked: '/me/shopping-list/items/checked',
+    item: (id: string): string => `/me/shopping-list/items/${encodeURIComponent(id)}`,
+  },
   recipes: {
     root: '/recipes',
     trending: '/recipes/trending',

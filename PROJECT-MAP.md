@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1831 source files.
+[architecture.md](architecture.md). 1866 source files.
 
 ## Layers
 
@@ -45,6 +45,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(1)_
 - `notifications/` _(11)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
+- `shopping/` — items, recipe _(13)_
 - `storage/` _(1)_
 - `user-profile/` _(5)_
 
@@ -58,7 +59,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `config/` _(6)_
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
-- `di/` — features _(14)_
+- `di/` — features _(15)_
 - `diary/` — day, entries, foods, goals, month _(26)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
@@ -69,6 +70,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — list, read _(9)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
+- `shopping/` — read, write _(11)_
 - `storage/` _(2)_
 - `store/` — paging _(10)_
 - `timers/` _(7)_
@@ -100,6 +102,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `network/` — envelope, errors, http, jwt, paging, upload _(26)_
 - `notifications/` — dtos _(10)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
+- `shopping/` — dtos _(10)_
 - `storage/` _(6)_
 - `user-profile/` _(4)_
 
@@ -165,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 16ed3576d367a979 -->
+<!-- fingerprint: f4dd1c57b6e84c5f -->

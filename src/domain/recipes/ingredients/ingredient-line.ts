@@ -84,6 +84,18 @@ export class IngredientLine extends BaseValueObject<IngredientLineProps> {
     return this._value.raw.trimStart().replace(RegexConstants.leadingIngredientGroupMarkers, CharConstants.empty).trim().replace(TRAILING_COLON, CharConstants.empty);
   }
 
+  /** What the line names without its amount — "un" of "2 su bardağı un"; anything else as written, trimmed. */
+  get name(): string {
+    return this._value.parts?.name ?? this._value.raw.trim();
+  }
+
+  /** The unit as it reads ("yk.", "cups"); null for a bare count or a line with no amount. */
+  get unitText(): string | null {
+    const { parts, quantity } = this._value;
+    if (parts === null || quantity === null || quantity.unit === null) return null;
+    return quantity.unitLabel(quantity.unit === parts.quantity.unit ? parts.unitToken : CharConstants.empty);
+  }
+
   /** The amount badge and the name; `qty` is empty when the line has no amount. */
   split(fallbackDecimalMark: string = CharConstants.dot): { qty: string; name: string } {
     const { parts, quantity } = this._value;

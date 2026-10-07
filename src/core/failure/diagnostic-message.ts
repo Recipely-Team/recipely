@@ -175,6 +175,11 @@ export const DiagnosticMessage = {
     foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
     foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
   },
+  shopping: {
+    idRequired: 'A shopping item id must be non-empty',
+    labelRequired: 'A shopping item needs a label',
+    quantityInvalid: 'A shopping quantity must be a positive finite number or none',
+  },
   instagram: {
     keywordInvalid: 'A keyword must be 1–40 characters',
     tooManyKeywords: 'A rule holds at most 10 keywords',

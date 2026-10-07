@@ -95,6 +95,19 @@ export const ErrorMessageKey = {
   instagramNotConnected: 'errors.instagram.not_connected',
   instagramReturnInvalid: 'errors.validation.instagram_return_invalid',
 
+  // Shopping list
+  shoppingLabelRequired: 'errors.validation.shopping_label_required',
+  shoppingLabelTooLong: 'errors.validation.shopping_label_too_long',
+  shoppingQuantityInvalid: 'errors.validation.shopping_quantity_invalid',
+  shoppingUnitTooLong: 'errors.validation.shopping_unit_too_long',
+  shoppingItemInvalid: 'errors.validation.shopping_item_invalid',
+  shoppingBatchInvalid: 'errors.validation.shopping_batch_invalid',
+  shoppingItemNotFound: 'errors.not_found.shopping_item',
+  shoppingListFull: 'errors.conflict.shopping_list_full',
+  shoppingListChanged: 'errors.conflict.shopping_list_changed',
+  shoppingRateLimited: 'errors.too_many_requests.shopping_list',
+  contentBlocked: 'errors.validation.content_blocked',
+
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',
   codeInvalid: 'errors.validation.code_invalid',

@@ -13,6 +13,7 @@ import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalo
 import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
 import type { InstagramStoreState } from '@application/instagram/instagram-store-state';
 import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
+import type { ShoppingListStoreState } from '@application/shopping/shopping-list-store-state';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
@@ -81,6 +82,8 @@ export interface ApplicationStores {
   instagramStore: BoundStore<InstagramStoreState>;
   /** Instagram comment-to-DM rules, their pickers and activity. User-scoped. */
   automationsStore: BoundStore<AutomationsStoreState>;
+  /** The viewer's shopping list. User-scoped. */
+  shoppingListStore: BoundStore<ShoppingListStoreState>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */
