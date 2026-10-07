@@ -6,8 +6,10 @@ import { ValueConstants } from '@core/constants';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import type { ShoppingAddResult } from '@domain/shopping/items/shopping-add-result';
 import { orderedShoppingItems } from '@domain/shopping/items/ordered-shopping-items';
+import { compareShoppingItems } from '@domain/shopping/items/compare-shopping-items';
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
+import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import { PageSizes } from '@application/config/page-sizes';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
@@ -34,21 +36,20 @@ interface ShoppingListStoreDeps {
 
 type Items = readonly ShoppingItemEntity[];
 
-/** A loaded list with its rows rewritten (and re-ordered) and its total moved; any other list unchanged. */
-const rewrite = (list: PagedList<ShoppingItemEntity>, next: (items: Items) => Items, totalDelta = ValueConstants.zero): PagedList<ShoppingItemEntity> =>
-  list.status === StoreStatus.Loaded
-    ? { ...list, items: orderedShoppingItems(next(list.items)), total: Math.max(ValueConstants.zero, list.total + totalDelta) }
-    : list;
+/**
+ * The loaded window with `touched` lines put in their server places. While more
+ * pages exist, a touched line that now sorts past the window's last row belongs
+ * to a later page and is left for it, so the window stays a prefix of the list.
+ */
+const placed = (items: Items, touched: Items, hasMore: boolean): Items => {
+  const ids = new Set(touched.map((item) => item.id));
+  const last = items[items.length - ValueConstants.one];
+  const kept = !hasMore ? touched : last === undefined ? [] : touched.filter((item) => compareShoppingItems(item, last) <= ValueConstants.zero);
+  return orderedShoppingItems([...items.filter((item) => !ids.has(item.id)), ...kept]);
+};
 
 const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
   list.status === StoreStatus.Loaded && list.items.some((item) => item.id === id);
-
-/** Touched lines replace theirs by id; new ones go to the top. */
-const upserting = (touched: Items) => (items: Items): Items => {
-  const byId = new Map(touched.map((item) => [item.id, item]));
-  const known = new Set(items.map((item) => item.id));
-  return [...touched.filter((item) => !known.has(item.id)), ...items.map((item) => byId.get(item.id) ?? item)];
-};
 
 /**
  * The viewer's shopping list, paged on scroll through a `PagedListLoader`.
@@ -58,20 +59,26 @@ const upserting = (touched: Items) => (items: Items): Items => {
  *   back — unless a later tick of the same line is on its way, whose answer
  *   then decides. A delete is optimistic too and puts the line back on refusal.
  * - **Adds show without a reload**: the lines the server touched replace
- *   theirs or join the top; the total grows by what was new, not by merges.
+ *   theirs or join in their place; the total grows by what was new, not by merges.
+ * - **The window stays a prefix of the server's order** (unchecked, then
+ *   checked, by position): a line ticked, added or put back past the last
+ *   loaded row waits for its page, and every row that leaves goes through the
+ *   loader, so the next page re-reads from the shifted offset instead of skipping.
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`).
  */
 export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStoreState> => {
   const ticks = new Map<string, number>();
-  let session: number = ValueConstants.zero;
+  const removals = new KeyedRequestEpoch();
 
   return create<ShoppingListStoreState>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
     const fetchPage = (page: number) => deps.list.execute(page, PageSizes.shoppingList);
-    const update = (next: (items: Items) => Items, totalDelta?: number): void => set((s) => ({ list: rewrite(s.list, next, totalDelta) }));
-    const show = (item: ShoppingItemEntity): void => update((items) => items.map((it) => (it.id === item.id ? item : it)));
+    const hasMore = (): boolean => { const list = get().list; return list.status === StoreStatus.Loaded && list.hasMore; };
+    const place = (touched: Items, totalDelta?: number): void => loader.rewriteItems((items) => placed(items, touched, hasMore()), totalDelta);
+    /** Refreshes a line already on screen; one that has left the window stays with its page. */
+    const show = (item: ShoppingItemEntity): void => { if (hasItem(get().list, item.id)) place([item]); };
     const added = (result: Result<ShoppingAddResult, Failure>): Result<ShoppingAddResult, Failure> => {
-      if (result.ok) update(upserting(result.value.items), result.value.added);
+      if (result.ok) place(result.value.items, result.value.added);
       return result;
     };
 
@@ -92,10 +99,12 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       setChecked: async (item, checked) => {
         const tick = (ticks.get(item.id) ?? ValueConstants.zero) + ValueConstants.one;
         ticks.set(item.id, tick);
-        show(item.withChecked(checked));
+        const wasShown = hasItem(get().list, item.id);
+        if (wasShown) place([item.withChecked(checked)]);
         const result = await deps.setChecked.execute(item.id, checked);
         if (ticks.get(item.id) !== tick) return ok(undefined);
-        show(result.ok ? result.value : item);
+        if (result.ok) show(result.value);
+        else if (wasShown) place([item]);
         return result.ok ? ok(undefined) : result;
       },
 
@@ -106,21 +115,18 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       },
 
       remove: async (item) => {
-        const sessionAtStart = session;
-        const before = get().list;
-        const at = before.status === StoreStatus.Loaded ? before.items.findIndex((it) => it.id === item.id) : ValueConstants.minusOne;
-        update((items) => items.filter((it) => it.id !== item.id), at < ValueConstants.zero ? ValueConstants.zero : ValueConstants.minusOne);
+        const isCurrent = removals.start(item.id);
+        const wasShown = hasItem(get().list, item.id);
+        loader.removeItem(item.id);
         const result = await deps.remove.execute(item.id);
         // Back only if this session's list still lacks it: a refresh may already have brought it back.
-        if (!result.ok && at >= ValueConstants.zero && session === sessionAtStart && !hasItem(get().list, item.id)) {
-          update((items) => [...items.slice(ValueConstants.zero, at), item, ...items.slice(at)], ValueConstants.one);
-        }
+        if (!result.ok && wasShown && isCurrent() && !hasItem(get().list, item.id)) place([item], ValueConstants.one);
         return result;
       },
 
       clearChecked: async () => {
         const result = await deps.clearChecked.execute();
-        if (result.ok) update((items) => items.filter((item) => !item.checked), -result.value);
+        if (result.ok) loader.rewriteItems((items) => items.filter((item) => !item.checked), -result.value);
         return result;
       },
 
@@ -131,7 +137,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       },
 
       clear: () => {
-        session += ValueConstants.one;
+        removals.invalidate();
         ticks.clear();
         loader.reset();
         set({ isRefreshing: false });

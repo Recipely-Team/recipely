@@ -10,6 +10,7 @@ import { ShoppingConfirm, type ShoppingConfirmType } from '@presentation/app/sho
 import { shoppingRows } from '@presentation/app/shopping-list/model/shopping-rows';
 import type { UseShoppingListResult } from '@presentation/app/shopping-list/model/use-shopping-list-result';
 import { t } from '@presentation/i18n';
+import { useLocale } from '@presentation/i18n/use-locale';
 
 /**
  * Drives the Shopping list screen: the paged list, the add field, ticks,
@@ -42,7 +43,10 @@ export const useShoppingList = (): UseShoppingListResult => {
   );
 
   const items = loadedItems(list);
-  const rows = useMemo(() => shoppingRows(items, t().shopping.toBuy, t().shopping.completed), [items]);
+  useLocale();
+  // The section labels are copy: a language switch must rebuild them, not only a list change.
+  const { toBuy, completed } = t().shopping;
+  const rows = useMemo(() => shoppingRows(items, toBuy, completed), [items, toBuy, completed]);
 
   const onAdd = (): void => {
     if (isAdding) return;

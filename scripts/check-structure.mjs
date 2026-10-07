@@ -53,6 +53,8 @@
  *   AO. Application imports no infrastructure module, not even from its di/
  *      wiring; storage keys sit behind `PreferenceStoreInterface` slots — build
  *      values such as `IS_DEV_BUILD` reach it through DI (CLAUDE.md §17).
+ *   AP. No annotation applied twice to one Kotlin declaration under modules/ —
+ *      kotlinc rejects it, and no JS gate compiles native code (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1695,6 +1697,39 @@ function openingTag(src, at) {
     errors.push(
       `${file}: registers with the assistant directly — use useAssistantAction / useAssistantScreenContent / useAssistantScreenReading, which register only while the screen is focused; mounted is not visible (CLAUDE.md §24)`,
     );
+  }
+}
+
+// --- AP: no annotation twice on one Kotlin declaration (CLAUDE.md §24) -----
+// `@Volatile` stacked twice on one field shipped green: JS gates never compile
+// the native modules, and kotlinc rejects a repeated non-repeatable annotation,
+// so every Android build failed. This catches that class without a JVM.
+{
+  const MODULES = path.join(ROOT, 'modules');
+  const ANNOTATION = /@([A-Za-z_][\w.]*)(?:\([^)]*\))?/g;
+  const ANNOTATIONS_ONLY = /^\s*(?:@[A-Za-z_][\w.]*(?:\([^)]*\))?\s*)+$/;
+  const walkKotlin = (dir, out) => {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === 'node_modules' || entry.name === 'build') continue;
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) walkKotlin(full, out);
+      else if (entry.name.endsWith('.kt')) out.push(full);
+    }
+    return out;
+  };
+  for (const full of fs.existsSync(MODULES) ? walkKotlin(MODULES, []) : []) {
+    const rel = path.relative(ROOT, full);
+    let pending = [];
+    fs.readFileSync(full, 'utf8').split('\n').forEach((line, i) => {
+      const leading = line.match(/^\s*((?:@[A-Za-z_][\w.]*(?:\([^)]*\))?\s*)*)/)[1];
+      const names = [...leading.matchAll(ANNOTATION)].map((m) => m[1]);
+      const all = [...pending, ...names];
+      const repeated = all.find((name, k) => all.indexOf(name) !== k);
+      if (repeated) {
+        errors.push(`${rel}:${i + 1}: @${repeated} is applied twice to one declaration — kotlinc rejects it and the Android build fails (CLAUDE.md §24)`);
+      }
+      pending = ANNOTATIONS_ONLY.test(line) ? all : [];
+    });
   }
 }
 

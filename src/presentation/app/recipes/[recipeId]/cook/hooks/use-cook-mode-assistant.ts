@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
 import type { AssistantActionResultType } from '@domain/assistant/actions/assistant-action-result';
@@ -12,6 +12,7 @@ import { startTimer } from '@presentation/base/timers/timer-controls';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { stepTimerId } from '@presentation/base/timers/step-timer-id';
 import { resolveStepTarget } from '@presentation/app/recipes/[recipeId]/cook/model/resolve-step-target';
+import { spokenIngredientLines } from '@presentation/app/recipes/[recipeId]/model/portions/spoken-ingredient-lines';
 import type { UseCookModeResult } from '@presentation/app/recipes/[recipeId]/cook/model/use-cook-mode-result';
 
 /**
@@ -33,7 +34,8 @@ import type { UseCookModeResult } from '@presentation/app/recipes/[recipeId]/coo
  *   resume and stop fall through to the app-wide timer actions.
  */
 export const useCookModeAssistant = (vm: UseCookModeResult): void => {
-  const { recipeId, recipeName, steps, ingredients, navigation, completedSteps, stepMinutes } = vm;
+  const { recipeId, recipeName, steps, navigation, completedSteps, stepMinutes } = vm;
+  const ingredients = useMemo(() => spokenIngredientLines(vm.ingredients), [vm.ingredients]);
   const isReady = steps.length > ValueConstants.zero;
 
   useAssistantScreenContent(() =>

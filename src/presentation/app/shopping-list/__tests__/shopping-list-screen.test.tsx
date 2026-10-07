@@ -15,7 +15,7 @@ import { fakeShoppingRepository, shoppingItemOf, shoppingStoreOf } from '@applic
 import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
 import { ShoppingListScreen } from '@presentation/app/shopping-list';
-import { t } from '@presentation/i18n';
+import { getLocale, setLocale, t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 
 const render = async (items = [shoppingItemOf({ id: 'a', label: 'Milk', quantity: 1, unit: 'l', recipeName: 'Pancakes', position: 0 }), shoppingItemOf({ id: 'b', label: 'Eggs', quantity: null, unit: null, checked: true, position: 1 })]) => {
@@ -40,6 +40,19 @@ describe('ShoppingListScreen', () => {
     expect(text).toContain('1 l · Milk');
     expect(text).toContain(copy.fromRecipe.replace('{name}', 'Pancakes'));
     expect(text.indexOf('Milk')).toBeLessThan(text.indexOf('Eggs'));
+  });
+
+  // Review finding: the section labels were memoised on the items only, so a language switch left them in the old language.
+  it('renames the sections when the language changes, without the list changing', async () => {
+    const before = getLocale();
+    const { root } = await render();
+    act(() => setLocale(before === 'tr' ? 'en' : 'tr'));
+    const text = textContent(root).join('|');
+    const copy = t().shopping;
+    act(() => setLocale(before));
+
+    expect(text).toContain(upperCase(`${copy.toBuy} (1)`));
+    expect(text).toContain(upperCase(`${copy.completed} (1)`));
   });
 
   it('ticks a line at once and sends the tick', async () => {

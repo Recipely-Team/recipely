@@ -22,6 +22,7 @@ import type { FileImportStoreState } from '@application/recipes/import-file/file
 import type { FeedbackStoreState } from '@application/feedback/feedback-store-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { StepProgressStoreState } from '@application/recipes/cooking/step-progress-store-state';
+import type { PortionChoiceStoreState } from '@application/recipes/cooking/portion-choice-store-state';
 import type { NotificationsStoreState } from '@application/notifications/notifications-store-state';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { RecipePublishingStoreState } from '@application/recipes/publishing/recipe-publishing-store-state';
@@ -65,6 +66,7 @@ export interface ApplicationStores {
   likesStore: BoundStore<LikesStoreState>;
   /** Ticked instruction steps per recipe, shared by the recipe page and cook mode. */
   stepProgressStore: BoundStore<StepProgressStoreState>;
+  portionChoiceStore: BoundStore<PortionChoiceStoreState>;
   notificationsStore: BoundStore<NotificationsStoreState>;
   userProfileStore: BoundStore<UserProfileStoreState>;
   taxonomyStore: BoundStore<TaxonomyStoreState>;

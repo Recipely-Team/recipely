@@ -92,7 +92,9 @@ export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, child
           start={{ x: ValueConstants.zero, y: ValueConstants.zero }}
           end={{ x: ValueConstants.one, y: ValueConstants.one }}
           style={styles.gradient}
-        />
+        >
+          {hero}
+        </LinearGradient>
         <Pressable
           onPress={onBack}
           style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
@@ -101,7 +103,6 @@ export const AuthHeroLayout = ({ icon, title, subtitle, backLabel, onBack, child
         >
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />
         </Pressable>
-        {hero}
         <View style={[styles.card, { backgroundColor: colors.cardBackground }, shadows.lg]}>
           {children}
         </View>
@@ -114,11 +115,6 @@ const styles = StyleSheet.create({
   flex: { flex: ValueConstants.one },
   scrollContent: { flexGrow: ValueConstants.one },
   gradient: {
-    position: 'absolute',
-    top: ValueConstants.zero,
-    left: ValueConstants.zero,
-    right: ValueConstants.zero,
-    height: mediaSizes.heroImageHeight,
     borderBottomLeftRadius: radii.xxxl,
     borderBottomRightRadius: radii.xxxl,
   },
@@ -134,7 +130,7 @@ const styles = StyleSheet.create({
     zIndex: zIndices.raised,
   },
   gradientCenter: {
-    height: mediaSizes.heroImageHeight,
+    minHeight: mediaSizes.heroImageHeight,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.sm,
@@ -176,7 +172,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.xxl,
   },
   heroLandscape: {
-    height: 'auto',
+    minHeight: ValueConstants.zero,
     maxWidth: layoutSizes.maxContentLg,
   },
   splitFormPane: {

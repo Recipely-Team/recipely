@@ -25,7 +25,7 @@ export const NotificationsHeader = ({ unreadCount, onBack, onMarkAllRead }: Noti
         onPress={onBack}
         style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
         accessibilityRole="button"
-        accessibilityLabel={t().notifications.title}
+        accessibilityLabel={t().common.back}
       >
         <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
       </Pressable>

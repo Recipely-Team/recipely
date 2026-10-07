@@ -5,6 +5,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { CommentView } from '@domain/comments/comment-view';
 import { StoreStatus } from '@application/store/store-status';
+import { RequestEpoch } from '@application/store/request-epoch';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { loadedItems } from '@application/store/paging/loaded-items';
@@ -39,13 +40,18 @@ const commentKey = (view: CommentView): string => view.comment.id;
  *   or delete leaves is de-duplicated by comment id. `byRecipe` is its projection.
  * - **Likes are optimistic:** `toggleLike` flips in place, rolls back on failure and
  *   returns the `Result` so the caller can toast the rejection.
- * - **`clear()` on sign-out** resets every loader, dropping answers in flight.
+ * - **`clear()` on sign-out** resets every loader, dropping answers in flight;
+ *   a comment posted under the old session writes nothing back.
+ * - **A comment posted before its thread has loaded** (loading, or in error)
+ *   reloads the thread, so it is not lost from view until the next visit.
  * - **No try/catch:** the use cases return `Result` and the HTTP client never throws.
  */
 export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<CommentsStoreState> => {
   const { listComments, addComment, deleteComment, setCommentLike } = deps;
   const lists = new Map<string, PagedList<CommentView>>();
   const loaders = new Map<string, PagedListLoader<CommentView>>();
+  const sessions = new RequestEpoch();
+  let isSessionCurrent = sessions.start();
 
   return create<CommentsStoreState>((set, get) => {
     const patch = (recipeId: string, change: Patch): void =>
@@ -78,8 +84,12 @@ export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<Comm
       loadMore: (recipeId) => loaderFor(recipeId).loadMore(),
       addComment: async (recipeId, body) => {
         patch(recipeId, () => ({ isSubmitting: true, error: null }));
+        const isCurrent = isSessionCurrent;
         const result = await addComment.execute({ recipeId, body });
-        if (result.ok) loaderFor(recipeId).upsertItem({ comment: result.value, likedByMe: false });
+        if (!isCurrent()) return result.ok;
+        const isLoaded = (lists.get(recipeId) ?? IDLE).status === StoreStatus.Loaded;
+        if (result.ok && isLoaded) loaderFor(recipeId).upsertItem({ comment: result.value, likedByMe: false });
+        else if (result.ok) void get().load(recipeId);
         patch(recipeId, () => (result.ok ? { isSubmitting: false, error: null } : { isSubmitting: false, error: result.failure }));
         return result.ok;
       },
@@ -99,6 +109,7 @@ export const configureCommentsStore = (deps: CommentsStoreDeps): BoundStore<Comm
         return result;
       },
       clear: () => {
+        isSessionCurrent = sessions.start();
         loaders.forEach((loader) => loader.reset());
         loaders.clear();
         lists.clear();

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { act } from 'react-test-renderer';
 import type { ReactTestInstance } from 'react-test-renderer';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -20,19 +21,22 @@ const CAKE = recipeEntityOf({ id: 'cake', servings: 4, ingredients: ['2 cups flo
 
 const mount = (recipe: RecipeEntity): { latest: () => PortionScaling; root: ReactTestInstance; show: (next: RecipeEntity) => void } => {
   let latest: PortionScaling | null = null;
+  let showRecipe: (next: RecipeEntity) => void = () => undefined;
   const Probe = ({ of }: { of: RecipeEntity }): React.JSX.Element => {
-    const portions = usePortionScaling(of);
+    const [shown, setShown] = useState(of);
+    showRecipe = setShown;
+    const portions = usePortionScaling(shown);
     latest = portions;
     return <PortionStepper portions={portions} />;
   };
-  const { root, renderer } = renderComponent(<Probe of={recipe} />);
+  const { root } = renderComponent(<Probe of={recipe} />);
   return {
     latest: () => {
       if (latest === null) throw new Error('not rendered');
       return latest;
     },
     root,
-    show: (next) => act(() => renderer.update(<Probe of={next} />)),
+    show: (next) => act(() => showRecipe(next)),
   };
 };
 

@@ -293,6 +293,32 @@ describe('commentsStore.addComment / deleteComment', () => {
     expect(thread.isSubmitting).toBe(false);
   });
 
+  // Review finding: `upsertItem` does nothing before a thread loads, so a comment posted meanwhile vanished from view.
+  it('a comment posted while the thread is still loading shows once it loads', async () => {
+    const created = makeComment({ id: 'new' });
+    const first = deferredPage();
+    const answers = [first.promise, Promise.resolve(ok(pageOf([created, makeComment({ id: 'c1' })])))];
+    const { store } = makeStore({ seed: [], add: ok(created.comment), list: () => answers.shift()! });
+    const loading = store.getState().load(RECIPE_ID);
+
+    await store.getState().addComment(RECIPE_ID, 'Lovely');
+    first.release(pageOf([makeComment({ id: 'c1' })]));
+    await loading;
+    await Promise.resolve();
+
+    expect(store.getState().byRecipe[RECIPE_ID].items.map((c) => c.comment.id)).toEqual(['new', 'c1']);
+  });
+
+  it('a comment answer that lands after sign-out writes nothing back', async () => {
+    const created = makeComment({ id: 'new' });
+    const { store } = await seededStore({ seed: [], add: ok(created.comment) });
+    const posting = store.getState().addComment(RECIPE_ID, 'Lovely');
+    store.getState().clear();
+    await posting;
+
+    expect(store.getState().byRecipe).toEqual({});
+  });
+
   it('keeps the failure for the screen when posting fails', async () => {
     const failure = new NetworkFailure('offline');
     const { store } = await seededStore({ seed: [], add: fail(failure) });

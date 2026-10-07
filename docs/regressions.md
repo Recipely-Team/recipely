@@ -178,6 +178,39 @@ prerender draws the glyphs and ships the `@font-face` in `<head>`;
 `use-icon-fonts.test.tsx` fails on an imported icon family it does not register, and
 `scripts/assert-icon-fonts.mjs` (in `build:web`) fails on an app page without them.
 
+**Every Android build failed on a Kotlin module while every gate was green.**
+`@Volatile` was stacked twice on one field of the window-posture module; kotlinc rejects
+a repeated non-repeatable annotation, but lint, tsc, jest and `check:structure` never
+compile native code, so nothing ran it until a device build. **Native code under
+`modules/` has no gate unless one is written for it.**
+*Guard:* `check:structure` rule **AP** — no annotation applied twice to one Kotlin
+declaration under `modules/`; the fix was proven with a local prebuild + `assembleDebug`.
+
+**A back button that did nothing after a reload on the web.** Forgot-password called
+`router.back()` unconditionally; a direct visit has no history. *Guard:* `canGoBack()` or
+`replace(RoutePaths.login)` — "goes to login when there is no history to go back to"
+(`forgot-password-screen.test.tsx`). **Every back on a routable page needs a fallback.**
+
+**Swipe paging ignored right-to-left.** `useHorizontalSwipe` hard-coded "left is
+forward", so Arabic paged cook-mode steps and the diary week against the mirrored UI.
+*Guard:* `swipePageDirection(dx, I18nManager.isRTL)` (`swipe-page-direction.test.ts`).
+
+**State shown by colour only, and a back button announced as the title.** The
+notification All / Unread pills had no `accessibilityState.selected`; the header's back
+button was labelled with the screen title. *Guard:* `notifications-a11y.test.tsx`.
+
+**A text box pinned to a fixed `height`.** The auth hero (forgot / reset password) held
+its title and subtitle in a `height`-pinned box over a gradient of the same height; at a
+large font scale the subtitle spilled into the card. *Guard:* `minHeight`, with the
+gradient wrapping the hero so it grows too — "lets the hero … grow with its text"
+(`auth-hero-layout.test.tsx`); rule 6b.
+
+**Copy memoised without the locale.** The shopping list's section labels were baked into
+a `useMemo` keyed on the items only, so a language switch left them stale. *Guard:* the
+labels are memo dependencies and the hook subscribes with `useLocale()` — "renames the
+sections when the language changes" (`shopping-list-screen.test.tsx`). **A memo that
+reads `t()` depends on the strings it reads.**
+
 ## Parsing and display
 
 **A greedy quantifier ate half a word.**
@@ -202,6 +235,19 @@ without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `
 `isString` from `@core/guards/type-guards` before calling the domain; the malformed
 cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
 is not a check** — a reader that promises leniency narrows the shape itself.
+
+**Cook mode and the assistants showed different amounts from the recipe page.**
+The servings / units choice was page-local state on the detail page, so cook mode's
+ingredient sheet (and its "Add to shopping list"), the cook-mode assistant and the
+recipe-page assistant all used the raw lines — the recipe's own servings, and
+`# For the sauce` as an ordinary row or spoken word. *Guard:* the choice lives in a
+session-scoped `portionChoiceStore` (cleared on sign-out) read through
+`usePortionScaling` by every surface; assistants read `spokenIngredientLines`. Covered
+by "lists and reads the ingredients the recipe page shows …"
+(`cook-mode-screen.test.tsx`) and "reads the ingredients at the servings the reader
+chose …" (`use-recipe-detail-assistant.test.tsx`), both red without it. **What the
+cook sees, hears and buys is one set of lines** — a second surface derives from the
+same state, never from the entity again.
 
 ## Integration
 
@@ -321,6 +367,22 @@ publish" (`drafts-paging.test.ts`). Comment threads page through one loader per
 recipe — "a comment deleted before 'load more' does not hide the next comment" and "a
 comment posted before 'load more' does not show an older comment twice"
 (`comments-store.test.ts`).
+
+**The same skip, bypassing the loader.** The shopping list rewrote its own rows on a
+delete or a tick and never told its `PagedListLoader`, so `removed` stayed 0: delete a
+line on page 1 — or tick one, which the server moves to the checked tail — and the next
+page skipped the line that moved up. *Guard:* every edit goes through the loader
+(`removeItem`, or `rewriteItems`, which counts each row that leaves the window), and a
+line that now sorts past the last loaded row waits for its page, so the window stays a
+prefix of the server order. Covered by "a line deleted on page 1 does not hide the first
+line of page 2" and "a line ticked on page 1 …" (`shopping-list-paging.test.ts`, against
+a fake server that really moves rows), red without the fix. **A store that edits a
+paged list edits it through the loader** — never its own `set`.
+
+**A comment posted while its thread was loading vanished.** `upsertItem` does nothing
+before a list has loaded, and the first page then landed without it. *Guard:* a post
+into a thread that is not loaded reloads it — "a comment posted while the thread is
+still loading shows once it loads" (`comments-store.test.ts`).
 
 ---
 
@@ -501,6 +563,19 @@ answering after a newer one overwrote it. *Guard:* a `KeyedRequestEpoch` per rec
 `load` / `loadMore`, invalidated by `clear()`. Covered by "a load answering after
 sign-out does not bring the old thread back" and "an older load answering after a
 newer one does not overwrite it" (`comments-store.test.ts`), both red without it.
+
+**And in three writes the earlier guards missed**: the recipe detail store's `load`
+(a late answer put the previous account's `likedByMe` back after `clear()`, and an
+older answer could overwrite a newer one), the drafts resume card (`loadLatestDraft` /
+`upsertDraft`), and a comment posted just before sign-out. *Guard:* a
+`KeyedRequestEpoch` per recipe id in the detail store, a `RequestEpoch` for the resume
+card, a session epoch in `addComment`. Covered by "a recipe answer that lands after
+sign-out does not bring back the previous account's like"
+(`recipe-detail-store-session.test.ts`), "a latest-draft answer that lands after
+sign-out does not bring back the previous account's resume card"
+(`drafts-store.test.ts`) and "a comment answer that lands after sign-out writes nothing
+back" (`comments-store.test.ts`), all red without the fix. **Every write after an
+`await` in a user-scoped store needs the guard — not only the list loads.**
 
 ---
 

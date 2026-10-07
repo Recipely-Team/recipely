@@ -5,6 +5,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { isString } from '@core/guards/type-guards';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { usePortionScaling } from '@presentation/app/recipes/[recipeId]/hooks/use-portion-scaling';
 import { useCookRecipe } from '@presentation/app/recipes/[recipeId]/cook/hooks/use-cook-recipe';
 import { useStepNavigation } from '@presentation/app/recipes/[recipeId]/cook/hooks/use-step-navigation';
 import { CookRecipeStatus } from '@presentation/app/recipes/[recipeId]/cook/model/cook-recipe-status';
@@ -20,6 +21,8 @@ const NONE: readonly never[] = [];
  * @remarks
  * - **The ticks are the recipe page's ticks** (`stepProgressStore`): a step
  *   done here reads as done there.
+ * - **The ingredients are the recipe page's lines**: at the servings and units
+ *   chosen there (`usePortionScaling`), for the sheet, its shopping button and the assistant.
  * - **"Next" means "done with this one".** Moving forward ticks the step being
  *   left — the cook has finished it — and on the last step it finishes cook
  *   mode. Going back ticks nothing.
@@ -34,6 +37,7 @@ export const useCookMode = (): UseCookModeResult => {
   const state = useCookRecipe(recipeId);
   const recipe = state.status === CookRecipeStatus.Ready || state.status === CookRecipeStatus.Empty ? state.recipe : null;
   const steps = recipe?.instructions ?? NONE;
+  const portions = usePortionScaling(recipe);
   const navigation = useStepNavigation(steps.length);
   const completedSteps = stepProgressStore((s) => s.byRecipe[recipeId]) ?? NONE;
   const toggleStep = stepProgressStore((s) => s.toggleStep);
@@ -68,7 +72,7 @@ export const useCookMode = (): UseCookModeResult => {
     state,
     recipeName: recipe?.name ?? CharConstants.empty,
     steps,
-    ingredients: recipe?.ingredients ?? NONE,
+    ingredients: portions.ingredients,
     navigation,
     completedSteps,
     currentStep,

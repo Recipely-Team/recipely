@@ -27,7 +27,7 @@ type PageFetch<T> = (page: number) => Promise<Result<Page<T>, Failure>>;
  *   query, shelf or group.
  * - **`refresh` re-reads without a spinner**: a loaded list stays on screen
  *   while it fetches and keeps its rows when the fetch fails.
- * - **`removeItem` / `upsertItem` edit a loaded list in place**, keeping
+ * - **`removeItem` / `upsertItem` / `rewriteItems` edit a loaded list in place**, keeping
  *   `total` in step (never below zero); before a list loads they do nothing.
  * - **A next page after removals re-reads from the shifted offset**: each
  *   removed row moved every later server row up by one, so asking `page + 1`
@@ -110,6 +110,20 @@ export class PagedListLoader<T> {
     if (items.length === current.items.length) return;
     this.removed += ValueConstants.one;
     this.write({ ...current, items, total: Math.max(ValueConstants.zero, current.total - ValueConstants.one) });
+  }
+
+  /**
+   * Rewrites a loaded list's rows and moves its total by `totalDelta`. Every row
+   * that leaves the window — deleted, or moved past it on the server — counts as
+   * a removal for the next page's offset; re-reading one row too many is safe.
+   */
+  rewriteItems(next: (items: readonly T[]) => readonly T[], totalDelta: number = ValueConstants.zero): void {
+    const current = this.read();
+    if (current.status !== StoreStatus.Loaded) return;
+    const items = next(current.items);
+    const kept = new Set(items.map(this.keyOf));
+    this.removed += current.items.filter((item) => !kept.has(this.keyOf(item))).length;
+    this.write({ ...current, items, total: Math.max(ValueConstants.zero, current.total + totalDelta) });
   }
 
   /** Replaces the row with the same key where it stands, or adds it at `position` and counts it. */

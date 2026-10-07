@@ -348,3 +348,24 @@ describe("draftsStore.deleteDraft", () => {
     expect(ids(store.getState())).toEqual(["a"]);
   });
 });
+
+/** Review finding: the resume card had no session guard, so an answer landing after sign-out showed the previous account's draft. */
+describe("draftsStore resume card after sign-out", () => {
+  it("a latest-draft answer that lands after sign-out does not bring back the previous account's resume card", async () => {
+    const store = makeStore({ latestResult: ok(makeDraft("old")) });
+    const loading = store.getState().loadLatestDraft();
+    store.getState().clear();
+    await loading;
+
+    expect(store.getState().latestDraft).toBeNull();
+  });
+
+  it("a draft save that lands after sign-out does not become the next session's resume card", async () => {
+    const store = makeStore({ upsertResult: ok(makeDraft("saved")) });
+    const saving = store.getState().upsertDraft({ id: "saved", prompt: "p", snapshot: { name: "x" }, chatHistory: [] });
+    store.getState().clear();
+    await saving;
+
+    expect(store.getState().latestDraft).toBeNull();
+  });
+});

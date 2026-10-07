@@ -35,6 +35,7 @@ export const NotificationFilterPills = ({ filter, totalCount, unreadCount, onCha
             ]}
             accessibilityRole="button"
             accessibilityLabel={label}
+            accessibilityState={{ selected: isActive }}
           >
             <ThemedText variant="caption" style={[styles.pillLabel, { color: isActive ? colors.primaryText : colors.text }]}>
               {label}

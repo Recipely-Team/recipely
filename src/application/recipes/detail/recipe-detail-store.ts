@@ -2,6 +2,7 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { ValueConstants } from '@core/constants';
+import { KeyedRequestEpoch } from '@application/store/keyed-request-epoch';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -13,7 +14,16 @@ interface RecipeDetailStoreDeps {
   removeRecipeMedia: RemoveRecipeMediaUseCase;
 }
 
+/**
+ * Recipes opened on the detail page, by id, with the viewer's `likedByMe`.
+ *
+ * @remarks
+ * - **Newest load wins, and a sign-out drops every load in flight**: a
+ *   per-id epoch, invalidated by `clear()` / `remove()`, keeps a late answer
+ *   from writing the previous account's like back, or an older answer over a newer one.
+ */
 export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundStore<RecipeDetailStoreState> => {
+  const loads = new KeyedRequestEpoch();
   return create<RecipeDetailStoreState>((set, get) => ({
     byId: {},
     load: async (id: string) => {
@@ -22,7 +32,9 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
       if (cached?.status !== StoreStatus.Loaded) {
         set({ byId: { ...get().byId, [id]: { status: StoreStatus.Loading } } });
       }
+      const isCurrent = loads.start(id);
       const result = await deps.getRecipe.execute(id);
+      if (!isCurrent()) return;
       if (!result.ok) {
         // A failed refresh must not throw away a recipe already on screen.
         if (cached?.status !== StoreStatus.Loaded) {
@@ -80,13 +92,18 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
         };
       }),
 
-    remove: (id) =>
+    remove: (id) => {
+      loads.invalidate(id);
       set((s) => {
         if (s.byId[id] === undefined) return s;
         const next = { ...s.byId };
         delete next[id];
         return { byId: next };
-      }),
-    clear: () => set({ byId: {} }),
+      });
+    },
+    clear: () => {
+      loads.invalidate();
+      set({ byId: {} });
+    },
   }));
 };
