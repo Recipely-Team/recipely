@@ -2,7 +2,7 @@ import type { StoreApi } from 'zustand';
 import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import type { CommentEntity } from '@domain/comments/comment-entity';
+import type { CommentView } from '@domain/comments/comment-view';
 import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
 import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
@@ -20,15 +20,15 @@ export const createToggleLikeAction = (
 ) => {
   return async (recipeId: string, commentId: string): Promise<Result<void, Failure>> => {
     const existing = get().byRecipe[recipeId];
-    const original = existing?.items.find((c) => c.id === commentId);
+    const original = existing?.items.find((c) => c.comment.id === commentId);
     if (!existing || !original) {
       return ok(undefined);
     }
 
     const wasLiked = original.likedByMe;
-    const optimistic = original.withLikeToggled();
+    const optimistic: CommentView = { comment: original.comment.withViewerLike(!wasLiked), likedByMe: !wasLiked };
 
-    const replace = (target: CommentEntity): void =>
+    const replace = (target: CommentView): void =>
       set((state) => {
         const current = state.byRecipe[recipeId];
         if (!current) {
@@ -39,7 +39,7 @@ export const createToggleLikeAction = (
             ...state.byRecipe,
             [recipeId]: {
               ...current,
-              items: current.items.map((c) => (c.id === commentId ? target : c)),
+              items: current.items.map((c) => (c.comment.id === commentId ? target : c)),
             },
           },
         };

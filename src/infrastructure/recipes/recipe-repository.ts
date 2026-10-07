@@ -2,6 +2,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeDetail } from '@domain/recipes/recipe-detail';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import type { RecipeRepositoryInterface } from '@domain/recipes/recipe-repository-interface';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
@@ -81,12 +82,14 @@ export class RecipeRepository implements RecipeRepositoryInterface {
     return toRecipePage(result.value);
   }
 
-  async getRecipe(id: string): Promise<Result<RecipeEntity, Failure>> {
+  async getRecipe(id: string): Promise<Result<RecipeDetail, Failure>> {
     const result = await this.http.get<RecipeDto>(ApiRoutes.recipes.byId(id));
     if (!result.ok) {
       return result;
     }
-    return this.mapRecipe(result.value);
+    const recipe = this.mapRecipe(result.value);
+    if (!recipe.ok) return recipe;
+    return ok({ recipe: recipe.value, likedByMe: result.value.likedByMe ?? false });
   }
 
   async createRecipe(

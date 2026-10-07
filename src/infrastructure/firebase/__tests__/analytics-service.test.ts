@@ -49,7 +49,7 @@ describe('analytics-service', () => {
     });
 
     it('swallows errors', async () => {
-      jest.mocked(logEvent).mockRejectedValueOnce(new Error('fail'));
+      jest.mocked(logEvent).mockImplementationOnce(() => { throw new Error('fail'); });
       await expect(analyticsService.logEvent('x')).resolves.not.toThrow();
     });
   });

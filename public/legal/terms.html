@@ -46,8 +46,8 @@
     <header>
       <span class="brand">Recipely</span>
       <div class="toggle" role="group" aria-label="Language / Dil">
-        <button id="btn-tr" class="active" onclick="setLang('tr')">Türkçe</button>
-        <button id="btn-en" onclick="setLang('en')">English</button>
+        <button id="btn-tr" class="active">Türkçe</button>
+        <button id="btn-en">English</button>
       </div>
     </header>
 
@@ -185,6 +185,8 @@
       document.documentElement.lang = lang;
       try { localStorage.setItem('recipely-legal-lang', lang); } catch (e) {}
     }
+    document.getElementById('btn-tr').addEventListener('click', function () { setLang('tr'); });
+    document.getElementById('btn-en').addEventListener('click', function () { setLang('en'); });
     (function () {
       var saved;
       try { saved = localStorage.getItem('recipely-legal-lang'); } catch (e) {}

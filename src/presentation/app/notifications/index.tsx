@@ -3,10 +3,9 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
-import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
+import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 import { StoreStatus } from '@application/store/store-status';
-import { ActivityIndicator, Pressable, SectionList, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { ActivityIndicator, SectionList, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -19,24 +18,22 @@ import {
   failureIcon,
   failureSeverity,
 } from '@presentation/base/errors/failure-lookups';
-import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, avatarSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, avatarSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
 import { ValueConstants } from '@core/constants';
 import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
+import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
+import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
 import { useOpenNotificationTarget } from '@presentation/app/notifications/hooks/use-open-notification-target';
-
-
 
 export const NotificationsScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
-  const { isWebShell } = useLayout();
 
   const { notificationsStore } = useStores();
   const state = notificationsStore((s) => s.state);
@@ -44,7 +41,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const markAllRead = notificationsStore((s) => s.markAllRead);
   const markOneRead = notificationsStore((s) => s.markOneRead);
 
-  const [filter, setFilter] = useState<'all' | 'unread'>('all');
+  const [filter, setFilter] = useState<NotificationFilterType>(NotificationFilter.All);
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
 
@@ -90,64 +87,8 @@ export const NotificationsScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="notifications" gutter={false} fill>
-      <View style={[styles.header, { paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
-        <Pressable
-          onPress={() => router.back()}
-          style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
-          accessibilityRole="button"
-          accessibilityLabel={t().notifications.title}
-        >
-          <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.primary} />
-        </Pressable>
-        <ThemedText variant="subtitle" style={styles.headerTitle}>
-          {t().notifications.title}
-        </ThemedText>
-        {unreadCount > ValueConstants.zero ? (
-          <Pressable
-            onPress={() => { void markAllRead(); }}
-            style={styles.markReadBtn}
-            accessibilityRole="button"
-            accessibilityLabel={t().notifications.markRead}
-          >
-            <ThemedText variant="caption" style={{ color: colors.primary, fontWeight: fontWeights.semibold }}>
-              {t().notifications.markRead}
-            </ThemedText>
-          </Pressable>
-        ) : (
-          <View style={styles.headerSpacer} />
-        )}
-      </View>
-
-      <View style={styles.filterRow}>
-        {Object.values(NotificationFilter).map((f) => {
-          const isActive = filter === f;
-          const label = f === NotificationFilter.All
-            ? `${t().notifications.all} (${items.length})`
-            : `${t().notifications.unread} (${unreadCount})`;
-          return (
-            <Pressable
-              key={f}
-              onPress={() => setFilter(f)}
-              style={[
-                styles.filterPill,
-                {
-                  backgroundColor: isActive ? colors.primary : colors.chipBackground,
-                  borderColor: isActive ? colors.primary : colors.cardBorder,
-                },
-              ]}
-              accessibilityRole="button"
-              accessibilityLabel={label}
-            >
-              <ThemedText
-                variant="caption"
-                style={{ color: isActive ? colors.primaryText : colors.text, fontWeight: fontWeights.semibold }}
-              >
-                {label}
-              </ThemedText>
-            </Pressable>
-          );
-        })}
-      </View>
+      <NotificationsHeader unreadCount={unreadCount} onBack={() => router.back()} onMarkAllRead={() => void markAllRead()} />
+      <NotificationFilterPills filter={filter} totalCount={items.length} unreadCount={unreadCount} onChange={setFilter} />
 
       {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
         <View style={styles.empty}>
@@ -193,38 +134,6 @@ export const NotificationsScreen = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   root: { flex: ValueConstants.one },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  backBtn: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: fontWeights.bold },
-  markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
-  headerSpacer: { width: controlSizes.iconBtn },
-  filterRow: {
-    flexDirection: 'row',
-    gap: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-  },
-  filterPill: {
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.xs,
-    borderRadius: radii.round,
-    borderWidth: borderWidths.hairline,
-    minHeight: controlSizes.chip,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   sectionHeader: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md,

@@ -37,7 +37,7 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
     return fail(new UnknownFailure(DiagnosticMessage.auth.googleUnavailableInBuild));
   }
   const { GoogleSignin, isSuccessResponse, isErrorWithCode, statusCodes } = googleSigninMod;
-  const auth = firebaseAuthMod.default;
+  const { getAuth, signInWithCredential, GoogleAuthProvider } = firebaseAuthMod;
   if (!googleConfigured) {
     GoogleSignin.configure({ webClientId: GOOGLE_WEB_CLIENT_ID });
     googleConfigured = true;
@@ -54,8 +54,8 @@ export const acquireGoogleFirebaseToken = async (): Promise<Result<string, Failu
     if (!idToken) {
       return fail(new UnknownFailure(DiagnosticMessage.socialAuth.googleNoIdToken));
     }
-    const credential = auth.GoogleAuthProvider.credential(idToken);
-    const { user } = await auth().signInWithCredential(credential);
+    const credential = GoogleAuthProvider.credential(idToken);
+    const { user } = await signInWithCredential(getAuth(), credential);
     return ok(await user.getIdToken());
   } catch (e) {
     if (isErrorWithCode(e) && e.code === statusCodes.SIGN_IN_CANCELLED) {
@@ -80,7 +80,7 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
   if (firebaseAuthMod === null) {
     return fail(new UnknownFailure(DiagnosticMessage.auth.appleUnavailableInBuild));
   }
-  const auth = firebaseAuthMod.default;
+  const { getAuth, signInWithCredential, AppleAuthProvider } = firebaseAuthMod;
   try {
     const available = await AppleAuthentication.isAvailableAsync();
     if (!available) {
@@ -99,8 +99,8 @@ export const acquireAppleFirebaseToken = async (): Promise<Result<string, Failur
     if (!identityToken) {
       return fail(new UnknownFailure(DiagnosticMessage.socialAuth.appleNoIdentityToken));
     }
-    const credential = auth.AppleAuthProvider.credential(identityToken, rawNonce);
-    const { user } = await auth().signInWithCredential(credential);
+    const credential = AppleAuthProvider.credential(identityToken, rawNonce);
+    const { user } = await signInWithCredential(getAuth(), credential);
     return ok(await user.getIdToken());
   } catch (e) {
     if (isCancellationError(e)) {

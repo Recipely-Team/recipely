@@ -10,10 +10,13 @@ import type { Result } from '@core/result/result';
 import { CommentEntity } from '@domain/comments/comment-entity';
 import type { CommentEntityProps } from '@domain/comments/comment-entity-props';
 import type { Page } from '@domain/common/page';
+import type { CommentView } from '@domain/comments/comment-view';
 
 const RECIPE_ID = 'recipe-3';
 
-const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity => {
+const makeComment = (
+  { likedByMe = false, ...overrides }: Partial<CommentEntityProps> & { likedByMe?: boolean } = {},
+): CommentView => {
   const result = CommentEntity.create({
     id: 'c1',
     body: 'Looks delicious!',
@@ -23,11 +26,10 @@ const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity
     authorDisplayName: 'Ada Lovelace',
     authorPhotoUrl: null,
     likeCount: 5,
-    likedByMe: false,
     ...overrides,
   });
   if (!result.ok) throw new Error('Test setup expected a valid Comment');
-  return result.value;
+  return { comment: result.value, likedByMe };
 };
 
 interface LikeCall {
@@ -36,7 +38,7 @@ interface LikeCall {
 }
 
 interface StubConfig {
-  seed: CommentEntity[];
+  seed: CommentView[];
   likeResult?: Result<void, Failure>;
   unlikeResult?: Result<void, Failure>;
 }
@@ -45,7 +47,7 @@ const makeStore = (config: StubConfig) => {
   const likeCalls: LikeCall[] = [];
   const unlikeCalls: LikeCall[] = [];
 
-  const page: Page<CommentEntity> = {
+  const page: Page<CommentView> = {
     items: config.seed,
     total: config.seed.length,
     page: 1,
@@ -93,7 +95,7 @@ const seededStore = async (config: StubConfig) => {
 };
 
 const itemOf = (store: ReturnType<typeof makeStore>['store'], commentId: string) =>
-  store.getState().byRecipe[RECIPE_ID].items.find((c) => c.id === commentId);
+  store.getState().byRecipe[RECIPE_ID].items.find((c) => c.comment.id === commentId);
 
 describe('commentsStore.toggleLike — like direction', () => {
   it('optimistically flips an unliked comment to liked before resolving', async () => {
@@ -105,7 +107,7 @@ describe('commentsStore.toggleLike — like direction', () => {
 
     const optimistic = itemOf(store, 'c1');
     expect(optimistic?.likedByMe).toBe(true);
-    expect(optimistic?.likeCount).toBe(6);
+    expect(optimistic?.comment.likeCount).toBe(6);
     await pending;
   });
 
@@ -122,7 +124,7 @@ describe('commentsStore.toggleLike — like direction', () => {
     expect(unlikeCalls).toHaveLength(0);
     const item = itemOf(store, 'c1');
     expect(item?.likedByMe).toBe(true);
-    expect(item?.likeCount).toBe(6);
+    expect(item?.comment.likeCount).toBe(6);
   });
 
   it('rolls back to the original like state and returns the failure when likeComment fails', async () => {
@@ -138,7 +140,7 @@ describe('commentsStore.toggleLike — like direction', () => {
     if (!result.ok) expect(result.failure).toBe(failure);
     const item = itemOf(store, 'c1');
     expect(item?.likedByMe).toBe(false);
-    expect(item?.likeCount).toBe(5);
+    expect(item?.comment.likeCount).toBe(5);
   });
 });
 
@@ -156,7 +158,7 @@ describe('commentsStore.toggleLike — unlike direction', () => {
     expect(likeCalls).toHaveLength(0);
     const item = itemOf(store, 'c1');
     expect(item?.likedByMe).toBe(false);
-    expect(item?.likeCount).toBe(4);
+    expect(item?.comment.likeCount).toBe(4);
   });
 
   it('rolls back to liked when unlikeComment fails', async () => {
@@ -169,7 +171,7 @@ describe('commentsStore.toggleLike — unlike direction', () => {
 
     const item = itemOf(store, 'c1');
     expect(item?.likedByMe).toBe(true);
-    expect(item?.likeCount).toBe(5);
+    expect(item?.comment.likeCount).toBe(5);
   });
 });
 

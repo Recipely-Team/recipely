@@ -11,6 +11,7 @@ import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { ValueConstants } from '@core/constants';
 import type { AddCommentRequestDto } from '@infrastructure/comments/dtos/add-comment-request-dto';
 import type { Page } from '@domain/common/page';
+import type { CommentView } from '@domain/comments/comment-view';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 
 /**
@@ -24,20 +25,20 @@ export class CommentRepository implements CommentRepositoryInterface {
     recipeId: string,
     page: number,
     pageSize: number,
-  ): Promise<Result<Page<CommentEntity>, Failure>> {
+  ): Promise<Result<Page<CommentView>, Failure>> {
     const result = await this.http.get<PageDto<CommentDto>>(ApiRoutes.recipes.comments(recipeId), {
       params: toPageQuery({ page, pageSize }),
     });
     if (!result.ok) {
       return result;
     }
-    const items: CommentEntity[] = [];
+    const items: CommentView[] = [];
     for (const dto of result.value.items) {
       const mapped = mapDtoToComment(dto);
       if (!mapped.ok) {
         return fail(mapped.failure);
       }
-      items.push(mapped.value);
+      items.push({ comment: mapped.value, likedByMe: dto.likedByMe ?? false });
     }
     // Strict: one unreadable comment fails the page, as before; `toPage` only wraps the envelope.
     return ok(toPage({ ...result.value, items }, ok));
@@ -82,6 +83,5 @@ function mapDtoToComment(dto: CommentDto): Result<CommentEntity, Failure> {
     authorDisplayName: dto.authorDisplayName,
     authorPhotoUrl: dto.authorPhotoUrl,
     likeCount: dto.likeCount ?? ValueConstants.zero,
-    likedByMe: dto.likedByMe ?? false,
   });
 }

@@ -35,7 +35,6 @@ export interface RecipeEntityProps {
   mealType: string[];
   ownerId: string;
   likeCount: number;
-  likedByMe: boolean;
   viewCount: number;
   /** Where the text came from; `User` for anything this app does not know. */
   origin: RecipeOriginType;

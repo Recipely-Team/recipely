@@ -30,7 +30,6 @@ export const recipeEntityOf = (overrides: Partial<RecipeEntityProps> = {}): Reci
     mealType: [],
     ownerId: 'owner-1',
     likeCount: 0,
-    likedByMe: false,
     viewCount: 0,
     origin: RecipeOrigin.User,
     sourcePlatform: null,

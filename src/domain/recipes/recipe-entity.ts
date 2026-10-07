@@ -149,9 +149,6 @@ export class RecipeEntity extends BaseEntity<RecipeEntityProps> {
   get likeCount(): number {
     return this.props.likeCount;
   }
-  get likedByMe(): boolean {
-    return this.props.likedByMe;
-  }
 
   get viewCount(): number {
     return this.props.viewCount;

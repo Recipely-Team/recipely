@@ -9,7 +9,8 @@
  *   C. Alias-only imports (`@layer/...`); `./` allowed only in barrel index.ts.
  *   D. No loose files at the base/widgets root (category folders only).
  *   E. app/ co-location convention (page code in body/items/sheets/hooks/model/).
- *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines.
+ *   F. Smart-UI size guard (CLAUDE.md §18): no non-test .tsx over 300 lines; a routed
+ *      app/.../index.tsx over 200.
  *   G. Entity naming (CLAUDE.md §21): *Entity classes in *-entity.ts files.
  *   H. Responsive sizing (CLAUDE.md §6b): no absolute lineHeight, no bare
  *      <TextInput multiline> outside the AutoGrowTextInput pair.
@@ -43,7 +44,7 @@
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
  *   AL. Every routed page is declared on the stack that owns it, header hidden.
- *   AN. Every Firebase hosting target sends the web security headers on `**`
+ *   AN. Every Firebase hosting target sends the web security headers on every path but /__/
  *      (nosniff, frame denial, referrer / permissions policy, COOP, HSTS).
  *   AM. Inline comments are one line (CLAUDE.md §3): no two consecutive indented
  *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
@@ -223,6 +224,8 @@ for (const file of files) {
     const lines = src.split('\n').length;
     if (lines > 300) {
       errors.push(`${file}: ${lines} lines — .tsx files must stay under 300 lines (CLAUDE.md §18); split into parts`);
+    } else if (/^presentation\/app\/(.+\/)?index\.tsx$/.test(file) && lines > 200) {
+      errors.push(`${file}: ${lines} lines — a routed index.tsx is composition only and stays under 200 lines (CLAUDE.md §18); move logic into hooks/ or body/`);
     }
   }
 
@@ -453,6 +456,11 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
       if (liveAudio.androidForegroundService !== false) {
         errors.push(
           'app.json: react-native-audio-api must set "androidForegroundService": false — it defaults to true and declares a mediaPlayback foreground service the app has no feature for (CLAUDE.md §23c)',
+        );
+      }
+      if (liveAudio.disableFFmpeg !== true) {
+        errors.push(
+          'app.json: react-native-audio-api must set "disableFFmpeg": true — the assistant plays raw PCM and never decodes files, and FFmpeg adds ~6 MB of native libraries per ABI',
         );
       }
       const androidPermissions = liveAudio.androidPermissions;
@@ -1566,30 +1574,43 @@ function openingTag(src, at) {
 // --- AN: the web app is served with its security headers -----------------
 // firebase.json shipped with no security header at all: the site could be
 // framed (clickjacking), MIME-sniffed, and leaked full referrers. Every
-// hosting target must set these on `**`.
+// hosting target must set these on `**`. The CSP's script-src is hash-based for
+// inline scripts (scripts/assert-csp-inline-scripts.mjs keeps the hashes true).
 {
   // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
   // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
   const REQUIRED = {
     'X-Content-Type-Options': (v) => v === 'nosniff',
     'X-Frame-Options': (v) => v === 'SAMEORIGIN' || v === 'DENY',
-    'Content-Security-Policy': (v) => /frame-ancestors '(self|none)'/.test(v),
+    'Content-Security-Policy': (v) =>
+      /frame-ancestors '(self|none)'/.test(v) &&
+      /default-src 'self'/.test(v) &&
+      /object-src 'none'/.test(v) &&
+      /script-src [^;]*'sha256-/.test(v) &&
+      !/script-src [^;]*'unsafe-(inline|eval)'/.test(v),
     'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
     'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
     'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
     'Strict-Transport-Security': (v) => /max-age=\d{7,}/.test(v),
   };
+  // Every path except Firebase's reserved /__/ (its auth handler runs a per-request inline script our CSP cannot hash).
+  const SITE_EXCEPT_RESERVED = '^/([^_].*|_[^_].*|_)?$';
   const firebase = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
   const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
   for (const target of targets) {
+    if ((target.headers ?? []).some((h) => h.source === '**' && h.headers.some((x) => x.key === 'Content-Security-Policy'))) {
+      errors.push(`firebase.json (${target.target}): the CSP is on "**", which also reaches /__/auth/ and blocks Firebase sign-in — use "regex": "${SITE_EXCEPT_RESERVED}"`);
+    }
     const sent = new Map(
-      (target.headers ?? []).filter((h) => h.source === '**').flatMap((h) => h.headers.map((x) => [x.key, x.value])),
+      (target.headers ?? [])
+        .filter((h) => h.regex === SITE_EXCEPT_RESERVED)
+        .flatMap((h) => h.headers.map((x) => [x.key, x.value])),
     );
     const missing = Object.entries(REQUIRED)
       .filter(([key, ok]) => !sent.has(key) || !ok(sent.get(key)))
       .map(([key]) => key);
     if (missing.length > 0) {
-      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on "**" — ${missing.join(', ')}`);
+      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on every page (regex ${SITE_EXCEPT_RESERVED}) — ${missing.join(', ')}`);
     }
   }
 }

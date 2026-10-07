@@ -116,7 +116,6 @@ const makeComment = (overrides: Partial<CommentEntityProps> = {}): CommentEntity
     authorDisplayName: 'Ada Lovelace',
     authorPhotoUrl: null,
     likeCount: 0,
-    likedByMe: false,
     ...overrides,
   });
   if (!result.ok) throw new Error('Test setup expected a valid Comment');
@@ -168,7 +167,7 @@ const makeRealCommentsStore = (
  * A loaded recipe whose server-side like state is caller-supplied, for the
  * single-source-of-truth tests below.
  */
-const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
+const buildRecipe = (cover = 'https://cdn.example.com/baklava.webp'): RecipeEntity => {
   const result = RecipeEntity.create({
     origin: RecipeOrigin.User,
     id: RECIPE_ID,
@@ -189,7 +188,6 @@ const buildRecipe = (likedByMe: boolean, cover = 'https://cdn.example.com/baklav
     mealType: [],
     ownerId: 'someone-else',
     likeCount: 7,
-    likedByMe,
     viewCount: 60,
     moderationStatus: 'approved',
     isPublished: true,
@@ -413,7 +411,7 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
  */
 describe('useRecipeDetail — liked is the single source of truth', () => {
   const loaded = (likedByMe: boolean): StoreOverrides => ({
-    detailState: { status: 'loaded', recipe: buildRecipe(likedByMe), fetchedAt: Date.now() },
+    detailState: { status: 'loaded', recipe: buildRecipe(), likedByMe, fetchedAt: Date.now() },
   });
 
   it("reports the server's likedByMe before the likes store has any entry", () => {
@@ -496,7 +494,7 @@ describe('useRecipeDetail — copying a recipe to drafts', () => {
  */
 describe('useRecipeDetail — the hero photos', () => {
   const loadedWithCover = (cover: string): StoreOverrides => ({
-    detailState: { status: 'loaded', recipe: buildRecipe(false, cover), fetchedAt: Date.now() },
+    detailState: { status: 'loaded', recipe: buildRecipe(cover), likedByMe: false, fetchedAt: Date.now() },
   });
 
   it('an owner\'s recipe with no photo showed a blank frame with a Remove button instead of the add-first-photo state', () => {

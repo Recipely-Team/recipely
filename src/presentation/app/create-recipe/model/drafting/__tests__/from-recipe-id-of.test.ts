@@ -13,8 +13,8 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 describe('fromRecipeIdOf', () => {
   const recipe = { id: 'r1' } as RecipeEntity;
   const loaded: Record<string, RecipeDetailState> = {
-    r1: { status: StoreStatus.Loaded, recipe, fetchedAt: 0 },
-    r2: { status: StoreStatus.Loaded, recipe: { id: 'r2' } as RecipeEntity, fetchedAt: 0 },
+    r1: { status: StoreStatus.Loaded, recipe, likedByMe: false, fetchedAt: 0 },
+    r2: { status: StoreStatus.Loaded, recipe: { id: 'r2' } as RecipeEntity, likedByMe: false, fetchedAt: 0 },
   };
 
   it('returns the recipe asked for, not another the session has open', () => {

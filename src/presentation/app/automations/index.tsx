@@ -1,6 +1,5 @@
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   StyleSheet,
   View,
@@ -9,7 +8,6 @@ import { StoreStatus } from "@application/store/store-status";
 import { ValueConstants } from "@core/constants";
 import { useTheme } from "@presentation/base/theme/context/use-theme";
 import { useAssistantScrollable } from "@presentation/base/hooks/assistant/actions/use-assistant-scrollable";
-import { ListConstants } from "@presentation/base/constants/list-constants";
 import { SizedText } from "@presentation/base/widgets/text/sized-text";
 import { ErrorState } from "@presentation/base/widgets/feedback/error-state";
 import { PageTitle } from "@presentation/base/widgets/head/page-title";
@@ -22,10 +20,8 @@ import {
 import { useAutomations } from "@presentation/app/automations/hooks/use-automations";
 import { AutomationsViewKind } from "@presentation/app/automations/model/automations-view-kind";
 import { AutomationsBar } from "@presentation/app/automations/shared/items/automations-bar";
-import { AutomationsHeader } from "@presentation/app/automations/body/automations-header";
-import { AutomationsEmpty } from "@presentation/app/automations/body/automations-empty";
 import { RulesNote } from "@presentation/app/automations/body/rules-note";
-import { RuleCard } from "@presentation/app/automations/items/rule-card";
+import { AutomationRulesList } from "@presentation/app/automations/body/automation-rules-list";
 import { ConfirmSheet } from "@presentation/base/widgets/sheets/confirm-sheet";
 import {
   controlSizes,
@@ -139,49 +135,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
             />
           );
         }
-        return (
-          <FlatList
-            {...scrollable}
-            data={rules.status === StoreStatus.Loaded ? rules.items : []}
-            keyExtractor={(rule) => rule.id}
-            renderItem={({ item }) => (
-              <RuleCard
-                rule={item}
-                isPaused={vm.isPaused}
-                onOpen={vm.onOpen}
-                onToggle={vm.onToggle}
-                onDelete={vm.onAskDelete}
-              />
-            )}
-            ItemSeparatorComponent={Separator}
-            ListHeaderComponent={
-              <AutomationsHeader
-                handle={vm.handle}
-                isPaused={vm.isPaused}
-                phase={vm.phase}
-                onReconnect={vm.connect}
-              />
-            }
-            ListEmptyComponent={
-              rules.status === StoreStatus.Loaded ? (
-                <AutomationsEmpty disabled={vm.isPaused} onCreate={vm.onNew} />
-              ) : (
-                <ActivityIndicator color={colors.primary} />
-              )
-            }
-            ListFooterComponent={
-              <>
-                {rules.status === StoreStatus.Loaded && rules.isLoadingMore ? (
-                  <ActivityIndicator color={colors.primary} />
-                ) : null}
-                <RulesNote />
-              </>
-            }
-            onEndReached={vm.onEndReached}
-            onEndReachedThreshold={ListConstants.endReachedThreshold}
-            contentContainerStyle={styles.list}
-          />
-        );
+        return <AutomationRulesList vm={vm} scrollable={scrollable} />;
     }
   };
 
@@ -210,8 +164,6 @@ export const AutomationsScreen = (): React.JSX.Element => {
   );
 };
 
-const Separator = (): React.JSX.Element => <View style={styles.separator} />;
-
 export default AutomationsScreen;
 
 const styles = StyleSheet.create({
@@ -222,8 +174,6 @@ const styles = StyleSheet.create({
     maxWidth: AutomationMetrics.pageMaxWidth,
     alignSelf: "center",
   },
-  list: { padding: spacing.lg, paddingBottom: spacing.xxl },
-  separator: { height: spacing.sm },
   spinner: { marginTop: spacing.xl },
   locked: { padding: spacing.lg, gap: spacing.lg },
   new: {

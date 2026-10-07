@@ -34,7 +34,7 @@ function harness(
   const getRecipe = {
     execute: async (id: string) => {
       loads.push(id);
-      return ok(recipeEntityOf({ id, image: COVER.url, media: [COVER, PHOTO] }));
+      return ok({ recipe: recipeEntityOf({ id, image: COVER.url, media: [COVER, PHOTO] }), likedByMe: false });
     },
   } as unknown as GetRecipeUseCase;
 

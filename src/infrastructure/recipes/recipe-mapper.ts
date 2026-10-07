@@ -90,7 +90,6 @@ export const toRecipe: Mapper<RecipeDto, RecipeEntity, ValidationFailure> = (dto
     mealType: dto.mealType,
     ownerId: dto.ownerId,
     likeCount: dto.likeCount ?? ValueConstants.zero,
-    likedByMe: dto.likedByMe ?? false,
     viewCount: dto.viewCount ?? ValueConstants.zero,
     origin: toRecipeOrigin(dto.origin),
     sourcePlatform: toSourcePlatform(dto.sourcePlatform),

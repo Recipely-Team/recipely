@@ -96,7 +96,7 @@ export const WebRecipeDetailComments = ({
         </ThemedText>
       ) : (
         <View style={styles.list}>
-          {items.map((comment) => (
+          {items.map(({ comment, likedByMe }) => (
             <CommentCard
               key={comment.id}
               body={comment.body}
@@ -105,7 +105,7 @@ export const WebRecipeDetailComments = ({
               createdAt={comment.createdAt}
               isOwn={comment.isAuthoredBy(userId)}
               likeCount={comment.likeCount}
-              likedByMe={comment.likedByMe}
+              likedByMe={likedByMe}
               canLike
               onToggleLike={() => onToggleCommentLike(comment.id)}
               onDelete={() => onDeleteComment(comment.id)}

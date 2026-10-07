@@ -10,7 +10,7 @@ import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
  * `totalTimeMinutes` is derived by summing `prepTimeMinutes` +
  * `cookTimeMinutes`, since detail flows only carry those two fields.
  */
-export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntity, ValidationFailure> => {
+export const recipeToSummary = (recipe: RecipeEntity, likedByMe: boolean): Result<RecipeSummaryEntity, ValidationFailure> => {
   return RecipeSummaryEntity.create({
     id: recipe.id,
     name: recipe.name,
@@ -26,7 +26,7 @@ export const recipeToSummary = (recipe: RecipeEntity): Result<RecipeSummaryEntit
     isPublished: recipe.isPublished,
     moderationStatus: recipe.moderationStatus,
     likeCount: recipe.likeCount,
-    likedByMe: recipe.likedByMe,
+    likedByMe,
     commentCount: recipe.commentCount,
     viewCount: recipe.viewCount,
     // Carried, so a just-published recipe shows its badge without a refresh.

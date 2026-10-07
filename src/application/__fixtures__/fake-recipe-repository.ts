@@ -15,6 +15,7 @@ import type { CreateRecipeProgressCallback } from "@domain/recipes/create/create
 import type { ImportJob } from "@domain/recipes/import/import-job";
 import type { RecipeFilters } from "@domain/recipes/list/recipe-filters";
 import type { RecipeEntity } from "@domain/recipes/recipe-entity";
+import type { RecipeDetail } from "@domain/recipes/recipe-detail";
 import type { RecipeRepositoryInterface } from "@domain/recipes/recipe-repository-interface";
 import type { RecipeSummaryEntity } from "@domain/recipes/recipe-summary-entity";
 import type { RefinedRecipe } from "@domain/recipes/refine/refined-recipe";
@@ -67,10 +68,9 @@ export class FakeRecipeRepository implements RecipeRepositoryInterface {
     );
   }
 
-  getRecipe(_id: string): Promise<Result<RecipeEntity, Failure>> {
-    return Promise.resolve(
-      this.config.getRecipeResult ?? fail(new UnknownFailure("not configured")),
-    );
+  getRecipe(_id: string): Promise<Result<RecipeDetail, Failure>> {
+    const result = this.config.getRecipeResult ?? fail(new UnknownFailure("not configured"));
+    return Promise.resolve(result.ok ? ok({ recipe: result.value, likedByMe: false }) : result);
   }
 
   /** The last create payload, so a test can see what reached the port. */
