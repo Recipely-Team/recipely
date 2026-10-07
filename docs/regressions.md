@@ -300,6 +300,14 @@ feed was fixed by moving paging into the repository's caller; nobody asked which
 *other* lists had the same shape. When a defect is found, grep for its shape
 before closing it — every list, every `page:`, every discarded envelope.
 
+**A third time: the notifications feed.** The store asked for one page (the backend's
+default 20) and had no `loadMore`; the repository took raw `limit` / `offset` and
+returned no `Page<T>`. *Guard:* the feed is a `PagedList` driven by `PagedListLoader`,
+the use case owns `PageSizes.notifications`, `toNotificationsQuery` turns the page into
+`limit` / `offset`. Covered by "shows notifications past the first 20 when the user
+scrolls to the end" (`notifications-store.test.ts`) and the paging cases in
+`notification-repository.test.ts`.
+
 ---
 
 ## A TODO comment that shipped as UI text
@@ -463,6 +471,15 @@ session" (`auth-repository.creator.test.ts`), "does not put the previous user in
 session of whoever is signed in now" (`auth-repository.update-profile.test.ts`,
 `auth-repository.upload-avatar.test.ts`) and "a claim answer for the previous user does
 not land in the next user's session" (`auth-store.test.ts`).
+
+**Again in the notifications store**, which had no guard: a feed answer in flight at
+sign-out wrote the previous account's notifications and badge back after `clear()`.
+*Guard:* the shared toolkit, not another hand-rolled counter — `PagedListLoader.reset()`
+drops the list answer and a `RequestEpoch` (`application/store/request-epoch.ts`;
+`KeyedRequestEpoch` for per-id requests) drops the badge write. Covered by "a feed
+answer that lands after sign-out does not refill the cleared feed or badge"
+(`notifications-store.test.ts`), red against the unfixed store. New store code guards
+with these instead of `let session` counters.
 
 ---
 

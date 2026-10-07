@@ -16,6 +16,8 @@ export const PageSizes = {
   /** A creator's recipes on their profile page; the backend caps pageSize at 100. */
   creatorRecipes: 20,
   drafts: 20,
+  /** The notifications feed, per page; the backend defaults to 20 and caps at 100. */
+  notifications: 20,
   /** The notifications badge only needs `unreadCount`, which comes with any page: one item is the cheapest ask. */
   unreadProbe: 1,
   /** Each group of the Add food search, per page (Add food v2 spec §3); the backend caps pageSize at 100. */

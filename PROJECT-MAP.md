@@ -66,7 +66,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules _(17)_
 - `likes/` _(6)_
-- `notifications/` — list, read _(11)_
+- `notifications/` — list, read _(9)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
 - `storage/` _(2)_
@@ -98,7 +98,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `instagram/` — dtos, read, write _(21)_
 - `likes/` _(1)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(26)_
-- `notifications/` — dtos _(8)_
+- `notifications/` — dtos _(10)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `storage/` _(6)_
 - `user-profile/` _(4)_
@@ -165,4 +165,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f71dcf43148f8e0b -->
+<!-- fingerprint: 16ed3576d367a979 -->
