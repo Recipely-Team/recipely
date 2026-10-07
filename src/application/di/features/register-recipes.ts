@@ -24,9 +24,10 @@ import { PublishRecipeUseCase } from '@application/recipes/publishing/publish-re
 import { UnpublishRecipeUseCase } from '@application/recipes/publishing/unpublish-recipe-use-case';
 import { EditRecipeUseCase } from '@application/recipes/edit/edit-recipe-use-case';
 import { configureRecipePublishingStore } from '@application/recipes/publishing/recipe-publishing-store';
-import type { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
-import type { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import type { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
+import type { FavoritesRepositoryInterface } from '@domain/favorites/favorites-repository-interface';
+import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
+import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
+import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { configureTrendingRecipesStore } from '@application/recipes/trending/trending-recipes-store';
 import { configureRecipeDetailStore } from '@application/recipes/detail/recipe-detail-store';
@@ -71,9 +72,10 @@ export const registerRecipes = (
   const refineRecipeUseCase = new RefineRecipeUseCase(recipeRepo);
   const deleteRecipeUseCase = new DeleteRecipeUseCase(recipeRepo);
 
-  const addFavoriteUseCase = container.resolve<AddFavoriteUseCase>(TOKENS.AddFavoriteUseCase);
-  const removeFavoriteUseCase = container.resolve<RemoveFavoriteUseCase>(TOKENS.RemoveFavoriteUseCase);
-  const loadFavoritesUseCase = container.resolve<LoadFavoritesUseCase>(TOKENS.LoadFavoritesUseCase);
+  const favoritesRepo = container.resolve<FavoritesRepositoryInterface>(TOKENS.FavoritesRepository);
+  const addFavoriteUseCase = new AddFavoriteUseCase(favoritesRepo);
+  const removeFavoriteUseCase = new RemoveFavoriteUseCase(favoritesRepo);
+  const loadFavoritesUseCase = new LoadFavoritesUseCase(favoritesRepo);
 
   const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase });
   const recipeListStore = configureRecipeListStore({ listRecipes });
