@@ -98,8 +98,8 @@ Object-oriented design is the active paradigm of this codebase, not a formality:
   `private readonly` fields behind getters, no public setters, no mutation after construction except via
   intention-revealing methods that re-check invariants.
 - **Entities stay identity-intrinsic (p.67).** Props describe what the thing *is*, not who is looking at
-  it. Viewer-dependent flags (`likedByMe`-style) are tolerated where they already exist but must not be
-  extended — new viewer/session-relative data goes into a read model / store state, not entity props.
+  it. Viewer-dependent flags (`likedByMe`-style) go into a read model / store state, never entity props:
+  `RecipeDetail` and `CommentView` carry `likedByMe` beside the entity; `RecipeSummaryEntity` is itself a read model.
 - **Value Objects for conceptual wholes (p.71).** When a primitive carries rules (format, range, unit) or
   travels as a group (amount + unit, minutes prep + cook), promote it to an immutable VO with a validating
   factory (the `Email` pattern) instead of re-validating raw primitives at multiple call sites.
@@ -114,8 +114,8 @@ references are **by id only**.
 
 | Aggregate root | Members / notes |
 |---|---|
-| `RecipeEntity` | Root. `RecipeSummaryEntity` is a read model of it (not a separate aggregate). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
-| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. |
+| `RecipeEntity` | Root. `RecipeSummaryEntity` and `RecipeDetail` (the recipe plus the viewer's like) are read models of it (not separate aggregates). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. `CommentView` (the comment plus the viewer's like) is a read model. |
 | `UserEntity` | Root (auth identity). Holds the user's own `CreatorClaim` (value object: `CreatorTag` + review status). |
 | `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. `CreatorSummaryEntity` (the Explore creators strip) is a read model of it, not a separate aggregate; `CreatorTag` / `CreatorHandle` are value objects. |
 | `AuthSessionEntity` | Root (token lifecycle). |

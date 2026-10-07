@@ -48,7 +48,7 @@ export const configureCreatedRecipesStore = (deps: CreatedRecipesStoreDeps): Bou
     // localRecipes backs findById; the lean grid list is kept in sync alongside it.
     add: (recipe) =>
       set((s) => {
-        const summary = recipeToSummary(recipe);
+        const summary = recipeToSummary(recipe, false);
         return {
           localRecipes: [recipe, ...s.localRecipes],
           recipes: summary.ok ? [summary.value, ...s.recipes] : s.recipes,

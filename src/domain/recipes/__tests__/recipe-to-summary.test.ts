@@ -28,7 +28,6 @@ const makeRecipe = (overrides: Partial<Parameters<typeof RecipeEntity.create>[0]
     mealType: ['Dinner'],
     ownerId: 'o1',
     likeCount: 5,
-    likedByMe: true,
     viewCount: 42,
     moderationStatus: 'approved',
     isPublished: true,
@@ -45,7 +44,7 @@ describe('recipeToSummary', () => {
   it('maps every field from the source Recipe onto a RecipeSummaryEntity', () => {
     const recipe = makeRecipe();
 
-    const result = recipeToSummary(recipe);
+    const result = recipeToSummary(recipe, true);
 
     expect(result.ok).toBe(true);
     if (result.ok) {
@@ -58,7 +57,7 @@ describe('recipeToSummary', () => {
       expect(result.value.rating).toBe(recipe.rating);
       expect(result.value.moderationStatus).toBe(recipe.moderationStatus);
       expect(result.value.likeCount).toBe(recipe.likeCount);
-      expect(result.value.likedByMe).toBe(recipe.likedByMe);
+      expect(result.value.likedByMe).toBe(true);
       expect(result.value.commentCount).toBe(recipe.commentCount);
       expect(result.value.viewCount).toBe(recipe.viewCount);
     }
@@ -67,7 +66,7 @@ describe('recipeToSummary', () => {
   it('derives totalTimeMinutes as prepTimeMinutes + cookTimeMinutes', () => {
     const recipe = makeRecipe({ prepTimeMinutes: 10, cookTimeMinutes: 20 });
 
-    const result = recipeToSummary(recipe);
+    const result = recipeToSummary(recipe, false);
 
     expect(result.ok).toBe(true);
     if (result.ok) expect(result.value.totalTimeMinutes).toBe(30);
@@ -75,7 +74,7 @@ describe('recipeToSummary', () => {
 
   it('keeps a Recipely Kitchen recipe curated on both shapes', () => {
     const recipe = makeRecipe({ origin: RecipeOrigin.Curated });
-    const result = recipeToSummary(recipe);
+    const result = recipeToSummary(recipe, false);
     expect(recipe.isCurated).toBe(true);
     expect(result.ok && result.value.isCurated).toBe(true);
     expect(makeRecipe().isCurated).toBe(false);
@@ -87,7 +86,7 @@ describe('recipeToSummary', () => {
     const created = ImageCredit.create('Jane Doe', 'CC0', 'https://commons.wikimedia.org/wiki/File:Pilaf.jpg');
     if (!created.ok) throw new Error('expected a credit');
     const credit = created.value;
-    const result = recipeToSummary(makeRecipe({ imageCredit: credit, nutritionSource: NutritionSource.Usda }));
+    const result = recipeToSummary(makeRecipe({ imageCredit: credit, nutritionSource: NutritionSource.Usda }), false);
     if (!result.ok) throw new Error('expected a summary');
     expect(result.value.imageCredit?.equals(credit)).toBe(true);
     expect(result.value.nutritionSource).toBe(NutritionSource.Usda);

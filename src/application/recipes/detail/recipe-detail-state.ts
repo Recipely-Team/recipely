@@ -10,5 +10,5 @@ export type RecipeDetailState =
    * cache renders a recipe that was read BEFORE the user's last like, and the
    * like overlay uses this to refuse being rewound by it.
    */
-  | { status: typeof StoreStatus.Loaded; recipe: RecipeEntity; fetchedAt: number }
+  | { status: typeof StoreStatus.Loaded; recipe: RecipeEntity; likedByMe: boolean; fetchedAt: number }
   | { status: typeof StoreStatus.Error; failure: Failure };

@@ -154,7 +154,7 @@ describe('photo count — the card chip', () => {
     });
     if (!r.ok) throw new Error('fixture recipe invalid');
 
-    const summary = recipeToSummary(r.value);
+    const summary = recipeToSummary(r.value, false);
 
     expect(summary.ok && summary.value.photoCount).toBe(2);
     expect(summary.ok && summary.value.caloriesPerServing).toBe(r.value.caloriesPerServing);
@@ -206,7 +206,7 @@ describe('photo focus', () => {
     const fromList = toRecipeSummary(listDto);
     const full = toRecipe({ ...fullDto, imageFocus: { x: 0.25, y: 0.75 } });
     if (!full.ok) throw new Error('expected a recipe');
-    const fromDetail = recipeToSummary(full.value);
+    const fromDetail = recipeToSummary(full.value, false);
 
     expect(fromList.ok && fromList.value.imageFocus?.y).toBe(0.75);
     expect(fromDetail.ok && fromDetail.value.imageFocus?.y).toBe(0.75);

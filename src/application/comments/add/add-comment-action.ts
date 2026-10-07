@@ -36,7 +36,7 @@ export const createAddCommentAction = (
       }
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, (existing) => ({
-          items: [result.value, ...existing.items],
+          items: [{ comment: result.value, likedByMe: false }, ...existing.items],
           total: existing.total + ValueConstants.one,
           isSubmitting: false,
           error: null,

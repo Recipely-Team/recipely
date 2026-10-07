@@ -57,16 +57,25 @@ describe('RecipeRepository — save first, publish later', () => {
     expect(calls[0]).toMatchObject({ method: 'PATCH', url: `/recipes/${RECIPE_ID}`, data: input });
   });
 
+  it('returns the viewer\'s like beside the recipe, not inside it', async () => {
+    const { repo } = makeRepo(ok({ ...dto, likedByMe: true }));
+
+    const result = await repo.getRecipe(RECIPE_ID);
+
+    expect(result.ok && result.value.likedByMe).toBe(true);
+    expect(result.ok && 'likedByMe' in result.value.recipe).toBe(false);
+  });
+
   it('reads the owner-only blockers off the detail payload', async () => {
     const { repo } = makeRepo(ok(dto));
 
     const result = await repo.getRecipe(RECIPE_ID);
 
-    expect(result.ok && result.value.publishBlockers).toEqual([
+    expect(result.ok && result.value.recipe.publishBlockers).toEqual([
       PublishBlocker.Photo,
       PublishBlocker.Instructions,
     ]);
-    expect(result.ok && result.value.ownerStatus).toBe(OwnerStatus.Private);
+    expect(result.ok && result.value.recipe.ownerStatus).toBe(OwnerStatus.Private);
   });
 
   it('publishes with POST /recipes/:id/publish and returns the moderator answer', async () => {

@@ -188,7 +188,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const isLocal = localRecipe !== undefined;
   const recipeState =
     localRecipe !== undefined
-      ? ({ status: StoreStatus.Loaded, recipe: localRecipe, fetchedAt: ValueConstants.zero })
+      ? ({ status: StoreStatus.Loaded, recipe: localRecipe, likedByMe: false, fetchedAt: ValueConstants.zero })
       : networkState;
 
   useEffect(() => {
@@ -203,7 +203,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   }, [recipeState?.status, commentState, commentsStore, recipeId]);
 
   const syncLikeCount = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likeCount : null;
-  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.recipe.likedByMe : null;
+  const syncLikedByMe = recipeState?.status === StoreStatus.Loaded ? recipeState.likedByMe : null;
   const syncFetchedAt = recipeState?.status === StoreStatus.Loaded ? recipeState.fetchedAt : null;
 
   useEffect(() => {
@@ -262,7 +262,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const media: readonly MediaItem[] = recipe?.heroPhotos ?? [];
   const firstImageUrl = media[ValueConstants.zero]?.url ?? CharConstants.empty;
   const cuisineName = recipe !== null ? cuisineLabel(recipe.cuisine).name : CharConstants.empty;
-  const liked = likeState?.likedByMe ?? recipe?.likedByMe ?? false;
+  const liked = likeState?.likedByMe ?? (current.status === StoreStatus.Loaded && current.likedByMe);
   const likeCount = likeState?.likeCount ?? recipe?.likeCount ?? ValueConstants.zero;
 
   // Ask the calculator once more before calling nutrition absent.

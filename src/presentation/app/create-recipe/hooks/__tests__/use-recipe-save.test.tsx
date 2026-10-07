@@ -104,7 +104,6 @@ const makeRecipe = (id: string): RecipeEntity => {
     mealType: [],
     ownerId: 'owner-1',
     likeCount: 0,
-    likedByMe: false,
     viewCount: 0,
     moderationStatus: 'approved',
     isPublished: true,

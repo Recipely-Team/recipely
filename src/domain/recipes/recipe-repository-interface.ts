@@ -1,6 +1,7 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
+import type { RecipeDetail } from '@domain/recipes/recipe-detail';
 import type { ImportJob } from '@domain/recipes/import/import-job';
 import type { RefinedRecipe } from '@domain/recipes/refine/refined-recipe';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
@@ -22,7 +23,7 @@ export interface RecipeRepositoryInterface {
   /** Trending recipes for the discover rail, backed by `GET /recipes/trending`. */
   listTrendingRecipes(limit?: number): Promise<Result<RecipeSummaryEntity[], Failure>>;
   listMyRecipes(page?: number): Promise<Result<Page<RecipeSummaryEntity>, Failure>>;
-  getRecipe(id: string): Promise<Result<RecipeEntity, Failure>>;
+  getRecipe(id: string): Promise<Result<RecipeDetail, Failure>>;
   createRecipe(
     input: CreateRecipeInput,
     onProgress?: CreateRecipeProgressCallback,

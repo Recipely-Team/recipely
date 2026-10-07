@@ -62,7 +62,7 @@ export const RecipeCommentsSection = ({
         </ThemedText>
       ) : (
         <View style={styles.commentsList}>
-          {commentState.items.map((comment) => (
+          {commentState.items.map(({ comment, likedByMe }) => (
             <CommentCard
               key={comment.id}
               body={comment.body}
@@ -71,7 +71,7 @@ export const RecipeCommentsSection = ({
               createdAt={comment.createdAt}
               isOwn={comment.isAuthoredBy(userId)}
               likeCount={comment.likeCount}
-              likedByMe={comment.likedByMe}
+              likedByMe={likedByMe}
               canLike
               onToggleLike={() => onToggleCommentLike(comment.id)}
               onDelete={() => onDeleteComment(comment.id)}

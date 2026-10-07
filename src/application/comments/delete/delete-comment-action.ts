@@ -28,7 +28,7 @@ export const createDeleteCommentAction = (
       }
       set((state) => ({
         byRecipe: mergeRecipeComments(state.byRecipe, recipeId, (existing) => ({
-          items: existing.items.filter((c) => c.id !== commentId),
+          items: existing.items.filter((c) => c.comment.id !== commentId),
           total: Math.max(ValueConstants.zero, existing.total - ValueConstants.one),
           error: null,
         })),

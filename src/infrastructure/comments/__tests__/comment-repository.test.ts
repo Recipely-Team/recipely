@@ -115,10 +115,10 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      const comment = r.value.items[0];
+      const { comment, likedByMe } = r.value.items[0];
       expect(comment).toBeInstanceOf(CommentEntity);
       expect(comment.likeCount).toBe(7);
-      expect(comment.likedByMe).toBe(true);
+      expect(likedByMe).toBe(true);
     }
   });
 
@@ -133,9 +133,9 @@ describe('CommentRepository.listByRecipe — like mapping', () => {
 
     expect(r.ok).toBe(true);
     if (r.ok) {
-      const comment = r.value.items[0];
+      const { comment, likedByMe } = r.value.items[0];
       expect(comment.likeCount).toBe(0);
-      expect(comment.likedByMe).toBe(false);
+      expect(likedByMe).toBe(false);
     }
   });
 

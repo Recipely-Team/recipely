@@ -37,7 +37,7 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
       set({
         byId: {
           ...get().byId,
-          [id]: { status: StoreStatus.Loaded, recipe: result.value, fetchedAt: Date.now() },
+          [id]: { status: StoreStatus.Loaded, ...result.value, fetchedAt: Date.now() },
         },
       });
     },
@@ -80,12 +80,16 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
     },
 
     put: (recipe) =>
-      set((s) => ({
-        byId: {
-          ...s.byId,
-          [recipe.id]: { status: StoreStatus.Loaded, recipe, fetchedAt: Date.now() },
-        },
-      })),
+      set((s) => {
+        const cached = s.byId[recipe.id];
+        const likedByMe = cached?.status === StoreStatus.Loaded && cached.likedByMe;
+        return {
+          byId: {
+            ...s.byId,
+            [recipe.id]: { status: StoreStatus.Loaded, recipe, likedByMe, fetchedAt: Date.now() },
+          },
+        };
+      }),
 
     remove: (id) =>
       set((s) => {

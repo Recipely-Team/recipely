@@ -87,7 +87,7 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
     facts: recipeFacts(vm.recipe ?? null),
     // "Who said what", for the reading only — the screen line carries the count.
     comments: (vm.commentState?.items ?? []).map(
-      (comment) => `${comment.authorDisplayName}: ${comment.body}`,
+      ({ comment }) => `${comment.authorDisplayName}: ${comment.body}`,
     ),
     isOwner: vm.isOwner,
     onPostComment: vm.onPostComment,

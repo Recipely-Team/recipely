@@ -114,7 +114,7 @@ export const useCommentHighlight = ({
     if (targetId === null || recipeId.length === ValueConstants.zero) return;
     if (commentState === undefined) return;
     if (commentState.isLoading || commentState.isLoadingMore) return;
-    if (commentState.items.some((c) => c.id === targetId)) return;
+    if (commentState.items.some((c) => c.comment.id === targetId)) return;
     if (commentState.items.length >= commentState.total) return;
     // A page that didn't grow the list means the server has nothing more for us.
     if (commentState.items.length <= lastCountRef.current) return;
