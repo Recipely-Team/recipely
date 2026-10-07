@@ -2647,3 +2647,17 @@ the grid is wide, without asking whether anyone is signed in.
 **Fix:** the load waits for a signed-in user (and runs again when one signs in).
 Covered by "does not ask a guest for their saved recipes" (`use-recipe-list.test.tsx`),
 red without the fix. **A `/me/*` read needs a signed-in user first.**
+
+## The web CSP blocked AdSense's ad-quality frame (2026-10-08)
+
+**Symptom:** with the new Content-Security-Policy (dev, #531), the feed's ad unit loaded and
+requested an ad, but the browser refused `ep2.adtrafficquality.google/sodar/…/runner.html`
+(`frame-src`). That frame is AdSense's traffic-quality check; without it the unit serves
+as unverified traffic. Found by loading the live page with dev's CSP injected and listening
+for `securitypolicyviolation`.
+
+**Fix:** `frame-src` allows `https://*.adtrafficquality.google` in both hosting targets.
+`check:structure` rule AN now requires every AdSense host (`*.googlesyndication.com`,
+`*.doubleclick.net`, `*.adtrafficquality.google`, `*.google.com`) in BOTH `script-src` and
+`frame-src`; red without the fix. **An ad network loads scripts and frames from the same
+hosts: allow-list them in both directives.**
