@@ -10,14 +10,15 @@ import { registerMisc } from '@application/di/features/register-misc';
 import { registerCreators } from '@application/di/features/register-creators';
 import { registerAssistant } from '@application/di/features/register-assistant';
 import { registerAuth } from '@application/di/features/register-auth';
+import { createClearSessionCaches } from '@application/di/create-clear-session-caches';
 
 /**
  * **Application composition** — builds every feature's stores (`di/features/register-*.ts`)
  * and assembles the `ApplicationStores` bundle the presentation layer reads.
  *
  * @remarks
- * - **Order:** `clearSessionCaches` is built after every session-scoped store and the auth
- *   store last, so sign-out / delete / expiry wipe them all in one place.
+ * - **Order:** the auth store is built last, over `createClearSessionCaches(features)`, so
+ *   sign-out / delete / expiry wipe every user-scoped store in one place.
  */
 export const registerApplication = (container: Container): ApplicationStores => {
   const recipes = registerRecipes(container);
@@ -29,45 +30,8 @@ export const registerApplication = (container: Container): ApplicationStores => 
   const misc = registerMisc(container);
   const creators = registerCreators(container);
   const assistant = registerAssistant(container);
-  const { savedRecipesStore, recipeDetailStore, createdRecipesStore, importJobStore, fileImportStore, stepProgressStore } = recipes;
-  const { likedRecipesStore, likesStore } = likes;
-  const { draftsStore } = drafts;
-  const { diaryStore, foodSearchStore, foodCatalogStore } = diary;
-  const { instagramStore, automationsStore } = instagram;
-  const { commentsStore } = comments;
-  const { notificationsStore, userProfileStore } = misc;
-  const { creatorProfileStore } = creators;
-  const { assistantSessionStore } = assistant;
-  // Built after every session store so sign-out/delete/expiry wipe them in one place.
-  const clearSessionCaches = (): void => {
-    savedRecipesStore.getState().clear();
-    likedRecipesStore.getState().clear();
-    commentsStore.getState().clear();
-    likesStore.getState().clear();
-    recipeDetailStore.getState().clear();
-    stepProgressStore.getState().clear();
-    notificationsStore.getState().clear();
-    createdRecipesStore.getState().clear();
-    draftsStore.getState().clear();
-    diaryStore.getState().clear();
-    foodSearchStore.getState().clear();
-    foodCatalogStore.getState().clear();
-    instagramStore.getState().clear();
-    automationsStore.getState().clear();
-    importJobStore.getState().clear();
-    fileImportStore.getState().clear();
-    userProfileStore.getState().reset();
-    creatorProfileStore.getState().clear();
-    assistantSessionStore.getState().reset();
-  };
-  const authStore = registerAuth(container, {
-    savedRecipesStore,
-    loadFavoritesUseCase: recipes.loadFavoritesUseCase,
-    clearSessionCaches,
-  });
-  return {
+  const features = {
     ...assistant,
-    authStore,
     ...recipes,
     ...likes,
     ...drafts,
@@ -77,4 +41,10 @@ export const registerApplication = (container: Container): ApplicationStores => 
     ...diary,
     ...instagram,
   };
+  const authStore = registerAuth(container, {
+    savedRecipesStore: recipes.savedRecipesStore,
+    loadFavoritesUseCase: recipes.loadFavoritesUseCase,
+    clearSessionCaches: createClearSessionCaches(features),
+  });
+  return { ...features, authStore };
 };
