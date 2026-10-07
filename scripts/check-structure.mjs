@@ -1574,14 +1574,20 @@ function openingTag(src, at) {
 // --- AN: the web app is served with its security headers -----------------
 // firebase.json shipped with no security header at all: the site could be
 // framed (clickjacking), MIME-sniffed, and leaked full referrers. Every
-// hosting target must set these on `**`.
+// hosting target must set these on `**`. The CSP's script-src is hash-based for
+// inline scripts (scripts/assert-csp-inline-scripts.mjs keeps the hashes true).
 {
   // Value checks, not just presence: 'ALLOWALL' must not pass for 'X-Frame-Options'.
   // SAMEORIGIN / 'self' (not DENY / 'none'): Firebase Auth frames /__/auth/iframe from our own host.
   const REQUIRED = {
     'X-Content-Type-Options': (v) => v === 'nosniff',
     'X-Frame-Options': (v) => v === 'SAMEORIGIN' || v === 'DENY',
-    'Content-Security-Policy': (v) => /frame-ancestors '(self|none)'/.test(v),
+    'Content-Security-Policy': (v) =>
+      /frame-ancestors '(self|none)'/.test(v) &&
+      /default-src 'self'/.test(v) &&
+      /object-src 'none'/.test(v) &&
+      /script-src [^;]*'sha256-/.test(v) &&
+      !/script-src [^;]*'unsafe-(inline|eval)'/.test(v),
     'Referrer-Policy': (v) => /^(strict-origin-when-cross-origin|no-referrer|same-origin|strict-origin)$/.test(v),
     'Permissions-Policy': (v) => /geolocation=\(\)/.test(v),
     'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
