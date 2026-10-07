@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1772 source files.
+[architecture.md](architecture.md). 1786 source files.
 
 ## Layers
 
@@ -31,7 +31,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(1)_
 - `auth/` _(8)_
 - `comments/` _(4)_
-- `common/` _(2)_
+- `common/` _(5)_
 - `creators/` _(13)_
 - `device/` _(3)_
 - `diary/` — calendar, day, entry, foods, month, nutrition _(51)_
@@ -52,14 +52,14 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `ads/` _(2)_
-- `assistant/` — actions, session _(12)_
+- `assistant/` — actions, session _(13)_
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
-- `config/` _(5)_
+- `config/` _(6)_
 - `creators/` — claim, list, profile _(13)_
 - `device/` _(2)_
-- `di/` _(3)_
+- `di/` — features _(13)_
 - `diary/` — day, entries, foods, goals, month _(26)_
 - `drafts/` — list, read, write _(10)_
 - `favorites/` _(5)_
@@ -82,7 +82,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(26)_
 - `comments/` — dtos _(3)_
-- `constants/` — analytics, api _(21)_
+- `constants/` — analytics, api _(20)_
 - `creators/` — dtos _(14)_
 - `crypto/` _(3)_
 - `device/` _(8)_
@@ -166,4 +166,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 09cad18081f16404 -->
+<!-- fingerprint: 220206bc29c959c1 -->

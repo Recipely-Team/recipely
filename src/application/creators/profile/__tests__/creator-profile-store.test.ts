@@ -11,7 +11,7 @@ import { FakeUserProfileRepository } from '@application/__fixtures__/fake-user-p
 import { recipePageOf } from '@application/__fixtures__/recipe-page-of';
 import { recipeSummaryOf } from '@application/__fixtures__/recipe-summary-of';
 import { viewedProfileOf } from '@application/__fixtures__/viewed-profile-of';
-import { CREATOR_RECIPES_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { Page } from '@domain/common/page';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 
@@ -46,7 +46,7 @@ describe('creator profile store', () => {
     await opening;
 
     expect(repo.viewedCalls).toEqual(['u-1']);
-    expect(repo.recipeCalls).toEqual([['u-1', 1, CREATOR_RECIPES_PAGE_SIZE]]);
+    expect(repo.recipeCalls).toEqual([['u-1', 1, PageSizes.creatorRecipes]]);
     const { profileState, recipes, recipesState } = store.getState();
     expect(profileState.status === StoreStatus.Loaded && profileState.viewed.profile.id).toBe('u-1');
     expect(recipes.map((r) => r.id)).toEqual(['r-1']);
@@ -103,7 +103,7 @@ describe('creator profile store', () => {
 
     await store.getState().loadMoreRecipes();
 
-    expect(repo.recipeCalls[1]).toEqual(['u-1', 2, CREATOR_RECIPES_PAGE_SIZE]);
+    expect(repo.recipeCalls[1]).toEqual(['u-1', 2, PageSizes.creatorRecipes]);
     expect(store.getState().recipes.map((r) => r.id)).toEqual(['r-1', 'r-2']);
     expect(store.getState().recipesState).toEqual({ status: StoreStatus.Loaded, page: 2, hasMore: false });
   });

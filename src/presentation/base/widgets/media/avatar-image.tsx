@@ -6,6 +6,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { fontWeights, durations } from '@presentation/base/theme';
 import { AVATAR_INITIALS_FONT_RATIO } from '@presentation/base/widgets/media/avatar-initials-font-ratio';
 import { CharConstants, ValueConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface AvatarImageProps {
   uri?: string;
@@ -62,7 +63,7 @@ export const AvatarImage = ({ uri, name, size }: AvatarImageProps): React.JSX.El
       style={[styles.fallback, { width: size, height: size, borderRadius }]}
     >
       <View style={styles.innerOverlay}>
-        {name.trim().length === ValueConstants.zero ? (
+        {isBlank(name) ? (
           <Ionicons name="person" size={size * PERSON_ICON_RATIO} color={colors.primaryText} />
         ) : (
           <Text

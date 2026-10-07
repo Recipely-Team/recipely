@@ -1,7 +1,7 @@
 import { AssistantDenialReason } from '@domain/assistant/session/assistant-denial-reason';
 import { AssistantFailureCode, SessionEventKind } from '@live-assistant/core';
 import type { AssistantFailure, AssistantMicrophone, AssistantPlayer, AssistantSession, Result, SessionEvent } from '@live-assistant/core';
-import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
+import { ApiLiveTool } from '@application/assistant/session/live-tool-contract';
 import { AssistantGrantStatus } from '@domain/assistant/session/assistant-grant-status';
 import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';

@@ -2,7 +2,8 @@ import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
 import { ValueConstants } from '@core/constants';
-import { CREATORS_PAGE_SIZE, FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
+import { PageSizes } from '@application/config/page-sizes';
 import type { CreatorsStoreState } from '@application/creators/creators-store-state';
 import type { ListCreatorsUseCase } from '@application/creators/list/list-creators-use-case';
 
@@ -32,7 +33,7 @@ export const configureCreatorsStore = (deps: CreatorsStoreDeps): BoundStore<Crea
       generation += ValueConstants.one;
       const requested = generation;
       if (get().listState.status !== StoreStatus.Loaded) set({ listState: { status: StoreStatus.Loading } });
-      const result = await deps.listCreators.execute({ page: FIRST_PAGE, pageSize: CREATORS_PAGE_SIZE });
+      const result = await deps.listCreators.execute({ page: FIRST_PAGE, pageSize: PageSizes.creators });
       if (requested !== generation) return;
       if (!result.ok) {
         const shown = get().listState;
@@ -67,7 +68,7 @@ export const configureCreatorsStore = (deps: CreatorsStoreDeps): BoundStore<Crea
         set({ listState: { ...current, isLoadingMore: true } });
         const result = await deps.listCreators.execute({
           page: current.page + ValueConstants.one,
-          pageSize: CREATORS_PAGE_SIZE,
+          pageSize: PageSizes.creators,
         });
         if (requested !== generation) return;
         if (!result.ok) {

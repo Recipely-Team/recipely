@@ -80,3 +80,16 @@ describe('likesStore.syncFromApi — freshness', () => {
     await toggling;
   });
 });
+
+describe('likesStore.toggle — count floor', () => {
+  // The optimistic unlike used to subtract one with no floor: a stale 0 showed "-1".
+  it('an unlike on a stale zero count never shows a negative like count', async () => {
+    const store = makeStore();
+    store.getState().seed(RECIPE_ID, 0, true);
+
+    await store.getState().toggle(RECIPE_ID);
+
+    expect(store.getState().byRecipe[RECIPE_ID]?.likedByMe).toBe(false);
+    expect(store.getState().byRecipe[RECIPE_ID]?.likeCount).toBe(0);
+  });
+});

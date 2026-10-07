@@ -5,7 +5,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { UserEntity } from '@domain/auth/user-entity';
-import { ValueConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 
 /**
@@ -19,10 +19,10 @@ export class AuthSessionEntity extends BaseEntity<AuthSessionEntityProps> {
   }
 
   static create(props: AuthSessionEntityProps): Result<AuthSessionEntity, ValidationFailure> {
-    if (props.id.trim().length === ValueConstants.zero) {
+    if (isBlank(props.id)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.session.idRequired, 'id'));
     }
-    if (props.accessToken.trim().length === ValueConstants.zero) {
+    if (isBlank(props.accessToken)) {
       return fail(new ValidationFailure(DiagnosticMessage.entity.session.accessTokenRequired, 'accessToken'));
     }
     if (Number.isNaN(props.expiresAt.getTime())) {

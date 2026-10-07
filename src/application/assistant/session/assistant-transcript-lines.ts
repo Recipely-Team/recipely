@@ -1,6 +1,6 @@
 import { ToolRunStatus, TranscriptEntryKind } from '@live-assistant/core';
 import type { TranscriptEntry } from '@live-assistant/core';
-import { ApiLiveTool } from '@infrastructure/constants/api/api-live-tool';
+import { ApiLiveTool } from '@application/assistant/session/live-tool-contract';
 import type { AssistantTranscriptLineType } from '@application/assistant/session/assistant-transcript-line';
 import { AssistantTranscriptLineKind } from '@application/assistant/session/assistant-transcript-line-kind';
 import { isAssistantAction } from '@domain/assistant/actions/is-assistant-action';

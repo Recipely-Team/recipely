@@ -7,7 +7,7 @@ import type { ListCreatorsUseCase } from '@application/creators/list/list-creato
 import type { ListCreatorsInput } from '@application/creators/list/list-creators-input';
 import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
-import { CREATORS_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { Page } from '@domain/common/page';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 
@@ -56,7 +56,7 @@ describe('creators store', () => {
     list.answer(0, ok(creatorPageOf([creatorSummaryOf('1'), creatorSummaryOf('2')], { total: 30, pageSize: 20 })));
     await loading;
 
-    expect(list.calls).toEqual([{ page: 1, pageSize: CREATORS_PAGE_SIZE }]);
+    expect(list.calls).toEqual([{ page: 1, pageSize: PageSizes.creators }]);
     expect(ids(store)).toEqual(['1', '2']);
     expect(store.getState().listState).toEqual({ status: StoreStatus.Loaded, page: 1, hasMore: true });
   });
@@ -117,7 +117,7 @@ describe('creators store', () => {
 
     await store.getState().loadMore();
 
-    expect(list.calls[1]).toEqual({ page: 2, pageSize: CREATORS_PAGE_SIZE });
+    expect(list.calls[1]).toEqual({ page: 2, pageSize: PageSizes.creators });
     expect(ids(store)).toEqual(['1', '2']);
     expect(store.getState().listState).toEqual({ status: StoreStatus.Loaded, page: 2, hasMore: false });
   });

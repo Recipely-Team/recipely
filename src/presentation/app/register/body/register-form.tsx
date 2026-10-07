@@ -19,6 +19,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { Email } from '@domain/common/email';
 import { Password } from '@domain/auth/password';
+import { isBlank } from '@core/guards/type-guards';
 
 /**
  * Register form fields (name / email / password / confirm / terms) with inline
@@ -51,14 +52,14 @@ export const RegisterForm = (): React.JSX.Element => {
   const strength = useMemo(() => Password.strengthOf(password), [password]);
 
   const canSubmit =
-    name.trim().length > ValueConstants.zero &&
+    !isBlank(name) &&
     emailValid &&
     Password.create(password).ok &&
     password === confirm &&
     agree;
 
   const handleRegister = useCallback(async () => {
-    if (name.trim().length === ValueConstants.zero) {
+    if (isBlank(name)) {
       setLocalError(t().register.errorName);
       return;
     }

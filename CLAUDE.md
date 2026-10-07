@@ -213,7 +213,8 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
     `check:structure` rule I; `architecture.md` §4a.
 15. **Imports** — always the `@layer/...` alias; `./` only inside barrel `index.ts`. Presentation → application/
     domain/core, never infrastructure (except `src/infrastructure/constants/*`, `src/presentation/bootstrap/`,
-    `*/di/` wiring). `check:structure` rules B and C.
+    `*/di/` wiring). Application imports no infrastructure but `@infrastructure/constants/storage`.
+    `check:structure` rules B, C and AO.
 15b. **Keep the map fresh** — after adding/moving/deleting files run `npm run map`; never hand-edit
     `PROJECT-MAP.md`. `check:structure` rule J.
 16. **Structure gate** — `npm run check:structure` must be green before any commit/PR. It enforces rules 1,

@@ -42,6 +42,7 @@ export const TOKENS = {
   GetUserProfileUseCase: Symbol.for('GetUserProfileUseCase'),
   FeedbackRepository: Symbol.for('FeedbackRepository'),
   FeatureFlagRepository: Symbol.for('FeatureFlagRepository'),
+  FeatureFlagResolver: Symbol.for('FeatureFlagResolver'),
   SubmitFeedbackUseCase: Symbol.for('SubmitFeedbackUseCase'),
   KeyValueStore: Symbol.for('KeyValueStore'),
   DeviceIdentity: Symbol.for('DeviceIdentity'),

@@ -5,7 +5,8 @@ import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layo
 import { ForgotPasswordInputView } from '@presentation/app/forgot-password/body/forgot-password-input-view';
 import { ForgotPasswordSuccessView } from '@presentation/app/forgot-password/body/forgot-password-success-view';
 import { t } from '@presentation/i18n';
-import { CharConstants, ValueConstants } from '@core/constants';
+import { CharConstants } from '@core/constants';
+import { isBlank } from '@core/guards/type-guards';
 
 export const ForgotPasswordScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -19,7 +20,7 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const [sendError, setSendError] = useState<string | undefined>(undefined);
 
   const handleSend = async (): Promise<void> => {
-    if (email.trim().length === ValueConstants.zero) return;
+    if (isBlank(email)) return;
     setSendError(undefined);
     setLoading(true);
     const failure = await requestPasswordReset(email.trim());

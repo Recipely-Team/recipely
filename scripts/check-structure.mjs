@@ -50,6 +50,9 @@
  *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
  *   AK. One page shape (CLAUDE.md §23d): no exported interface/type whose body
  *      has `total` and `pageSize`/`hasMore`, besides `Page<T>` / `PageDto<T>`.
+ *   AO. Application imports no infrastructure module but the storage keys
+ *      (`@infrastructure/constants/storage`), not even from its di/ wiring — build
+ *      values such as `IS_DEV_BUILD` reach it through DI (CLAUDE.md §17).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -94,6 +97,9 @@ const walk = (dir) => {
 };
 for (const l of LAYERS) if (fs.existsSync(path.join(SRC, l))) walk(path.join(SRC, l));
 
+/** Rule AO: the only infrastructure module application code (its di/ included) may name. */
+const APPLICATION_INFRA_ALLOWED = new Set(['@infrastructure/constants/storage']);
+
 const isTest = (f) => /__tests__|\.test\.tsx?$/.test(f);
 const isBarrel = (f) => path.basename(f) === 'index.ts';
 
@@ -112,6 +118,10 @@ for (const file of files) {
     }
     const target = LAYERS.map((l) => `@${l}`).find((a) => spec === a || spec.startsWith(a + '/'));
     if (!target) continue;
+    if (layer === 'application' && target === '@infrastructure' && !APPLICATION_INFRA_ALLOWED.has(spec)) {
+      errors.push(`${file}: rule AO — application may not import '${spec}'; receive it through DI (CLAUDE.md §17)`);
+      continue;
+    }
     const allowed = ALLOWED_IMPORTS[layer] ?? [];
     if (allowed.includes(target)) continue;
     // Composition-root exception: DI wiring modules assemble across layers.

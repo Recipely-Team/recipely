@@ -7,7 +7,7 @@ import { FoodSearchGroup } from '@domain/diary/foods/search/food-search-group';
 import type { RecipeHitGroupType } from '@domain/diary/foods/search/recipe-hit-group-type';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
-import { FOOD_SEARCH_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { FoodSearchStoreState } from '@application/diary/foods/food-search-store-state';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
@@ -56,7 +56,7 @@ export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<
     const recipePages =
       (query: string, group: RecipeHitGroupType) =>
       (page: number): ReturnType<SearchRecipeGroupUseCase['execute']> =>
-        deps.searchRecipeGroup.execute(query, group, page, FOOD_SEARCH_PAGE_SIZE);
+        deps.searchRecipeGroup.execute(query, group, page, PageSizes.foodSearch);
 
     const run = async (query: string): Promise<void> => {
       set({ query });
@@ -69,9 +69,9 @@ export const configureFoodSearchStore = (deps: FoodSearchStoreDeps): BoundStore<
         saved: loaders.saved.begin(recipePages(query, FoodSearchGroup.Saved)),
         mine: loaders.mine.begin(recipePages(query, FoodSearchGroup.Mine)),
         recipes: loaders.recipes.begin(recipePages(query, FoodSearchGroup.Recipes)),
-        products: loaders.products.begin((page) => deps.searchProducts.execute(query, page, FOOD_SEARCH_PAGE_SIZE)),
+        products: loaders.products.begin((page) => deps.searchProducts.execute(query, page, PageSizes.foodSearch)),
       };
-      const result = await deps.searchFoods.execute(query, FOOD_SEARCH_PAGE_SIZE);
+      const result = await deps.searchFoods.execute(query, PageSizes.foodSearch);
       for (const group of recipeGroups) loaders[group].settle(tokens[group], result.ok ? ok(result.value[group]) : result);
       loaders.products.settle(tokens.products, result.ok ? ok(result.value.products) : result);
     };

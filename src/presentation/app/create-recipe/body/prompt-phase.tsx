@@ -16,6 +16,7 @@ import { FieldErrorText } from '@presentation/app/create-recipe/items/field-erro
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
+import { isBlank } from '@core/guards/type-guards';
 
 export interface PromptPhaseProps {
   insets: EdgeInsets;
@@ -51,7 +52,7 @@ export const PromptPhase = ({
 }: PromptPhaseProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const scrollable = useAssistantScrollable();
-  const canGenerate = prompt.trim().length > ValueConstants.zero;
+  const canGenerate = !isBlank(prompt);
   const ideaChips = t().createRecipe.ideaChips;
   const draftName = latestDraft?.snapshot.name?.trim();
 

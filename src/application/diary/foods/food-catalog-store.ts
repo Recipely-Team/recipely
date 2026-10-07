@@ -5,7 +5,7 @@ import { ValueConstants } from '@core/constants';
 import type { FoodCategory } from '@domain/diary/foods/food-category';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
-import { FOOD_LIST_PAGE_SIZE } from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalog-store-state';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-food-categories-use-case';
@@ -40,7 +40,7 @@ export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): BoundStor
     const products = new PagedListLoader<FoodProduct>(() => get().products, (list) => set({ products: list }), (p) => p.key);
     const recent = new PagedListLoader<RecentFoodType>(() => get().recent, (list) => set({ recent: list }), (r) => r.key);
     const shelf = (category: string | null): Promise<void> =>
-      products.load((page) => deps.listProducts.execute(category, page, FOOD_LIST_PAGE_SIZE));
+      products.load((page) => deps.listProducts.execute(category, page, PageSizes.foodList));
 
     return {
       categories: { status: StoreStatus.Idle },
@@ -50,7 +50,7 @@ export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): BoundStor
       detail: { status: StoreStatus.Idle },
 
       loadProducts: async () => {
-        await Promise.all([categories.load((page) => deps.listCategories.execute(page, FOOD_LIST_PAGE_SIZE)), shelf(get().category)]);
+        await Promise.all([categories.load((page) => deps.listCategories.execute(page, PageSizes.foodList)), shelf(get().category)]);
       },
       loadMoreCategories: () => categories.loadMore(),
       selectCategory: async (category) => {
@@ -58,7 +58,7 @@ export const configureFoodCatalogStore = (deps: FoodCatalogStoreDeps): BoundStor
         await shelf(category);
       },
       loadMoreProducts: () => products.loadMore(),
-      loadRecent: () => recent.load((page) => deps.listRecent.execute(page, FOOD_LIST_PAGE_SIZE)),
+      loadRecent: () => recent.load((page) => deps.listRecent.execute(page, PageSizes.foodList)),
       loadMoreRecent: () => recent.loadMore(),
 
       openProduct: async (product) => {

@@ -1,4 +1,4 @@
-import { isObject, isString, isNonEmptyString, hasKey, optional } from '@core/guards/type-guards';
+import { isObject, isString, isNonEmptyString, isBlank, hasKey, optional } from '@core/guards/type-guards';
 
 /**
  * These narrow values the app did not create — response bodies, decoded JWT
@@ -33,6 +33,21 @@ describe('isNonEmptyString', () => {
 
   it.each([null, undefined, 0, {}])('rejects %p', (value) => {
     expect(isNonEmptyString(value)).toBe(false);
+  });
+});
+
+describe('isBlank', () => {
+  it.each(['', ' ', '   ', '\t', '\n', ' \t\n\r ', '\u00a0', '\u2003'])('calls %p blank', (value) => {
+    expect(isBlank(value)).toBe(true);
+  });
+
+  it.each(['a', ' a ', '\tx\n', '0', '.', '\u00e7'])('calls %p not blank', (value) => {
+    expect(isBlank(value)).toBe(false);
+  });
+
+  it('differs from isNonEmptyString on whitespace: non-empty, yet blank', () => {
+    expect(isNonEmptyString('  ')).toBe(true);
+    expect(isBlank('  ')).toBe(true);
   });
 });
 

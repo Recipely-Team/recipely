@@ -1,6 +1,6 @@
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { ValueConstants } from '@core/constants';
-import { FIRST_PAGE } from '@infrastructure/constants/api/api-paging';
+import { FIRST_PAGE } from '@domain/common/first-page';
 import type { Page } from '@domain/common/page';
 
 /** Wraps items as one page; pass `total` (or `hasMore`) to describe a page with more behind it. */

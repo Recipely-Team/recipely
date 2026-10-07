@@ -8,12 +8,7 @@ import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
 import type { InstagramMedia } from '@domain/instagram/instagram-media';
 import type { RecipeFoodHit } from '@domain/diary/foods/search/recipe-food-hit';
-import {
-  DM_RECIPES_PAGE_SIZE,
-  DM_RULES_PAGE_SIZE,
-  DM_SENDS_PAGE_SIZE,
-  INSTAGRAM_MEDIA_PAGE_SIZE,
-} from '@infrastructure/constants/api/api-paging';
+import { PageSizes } from '@application/config/page-sizes';
 import type { PagedList } from '@application/store/paging/paged-list';
 import { PagedListLoader } from '@application/store/paging/paged-list-loader';
 import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
@@ -69,7 +64,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         rules: replacing(s.rules, rule),
         ...(s.opened.status === StoreStatus.Loaded && s.opened.rule.id === rule.id ? { opened: { status: StoreStatus.Loaded, rule } } : {}),
       }));
-    const loadRules = (): Promise<void> => rules.load((page) => deps.listRules.execute(page, DM_RULES_PAGE_SIZE));
+    const loadRules = (): Promise<void> => rules.load((page) => deps.listRules.execute(page, PageSizes.dmRules));
 
     return {
       rules: { status: StoreStatus.Idle },
@@ -97,13 +92,13 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         return result;
       },
 
-      loadMedia: () => media.load((page) => deps.listMedia.execute(page, INSTAGRAM_MEDIA_PAGE_SIZE)),
+      loadMedia: () => media.load((page) => deps.listMedia.execute(page, PageSizes.instagramMedia)),
       loadMoreMedia: () => media.loadMore(),
 
       searchRecipes: (raw) => {
         const query = raw.trim();
         set({ recipeQuery: query });
-        return recipes.load((page) => deps.searchMyRecipes.execute(query, FoodSearchGroup.Mine, page, DM_RECIPES_PAGE_SIZE));
+        return recipes.load((page) => deps.searchMyRecipes.execute(query, FoodSearchGroup.Mine, page, PageSizes.dmRecipes));
       },
       loadMoreRecipes: () => recipes.loadMore(),
 
@@ -119,7 +114,7 @@ export const configureAutomationsStore = (deps: AutomationsStoreDeps): BoundStor
         else if (cached === undefined) set({ opened: { status: StoreStatus.Error, id, failure: result.failure } });
       },
 
-      loadSends: (ruleId) => sends.load((page) => deps.listSends.execute(ruleId, page, DM_SENDS_PAGE_SIZE)),
+      loadSends: (ruleId) => sends.load((page) => deps.listSends.execute(ruleId, page, PageSizes.dmSends)),
       loadMoreSends: () => sends.loadMore(),
 
       saveRule: async (draft, ruleId) => {

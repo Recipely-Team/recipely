@@ -2473,3 +2473,14 @@ and normalise first, or refuse what could normalise into something else.**
 like a private key or API token; `.gitignore` ignores every `.env.*` but `.env.example`. A Claude Code
 hook also refuses `git add -A` / `.` / `-u` and `git commit -a`.
 *The class:* **an ignore rule that names the exact file misses its copies; check what is going in.**
+
+## Three copies of "count me in", one without a floor
+
+- **An optimistic recipe unlike on a stale `0` would have shown `-1` likes**: `likesStore.toggle`
+  subtracted one with no floor, while the comment like and the follower count — the same rule
+  written twice more — clamped at zero. *Now:* all three go through the `ViewerReaction` value
+  object (`domain/common/viewer-reaction.ts`), which moves the count with the viewer and never
+  below zero. *Guard:* `viewer-reaction.test.ts`, and the count-floor case in
+  `likes-store.sync.test.ts`.
+
+*The class:* **a rule written in three places drifts in one of them; give it one home.**
