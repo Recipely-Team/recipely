@@ -52,7 +52,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `ads/` _(2)_
-- `assistant/` — actions, session _(12)_
+- `assistant/` — actions, session _(13)_
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(15)_
@@ -82,7 +82,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `audio/` _(2)_
 - `auth/` — dtos, registration, session, social _(26)_
 - `comments/` — dtos _(3)_
-- `constants/` — analytics, api _(21)_
+- `constants/` — analytics, api _(20)_
 - `creators/` — dtos _(14)_
 - `crypto/` _(3)_
 - `device/` _(8)_
@@ -166,4 +166,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 70d949022fe361bd -->
+<!-- fingerprint: 6404bd29386822c5 -->
