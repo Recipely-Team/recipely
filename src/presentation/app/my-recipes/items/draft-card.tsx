@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -15,14 +16,19 @@ import { MediaType } from '@domain/recipes/media/media-type';
 
 export interface DraftCardProps {
   draft: RecipeDraft;
-  onOpen: () => void;
-  onDelete: () => void;
+  /** Opens a draft by id; one stable handler for every row, bound here. */
+  onOpen: (id: string) => void;
+  /** Deletes a draft by id. */
+  onDelete: (id: string) => void;
 }
 
 const THUMB = mediaSizes.draftThumb;
 
-/** Row in the Drafts tab: cover thumb, title, item count + relative time, delete. */
-export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
+/**
+ * Row in the Drafts tab: cover thumb, title, item count + relative time, delete.
+ * Memoised, and takes id handlers so the list can pass the same two to every row.
+ */
+const DraftCardComponent = ({ draft, onOpen, onDelete }: DraftCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const name = draft.snapshot.name?.trim();
   const cover = draft.snapshot.media?.find((m) => m.type === MediaType.Image);
@@ -30,7 +36,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
 
   return (
     <Pressable
-      onPress={onOpen}
+      onPress={() => onOpen(draft.id)}
       style={[styles.root, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }, shadows.sm]}
       accessibilityRole="button"
       accessibilityLabel={name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
@@ -53,7 +59,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
         </ThemedText>
       </View>
       <Pressable
-        onPress={onDelete}
+        onPress={() => onDelete(draft.id)}
         hitSlop={spacing.sm}
         style={styles.deleteBtn}
         accessibilityRole="button"
@@ -64,6 +70,8 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
     </Pressable>
   );
 };
+
+export const DraftCard = memo(DraftCardComponent);
 
 const styles = StyleSheet.create({
   root: {

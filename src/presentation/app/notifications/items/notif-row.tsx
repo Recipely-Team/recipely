@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -38,7 +39,7 @@ const creatorLine = (template: string, n: NotifItem): string =>
   // A platform this build cannot name: the row still says something, never blank.
   n.creator === undefined ? t().notifications.genericLabel : template.replace('{platform}', creatorPlatformName(n.creator.platform));
 
-interface NotifRowProps {
+export interface NotifRowProps {
   item: NotifItem;
   onTap: (item: NotifItem) => void;
 }
@@ -51,8 +52,9 @@ const PRESSED_OPACITY = opacities.pressedLight;
  * follow — there is no public user-profile route) has nothing left to do: it
  * renders disabled, with no press feedback, and announces as text rather than
  * a button so assistive tech never offers an action that does nothing.
+ * Memoised: the screen passes one stable `onTap` to every row.
  */
-export const NotifRow = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
+const NotifRowComponent = ({ item, onTap }: NotifRowProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const meta = useKindMeta(item.kind);
   const tappable = item.target !== null || !item.read;
@@ -149,3 +151,5 @@ const styles = StyleSheet.create({
     flexShrink: ValueConstants.zero,
   },
 });
+
+export const NotifRow = memo(NotifRowComponent);

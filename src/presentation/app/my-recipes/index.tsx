@@ -95,22 +95,22 @@ export const MyRecipesScreen = (): React.JSX.Element => {
     { key: TabType.Drafts, label: t().myRecipes.drafts, count: drafts.length },
   ];
 
-  const openRecipe = (id: string): void => {
-    router.push(RoutePaths.recipeDetail(id) as Href);
-  };
+  // Stable handlers, so the list's memoised rows and `renderItem` hold across renders.
+  const openRecipe = useCallback((id: string): void => router.push(RoutePaths.recipeDetail(id) as Href), [router]);
 
   const openCreate = (): void => {
     router.push(RoutePaths.createRecipe);
   };
 
-  const openDraft = (id: string): void => {
-    router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } });
-  };
+  const openDraft = useCallback(
+    (id: string): void => router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } }),
+    [router],
+  );
 
-  const deleteDraft = async (id: string): Promise<void> => {
+  const deleteDraft = useCallback(async (id: string): Promise<void> => {
     const result = await draftsStore.getState().deleteDraft(id);
     if (!result.ok) showErrorToast(result.failure);
-  };
+  }, [draftsStore]);
 
   const assistant = useMyRecipesAssistant({
     tab,
@@ -161,10 +161,10 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             gridColumns={gridColumns}
             isExpanded={isExpanded}
             isSaved={isSaved}
-            onToggleSave={(id) => void toggleSave(id)}
+            onToggleSave={toggleSave}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
-            onDeleteDraft={(id) => void deleteDraft(id)}
+            onDeleteDraft={deleteDraft}
             isFirstLoad={isTabFirstLoad}
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
