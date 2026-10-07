@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { type Href, usePathname, useRouter } from 'expo-router';
 import { ValueConstants } from '@core/constants';
 import { StoreStatus } from '@application/store/store-status';
@@ -42,9 +42,14 @@ export const useAddToShoppingList = (source: ShoppingSource): UseAddToShoppingLi
   const { recipeId, recipeName, lines } = source;
   const canAdd = useMemo(() => IngredientList.of(lines).filledCount > ValueConstants.zero, [lines]);
 
+  // A ref, not state: two taps in one frame both read state as idle and the server merge doubled every amount.
+  const inFlight = useRef(false);
   const send = useCallback(async (): Promise<ShoppingAddResult | null> => {
+    if (inFlight.current) return null;
+    inFlight.current = true;
     setAdding(true);
     const result = await shoppingListStore.getState().addFromRecipe(lines, { id: recipeId, name: recipeName });
+    inFlight.current = false;
     setAdding(false);
     if (!result.ok) {
       showErrorToast(result.failure);

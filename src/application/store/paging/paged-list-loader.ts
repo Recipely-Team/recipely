@@ -58,26 +58,6 @@ export class PagedListLoader<T> {
     this.settle(token, await fetchPage(FIRST_PAGE));
   }
 
-  /**
-   * The first page again without blanking the rows (pull-to-refresh): they
-   * stay until the answer replaces them, and a failure keeps them and is
-   * returned. Not loaded yet, it is `load`.
-   */
-  async reload(fetchPage: PageFetch<T>): Promise<Failure | null> {
-    if (this.read().status !== StoreStatus.Loaded) {
-      await this.load(fetchPage);
-      return null;
-    }
-    this.generation += ValueConstants.one;
-    this.fetchPage = fetchPage;
-    const token = this.generation;
-    const result = await fetchPage(FIRST_PAGE);
-    if (token !== this.generation) return null;
-    if (!result.ok) return result.failure;
-    this.write(loadedList(result.value));
-    return null;
-  }
-
   /** The next page, unless there is none, one is in flight or nothing has loaded. A failure keeps the rows. */
   async loadMore(): Promise<void> {
     const current = this.read();
@@ -93,16 +73,23 @@ export class PagedListLoader<T> {
   }
 
   /** The first page again; a loaded list keeps showing (and keeps its rows on failure) instead of a spinner. */
-  async refresh(fetchPage: PageFetch<T>): Promise<void> {
-    if (this.read().status !== StoreStatus.Loaded) return this.load(fetchPage);
+  async refresh(fetchPage: PageFetch<T>): Promise<Failure | null> {
+    if (this.read().status !== StoreStatus.Loaded) {
+      await this.load(fetchPage);
+      return null;
+    }
     this.generation += ValueConstants.one;
     const token = this.generation;
     this.fetchPage = fetchPage;
     const result = await fetchPage(FIRST_PAGE);
-    if (token !== this.generation) return;
+    if (token !== this.generation) return null;
     const latest = this.read();
-    if (result.ok) this.write(loadedList(result.value));
-    else if (latest.status === StoreStatus.Loaded) this.write({ ...latest, isLoadingMore: false });
+    if (result.ok) {
+      this.write(loadedList(result.value));
+      return null;
+    }
+    if (latest.status === StoreStatus.Loaded) this.write({ ...latest, isLoadingMore: false });
+    return result.failure;
   }
 
   removeItem(key: string): void {

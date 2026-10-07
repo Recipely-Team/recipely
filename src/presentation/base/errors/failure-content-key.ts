@@ -67,7 +67,6 @@ export type FailureContentKeyType =
   | 'mealParsePhotoUnchecked'
   | 'mealParseQuotaExceeded'
   | 'mealParseUnavailable'
-  | 'contentBlocked'
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'

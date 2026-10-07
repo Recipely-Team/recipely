@@ -40,6 +40,9 @@ const rewrite = (list: PagedList<ShoppingItemEntity>, next: (items: Items) => It
     ? { ...list, items: orderedShoppingItems(next(list.items)), total: Math.max(ValueConstants.zero, list.total + totalDelta) }
     : list;
 
+const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
+  list.status === StoreStatus.Loaded && list.items.some((item) => item.id === id);
+
 /** Touched lines replace theirs by id; new ones go to the top. */
 const upserting = (touched: Items) => (items: Items): Items => {
   const byId = new Map(touched.map((item) => [item.id, item]));
@@ -60,6 +63,7 @@ const upserting = (touched: Items) => (items: Items): Items => {
  */
 export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundStore<ShoppingListStoreState> => {
   const ticks = new Map<string, number>();
+  let session: number = ValueConstants.zero;
 
   return create<ShoppingListStoreState>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
@@ -78,7 +82,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       loadMore: () => loader.loadMore(),
       refresh: async () => {
         set({ isRefreshing: true });
-        const failure = await loader.reload(fetchPage);
+        const failure = await loader.refresh(fetchPage);
         set({ isRefreshing: false });
         return failure;
       },
@@ -102,11 +106,13 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       },
 
       remove: async (item) => {
+        const sessionAtStart = session;
         const before = get().list;
         const at = before.status === StoreStatus.Loaded ? before.items.findIndex((it) => it.id === item.id) : ValueConstants.minusOne;
         update((items) => items.filter((it) => it.id !== item.id), at < ValueConstants.zero ? ValueConstants.zero : ValueConstants.minusOne);
         const result = await deps.remove.execute(item.id);
-        if (!result.ok && at >= ValueConstants.zero) {
+        // Back only if this session's list still lacks it: a refresh may already have brought it back.
+        if (!result.ok && at >= ValueConstants.zero && session === sessionAtStart && !hasItem(get().list, item.id)) {
           update((items) => [...items.slice(ValueConstants.zero, at), item, ...items.slice(at)], ValueConstants.one);
         }
         return result;
@@ -125,6 +131,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       },
 
       clear: () => {
+        session += ValueConstants.one;
         ticks.clear();
         loader.reset();
         set({ isRefreshing: false });

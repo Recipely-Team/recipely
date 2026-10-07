@@ -101,6 +101,36 @@ describe('ShoppingListStore', () => {
     expect(store.getState().isRefreshing).toBe(false);
   });
 
+  // Review finding: a refresh that failed while the next page was in flight left `isLoadingMore` set, and paging stopped for good.
+  it('pages again after a pull-to-refresh fails while the next page is loading', async () => {
+    const repo = fakeShoppingRepository();
+    repo.list.mockResolvedValueOnce(page([shoppingItemOf({ id: 'a' })], 30));
+    const store = shoppingStoreOf(repo);
+    await store.getState().load();
+    let answerPage2: (value: ReturnType<typeof page>) => void = () => undefined;
+    repo.list.mockReturnValueOnce(new Promise((resolve) => { answerPage2 = resolve; }));
+    const scrolling = store.getState().loadMore();
+    repo.list.mockResolvedValueOnce(fail(new NetworkFailure('offline')));
+    await store.getState().refresh();
+    answerPage2(page([shoppingItemOf({ id: 'b' })], 30, 2));
+    await scrolling;
+
+    repo.list.mockResolvedValueOnce(page([shoppingItemOf({ id: 'b' })], 30, 2));
+    await store.getState().loadMore();
+    expect(repo.list).toHaveBeenLastCalledWith(2, 20);
+  });
+
+  it('does not put a removed line back twice when a refresh already restored it', async () => {
+    const { repo, store } = await loaded();
+    let answerDelete: (value: Result<void, Failure>) => void = () => undefined;
+    repo.remove.mockReturnValueOnce(new Promise((resolve) => { answerDelete = resolve; }));
+    const removing = store.getState().remove(loadedItems(store.getState().list)[0]!);
+    await store.getState().refresh();
+    answerDelete(fail(new NetworkFailure('offline')));
+    await removing;
+    expect(ids(store)).toEqual(['a', 'b', 'c+']);
+  });
+
   it('forgets the list when the session ends', async () => {
     const { store } = await loaded();
     store.getState().clear();
