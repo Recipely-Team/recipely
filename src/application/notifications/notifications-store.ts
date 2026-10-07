@@ -77,6 +77,8 @@ export const configureNotificationsStore = (
         if (current.status !== StoreStatus.Loaded) return;
         const target = current.items.find((n) => n.id === id);
         if (target === undefined || target.read) return;
+        // A poll already in flight carries the count from before this mark.
+        badge.invalidate();
         set({
           state: { ...current, items: current.items.map((n) => (n.id === id ? n.asRead() : n)) },
           unreadCount: Math.max(ValueConstants.zero, get().unreadCount - ValueConstants.one),
