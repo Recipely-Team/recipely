@@ -455,6 +455,11 @@ if (crowded.length > 0 && process.env.CI !== 'true') {
           'app.json: react-native-audio-api must set "androidForegroundService": false — it defaults to true and declares a mediaPlayback foreground service the app has no feature for (CLAUDE.md §23c)',
         );
       }
+      if (liveAudio.disableFFmpeg !== true) {
+        errors.push(
+          'app.json: react-native-audio-api must set "disableFFmpeg": true — the assistant plays raw PCM and never decodes files, and FFmpeg adds ~6 MB of native libraries per ABI',
+        );
+      }
       const androidPermissions = liveAudio.androidPermissions;
       if (!Array.isArray(androidPermissions)) {
         errors.push(
