@@ -62,14 +62,14 @@ const firebase = JSON.parse(fs.readFileSync(FIREBASE, 'utf8'));
 const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
 const cspOf = (target) =>
   (target.headers ?? [])
-    .filter((h) => h.source === '**')
+    .filter((h) => h.regex !== undefined || h.source === '**')
     .flatMap((h) => h.headers)
     .find((h) => h.key === 'Content-Security-Policy');
 
 for (const target of targets) {
   const csp = cspOf(target);
   if (csp === undefined) {
-    failures.push(`firebase.json (${target.target}): no Content-Security-Policy on "**"`);
+    failures.push(`firebase.json (${target.target}): no Content-Security-Policy header`);
     continue;
   }
   if (write) {
@@ -90,7 +90,6 @@ for (const target of targets) {
 if (write) {
   fs.writeFileSync(FIREBASE, `${JSON.stringify(firebase, null, 2)}\n`);
   console.log(`assert-csp-inline-scripts: wrote ${String(hashes.size)} hash(es) into firebase.json`);
-  process.exit(0);
 }
 if (failures.length > 0) {
   console.error(`assert-csp-inline-scripts — ${String(failures.length)} problem(s):\n`);

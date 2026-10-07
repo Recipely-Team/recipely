@@ -44,7 +44,7 @@
  *      web it forwards them to the DOM `<svg>`, which React rejects as unknown
  *      attributes (CLAUDE.md §24).
  *   AL. Every routed page is declared on the stack that owns it, header hidden.
- *   AN. Every Firebase hosting target sends the web security headers on `**`
+ *   AN. Every Firebase hosting target sends the web security headers on every path but /__/
  *      (nosniff, frame denial, referrer / permissions policy, COOP, HSTS).
  *   AM. Inline comments are one line (CLAUDE.md §3): no two consecutive indented
  *      `//` lines (eslint directives excepted) — a rationale belongs in the head doc block.
@@ -1593,17 +1593,24 @@ function openingTag(src, at) {
     'Cross-Origin-Opener-Policy': (v) => /^same-origin(-allow-popups)?$/.test(v),
     'Strict-Transport-Security': (v) => /max-age=\d{7,}/.test(v),
   };
+  // Every path except Firebase's reserved /__/ (its auth handler runs a per-request inline script our CSP cannot hash).
+  const SITE_EXCEPT_RESERVED = '^/([^_].*|_[^_].*|_)?$';
   const firebase = JSON.parse(fs.readFileSync(path.join(ROOT, 'firebase.json'), 'utf8'));
   const targets = Array.isArray(firebase.hosting) ? firebase.hosting : [firebase.hosting];
   for (const target of targets) {
+    if ((target.headers ?? []).some((h) => h.source === '**' && h.headers.some((x) => x.key === 'Content-Security-Policy'))) {
+      errors.push(`firebase.json (${target.target}): the CSP is on "**", which also reaches /__/auth/ and blocks Firebase sign-in — use "regex": "${SITE_EXCEPT_RESERVED}"`);
+    }
     const sent = new Map(
-      (target.headers ?? []).filter((h) => h.source === '**').flatMap((h) => h.headers.map((x) => [x.key, x.value])),
+      (target.headers ?? [])
+        .filter((h) => h.regex === SITE_EXCEPT_RESERVED)
+        .flatMap((h) => h.headers.map((x) => [x.key, x.value])),
     );
     const missing = Object.entries(REQUIRED)
       .filter(([key, ok]) => !sent.has(key) || !ok(sent.get(key)))
       .map(([key]) => key);
     if (missing.length > 0) {
-      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on "**" — ${missing.join(', ')}`);
+      errors.push(`firebase.json (${target.target}): missing or weak security header(s) on every page (regex ${SITE_EXCEPT_RESERVED}) — ${missing.join(', ')}`);
     }
   }
 }

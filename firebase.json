@@ -40,7 +40,7 @@
       ],
       "headers": [
         {
-          "source": "**",
+          "regex": "^/([^_].*|_[^_].*|_)?$",
           "headers": [
             {
               "key": "X-Content-Type-Options",
@@ -52,7 +52,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com 'sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=' 'sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss://generativelanguage.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+              "value": "default-src 'self'; script-src 'self' https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com https://www.googletagservices.com https://partner.googleadservices.com 'sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=' 'sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss://generativelanguage.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
             },
             {
               "key": "Referrer-Policy",
@@ -164,7 +164,7 @@
       ],
       "headers": [
         {
-          "source": "**",
+          "regex": "^/([^_].*|_[^_].*|_)?$",
           "headers": [
             {
               "key": "X-Robots-Tag",
@@ -180,7 +180,7 @@
             },
             {
               "key": "Content-Security-Policy",
-              "value": "default-src 'self'; script-src 'self' https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com 'sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=' 'sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss://generativelanguage.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
+              "value": "default-src 'self'; script-src 'self' https://apis.google.com https://www.googletagmanager.com https://*.googlesyndication.com https://*.google.com https://*.gstatic.com https://*.doubleclick.net https://*.adtrafficquality.google https://appleid.cdn-apple.com https://www.googletagservices.com https://partner.googleadservices.com 'sha256-4HKmxNMaTA7BfFQ0OHXx78hzKq/6a3RQQS72kCp8yzs=' 'sha256-67fhrP0+BkBqmgGGXTtgiVO/9EQs3QruYNU/7fnRkI8=' 'sha256-Du+OJKJSbdUgz5nrHeWWINvez6XKDDU/tyj/5c2uvwo=' 'sha256-Kn8osZealPgF5/uyWLGdN791p5pEEYjpnmlCrT37yUY=' 'sha256-Q+1WuWvqD9NIEIiCmHeOAnTcr27FQ9N6qNJ4ev0SBeI='; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' data: https://fonts.gstatic.com; img-src 'self' data: blob: https:; media-src 'self' data: blob: https:; connect-src 'self' https: wss://generativelanguage.googleapis.com; frame-src 'self' https://*.firebaseapp.com https://*.google.com https://*.googlesyndication.com https://*.doubleclick.net https://appleid.apple.com; worker-src 'self' blob:; manifest-src 'self'; form-action 'self' https://appleid.apple.com; frame-ancestors 'self'; base-uri 'self'; object-src 'none'; upgrade-insecure-requests"
             },
             {
               "key": "Referrer-Policy",

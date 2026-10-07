@@ -3,13 +3,13 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontWeights, controlSizes, borderWidths } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
+import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 
 export interface NotificationFilterPillsProps {
-  filter: NotificationFilter;
+  filter: NotificationFilterType;
   totalCount: number;
   unreadCount: number;
-  onChange: (filter: NotificationFilter) => void;
+  onChange: (filter: NotificationFilterType) => void;
 }
 
 /** All / Unread switch, each pill carrying its count. */

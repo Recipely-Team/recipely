@@ -1,6 +1,7 @@
 import type { BoundStore } from '@application/store/bound-store';
 import { StoreStatus } from '@application/store/store-status';
 import { create } from 'zustand';
+import { ValueConstants } from '@core/constants';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import type { GetRecipeUseCase } from '@application/recipes/detail/get-recipe-use-case';
 import type { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
@@ -82,11 +83,14 @@ export const configureRecipeDetailStore = (deps: RecipeDetailStoreDeps): BoundSt
     put: (recipe) =>
       set((s) => {
         const cached = s.byId[recipe.id];
-        const likedByMe = cached?.status === StoreStatus.Loaded && cached.likedByMe;
+        const loaded = cached?.status === StoreStatus.Loaded ? cached : null;
+        // The like is the cached one, so it keeps the cached age: a fresh stamp would let it rewind a newer like.
+        const likedByMe = loaded?.likedByMe ?? false;
+        const fetchedAt = loaded?.fetchedAt ?? ValueConstants.zero;
         return {
           byId: {
             ...s.byId,
-            [recipe.id]: { status: StoreStatus.Loaded, recipe, likedByMe, fetchedAt: Date.now() },
+            [recipe.id]: { status: StoreStatus.Loaded, recipe, likedByMe, fetchedAt },
           },
         };
       }),

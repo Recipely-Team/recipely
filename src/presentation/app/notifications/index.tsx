@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
-import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
+import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, SectionList, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
@@ -41,7 +41,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   const markAllRead = notificationsStore((s) => s.markAllRead);
   const markOneRead = notificationsStore((s) => s.markOneRead);
 
-  const [filter, setFilter] = useState<NotificationFilter>(NotificationFilter.All);
+  const [filter, setFilter] = useState<NotificationFilterType>(NotificationFilter.All);
 
   useReportFailure(state.status === StoreStatus.Error ? state.failure : null, 'NotificationsScreen');
 

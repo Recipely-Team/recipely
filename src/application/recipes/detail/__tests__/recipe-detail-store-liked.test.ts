@@ -42,6 +42,22 @@ describe('recipeDetailStore — the viewer\'s like', () => {
     expect(state?.status === StoreStatus.Loaded && state.likedByMe).toBe(true);
   });
 
+  // An edit re-puts the recipe; a fresh stamp on the old flag made the likes overlay
+  // take "not liked" as newer than the tap that liked it, and the heart emptied.
+  it('keeps the like\'s own age when a newer copy is put, so the flag cannot outrank a later like', async () => {
+    const store = storeWith(false);
+    await store.getState().load(RECIPE_ID);
+    const loaded = store.getState().byId[RECIPE_ID];
+    const loadedAt = loaded?.status === StoreStatus.Loaded ? loaded.fetchedAt : -1;
+
+    jest.spyOn(Date, 'now').mockReturnValue(loadedAt + 60_000);
+    store.getState().put(recipeEntityOf({ id: RECIPE_ID, name: 'Edited' }));
+    jest.restoreAllMocks();
+
+    const state = store.getState().byId[RECIPE_ID];
+    expect(state?.status === StoreStatus.Loaded && state.fetchedAt).toBe(loadedAt);
+  });
+
   it('reads a recipe put without a prior load as not liked', () => {
     const store = storeWith(true);
 
@@ -49,5 +65,6 @@ describe('recipeDetailStore — the viewer\'s like', () => {
 
     const state = store.getState().byId[RECIPE_ID];
     expect(state?.status === StoreStatus.Loaded && state.likedByMe).toBe(false);
+    expect(state?.status === StoreStatus.Loaded && state.fetchedAt).toBe(0);
   });
 });
