@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, RefreshControl, StyleSheet, View } from 'react-native';
 import { ValueConstants } from '@core/constants';
 import { StoreStatus } from '@application/store/store-status';
@@ -6,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { ListConstants } from '@presentation/base/constants/list-constants';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing } from '@presentation/base/theme';
@@ -26,42 +28,47 @@ export interface ShoppingListBodyProps {
  * The loaded list: the add field and the clears above, "To buy" then
  * "Completed", the next page on scroll and pull-to-refresh. Rows are bounded
  * with `windowSize` and the batch sizes, never `removeClippedSubviews`.
+ * `renderRow` and `keyExtractor` keep their identity so the memoised rows hold.
  */
 export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const list = vm.list;
   const copy = t().shopping;
-  const renderRow = ({ item: row }: { item: ShoppingRow }): React.JSX.Element =>
-    row.kind === 'heading' ? (
-      <ThemedText variant="label" muted accessibilityRole="header" style={styles.heading}>
-        {`${row.title} (${String(row.count)})`}
-      </ThemedText>
-    ) : (
-      <ShoppingItemRow item={row.item} onToggle={vm.onToggle} onEdit={onEdit} onRemove={vm.onRemove} />
-    );
+  const { onToggle, onRemove } = vm;
+  const renderRow = useCallback(
+    ({ item: row }: { item: ShoppingRow }): React.JSX.Element =>
+      row.kind === 'heading' ? (
+        <ThemedText variant="label" muted accessibilityRole="header" style={styles.heading}>
+          {`${row.title} (${String(row.count)})`}
+        </ThemedText>
+      ) : (
+        <ShoppingItemRow item={row.item} onToggle={onToggle} onEdit={onEdit} onRemove={onRemove} />
+      ),
+    [onToggle, onEdit, onRemove],
+  );
   return (
     <FlatList
       {...scrollable}
       data={vm.rows}
-      keyExtractor={(row) => row.key}
+      keyExtractor={rowKey}
       renderItem={renderRow}
       ItemSeparatorComponent={Separator}
       ListHeaderComponent={
         <View style={styles.header}>
-          <ShoppingAddField value={vm.draft} onChangeText={vm.onChangeDraft} onSubmit={vm.onAdd} isAdding={vm.isAdding} />
+          <ShoppingAddField />
           <ShoppingListActions checkedCount={vm.checkedCount} itemCount={vm.items.length} onAsk={vm.onAskConfirm} />
         </View>
       }
       ListEmptyComponent={
         list.status === StoreStatus.Loaded ? (
-          <ErrorState icon="cart-outline" title={copy.emptyTitle} body={copy.emptyBody} />
+          <ErrorState icon="cart-outline" severity={SeverityType.Neutral} title={copy.emptyTitle} body={copy.emptyBody} />
         ) : (
           <ActivityIndicator color={colors.primary} style={styles.spinner} />
         )
       }
       ListFooterComponent={
         list.status === StoreStatus.Loaded && list.moreFailure !== null ? (
-          <ErrorState icon="cloud-offline-outline" title={copy.loadMoreFailed} primaryLabel={copy.tryAgain} onPrimary={vm.onEndReached} />
+          <ErrorState icon="cloud-offline-outline" severity={SeverityType.Warning} title={copy.loadMoreFailed} primaryLabel={copy.tryAgain} onPrimary={vm.onEndReached} />
         ) : (
           <FeedFooter isLoadingMore={list.status === StoreStatus.Loaded && list.isLoadingMore} />
         )
@@ -79,6 +86,7 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
 };
 
 const Separator = (): React.JSX.Element => <View style={styles.separator} />;
+const rowKey = (row: ShoppingRow): string => row.key;
 
 const styles = StyleSheet.create({
   content: { padding: spacing.lg, paddingBottom: spacing.xxl, flexGrow: ValueConstants.one },

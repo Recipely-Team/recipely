@@ -1,11 +1,11 @@
 import { ListState } from '@presentation/base/hooks/assistant/args/describing/list-state';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAssistantNotificationActions } from '@presentation/app/notifications/hooks/use-assistant-notification-actions';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { buildSections } from '@presentation/app/notifications/model/build-sections';
 import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 import { StoreStatus } from '@application/store/store-status';
-import { ActivityIndicator, SectionList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, SectionList, StyleSheet, View, type SectionListData } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -22,7 +22,7 @@ import {
 } from '@presentation/base/errors/failure-lookups';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, fontSizes, fontWeights, letterSpacings, avatarSizes } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { NotifItem } from '@presentation/app/notifications/model/notif-item';
 import { NotifRow } from '@presentation/app/notifications/items/notif-row';
@@ -32,6 +32,21 @@ import { NotificationsHeader } from '@presentation/app/notifications/body/notifi
 import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
 import { useOpenNotificationTarget } from '@presentation/app/notifications/hooks/use-open-notification-target';
 
+// Module-level so their identity is stable: an inline separator remounts on every render.
+const notifKey = (item: NotifItem): string => String(item.id);
+const NotifSeparator = (): React.JSX.Element => {
+  const colors = useTheme().colors;
+  return <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />;
+};
+
+/**
+ * The viewer's notifications, filtered and grouped into sections, paged on scroll.
+ *
+ * @remarks
+ * **Every list callback keeps its identity** (`useMemo` sections, `useCallback`
+ * renderers, a module-level key and separator) so the memoised rows re-render
+ * only when their own notification changes.
+ */
 export const NotificationsScreen = (): React.JSX.Element => {
   const router = useRouter();
   const colors = useTheme().colors;
@@ -60,7 +75,10 @@ export const NotificationsScreen = (): React.JSX.Element => {
     return state.items.map(toNotifItem);
   }, [state]);
 
-  const sections = buildSections(items, filter);
+  const locale = useLocale();
+  // Section titles are translated: a language switch rebuilds them.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- locale is read through t() inside buildSections
+  const sections = useMemo(() => buildSections(items, filter), [items, filter, locale]);
 
   const openTarget = useOpenNotificationTarget();
 
@@ -81,10 +99,25 @@ export const NotificationsScreen = (): React.JSX.Element => {
   });
   const scrollable = useAssistantScrollable();
 
-  const tap = (item: NotifItem): void => {
-    if (!item.read) void markOneRead(item.id);
-    if (item.target !== null) openTarget(item.target);
-  };
+  const tap = useCallback(
+    (item: NotifItem): void => {
+      if (!item.read) void markOneRead(item.id);
+      if (item.target !== null) openTarget(item.target);
+    },
+    [markOneRead, openTarget],
+  );
+  const renderItem = useCallback(({ item }: { item: NotifItem }) => <NotifRow item={item} onTap={tap} />, [tap]);
+  const sectionBackground = colors.background;
+  const renderSectionHeader = useCallback(
+    ({ section }: { section: SectionListData<NotifItem, { title: string }> }) => (
+      <View style={[styles.sectionHeader, { backgroundColor: sectionBackground }]}>
+        <ThemedText variant="caption" muted style={styles.sectionTitle}>
+          {upperCase(section.title)}
+        </ThemedText>
+      </View>
+    ),
+    [sectionBackground],
+  );
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -109,15 +142,9 @@ export const NotificationsScreen = (): React.JSX.Element => {
       <SectionList
         {...scrollable}
         sections={sections}
-        keyExtractor={(item) => String(item.id)}
-        renderItem={({ item }) => <NotifRow item={item} onTap={tap} />}
-        renderSectionHeader={({ section }) => (
-          <View style={[styles.sectionHeader, { backgroundColor: colors.background }]}>
-            <ThemedText variant="caption" muted style={styles.sectionTitle}>
-              {upperCase(section.title)}
-            </ThemedText>
-          </View>
-        )}
+        keyExtractor={notifKey}
+        renderItem={renderItem}
+        renderSectionHeader={renderSectionHeader}
         ListEmptyComponent={
           <View style={styles.empty}>
             <ThemedText variant="body" muted style={{ textAlign: 'center' }}>
@@ -129,7 +156,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
         onEndReachedThreshold={ListConstants.endReachedThreshold}
         ListFooterComponent={<FeedFooter isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore} />}
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
-        ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.cardBorder }]} />}
+        ItemSeparatorComponent={NotifSeparator}
       />
       )}
       </ResponsiveContainer>

@@ -12,7 +12,7 @@ import { useAssistantScroll } from '@presentation/base/hooks/assistant/actions/u
 import type { AssistantScrollDirectionType } from '@presentation/base/hooks/assistant/args/scrolling/assistant-scroll-direction';
 import { moveScrollTo } from '@presentation/base/hooks/assistant/args/scrolling/move-scroll-to';
 import { scrollTargetFor } from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
-import { useRecipeTimer } from '@presentation/base/hooks/timers/use-recipe-timer';
+import { pauseTimer, resumeTimer, startTimer, stopTimer } from '@presentation/base/timers/timer-controls';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 interface RecipeDetailAssistant {
@@ -30,6 +30,9 @@ interface RecipeDetailAssistant {
  * - **Unsave asks first**, so the pending unsave lives here and the screen's sheet reads it.
  * - **It reads the lines the screen shows**: scaled to the chosen servings and
  *   units (`usePortionScaling`), headings read as their labels.
+ * - **The cook timer is driven, never watched**: the controls go straight to `timer-controls`.
+ *   `useRecipeTimer` would subscribe this hook — and with it the whole detail tree — to the
+ *   one-second tick while the countdown runs; only the time card needs to re-render.
  * - **One confirmation at a time**: delete is a modal over everything, and sheets drawn later
  *   (share, sign-in) take the spoken answer away from unsave.
  */
@@ -46,18 +49,22 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
   );
   const portions = usePortionScaling(vm.recipe ?? null);
   const ingredients = useMemo(() => spokenIngredientLines(portions.ingredients), [portions.ingredients]);
-  const cookTimer = useRecipeTimer({
-    timerId: cookTimerId(vm.recipeId),
-    recipeId: vm.recipeId,
-    recipeName: vm.recipe?.name ?? CharConstants.empty,
-    minutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
-  });
+  const timerId = cookTimerId(vm.recipeId);
+  const recipeName = vm.recipe?.name ?? CharConstants.empty;
+  const cookMinutes = vm.recipe?.cookTimeMinutes ?? ValueConstants.zero;
+  const startCookTimer = useCallback(
+    () => startTimer(timerId, vm.recipeId, recipeName, cookMinutes),
+    [timerId, vm.recipeId, recipeName, cookMinutes],
+  );
+  const pauseCookTimer = useCallback(() => pauseTimer(timerId), [timerId]);
+  const resumeCookTimer = useCallback(() => resumeTimer(timerId), [timerId]);
+  const stopCookTimer = useCallback(() => stopTimer(timerId), [timerId]);
   useAssistantRecipeActions({
     recipeId: vm.recipeId,
-    recipeName: vm.recipe?.name ?? CharConstants.empty,
+    recipeName,
     ingredients,
     instructions: vm.recipe?.instructions ?? [],
-    cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
+    cookTimeMinutes: cookMinutes,
     facts: recipeFacts(vm.recipe ?? null),
     // "Who said what", for the reading only — the screen line carries the count.
     comments: (vm.commentState?.items ?? []).map(
@@ -69,10 +76,10 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
     onRequestUnsave: () => setUnsavePending(true),
     onOpenShare: vm.onOpenShare,
     onCopyToDraft: vm.onCopyToDraft,
-    onStartCookTimer: cookTimer.start,
-    onPauseTimer: cookTimer.pause,
-    onResumeTimer: () => cookTimer.resume(),
-    onStopTimer: cookTimer.stop,
+    onStartCookTimer: startCookTimer,
+    onPauseTimer: pauseCookTimer,
+    onResumeTimer: resumeCookTimer,
+    onStopTimer: stopCookTimer,
     checkedIngredients: vm.checkedIngredients,
     completedSteps: vm.completedSteps,
     onToggleIngredient: vm.onToggleIngredient,

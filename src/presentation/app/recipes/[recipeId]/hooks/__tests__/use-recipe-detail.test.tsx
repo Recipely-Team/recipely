@@ -296,15 +296,16 @@ const driveHook = (
  */
 let mounted: ReactTestRenderer | null = null;
 
-/** Types a comment body into the input, then submits it and flushes the post. */
-const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<void> => {
+/**
+ * Submits a comment body the way the composer does and flushes the post; returns the
+ * `onPosted` callback, which clears the composer's field when (and only when) the post lands.
+ */
+const typeAndSubmit = async (latest: () => UseRecipeDetailResult, body: string): Promise<jest.Mock> => {
+  const onPosted = jest.fn();
   await act(async () => {
-    latest().onChangeCommentInput(body);
+    latest().onAddComment(body, onPosted);
   });
-
-  await act(async () => {
-    latest().onAddComment();
-  });
+  return onPosted;
 };
 
 afterEach(async () => {
@@ -338,9 +339,9 @@ describe('useRecipeDetail — submitError after a failed comment post', () => {
     const execute = jest.fn().mockResolvedValue(fail(new NetworkFailure('offline')));
     const { latest } = driveHook(makeRealCommentsStore(execute));
 
-    await typeAndSubmit(latest, 'Great recipe!');
+    const onPosted = await typeAndSubmit(latest, 'Great recipe!');
 
-    expect(latest().commentInput).toBe('Great recipe!');
+    expect(onPosted).not.toHaveBeenCalled();
   });
 
   it('falls back to the generic error when the store records no failure', async () => {
@@ -378,12 +379,10 @@ describe('useRecipeDetail — submitError after a successful comment post', () =
     await typeAndSubmit(latest, 'Great recipe!');
     expect(latest().submitError).toBe(t().errors.network.short);
 
-    await act(async () => {
-      latest().onAddComment();
-    });
+    const onPosted = await typeAndSubmit(latest, 'Great recipe!');
 
     expect(latest().submitError).toBeNull();
-    expect(latest().commentInput).toBe('');
+    expect(onPosted).toHaveBeenCalledTimes(1);
   });
 
   it('does not post a whitespace-only comment', async () => {

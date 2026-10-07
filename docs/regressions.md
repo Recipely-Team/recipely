@@ -2648,6 +2648,37 @@ the grid is wide, without asking whether anyone is signed in.
 Covered by "does not ask a guest for their saved recipes" (`use-recipe-list.test.tsx`),
 red without the fix. **A `/me/*` read needs a signed-in user first.**
 
+---
+
+## Render storms: one keystroke or one tick re-rendered a whole screen
+
+**Symptom:** a running cook timer re-rendered the entire recipe detail every second;
+each character typed into the shopping "add" field or the comment box re-rendered every
+row of the list or the whole recipe; scrolling the feed re-rendered every visible card.
+In the background the one-second clock kept waking the JS thread with no timer running,
+the unread badge was polled twice a minute for a hidden app, and every return to the
+feed re-requested page 1.
+
+**Root cause:** state or subscriptions held one level too high, and identities minted per
+render. A hook subscribed to the tick only to reach start/stop; drafts lived in the
+screen hook instead of the field; a curried `openRecipe(id)` or an inline arrow handed a
+memoised row a new prop each render (outside `strictMode`, `FlatList` calls `renderItem`
+for every visible cell on each of its renders, so only a memoised row with stable props
+bails out); inline `ItemSeparatorComponent`s remounted; background work never asked
+whether anything needed it.
+
+**Fix:** state lives with the component that reads it (`useShoppingAddDraft`,
+`useCommentDraft`); rows are `memo` and take id handlers (`onOpen(id)`); renderers and
+separators are stable; the tick listens only while a timer runs; the poll skips unless
+`AppState` is active; the feed refetches on focus only after `FEED_STALE_AFTER_MS`.
+
+**Guard:** render-count and timer-count tests, each red without its fix —
+`use-recipe-detail-assistant.test.tsx`, `feed-row-view.test.tsx`,
+`shopping-add-field-typing.test.tsx`, `recipe-comments-section.typing.test.tsx`,
+`my-recipes-list.renders.test.tsx`, `use-timer-notification-sync.test.tsx`,
+`use-unread-notifications-sync.test.tsx`, `use-recipe-list.test.tsx`.
+**Keep high-frequency state at the leaf that shows it, and give memoised rows nothing
+that is new on every render.**
 ## The web CSP blocked AdSense's ad-quality frame (2026-10-08)
 
 **Symptom:** with the new Content-Security-Policy (dev, #531), the feed's ad unit loaded and

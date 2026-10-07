@@ -5,18 +5,16 @@ import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontSizes, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { useShoppingAddDraft } from '@presentation/app/shopping-list/hooks/use-shopping-add-draft';
 
-export interface ShoppingAddFieldProps {
-  value: string;
-  onChangeText: (text: string) => void;
-  onSubmit: () => void;
-  isAdding: boolean;
-}
-
-/** The manual add field at the top of the list: type "2 kg potatoes", press return or +. */
-export const ShoppingAddField = ({ value, onChangeText, onSubmit, isAdding }: ShoppingAddFieldProps): React.JSX.Element => {
+/**
+ * The manual add field at the top of the list: type "2 kg potatoes", press return or +.
+ * It holds its own draft (`useShoppingAddDraft`), so typing re-renders this field only.
+ */
+export const ShoppingAddField = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const copy = t().shopping;
+  const { draft: value, onChangeDraft: onChangeText, onAdd: onSubmit, isAdding } = useShoppingAddDraft();
   const disabled = isAdding || isBlank(value);
   return (
     <View style={[styles.field, { backgroundColor: colors.inputBackground, borderColor: colors.inputBorder }]}>

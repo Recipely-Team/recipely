@@ -1,4 +1,4 @@
-import { memo, useEffect } from 'react';
+import { memo, useCallback, useEffect } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { RecipeCard } from '@presentation/base/widgets/cards/recipe-card';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -7,7 +7,11 @@ import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity'
 
 export interface RecipeListItemProps {
   recipe: RecipeSummaryEntity;
-  onPress: () => void;
+  /**
+   * Opens a recipe by id. Taken unbound and bound here, so a caller passes one
+   * stable handler for every row instead of a fresh closure per row per render.
+   */
+  onOpen: (id: string) => void;
   /** Web-only: enable the hover lift on the underlying `RecipeCard`. */
   hoverEffect?: boolean;
 }
@@ -22,9 +26,11 @@ export interface RecipeListItemProps {
  * update, and each of those re-rendered EVERY visible row — each row re-reading
  * the likes store and re-resolving its taxonomy labels. `memo` is only half of
  * it: a row whose `onPress` is a fresh arrow on every render is not memoised at
- * all, which is why `RecipeListBody` builds its handlers with `useCallback`.
+ * all, so the row takes the unbound `onOpen(id)` and binds it (and `onLike`)
+ * with `useCallback` itself — a curried `openRecipe(id)` at the call site used
+ * to hand every row a new `onPress` on every render.
  */
-const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
+const RecipeListItemComponent = ({ recipe, onOpen, hoverEffect }: RecipeListItemProps): React.JSX.Element => {
   const { likesStore, authStore } = useStores();
   const { cuisineLabel } = useTaxonomyLabel();
   const authState = authStore((s) => s.state);
@@ -37,6 +43,9 @@ const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListIte
   useEffect(() => {
     seed(recipe.id, recipe.likeCount, recipe.likedByMe);
   }, [recipe.id, recipe.likeCount, recipe.likedByMe, seed]);
+
+  const onPress = useCallback(() => onOpen(recipe.id), [onOpen, recipe.id]);
+  const onLike = useCallback(() => void toggle(recipe.id), [toggle, recipe.id]);
 
   return (
     <RecipeCard
@@ -51,7 +60,7 @@ const RecipeListItemComponent = ({ recipe, onPress, hoverEffect }: RecipeListIte
       likeCount={likeState?.likeCount ?? recipe.likeCount}
       likedByMe={likeState?.likedByMe ?? recipe.likedByMe}
       onPress={onPress}
-      onLike={isAuthenticated ? () => void toggle(recipe.id) : undefined}
+      onLike={isAuthenticated ? onLike : undefined}
       hoverEffect={hoverEffect}
     />
   );

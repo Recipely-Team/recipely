@@ -8,7 +8,7 @@ import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsiv
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
-import { failureContent, failureIcon } from '@presentation/base/errors/failure-lookups';
+import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { useShoppingList } from '@presentation/app/shopping-list/hooks/use-shopping-list';
 import { useShoppingItemEditor } from '@presentation/app/shopping-list/hooks/use-shopping-item-editor';
 import { useAssistantShoppingActions } from '@presentation/app/shopping-list/hooks/use-assistant-shopping-actions';
@@ -42,7 +42,7 @@ export const ShoppingListScreen = (): React.JSX.Element => {
     if (list.status === StoreStatus.Error) {
       const content = failureContent(list.failure);
       return (
-        <ErrorState icon={failureIcon(list.failure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />
+        <ErrorState icon={failureIcon(list.failure)} severity={failureSeverity(list.failure)} title={content.title} body={content.body} primaryLabel={copy.tryAgain} onPrimary={vm.onRetry} />
       );
     }
     return <ShoppingListBody vm={vm} scrollable={scrollable} onEdit={editor.open} />;

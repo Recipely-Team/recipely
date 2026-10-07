@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
@@ -7,7 +8,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
 import { borderWidths, controlSizes, opacities, radii, spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { t, useLocale } from '@presentation/i18n';
 import { ShoppingCopyToken } from '@presentation/app/shopping-list/model/shopping-copy-token';
 
 export interface ShoppingItemRowProps {
@@ -21,8 +22,11 @@ export interface ShoppingItemRowProps {
  * One line of the list: a tick, the name with its amount, the recipe it came
  * from, and edit / remove. The whole left part is the tick's target, so a
  * shopper with one free hand does not have to aim for the box.
+ * Memoised: it re-renders only when its line or a handler changes.
  */
-export const ShoppingItemRow = ({ item, onToggle, onEdit, onRemove }: ShoppingItemRowProps): React.JSX.Element => {
+const ShoppingItemRowComponent = ({ item, onToggle, onEdit, onRemove }: ShoppingItemRowProps): React.JSX.Element => {
+  // Memoised: subscribe to the language so a switch still re-renders the row's copy.
+  useLocale();
   const colors = useTheme().colors;
   const copy = t().shopping;
   const amount = shoppingAmountText(item.quantity, item.unit, t().recipes.portions.decimalMark);
@@ -63,6 +67,8 @@ export const ShoppingItemRow = ({ item, onToggle, onEdit, onRemove }: ShoppingIt
     </View>
   );
 };
+
+export const ShoppingItemRow = memo(ShoppingItemRowComponent);
 
 const styles = StyleSheet.create({
   row: {

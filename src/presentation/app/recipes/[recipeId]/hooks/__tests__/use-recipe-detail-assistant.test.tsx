@@ -12,6 +12,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import type { ApplicationStores } from '@application/di/application-stores';
 import { StoreStatus } from '@application/store/store-status';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
+import { timerStore } from '@application/timers/timer-store';
 import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { renderComponent } from '@presentation/base/test-support/render-component';
@@ -52,8 +53,9 @@ function harness(over: Partial<UseRecipeDetailResult> = {}, extraStores: Partial
     onToggleStep: jest.fn(),
     ...over,
   } as unknown as UseRecipeDetailResult;
-  const view: { pending: boolean } = { pending: false };
+  const view: { pending: boolean; renders: number } = { pending: false, renders: 0 };
   const Probe = (): null => {
+    view.renders += 1;
     view.pending = useRecipeDetailAssistant(vm).unsavePending;
     return null;
   };
@@ -118,5 +120,39 @@ describe('useRecipeDetailAssistant', () => {
     await act(async () => {
       await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({ ok: true, title: 'For the sauce, 4 cups flour' });
     });
+  });
+
+  // Render storm: the hook read the cook timer through `useRecipeTimer`, which subscribes to the
+  // one-second tick, so the WHOLE detail screen re-rendered every second while the timer ran.
+  it('does not re-render the detail screen every second while its cook timer runs', () => {
+    jest.useFakeTimers();
+    try {
+      const minuteMs = 60_000;
+      timerStore.setState({
+        timers: {
+          'r1:cook': {
+            id: 'r1:cook',
+            recipeId: 'r1',
+            recipeName: 'Soup',
+            durationSeconds: 600,
+            endTimeMs: Date.now() + 10 * minuteMs,
+            isPaused: false,
+            remainingMsOnPause: 0,
+            completionNotifIds: [],
+          },
+        },
+      });
+      const { view } = harness();
+      const rendersAfterMount = view.renders;
+
+      act(() => {
+        jest.advanceTimersByTime(5_000);
+      });
+
+      expect(view.renders).toBe(rendersAfterMount);
+    } finally {
+      timerStore.setState({ timers: {} });
+      jest.useRealTimers();
+    }
   });
 });

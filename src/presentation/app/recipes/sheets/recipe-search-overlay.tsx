@@ -87,7 +87,7 @@ export const RecipeSearchOverlay = ({
           data={recipes}
           keyExtractor={(r) => r.id}
           renderItem={({ item }) => (
-            <RecipeListItem recipe={item} onPress={() => onOpenRecipe(item.id)} />
+            <RecipeListItem recipe={item} onOpen={onOpenRecipe} />
           )}
           ItemSeparatorComponent={ItemSeparator}
           keyboardShouldPersistTaps="handled"

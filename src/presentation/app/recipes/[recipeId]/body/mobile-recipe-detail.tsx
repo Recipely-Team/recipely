@@ -35,13 +35,11 @@ export interface MobileRecipeDetailProps {
   completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
   onFocusCommentInput: () => void;
   onToggleLike: () => void;
   onDelete: () => void;
-  onAddComment: () => void;
+  onAddComment: (text: string, onPosted: () => void) => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -109,9 +107,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
         <RecipeCommentsSection
           commentState={commentState}
           userId={props.userId}
-          commentInput={props.commentInput}
           submitError={props.submitError}
-          onChangeCommentInput={props.onChangeCommentInput}
           onFocusCommentInput={props.onFocusCommentInput}
           onAddComment={props.onAddComment}
           onLoadMoreComments={props.onLoadMoreComments}

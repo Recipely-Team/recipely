@@ -30,9 +30,9 @@ const publish = (): void => {
  * at the same time. Here one callback notifies every listener, so React batches
  * them into a single commit, and the cost stops scaling with the timer count.
  *
- * The interval itself runs for as long as anything is subscribed, which in
- * practice is the app's lifetime: `useTimerNotificationSync` is mounted at the
- * root and has to keep sweeping for expired timers.
+ * The interval itself runs only while something is subscribed: the countdowns
+ * on screen, and `useTimerNotificationSync` while at least one timer is
+ * running. With no timer running, nothing wakes the JS thread.
  */
 export const subscribeToTick = (listener: TickListener): (() => void) => {
   nowMs = Date.now();

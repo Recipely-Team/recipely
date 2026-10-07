@@ -16,10 +16,6 @@ export interface UseShoppingListResult {
   onRetry: () => void;
   onEndReached: () => void;
   onBack: () => void;
-  draft: string;
-  onChangeDraft: (text: string) => void;
-  isAdding: boolean;
-  onAdd: () => void;
   onToggle: (item: ShoppingItemEntity) => void;
   onRemove: (item: ShoppingItemEntity) => void;
   confirm: ShoppingConfirmType | null;
