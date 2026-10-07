@@ -2450,3 +2450,13 @@ the box you can hit, not the glyph you can see.**
 
 *The class:* **a check on a URL string must see it the way the browser will: decode
 and normalise first, or refuse what could normalise into something else.**
+
+## Secrets committed by staging everything
+
+**A copy of a real `.env` (`.env.bak.<timestamp>`) was committed to recipely-backend with `git add -A`
+(#376) and promoted to main,** because `.gitignore` named `.env` but not its copies.
+*Guard:* `scripts/guard-secrets.mjs` in both repos — pre-commit on staged files, `check:structure`
+(CI) on every tracked file — refuses env files and copies, key/certificate files, and text that looks
+like a private key or API token; `.gitignore` ignores every `.env.*` but `.env.example`. A Claude Code
+hook also refuses `git add -A` / `.` / `-u` and `git commit -a`.
+*The class:* **an ignore rule that names the exact file misses its copies; check what is going in.**
