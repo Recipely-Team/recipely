@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { type Href, useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
+import { loadedItems } from '@application/store/paging/loaded-items';
 import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
@@ -24,8 +25,7 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   const router = useRouter();
   const { width, isExpanded } = useLayout();
   const { creatorsStore } = useStores();
-  const creators = creatorsStore((s) => s.creators);
-  const listState = creatorsStore((s) => s.listState);
+  const listState = creatorsStore((s) => s.creators);
   const load = creatorsStore((s) => s.load);
   const refresh = creatorsStore((s) => s.refresh);
   const loadMore = creatorsStore((s) => s.loadMore);
@@ -53,13 +53,13 @@ export const useCreatorsScreen = (): UseCreatorsScreenResult => {
   );
 
   return {
-    creators,
+    creators: loadedItems(listState),
     listState,
     columns,
     gap,
     cellWidth: (contentWidth - gap * (columns - ValueConstants.one)) / columns,
     isPullRefreshing,
-    isLoadingMore: listState.status === StoreStatus.Loaded && listState.isLoadingMore === true,
+    isLoadingMore: listState.status === StoreStatus.Loaded && listState.isLoadingMore,
     onRefresh,
     onEndReached: () => void loadMore(),
     onOpenCreator,

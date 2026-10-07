@@ -1,5 +1,4 @@
 import { configureDraftsStore } from "@application/drafts/drafts-store";
-import type { ListDraftsInput } from "@application/drafts/list/list-drafts-input";
 import type { ListDraftsUseCase } from "@application/drafts/list/list-drafts-use-case";
 import type { GetDraftUseCase } from "@application/drafts/read/get-draft-use-case";
 import type { GetLatestDraftUseCase } from "@application/drafts/read/get-latest-draft-use-case";
@@ -11,6 +10,8 @@ import { fail, ok } from "@core/result/result-helpers";
 import type { RecipeDraft } from "@domain/drafts/recipe-draft";
 import type { UpsertDraftInput } from "@domain/drafts/upsert-draft-input";
 import type { Page } from '@domain/common/page';
+import { loadedItems } from '@application/store/paging/loaded-items';
+import type { DraftsStoreState } from '@application/drafts/drafts-store-state';
 
 const makeDraft = (id: string): RecipeDraft => ({
   id,
@@ -30,6 +31,8 @@ const makePage = (items: RecipeDraft[]): Page<RecipeDraft> => ({
   hasMore: false,
 });
 
+const ids = (s: DraftsStoreState): string[] => loadedItems(s.drafts).map((d) => d.id);
+
 interface StubConfig {
   listResult?: Result<Page<RecipeDraft>, Failure>;
   latestResult?: Result<RecipeDraft | null, Failure>;
@@ -40,7 +43,7 @@ interface StubConfig {
 
 const makeStore = (config: StubConfig = {}) => {
   const listDraftsUseCase = {
-    execute: (_input: ListDraftsInput) =>
+    execute: (_page: number) =>
       Promise.resolve(
         config.listResult ?? fail(new UnknownFailure("not configured")),
       ),
@@ -75,39 +78,57 @@ const makeStore = (config: StubConfig = {}) => {
 };
 
 describe("draftsStore initial state", () => {
-  it("starts empty with idle listState and null latestDraft", () => {
+  it("starts with an idle drafts list and null latestDraft", () => {
     const store = makeStore();
 
-    expect(store.getState().drafts).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: "idle" });
+    expect(store.getState().drafts).toEqual({ status: "idle" });
     expect(store.getState().latestDraft).toBeNull();
   });
 });
 
 describe("draftsStore.loadDrafts", () => {
-  it("populates drafts and sets listState loaded on success", async () => {
+  it("loads the first page of drafts on success", async () => {
     const drafts = [makeDraft("a"), makeDraft("b")];
     const store = makeStore({ listResult: ok(makePage(drafts)) });
 
     await store.getState().loadDrafts();
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(["a", "b"]);
-    expect(s.listState).toEqual({ status: "loaded", page: 1, hasMore: false });
+    expect(ids(s)).toEqual(["a", "b"]);
+    expect(s.drafts).toMatchObject({ status: "loaded", page: 1, hasMore: false });
   });
 
-  it("sets listState error and leaves drafts empty on failure", async () => {
+  it("shows the failure when the first load fails", async () => {
     const failure = new UnknownFailure("boom");
     const store = makeStore({ listResult: fail(failure) });
 
     await store.getState().loadDrafts();
 
-    const s = store.getState();
-    expect(s.listState.status).toBe("error");
-    if (s.listState.status === "error") {
-      expect(s.listState.failure).toBe(failure);
-    }
-    expect(s.drafts).toEqual([]);
+    expect(store.getState().drafts).toEqual({ status: "error", failure });
+  });
+
+  it("keeps the rows on screen and returns why when a reload fails", async () => {
+    const failure = new UnknownFailure("offline");
+    let call = 0;
+    const listDraftsUseCase = {
+      execute: () => {
+        call++;
+        return Promise.resolve(call === 1 ? ok(makePage([makeDraft("a")])) : fail(failure));
+      },
+    } as unknown as ListDraftsUseCase;
+    const store = configureDraftsStore({
+      listDraftsUseCase,
+      getLatestDraftUseCase: { execute: () => Promise.resolve(ok(null)) } as unknown as GetLatestDraftUseCase,
+      getDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure("unused"))) } as unknown as GetDraftUseCase,
+      upsertDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure("unused"))) } as unknown as UpsertDraftUseCase,
+      deleteDraftUseCase: { execute: () => Promise.resolve(fail(new UnknownFailure("unused"))) } as unknown as DeleteDraftUseCase,
+    });
+    await store.getState().loadDrafts();
+
+    const returned = await store.getState().loadDrafts();
+
+    expect(returned).toBe(failure);
+    expect(ids(store.getState())).toEqual(["a"]);
   });
 
   // Both guards were added after review of the My-Recipes skeleton work: the
@@ -143,10 +164,10 @@ describe("draftsStore.loadDrafts", () => {
 
     const reload = store.getState().loadDrafts();
 
-    expect(store.getState().listState.status).toBe("loaded");
+    expect(store.getState().drafts.status).toBe("loaded");
     release();
     await reload;
-    expect(store.getState().listState.status).toBe("loaded");
+    expect(store.getState().drafts.status).toBe("loaded");
   });
 
   it("discards a page that started before the session ended", async () => {
@@ -183,8 +204,7 @@ describe("draftsStore.loadDrafts", () => {
     release();
     await inFlight;
 
-    expect(store.getState().drafts).toEqual([]);
-    expect(store.getState().listState).toEqual({ status: "idle" });
+    expect(store.getState().drafts).toEqual({ status: "idle" });
   });
 });
 
@@ -233,7 +253,7 @@ describe("draftsStore.upsertDraft", () => {
     });
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(["b", "a"]);
+    expect(ids(s)).toEqual(["b", "a"]);
     expect(s.latestDraft).toBe(saved);
     expect(returned).toBe(saved);
   });
@@ -255,8 +275,8 @@ describe("draftsStore.upsertDraft", () => {
     });
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(["a"]);
-    expect(s.drafts[0].prompt).toBe("updated");
+    expect(ids(s)).toEqual(["a"]);
+    expect(loadedItems(s.drafts)[0]?.prompt).toBe("updated");
     expect(s.latestDraft).toBe(updated);
   });
 
@@ -276,7 +296,7 @@ describe("draftsStore.upsertDraft", () => {
     });
 
     expect(returned).toBeNull();
-    expect(store.getState().drafts.map((d) => d.id)).toEqual(["a"]);
+    expect(ids(store.getState())).toEqual(["a"]);
   });
 });
 
@@ -294,7 +314,7 @@ describe("draftsStore.deleteDraft", () => {
     await store.getState().deleteDraft("a");
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(["b"]);
+    expect(ids(s)).toEqual(["b"]);
     expect(s.latestDraft).toBeNull();
   });
 
@@ -311,7 +331,7 @@ describe("draftsStore.deleteDraft", () => {
     await store.getState().deleteDraft("b");
 
     const s = store.getState();
-    expect(s.drafts.map((d) => d.id)).toEqual(["a"]);
+    expect(ids(s)).toEqual(["a"]);
     expect(s.latestDraft).toBe(a);
   });
 
@@ -325,6 +345,6 @@ describe("draftsStore.deleteDraft", () => {
 
     await store.getState().deleteDraft("a");
 
-    expect(store.getState().drafts.map((d) => d.id)).toEqual(["a"]);
+    expect(ids(store.getState())).toEqual(["a"]);
   });
 });

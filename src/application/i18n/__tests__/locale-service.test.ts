@@ -2,18 +2,17 @@ import { ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
-import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
+import type { PreferenceStoreInterface } from '@domain/storage/preference-store-interface';
+import { PreferenceSlot } from '@domain/storage/preference-slot';
 
-const makeStore = (initial: string | null = null): KeyValueStoreInterface & { saved: string | null } => {
+const makeStore = (initial: string | null = null): PreferenceStoreInterface & { saved: string | null } => {
   const store = {
     saved: initial,
-    getItem: (): Promise<Result<string | null, Failure>> => Promise.resolve(ok(store.saved)),
-    setItem: (_key: string, value: string): Promise<Result<void, Failure>> => {
+    get: (): Promise<Result<string | null, Failure>> => Promise.resolve(ok(store.saved)),
+    set: (_slot: string, value: string): Promise<Result<void, Failure>> => {
       store.saved = value;
       return Promise.resolve(ok(undefined));
     },
-    removeItem: (): Promise<Result<void, Failure>> => Promise.resolve(ok(undefined)),
   };
   return store;
 };
@@ -56,20 +55,20 @@ describe('LocaleService', () => {
   // after the first call — not a storage hit per request.
   it('reads storage once however often hydrate is awaited', async () => {
     const store = makeStore('tr');
-    const getItem = jest.spyOn(store, 'getItem');
+    const get = jest.spyOn(store, 'get');
     const service = new LocaleService(store, deviceLocale('en'));
 
     await Promise.all([service.hydrate(), service.hydrate()]);
     await service.hydrate();
 
-    expect(getItem).toHaveBeenCalledTimes(1);
+    expect(get).toHaveBeenCalledTimes(1);
     expect(service.getLocale()).toBe('tr');
   });
 
   it('keeps the device seed when the storage read fails, and retries on the next hydrate', async () => {
     const store = makeStore('en');
-    const getItem = jest
-      .spyOn(store, 'getItem')
+    const get = jest
+      .spyOn(store, 'get')
       .mockRejectedValueOnce(new Error('storage unavailable'));
     const service = new LocaleService(store, deviceLocale('tr'));
 
@@ -79,7 +78,7 @@ describe('LocaleService', () => {
     // A failed read must not be cached as "hydrated" — the next request retries.
     await service.hydrate();
 
-    expect(getItem).toHaveBeenCalledTimes(2);
+    expect(get).toHaveBeenCalledTimes(2);
     expect(service.getLocale()).toBe('en');
   });
 
@@ -134,13 +133,13 @@ describe('LocaleService', () => {
     expect(listener).not.toHaveBeenCalled();
   });
 
-  it('reads and writes the persisted choice under the shared storage key', async () => {
+  it('reads and writes the persisted choice under the language slot', async () => {
     const store = makeStore(null);
     const service = new LocaleService(store, deviceLocale('en'));
-    const setItem = jest.spyOn(store, 'setItem');
+    const set = jest.spyOn(store, 'set');
 
     service.setLocale('tr');
 
-    expect(setItem).toHaveBeenCalledWith(LANGUAGE_STORAGE_KEY, 'tr');
+    expect(set).toHaveBeenCalledWith(PreferenceSlot.Language, 'tr');
   });
 });

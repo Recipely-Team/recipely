@@ -6,6 +6,7 @@ import { ValueConstants } from '@core/constants';
 import { DmRuleLimits } from '@domain/instagram/dm/dm-rule-limits';
 import { DmMessageToken } from '@domain/instagram/dm/dm-message-token';
 import type { DmKeywords } from '@domain/instagram/dm/dm-keywords';
+import type { DmRuleChanges } from '@domain/instagram/dm/dm-rule-changes';
 
 /** What the editor collected. */
 interface DmRuleInput {
@@ -34,6 +35,11 @@ export class DmRuleDraft {
     readonly dmText: string,
     readonly publicReplyText: string | null,
   ) {}
+
+  /** The edit an existing rule takes — everything but the post, which never changes. */
+  asChanges(): DmRuleChanges {
+    return { keywords: this.keywords, recipeId: this.recipeId, dmText: this.dmText, publicReplyText: this.publicReplyText };
+  }
 
   static isDmTextValid(text: string): boolean {
     return text.trim().length > ValueConstants.zero && text.length <= DmRuleLimits.DmTextMax && text.includes(DmMessageToken.Link);

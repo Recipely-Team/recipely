@@ -1,10 +1,9 @@
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
-import type { CreatorsListState } from '@application/creators/list/creators-list-state';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 export interface CreatorsStoreState {
-  /** The strip's items, most-followed first. Empty means the strip is hidden. */
-  creators: CreatorSummaryEntity[];
-  listState: CreatorsListState;
+  /** The strip, most-followed first. Loaded and empty means the strip is hidden. */
+  creators: PagedList<CreatorSummaryEntity>;
   /** First load. A no-op while a load is in flight or once the strip is loaded. */
   load: () => Promise<void>;
   /** Re-reads the first page; the rows on screen stay until the answer lands. */

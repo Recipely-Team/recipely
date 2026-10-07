@@ -122,6 +122,29 @@ describe('PagedListLoader', () => {
     expect(list.status === 'loaded' && list.items[2]?.label).toBe('edited');
   });
 
+  /**
+   * The symptom: deleting a draft and then scrolling skipped a draft the user
+   * never saw. `removeItem` kept `page`, so the next page asked the old offset
+   * while every later server row had moved up by one.
+   */
+  it('a next page after deleting rows does not skip the rows that moved up', async () => {
+    const server = ['a', 'b', 'c', 'd', 'e', 'f'];
+    const fetch = (page: number) =>
+      Promise.resolve(pageOf(page, server.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), server.length));
+    const { loader, read } = makeLoader();
+    await loader.load(fetch);
+    await loader.loadMore();
+    for (const id of ['a', 'b', 'c']) {
+      server.splice(server.indexOf(id), 1);
+      loader.removeItem(id);
+    }
+    await loader.loadMore();
+    await loader.loadMore();
+
+    expect(ids(read())).toEqual(['d', 'e', 'f']);
+    expect(read()).toMatchObject({ hasMore: false });
+  });
+
   it('edits nothing before the list has loaded', () => {
     const { loader, read } = makeLoader();
     loader.upsertItem({ id: 'a' });

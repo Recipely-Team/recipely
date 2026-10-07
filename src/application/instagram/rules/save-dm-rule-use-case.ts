@@ -13,11 +13,6 @@ export class SaveDmRuleUseCase {
 
   execute(draft: DmRuleDraft, ruleId: string | null): Promise<Result<DmRuleEntity, Failure>> {
     if (ruleId === null) return this.repo.createRule(draft);
-    return this.repo.updateRule(ruleId, {
-      keywords: draft.keywords,
-      recipeId: draft.recipeId,
-      dmText: draft.dmText,
-      publicReplyText: draft.publicReplyText,
-    });
+    return this.repo.updateRule(ruleId, draft.asChanges());
   }
 }

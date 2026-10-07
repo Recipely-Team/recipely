@@ -29,10 +29,17 @@ type PageFetch<T> = (page: number) => Promise<Result<Page<T>, Failure>>;
  *   while it fetches and keeps its rows when the fetch fails.
  * - **`removeItem` / `upsertItem` edit a loaded list in place**, keeping
  *   `total` in step (never below zero); before a list loads they do nothing.
+ * - **A next page after removals re-reads from the shifted offset**: each
+ *   removed row moved every later server row up by one, so asking `page + 1`
+ *   would skip as many rows as were removed. The overlap it re-reads is
+ *   de-duplicated by key.
  */
 export class PagedListLoader<T> {
   private generation = ValueConstants.zero;
   private fetchPage: PageFetch<T> | null = null;
+  private pageSize = ValueConstants.zero;
+  /** Rows removed since the last page landed; the server's offsets moved by this much. */
+  private removed = ValueConstants.zero;
 
   constructor(
     private readonly read: () => PagedList<T>,
@@ -50,6 +57,7 @@ export class PagedListLoader<T> {
 
   settle(token: number, result: Result<Page<T>, Failure>): void {
     if (token !== this.generation) return;
+    if (result.ok) this.landed(result.value);
     this.write(result.ok ? loadedList(result.value) : { status: StoreStatus.Error, failure: result.failure });
   }
 
@@ -64,11 +72,13 @@ export class PagedListLoader<T> {
     const fetchPage = this.fetchPage;
     if (fetchPage === null || current.status !== StoreStatus.Loaded || !current.hasMore || current.isLoadingMore) return;
     const token = this.generation;
+    const removedBefore = this.removed;
     this.write({ ...current, isLoadingMore: true, moreFailure: null });
-    const result = await fetchPage(current.page + ValueConstants.one);
+    const result = await fetchPage(this.nextPage(current.page));
     if (token !== this.generation) return;
     const latest = this.read();
     if (latest.status !== StoreStatus.Loaded) return;
+    if (result.ok) this.landed(result.value, removedBefore);
     this.write(result.ok ? appendedList(latest, result.value, this.keyOf) : { ...latest, isLoadingMore: false, moreFailure: result.failure });
   }
 
@@ -85,6 +95,7 @@ export class PagedListLoader<T> {
     if (token !== this.generation) return null;
     const latest = this.read();
     if (result.ok) {
+      this.landed(result.value);
       this.write(loadedList(result.value));
       return null;
     }
@@ -97,6 +108,7 @@ export class PagedListLoader<T> {
     if (current.status !== StoreStatus.Loaded) return;
     const items = current.items.filter((item) => this.keyOf(item) !== key);
     if (items.length === current.items.length) return;
+    this.removed += ValueConstants.one;
     this.write({ ...current, items, total: Math.max(ValueConstants.zero, current.total - ValueConstants.one) });
   }
 
@@ -117,6 +129,20 @@ export class PagedListLoader<T> {
   reset(): void {
     this.generation += ValueConstants.one;
     this.fetchPage = null;
+    this.removed = ValueConstants.zero;
     this.write({ status: StoreStatus.Idle });
+  }
+
+  /** The 1-based page holding the first row not loaded yet, after the removals since the last page. */
+  private nextPage(loadedPage: number): number {
+    if (this.pageSize <= ValueConstants.zero) return loadedPage + ValueConstants.one;
+    const offset = Math.max(ValueConstants.zero, loadedPage * this.pageSize - this.removed);
+    return Math.floor(offset / this.pageSize) + ValueConstants.one;
+  }
+
+  /** A page arrived: its size sets the paging stride, and the removals it already reflects are settled. */
+  private landed(page: Page<T>, removedBefore: number = this.removed): void {
+    this.pageSize = page.pageSize;
+    this.removed -= removedBefore;
   }
 }

@@ -40,8 +40,7 @@ import type { AddCommentUseCase } from '@application/comments/add/add-comment-us
 import type { CommentsStoreState } from '@application/comments/comments-store-state';
 import type { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import type { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
-import type { LikeCommentUseCase } from '@application/comments/like/like-comment-use-case';
-import type { UnlikeCommentUseCase } from '@application/comments/like/unlike-comment-use-case';
+import type { SetCommentLikeUseCase } from '@application/comments/like/set-comment-like-use-case';
 import type { AuthStoreState } from '@application/auth/auth-store-state';
 import type { RecipeDetailStoreState } from '@application/recipes/detail/recipe-detail-store-state';
 import { AuthSessionEntity } from '@domain/auth/auth-session-entity';
@@ -145,17 +144,16 @@ const buildSession = (userId: string): AuthSessionEntity => {
 /**
  * Builds a real comments store whose `addComment` is backed by the given fake
  * use-case result — so `byRecipe[id].error` is written by the production
- * `createAddCommentAction`, not by the test.
+ * `addComment` action, not by the test.
  */
 const makeRealCommentsStore = (
   execute: jest.Mock<Promise<Result<CommentEntity, Failure>>, [{ recipeId: string; body: string }]>,
 ): BoundStore<CommentsStoreState> =>
   configureCommentsStore({
     addComment: { execute } as unknown as AddCommentUseCase,
-    listComments: { execute: jest.fn() } as unknown as ListCommentsUseCase,
+    listComments: { execute: jest.fn().mockResolvedValue(fail(new NetworkFailure('not stubbed'))) } as unknown as ListCommentsUseCase,
     deleteComment: { execute: jest.fn() } as unknown as DeleteCommentUseCase,
-    likeComment: { execute: jest.fn() } as unknown as LikeCommentUseCase,
-    unlikeComment: { execute: jest.fn() } as unknown as UnlikeCommentUseCase,
+    setCommentLike: { execute: jest.fn() } as unknown as SetCommentLikeUseCase,
   });
 
 /**

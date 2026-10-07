@@ -1,16 +1,17 @@
 import { ok } from '@core/result/result-helpers';
 import { SignInWithAppleUseCase } from '@application/auth/sign-in/sign-in-with-apple-use-case';
 import { SignInWithGoogleUseCase } from '@application/auth/sign-in/sign-in-with-google-use-case';
-import { AddCommentUseCase } from '@application/comments/add/add-comment-use-case';
 import { DeleteCommentUseCase } from '@application/comments/delete/delete-comment-use-case';
 import { ListCommentsUseCase } from '@application/comments/list/list-comments-use-case';
 import { SearchProductsUseCase } from '@application/diary/foods/search/search-products-use-case';
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
-import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
+import { SetFollowingUseCase } from '@application/user-profile/follow/set-following-use-case';
+import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
+import { PageSizes } from '@application/config/page-sizes';
 import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
@@ -41,16 +42,18 @@ const filters = { cuisines: ['ITALIAN'] };
 const CASES: readonly Delegation[] = [
   { name: 'SignInWithApple', build: (r) => new SignInWithAppleUseCase(r), method: 'signInWithApple', args: [], forwarded: [] },
   { name: 'SignInWithGoogle', build: (r) => new SignInWithGoogleUseCase(r), method: 'signInWithGoogle', args: [], forwarded: [] },
-  { name: 'AddComment', build: (r) => new AddCommentUseCase(r), method: 'add', args: [{ recipeId: 'r1', body: 'yum' }], forwarded: ['r1', 'yum'] },
   { name: 'DeleteComment', build: (r) => new DeleteCommentUseCase(r), method: 'remove', args: [{ recipeId: 'r1', commentId: 'c1' }], forwarded: ['r1', 'c1'] },
-  { name: 'ListComments', build: (r) => new ListCommentsUseCase(r), method: 'listByRecipe', args: [{ recipeId: 'r1', page: 2, pageSize: 20 }], forwarded: ['r1', 2, 20] },
+  { name: 'ListComments', build: (r) => new ListCommentsUseCase(r), method: 'listByRecipe', args: ['r1', 2], forwarded: ['r1', 2, PageSizes.comments] },
   { name: 'SearchProducts', build: (r) => new SearchProductsUseCase(r), method: 'searchProducts', args: ['oat', 3, 20], forwarded: ['oat', 3, 20] },
   { name: 'AddFavorite', build: (r) => new AddFavoriteUseCase(r), method: 'addFavorite', args: ['u1', 'r1'], forwarded: ['u1', 'r1'] },
   { name: 'LoadFavorites', build: (r) => new LoadFavoritesUseCase(r), method: 'listFavorites', args: [], forwarded: [] },
   { name: 'RemoveFavorite', build: (r) => new RemoveFavoriteUseCase(r), method: 'removeFavorite', args: ['u1', 'r1'], forwarded: ['u1', 'r1'] },
-  { name: 'LikeRecipe', build: (r) => new LikeRecipeUseCase(r), method: 'like', args: ['r1'], forwarded: ['r1'] },
   { name: 'LoadLikedRecipes', build: (r) => new LoadLikedRecipesUseCase(r), method: 'listLiked', args: [], forwarded: [] },
-  { name: 'UnlikeRecipe', build: (r) => new UnlikeRecipeUseCase(r), method: 'unlike', args: ['r1'], forwarded: ['r1'] },
+  { name: 'SetRecipeLike(true)', build: (r) => new SetRecipeLikeUseCase(r), method: 'like', args: ['r1', true], forwarded: ['r1'] },
+  { name: 'SetRecipeLike(false)', build: (r) => new SetRecipeLikeUseCase(r), method: 'unlike', args: ['r1', false], forwarded: ['r1'] },
+  { name: 'SetFollowing(true)', build: (r) => new SetFollowingUseCase(r), method: 'follow', args: ['u1', true], forwarded: ['u1'] },
+  { name: 'SetFollowing(false)', build: (r) => new SetFollowingUseCase(r), method: 'unfollow', args: ['u1', false], forwarded: ['u1'] },
+  { name: 'ListUserRecipes', build: (r) => new ListUserRecipesUseCase(r), method: 'listUserRecipes', args: ['u1', 2], forwarded: ['u1', 2, PageSizes.creatorRecipes] },
   { name: 'RegisterDeviceToken', build: (r) => new RegisterDeviceTokenUseCase(r), method: 'registerDeviceToken', args: ['tok', 'android'], forwarded: ['tok', 'android'] },
   { name: 'ListNotifications', build: (r) => new ListNotificationsUseCase(r), method: 'list', args: [{ page: 3, pageSize: 20 }], forwarded: [3, 20] },
   { name: 'MarkAllRead', build: (r) => new MarkAllReadUseCase(r), method: 'markAllRead', args: [], forwarded: [] },

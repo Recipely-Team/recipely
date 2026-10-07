@@ -21,8 +21,7 @@ export const instagramStoreOf = (
   const repo = fakeInstagramRepository();
   repo.getConnection.mockResolvedValue(ok(connection));
   const store = configureInstagramStore({
-    isEnabled: () => Promise.resolve(true),
-    getConnection: new GetInstagramConnectionUseCase(repo),
+    getConnection: new GetInstagramConnectionUseCase(repo, () => Promise.resolve(true)),
     startLogin: new StartInstagramLoginUseCase(repo),
     finalize: new FinalizeInstagramLinkUseCase(repo),
     disconnect: new DisconnectInstagramUseCase(repo),

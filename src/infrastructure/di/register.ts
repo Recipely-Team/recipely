@@ -4,6 +4,7 @@ import { TOKENS } from '@application/di/tokens';
 import { HttpClient } from '@infrastructure/network/http/http-client';
 import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
+import { PreferenceStore } from '@infrastructure/storage/preference-store';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
@@ -66,10 +67,12 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     Constants.expoConfig?.version ?? null,
   );
 
+  const preferenceStore = new PreferenceStore(kvStore);
   container.register(TOKENS.KeyValueStore, () => kvStore);
+  container.register(TOKENS.PreferenceStore, () => preferenceStore);
   container.register(TOKENS.DeviceIdentity, () => deviceIdentity);
   // The single source of the active language.
-  container.register(TOKENS.LocaleService, () => new LocaleService(kvStore, new ExpoDeviceLocaleProvider()));
+  container.register(TOKENS.LocaleService, () => new LocaleService(preferenceStore, new ExpoDeviceLocaleProvider()));
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
