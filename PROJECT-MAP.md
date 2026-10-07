@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1917 source files.
+[architecture.md](architecture.md). 1924 source files.
 
 ## Layers
 
@@ -27,7 +27,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 
 - `ads/` _(1)_
 - `analytics/` _(1)_
-- `assistant/` — actions, os, session _(24)_
+- `assistant/` — actions, os, session _(25)_
 - `audio/` _(1)_
 - `auth/` _(8)_
 - `comments/` _(5)_
@@ -52,7 +52,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 ## `src/application/` — use cases, stores, DI
 
 - `ads/` _(2)_
-- `assistant/` — actions, session _(13)_
+- `assistant/` — actions, session _(16)_
 - `audio/` _(2)_
 - `auth/` — password-reset, profile, registration, session, sign-in _(17)_
 - `comments/` — add, delete, like, list _(12)_
@@ -135,7 +135,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram) — small pure helpers _(28)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(197)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(199)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 0392a4a340112ced -->
+<!-- fingerprint: 35fb0cf52004adfb -->

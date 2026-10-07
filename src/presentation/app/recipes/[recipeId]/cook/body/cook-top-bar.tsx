@@ -42,7 +42,7 @@ export const CookTopBar = ({ recipeName, onExit, onOpenIngredients, hasIngredien
           ]}
         >
           <Ionicons name="list-outline" size={iconSizes.md} color={colors.text} />
-          <ThemedText variant="label" style={[styles.pillLabel, { color: colors.text }]}>
+          <ThemedText variant="caption" style={[styles.pillLabel, { color: colors.text }]}>
             {t().cookMode.ingredients}
           </ThemedText>
         </Pressable>

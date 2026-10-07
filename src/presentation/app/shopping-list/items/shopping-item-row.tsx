@@ -1,13 +1,14 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { CharConstants, ValueConstants } from '@core/constants';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import { shoppingAmountText } from '@domain/shopping/items/shopping-amount-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { TickBox } from '@presentation/base/widgets/inputs/tick-box';
 import { RoundIconButton } from '@presentation/base/widgets/buttons/round-icon-button';
-import { borderWidths, controlSizes, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
+import { ShoppingCopyToken } from '@presentation/app/shopping-list/model/shopping-copy-token';
 
 export interface ShoppingItemRowProps {
   item: ShoppingItemEntity;
@@ -32,36 +33,32 @@ export const ShoppingItemRow = ({ item, onToggle, onEdit, onRemove }: ShoppingIt
         onPress={() => onToggle(item)}
         accessibilityRole="checkbox"
         accessibilityState={{ checked: item.checked }}
-        accessibilityLabel={(item.checked ? copy.uncheck : copy.check).replace('{name}', item.label)}
+        accessibilityLabel={(item.checked ? copy.uncheck : copy.check).replace(ShoppingCopyToken.name, item.label)}
         style={({ pressed }) => [styles.tick, { opacity: pressed ? opacities.pressed : opacities.full }]}
       >
-        <Ionicons
-          name={item.checked ? 'checkmark-circle' : 'ellipse-outline'}
-          size={iconSizes.lg}
-          color={item.checked ? colors.primary : colors.textMuted}
-        />
+        <TickBox checked={item.checked} />
         <View style={styles.text}>
           <ThemedText variant="body" style={[{ color: muted }, item.checked ? styles.done : null]}>
             {amount.length > ValueConstants.zero ? `${amount}${CharConstants.middotSpaced}${item.label}` : item.label}
           </ThemedText>
           {item.recipeName === null ? null : (
             <ThemedText variant="caption" muted numberOfLines={ValueConstants.one}>
-              {copy.fromRecipe.replace('{name}', item.recipeName)}
+              {copy.fromRecipe.replace(ShoppingCopyToken.name, item.recipeName)}
             </ThemedText>
           )}
         </View>
       </Pressable>
       <RoundIconButton
         icon="create-outline"
-        accessibilityLabel={copy.edit.replace('{name}', item.label)}
+        accessibilityLabel={copy.edit.replace(ShoppingCopyToken.name, item.label)}
         onPress={() => onEdit(item)}
-        size={controlSizes.iconBtn}
+        size={controlSizes.touchTarget}
       />
       <RoundIconButton
         icon="trash-outline"
-        accessibilityLabel={copy.remove.replace('{name}', item.label)}
+        accessibilityLabel={copy.remove.replace(ShoppingCopyToken.name, item.label)}
         onPress={() => onRemove(item)}
-        size={controlSizes.iconBtn}
+        size={controlSizes.touchTarget}
       />
     </View>
   );

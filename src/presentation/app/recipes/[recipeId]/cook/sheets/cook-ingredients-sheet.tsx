@@ -30,7 +30,7 @@ export const CookIngredientsSheet = ({ visible, recipeId, recipeName, ingredient
       title={t().cookMode.ingredients}
       onClose={onClose}
       showCloseButton
-      footer={<AddToShoppingButton source={{ recipeId, recipeName, lines: ingredients }} />}
+      footer={<AddToShoppingButton source={{ recipeId, recipeName, lines: ingredients }} inCard={false} />}
     >
       {ingredients.map((line, i) => (
         <View

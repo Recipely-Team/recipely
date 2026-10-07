@@ -68,7 +68,7 @@ export const RecipeSteps = ({
             />
           ),
         )}
-        <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} />
+        <AddToShoppingButton source={{ recipeId, recipeName: recipe.name, lines: portions.ingredients }} inCard={false} />
       </View>
 
       <SectionHeader title={t().recipes.instructions} count={recipe.instructions.length} />

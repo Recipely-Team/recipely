@@ -33,6 +33,7 @@ export const ShoppingAddField = ({ value, onChangeText, onSubmit, isAdding }: Sh
       <Pressable
         onPress={onSubmit}
         disabled={disabled}
+        hitSlop={spacing.xs}
         accessibilityRole="button"
         accessibilityLabel={copy.add}
         accessibilityState={{ disabled, busy: isAdding }}

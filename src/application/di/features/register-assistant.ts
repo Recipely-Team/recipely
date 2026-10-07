@@ -5,6 +5,8 @@ import type { AssistantMicrophone, AssistantPlayer, AssistantSession } from '@li
 import type { LiveSessionCredentials } from '@domain/assistant/session/live-session-credentials';
 import type { AssistantTokenRepositoryInterface } from '@domain/assistant/session/assistant-token-repository-interface';
 import { configureAssistantSessionStore } from '@application/assistant/session/assistant-session-store';
+import { AskAssistantUseCase } from '@application/assistant/session/ask-assistant-use-case';
+import { RunAssistantActionUseCase } from '@application/assistant/actions/run-assistant-action-use-case';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -23,8 +25,11 @@ export const registerAssistant = (
     microphone: container.resolve<AssistantMicrophone>(TOKENS.AssistantMicrophone),
     player: container.resolve<AssistantPlayer>(TOKENS.AssistantPlayer),
     tokens: container.resolve<AssistantTokenRepositoryInterface>(TOKENS.AssistantTokenRepository),
-    messenger: container.resolve<AssistantMessengerInterface>(TOKENS.AssistantMessenger),
     registry: assistantActionRegistry,
+    askAssistant: new AskAssistantUseCase(
+      container.resolve<AssistantMessengerInterface>(TOKENS.AssistantMessenger),
+    ),
+    runAction: new RunAssistantActionUseCase(assistantActionRegistry),
   });
   return {
     assistantSessionStore,

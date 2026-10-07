@@ -12,7 +12,7 @@ import { MealCandidateRow } from '@presentation/base/widgets/diary/add-food/meal
 import type { MealLog } from '@presentation/base/widgets/diary/add-food/meal/state/meal-log';
 import type { MealReviewRow } from '@presentation/base/widgets/diary/add-food/meal/state/meal-review-row';
 import { formatWholeNumber } from '@presentation/base/utils/diary/format-whole-number';
-import { controlSizes, fontSizes, fontWeights, iconSizes, radii, spacing } from '@presentation/base/theme';
+import { controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { t, useLocale } from '@presentation/i18n';
 
 export interface MealConfirmListProps {
@@ -55,7 +55,11 @@ export const MealConfirmList = ({ log, rows, note, initialMeal, isSubmitting }: 
       </SizedText>
       <MealPicker value={meal} onChange={setMeal} />
       <PrimaryButton label={addLabel} onPress={() => void log.add(meal)} disabled={log.selectedCount === ValueConstants.zero} loading={isSubmitting} />
-      <Pressable onPress={log.edit} accessibilityRole="button" style={styles.startOver}>
+      <Pressable
+        onPress={log.edit}
+        accessibilityRole="button"
+        style={({ pressed }) => [styles.startOver, { opacity: pressed ? opacities.pressedSubtle : opacities.full }]}
+      >
         <SizedText size={fontSizes.caption} weight={fontWeights.bold} color={colors.primary}>
           {strings.mealLogStartOver}
         </SizedText>

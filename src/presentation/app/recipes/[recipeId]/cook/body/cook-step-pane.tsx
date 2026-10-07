@@ -5,7 +5,7 @@ import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actio
 import { useHorizontalSwipe } from '@presentation/base/hooks/interaction/use-horizontal-swipe';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useLayout } from '@presentation/base/responsive/use-layout';
-import { borderWidths, controlSizes, fontWeights, iconSizes, lineHeightFor, lineHeights, radii, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, fontWeights, iconSizes, lineHeightFor, lineHeights, opacities, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants, ValueConstants } from '@core/constants';
 import { CookStepTimer } from '@presentation/app/recipes/[recipeId]/cook/items/cook-step-timer';
@@ -59,15 +59,16 @@ export const CookStepPane = (props: CookStepPaneProps): React.JSX.Element => {
           accessibilityState={{ checked: isDone }}
           accessibilityLabel={isDone ? t().cookMode.markUndone : t().cookMode.markDone}
           onPress={onToggleDone}
-          style={[
+          style={({ pressed }) => [
             styles.done,
             isDone
               ? { backgroundColor: colors.success, borderColor: colors.success }
-              : { backgroundColor: colors.surface, borderColor: colors.cardBorder },
+              : { backgroundColor: colors.surface, borderColor: colors.border },
+            { opacity: pressed ? opacities.pressed : opacities.full },
           ]}
         >
-          <Ionicons name="checkmark" size={iconSizes.md} color={isDone ? colors.onSuccess : colors.textMuted} />
-          <ThemedText variant="label" style={[styles.doneLabel, { color: isDone ? colors.onSuccess : colors.textMuted }]}>
+          <Ionicons name="checkmark" size={iconSizes.md} color={isDone ? colors.onSuccess : colors.text} />
+          <ThemedText variant="caption" style={[styles.doneLabel, { color: isDone ? colors.onSuccess : colors.text }]}>
             {t().cookMode.stepDone}
           </ThemedText>
         </Pressable>
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.xs,
-    minHeight: controlSizes.iconBtn,
+    minHeight: controlSizes.touchTarget,
     paddingHorizontal: spacing.md,
     borderRadius: radii.round,
     borderWidth: borderWidths.hairline,

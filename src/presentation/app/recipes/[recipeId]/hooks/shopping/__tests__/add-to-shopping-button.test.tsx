@@ -31,7 +31,7 @@ const render = (signedIn: boolean, lines: readonly string[]) => {
   const repo = fakeShoppingRepository();
   repo.add.mockResolvedValue(ok({ items: [], added: 2, merged: 1 }));
   const stores = { shoppingListStore: shoppingStoreOf(repo), authStore: authStoreOf(signedIn ? viewer() : null) } as unknown as Partial<ApplicationStores>;
-  const { root } = renderComponent(<AddToShoppingButton source={{ recipeId: 'r1', recipeName: 'Pancakes', lines }} />, stores);
+  const { root } = renderComponent(<AddToShoppingButton source={{ recipeId: 'r1', recipeName: 'Pancakes', lines }} inCard={false} />, stores);
   return { root, repo };
 };
 
