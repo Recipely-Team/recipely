@@ -15,7 +15,6 @@ import { InstagramRepository } from '@infrastructure/instagram/instagram-reposit
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
-import { HealthCheckService } from '@infrastructure/network/health-check-service';
 import { CommentRepository } from '@infrastructure/comments/comment-repository';
 import { LikeRepository } from '@infrastructure/likes/like-repository';
 import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
@@ -69,8 +68,6 @@ interface InfrastructureOptions {
 
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();
-  container.register(TOKENS.SecureStorage, () => storage);
-
   container.register(TOKENS.KeyValueStore, () => kvStore);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
@@ -199,8 +196,6 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
     const repo = container.resolve<FavoritesRepository>(TOKENS.FavoritesRepository);
     return new LoadFavoritesUseCase(repo);
   });
-
-  container.register(TOKENS.HealthCheckService, () => new HealthCheckService());
 
   container.register(TOKENS.CommentRepository, () => {
     const http = container.resolve<HttpClient>(TOKENS.HttpClient);
