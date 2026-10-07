@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1918 source files.
+[architecture.md](architecture.md). 1923 source files.
 
 ## Layers
 
@@ -46,7 +46,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` _(11)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, recipe _(13)_
-- `storage/` _(1)_
+- `storage/` _(3)_
 - `user-profile/` _(5)_
 
 ## `src/application/` — use cases, stores, DI
@@ -71,7 +71,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
 - `shopping/` — read, write _(11)_
-- `storage/` _(2)_
+- `storage/` _(4)_
 - `store/` — paging _(10)_
 - `timers/` _(7)_
 - `user-profile/` — follow, recipes _(11)_
@@ -103,7 +103,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — dtos _(10)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
 - `shopping/` — dtos _(10)_
-- `storage/` _(6)_
+- `storage/` _(7)_
 - `user-profile/` _(4)_
 
 ## `src/core/` — building blocks only
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: d7ddca53645f6bbc -->
+<!-- fingerprint: 53a594fde5f37fc1 -->

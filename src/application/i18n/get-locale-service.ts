@@ -1,7 +1,7 @@
 import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { LocaleService } from '@application/i18n/locale-service';
-import { noopKeyValueStore } from '@application/storage/noop-key-value-store';
+import { noopPreferenceStore } from '@application/storage/noop-preference-store';
 import { DEFAULT_LOCALE } from '@application/i18n/supported-locales';
 
 /**
@@ -19,6 +19,6 @@ export const getLocaleService = (): LocaleService => {
   if (container.has(TOKENS.LocaleService)) {
     return container.resolve<LocaleService>(TOKENS.LocaleService);
   }
-  fallback ??= new LocaleService(noopKeyValueStore, { getDeviceLocale: () => DEFAULT_LOCALE });
+  fallback ??= new LocaleService(noopPreferenceStore, { getDeviceLocale: () => DEFAULT_LOCALE });
   return fallback;
 };

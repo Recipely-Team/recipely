@@ -29,6 +29,7 @@ export const TOKENS = {
   FeedbackRepository: Symbol.for('FeedbackRepository'),
   FeatureFlagResolver: Symbol.for('FeatureFlagResolver'),
   KeyValueStore: Symbol.for('KeyValueStore'),
+  PreferenceStore: Symbol.for('PreferenceStore'),
   DeviceIdentity: Symbol.for('DeviceIdentity'),
   DeviceRepository: Symbol.for('DeviceRepository'),
   LocaleService: Symbol.for('LocaleService'),

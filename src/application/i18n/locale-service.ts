@@ -1,7 +1,7 @@
 import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
+import type { PreferenceStoreInterface } from '@domain/storage/preference-store-interface';
+import { PreferenceSlot } from '@domain/storage/preference-slot';
 import { toSupportedLocale } from '@application/i18n/supported-locales';
-import { LANGUAGE_STORAGE_KEY } from '@infrastructure/constants/storage';
 
 /**
  * The single source of truth for the app's active language.
@@ -25,7 +25,7 @@ export class LocaleService {
   private readonly listeners = new Set<() => void>();
 
   constructor(
-    private readonly store: KeyValueStoreInterface,
+    private readonly store: PreferenceStoreInterface,
     deviceLocaleProvider: DeviceLocaleProviderInterface,
   ) {
     this.current = toSupportedLocale(deviceLocaleProvider.getDeviceLocale());
@@ -58,7 +58,7 @@ export class LocaleService {
    */
   private async restore(): Promise<void> {
     try {
-      const read = await this.store.getItem(LANGUAGE_STORAGE_KEY);
+      const read = await this.store.get(PreferenceSlot.Language);
       // A failed read and an unset language both fall back to the device locale.
       const stored = read.ok ? read.value : null;
       if (stored === null || this.chosenByUser) return;
@@ -73,7 +73,7 @@ export class LocaleService {
     const next = toSupportedLocale(locale);
     this.chosenByUser = true;
     if (!this.apply(next)) return;
-    void this.store.setItem(LANGUAGE_STORAGE_KEY, next);
+    void this.store.set(PreferenceSlot.Language, next);
   }
 
   /** Subscribes to language changes (backs `useSyncExternalStore` in presentation). */

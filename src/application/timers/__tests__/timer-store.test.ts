@@ -1,23 +1,17 @@
 /**
  * Timer store unit tests.
  */
-/* eslint-disable import/first -- jest.mock() must be hoisted above imports */
-
-jest.mock('@infrastructure/constants/storage', () => ({
-  SESSION_STORAGE_KEY: 'recipely.session.v1',
-  TIMERS_STORAGE_KEY: 'recipely.timers.v1',
-}));
-
 import { container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
-import { FakeKeyValueStore } from '@application/__fixtures__/fake-key-value-store';
+import { FakePreferenceStore } from '@application/__fixtures__/fake-preference-store';
+import { PreferenceSlot } from '@domain/storage/preference-slot';
 import { timerStore } from '@application/timers/timer-store';
 import type { TimerEntry } from '@application/timers/timer-entry';
 
-// Register the shared in-memory key-value store under the DI token so the
-// store's `getKeyValueStore()` accessor resolves it instead of the platform
+// Register the in-memory preference store under the DI token so the
+// store's `getPreferenceStore()` accessor resolves it instead of the platform
 // backend. `peek`/`seed` read and plant the persisted JSON in assertions.
-const fakeKvStore = new FakeKeyValueStore();
+const fakePrefs = new FakePreferenceStore();
 
 const makeEntry = (overrides: Partial<TimerEntry> = {}): TimerEntry => ({
   id: 'recipe1:step0:5min',
@@ -32,9 +26,9 @@ const makeEntry = (overrides: Partial<TimerEntry> = {}): TimerEntry => ({
 });
 
 const resetAll = (): void => {
-  container.register(TOKENS.KeyValueStore, () => fakeKvStore);
+  container.register(TOKENS.PreferenceStore, () => fakePrefs);
   timerStore.setState({ timers: {}, hydrated: false });
-  fakeKvStore.clear();
+  fakePrefs.clear();
 };
 
 describe('timerStore', () => {
@@ -50,7 +44,7 @@ describe('timerStore', () => {
     it('persists to kv-store', async () => {
       const entry = makeEntry();
       await timerStore.getState().add(entry);
-      const persisted = JSON.parse(fakeKvStore.peek('recipely.timers.v1') ?? '{}') as Record<string, TimerEntry>;
+      const persisted = JSON.parse(fakePrefs.peek(PreferenceSlot.Timers) ?? '{}') as Record<string, TimerEntry>;
       expect(persisted[entry.id]).toEqual(entry);
     });
 
@@ -69,7 +63,7 @@ describe('timerStore', () => {
       await timerStore.getState().add(entry);
       await timerStore.getState().remove(entry.id);
       expect(timerStore.getState().timers[entry.id]).toBeUndefined();
-      const persisted = JSON.parse(fakeKvStore.peek('recipely.timers.v1') ?? '{}') as Record<string, TimerEntry>;
+      const persisted = JSON.parse(fakePrefs.peek(PreferenceSlot.Timers) ?? '{}') as Record<string, TimerEntry>;
       expect(persisted[entry.id]).toBeUndefined();
     });
 
@@ -94,7 +88,7 @@ describe('timerStore', () => {
       const entry = makeEntry({ endTimeMs: Date.now() + 60_000 });
       await timerStore.getState().add(entry);
       await timerStore.getState().pause(entry.id);
-      const persisted = JSON.parse(fakeKvStore.peek('recipely.timers.v1') ?? '{}') as Record<string, TimerEntry>;
+      const persisted = JSON.parse(fakePrefs.peek(PreferenceSlot.Timers) ?? '{}') as Record<string, TimerEntry>;
       expect(persisted[entry.id]?.isPaused).toBe(true);
     });
 
@@ -126,7 +120,7 @@ describe('timerStore', () => {
       await timerStore.getState().add(entry);
       const newEnd = Date.now() + 30_000;
       await timerStore.getState().resume(entry.id, newEnd);
-      const persisted = JSON.parse(fakeKvStore.peek('recipely.timers.v1') ?? '{}') as Record<string, TimerEntry>;
+      const persisted = JSON.parse(fakePrefs.peek(PreferenceSlot.Timers) ?? '{}') as Record<string, TimerEntry>;
       expect(persisted[entry.id]?.isPaused).toBe(false);
       expect(persisted[entry.id]?.endTimeMs).toBe(newEnd);
     });
@@ -152,27 +146,27 @@ describe('timerStore', () => {
 
     it('restores active timers', async () => {
       const entry = makeEntry({ endTimeMs: Date.now() + 300_000 });
-      fakeKvStore.seed('recipely.timers.v1', JSON.stringify({ [entry.id]: entry }));
+      fakePrefs.seed(PreferenceSlot.Timers, JSON.stringify({ [entry.id]: entry }));
       await timerStore.getState().hydrate();
       expect(timerStore.getState().timers[entry.id]).toBeDefined();
     });
 
     it('keeps expired timers so the alarm can be triggered', async () => {
       const entry = makeEntry({ endTimeMs: Date.now() - 1000, isPaused: false });
-      fakeKvStore.seed('recipely.timers.v1', JSON.stringify({ [entry.id]: entry }));
+      fakePrefs.seed(PreferenceSlot.Timers, JSON.stringify({ [entry.id]: entry }));
       await timerStore.getState().hydrate();
       expect(timerStore.getState().timers[entry.id]).toBeDefined();
     });
 
     it('keeps paused timers regardless of endTimeMs', async () => {
       const entry = makeEntry({ endTimeMs: Date.now() - 5000, isPaused: true, remainingMsOnPause: 60_000 });
-      fakeKvStore.seed('recipely.timers.v1', JSON.stringify({ [entry.id]: entry }));
+      fakePrefs.seed(PreferenceSlot.Timers, JSON.stringify({ [entry.id]: entry }));
       await timerStore.getState().hydrate();
       expect(timerStore.getState().timers[entry.id]?.isPaused).toBe(true);
     });
 
     it('handles corrupt storage without throwing', async () => {
-      fakeKvStore.seed('recipely.timers.v1', 'NOT_VALID_JSON{{');
+      fakePrefs.seed(PreferenceSlot.Timers, 'NOT_VALID_JSON{{');
       await expect(timerStore.getState().hydrate()).resolves.not.toThrow();
       expect(timerStore.getState().hydrated).toBe(true);
     });
@@ -183,7 +177,7 @@ describe('timerStore', () => {
         const e = makeEntry({ id: `r${String(i)}:step0:5min`, recipeId: `r${String(i)}` });
         entries[e.id] = e;
       }
-      fakeKvStore.seed('recipely.timers.v1', JSON.stringify(entries));
+      fakePrefs.seed(PreferenceSlot.Timers, JSON.stringify(entries));
       await timerStore.getState().hydrate();
       expect(Object.keys(timerStore.getState().timers)).toHaveLength(5);
     });
