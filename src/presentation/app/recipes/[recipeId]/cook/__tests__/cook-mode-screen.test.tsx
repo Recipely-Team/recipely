@@ -11,6 +11,7 @@ import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import type { StoresType } from '@presentation/bootstrap/stores';
 import { startTimer } from '@presentation/base/timers/timer-controls';
+import { timerStore } from '@application/timers/timer-store';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CookModeScreen } from '@presentation/app/recipes/[recipeId]/cook';
@@ -110,6 +111,28 @@ describe('CookModeScreen', () => {
     expect(texts(root)).not.toContain(timerLabel);
     pressButton(root, t().cookMode.next);
     expect(texts(root)).toContain(timerLabel);
+  });
+
+  it('keeps a step timer that is still counting in view after moving on', () => {
+    timerStore.setState({
+      timers: {
+        'r1:step2:10min': {
+          id: 'r1:step2:10min',
+          recipeId: 'r1',
+          recipeName: 'Soup',
+          durationSeconds: 600,
+          endTimeMs: Date.now() + 300_000,
+          isPaused: true,
+          remainingMsOnPause: 300_000,
+          completionNotifIds: [],
+        },
+      },
+    });
+    const { root } = setup();
+    pressButton(root, t().cookMode.next);
+    pressButton(root, t().cookMode.next);
+    expect(texts(root)).toEqual(expect.arrayContaining([STEPS[2], 'Step 2 of 3', '05:00']));
+    timerStore.setState({ timers: {} });
   });
 
   it('answers the voice assistant: next, previous, repeat and the step timer move the screen', async () => {

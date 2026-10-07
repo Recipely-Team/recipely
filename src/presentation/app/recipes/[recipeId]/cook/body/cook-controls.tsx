@@ -37,7 +37,7 @@ export const CookControls = ({ isFirst, isLast, onPrevious, onNext }: CookContro
         ]}
       >
         <Ionicons name="chevron-back" size={iconSizes.lg} color={colors.text} />
-        <ThemedText variant="subtitle" numberOfLines={ValueConstants.one} style={[styles.label, { color: colors.text }]}>
+        <ThemedText variant="body" style={[styles.label, { color: colors.text }]}>
           {t().cookMode.previous}
         </ThemedText>
       </Pressable>
@@ -51,8 +51,7 @@ export const CookControls = ({ isFirst, isLast, onPrevious, onNext }: CookContro
         ]}
       >
         <ThemedText
-          variant="subtitle"
-          numberOfLines={ValueConstants.one}
+          variant="body"
           style={[styles.label, { color: isLast ? colors.onSuccess : colors.primaryText }]}
         >
           {nextLabel}
@@ -82,10 +81,11 @@ const styles = StyleSheet.create({
     borderWidth: borderWidths.hairline,
   },
   next: {
-    flex: ValueConstants.two,
+    flex: ValueConstants.one,
   },
   label: {
     flexShrink: ValueConstants.one,
     fontWeight: fontWeights.bold,
+    textAlign: 'center',
   },
 });

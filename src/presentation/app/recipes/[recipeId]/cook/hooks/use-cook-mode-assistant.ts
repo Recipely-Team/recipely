@@ -10,7 +10,7 @@ import { SCREEN_PART_SEPARATOR } from '@presentation/base/hooks/assistant/args/d
 import { rowAt } from '@presentation/base/hooks/assistant/args/resolving/row-at';
 import { startTimer } from '@presentation/base/timers/timer-controls';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { cookStepTimerId } from '@presentation/app/recipes/[recipeId]/cook/model/cook-step-timer-id';
+import { stepTimerId } from '@presentation/base/timers/step-timer-id';
 import { resolveStepTarget } from '@presentation/app/recipes/[recipeId]/cook/model/resolve-step-target';
 import type { UseCookModeResult } from '@presentation/app/recipes/[recipeId]/cook/model/use-cook-mode-result';
 
@@ -73,7 +73,7 @@ export const useCookModeAssistant = (vm: UseCookModeResult): void => {
     AssistantAction.StartTimer,
     useCallback(async (): Promise<AssistantActionResultType> => {
       if (stepMinutes === null) return { ok: false, error: AssistantActionError.NoCookTime };
-      await startTimer(cookStepTimerId(recipeId, navigation.index, stepMinutes), recipeId, recipeName, stepMinutes);
+      await startTimer(stepTimerId(recipeId, navigation.index, stepMinutes), recipeId, recipeName, stepMinutes);
       return { ok: true, title: recipeName, n: { min: stepMinutes } };
     }, [stepMinutes, recipeId, navigation.index, recipeName]),
     isReady,

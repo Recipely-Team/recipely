@@ -76,9 +76,8 @@ export const CookModeScreen = (): React.JSX.Element => {
             <CookStepPane
               recipeId={vm.recipeId}
               recipeName={vm.recipeName}
-              step={vm.currentStep}
+              steps={vm.steps}
               index={navigation.index}
-              total={vm.steps.length}
               isDone={vm.completedSteps[navigation.index] === true}
               onToggleDone={() => vm.onToggleStep(navigation.index)}
               minutes={vm.stepMinutes}

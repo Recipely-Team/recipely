@@ -46,8 +46,14 @@ const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
  */
 const CREATOR_PROFILE_PATH = /^\/creators\/[^/]+$/;
 
+/** Cook mode reads the same public recipe as its detail page, so a guest may cook too. */
+const RECIPE_COOK_PATH = RoutePaths.recipeCookPattern;
+
 const isPublicPath = (pathname: string): boolean =>
-  PUBLIC_PATHS.has(pathname) || RECIPE_DETAIL_PATH.test(pathname) || CREATOR_PROFILE_PATH.test(pathname);
+  PUBLIC_PATHS.has(pathname) ||
+  RECIPE_DETAIL_PATH.test(pathname) ||
+  RECIPE_COOK_PATH.test(pathname) ||
+  CREATOR_PROFILE_PATH.test(pathname);
 
 /**
  * Rebuilds the path the user was actually on, query string included.

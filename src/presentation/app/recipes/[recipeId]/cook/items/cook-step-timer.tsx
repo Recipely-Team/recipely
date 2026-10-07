@@ -8,13 +8,15 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { borderWidths, controlSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { formatTimer } from '@presentation/base/utils/format-timer';
 import { t } from '@presentation/i18n';
-import { cookStepTimerId } from '@presentation/app/recipes/[recipeId]/cook/model/cook-step-timer-id';
+import { stepTimerId } from '@presentation/base/timers/step-timer-id';
 import { CookCopyToken } from '@presentation/app/recipes/[recipeId]/cook/model/cook-copy-token';
 
 export interface CookStepTimerProps {
   recipeId: string;
   recipeName: string;
   stepIndex: number;
+  /** Names a timer that is not the step on screen's ("Step 2 of 8"). */
+  caption?: string;
   minutes: number;
 }
 
@@ -25,9 +27,9 @@ export interface CookStepTimerProps {
  * The app's persistent recipe timer (`useRecipeTimer`), so it keeps counting
  * off this screen, alarms when done and shows in the app-wide timers bar.
  */
-export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes }: CookStepTimerProps): React.JSX.Element => {
+export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes, caption }: CookStepTimerProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const timer = useRecipeTimer({ timerId: cookStepTimerId(recipeId, stepIndex, minutes), recipeId, recipeName, minutes });
+  const timer = useRecipeTimer({ timerId: stepTimerId(recipeId, stepIndex, minutes), recipeId, recipeName, minutes });
 
   if (!timer.isActive) {
     const label = t().cookMode.startTimer.replace(CookCopyToken.minutes, String(minutes));
@@ -51,6 +53,11 @@ export const CookStepTimer = ({ recipeId, recipeName, stepIndex, minutes }: Cook
   return (
     <View style={[styles.running, { backgroundColor: timer.isDone ? colors.successLight : colors.surface, borderColor: colors.cardBorder }]}>
       <Ionicons name="timer-outline" size={iconSizes.lg} color={timer.isDone ? colors.success : colors.text} />
+      {caption !== undefined ? (
+        <ThemedText variant="label" style={{ color: colors.textMuted }}>
+          {caption}
+        </ThemedText>
+      ) : null}
       <ThemedText variant="title" accessibilityRole="timer" style={[styles.time, { color: colors.text }]}>
         {timer.isDone ? t().timer.done : formatTimer(timer.remainingSeconds)}
       </ThemedText>
