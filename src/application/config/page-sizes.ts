@@ -32,4 +32,6 @@ export const PageSizes = {
   instagramMedia: 9,
   /** The rule editor's recipe picker (design spec: 6 rows). */
   dmRecipes: 6,
+  /** The shopping list, per page; unchecked lines come first, so the first page is what is left to buy. */
+  shoppingList: 20,
 } as const;

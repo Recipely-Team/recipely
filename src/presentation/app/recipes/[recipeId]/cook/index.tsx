@@ -92,7 +92,13 @@ export const CookModeScreen = (): React.JSX.Element => {
           </View>
         </StateView>
       </View>
-      <CookIngredientsSheet visible={vm.isIngredientsOpen} ingredients={vm.ingredients} onClose={vm.closeIngredients} />
+      <CookIngredientsSheet
+        visible={vm.isIngredientsOpen}
+        recipeId={vm.recipeId}
+        recipeName={vm.recipeName}
+        ingredients={vm.ingredients}
+        onClose={vm.closeIngredients}
+      />
     </View>
   );
 };

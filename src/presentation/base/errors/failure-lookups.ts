@@ -61,6 +61,12 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   creatorNotPending: SeverityType.Neutral,
   instagramNotConfigured: SeverityType.Neutral,
   instagramLinkInvalid: SeverityType.Warning,
+  shoppingListFull: SeverityType.Warning,
+  shoppingListChanged: SeverityType.Neutral,
+  shoppingItemGone: SeverityType.Neutral,
+  mealParseQuotaExceeded: SeverityType.Warning,
+  mealParseUnavailable: SeverityType.Neutral,
+  mealParsePhotoUnchecked: SeverityType.Warning,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
@@ -107,6 +113,10 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   instagramAccountLinked: 'person-circle-outline',
   instagramNotConnected: 'logo-instagram',
   instagramReturnInvalid: 'link-outline',
+  shoppingListFull: 'cart-outline',
+  shoppingListChanged: 'refresh-outline',
+  shoppingItemGone: 'cart-outline',
+  contentBlocked: 'hand-left-outline',
 
   emailExists: 'mail-outline',
   codeInvalid: 'keypad-outline',
@@ -124,6 +134,14 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   resetLinkExpired: 'time-outline',
   resetLinkUsed: 'checkmark-done-outline',
   passwordTooShort: 'key-outline',
+
+  mealParseInputRequired: 'create-outline',
+  mealParseTextTooLong: 'cut-outline',
+  mealParseUnsupportedPhoto: 'image-outline',
+  mealParsePhotoRejected: 'image-outline',
+  mealParsePhotoUnchecked: 'time-outline',
+  mealParseQuotaExceeded: 'hourglass-outline',
+  mealParseUnavailable: 'cloud-offline-outline',
 };
 
 const FALLBACK_ICON: IoniconNameType = 'sad-outline';

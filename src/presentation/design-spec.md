@@ -3470,6 +3470,21 @@ portion; an unknown key shows its amount in g/ml.
 4. **Paging trigger:** `FlatList onEndReached` on mobile and web alike, not an IntersectionObserver
    sentinel; it pages the first group (in display order) that still has more.
 
+### Meal logging from text or a photo (Add food)
+
+TODO(design): meal logging to be redesigned in Claude Design. Claude Design was unavailable when it
+shipped; it is built from existing widgets. Today: a card-like row ("Describe or photograph your
+meal", `pickRowMinHeight`, chip-coloured sparkles disc) sits between the search field and the tabs
+of the pick step. It opens the meal panel in place of the tab body: an `AutoGrowTextInput`
+(`controlSizes.textArea`, 500 characters), a chip-styled photo button (camera or library via
+`askPickSource`) and a `PrimaryButton` "Find foods", with a muted line saying the values are
+estimates. While the parser reads, a spinner; a failure reuses `PickMessage` (retry, edit, or no
+action for the daily limit / unavailable). The confirm list: a `warningLight` note (estimates, and
+"some items are rough estimates" for `some_estimated`), one row per item — `checkbox` tick, label,
+`DraftTag` "Estimated" when the figures are the model's, kcal · macros for the current grams, and a
+`SuffixField` grams box (`diarySizes.mealGramsFieldWidth`) — then the `MealPicker` and
+"Add {n} to diary · {k} kcal". No health claims anywhere in the copy.
+
 ## Instagram connect + Automations (Oct 2026)
 
 **Source of truth:** the [Recipely Prototype](https://claude.ai/design/p/174d3c66-20f8-49e9-bffa-3bf97ef8aaf1?file=Recipely+Prototype.html)
@@ -3699,3 +3714,26 @@ this section with the spec that comes out of it.
   flex 1) / Next (primary, flex 2; success-green "Finish" on the last step), `controlSizes.fab` tall.
 - **Widths:** full width on a phone; a centred column capped at `layoutSizes.webModalMaxWidth` on tablet and desktop.
 - **Ingredients:** `BottomSheet` (sheet on mobile, centred dialog on the web shell), one line per ingredient.
+
+## Shopping list (Oct 2026 — interim, not from the prototype)
+
+TODO(design): shopping list to be redesigned in Claude Design
+
+Claude Design was unavailable when this shipped, so the screen is built from existing widgets and tokens only, with
+no new measurement or colour:
+
+- **Route:** `/shopping-list` (account page, `Disallow`ed in `robots.txt`). Entry points: Profile (a row under the
+  profile actions, every platform), My Recipes (a cart `RoundIconButton` beside "Create new" in both headers), and
+  the recipe page's "Add to shopping list" toast action.
+- **Screen:** a top bar (back + title; no inset or hairline in the web shell) → content capped at
+  `WEB_CONTENT_MAX_WIDTH.shoppingList` (720) on expanded viewports → the add field (`controlSizes.searchBar` min
+  height, `inputBackground` / `inputBorder`, a primary round + button) → "Clear completed" / "Clear all" pills
+  (each through `ConfirmSheet`) → "To buy (n)" then "Completed (n)" label headings → rows.
+- **Row:** card surface, hairline border, `radii.lg`; a tick (`checkmark-circle` in primary / `ellipse-outline`),
+  "amount · label" (line-through and muted when ticked), "From {recipe}" caption, edit and remove round buttons.
+  The whole left part is the tick's target.
+- **Edit:** `BottomSheet` (sheet on mobile, centred dialog on the web shell) with name, amount and unit fields and a
+  primary Save; a refusal shows the error's body copy in `danger` under the fields.
+- **Recipe page:** an outlined primary "Add to shopping list" button (`controlSizes.buttonSm`) under the
+  ingredient list on mobile, inside the ingredients card on the web sidebar, and in cook mode's ingredients sheet
+  footer. The toast counts added and merged lines and offers "View".

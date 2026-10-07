@@ -9,6 +9,8 @@ import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
 import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-changes';
 import type { FoodLogEntryEntity } from '@domain/diary/food-log-entry-entity';
 import type { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
+import type { MealParseInputType } from '@domain/diary/meal/meal-parse-input';
+import type { MealParseResult } from '@domain/diary/meal/meal-parse-result';
 
 /**
  * The signed-in user's food diary. Every call is scoped to the session's user
@@ -27,4 +29,6 @@ export interface FoodDiaryRepositoryInterface {
   /** The saved goals, or the defaults when the user never saved any. */
   getGoals(): Promise<Result<NutritionGoals, Failure>>;
   saveGoals(goals: NutritionGoals): Promise<Result<NutritionGoals, Failure>>;
+  /** Candidate diary items for a described or photographed meal; nothing is logged. */
+  parseMeal(input: MealParseInputType): Promise<Result<MealParseResult, Failure>>;
 }

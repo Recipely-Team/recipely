@@ -70,12 +70,14 @@ export const AddFoodSheet = ({ request, onClose, onOpenDiary }: AddFoodSheetProp
     return (
       <AddFoodPickStep
         initialQuery={request?.kind === AddFoodRequestKind.Pick ? (request.query ?? CharConstants.empty) : CharConstants.empty}
+        initialMealText={request?.kind === AddFoodRequestKind.Pick ? (request.mealText ?? null) : null}
         meal={flow.meal}
         isSubmitting={flow.isSubmitting}
         onChoose={flow.choose}
         onChooseProduct={flow.chooseProduct}
         onChooseRecent={flow.chooseRecent}
         onQuickAdd={(quick, meal) => void flow.submitQuickAdd(quick, meal)}
+        onLogMeal={flow.logMeal}
       />
     );
   };

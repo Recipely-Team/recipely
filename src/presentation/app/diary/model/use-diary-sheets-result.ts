@@ -10,6 +10,8 @@ export interface UseDiarySheetsResult {
   openAdd: (meal: MealSlotType | null) => void;
   /** Opens Add food on the pick step with its search already filled. */
   openSearch: (query: string) => void;
+  /** Opens Add food on its meal panel, reading `text` at once (the assistant's `logMeal`). */
+  openMealLog: (text: string) => void;
   openEdit: (entry: FoodLogEntryEntity) => void;
   closeAdd: () => void;
   openGoals: () => void;

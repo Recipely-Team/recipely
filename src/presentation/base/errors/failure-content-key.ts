@@ -59,6 +59,14 @@ export type FailureContentKeyType =
   | 'diaryFoodNameTooLong'
   | 'diaryNutrientInvalid'
   | 'diaryGoalInvalid'
+  // ── key-tier: meal logging from text or a photo ────────────────────────────
+  | 'mealParseInputRequired'
+  | 'mealParseTextTooLong'
+  | 'mealParseUnsupportedPhoto'
+  | 'mealParsePhotoRejected'
+  | 'mealParsePhotoUnchecked'
+  | 'mealParseQuotaExceeded'
+  | 'mealParseUnavailable'
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'
@@ -68,6 +76,13 @@ export type FailureContentKeyType =
   | 'instagramAccountLinked'
   | 'instagramNotConnected'
   | 'instagramReturnInvalid'
+  // ── key-tier: shopping list ────────────────────────────────────────────────
+  | 'shoppingLabelInvalid'
+  | 'shoppingAmountInvalid'
+  | 'shoppingListFull'
+  | 'shoppingListChanged'
+  | 'shoppingItemGone'
+  | 'contentBlocked'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'
   | 'codeInvalid'

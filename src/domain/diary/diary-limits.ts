@@ -38,4 +38,10 @@ export const DiaryLimits = {
   GramsStep: 10,
   /** Catalogue nutrients are per 100 g or ml; a product with only a base unit defaults to this much. */
   PerHundred: 100,
+  /** A meal description sent to the meal parser (backend cap). */
+  MealTextMaxLength: 500,
+  /** The meal parser answers at most this many items. */
+  MealItemsMax: 12,
+  /** The least a meal item can weigh once the user edits its grams. */
+  MealGramsMin: 1,
 } as const;

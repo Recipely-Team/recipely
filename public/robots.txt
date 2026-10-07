@@ -25,6 +25,7 @@ Disallow: /diary/calendar
 Disallow: /automations
 Disallow: /automations/edit
 Disallow: /automations/activity
+Disallow: /shopping-list
 Disallow: /instagram-connected
 
 # Authoring flows: wait screens and wizards.

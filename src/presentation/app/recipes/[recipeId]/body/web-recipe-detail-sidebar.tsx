@@ -13,6 +13,7 @@ import type { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { ValueConstants } from '@core/constants';
 import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutrition/nutrition-panel';
 import { AddToDiaryButton } from '@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 
 export interface WebRecipeDetailSidebarProps {
@@ -112,6 +113,7 @@ export const WebRecipeDetailSidebar = ({
             );
           })}
         </View>
+        <AddToShoppingButton source={{ recipeId: recipe.id, recipeName: recipe.name, lines: portions.ingredients }} />
       </View>
 
       <View style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>

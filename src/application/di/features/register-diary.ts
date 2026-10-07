@@ -23,6 +23,7 @@ import { ListFoodCategoriesUseCase } from '@application/diary/foods/browse/list-
 import { ListFoodProductsUseCase } from '@application/diary/foods/browse/list-food-products-use-case';
 import { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import { LoadFoodDetailUseCase } from '@application/diary/foods/detail/load-food-detail-use-case';
+import { ParseMealUseCase } from '@application/diary/meal/parse-meal-use-case';
 
 /** **Diary composition** — the food diary, the food search and the food catalogue. */
 export const registerDiary = (
@@ -35,6 +36,7 @@ export const registerDiary = (
   | 'searchFoods'
   | 'listRecentFoods'
   | 'buildLoggableFoodFromRecipe'
+  | 'parseMeal'
 > => {
   const diaryRepo = container.resolve<FoodDiaryRepositoryInterface>(TOKENS.FoodDiaryRepository);
   const diaryStore = configureDiaryStore({
@@ -69,5 +71,6 @@ export const registerDiary = (
     searchFoods,
     listRecentFoods,
     buildLoggableFoodFromRecipe: new BuildLoggableFoodFromRecipeUseCase(),
+    parseMeal: new ParseMealUseCase(diaryRepo),
   };
 };

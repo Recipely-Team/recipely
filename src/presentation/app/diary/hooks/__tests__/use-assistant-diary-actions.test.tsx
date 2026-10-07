@@ -83,6 +83,7 @@ const harness = (
     goalsOpen: false,
     openAdd: jest.fn(),
     openSearch: jest.fn(),
+    openMealLog: jest.fn(),
     openEdit: jest.fn(),
     closeAdd: jest.fn(),
     openGoals: jest.fn(),
@@ -105,6 +106,15 @@ const harness = (
 
 describe('useAssistantDiaryActions', () => {
   beforeEach(() => jest.clearAllMocks());
+
+  it('logMeal opens the meal panel on the description and logs nothing itself; a blank one is refused', async () => {
+    const h = harness();
+    const result = await h.run(AssistantAction.LogMeal, '  menemen and 2 slices of bread ');
+    expect(h.sheets.openMealLog).toHaveBeenCalledWith('menemen and 2 slices of bread');
+    expect(result).toMatchObject({ ok: true });
+    expect(h.store.addEntry).not.toHaveBeenCalled();
+    await expect(h.run(AssistantAction.LogMeal, '  ')).resolves.toMatchObject({ ok: false });
+  });
 
   it('selectDate moves the day like a tap, and refuses the future', async () => {
     const h = harness();

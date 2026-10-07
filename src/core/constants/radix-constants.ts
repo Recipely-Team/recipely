@@ -7,6 +7,8 @@
  * have to recognise the idiom to follow the code.
  */
 export const RadixConstants = {
+  /** Base ten — `10 ** places` rounds to that many decimals. */
+  decimal: 10,
   hex: 16,
   /** A byte is two hex characters — the pad width for `toString(16)`. */
   hexCharsPerByte: 2,

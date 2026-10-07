@@ -115,6 +115,14 @@ export const AssistantAction = {
   SetGoals: 'setGoals',
   OpenGoals: 'openGoals',
   OpenAddFood: 'openAddFood',
+  /**
+   * Puts the open recipe's ingredients on the shopping list, at the servings
+   * and units on screen. Checking a line off on the list itself is
+   * `toggleIngredient`, and reading the list is `readScreen`.
+   */
+  AddToShoppingList: 'addToShoppingList',
+  /** Reads a described meal into Add food's confirm list; the user ticks and adds. */
+  LogMeal: 'logMeal',
 } as const;
 
 export type AssistantActionType = (typeof AssistantAction)[keyof typeof AssistantAction];

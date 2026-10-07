@@ -45,4 +45,5 @@ export const ASSISTANT_ACTION_HOMES: Readonly<
   [AssistantAction.SetGoals]: 'diary',
   [AssistantAction.OpenGoals]: 'diary',
   [AssistantAction.OpenAddFood]: 'diary',
+  [AssistantAction.LogMeal]: 'diary',
 };

@@ -94,7 +94,8 @@ export class Quantity extends BaseValueObject<QuantityProps> {
     return this.amount === other.amount && this.upTo === other.upTo && this.unit === other.unit;
   }
 
-  private unitLabel(writtenUnit: string): string {
+  /** The unit as it reads: `writtenUnit` unless it names the unit generically, else the unit's own word; empty for a bare count. */
+  unitLabel(writtenUnit: string = CharConstants.empty): string {
     if (this.unit === null) return CharConstants.empty;
     const { one, other } = MEASURE_UNITS[this.unit];
     const generic = [one, other].includes(writtenUnit.toLowerCase());
