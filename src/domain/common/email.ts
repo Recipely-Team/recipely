@@ -12,7 +12,9 @@ import { RegexConstants } from '@core/constants';
  * Equality and `value` come from {@link BaseValueObject}: two `Email`s holding
  * the same address ARE the same email, which is what separates a value object
  * from an entity. `create` is the only way in — the constructor is private so
- * an unvalidated address cannot exist.
+ * an unvalidated address cannot exist. Surrounding whitespace (a keyboard's
+ * autocomplete space) is trimmed before validation: this is the one place an
+ * address is normalised.
  */
 export class Email extends BaseValueObject<string> {
   private constructor(raw: string) {
@@ -20,9 +22,10 @@ export class Email extends BaseValueObject<string> {
   }
 
   static create(raw: string): Result<Email, ValidationFailure> {
-    if (!RegexConstants.email.test(raw)) {
+    const address = raw.trim();
+    if (!RegexConstants.email.test(address)) {
       return fail(new ValidationFailure(DiagnosticMessage.auth.invalidEmail, FailureField.email));
     }
-    return ok(new Email(raw));
+    return ok(new Email(address));
   }
 }

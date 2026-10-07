@@ -49,9 +49,9 @@ const buildSession = (overrides: { expiresAt?: Date } = {}): AuthSessionEntity =
   return session.value;
 };
 
-// Fake LoadFavoritesUseCase that always returns empty set
-const fakeLoadFavorites: LoadFavoritesUseCase = {
-  execute: () => Promise.resolve(ok(new Set<string>())),
+// Fake LoadFavoritesUseCase that always returns no favourites.
+const fakeLoadFavorites = {
+  execute: () => Promise.resolve(ok([])),
 } as unknown as LoadFavoritesUseCase;
 
 /** Minimal saved-recipe row — only its id matters to these tests. */
@@ -135,7 +135,7 @@ describe('auth-store', () => {
     const session = buildSession();
     const store = makeStore(new FakeAuthRepository({ signInResult: ok(session) }));
 
-    await store.getState().signIn('emilys', 'emilyspass');
+    await store.getState().signIn('emilys@example.com', 'emilyspass');
 
     const s = store.getState().state;
     expect(s.status).toBe('authenticated');
@@ -146,7 +146,7 @@ describe('auth-store', () => {
     const failure = new UnauthorizedFailure('bad');
     const store = makeStore(new FakeAuthRepository({ signInResult: fail(failure) }));
 
-    const result = await store.getState().signIn('bad', 'creds');
+    const result = await store.getState().signIn('bad@example.com', 'creds');
 
     expect(result).toBe(failure);
     expect(store.getState().state.status).toBe('unauthenticated');
@@ -296,7 +296,7 @@ describe('auth-store', () => {
     const onSessionRestored = jest.fn();
     const store = makeStore(new FakeAuthRepository({ signInResult: ok(buildSession()) }), { onSessionRestored });
 
-    await store.getState().signIn('emilys', 'emilyspass');
+    await store.getState().signIn('emilys@example.com', 'emilyspass');
 
     expect(store.getState().state.status).toBe('authenticated');
     expect(onSessionRestored).not.toHaveBeenCalled();
@@ -380,7 +380,7 @@ describe('auth-store', () => {
   it('uploadAvatar returns null and sets the new authenticated session on success', async () => {
     const updated = buildSession();
     const store = makeStore(new FakeAuthRepository({ uploadAvatarResult: ok(updated) }));
-    await store.getState().signIn('emilys', 'emilyspass');
+    await store.getState().signIn('emilys@example.com', 'emilyspass');
 
     const result = await store.getState().uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -402,7 +402,7 @@ describe('auth-store', () => {
       }
     })();
     const store = makeStore(repo);
-    await store.getState().signIn('emilys', 'emilyspass');
+    await store.getState().signIn('emilys@example.com', 'emilyspass');
 
     const result = await store.getState().uploadAvatar('file:///tmp/a.png', 'a.png', 'image/png');
 
@@ -448,7 +448,7 @@ describe('auth-store', () => {
       const signOutSpy = jest.spyOn(repo, 'signOut');
       const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
-      await store.getState().signIn('emilys', 'emilyspass');
+      await store.getState().signIn('emilys@example.com', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
       savedRecipesStore.getState().setSaved([makeSummary('r1'), makeSummary('r2')]);
 
@@ -484,7 +484,7 @@ describe('auth-store', () => {
     it('returns null and sets the new authenticated session on success', async () => {
       const updated = buildUpdatedSession();
       const store = makeStore(new FakeAuthRepository({ updateProfileResult: ok(updated) }));
-      await store.getState().signIn('emilys', 'emilyspass');
+      await store.getState().signIn('emilys@example.com', 'emilyspass');
 
       const result = await store
         .getState()
@@ -512,7 +512,7 @@ describe('auth-store', () => {
         }
       })();
       const store = makeStore(repo);
-      await store.getState().signIn('emilys', 'emilyspass');
+      await store.getState().signIn('emilys@example.com', 'emilyspass');
 
       const result = await store.getState().updateProfile({ displayName: 'Updated Name' });
 
@@ -532,7 +532,7 @@ describe('auth-store', () => {
       });
       const savedRecipesStore = configureSavedRecipesStore({ loadFavoritesUseCase: neverLoadsFavorites });
       const store = makeStore(repo, { savedRecipesStore });
-      await store.getState().signIn('emilys', 'emilyspass');
+      await store.getState().signIn('emilys@example.com', 'emilyspass');
       expect(store.getState().state.status).toBe('authenticated');
       savedRecipesStore.getState().setSaved([makeSummary('r1'), makeSummary('r2')]);
 
@@ -555,7 +555,7 @@ describe('auth-store', () => {
         }
       })();
       const store = makeStore(repo);
-      await store.getState().signIn('emilys', 'emilyspass');
+      await store.getState().signIn('emilys@example.com', 'emilyspass');
 
       const result = await store.getState().deleteAccount();
 
