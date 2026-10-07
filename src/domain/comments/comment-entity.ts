@@ -5,6 +5,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
+import { ViewerReaction } from '@domain/common/viewer-reaction';
 
 
 /**
@@ -67,9 +68,7 @@ export class CommentEntity extends BaseEntity<CommentEntityProps> {
 
   /** A copy whose `likeCount` gains the viewer's like, or loses it (never below 0). */
   withViewerLike(liked: boolean): CommentEntity {
-    const likeCount = liked
-      ? this.props.likeCount + ValueConstants.one
-      : Math.max(ValueConstants.zero, this.props.likeCount - ValueConstants.one);
+    const likeCount = ViewerReaction.of(this.props.likeCount, !liked).set(liked).count;
     return new CommentEntity({ ...this.props, likeCount });
   }
 }

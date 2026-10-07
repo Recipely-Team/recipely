@@ -8,7 +8,7 @@ import type { LikesStoreState } from '@application/likes/likes-store-state';
 import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
-import { ValueConstants } from '@core/constants';
+import { ViewerReaction } from '@domain/common/viewer-reaction';
 
 interface LikesStoreDeps {
   likeRecipe: LikeRecipeUseCase;
@@ -56,9 +56,10 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
       if (!current || current.isLoading) return ok(undefined);
 
       const wasLiked = current.likedByMe;
+      const next = ViewerReaction.of(current.likeCount, wasLiked).toggled();
       const optimistic: RecipeLikeState = {
-        likeCount: wasLiked ? current.likeCount - ValueConstants.one : current.likeCount + ValueConstants.one,
-        likedByMe: !wasLiked,
+        likeCount: next.count,
+        likedByMe: next.mine,
         isLoading: true,
         updatedAt: Date.now(),
       };
