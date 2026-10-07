@@ -18,7 +18,6 @@ import { UserProfileRepository } from '@infrastructure/user-profile/user-profile
 import { FeedbackRepository } from '@infrastructure/feedback/feedback-repository';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
 import { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
-import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
 import { IS_DEV_BUILD } from '@infrastructure/constants/app-variant';
 import { kvStore } from '@infrastructure/storage/kv-store';
 import { NotificationService } from '@infrastructure/notifications/notification-service';
@@ -32,15 +31,11 @@ import { GeminiLiveSession } from '@live-assistant/gemini';
 import { Microphone, PcmPlayer } from '@live-assistant/audio';
 import { ExpoDeviceLocaleProvider } from '@infrastructure/i18n/expo-device-locale-provider';
 import { LocaleService } from '@application/i18n/locale-service';
-import type { DeviceLocaleProviderInterface } from '@domain/i18n/device-locale-provider-interface';
-import type { KeyValueStoreInterface } from '@domain/storage/key-value-store-interface';
-
 import { randomUUID } from 'expo-crypto';
 import Constants from 'expo-constants';
 import { StoredDeviceIdentity } from '@infrastructure/device/stored-device-identity';
 import { DeviceRepository } from '@infrastructure/device/device-repository';
 import { currentDevicePlatform } from '@infrastructure/device/current-device-platform';
-import type { DeviceIdentityInterface } from '@domain/device/device-identity-interface';
 import { API_BASE_URL } from '@infrastructure/constants/api/api-hosts';
 
 /** Host-app callbacks and providers injected into the infrastructure wiring. */
@@ -53,45 +48,37 @@ interface InfrastructureOptions {
   onUnauthorized?: () => void;
 }
 
+/**
+ * **Infrastructure composition** — binds every port the application resolves to its adapter.
+ *
+ * @remarks
+ * - **Tokens:** only for what application or presentation resolve; the HTTP client, the
+ *   device-locale provider and the feature-flag repository are local values here.
+ * - **Use cases:** none — the application registrars build them over these ports.
+ */
 export const registerInfrastructure = (container: Container, opts?: InfrastructureOptions): void => {
   const storage = new SecureTokenStorage();
-  container.register(TOKENS.KeyValueStore, () => kvStore);
   const deviceIdentity = new StoredDeviceIdentity(
     kvStore,
     randomUUID,
     currentDevicePlatform(),
     Constants.expoConfig?.version ?? null,
   );
+
+  container.register(TOKENS.KeyValueStore, () => kvStore);
   container.register(TOKENS.DeviceIdentity, () => deviceIdentity);
+  // The single source of the active language.
+  container.register(TOKENS.LocaleService, () => new LocaleService(kvStore, new ExpoDeviceLocaleProvider()));
   container.register(TOKENS.NotificationService, () => new NotificationService());
   container.register(TOKENS.AlarmAudioService, () => new AlarmAudioService());
   container.register(TOKENS.AdsService, () => new AdsService());
   container.register(TOKENS.AssistantSession, () => new GeminiLiveSession());
   container.register(TOKENS.AssistantMicrophone, () => new Microphone());
   container.register(TOKENS.AssistantPlayer, () => new PcmPlayer());
-  container.register(
-    TOKENS.AssistantTokenRepository,
-    () => new AssistantTokenRepository(container.resolve(TOKENS.HttpClient)),
-  );
-  container.register(
-    TOKENS.AssistantMessenger,
-    () => new AssistantMessenger(container.resolve(TOKENS.HttpClient)),
-  );
   // OS assistant integrations behind a port; the web half reports unavailable.
   container.register(TOKENS.OsAssistant, () => new OsAssistantBridge());
   // Fold and hinge posture; the web half reads the Viewport Segments API.
   container.register(TOKENS.WindowPosture, () => new WindowPostureBridge());
-  container.register(TOKENS.DeviceLocaleProvider, () => new ExpoDeviceLocaleProvider());
-
-  // The single source of the active language.
-  container.register(
-    TOKENS.LocaleService,
-    () =>
-      new LocaleService(
-        container.resolve<KeyValueStoreInterface>(TOKENS.KeyValueStore),
-        container.resolve<DeviceLocaleProviderInterface>(TOKENS.DeviceLocaleProvider),
-      ),
-  );
 
   const httpClientOptions: HttpClientOptions = {
     baseUrl: API_BASE_URL,
@@ -113,89 +100,26 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
-  container.register(TOKENS.HttpClient, () => new HttpClient(httpClientOptions));
+  const http = new HttpClient(httpClientOptions);
 
-  container.register(TOKENS.AuthRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new AuthRepository(
-      http,
-      storage,
-      container.resolve<DeviceIdentityInterface>(TOKENS.DeviceIdentity),
-    );
-  });
-
+  container.register(TOKENS.AuthRepository, () => new AuthRepository(http, storage, deviceIdentity));
+  container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));
+  container.register(TOKENS.RecipeRepository, () => new RecipeRepository(http));
+  container.register(TOKENS.TaxonomyRepository, () => new TaxonomyRepository(http));
+  container.register(TOKENS.RecipeDraftRepository, () => new RecipeDraftRepository(http));
+  container.register(TOKENS.FavoritesRepository, () => new FavoritesRepository(http));
+  container.register(TOKENS.FoodDiaryRepository, () => new FoodDiaryRepository(http));
+  container.register(TOKENS.FoodCatalogRepository, () => new FoodCatalogRepository(http));
+  container.register(TOKENS.InstagramRepository, () => new InstagramRepository(http));
+  container.register(TOKENS.CommentRepository, () => new CommentRepository(http));
+  container.register(TOKENS.LikeRepository, () => new LikeRepository(http));
+  container.register(TOKENS.NotificationRepository, () => new NotificationRepository(http));
+  container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
+  container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
+  container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));
+  container.register(TOKENS.AssistantMessenger, () => new AssistantMessenger(http));
   container.register(
-    TOKENS.DeviceRepository,
-    () => new DeviceRepository(container.resolve<HttpClient>(TOKENS.HttpClient)),
+    TOKENS.FeatureFlagResolver,
+    () => new FeatureFlagResolver(new FeatureFlagRepository(http), IS_DEV_BUILD),
   );
-
-  container.register(TOKENS.RecipeRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new RecipeRepository(http);
-  });
-
-  container.register(TOKENS.TaxonomyRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new TaxonomyRepository(http);
-  });
-
-  container.register(TOKENS.RecipeDraftRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new RecipeDraftRepository(http);
-  });
-
-  container.register(TOKENS.FavoritesRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new FavoritesRepository(http);
-  });
-
-  container.register(TOKENS.FoodDiaryRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new FoodDiaryRepository(http);
-  });
-
-  container.register(TOKENS.FoodCatalogRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new FoodCatalogRepository(http);
-  });
-
-  container.register(TOKENS.InstagramRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new InstagramRepository(http);
-  });
-
-  container.register(TOKENS.CommentRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new CommentRepository(http);
-  });
-
-  container.register(TOKENS.LikeRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new LikeRepository(http);
-  });
-
-  container.register(TOKENS.NotificationRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new NotificationRepository(http);
-  });
-
-  container.register(TOKENS.UserProfileRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new UserProfileRepository(http);
-  });
-
-  container.register(TOKENS.FeedbackRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new FeedbackRepository(http);
-  });
-
-  container.register(TOKENS.FeatureFlagRepository, () => {
-    const http = container.resolve<HttpClient>(TOKENS.HttpClient);
-    return new FeatureFlagRepository(http);
-  });
-
-  container.register(TOKENS.FeatureFlagResolver, () => new FeatureFlagResolver(
-    container.resolve<FeatureFlagRepositoryInterface>(TOKENS.FeatureFlagRepository),
-    IS_DEV_BUILD,
-  ));
 };
