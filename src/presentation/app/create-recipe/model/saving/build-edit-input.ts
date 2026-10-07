@@ -2,7 +2,7 @@ import type { EditRecipeInput } from '@domain/recipes/edit/edit-recipe-input';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { cleanLines } from '@presentation/app/create-recipe/model/saving/clean-lines';
-import { cleanIngredients } from '@presentation/app/create-recipe/model/saving/clean-ingredients';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 
 /**
  * Builds the PATCH payload for a private recipe from the editor state.
@@ -15,7 +15,7 @@ export const buildEditInput = (recipe: EditableRecipe, locale: string): EditReci
   cuisine: recipe.cuisine ?? CuisineKey.Other,
   category: recipe.category,
   difficulty: recipe.difficulty,
-  ingredients: { [locale]: cleanIngredients(recipe.ingredients) },
+  ingredients: { [locale]: IngredientList.of(recipe.ingredients).cleaned() },
   instructions: { [locale]: cleanLines(recipe.instructions) },
   prepTimeMinutes: recipe.prepTimeMinutes,
   cookTimeMinutes: recipe.cookTimeMinutes,

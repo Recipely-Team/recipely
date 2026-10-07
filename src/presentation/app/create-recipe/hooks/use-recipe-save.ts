@@ -6,7 +6,7 @@ import { getLocale, t } from '@presentation/i18n';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { ValidationFailure, type Failure } from '@core/failure';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { buildCreateInput } from '@presentation/app/create-recipe/model/saving/build-recipe-input';
 import { buildEditInput } from '@presentation/app/create-recipe/model/saving/build-edit-input';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
@@ -89,9 +89,7 @@ export const useRecipeSave = ({
   const hasRequiredText = (): boolean => {
     const nameEmpty = recipe.name.trim().length === ValueConstants.zero;
     // A recipe of group headings only has no ingredients.
-    const ingredientsEmpty = recipe.ingredients.every(
-      (s) => s.trim().length === ValueConstants.zero || isIngredientGroup(s),
-    );
+    const ingredientsEmpty = IngredientList.of(recipe.ingredients).filledCount === ValueConstants.zero;
     if (nameEmpty || ingredientsEmpty) {
       const fields: CreateRecipeFieldErrors['fields'] = {};
       if (nameEmpty) fields.name = t().createRecipe.nameRequired;

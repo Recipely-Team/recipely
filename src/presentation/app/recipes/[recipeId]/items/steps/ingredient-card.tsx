@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities, BrandColors } from '@presentation/base/theme';
-import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/ingredients/parse-ingredient';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
 import { ValueConstants } from '@core/constants';
 
 export interface IngredientCardProps {
@@ -19,7 +19,7 @@ export const IngredientCard = ({
   onToggle,
 }: IngredientCardProps): React.JSX.Element => {
   const colors = useTheme().colors;
-  const { qty, name } = parseIngredient(raw);
+  const { qty, name } = IngredientLine.of(raw).split();
   const display = name.length > ValueConstants.zero ? name : raw;
 
   return (

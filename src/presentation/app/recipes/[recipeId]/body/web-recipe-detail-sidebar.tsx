@@ -1,7 +1,9 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
-import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
+import { PortionStepper } from '@presentation/app/recipes/[recipeId]/items/meta/portion-stepper';
+import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { difficultyLabel } from '@presentation/base/taxonomy/difficulty-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -16,29 +18,36 @@ import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/us
 export interface WebRecipeDetailSidebarProps {
   recipe: RecipeEntity;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
   /** The backend is still computing nutrition; the empty state says so. */
   isNutritionCalculating: boolean;
 }
 
-/** Sticky-column sidebar for the web recipe detail: ingredients checklist, a meta grid, and the nutrition panel. */
+/**
+ * Sticky-column sidebar for the web recipe detail: ingredients checklist (with
+ * the unit toggle), a meta grid whose servings row is the portion stepper, and
+ * the nutrition panel.
+ */
 export const WebRecipeDetailSidebar = ({
   recipe,
   checkedIngredients,
+  portions,
   onToggleIngredient,
   isNutritionCalculating,
 }: WebRecipeDetailSidebarProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const strings = t();
   const checkedCount = checkedIngredients.filter(Boolean).length;
+  const ingredients = IngredientList.of(portions.ingredients);
 
   const headingLineHeight = useTextLineHeight(fontSizes.body, lineHeights.snug);
 
-  const metaRows = [
+  const metaRows: { icon: keyof typeof Ionicons.glyphMap; label: string; value: string; control?: React.JSX.Element }[] = [
     { icon: 'timer-outline' as const, label: strings.recipes.prepTime, value: `${String(recipe.prepTimeMinutes)} ${strings.createRecipe.minShort}` },
     { icon: 'flame-outline' as const, label: strings.recipes.cookTime, value: `${String(recipe.cookTimeMinutes)} ${strings.createRecipe.minShort}` },
     { icon: 'speedometer-outline' as const, label: strings.recipes.difficulty, value: difficultyLabel(recipe.difficulty) },
-    { icon: 'people-outline' as const, label: strings.recipes.servings, value: String(recipe.servings) },
+    { icon: 'people-outline' as const, label: strings.recipes.servings, value: String(portions.servings), control: <PortionStepper portions={portions} /> },
   ];
 
   return (
@@ -47,13 +56,15 @@ export const WebRecipeDetailSidebar = ({
         <View style={styles.cardHeader}>
           <ThemedText variant="subtitle">{strings.recipes.ingredients}</ThemedText>
           <ThemedText variant="caption" muted>
-            {`${String(checkedCount)}/${String(recipe.ingredients.filter((line) => !isIngredientGroup(line)).length)}`}
+            {`${String(checkedCount)}/${String(ingredients.filledCount)}`}
           </ThemedText>
         </View>
         <View style={styles.checklist}>
-          {recipe.ingredients.map((item, i) => {
+          <UnitSystemToggle portions={portions} />
+          {ingredients.lines.map((line, i) => {
+            const item = line.raw;
             // Group headings get no checkbox.
-            if (isIngredientGroup(item)) {
+            if (line.isGroup) {
               return (
                 <ThemedText
                   key={i}
@@ -61,7 +72,7 @@ export const WebRecipeDetailSidebar = ({
                   accessibilityRole="header"
                   style={[styles.groupHeading, { color: colors.primary }]}
                 >
-                  {ingredientGroupLabel(item)}
+                  {line.groupLabel}
                 </ThemedText>
               );
             }
@@ -118,9 +129,11 @@ export const WebRecipeDetailSidebar = ({
                 {meta.label}
               </ThemedText>
             </View>
-            <ThemedText variant="body" style={styles.metaValue}>
-              {meta.value}
-            </ThemedText>
+            {meta.control ?? (
+              <ThemedText variant="body" style={styles.metaValue}>
+                {meta.value}
+              </ThemedText>
+            )}
           </View>
         ))}
       </View>

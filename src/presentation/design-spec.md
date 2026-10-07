@@ -1055,6 +1055,14 @@ For the recipe detail screen, hide the default header to allow the floating back
 
 ---
 
+### Portion stepper and unit toggle (recipe detail)
+
+TODO(design): portion stepper to be redesigned in Claude Design. Claude Design was unavailable when
+it shipped; the owner approved building it from existing widgets. Today: the servings stat tile
+(mobile meta card) carries a `− +` row of `RoundIconButton`s (`controlSizes.touchTarget`, as the
+diary's servings stepper) under its value; the web sidebar's Servings row shows `− n +`. The
+Original / Metric / US toggle above the ingredient list reuses `SegmentedTabs`.
+
 ## C. New Components Needed
 
 All new components live in `presentation/base/widgets/`.

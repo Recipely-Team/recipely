@@ -5,7 +5,7 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 import { NO_CREATE_RECIPE_FIELD_ERRORS } from '@presentation/app/create-recipe/model/validation/map-field-errors-to-inputs';
 import type { CreateRecipeFieldErrors } from '@presentation/app/create-recipe/model/validation/create-recipe-field-errors';
 import type { CreateRecipeFieldKeyType } from '@presentation/app/create-recipe/model/validation/create-recipe-field-key';
-import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
 import { CharConstants, ValueConstants } from '@core/constants';
 
 /**
@@ -121,7 +121,7 @@ export const useEditableRecipe = () => {
   );
   // An unnamed group is dropped on save.
   const onAddIngredientGroup = useCallback((): void => {
-    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, INGREDIENT_GROUP_PREFIX] }));
+    setRecipe((r) => ({ ...r, ingredients: [...r.ingredients, IngredientLine.heading()] }));
   }, []);
   const onChangeStep = useCallback(
     (i: number, value: string): void => {

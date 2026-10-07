@@ -9,7 +9,11 @@
  * user would edit one ingredient and watch another change.
  */
 
-import { parseIngredientGroups } from '@presentation/app/create-recipe/model/ingredients/parse-ingredient-groups';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
+
+import type { IngredientGroup } from '@domain/recipes/ingredients/ingredient-group';
+
+const parseIngredientGroups = (lines: readonly string[]): IngredientGroup[] => IngredientList.of(lines).groups();
 
 describe('parseIngredientGroups', () => {
   it('returns one ungrouped run for a recipe with no headings — the common case', () => {

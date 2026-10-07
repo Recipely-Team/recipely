@@ -1,4 +1,4 @@
-import type { GroupedIngredient } from '@presentation/app/create-recipe/model/ingredients/grouped-ingredient';
+import type { GroupedIngredient } from '@domain/recipes/ingredients/grouped-ingredient';
 
 /** A run of ingredients under one heading, or the ungrouped run before the first. */
 export interface IngredientGroup {

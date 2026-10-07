@@ -9,6 +9,7 @@ import { NutritionPanel } from '@presentation/app/recipes/[recipeId]/items/nutri
 import { AddToDiaryButton } from '@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button';
 import { RecipeAuthorCard } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-author-card';
 import { SkeletonLoader } from '@presentation/base/widgets/loading/skeleton-loader';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -33,6 +34,7 @@ export interface RecipeOverviewProps {
   isNutritionCalculating: boolean;
   /** The owner's photo controls; present only for the owner, who also gets the status panel. */
   photos: GalleryOwnerControls | undefined;
+  portions: PortionScaling;
 }
 
 /**
@@ -49,6 +51,7 @@ export const RecipeOverview = ({
   onToggleLike,
   isNutritionCalculating,
   photos,
+  portions,
 }: RecipeOverviewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { cuisineLabel } = useTaxonomyLabel();
@@ -150,7 +153,7 @@ export const RecipeOverview = ({
       <RecipeMetaCard
         prepTimeMinutes={recipe.prepTimeMinutes}
         cookTimeMinutes={recipe.cookTimeMinutes}
-        servings={recipe.servings}
+        portions={portions}
         difficulty={recipe.difficulty}
         recipeId={recipeId}
         recipeName={recipe.name}

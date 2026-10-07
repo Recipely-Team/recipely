@@ -1,4 +1,6 @@
-import { parseIngredient } from '@presentation/app/recipes/[recipeId]/model/ingredients/parse-ingredient';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
+
+const parseIngredient = (raw: string): { qty: string; name: string } => IngredientLine.of(raw).split();
 
 /**
  * The bug: an ingredient row showed the badge "3 yumurt" next to the name "a".

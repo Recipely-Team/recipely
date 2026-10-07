@@ -443,6 +443,15 @@ export const en = {
     searchPlaceholder: 'Search recipes...',
     noResults: 'No recipes match your search.',
     servings: 'Servings',
+    portions: {
+      decrease: 'Fewer servings',
+      increase: 'More servings',
+      original: 'Original',
+      metric: 'Metric',
+      imperial: 'US',
+      /** The decimal mark a scaled amount is written with when the recipe wrote none. */
+      decimalMark: '.',
+    },
     saved: 'Saved',
     save: 'Save',
     filter: 'Filter',

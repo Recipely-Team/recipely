@@ -1,5 +1,7 @@
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
-import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
+
+const isIngredientGroup = (line: string): boolean => IngredientLine.of(line).isGroup;
+const ingredientGroupLabel = (line: string): string => IngredientLine.of(line).groupLabel;
 
 /**
  * Group headings ride inside the ingredient `string[]` marked by a leading `#`,

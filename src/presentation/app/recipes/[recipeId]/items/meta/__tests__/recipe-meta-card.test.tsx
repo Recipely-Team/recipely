@@ -13,6 +13,7 @@ import { renderComponent, textContent } from '@presentation/base/test-support/re
 import { RecipeMetaCard, type RecipeMetaCardProps } from '@presentation/app/recipes/[recipeId]/items/meta/recipe-meta-card';
 import { statGrid } from '@presentation/app/recipes/[recipeId]/model/meta/stat-grid';
 import { statCellWidths } from '@presentation/app/recipes/[recipeId]/model/meta/stat-cell-widths';
+import { portionScalingFixture } from '@presentation/app/recipes/[recipeId]/model/portions/__fixtures__/portion-scaling-fixture';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
@@ -20,7 +21,7 @@ import { upperCase } from '@presentation/i18n/upper-case';
 const PROPS: RecipeMetaCardProps = {
   prepTimeMinutes: 15,
   cookTimeMinutes: 40,
-  servings: 4,
+  portions: portionScalingFixture(),
   difficulty: Difficulty.Easy,
   recipeId: 'r1',
   recipeName: 'Menemen',
