@@ -1,6 +1,5 @@
 import { configureLikesStore } from '@application/likes/likes-store';
-import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
-import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import type { BoundStore } from '@application/store/bound-store';
 import { ok } from '@core/result/result-helpers';
@@ -12,14 +11,12 @@ import { ok } from '@core/result/result-helpers';
  * this pins the actual behaviour instead.
  */
 const build = (calls: string[]) => {
-  const likeRecipe = { execute: async (id: string) => { calls.push(`like:${id}`); return ok(undefined); } };
-  const unlikeRecipe = { execute: async (id: string) => { calls.push(`unlike:${id}`); return ok(undefined); } };
+  const setRecipeLike = { execute: async (id: string, like: boolean) => { calls.push(`${like ? 'like' : 'unlike'}:${id}`); return ok(undefined); } };
   const likedRecipesStore = {
     getState: () => ({ removeLocal: (id: string) => calls.push(`removeLocal:${id}`) }),
   };
   return configureLikesStore({
-    likeRecipe: likeRecipe as unknown as LikeRecipeUseCase,
-    unlikeRecipe: unlikeRecipe as unknown as UnlikeRecipeUseCase,
+    setRecipeLike: setRecipeLike as unknown as SetRecipeLikeUseCase,
     likedRecipesStore: likedRecipesStore as unknown as BoundStore<LikedRecipesStoreState>,
   });
 };

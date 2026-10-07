@@ -1,10 +1,10 @@
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
-import type { CreatorsListState } from '@application/creators/list/creators-list-state';
+import type { PagedList } from '@application/store/paging/paged-list';
 
 /** View model returned by {@link useCreatorsScreen} for the /creators page. */
 export interface UseCreatorsScreenResult {
   creators: readonly CreatorSummaryEntity[];
-  listState: CreatorsListState;
+  listState: PagedList<CreatorSummaryEntity>;
   columns: number;
   /** Between cards, both ways. */
   gap: number;

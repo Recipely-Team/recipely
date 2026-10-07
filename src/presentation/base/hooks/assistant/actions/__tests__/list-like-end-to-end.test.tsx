@@ -7,8 +7,7 @@ import { renderComponent } from '@presentation/base/test-support/render-componen
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantListRecipeActions } from '@presentation/base/hooks/assistant/actions/use-assistant-list-recipe-actions';
-import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
-import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import type { BoundStore } from '@application/store/bound-store';
 import { ok } from '@core/result/result-helpers';
@@ -25,8 +24,7 @@ const ROWS = [{ id: 'r-ratatouille', name: 'Ratatuy' }];
 const mount = (seeded: { count: number; liked: boolean } | null) => {
   const calls: string[] = [];
   const likes = configureLikesStore({
-    likeRecipe: { execute: async (id: string) => { calls.push(`like:${id}`); return ok(undefined); } } as unknown as LikeRecipeUseCase,
-    unlikeRecipe: { execute: async (id: string) => { calls.push(`unlike:${id}`); return ok(undefined); } } as unknown as UnlikeRecipeUseCase,
+    setRecipeLike: { execute: async (id: string, like: boolean) => { calls.push(`${like ? 'like' : 'unlike'}:${id}`); return ok(undefined); } } as unknown as SetRecipeLikeUseCase,
     likedRecipesStore: { getState: () => ({ removeLocal: () => undefined }) } as unknown as BoundStore<LikedRecipesStoreState>,
   });
   if (seeded !== null) likes.getState().seed(ROWS[0]!.id, seeded.count, seeded.liked);

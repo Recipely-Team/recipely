@@ -5,7 +5,8 @@
  */
 import { act, type ReactTestInstance } from 'react-test-renderer';
 import { create } from 'zustand';
-import { StoreStatus } from '@application/store/store-status';
+import { loadedList } from '@application/store/paging/loaded-list';
+import { creatorPageOf } from '@application/__fixtures__/creator-page-of';
 import type { CreatorsStoreState } from '@application/creators/creators-store-state';
 import type { CreatorSummaryEntity } from '@domain/creators/creator-summary-entity';
 import { creatorSummaryOf } from '@application/__fixtures__/creator-summary-of';
@@ -20,8 +21,7 @@ jest.mock('expo-router', () => ({
 
 const storeOf = (creators: CreatorSummaryEntity[]) =>
   create<CreatorsStoreState>(() => ({
-    creators,
-    listState: { status: StoreStatus.Loaded, page: 1, hasMore: false },
+    creators: loadedList(creatorPageOf(creators)),
     load: jest.fn(async () => undefined),
     refresh: jest.fn(async () => undefined),
     loadMore: jest.fn(async () => undefined),

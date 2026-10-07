@@ -7,9 +7,11 @@ import { SearchProductsUseCase } from '@application/diary/foods/search/search-pr
 import { AddFavoriteUseCase } from '@application/favorites/add-favorite-use-case';
 import { LoadFavoritesUseCase } from '@application/favorites/load-favorites-use-case';
 import { RemoveFavoriteUseCase } from '@application/favorites/remove-favorite-use-case';
-import { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
 import { LoadLikedRecipesUseCase } from '@application/likes/load-liked-recipes-use-case';
-import { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
+import { SetFollowingUseCase } from '@application/user-profile/follow/set-following-use-case';
+import { ListUserRecipesUseCase } from '@application/user-profile/recipes/list-user-recipes-use-case';
+import { PageSizes } from '@application/config/page-sizes';
 import { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
 import { ListNotificationsUseCase } from '@application/notifications/list/list-notifications-use-case';
 import { MarkAllReadUseCase } from '@application/notifications/read/mark-all-read-use-case';
@@ -21,7 +23,6 @@ import { ListMyRecipesUseCase } from '@application/recipes/my-recipes/list-my-re
 import { AddRecipePhotoUseCase } from '@application/recipes/photos/add-recipe-photo-use-case';
 import { RemoveRecipeCoverUseCase } from '@application/recipes/photos/remove-recipe-cover-use-case';
 import { RemoveRecipePhotoUseCase } from '@application/recipes/photos/remove-recipe-photo-use-case';
-import { PageSizes } from '@application/config/page-sizes';
 
 /**
  * The use cases that are a single port call: each must reach the right
@@ -47,9 +48,12 @@ const CASES: readonly Delegation[] = [
   { name: 'AddFavorite', build: (r) => new AddFavoriteUseCase(r), method: 'addFavorite', args: ['u1', 'r1'], forwarded: ['u1', 'r1'] },
   { name: 'LoadFavorites', build: (r) => new LoadFavoritesUseCase(r), method: 'listFavorites', args: [], forwarded: [] },
   { name: 'RemoveFavorite', build: (r) => new RemoveFavoriteUseCase(r), method: 'removeFavorite', args: ['u1', 'r1'], forwarded: ['u1', 'r1'] },
-  { name: 'LikeRecipe', build: (r) => new LikeRecipeUseCase(r), method: 'like', args: ['r1'], forwarded: ['r1'] },
   { name: 'LoadLikedRecipes', build: (r) => new LoadLikedRecipesUseCase(r), method: 'listLiked', args: [], forwarded: [] },
-  { name: 'UnlikeRecipe', build: (r) => new UnlikeRecipeUseCase(r), method: 'unlike', args: ['r1'], forwarded: ['r1'] },
+  { name: 'SetRecipeLike(true)', build: (r) => new SetRecipeLikeUseCase(r), method: 'like', args: ['r1', true], forwarded: ['r1'] },
+  { name: 'SetRecipeLike(false)', build: (r) => new SetRecipeLikeUseCase(r), method: 'unlike', args: ['r1', false], forwarded: ['r1'] },
+  { name: 'SetFollowing(true)', build: (r) => new SetFollowingUseCase(r), method: 'follow', args: ['u1', true], forwarded: ['u1'] },
+  { name: 'SetFollowing(false)', build: (r) => new SetFollowingUseCase(r), method: 'unfollow', args: ['u1', false], forwarded: ['u1'] },
+  { name: 'ListUserRecipes', build: (r) => new ListUserRecipesUseCase(r), method: 'listUserRecipes', args: ['u1', 2], forwarded: ['u1', 2, PageSizes.creatorRecipes] },
   { name: 'RegisterDeviceToken', build: (r) => new RegisterDeviceTokenUseCase(r), method: 'registerDeviceToken', args: ['tok', 'android'], forwarded: ['tok', 'android'] },
   { name: 'ListNotifications', build: (r) => new ListNotificationsUseCase(r), method: 'list', args: [{ page: 3, pageSize: 20 }], forwarded: [3, 20] },
   { name: 'MarkAllRead', build: (r) => new MarkAllReadUseCase(r), method: 'markAllRead', args: [], forwarded: [] },

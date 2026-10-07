@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1920 source files.
+[architecture.md](architecture.md). 1913 source files.
 
 ## Layers
 
@@ -57,7 +57,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `auth/` — password-reset, profile, registration, session, sign-in _(16)_
 - `comments/` — add, delete, like, list _(11)_
 - `config/` _(6)_
-- `creators/` — claim, list, profile _(13)_
+- `creators/` — claim, list, profile _(10)_
 - `device/` _(2)_
 - `di/` — features _(15)_
 - `diary/` — day, entries, foods, goals, meal, month _(27)_
@@ -66,7 +66,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `feedback/` _(3)_
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules _(17)_
-- `likes/` _(6)_
+- `likes/` _(5)_
 - `notifications/` — list, read _(9)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
@@ -74,7 +74,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `storage/` _(4)_
 - `store/` — paging _(10)_
 - `timers/` _(7)_
-- `user-profile/` — follow, recipes _(11)_
+- `user-profile/` — follow, recipes _(8)_
 
 ## `src/infrastructure/` — repository impls, DTOs, mappers, IO
 
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 55e4129b22f1aefe -->
+<!-- fingerprint: 25171c66083dd2d8 -->

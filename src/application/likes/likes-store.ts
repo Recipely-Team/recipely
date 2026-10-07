@@ -5,14 +5,12 @@ import { ConflictFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import type { RecipeLikeState } from '@application/likes/recipe-like-state';
 import type { LikesStoreState } from '@application/likes/likes-store-state';
-import type { LikeRecipeUseCase } from '@application/likes/like-recipe-use-case';
-import type { UnlikeRecipeUseCase } from '@application/likes/unlike-recipe-use-case';
+import type { SetRecipeLikeUseCase } from '@application/likes/set-recipe-like-use-case';
 import type { LikedRecipesStoreState } from '@application/recipes/liked/liked-recipes-store-state';
 import { ViewerReaction } from '@domain/common/viewer-reaction';
 
 interface LikesStoreDeps {
-  likeRecipe: LikeRecipeUseCase;
-  unlikeRecipe: UnlikeRecipeUseCase;
+  setRecipeLike: SetRecipeLikeUseCase;
   likedRecipesStore: BoundStore<LikedRecipesStoreState>;
 }
 
@@ -66,9 +64,7 @@ export const configureLikesStore = (deps: LikesStoreDeps): BoundStore<LikesStore
 
       set((s) => ({ byRecipe: { ...s.byRecipe, [recipeId]: optimistic } }));
 
-      const result = wasLiked
-        ? await deps.unlikeRecipe.execute(recipeId)
-        : await deps.likeRecipe.execute(recipeId);
+      const result = await deps.setRecipeLike.execute(recipeId, next.mine);
 
       set((s) => ({
         byRecipe: {
