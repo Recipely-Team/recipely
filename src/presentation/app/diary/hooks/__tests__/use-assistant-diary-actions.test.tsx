@@ -24,7 +24,7 @@ import { RecentFoodKind } from '@domain/diary/foods/search/recent-food-kind';
 import type { RecentFoodType } from '@domain/diary/foods/search/recent-food';
 import { LoggableProduct } from '@domain/diary/foods/loggable-product';
 import { FoodQuantity } from '@domain/diary/foods/units/food-quantity';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { DiaryArgError } from '@presentation/base/hooks/assistant/args/diary/diary-arg-error';
 import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
@@ -92,7 +92,7 @@ const harness = (
     useAssistantDiaryActions({ view: { status: StoreStatus.Loaded, day }, selected: today, today, select, sheets });
     return null;
   };
-  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<StoresType>);
+  renderComponent(<Probe />, { assistantActionRegistry: registry, diaryStore, searchFoods, listRecentFoods, foodSearchStore } as unknown as Partial<ApplicationStores>);
   const run = async (action: (typeof AssistantAction)[keyof typeof AssistantAction], arg?: string): Promise<AssistantActionResultType> => {
     let result!: AssistantActionResultType;
     await act(async () => {

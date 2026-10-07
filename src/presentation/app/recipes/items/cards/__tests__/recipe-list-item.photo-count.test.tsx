@@ -7,7 +7,7 @@
 
 import { create } from 'zustand';
 import { renderComponent, textContent } from '@presentation/base/test-support/render-component';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -51,12 +51,12 @@ const summary = (photoCount: number): RecipeSummaryEntity => {
   return result.value;
 };
 
-const stores = (): Partial<StoresType> =>
+const stores = (): Partial<ApplicationStores> =>
   ({
     likesStore: create(() => ({ byRecipe: {}, seed: jest.fn(), toggle: jest.fn() })),
     authStore: create(() => ({ state: { status: 'unauthenticated' } })),
     taxonomyStore: create(() => ({ cuisines: [], categories: [], status: 'idle', failure: null })),
-  }) as unknown as Partial<StoresType>;
+  }) as unknown as Partial<ApplicationStores>;
 
 describe('RecipeListItem — photo count', () => {
   it('shows the chip with the count a multi-photo recipe carries', () => {

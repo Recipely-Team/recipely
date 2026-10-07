@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useTimerNotificationSync } from '@presentation/base/hooks/timers/use-timer-notification-sync';
 import { useUnreadNotificationsSync } from '@presentation/base/hooks/sync/use-unread-notifications-sync';
 import { useTaxonomySync } from '@presentation/base/hooks/sync/use-taxonomy-sync';
@@ -7,7 +7,7 @@ import { useAdsWarmup } from '@presentation/base/hooks/ads/use-ads-warmup';
 import { useScreenTracking } from '@presentation/bootstrap/use-screen-tracking';
 
 export interface AppSyncsProps {
-  stores: StoresType;
+  stores: ApplicationStores;
   children: ReactNode;
 }
 

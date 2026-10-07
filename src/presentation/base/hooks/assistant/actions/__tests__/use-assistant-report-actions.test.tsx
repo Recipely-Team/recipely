@@ -4,7 +4,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import { FailureReporter } from '@presentation/base/errors/failure-reporter';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantReportActions } from '@presentation/base/hooks/assistant/actions/use-assistant-report-actions';
 
 /**
@@ -26,7 +26,7 @@ function harness() {
         return accepts;
       },
     }),
-  } as unknown as StoresType['feedbackStore'];
+  } as unknown as ApplicationStores['feedbackStore'];
 
   const Probe = (): null => {
     useAssistantReportActions();
@@ -34,7 +34,7 @@ function harness() {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry, feedbackStore } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry, feedbackStore } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

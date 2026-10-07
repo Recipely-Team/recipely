@@ -11,7 +11,7 @@ import { act } from 'react-test-renderer';
 import { NotFoundFailure, ErrorMessageKey } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { CreatorTagOutcome } from '@domain/instagram/connect/creator-tag-outcome';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { instagramStoreOf } from '@presentation/base/test-support/instagram-store-of';
 import { connectionOf } from '@application/instagram/__fixtures__/instagram-fixtures';
@@ -33,7 +33,7 @@ const setup = () => {
     hook.current = useInstagramConnect();
     return null;
   };
-  renderComponent(<Probe />, { instagramStore: instagram.store, authStore } as unknown as Partial<StoresType>);
+  renderComponent(<Probe />, { instagramStore: instagram.store, authStore } as unknown as Partial<ApplicationStores>);
   const connect = async (): Promise<void> => {
     await act(async () => hook.current?.connect());
     await act(async () => undefined);

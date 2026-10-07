@@ -24,14 +24,14 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import { create } from 'zustand';
 import type { SavedRecipesStoreState } from '@application/recipes/saved/saved-recipes-store-state';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 
 /** The saved set the web cards' bookmarks read; empty, since these tests are about following. */
-const savedStores = (): Partial<StoresType> =>
+const savedStores = (): Partial<ApplicationStores> =>
   ({
     savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
     favoritesStore: create(() => ({ isLoading: false, error: null })),
-  }) as unknown as Partial<StoresType>;
+  }) as unknown as Partial<ApplicationStores>;
 
 const mockPush = jest.fn();
 jest.mock('expo-router', () => ({

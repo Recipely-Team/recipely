@@ -3,7 +3,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { EditProfileSaveOutcome } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 import type { EditProfileSaveOutcomeType } from '@presentation/app/edit-profile/model/edit-profile-save-outcome';
 import { useAssistantProfileActions } from '@presentation/app/edit-profile/hooks/use-assistant-profile-actions';
@@ -29,7 +29,7 @@ function harness(outcome: EditProfileSaveOutcomeType, isDirty = true) {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

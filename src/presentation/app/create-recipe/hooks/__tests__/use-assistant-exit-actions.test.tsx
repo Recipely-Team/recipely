@@ -3,7 +3,7 @@ import { AssistantAction } from '@domain/assistant/actions/assistant-action-type
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantExitActions } from '@presentation/app/create-recipe/hooks/use-assistant-exit-actions';
 
 /**
@@ -27,7 +27,7 @@ function harness(isExitPending: boolean, asks = true, canLeave = true) {
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

@@ -6,7 +6,7 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { useAssistantDraftActions } from '@presentation/app/create-recipe/hooks/use-assistant-draft-actions';
 
 const CUISINES = [{ key: 'italian', name: 'İtalyan', emoji: '🇮🇹' }];
@@ -41,7 +41,7 @@ function harness(
 ) {
   const registry = new AssistantActionRegistry();
   const taxonomyStore = ((selector: (state: unknown) => unknown) =>
-    selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as StoresType['taxonomyStore'];
+    selector({ cuisines: loaded ? CUISINES : [], categories: loaded ? CATEGORIES : [] })) as unknown as ApplicationStores['taxonomyStore'];
 
   const spies = {
     onUpdateField: jest.fn(),
@@ -71,7 +71,7 @@ function harness(
   };
 
   renderComponent(
-    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as StoresType}>
+    <StoresProvider value={{ assistantActionRegistry: registry, taxonomyStore } as unknown as ApplicationStores}>
       <Probe />
     </StoresProvider>,
   );

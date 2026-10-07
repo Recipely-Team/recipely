@@ -9,7 +9,7 @@ import { StoreStatus } from '@application/store/store-status';
 import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { renderComponent } from '@presentation/base/test-support/render-component';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { startTimer } from '@presentation/base/timers/timer-controls';
 import { timerStore } from '@application/timers/timer-store';
 import { t } from '@presentation/i18n';
@@ -45,7 +45,7 @@ const setup = () => {
       load: jest.fn(),
     })),
     createdRecipesStore: create(() => ({ findById: () => undefined })),
-  } as unknown as Partial<StoresType>;
+  } as unknown as Partial<ApplicationStores>;
 
   const listeners: (() => void)[] = [];
   let focused = true;

@@ -16,7 +16,7 @@ import { SegmentedTabs } from '@presentation/base/widgets/diary/segmented-tabs';
 import { PickTab } from '@presentation/base/widgets/diary/add-food/list/pick-tab';
 import { FoodSearchField } from '@presentation/base/widgets/diary/add-food/pick/food-search-field';
 import { ADD_FOOD_SEARCH_DEBOUNCE_MS } from '@presentation/base/widgets/diary/add-food/list/search-debounce';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { AddFoodPickStep } from '@presentation/base/widgets/diary/add-food/pick/add-food-pick-step';
 import { t } from '@presentation/i18n';
@@ -54,7 +54,7 @@ const setup = async (initialQuery = 'tomato') => {
       onChooseRecent={jest.fn()}
       onQuickAdd={jest.fn()}
     />,
-    { foodSearchStore, foodCatalogStore } as unknown as Partial<StoresType>,
+    { foodSearchStore, foodCatalogStore } as unknown as Partial<ApplicationStores>,
   );
   await act(async () => undefined);
   return { repo, view, onChoose, onChooseProduct };

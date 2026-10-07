@@ -6,7 +6,7 @@ import { LoggableFood } from '@domain/diary/entry/loggable-food';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { foodLogEntryOf } from '@domain/diary/__fixtures__/food-log-entry-of';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
-import type { StoresType } from '@presentation/bootstrap/stores';
+import type { ApplicationStores } from '@application/di/application-stores';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { useAddFoodFlow } from '@presentation/base/hooks/diary/use-add-food-flow';
@@ -62,7 +62,7 @@ const setup = (request: AddFoodRequestType, onOpenDiary?: () => void, detail = a
     flow.current = useAddFoodFlow(request, onClose, onOpenDiary);
     return null;
   };
-  renderComponent(<Probe />, { diaryStore, foodCatalogStore } as unknown as Partial<StoresType>);
+  renderComponent(<Probe />, { diaryStore, foodCatalogStore } as unknown as Partial<ApplicationStores>);
   const get = (): AddFoodFlow => {
     if (flow.current === null) throw new Error('not rendered');
     return flow.current;
