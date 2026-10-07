@@ -11,4 +11,6 @@ export const AnalyticsEvent = {
   failureShown: 'failure_shown',
   /** One per launch: the device, OS, build and locale the session ran on. */
   deviceProfile: 'device_profile',
+  /** A come-back reminder was tapped. Carries its `day` of absence and copy `variant`. */
+  reminderOpened: 'reminder_opened',
 } as const;

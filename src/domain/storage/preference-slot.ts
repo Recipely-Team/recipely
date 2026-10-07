@@ -9,6 +9,8 @@ export const PreferenceSlot = {
   Timers: 'timers',
   Language: 'language',
   OnboardingSeen: 'onboardingSeen',
+  RemindersChoice: 'remindersChoice',
+  FirstOpenAt: 'firstOpenAt',
 } as const;
 
 export type PreferenceSlotType = (typeof PreferenceSlot)[keyof typeof PreferenceSlot];

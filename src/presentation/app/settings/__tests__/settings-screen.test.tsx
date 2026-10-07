@@ -116,10 +116,17 @@ afterEach(() => {
   });
 });
 
+const getRemindersEnabled = { execute: jest.fn(() => Promise.resolve(false)) };
+const setRemindersChoice = { execute: jest.fn((on: boolean) => Promise.resolve(on)) };
+
 const renderSettings = (
   deleteAccount: jest.Mock,
 ): RenderResult => {
-  const stores = { authStore: makeAuthStore(deleteAccount) } as unknown as ApplicationStores;
+  const stores = {
+    authStore: makeAuthStore(deleteAccount),
+    getRemindersEnabled,
+    setRemindersChoice,
+  } as unknown as ApplicationStores;
   const rendered = renderComponent(
     <StoresProvider value={stores}>
       <SettingsScreen />
@@ -138,6 +145,39 @@ const rowByLabel = (root: RenderResult['root'], label: string) =>
 beforeEach(() => {
   mockReplace.mockClear();
   confirmSheetProps = null;
+  getRemindersEnabled.execute.mockClear();
+  setRemindersChoice.execute.mockClear();
+});
+
+describe('SettingsScreen — recipe reminders', () => {
+  const reminderSwitch = (root: RenderResult['root']) =>
+    root.findAll((node) => node.props.accessibilityRole === 'switch' && node.props.accessibilityLabel === t().reminders.setting)[0];
+
+  it('shows the switch off for a user who never opted in', async () => {
+    const { root } = renderSettings(jest.fn());
+    await act(async () => {});
+    expect(reminderSwitch(root)?.props.value).toBe(false);
+  });
+
+  it('turns reminders on through the use case and settles on its answer', async () => {
+    const { root } = renderSettings(jest.fn());
+    await act(async () => {});
+    await act(async () => {
+      (reminderSwitch(root)?.props.onValueChange as (v: boolean) => void)(true);
+    });
+    expect(setRemindersChoice.execute).toHaveBeenCalledWith(true, t().reminders.messages, expect.any(Number));
+    expect(reminderSwitch(root)?.props.value).toBe(true);
+  });
+
+  it('snaps back off when the OS permission prompt is declined', async () => {
+    setRemindersChoice.execute.mockImplementationOnce(() => Promise.resolve(false));
+    const { root } = renderSettings(jest.fn());
+    await act(async () => {});
+    await act(async () => {
+      (reminderSwitch(root)?.props.onValueChange as (v: boolean) => void)(true);
+    });
+    expect(reminderSwitch(root)?.props.value).toBe(false);
+  });
 });
 
 describe('SettingsScreen — delete account', () => {

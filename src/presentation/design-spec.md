@@ -3739,3 +3739,15 @@ no new measurement or colour:
 - **Recipe page:** an outlined primary "Add to shopping list" button (`controlSizes.buttonSm`) under the
   ingredient list on mobile, inside the ingredients card on the web sidebar, and in cook mode's ingredients sheet
   footer. The toast counts added and merged lines and offers "View".
+
+## Notifications: timer heads-ups and come-back reminders
+
+TODO(design): the reminders opt-in sheet and the Settings "Notifications" section are to be redesigned in
+Claude Design. Claude Design was unavailable when they were built, so both reuse existing widgets:
+
+- **Opt-in:** the shared `ConfirmSheet` on the recipe feed, once, on a return visit a day after the first open.
+  Title, a message saying what is sent, how often and where to stop it, "Yes, remind me" (primary) and
+  "Not now" (the new `cancelLabel`).
+- **Settings:** a "Notifications" section under Appearance with one `SettingsRow` ("Recipe reminders",
+  `notifications-outline`) whose right element is the shared `SettingsSwitch` (primary track when on). Native only.
+- **Timer heads-ups** have no in-app surface: a quiet notification at 5 and 1 minute left.
