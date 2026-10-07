@@ -36,6 +36,8 @@ import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
 import { useRecipeList } from '@presentation/app/recipes/hooks/use-recipe-list';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
+import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
+import { useFocusEffect } from 'expo-router';
 import { configureRecipeListStore } from '@application/recipes/list/recipe-list-store';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
 import type { ListRecipesUseCase } from '@application/recipes/list/list-recipes-use-case';
@@ -768,6 +770,44 @@ describe('useRecipeList — pull-to-refresh spinner and load parameters', () => 
       expect(unhandled).not.toHaveBeenCalled();
     } finally {
       process.off('unhandledRejection', unhandled);
+    }
+  });
+
+  /** Re-runs the screen's focus callback, as returning to the feed tab would. */
+  const refocus = async (): Promise<void> => {
+    const calls = (useFocusEffect as jest.Mock).mock.calls;
+    const onFocus = calls[calls.length - 1][0] as () => void;
+    await act(async () => {
+      onFocus();
+      await Promise.resolve();
+    });
+  };
+
+  // Every return from a recipe detail re-requested page 1 of a feed loaded seconds earlier.
+  it('does not refetch the feed when it regains focus within a minute of loading', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    const now = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + FEED_STALE_AFTER_MS - 1);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(1);
+    } finally {
+      now.mockRestore();
+    }
+  });
+
+  it('refetches the feed quietly on focus once it is older than a minute', async () => {
+    const execute = jest.fn();
+    await mountLoaded(execute);
+    execute.mockReturnValueOnce(Promise.resolve(ok(recipePageOf([makeRecipe('r2')]))));
+    const now = jest.spyOn(Date, 'now').mockReturnValue(Date.now() + FEED_STALE_AFTER_MS + 1);
+
+    try {
+      await refocus();
+      expect(execute).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
     }
   });
 });

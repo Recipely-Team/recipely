@@ -18,6 +18,7 @@ import { SortKey } from '@presentation/app/recipes/model/sorting/sort-key';
 import { useTaxonomyLabel } from '@presentation/base/taxonomy/use-taxonomy-label';
 import { useDebouncedValue } from '@presentation/base/hooks/interaction/use-debounced-value';
 import { SEARCH_DEBOUNCE_MS } from '@presentation/app/recipes/model/search-debounce';
+import { FEED_STALE_AFTER_MS } from '@presentation/app/recipes/model/feed-stale-after-ms';
 import { useRefreshFailureToast } from '@presentation/app/recipes/hooks/use-refresh-failure-toast';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { isRecipeListRefreshing } from '@application/recipes/list/is-recipe-list-refreshing';
@@ -70,6 +71,10 @@ const REVEAL_THRESHOLD = spacing.sm;
  * - **Initial load carries the sort** — a bare `load()` falls back to the
  *   backend's `createdAt desc`, so the first paint and the focus refetch
  *   disagreed and the list reshuffled on the first return from a detail page.
+ * - **Refocus refetches only a stale feed** — one older than
+ *   `FEED_STALE_AFTER_MS` since its last successful load. Every return from a
+ *   detail page used to re-request page 1. The first load and a pull are
+ *   unchanged; a deleted recipe already leaves the store via `remove`.
  * - **`buildApiFilters` takes the query as an argument** rather than closing
  *   over it: its identity is a dependency of the focus and locale effects, and
  *   a callback changing on every debounced keystroke made those refire and
@@ -98,7 +103,17 @@ export const useRecipeList = (): UseRecipeListResult => {
   const { cuisineLabel } = useTaxonomyLabel();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
-  const load = recipeListStore((s) => s.load);
+  const loadFromStore = recipeListStore((s) => s.load);
+  // When the feed last loaded successfully — what the focus refetch's staleness reads.
+  const lastLoadedAtRef = useRef<number | null>(null);
+  const load = useCallback(
+    async (next: RecipeFilters): Promise<void> => {
+      await loadFromStore(next);
+      const settled = recipeListStore.getState().state;
+      if (settled.status === StoreStatus.Loaded && settled.refreshFailure === undefined) lastLoadedAtRef.current = Date.now();
+    },
+    [loadFromStore, recipeListStore],
+  );
   const loadMore = recipeListStore((s) => s.loadMore);
   const { isWebShell, isExpanded, width, height } = useLayout();
   const { searchQuery: webSearchQuery, setSearchQuery: setWebSearchQuery } = useWebShellState();
@@ -266,7 +281,7 @@ export const useRecipeList = (): UseRecipeListResult => {
     void reload(buildApiFilters(filtersRef.current, sortByRef.current, debouncedSearch));
   }, [debouncedSearch, reload, buildApiFilters]);
 
-  // Re-fetch quietly on focus so new/edited recipes appear; skip the mount focus.
+  // Re-fetch quietly on focus once the feed is stale; skip the mount focus.
   const didFocusRef = useRef(false);
   useFocusEffect(
     useCallback(() => {
@@ -274,6 +289,8 @@ export const useRecipeList = (): UseRecipeListResult => {
         didFocusRef.current = true;
         return;
       }
+      const lastLoadedAt = lastLoadedAtRef.current;
+      if (lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS) return;
       void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),
   );
