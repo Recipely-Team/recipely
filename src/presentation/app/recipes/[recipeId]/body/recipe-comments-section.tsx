@@ -11,16 +11,14 @@ import { spacing, radii, iconSizes, controlSizes, borderWidths, opacities } from
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
-import { isBlank } from '@core/guards/type-guards';
+import { useCommentDraft } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-comment-draft';
 
 export interface RecipeCommentsSectionProps {
   commentState: RecipeCommentsState | undefined;
   userId: string | null;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
   onFocusCommentInput: () => void;
-  onAddComment: () => void;
+  onAddComment: (text: string, onPosted: () => void) => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -30,13 +28,13 @@ export interface RecipeCommentsSectionProps {
 /**
  * Comments block for the mobile detail screen: header, list (with loading/empty
  * states), load-more, and the comment composer with its inline submit error.
+ * The composer's text is its own (`useCommentDraft`): typing re-renders this
+ * block, not the detail screen.
  */
 export const RecipeCommentsSection = ({
   commentState,
   userId,
-  commentInput,
   submitError,
-  onChangeCommentInput,
   onFocusCommentInput,
   onAddComment,
   onLoadMoreComments,
@@ -45,6 +43,7 @@ export const RecipeCommentsSection = ({
   commentHighlight,
 }: RecipeCommentsSectionProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const composer = useCommentDraft(onAddComment);
 
   return (
     <>
@@ -105,8 +104,8 @@ export const RecipeCommentsSection = ({
 
       <View style={styles.commentInputRow}>
         <AutoGrowTextInput
-          value={commentInput}
-          onChangeText={onChangeCommentInput}
+          value={composer.draft}
+          onChangeText={composer.onChangeDraft}
           placeholder={t().comments.placeholder}
           placeholderTextColor={colors.textMuted}
           style={[
@@ -118,8 +117,8 @@ export const RecipeCommentsSection = ({
           onFocus={onFocusCommentInput}
         />
         <Pressable
-          onPress={onAddComment}
-          disabled={commentState?.isSubmitting === true || isBlank(commentInput)}
+          onPress={composer.onSubmit}
+          disabled={commentState?.isSubmitting === true || composer.isEmpty}
           accessibilityRole="button"
           accessibilityLabel={t().comments.send}
           style={({ pressed }) => [
@@ -127,7 +126,7 @@ export const RecipeCommentsSection = ({
             {
               backgroundColor: colors.primary,
               opacity:
-                pressed || commentState?.isSubmitting === true || isBlank(commentInput)
+                pressed || commentState?.isSubmitting === true || composer.isEmpty
                   ? opacities.disabledFaint
                   : opacities.full,
             },

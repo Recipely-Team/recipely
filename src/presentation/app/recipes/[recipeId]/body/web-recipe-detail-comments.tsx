@@ -10,14 +10,13 @@ import { t } from '@presentation/i18n';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import type { RecipeCommentsState } from '@application/comments/list/recipe-comments-state';
 import { ValueConstants } from '@core/constants';
+import { useCommentDraft } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-comment-draft';
 
 export interface WebRecipeDetailCommentsProps {
   commentState: RecipeCommentsState | undefined;
   userId: string | null;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
-  onAddComment: () => void;
+  onAddComment: (text: string, onPosted: () => void) => void;
   onLoadMore: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -30,13 +29,13 @@ export interface WebRecipeDetailCommentsProps {
  * button are always shown/enabled — a guest's tap is caught by
  * `onAddComment` / `onToggleCommentLike` (wired to `useGuestGate` in the
  * parent screen), which opens a sign-in prompt instead of running the action.
+ * The composer's text is its own (`useCommentDraft`), so typing re-renders
+ * this section, not the detail page.
  */
 export const WebRecipeDetailComments = ({
   commentState,
   userId,
-  commentInput,
   submitError,
-  onChangeCommentInput,
   onAddComment,
   onLoadMore,
   onToggleCommentLike,
@@ -47,7 +46,8 @@ export const WebRecipeDetailComments = ({
   const total = commentState?.total ?? ValueConstants.zero;
   const items = commentState?.items ?? [];
   const canLoadMore = commentState !== undefined && items.length < commentState.total;
-  const submitDisabled = commentState?.isSubmitting === true || commentInput.trim().length === ValueConstants.zero;
+  const composer = useCommentDraft(onAddComment);
+  const submitDisabled = commentState?.isSubmitting === true || composer.isEmpty;
 
   return (
     <View style={styles.section}>
@@ -57,8 +57,8 @@ export const WebRecipeDetailComments = ({
 
       <View style={styles.inputRow}>
         <AutoGrowTextInput
-          value={commentInput}
-          onChangeText={onChangeCommentInput}
+          value={composer.draft}
+          onChangeText={composer.onChangeDraft}
           placeholder={t().comments.placeholder}
           placeholderTextColor={colors.textMuted}
           style={[
@@ -69,7 +69,7 @@ export const WebRecipeDetailComments = ({
           maxLength={COMMENT_MAX_LENGTH}
         />
         <Pressable
-          onPress={onAddComment}
+          onPress={composer.onSubmit}
           disabled={submitDisabled}
           accessibilityRole="button"
           accessibilityLabel={t().comments.send}

@@ -60,10 +60,8 @@ export interface WebRecipeDetailProps {
   completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
-  commentInput: string;
   submitError: string | null;
-  onChangeCommentInput: (value: string) => void;
-  onAddComment: () => void;
+  onAddComment: (text: string, onPosted: () => void) => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
   onDeleteComment: (commentId: string) => void;
@@ -151,9 +149,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           <WebRecipeDetailComments
             commentState={props.commentState}
             userId={props.userId}
-            commentInput={props.commentInput}
             submitError={props.submitError}
-            onChangeCommentInput={props.onChangeCommentInput}
             onAddComment={props.onAddComment}
             onLoadMore={props.onLoadMoreComments}
             onToggleCommentLike={props.onToggleCommentLike}

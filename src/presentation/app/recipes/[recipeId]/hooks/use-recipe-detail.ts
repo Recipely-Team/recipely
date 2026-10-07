@@ -105,7 +105,6 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const [shareOpen, setShareOpen] = useState(false);
   const [showDeleteSheet, setShowDeleteSheet] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [commentInput, setCommentInput] = useState(CharConstants.empty);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
   const revealCommentInput = useScrollToEndOnKeyboard(scrollViewRef);
@@ -137,26 +136,25 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   );
 
   /**
-   * Posts `text`, or the field's contents when called without one.
+   * Posts `text`; resolves true once the post lands.
    *
-   * The parameter exists for the assistant: writing the field and posting in
-   * the same tick meant the post read the PREVIOUS render's value — normally
-   * empty, which this drops — while still reporting success, so the model
-   * announced a comment that was never made. Same class as the append-then-
-   * write bug in the draft editor.
+   * The text always comes from the caller — the composer (which owns its
+   * draft, so typing does not re-render this screen) or the assistant. Writing
+   * the field and posting in the same tick used to read the PREVIOUS render's
+   * value — normally empty, which this drops — while still reporting success.
    */
-  const handleAddComment = useCallback(async (text?: string) => {
-    const trimmed = (text ?? commentInput).trim();
-    if (trimmed.length === ValueConstants.zero) return;
+  const handleAddComment = useCallback(async (text: string): Promise<boolean> => {
+    const trimmed = text.trim();
+    if (trimmed.length === ValueConstants.zero) return false;
     const ok = await commentsStore.getState().addComment(recipeId, trimmed);
     if (ok) {
-      setCommentInput(CharConstants.empty);
       setSubmitError(null);
     } else {
       const failure = commentsStore.getState().byRecipe[recipeId]?.error;
       setSubmitError(failure != null ? failureToastMessage(failure) : t().comments.error);
     }
-  }, [commentInput, commentsStore, recipeId]);
+    return ok;
+  }, [commentsStore, recipeId]);
 
   const handleToggleSave = useCallback(async () => {
     if (isLoading || !userId) return;
@@ -285,9 +283,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     userId,
     authorState,
     commentState,
-    commentInput,
     submitError,
-    onChangeCommentInput: setCommentInput,
     onFocusCommentInput: revealCommentInput,
     scrollViewRef,
     checkedIngredients,
@@ -296,7 +292,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onToggleStep,
     onToggleLike: () => requestGate(() => void handleToggleLike(), t().recipes.signInToLike),
     onToggleSave: () => requestGate(() => void handleToggleSave(), t().recipes.signInToSave),
-    onAddComment: () => requestGate(() => void handleAddComment(), t().comments.signInToComment),
+    onAddComment: (text: string, onPosted: () => void) =>
+      requestGate(() => void handleAddComment(text).then((ok) => ok && onPosted()), t().comments.signInToComment),
     /** Posts text the caller already has — the assistant's path. */
     onPostComment: (text: string) =>
       requestGate(() => void handleAddComment(text), t().comments.signInToComment),
