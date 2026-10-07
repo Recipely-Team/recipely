@@ -6,7 +6,11 @@ jest.mock('expo-router', () => ({
 }));
 
 import { act, type ReactTestInstance } from 'react-test-renderer';
-import { ok } from '@core/result/result-helpers';
+import { NetworkFailure } from '@core/failure';
+import { fail, ok } from '@core/result/result-helpers';
+import { AssistantAction } from '@domain/assistant/actions/assistant-action-type';
+import { AssistantActionError } from '@domain/assistant/actions/assistant-action-error';
+import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
 import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
@@ -30,9 +34,10 @@ const viewer = (): UserEntity => {
 const render = (signedIn: boolean, lines: readonly string[]) => {
   const repo = fakeShoppingRepository();
   repo.add.mockResolvedValue(ok({ items: [], added: 2, merged: 1 }));
-  const stores = { shoppingListStore: shoppingStoreOf(repo), authStore: authStoreOf(signedIn ? viewer() : null) } as unknown as Partial<ApplicationStores>;
+  const registry = new AssistantActionRegistry();
+  const stores = { shoppingListStore: shoppingStoreOf(repo), authStore: authStoreOf(signedIn ? viewer() : null), assistantActionRegistry: registry } as unknown as Partial<ApplicationStores>;
   const { root } = renderComponent(<AddToShoppingButton source={{ recipeId: 'r1', recipeName: 'Pancakes', lines }} inCard={false} />, stores);
-  return { root, repo };
+  return { root, repo, registry };
 };
 
 const button = (root: ReactTestInstance): ReactTestInstance =>
@@ -62,5 +67,45 @@ describe('Add to shopping list on a recipe', () => {
     const { root } = render(true, ['# Only a heading']);
     await act(async () => undefined);
     expect(root.findAllByType(SignInPromptSheet)).toHaveLength(0);
+  });
+
+  // Two taps in one frame both read `isAdding` as false; the server merge then doubled every amount.
+  it('adds the recipe once when the button is tapped twice in one frame', async () => {
+    const { root, repo } = render(true, ['1 cup milk']);
+    await act(async () => {
+      const press = button(root).props.onPress as () => void;
+      press();
+      press();
+    });
+    expect(repo.add).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends a guest who chooses to sign in to the login page, coming back to this recipe', async () => {
+    mockPush.mockClear();
+    const { root } = render(false, ['1 cup milk']);
+    await act(async () => (button(root).props.onPress as () => void)());
+    await act(async () => (root.findByType(SignInPromptSheet).props.onSignIn as () => void)());
+    expect(mockPush).toHaveBeenCalledWith('/login?redirect=%2Frecipes%2Fr1');
+  });
+
+  it('lets the assistant add the recipe and reports how many lines were new and merged', async () => {
+    const { repo, registry } = render(true, ['1 cup milk', '2 eggs']);
+    await act(async () => {
+      await expect(registry.run(AssistantAction.AddToShoppingList)).resolves.toMatchObject({ ok: true, title: 'Pancakes', n: { added: 2, merged: 1 } });
+    });
+    expect(repo.add).toHaveBeenCalledTimes(1);
+  });
+
+  it('tells the assistant why it could not add: signed out, nothing to buy, or the request failed', async () => {
+    const guest = render(false, ['1 cup milk']);
+    const empty = render(true, ['# Only a heading']);
+    const failing = render(true, ['1 cup milk']);
+    failing.repo.add.mockResolvedValue(fail(new NetworkFailure('offline')));
+    await act(async () => {
+      await expect(guest.registry.run(AssistantAction.AddToShoppingList)).resolves.toMatchObject({ ok: false, error: AssistantActionError.SignedOut });
+      await expect(empty.registry.run(AssistantAction.AddToShoppingList)).resolves.toMatchObject({ ok: false, error: AssistantActionError.NoIngredients });
+      await expect(failing.registry.run(AssistantAction.AddToShoppingList)).resolves.toMatchObject({ ok: false, error: AssistantActionError.Failed });
+    });
+    expect(guest.repo.add).not.toHaveBeenCalled();
   });
 });
