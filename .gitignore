@@ -70,3 +70,10 @@ memory/
 # Local, machine-specific release/push helper scripts (per-user, not project state).
 git_push.applescript
 recipely_push.command
+
+# env files and copies of them (only .env.example is committed; scripts/guard-secrets.mjs enforces it)
+.env
+.env.*
+!.env.example
+*.bak
+*.bak.*
