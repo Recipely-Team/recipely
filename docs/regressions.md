@@ -178,6 +178,14 @@ prerender draws the glyphs and ships the `@font-face` in `<head>`;
 `use-icon-fonts.test.tsx` fails on an imported icon family it does not register, and
 `scripts/assert-icon-fonts.mjs` (in `build:web`) fails on an app page without them.
 
+**Every Android build failed on a Kotlin module while every gate was green.**
+`@Volatile` was stacked twice on one field of the window-posture module; kotlinc rejects
+a repeated non-repeatable annotation, but lint, tsc, jest and `check:structure` never
+compile native code, so nothing ran it until a device build. **Native code under
+`modules/` has no gate unless one is written for it.**
+*Guard:* `check:structure` rule **AP** — no annotation applied twice to one Kotlin
+declaration under `modules/`; the fix was proven with a local prebuild + `assembleDebug`.
+
 ## Parsing and display
 
 **A greedy quantifier ate half a word.**

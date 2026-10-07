@@ -29,7 +29,6 @@ private const val STATE_HALF_OPENED = "halfOpened"
  * React Native lays out in.
  */
 class RecipelyWindowPostureModule : Module() {
-  @Volatile
   @Volatile private var latest: Map<String, Any>? = null
   private var job: Job? = null
 
