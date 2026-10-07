@@ -9,7 +9,7 @@ import type { NotificationTargetType } from '@domain/notifications/notification-
 import type { CreatorPlatformType } from '@domain/creators/creator-platform';
 import { ValueConstants } from '@core/constants';
 import type { SourcePlatformType } from '@domain/recipes/provenance/source-platform';
-
+import { ImportNotificationType } from '@domain/notifications/import-notification-type';
 
 /**
  * Domain entity representing a backend notification (comment, like, follow,
@@ -109,6 +109,15 @@ export class NotificationEntity extends BaseEntity<NotificationEntityProps> {
       return { kind: NotificationTargetKind.Draft, draftId: this.props.draftId };
     }
     return null;
+  }
+
+  /**
+   * A queued import that produced nothing. The server sends it as `import_done`
+   * too, with neither a draft nor a recipe behind it; read as it came, the row
+   * told the user their recipe was ready and then went nowhere when tapped.
+   */
+  get isFailedImport(): boolean {
+    return this.props.type === ImportNotificationType.Done && this.target === null;
   }
 
   /**

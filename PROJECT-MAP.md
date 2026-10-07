@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1911 source files.
+[architecture.md](architecture.md). 1914 source files.
 
 ## Layers
 
@@ -43,7 +43,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(1)_
 - `instagram/` — activity, connect, dm _(24)_
 - `likes/` _(1)_
-- `notifications/` _(11)_
+- `notifications/` _(13)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, recipe _(13)_
 - `storage/` _(3)_
@@ -67,7 +67,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules _(17)_
 - `likes/` _(5)_
-- `notifications/` — list, read _(9)_
+- `notifications/` — list, read _(10)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
 - `shopping/` — read, write _(11)_
@@ -168,4 +168,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: f1731ee11c223c58 -->
+<!-- fingerprint: 13e60d5f15e1de2c -->

@@ -114,3 +114,17 @@ describe('NotificationEntity.target — a creator decision', () => {
     });
   });
 });
+
+describe('NotificationEntity.isFailedImport', () => {
+  it('is a failed import when an import_done carries neither a draft nor a recipe', () => {
+    expect(build({ type: 'import_done', recipeId: null }).isFailedImport).toBe(true);
+  });
+
+  it('is a finished import while a draft is behind it', () => {
+    expect(build({ type: 'import_done', recipeId: null, draftId: 'd1' }).isFailedImport).toBe(false);
+  });
+
+  it('never applies to another type with no destination', () => {
+    expect(build({ type: 'follow', recipeId: null }).isFailedImport).toBe(false);
+  });
+});

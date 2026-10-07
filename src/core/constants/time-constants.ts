@@ -11,4 +11,6 @@ export const TimeConstants = {
   secondsPerMinute: 60,
   minutesPerHour: 60,
   hoursPerDay: 24,
+  /** 24 h × 60 min × 60 s × 1000 ms. */
+  millisecondsPerDay: 86_400_000,
 } as const;
