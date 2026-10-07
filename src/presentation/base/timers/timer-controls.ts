@@ -7,6 +7,8 @@ import { TimerTimeConstants } from '@presentation/base/timers/timer-time-constan
 import { showWarningToast } from '@presentation/base/feedback/show-toast';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
+import { timerWarnings } from '@domain/timers/timer-warnings';
+import type { TimerWarningAlert } from '@domain/timers/timer-warning-alert';
 
 /**
  * True when this recipe already has a timer going, which makes starting a
@@ -25,7 +27,27 @@ const isBlockedByRunningTimer = (recipeId: string, startingTimerId: string): boo
   return true;
 };
 
-/** Starts a timer: schedules all alarm notifications and persists the entry. */
+/** "1 minute left" / "5 minutes left" in the user's language. */
+const minutesLeftCopy = (minutes: number): string =>
+  minutes === ValueConstants.one ? t().timer.oneMinuteLeft : t().timer.minutesLeft.replace('{n}', String(minutes));
+
+/**
+ * Schedules a countdown's alarm and its quiet heads-ups; the ids come back together so one
+ * `cancel` on stop or pause clears both.
+ */
+const scheduleAlerts = async (timerId: string, recipeName: string, endTimeMs: number): Promise<string[]> => {
+  const service = getNotificationService();
+  const alerts = timerWarnings(endTimeMs, Date.now()).map(
+    (w): TimerWarningAlert => ({ fireAtMs: w.fireAtMs, body: minutesLeftCopy(w.minutesLeft) }),
+  );
+  const [completion, warnings] = await Promise.all([
+    service.scheduleTimerComplete(timerId, recipeName, endTimeMs, t().timer.notificationBody),
+    service.scheduleTimerWarnings(timerId, recipeName, alerts),
+  ]);
+  return [...completion, ...warnings];
+};
+
+/** Starts a timer: schedules its alarm and heads-ups and persists the entry. */
 export const startTimer = async (
   timerId: string,
   recipeId: string,
@@ -41,12 +63,7 @@ export const startTimer = async (
   await getNotificationService().requestPermissions();
   const durationSeconds = Math.round(minutes * TimerTimeConstants.secondsPerMinute);
   const endTimeMs = Date.now() + durationSeconds * TimerTimeConstants.msPerSecond;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
-    timerId,
-    recipeName,
-    endTimeMs,
-    t().timer.notificationBody,
-  );
+  const completionNotifIds = await scheduleAlerts(timerId, recipeName, endTimeMs);
   await timerStore.getState().add({
     id: timerId,
     recipeId,
@@ -86,12 +103,7 @@ export const resumeTimer = async (timerId: string): Promise<void> => {
   if (isBlockedByRunningTimer(entry.recipeId, timerId)) return;
   triggeredAlarms.release(timerId);
   const newEndTimeMs = Date.now() + entry.remainingMsOnPause;
-  const completionNotifIds = await getNotificationService().scheduleTimerComplete(
-    timerId,
-    entry.recipeName,
-    newEndTimeMs,
-    t().timer.notificationBody,
-  );
+  const completionNotifIds = await scheduleAlerts(timerId, entry.recipeName, newEndTimeMs);
   timerStore.setState((s) => {
     const cur = s.timers[timerId];
     if (cur === undefined) return s;

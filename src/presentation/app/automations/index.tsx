@@ -16,7 +16,9 @@ import { AutomationMetrics } from "@presentation/base/widgets/instagram/automati
 import {
   failureContent,
   failureIcon,
+  failureSeverity,
 } from "@presentation/base/errors/failure-lookups";
+import { SeverityType } from "@presentation/base/theme/colors/surfaces/severity-type";
 import { useAutomations } from "@presentation/app/automations/hooks/use-automations";
 import { AutomationsViewKind } from "@presentation/app/automations/model/automations-view-kind";
 import { AutomationsBar } from "@presentation/app/automations/shared/items/automations-bar";
@@ -84,6 +86,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
         return (
           <ErrorState
             icon={failureIcon(vm.connectionFailure)}
+            severity={failureSeverity(vm.connectionFailure)}
             title={content.title}
             body={content.body}
             primaryLabel={copy.tryAgain}
@@ -99,6 +102,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
         return (
           <ErrorState
             icon="logo-instagram"
+            severity={SeverityType.Neutral}
             title={t().errors.instagramNotConfigured.title}
             body={t().errors.instagramNotConfigured.body}
           />
@@ -128,6 +132,7 @@ export const AutomationsScreen = (): React.JSX.Element => {
           return (
             <ErrorState
               icon={failureIcon(rules.failure)}
+              severity={failureSeverity(rules.failure)}
               title={content.title}
               body={content.body}
               primaryLabel={copy.tryAgain}

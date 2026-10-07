@@ -17,6 +17,7 @@ import { RecipeListBody } from '@presentation/app/recipes/body/recipe-list-body'
 import { MobileFilterSheet } from '@presentation/app/recipes/sheets/mobile-filter-sheet';
 import { WebFilterModal } from '@presentation/app/recipes/sheets/web-filter-modal';
 import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
+import { RemindersOfferSheet } from '@presentation/app/recipes/sheets/reminders-offer-sheet';
 import { countActiveFilters } from '@presentation/app/recipes/model/filtering/filter-mutations';
 import { ValueConstants } from '@core/constants';
 
@@ -124,6 +125,8 @@ export const RecipeListScreen = (): React.JSX.Element => {
         onSignIn={vm.onGoToSignIn}
         message={vm.promptMessage}
       />
+
+      <RemindersOfferSheet blocked={vm.sheetOpen !== null || vm.promptVisible} />
     </>
   );
 };

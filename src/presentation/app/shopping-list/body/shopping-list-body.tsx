@@ -7,6 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { ListConstants } from '@presentation/base/constants/list-constants';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { spacing } from '@presentation/base/theme';
@@ -60,14 +61,14 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
       }
       ListEmptyComponent={
         list.status === StoreStatus.Loaded ? (
-          <ErrorState icon="cart-outline" title={copy.emptyTitle} body={copy.emptyBody} />
+          <ErrorState icon="cart-outline" severity={SeverityType.Neutral} title={copy.emptyTitle} body={copy.emptyBody} />
         ) : (
           <ActivityIndicator color={colors.primary} style={styles.spinner} />
         )
       }
       ListFooterComponent={
         list.status === StoreStatus.Loaded && list.moreFailure !== null ? (
-          <ErrorState icon="cloud-offline-outline" title={copy.loadMoreFailed} primaryLabel={copy.tryAgain} onPrimary={vm.onEndReached} />
+          <ErrorState icon="cloud-offline-outline" severity={SeverityType.Warning} title={copy.loadMoreFailed} primaryLabel={copy.tryAgain} onPrimary={vm.onEndReached} />
         ) : (
           <FeedFooter isLoadingMore={list.status === StoreStatus.Loaded && list.isLoadingMore} />
         )

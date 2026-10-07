@@ -74,7 +74,9 @@ const REVEAL_THRESHOLD = spacing.sm;
  * - **Refocus refetches only a stale feed** — one older than
  *   `FEED_STALE_AFTER_MS` since its last successful load. Every return from a
  *   detail page used to re-request page 1. The first load and a pull are
- *   unchanged; a deleted recipe already leaves the store via `remove`.
+ *   unchanged; a deleted recipe already leaves the store via `remove`, and a
+ *   change to the user's own recipes (publish, create) makes the next focus
+ *   refetch at once, so a just-published recipe never waits for the clock.
  * - **`buildApiFilters` takes the query as an argument** rather than closing
  *   over it: its identity is a dependency of the focus and locale effects, and
  *   a callback changing on every debounced keystroke made those refire and
@@ -91,7 +93,7 @@ type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore } = useStores();
+  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore, createdRecipesStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
   const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
@@ -283,6 +285,14 @@ export const useRecipeList = (): UseRecipeListResult => {
 
   // Re-fetch quietly on focus once the feed is stale; skip the mount focus.
   const didFocusRef = useRef(false);
+  const ownRecipesChangedRef = useRef(false);
+  useEffect(
+    () =>
+      createdRecipesStore.subscribe(() => {
+        ownRecipesChangedRef.current = true;
+      }),
+    [createdRecipesStore],
+  );
   useFocusEffect(
     useCallback(() => {
       if (!didFocusRef.current) {
@@ -290,7 +300,9 @@ export const useRecipeList = (): UseRecipeListResult => {
         return;
       }
       const lastLoadedAt = lastLoadedAtRef.current;
-      if (lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS) return;
+      const fresh = lastLoadedAt !== null && Date.now() - lastLoadedAt < FEED_STALE_AFTER_MS;
+      if (fresh && !ownRecipesChangedRef.current) return;
+      ownRecipesChangedRef.current = false;
       void load(buildApiFilters(filtersRef.current, sortByRef.current, searchRef.current));
     }, [load, buildApiFilters]),
   );

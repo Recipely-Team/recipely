@@ -37,6 +37,8 @@ const resetAll = (): void => {
   fakeKvStore.clear();
   notificationService.scheduleCalls = [];
   notificationService.cancelCalls = [];
+  notificationService.warningCalls = [];
+  notificationService.warningIds = [];
   toastStore.setState({ toasts: [] });
   alarmStore.setState({ alarms: [] });
 };
@@ -61,6 +63,34 @@ describe('timer-controls', () => {
     it('schedules alarm notifications', async () => {
       await startTimer('r1:prep', 'r1', 'Pasta', 5);
       expect(notificationService.scheduleCalls).toHaveLength(1);
+    });
+
+    it('gives a 10-minute timer a quiet heads-up at 5 and at 1 minute left', async () => {
+      await startTimer('r1:cook', 'r1', 'Pasta', 10);
+      const [alerts] = notificationService.warningCalls;
+      expect(alerts?.map((a) => a.body)).toEqual([
+        t().timer.minutesLeft.replace('{n}', '5'),
+        t().timer.oneMinuteLeft,
+      ]);
+      const end = timerStore.getState().timers['r1:cook']!.endTimeMs;
+      expect(alerts?.map((a) => end - a.fireAtMs)).toEqual([300_000, 60_000]);
+    });
+
+    it('stores the heads-up ids with the alarm ids, so stopping cancels both', async () => {
+      notificationService.warningIds = ['warn-5', 'warn-1'];
+      await startTimer('r1:cook', 'r1', 'Pasta', 10);
+      await stopTimer('r1:cook');
+      expect(notificationService.cancelCalls).toContainEqual(['notif-1', 'notif-2', 'notif-3', 'warn-5', 'warn-1']);
+    });
+
+    it('re-plans the heads-ups for what is left when a paused timer resumes', async () => {
+      await startTimer('r1:cook', 'r1', 'Pasta', 10);
+      await pauseTimer('r1:cook');
+      timerStore.setState((st) => ({
+        timers: { ...st.timers, 'r1:cook': { ...st.timers['r1:cook']!, remainingMsOnPause: 3 * 60_000 } },
+      }));
+      await resumeTimer('r1:cook');
+      expect(notificationService.warningCalls.at(-1)?.map((a) => a.body)).toEqual([t().timer.oneMinuteLeft]);
     });
 
     it('cancels the previous run’s notifications when the same timer is restarted', async () => {

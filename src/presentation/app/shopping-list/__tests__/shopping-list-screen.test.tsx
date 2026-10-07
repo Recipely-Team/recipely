@@ -66,6 +66,9 @@ describe('ShoppingListScreen', () => {
   it('says the list is empty, and offers Try again when it cannot load', async () => {
     const empty = await render([]);
     expect(textContent(empty.root)).toContain(t().shopping.emptyTitle);
+    // An empty list is not an error: it must not wear the red danger disc.
+    const emptyState = empty.root.findAll((n) => n.props.icon === 'cart-outline' && n.props.severity !== undefined)[0];
+    expect(emptyState?.props.severity).toBe('neutral');
 
     const repo = fakeShoppingRepository();
     repo.list.mockResolvedValue(fail(new NetworkFailure('offline')));

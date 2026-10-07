@@ -20,6 +20,12 @@ const dayWith = (calories: number[]) =>
   });
 
 describe('DiaryDay', () => {
+  it('reports the share of the calorie goal eaten, capped at a full ring', () => {
+    expect(dayWith([]).calorieProgress).toBe(0);
+    expect(dayWith([500, 500]).calorieProgress).toBeCloseTo(1000 / goals.calories);
+    expect(dayWith([goals.calories, 900]).calorieProgress).toBe(1);
+  });
+
   it('groups entries into the four meals in display order, each with its sum', () => {
     const groups = dayWith([400, 600, 500]).mealGroups;
     expect(groups.map((g) => g.meal)).toEqual([MealSlot.Breakfast, MealSlot.Lunch, MealSlot.Dinner, MealSlot.Snacks]);

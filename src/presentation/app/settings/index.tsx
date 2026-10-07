@@ -13,6 +13,7 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { RoutePaths } from '@presentation/base/constants';
 import { SettingsHeader } from '@presentation/app/settings/body/settings-header';
 import { SettingsAppearanceSection } from '@presentation/app/settings/body/settings-appearance-section';
+import { SettingsNotificationsSection } from '@presentation/app/settings/body/settings-notifications-section';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, controlSizes, avatarSizes } from '@presentation/base/theme';
@@ -76,6 +77,8 @@ export const SettingsScreen = (): React.JSX.Element => {
         </View>
 
         <SettingsAppearanceSection />
+
+        <SettingsNotificationsSection />
 
         <SectionHeader title={t().settings.account} />
         <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>

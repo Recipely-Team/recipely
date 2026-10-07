@@ -38,6 +38,10 @@ import type { CreatorsStoreState } from '@application/creators/creators-store-st
 import type { CreatorProfileStoreState } from '@application/creators/profile/creator-profile-store-state';
 import type { GetUserProfileUseCase } from '@application/user-profile/get-user-profile-use-case';
 import type { RegisterDeviceTokenUseCase } from '@application/notifications/register-device-token-use-case';
+import type { RefreshRemindersUseCase } from '@application/notifications/reminders/refresh-reminders-use-case';
+import type { SetRemindersChoiceUseCase } from '@application/notifications/reminders/set-reminders-choice-use-case';
+import type { GetRemindersEnabledUseCase } from '@application/notifications/reminders/get-reminders-enabled-use-case';
+import type { ShouldOfferRemindersUseCase } from '@application/notifications/reminders/should-offer-reminders-use-case';
 
 /** The store bundle `registerApplication` hands to the presentation layer. */
 export interface ApplicationStores {
@@ -100,4 +104,12 @@ export interface ApplicationStores {
   getUserProfile: GetUserProfileUseCase;
   /** Hands the push token to the backend once signed in. */
   registerDeviceToken: RegisterDeviceTokenUseCase;
+  /** Restarts the come-back reminder series; run on launch and on every return to the foreground. */
+  refreshReminders: RefreshRemindersUseCase;
+  /** Stores the answer to "may we remind you?" (asking the OS on a yes) and applies it. */
+  setRemindersChoice: SetRemindersChoiceUseCase;
+  /** Whether reminders are really on, for the Settings switch. */
+  getRemindersEnabled: GetRemindersEnabledUseCase;
+  /** Whether to ask "may we remind you?" now; records the first open. */
+  shouldOfferReminders: ShouldOfferRemindersUseCase;
 }
