@@ -22,6 +22,7 @@
 export const AnalyticsScreen = {
   recipeList: 'RecipeListScreen',
   recipeDetail: 'RecipeDetailScreen',
+  cookMode: 'CookModeScreen',
   creators: 'CreatorsScreen',
   creatorProfile: 'CreatorProfileScreen',
   myRecipes: 'MyRecipesScreen',

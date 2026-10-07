@@ -42,6 +42,7 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
 
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { renderComponent } from '@presentation/base/test-support/render-component';
+import { portionScalingFixture } from '@presentation/app/recipes/[recipeId]/model/portions/__fixtures__/portion-scaling-fixture';
 import { t } from '@presentation/i18n';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
@@ -105,6 +106,7 @@ const baseProps = {
   onCopyToDraft: jest.fn(),
   onDelete: jest.fn(),
   checkedIngredients: [],
+  portions: portionScalingFixture(),
   onToggleIngredient: jest.fn(),
   completedSteps: [false],
   onToggleStep: jest.fn(),

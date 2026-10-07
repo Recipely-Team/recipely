@@ -10,8 +10,8 @@ import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { MediaType } from '@domain/recipes/media/media-type';
-import { isBlank } from '@core/guards/type-guards';
 
 export interface DraftCardProps {
   draft: RecipeDraft;
@@ -26,7 +26,7 @@ export const DraftCard = ({ draft, onOpen, onDelete }: DraftCardProps): React.JS
   const colors = useTheme().colors;
   const name = draft.snapshot.name?.trim();
   const cover = draft.snapshot.media?.find((m) => m.type === MediaType.Image);
-  const ingredientCount = (draft.snapshot.ingredients ?? []).filter((x) => !isBlank(x)).length;
+  const ingredientCount = IngredientList.of(draft.snapshot.ingredients ?? []).filledCount;
 
   return (
     <Pressable

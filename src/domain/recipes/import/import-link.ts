@@ -136,6 +136,11 @@ export class ImportLink extends BaseValueObject<string> {
     return ok(new ImportLink(url.toString(), SourcePlatform.Web, host, ImportLink.shorten(`${host}${path}`)));
   }
 
+  /** This link when it is on `platform`; otherwise the unsupported-source failure, before any round trip. */
+  requirePlatform(platform: SourcePlatformType): Result<ImportLink, ValidationFailure> {
+    return this.platform === platform ? ok(this) : fail(ImportLink.unsupported(this.value));
+  }
+
   /** True for a video post, which the backend runs through a model; false for a page it reads. */
   get isVideo(): boolean {
     return this.platform !== SourcePlatform.Web;

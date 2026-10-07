@@ -34,6 +34,10 @@
           "destination": "/index.html"
         },
         {
+          "source": "/recipes/*/cook",
+          "destination": "/index.html"
+        },
+        {
           "source": "/creators/*",
           "destination": "/index.html"
         }
@@ -155,6 +159,10 @@
         },
         {
           "source": "/recipes/*",
+          "destination": "/index.html"
+        },
+        {
+          "source": "/recipes/*/cook",
           "destination": "/index.html"
         },
         {

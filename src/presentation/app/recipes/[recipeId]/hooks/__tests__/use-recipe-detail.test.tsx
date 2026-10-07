@@ -55,6 +55,7 @@ import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { t } from '@presentation/i18n';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
+import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
 
 const RECIPE_ID = 'recipe-3';
 const USER_ID = 'user-1';
@@ -247,6 +248,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     syncFromApi: jest.fn(),
   }));
   const userProfileStore = create(() => ({ state: { status: 'idle' as const }, load: jest.fn() }));
+  const stepProgressStore = configureStepProgressStore();
 
   return {
     recipeDetailStore,
@@ -257,6 +259,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
     commentsStore,
     likesStore,
     userProfileStore,
+    stepProgressStore,
   } as unknown as StoresType;
 };
 

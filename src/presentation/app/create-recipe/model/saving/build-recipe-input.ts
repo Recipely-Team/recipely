@@ -7,7 +7,7 @@ import { MediaType } from '@domain/recipes/media/media-type';
 import { RecipeVisibility } from '@domain/recipes/publishing/recipe-visibility';
 
 import { cleanLines } from '@presentation/app/create-recipe/model/saving/clean-lines';
-import { cleanIngredients } from '@presentation/app/create-recipe/model/saving/clean-ingredients';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 
 /** Builds the create-recipe API payload from the editor state for a given locale. */
 export const buildCreateInput = (
@@ -24,7 +24,7 @@ export const buildCreateInput = (
     cuisine: recipe.cuisine ?? CuisineKey.Other,
     category: recipe.category,
     difficulty: recipe.difficulty,
-    ingredients: { [locale]: cleanIngredients(recipe.ingredients) },
+    ingredients: { [locale]: IngredientList.of(recipe.ingredients).cleaned() },
     instructions: { [locale]: cleanLines(recipe.instructions) },
     prepTimeMinutes: recipe.prepTimeMinutes,
     cookTimeMinutes: recipe.cookTimeMinutes,

@@ -14,6 +14,7 @@ import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
+import { stepTimerPrefix } from '@presentation/base/timers/step-timer-prefix';
 
 /**
  * Matches the single-recipe detail route (`/recipes/:recipeId`) so this bar
@@ -21,6 +22,7 @@ import { RoutePaths } from '@presentation/base/constants';
  * {@link ActiveTimersBar}.
  */
 const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
+const RECIPE_COOK_PATH = RoutePaths.recipeCookPattern;
 
 /**
  * Floating bar showing every active timer that isn't already visible inline
@@ -33,7 +35,8 @@ const RECIPE_DETAIL_PATH = RoutePaths.recipeDetailPattern;
  * one place. The one case it deliberately hides is a timer for the recipe
  * whose detail screen is currently open: that timer already has a live
  * inline countdown (the prep/cook stat segment, or the step's inline chip),
- * so repeating it here would be a literal on-screen duplicate.
+ * so repeating it here would be a literal on-screen duplicate. Cook mode is
+ * the same case for its recipe's STEP timers, which it lists inline.
  *
  * Being pinned over the content, it can cover whatever sits at the bottom of
  * the screen — the onboarding CTAs are directly underneath it, with no way to
@@ -58,8 +61,11 @@ export const ActiveTimersBar = (): React.JSX.Element | null => {
   const collapsed = timersBarStore((s) => s.collapsed);
   const setCollapsed = timersBarStore((s) => s.setCollapsed);
   const currentRecipeId = RECIPE_DETAIL_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
+  const cookingRecipeId = RECIPE_COOK_PATH.exec(pathname)?.[ValueConstants.one] ?? null;
   const entries = Object.values(timers).filter(
-    (entry) => entry.recipeId !== currentRecipeId,
+    (entry) =>
+      entry.recipeId !== currentRecipeId &&
+      (cookingRecipeId === null || !entry.id.startsWith(stepTimerPrefix(cookingRecipeId))),
   );
 
   if (entries.length === ValueConstants.zero) return null;

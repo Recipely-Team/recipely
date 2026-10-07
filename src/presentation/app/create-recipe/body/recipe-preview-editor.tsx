@@ -12,8 +12,8 @@ import type { EditableRecipe } from '@presentation/app/create-recipe/model/draft
 import { RecipeSpecCard } from '@presentation/app/create-recipe/body/recipe-spec-card';
 import { EditableItemsSection } from '@presentation/app/create-recipe/body/editable-items-section';
 import { IngredientGroupCard } from '@presentation/app/create-recipe/items/ingredient-group-card';
-import { INGREDIENT_GROUP_PREFIX } from '@domain/recipes/ingredients/ingredient-group-prefix';
-import { parseIngredientGroups } from '@presentation/app/create-recipe/model/ingredients/parse-ingredient-groups';
+import { IngredientLine } from '@domain/recipes/ingredients/ingredient-line';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 import { StepRow } from '@presentation/app/create-recipe/items/step-row';
 import { SelectTile } from '@presentation/app/create-recipe/items/select-tile';
 import { TaxonomyPickerSheet } from '@presentation/app/create-recipe/sheets/taxonomy-picker-sheet';
@@ -84,12 +84,9 @@ export const RecipePreviewEditor = ({
   const category = categoryLabel(recipe.category);
   const cover = recipe.media.find((m) => m.type === MediaType.Image);
   // Group headings are structure, not items.
-  const ingredientGroups = parseIngredientGroups(recipe.ingredients);
-  const ingredientCount = ingredientGroups.reduce(
-    (total, group) =>
-      total + group.items.filter((item) => item.value.trim().length > ValueConstants.zero).length,
-    ValueConstants.zero,
-  );
+  const ingredientList = IngredientList.of(recipe.ingredients);
+  const ingredientGroups = ingredientList.groups();
+  const ingredientCount = ingredientList.filledCount;
   const stepCount = recipe.instructions.filter((s) => s.trim().length > ValueConstants.zero).length;
 
   return (
@@ -186,7 +183,7 @@ export const RecipePreviewEditor = ({
                 )
               }
               onRenameGroup={(label) =>
-                onChangeIngredient(group.headerIndex, `${INGREDIENT_GROUP_PREFIX}${label}`)
+                onChangeIngredient(group.headerIndex, IngredientLine.heading(label))
               }
               onDeleteGroup={(keepItems) =>
                 onRemoveIngredientGroup(

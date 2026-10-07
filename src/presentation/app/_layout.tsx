@@ -159,6 +159,7 @@ const RootStack = (): React.JSX.Element => {
         <Stack.Screen name="verify-code/index" options={{ headerShown: false }} />
         <Stack.Screen name="recipes/index" options={TAB_SCREEN_OPTIONS} />
         <Stack.Screen name="recipes/[recipeId]/index" options={{ headerShown: false }} />
+        <Stack.Screen name="recipes/[recipeId]/cook/index" options={{ headerShown: false }} />
         <Stack.Screen name="creators/index" options={{ headerShown: false }} />
         <Stack.Screen name="creators/[userId]/index" options={{ headerShown: false }} />
         <Stack.Screen name="my-recipes/index" options={TAB_SCREEN_OPTIONS} />

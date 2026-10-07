@@ -22,6 +22,7 @@ jest.mock('@presentation/base/taxonomy/use-taxonomy-label', () => ({
   useTaxonomyLabel: () => ({ cuisineLabel: (key: string) => ({ name: key }) }),
 }));
 
+import { portionScalingFixture } from '@presentation/app/recipes/[recipeId]/model/portions/__fixtures__/portion-scaling-fixture';
 import { StoreStatus } from '@application/store/store-status';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe-overview';
@@ -44,6 +45,7 @@ describe('RecipeOverview — nutrition heading', () => {
         onToggleLike={jest.fn()}
         isNutritionCalculating={false}
         photos={undefined}
+        portions={portionScalingFixture()}
       />,
     );
 

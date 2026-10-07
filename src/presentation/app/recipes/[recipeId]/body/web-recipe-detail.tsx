@@ -5,6 +5,7 @@ import { InstructionCard } from '@presentation/app/recipes/[recipeId]/items/step
 import { WebRecipeDetailHeader } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-header';
 import { WebRecipeDetailSidebar } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-sidebar';
 import { WebRecipeDetailComments } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail-comments';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { useLayout } from '@presentation/base/responsive/use-layout';
@@ -54,8 +55,9 @@ export interface WebRecipeDetailProps {
   onCopyToDraft: () => void;
   onDelete: () => void;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
   commentInput: string;
@@ -164,6 +166,7 @@ export const WebRecipeDetail = (props: WebRecipeDetailProps): React.JSX.Element 
           <WebRecipeDetailSidebar
             recipe={recipe}
             checkedIngredients={props.checkedIngredients}
+            portions={props.portions}
             onToggleIngredient={props.onToggleIngredient}
             isNutritionCalculating={props.isNutritionCalculating}
           />

@@ -49,6 +49,7 @@ const CREATOR_PROFILE_PREFIX = `${RoutePaths.creators}${CharConstants.slash}`;
 const resolveScreen = (pathname: string): string | null => {
   const exact = SCREEN_BY_PATH.get(pathname);
   if (exact !== undefined) return exact;
+  if (RoutePaths.recipeCookPattern.test(pathname)) return AnalyticsScreen.cookMode;
   if (pathname.startsWith(RECIPE_DETAIL_PREFIX)) return AnalyticsScreen.recipeDetail;
   if (pathname.startsWith(CREATOR_PROFILE_PREFIX)) return AnalyticsScreen.creatorProfile;
   return null;

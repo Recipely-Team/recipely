@@ -1,5 +1,6 @@
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { ValueConstants } from '@core/constants';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
 
 /**
  * True when the editor holds something worth saving as a draft.
@@ -10,5 +11,5 @@ import { ValueConstants } from '@core/constants';
  */
 export const editableHasContent = (recipe: EditableRecipe): boolean =>
   recipe.name.trim().length > ValueConstants.zero ||
-  recipe.ingredients.some((s) => s.trim().length > ValueConstants.zero) ||
+  IngredientList.of(recipe.ingredients).hasContent ||
   recipe.instructions.some((s) => s.trim().length > ValueConstants.zero);

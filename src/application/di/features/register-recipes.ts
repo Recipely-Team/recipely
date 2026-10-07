@@ -1,3 +1,4 @@
+import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -55,6 +56,7 @@ export const registerRecipes = (
   | 'fileImportStore'
   | 'favoritesStore'
   | 'loadFavoritesUseCase'
+  | 'stepProgressStore'
 > => {
   const recipeRepo = container.resolve<RecipeRepositoryInterface>(TOKENS.RecipeRepository);
   const listRecipes = new ListRecipesUseCase(recipeRepo);
@@ -112,6 +114,7 @@ export const registerRecipes = (
   const fileImportStore = configureFileImportStore({
     importRecipeFromFilesUseCase: new ImportRecipeFromFilesUseCase(recipeRepo),
   });
+  const stepProgressStore = configureStepProgressStore();
   return {
     recipeListStore,
     trendingRecipesStore,
@@ -123,5 +126,6 @@ export const registerRecipes = (
     fileImportStore,
     favoritesStore,
     loadFavoritesUseCase,
+    stepProgressStore,
   };
 };

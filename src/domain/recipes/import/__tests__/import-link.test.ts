@@ -140,4 +140,18 @@ describe('ImportLink', () => {
   it('treats an empty field as an invalid link', () => {
     expect(failureKeyOf('   ')).toBe(ErrorMessageKey.importInvalidUrl);
   });
+
+  describe('requirePlatform', () => {
+    it('keeps a link that is on the required platform', () => {
+      const link = accepted('instagram.com/reel/Cx1y2z3');
+      const result = link.requirePlatform(SourcePlatform.Instagram);
+      expect(result.ok && result.value).toBe(link);
+    });
+
+    it('refuses a link on another platform as an unsupported source', () => {
+      const result = accepted('https://www.tiktok.com/@chef/video/123').requirePlatform(SourcePlatform.Instagram);
+      expect(result.ok).toBe(false);
+      if (!result.ok) expect(result.failure.messageKey).toBe(ErrorMessageKey.importUnsupportedSource);
+    });
+  });
 });

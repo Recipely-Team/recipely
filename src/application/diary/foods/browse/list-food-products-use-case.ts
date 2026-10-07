@@ -1,5 +1,6 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
+import { PageSizes } from '@application/config/page-sizes';
 import type { Page } from '@domain/common/page';
 import type { FoodProduct } from '@domain/diary/foods/product/food-product';
 import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-catalog-repository-interface';
@@ -8,7 +9,7 @@ import type { FoodCatalogRepositoryInterface } from '@domain/diary/foods/food-ca
 export class ListFoodProductsUseCase {
   constructor(private readonly repo: FoodCatalogRepositoryInterface) {}
 
-  execute(category: string | null, page: number, pageSize: number): Promise<Result<Page<FoodProduct>, Failure>> {
-    return this.repo.listProducts(category, page, pageSize);
+  execute(category: string | null, page: number): Promise<Result<Page<FoodProduct>, Failure>> {
+    return this.repo.listProducts(category, page, PageSizes.foodList);
   }
 }

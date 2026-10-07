@@ -10,8 +10,9 @@ import { t } from '@presentation/i18n';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, opacities } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import type { RecipeEntity } from '@domain/recipes/recipe-entity';
-import { isIngredientGroup } from '@domain/recipes/ingredients/is-ingredient-group';
-import { ingredientGroupLabel } from '@domain/recipes/ingredients/ingredient-group-label';
+import { IngredientList } from '@domain/recipes/ingredients/ingredient-list';
+import { UnitSystemToggle } from '@presentation/app/recipes/[recipeId]/items/steps/unit-system-toggle';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 
 export interface RecipeStepsProps {
   recipe: RecipeEntity;
@@ -19,8 +20,9 @@ export interface RecipeStepsProps {
   isOwner: boolean;
   isExpanded: boolean;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   onDelete: () => void;
 }
@@ -35,33 +37,31 @@ export const RecipeSteps = ({
   isOwner,
   isExpanded,
   checkedIngredients,
+  portions,
   onToggleIngredient,
   completedSteps,
   onToggleStep,
   onDelete,
 }: RecipeStepsProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const ingredients = IngredientList.of(portions.ingredients);
 
   return (
     <>
-      {/* The count is of INGREDIENTS: a recipe with three group headings does
-          not have three more things to buy. */}
-      <SectionHeader
-        title={t().recipes.ingredients}
-        count={recipe.ingredients.filter((line) => !isIngredientGroup(line)).length}
-      />
+      <SectionHeader title={t().recipes.ingredients} count={ingredients.filledCount} />
       <View style={styles.cardsList}>
-        {recipe.ingredients.map((item, i) =>
-          isIngredientGroup(item) ? (
+        <UnitSystemToggle portions={portions} />
+        {ingredients.lines.map((line, i) =>
+          line.isGroup ? (
             <IngredientGroupHeading
               key={i}
-              label={ingredientGroupLabel(item)}
+              label={line.groupLabel}
               isFirst={i === ValueConstants.zero}
             />
           ) : (
             <IngredientCard
               key={i}
-              raw={item}
+              raw={line.raw}
               checked={checkedIngredients[i] ?? false}
               onToggle={() => onToggleIngredient(i)}
             />

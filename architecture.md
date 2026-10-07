@@ -114,7 +114,7 @@ references are **by id only**.
 
 | Aggregate root | Members / notes |
 |---|---|
-| `RecipeEntity` | Root. `RecipeSummaryEntity` and `RecipeDetail` (the recipe plus the viewer's like) are read models of it (not separate aggregates). `MediaItem`, `RecipeNutrition` are VO-shaped members. `commentCount` / `likeCount` are server-maintained denormalizations. |
+| `RecipeEntity` | Root. `RecipeSummaryEntity` and `RecipeDetail` (the recipe plus the viewer's like) are read models of it (not separate aggregates). `MediaItem`, `RecipeNutrition` are VO-shaped members. `IngredientList` / `IngredientLine` (with `Quantity`) are value objects over its `ingredients` lines; `RecipeServings` is the reader's chosen servings, a value object. `commentCount` / `likeCount` are server-maintained denormalizations. |
 | `CommentEntity` | Own root (own identity + lifecycle); references its recipe by `recipeId`. `CommentView` (the comment plus the viewer's like) is a read model. |
 | `UserEntity` | Root (auth identity). Holds the user's own `CreatorClaim` (value object: `CreatorTag` + review status). |
 | `UserProfileEntity` | Own root (profile lifecycle independent of auth session); references `UserEntity` by id. `CreatorSummaryEntity` (the Explore creators strip) is a read model of it, not a separate aggregate; `CreatorTag` / `CreatorHandle` are value objects. |

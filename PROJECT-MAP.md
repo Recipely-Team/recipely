@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1786 source files.
+[architecture.md](architecture.md). 1831 source files.
 
 ## Layers
 
@@ -34,18 +34,18 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `common/` _(5)_
 - `creators/` _(13)_
 - `device/` _(3)_
-- `diary/` — calendar, day, entry, foods, month, nutrition _(51)_
+- `diary/` — calendar, day, entry, foods, month, nutrition _(52)_
 - `display/` _(5)_
 - `drafts/` _(6)_
 - `favorites/` _(1)_
-- `feedback/` _(3)_
+- `feedback/` _(4)_
 - `flags/` _(1)_
 - `i18n/` _(1)_
 - `instagram/` — activity, connect, dm _(24)_
 - `likes/` _(1)_
 - `network/` _(2)_
 - `notifications/` _(11)_
-- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(59)_
+- `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `storage/` _(1)_
 - `user-profile/` _(5)_
 
@@ -69,7 +69,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `likes/` _(6)_
 - `notifications/` — list, read _(11)_
 - `onboarding/` _(2)_
-- `recipes/` — create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(57)_
+- `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(59)_
 - `storage/` _(2)_
 - `store/` — paging _(7)_
 - `timers/` _(7)_
@@ -125,12 +125,12 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(97)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(98)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(5)_
 - `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(51)_
-- `timers/` — timer control helpers _(7)_
+- `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram) — small pure helpers _(28)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
 - `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(185)_
@@ -166,4 +166,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 220206bc29c959c1 -->
+<!-- fingerprint: 6359b589b6ef64d1 -->

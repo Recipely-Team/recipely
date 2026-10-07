@@ -3,6 +3,7 @@ import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recip
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
 import { WebRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/web-recipe-detail';
 import { MobileRecipeDetail } from '@presentation/app/recipes/[recipeId]/body/mobile-recipe-detail';
+import { usePortionScaling } from '@presentation/app/recipes/[recipeId]/hooks/use-portion-scaling';
 
 export interface RecipeDetailContentProps {
   vm: UseRecipeDetailResult;
@@ -20,6 +21,7 @@ export const RecipeDetailContent = ({
   commentHighlight,
   onBack,
 }: RecipeDetailContentProps): React.JSX.Element | null => {
+  const portions = usePortionScaling(vm.recipe);
   return (
     vm.recipe !== null ? (
       isExpanded ? (
@@ -41,6 +43,7 @@ export const RecipeDetailContent = ({
           onDelete={vm.onOpenDelete}
           photos={ownerPhotoControls}
           checkedIngredients={vm.checkedIngredients}
+          portions={portions}
           onToggleIngredient={vm.onToggleIngredient}
           completedSteps={vm.completedSteps}
           onToggleStep={vm.onToggleStep}
@@ -67,6 +70,7 @@ export const RecipeDetailContent = ({
           isNutritionCalculating={vm.isNutritionCalculating}
           userId={vm.userId}
           checkedIngredients={vm.checkedIngredients}
+          portions={portions}
           onToggleIngredient={vm.onToggleIngredient}
           completedSteps={vm.completedSteps}
           onToggleStep={vm.onToggleStep}

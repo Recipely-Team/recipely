@@ -56,8 +56,12 @@ const robots = fs.readFileSync(ROBOTS, 'utf8');
 const sitemap = fs.readFileSync(SITEMAP, 'utf8');
 const rewrites = JSON.stringify(JSON.parse(fs.readFileSync(HOSTING, 'utf8')).hosting);
 
+// A page under a dynamic segment (`/recipes/[recipeId]/cook`) is disallowed with
+// robots' `*` wildcard in that segment's place.
+const robotsPattern = (route) =>
+  route.replace(/\/\[[^\]]+\]/g, '/*').replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const isDisallowed = (route) =>
-  new RegExp(`^Disallow:\\s*${route}\\s*$`, 'm').test(robots);
+  new RegExp(`^Disallow:\\s*${robotsPattern(route)}\\s*$`, 'm').test(robots);
 const isListed = (route) => sitemap.includes(`${route}</loc>`);
 const isRewritten = (route) => rewrites.includes(`"${route.replace(/\/\[[^\]]+\]$/, '/*')}"`);
 

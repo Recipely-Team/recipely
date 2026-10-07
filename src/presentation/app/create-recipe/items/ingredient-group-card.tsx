@@ -15,7 +15,7 @@ import {
 } from '@presentation/base/theme';
 import { useTextLineHeight } from '@presentation/base/theme/tokens/typography/use-text-line-height';
 import { t } from '@presentation/i18n';
-import type { IngredientGroup } from '@presentation/app/create-recipe/model/ingredients/ingredient-group';
+import type { IngredientGroup } from '@domain/recipes/ingredients/ingredient-group';
 import { ValueConstants } from '@core/constants';
 import { useStableKeys } from '@presentation/app/create-recipe/hooks/use-stable-keys';
 

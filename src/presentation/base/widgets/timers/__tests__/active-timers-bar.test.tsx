@@ -72,6 +72,26 @@ describe('ActiveTimersBar — same-screen dedupe', () => {
     expect(renderer.toJSON()).not.toBeNull();
   });
 
+  it('leaves out the step timers cook mode lists inline, and keeps the rest', () => {
+    mockPathname = '/recipes/pecan-pie/cook';
+    timerStore.setState({
+      timers: { 'pecan-pie:step2:10min': makeEntry('pecan-pie:step2:10min', 'pecan-pie', 'Pecan Pie') },
+    });
+    renderer = renderComponent(<ActiveTimersBar />).renderer;
+    const tree = renderer.toJSON();
+    expect(Array.isArray(tree) ? tree : tree?.children).toBeNull();
+
+    act(() => renderer?.unmount());
+    timerStore.setState({
+      timers: {
+        'pecan-pie:step2:10min': makeEntry('pecan-pie:step2:10min', 'pecan-pie', 'Pecan Pie'),
+        'pecan-pie:cook': makeEntry('pecan-pie:cook', 'pecan-pie', 'Pecan Pie'),
+      },
+    });
+    renderer = renderComponent(<ActiveTimersBar />).renderer;
+    expect(renderer.toJSON()).not.toBeNull();
+  });
+
   it('shows every timer when not on any recipe detail screen', () => {
     mockPathname = '/my-recipes';
     timerStore.setState({

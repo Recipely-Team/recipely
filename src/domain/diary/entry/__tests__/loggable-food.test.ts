@@ -46,3 +46,27 @@ describe('LoggableFood.quickAdd', () => {
     expect(!r.ok && r.failure.messageKey).toBe('errors.validation.nutrient_invalid');
   });
 });
+
+describe('LoggableFood.fromRecipe', () => {
+  const recipe = { id: 'recipe-1', name: 'Menemen', image: 'https://cdn.example.test/cover.jpg', caloriesPerServing: 350, nutrition: undefined };
+
+  it('takes calories and macros per serving from the recipe', () => {
+    const r = LoggableFood.fromRecipe({ ...recipe, nutrition: { protein: 20, carbs: 40, fat: 10, fiber: 6 } });
+    expect(r.ok).toBe(true);
+    if (!r.ok) return;
+    expect(r.value.perServing.value).toEqual({ calories: 350, protein: 20, carbs: 40, fat: 10, fiber: 6 });
+    expect(r.value.recipeId).toBe('recipe-1');
+    expect(r.value.imageUrl).toBe('https://cdn.example.test/cover.jpg');
+  });
+
+  it('gives a calories-only recipe null macros, treating a reported 0 as absent', () => {
+    const r = LoggableFood.fromRecipe({ ...recipe, image: '', nutrition: { protein: 0 } });
+    expect(r.ok && r.value.perServing.hasMacros).toBe(false);
+    expect(r.ok && r.value.perServing.fiber).toBeNull();
+    expect(r.ok && r.value.imageUrl).toBeNull();
+  });
+
+  it('refuses a recipe without calories', () => {
+    expect(LoggableFood.fromRecipe({ ...recipe, caloriesPerServing: 0 }).ok).toBe(false);
+  });
+});

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { StyleSheet, View, type LayoutChangeEvent } from 'react-native';
 import { TimeCard } from '@presentation/app/recipes/[recipeId]/items/meta/time-card';
 import { InfoStat } from '@presentation/app/recipes/[recipeId]/items/meta/info-stat';
+import { PortionStepper } from '@presentation/app/recipes/[recipeId]/items/meta/portion-stepper';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import { statCellWidths } from '@presentation/app/recipes/[recipeId]/model/meta/stat-cell-widths';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, borderWidths } from '@presentation/base/theme';
@@ -14,7 +16,7 @@ import { ValueConstants } from '@core/constants';
 export interface RecipeMetaCardProps {
   prepTimeMinutes: number;
   cookTimeMinutes: number;
-  servings: number;
+  portions: PortionScaling;
   difficulty: Difficulty;
   recipeId: string;
   recipeName: string;
@@ -34,6 +36,8 @@ const FRAME = { border: borderWidths.thin, gap: borderWidths.hairline } as const
  *   at or below `statGrid.narrowMaxWidth` the tiles fold into two columns.
  * - **Dividers are the card showing through** 1pt gaps between surface tiles,
  *   so a wrapped grid gets its horizontal rule for free.
+ * - **The servings tile steps**: its value is the reader's chosen servings and
+ *   the stepper under it rescales every ingredient on the page.
  * - **Difficulty goes through `difficultyLabel`**, as the web sidebar does;
  *   the raw wire value "EASY" was printed on the phone.
  * - **The shadow sits on an outer view**: on Android `overflow: hidden` and
@@ -42,7 +46,7 @@ const FRAME = { border: borderWidths.thin, gap: borderWidths.hairline } as const
 export const RecipeMetaCard = ({
   prepTimeMinutes,
   cookTimeMinutes,
-  servings,
+  portions,
   difficulty,
   recipeId,
   recipeName,
@@ -64,7 +68,17 @@ export const RecipeMetaCard = ({
       node: <TimeCard label={strings.cookShort} minutes={cookTimeMinutes} recipeId={recipeId} recipeName={recipeName} />,
     });
   }
-  tiles.push({ key: 'serves', node: <InfoStat icon="people-outline" value={String(servings)} label={strings.servings} /> });
+  tiles.push({
+    key: 'serves',
+    node: (
+      <InfoStat
+        icon="people-outline"
+        value={String(portions.servings)}
+        label={strings.servings}
+        footer={<PortionStepper portions={portions} inTile />}
+      />
+    ),
+  });
   tiles.push({
     key: 'level',
     node: <InfoStat icon="speedometer-outline" value={difficultyLabel(difficulty)} label={strings.difficulty} />,

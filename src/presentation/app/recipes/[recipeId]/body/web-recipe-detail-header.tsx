@@ -16,6 +16,7 @@ import { formatRating } from '@presentation/base/utils/format-rating';
 import { ProvenanceNote } from '@presentation/base/widgets/badges/provenance-note';
 import type { GalleryOwnerControls } from '@presentation/app/recipes/[recipeId]/model/gallery-owner-controls';
 import { OwnerStatusPanel } from '@presentation/app/recipes/[recipeId]/items/publishing/owner-status-panel';
+import { StartCookingPill } from '@presentation/app/recipes/[recipeId]/items/start-cooking-pill';
 
 export interface WebRecipeDetailHeaderProps {
   recipe: RecipeEntity;
@@ -135,6 +136,7 @@ export const WebRecipeDetailHeader = ({
       </View>
 
       <View style={styles.actions}>
+        {recipe.instructions.length > ValueConstants.zero ? <StartCookingPill recipeId={recipe.id} /> : null}
         {isOwner ? (
           <Pressable
             accessibilityRole="button"

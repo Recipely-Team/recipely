@@ -142,6 +142,13 @@ export const DiagnosticMessage = {
       focalPointOutOfFrame: 'Focal point must lie within 0..1 on both axes',
       imageCreditIncomplete: 'Image credit needs an author, a licence and an http(s) link',
     },
+    quantity: {
+      amountNotPositive: 'A quantity amount must be a positive finite number',
+      rangeInverted: 'A quantity range must end above where it starts',
+    },
+    recipeServings: {
+      outOfRange: 'Servings must be a whole number within the recipe limits',
+    },
   },
   creator: {
     handleInvalid: (platform: string): string => `Not a valid ${platform} handle`,

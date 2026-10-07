@@ -46,7 +46,7 @@ export interface UseRecipeDetailResult {
   scrollViewRef: RefObject<ScrollView | null>;
 
   checkedIngredients: boolean[];
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleIngredient: (index: number) => void;
   onToggleStep: (index: number) => void;
 

@@ -7,6 +7,7 @@ import { RecipeOverview } from '@presentation/app/recipes/[recipeId]/body/recipe
 import { RecipeSteps } from '@presentation/app/recipes/[recipeId]/body/recipe-steps';
 import { PhotoCreditLine } from '@presentation/app/recipes/[recipeId]/items/media/photo-credit-line';
 import { RecipeCommentsSection } from '@presentation/app/recipes/[recipeId]/body/recipe-comments-section';
+import type { PortionScaling } from '@presentation/app/recipes/[recipeId]/model/portions/portion-scaling';
 import type { RecipeAuthorState } from '@presentation/app/recipes/[recipeId]/model/author/recipe-author-state';
 import type { UseCommentHighlightResult } from '@presentation/app/recipes/[recipeId]/model/comments/use-comment-highlight-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -29,8 +30,9 @@ export interface MobileRecipeDetailProps {
   isNutritionCalculating: boolean;
   userId: string | null;
   checkedIngredients: boolean[];
+  portions: PortionScaling;
   onToggleIngredient: (index: number) => void;
-  completedSteps: boolean[];
+  completedSteps: readonly boolean[];
   onToggleStep: (index: number) => void;
   commentState: RecipeCommentsState | undefined;
   commentInput: string;
@@ -88,6 +90,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           onToggleLike={props.onToggleLike}
           isNutritionCalculating={props.isNutritionCalculating}
           photos={props.photos}
+          portions={props.portions}
         />
 
         <RecipeSteps
@@ -96,6 +99,7 @@ export const MobileRecipeDetail = (props: MobileRecipeDetailProps): React.JSX.El
           isOwner={props.isOwner}
           isExpanded={props.isExpanded}
           checkedIngredients={props.checkedIngredients}
+          portions={props.portions}
           onToggleIngredient={props.onToggleIngredient}
           completedSteps={props.completedSteps}
           onToggleStep={props.onToggleStep}
