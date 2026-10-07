@@ -211,6 +211,19 @@ without `handle` reached `CreatorHandle.normalize(undefined)` and threw inside `
 cases in `creator-mappers.test.ts` and `session-creator-claim.test.ts`. **A DTO type
 is not a check** — a reader that promises leniency narrows the shape itself.
 
+**Cook mode and the assistants showed different amounts from the recipe page.**
+The servings / units choice was page-local state on the detail page, so cook mode's
+ingredient sheet (and its "Add to shopping list"), the cook-mode assistant and the
+recipe-page assistant all used the raw lines — the recipe's own servings, and
+`# For the sauce` as an ordinary row or spoken word. *Guard:* the choice lives in a
+session-scoped `portionChoiceStore` (cleared on sign-out) read through
+`usePortionScaling` by every surface; assistants read `spokenIngredientLines`. Covered
+by "lists and reads the ingredients the recipe page shows …"
+(`cook-mode-screen.test.tsx`) and "reads the ingredients at the servings the reader
+chose …" (`use-recipe-detail-assistant.test.tsx`), both red without it. **What the
+cook sees, hears and buys is one set of lines** — a second surface derives from the
+same state, never from the entity again.
+
 ## Integration
 
 **A URL the server gave us is not a file we can upload.**

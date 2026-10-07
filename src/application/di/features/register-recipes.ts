@@ -1,4 +1,5 @@
 import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
+import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
 import type { Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -59,6 +60,7 @@ export const registerRecipes = (
   | 'favoritesStore'
   | 'loadFavoritesUseCase'
   | 'stepProgressStore'
+  | 'portionChoiceStore'
 > => {
   const recipeRepo = container.resolve<RecipeRepositoryInterface>(TOKENS.RecipeRepository);
   const favoritesRepo = container.resolve<FavoritesRepositoryInterface>(TOKENS.FavoritesRepository);
@@ -107,6 +109,7 @@ export const registerRecipes = (
     importRecipeFromFilesUseCase: new ImportRecipeFromFilesUseCase(recipeRepo),
   });
   const stepProgressStore = configureStepProgressStore();
+  const portionChoiceStore = configurePortionChoiceStore();
   return {
     recipeListStore,
     trendingRecipesStore,
@@ -119,5 +122,6 @@ export const registerRecipes = (
     favoritesStore,
     loadFavoritesUseCase,
     stepProgressStore,
+    portionChoiceStore,
   };
 };

@@ -1,7 +1,9 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { Dimensions } from 'react-native';
 import type { NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
 import { recipeFacts } from '@presentation/app/recipes/[recipeId]/model/recipe-facts';
+import { usePortionScaling } from '@presentation/app/recipes/[recipeId]/hooks/use-portion-scaling';
+import { spokenIngredientLines } from '@presentation/app/recipes/[recipeId]/model/portions/spoken-ingredient-lines';
 import { cookTimerId } from '@presentation/app/recipes/[recipeId]/model/cook-timer-slot';
 import type { UseRecipeDetailResult } from '@presentation/app/recipes/[recipeId]/model/use-recipe-detail-result';
 import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
@@ -26,6 +28,8 @@ interface RecipeDetailAssistant {
  *
  * @remarks
  * - **Unsave asks first**, so the pending unsave lives here and the screen's sheet reads it.
+ * - **It reads the lines the screen shows**: scaled to the chosen servings and
+ *   units (`usePortionScaling`), headings read as their labels.
  * - **One confirmation at a time**: delete is a modal over everything, and sheets drawn later
  *   (share, sign-in) take the spoken answer away from unsave.
  */
@@ -40,6 +44,8 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
       ),
     [vm.scrollViewRef],
   );
+  const portions = usePortionScaling(vm.recipe ?? null);
+  const ingredients = useMemo(() => spokenIngredientLines(portions.ingredients), [portions.ingredients]);
   const cookTimer = useRecipeTimer({
     timerId: cookTimerId(vm.recipeId),
     recipeId: vm.recipeId,
@@ -49,7 +55,7 @@ export const useRecipeDetailAssistant = (vm: UseRecipeDetailResult): RecipeDetai
   useAssistantRecipeActions({
     recipeId: vm.recipeId,
     recipeName: vm.recipe?.name ?? CharConstants.empty,
-    ingredients: vm.recipe?.ingredients ?? [],
+    ingredients,
     instructions: vm.recipe?.instructions ?? [],
     cookTimeMinutes: vm.recipe?.cookTimeMinutes ?? ValueConstants.zero,
     facts: recipeFacts(vm.recipe ?? null),

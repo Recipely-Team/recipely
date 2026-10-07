@@ -7,6 +7,7 @@ import { AssistantActionError } from '@domain/assistant/actions/assistant-action
 import { AssistantActionRegistry } from '@application/assistant/actions/assistant-action-registry';
 import { StoreStatus } from '@application/store/store-status';
 import { configureStepProgressStore } from '@application/recipes/cooking/step-progress-store';
+import { configurePortionChoiceStore } from '@application/recipes/cooking/portion-choice-store';
 import { recipeEntityOf } from '@application/__fixtures__/recipe-entity-of';
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import type { ApplicationStores } from '@application/di/application-stores';
@@ -15,6 +16,7 @@ import { timerStore } from '@application/timers/timer-store';
 import { t } from '@presentation/i18n';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { CookModeScreen } from '@presentation/app/recipes/[recipeId]/cook';
+import { AddToShoppingButton } from '@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: () => ({ recipeId: 'r1' }),
@@ -31,10 +33,14 @@ jest.mock('@presentation/base/timers/timer-controls', () => ({
   resumeTimer: jest.fn(() => Promise.resolve()),
 }));
 
+jest.mock('@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button', () => ({
+  AddToShoppingButton: jest.fn(() => null),
+}));
+
 const STEPS = ['Chop the onion', 'Simmer for 10 minutes', 'Serve hot'];
 
-const setup = () => {
-  const recipe = recipeEntityOf({ id: 'r1', name: 'Soup', instructions: STEPS });
+const setup = (over: Partial<{ servings: number; ingredients: string[] }> = {}, extra: Partial<ApplicationStores> = {}) => {
+  const recipe = recipeEntityOf({ id: 'r1', name: 'Soup', instructions: STEPS, ...over });
   const registry = new AssistantActionRegistry();
   const stepProgressStore = configureStepProgressStore();
   const stores = {
@@ -45,6 +51,7 @@ const setup = () => {
       load: jest.fn(),
     })),
     createdRecipesStore: create(() => ({ findById: () => undefined })),
+    ...extra,
   } as unknown as Partial<ApplicationStores>;
 
   const listeners: (() => void)[] = [];
@@ -160,6 +167,23 @@ describe('CookModeScreen', () => {
         error: AssistantActionError.NoCookTime,
       });
     });
+  });
+
+  // Review finding: cook mode listed and read the raw lines — "# For the sauce" as a row, amounts
+  // at the recipe's own servings — while the recipe page showed them scaled, with headings.
+  it('lists and reads the ingredients the recipe page shows: scaled to the chosen servings, headings as headings', async () => {
+    const portionChoiceStore = configurePortionChoiceStore();
+    portionChoiceStore.getState().setServings('r1', 4);
+    const { root, registry } = setup({ servings: 2, ingredients: ['# For the sauce', '2 cups flour'] }, { portionChoiceStore });
+
+    await act(async () => {
+      await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({ ok: true, title: 'For the sauce, 4 cups flour' });
+    });
+    pressButton(root, t().cookMode.ingredients);
+
+    expect(texts(root)).toEqual(expect.arrayContaining(['For the sauce', '4 cups flour']));
+    expect(texts(root)).not.toContain('# For the sauce');
+    expect(jest.mocked(AddToShoppingButton).mock.lastCall?.[0].source.lines).toEqual(['# For the sauce', '4 cups flour']);
   });
 
   it('stops answering once another screen is in front', async () => {
