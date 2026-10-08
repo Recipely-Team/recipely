@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const hi: TranslationsType = {
   common: {
+    showPassword: 'पासवर्ड दिखाएँ',
+    hidePassword: 'पासवर्ड छिपाएँ',
     openSettings: 'सेटिंग्स खोलें',
     retry: 'फिर कोशिश करें',
     loading: 'लोड हो रहा है...',
@@ -1277,8 +1279,6 @@ export const hi: TranslationsType = {
     passwordPlaceholder: 'पासवर्ड (कम से कम 8 अक्षर)',
     confirmPlaceholder: 'पासवर्ड दोबारा लिखें',
     signUp: 'खाता बनाएँ',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
     haveAccount: 'पहले से खाता है?',
     signIn: 'साइन इन',
     weak: 'कमज़ोर',

@@ -2730,6 +2730,7 @@ short and unstructured); the diary handlers used `title` for the sentence they w
 
 **Fix:** `AssistantActionResultType.summary` carries text for the model and is never shown; the
 diary handlers (water, goals, select day, search, log / change / remove food, meal log) moved their
-sentences there. Covered by `use-assistant-diary-actions.test.tsx` ("puts no English sentence on the
-transcript chip…") and `check:structure` rule AR: a `use-assistant-*` file may not put a literal on
-`title`. **A field a person reads is not a channel for talking to the model.**
+sentences there; so did `readScreen` (the screen reading) and both `readIngredients` handlers.
+Covered by `use-assistant-diary-actions.test.tsx` ("puts no English sentence on the transcript
+chip…") and `check:structure` rule AR: in any file that builds an action result, a `title:`
+expression may not contain a string literal or a `.join(` — even inside a ternary. **A field a person reads is not a channel for talking to the model.**

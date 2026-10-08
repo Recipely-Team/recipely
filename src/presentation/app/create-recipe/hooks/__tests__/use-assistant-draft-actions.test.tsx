@@ -351,7 +351,7 @@ describe('useAssistantDraftActions', () => {
 
       await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({
         ok: true,
-        title: '2 yumurta',
+        summary: '2 yumurta',
       });
     });
 

@@ -54,7 +54,7 @@ describe('reading a screen that is still loading', () => {
     await Promise.resolve();
     arrive({ ingredients: ['2 yumurta', '1 su bardağı un'], instructions: ['Karıştır.'] });
 
-    await expect(reading).resolves.toMatchObject({ ok: true, title: '2 yumurta, 1 su bardağı un' });
+    await expect(reading).resolves.toMatchObject({ ok: true, summary: '2 yumurta, 1 su bardağı un' });
   });
 
   it('gives up on a screen that never has anything to read', async () => {

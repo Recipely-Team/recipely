@@ -1,5 +1,7 @@
 export const ja = {
   common: {
+    showPassword: 'パスワードを表示',
+    hidePassword: 'パスワードを隠す',
     openSettings: '設定を開く',
     retry: '再試行',
     loading: '読み込み中...',
@@ -1281,8 +1283,6 @@ export const ja = {
     passwordPlaceholder: 'パスワード（8文字以上）',
     confirmPlaceholder: 'パスワードを確認',
     signUp: 'アカウントを作成',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
     haveAccount: 'すでにアカウントをお持ちですか？',
     signIn: 'ログイン',
     weak: '弱い',

@@ -50,7 +50,7 @@ export const useAssistantGlobalActions = (): void => {
     AssistantAction.ReadScreen,
     useCallback(async (): Promise<AssistantActionResultType> => {
       // Global: the reading comes from the describer stack, so it always reads the innermost screen.
-      return { ok: true, title: registry.screenReading };
+      return { ok: true, summary: registry.screenReading };
     }, [registry]),
   );
 

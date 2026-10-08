@@ -13,7 +13,6 @@ export interface FileDropZoneProps {
 
 /** The upload disc, as the design draws it. */
 const DISC = 56;
-/** The "Choose files" button's height in the design — a compact action, not the page's CTA. */
 
 /**
  * The web's empty state: drop photos or a PDF anywhere, or choose them.

@@ -22,7 +22,7 @@ export const PasswordEyeToggle = ({ visible, onToggle }: PasswordEyeToggleProps)
       hitSlop={spacing.sm}
       style={styles.button}
       accessibilityRole="button"
-      accessibilityLabel={visible ? t().register.hidePassword : t().register.showPassword}
+      accessibilityLabel={visible ? t().common.hidePassword : t().common.showPassword}
     >
       <Ionicons
         name={visible ? 'eye-off-outline' : 'eye-outline'}

@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const ko: TranslationsType = {
   common: {
+    showPassword: '비밀번호 보기',
+    hidePassword: '비밀번호 숨기기',
     openSettings: '설정 열기',
     retry: '다시 시도',
     loading: '불러오는 중...',
@@ -1277,8 +1279,6 @@ export const ko: TranslationsType = {
     passwordPlaceholder: '비밀번호(8자 이상)',
     confirmPlaceholder: '비밀번호 확인',
     signUp: '계정 만들기',
-    showPassword: '비밀번호 보기',
-    hidePassword: '비밀번호 숨기기',
     haveAccount: '이미 계정이 있나요?',
     signIn: '로그인',
     weak: '약함',

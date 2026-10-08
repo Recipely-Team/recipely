@@ -1,5 +1,7 @@
 export const ar = {
   common: {
+    showPassword: "إظهار كلمة المرور",
+    hidePassword: "إخفاء كلمة المرور",
     openSettings: 'فتح الإعدادات',
     retry: "إعادة المحاولة",
     loading: "جارٍ التحميل...",
@@ -1281,8 +1283,6 @@ export const ar = {
     passwordPlaceholder: "كلمة المرور (8 أحرف على الأقل)",
     confirmPlaceholder: "تأكيد كلمة المرور",
     signUp: "إنشاء حساب",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور",
     haveAccount: "لديك حساب بالفعل؟",
     signIn: "تسجيل الدخول",
     weak: "ضعيفة",

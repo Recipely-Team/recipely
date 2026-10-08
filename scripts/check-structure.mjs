@@ -1710,15 +1710,35 @@ function openingTag(src, at) {
 // The transcript chip shows a handler's `title`. The diary handlers wrote English
 // sentences there ("water 7/8 glasses on …"), so a Turkish user read English on
 // the chip. Sentences for the model go on `summary`, which is never shown; a
-// `title` is a value that already exists (a recipe's name), never a literal.
+// `title` is a value that already exists (a recipe's name). Any file building an
+// action result is scanned, and the whole `title:` expression is read, so a
+// literal inside a ternary or a `.join(` of a list is caught too.
 {
-  const LITERAL_TITLE = /\btitle:\s*[`'"]/g;
+  const HANDLER = /AssistantActionResultType|useAssistantAction\s*\(/;
+  const TITLE = /\btitle:\s*/g;
+  const OPEN = '([{';
+  const CLOSE = ')]}';
+  const expressionAt = (src, start) => {
+    let depth = 0;
+    for (let i = start; i < src.length; i += 1) {
+      const ch = src[i];
+      if (OPEN.includes(ch)) depth += 1;
+      else if (CLOSE.includes(ch)) {
+        if (depth === 0) return src.slice(start, i);
+        depth -= 1;
+      } else if ((ch === ',' || ch === ';') && depth === 0) return src.slice(start, i);
+    }
+    return src.slice(start);
+  };
   for (const file of files) {
-    if (isTest(file) || !path.basename(file).startsWith('use-assistant-')) continue;
+    if (isTest(file) || !file.startsWith('presentation')) continue;
     const src = fs.readFileSync(path.join(SRC, file), 'utf8');
-    for (const m of src.matchAll(LITERAL_TITLE)) {
+    if (!HANDLER.test(src)) continue;
+    for (const m of src.matchAll(TITLE)) {
+      const expr = expressionAt(src, m.index + m[0].length);
+      if (!/[`'"]|\.join\(/.test(expr)) continue;
       const line = src.slice(0, m.index).split('\n').length;
-      errors.push(`${file}:${line}: an assistant handler puts a literal on \`title\` — the chip shows it untranslated; put the sentence on \`summary\` (CLAUDE.md §11, §24)`);
+      errors.push(`${file}:${line}: an assistant handler builds text on \`title\` — the chip shows it untranslated; put the sentence on \`summary\` (CLAUDE.md §11, §24)`);
     }
   }
 }

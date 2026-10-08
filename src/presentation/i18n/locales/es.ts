@@ -1,5 +1,7 @@
 export const es = {
   common: {
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
     openSettings: 'Abrir Ajustes',
     retry: 'Reintentar',
     loading: 'Cargando...',
@@ -1281,8 +1283,6 @@ export const es = {
     passwordPlaceholder: 'Contraseña (mín. 8 caracteres)',
     confirmPlaceholder: 'Confirmar contraseña',
     signUp: 'Crear cuenta',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
     haveAccount: '¿Ya tienes una cuenta?',
     signIn: 'Iniciar sesión',
     weak: 'Débil',

@@ -1,5 +1,7 @@
 export const id = {
   common: {
+    showPassword: 'Tampilkan kata sandi',
+    hidePassword: 'Sembunyikan kata sandi',
     openSettings: 'Buka Pengaturan',
     retry: 'Coba lagi',
     loading: 'Memuat...',
@@ -1281,8 +1283,6 @@ export const id = {
     passwordPlaceholder: 'Kata sandi (min. 8 karakter)',
     confirmPlaceholder: 'Konfirmasi kata sandi',
     signUp: 'Buat akun',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
     haveAccount: 'Sudah punya akun?',
     signIn: 'Masuk',
     weak: 'Lemah',

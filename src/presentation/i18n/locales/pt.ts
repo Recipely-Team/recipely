@@ -1,5 +1,7 @@
 export const pt = {
   common: {
+    showPassword: 'Mostrar senha',
+    hidePassword: 'Ocultar senha',
     openSettings: 'Abrir Definições',
     retry: 'Tentar novamente',
     loading: 'Carregando...',
@@ -1281,8 +1283,6 @@ export const pt = {
     passwordPlaceholder: 'Senha (mín. 8 caracteres)',
     confirmPlaceholder: 'Confirmar senha',
     signUp: 'Criar conta',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
     haveAccount: 'Já tem uma conta?',
     signIn: 'Entrar',
     weak: 'Fraca',

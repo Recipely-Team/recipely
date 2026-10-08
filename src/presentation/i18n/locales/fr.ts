@@ -1,5 +1,7 @@
 export const fr = {
   common: {
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
     openSettings: 'Ouvrir les Réglages',
     retry: 'Réessayer',
     loading: 'Chargement...',
@@ -1281,8 +1283,6 @@ export const fr = {
     passwordPlaceholder: 'Mot de passe (8 caractères min.)',
     confirmPlaceholder: 'Confirmer le mot de passe',
     signUp: 'Créer un compte',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
     haveAccount: 'Vous avez déjà un compte ?',
     signIn: 'Se connecter',
     weak: 'Faible',

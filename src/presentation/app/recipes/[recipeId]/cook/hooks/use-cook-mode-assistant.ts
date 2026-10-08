@@ -85,7 +85,7 @@ export const useCookModeAssistant = (vm: UseCookModeResult): void => {
     AssistantAction.ReadIngredients,
     useCallback(async (): Promise<AssistantActionResultType> => {
       if (ingredients.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NoIngredients };
-      return { ok: true, title: ingredients.join(CharConstants.commaSpace), n: { ingredients: ingredients.length } };
+      return { ok: true, summary: ingredients.join(CharConstants.commaSpace), n: { ingredients: ingredients.length } };
     }, [ingredients]),
     isReady,
   );

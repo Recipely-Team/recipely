@@ -1,5 +1,7 @@
 export const ru = {
   common: {
+    showPassword: 'Показать пароль',
+    hidePassword: 'Скрыть пароль',
     openSettings: 'Открыть настройки',
     retry: 'Повторить',
     loading: 'Загрузка...',
@@ -1281,8 +1283,6 @@ export const ru = {
     passwordPlaceholder: 'Пароль (мин. 8 символов)',
     confirmPlaceholder: 'Подтвердите пароль',
     signUp: 'Создать аккаунт',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
     haveAccount: 'Уже есть аккаунт?',
     signIn: 'Войти',
     weak: 'Слабый',

@@ -1,5 +1,7 @@
 export const zh = {
   common: {
+    showPassword: '显示密码',
+    hidePassword: '隐藏密码',
     openSettings: '打开设置',
     retry: '重试',
     loading: '加载中...',
@@ -1285,8 +1287,6 @@ export const zh = {
     passwordPlaceholder: '密码（至少 8 个字符）',
     confirmPlaceholder: '确认密码',
     signUp: '创建账户',
-    showPassword: '显示密码',
-    hidePassword: '隐藏密码',
     haveAccount: '已经有账户了？',
     signIn: '登录',
     weak: '弱',

@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const tr: TranslationsType = {
   common: {
+    showPassword: 'Şifreyi göster',
+    hidePassword: 'Şifreyi gizle',
     openSettings: 'Ayarları aç',
     retry: 'Tekrar dene',
     loading: 'Yükleniyor...',
@@ -1285,8 +1287,6 @@ export const tr: TranslationsType = {
     passwordPlaceholder: 'Şifre (en az 8 karakter)',
     confirmPlaceholder: 'Şifreyi onayla',
     signUp: 'Hesap oluştur',
-    showPassword: 'Şifreyi göster',
-    hidePassword: 'Şifreyi gizle',
     haveAccount: 'Zaten hesabın var mı?',
     signIn: 'Giriş yap',
     weak: 'Zayıf',
