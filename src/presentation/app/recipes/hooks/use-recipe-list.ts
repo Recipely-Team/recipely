@@ -94,7 +94,7 @@ type AssistantScrollHandleType = Parameters<AssistantScrollableProps['ref']>[0];
 export const useRecipeList = (): UseRecipeListResult => {
   const router = useRouter();
   const pathname = usePathname();
-  const { recipeListStore, notificationsStore, savedRecipesStore, loadFavoritesUseCase, authStore, createdRecipesStore } = useStores();
+  const { recipeListStore, savedRecipesStore, loadFavoritesUseCase, authStore, createdRecipesStore } = useStores();
   const { isSaved, toggleSave } = useSaveRecipe();
   const userId = authStore((s) => (s.state.status === StoreStatus.Authenticated ? s.state.session.user.id : null));
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);
@@ -104,7 +104,6 @@ export const useRecipeList = (): UseRecipeListResult => {
   }, [closePrompt, pathname, router]);
   const onOpenCreate = useCallback(() => requestGate(() => router.push(RoutePaths.createRecipe)), [requestGate, router]);
   const { cuisineLabel } = useTaxonomyLabel();
-  const unreadCount = notificationsStore((s) => s.unreadCount);
   const state = recipeListStore((s) => s.state);
   const loadFromStore = recipeListStore((s) => s.load);
   // When the feed last loaded successfully — what the focus refetch's staleness reads.
@@ -408,7 +407,6 @@ export const useRecipeList = (): UseRecipeListResult => {
     sortBy,
     filters,
     activeCuisineLabel: filters.cuisines.length > ValueConstants.zero ? cuisineLabel(filters.cuisines[ValueConstants.zero]).name : null,
-    unreadCount,
     // A callback ref (each branch attaches a different list class) bundled with onScroll so neither is forgotten.
     assistantScroll: {
       ref: (instance: AssistantScrollHandleType): void => {
@@ -443,7 +441,6 @@ export const useRecipeList = (): UseRecipeListResult => {
     onRefresh,
     onOpenRecipe,
     onOpenCreate,
-    onNotifications: () => router.push(RoutePaths.notifications),
     isSaved,
     onToggleSave: (id: string) => requestGate(() => void toggleSave(id), t().recipes.signInToSave),
     onChangeSort: (key: SortKey) => {

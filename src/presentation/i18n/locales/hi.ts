@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const hi: TranslationsType = {
   common: {
+    showPassword: 'पासवर्ड दिखाएँ',
+    hidePassword: 'पासवर्ड छिपाएँ',
     openSettings: 'सेटिंग्स खोलें',
     retry: 'फिर कोशिश करें',
     loading: 'लोड हो रहा है...',
@@ -445,8 +447,6 @@ export const hi: TranslationsType = {
     signInWithApple: 'Apple से जारी रखें',
     forgot: 'पासवर्ड भूल गए?',
     forgotPassword: 'पासवर्ड भूल गए',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
     continueAsGuest: 'बिना खाते के जारी रखें',
   },
   recipes: {
@@ -1279,8 +1279,6 @@ export const hi: TranslationsType = {
     passwordPlaceholder: 'पासवर्ड (कम से कम 8 अक्षर)',
     confirmPlaceholder: 'पासवर्ड दोबारा लिखें',
     signUp: 'खाता बनाएँ',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
     haveAccount: 'पहले से खाता है?',
     signIn: 'साइन इन',
     weak: 'कमज़ोर',
@@ -1326,8 +1324,6 @@ export const hi: TranslationsType = {
     tooShort: 'पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।',
     mismatch: 'पासवर्ड मेल नहीं खाते।',
     invalidOrExpired: 'यह रीसेट लिंक गलत है या इसकी समय-सीमा समाप्त हो चुकी है। नया लिंक माँगें।',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
   },
   verify: {
     title: 'ईमेल सत्यापित करें',
@@ -1440,7 +1436,13 @@ export const hi: TranslationsType = {
     itemLabel: '{name}, {platform} {handle}',
     platformInstagram: 'Instagram',
     platformTiktok: 'TikTok',
-    empty: 'अभी कोई शेफ़ नहीं।',
+    comingSoon: {
+      pill: 'जल्द आ रहा है',
+      title: 'शेफ़ रास्ते में हैं',
+      body: 'Instagram और TikTok के सत्यापित फ़ूड क्रिएटर यहाँ अपनी रेसिपी साझा करेंगे।',
+      creatorQuestion: 'क्या आप फ़ूड क्रिएटर हैं?',
+      apply: 'क्रिएटर के रूप में आवेदन करें',
+    },
     back: 'वापस',
     share: 'प्रोफ़ाइल शेयर करें',
     shareText: 'Recipely पर {name}',

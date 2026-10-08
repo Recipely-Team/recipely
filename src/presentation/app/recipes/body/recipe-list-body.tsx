@@ -4,8 +4,6 @@ import { Platform, RefreshControl, StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import Animated from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeSearchOverlay } from '@presentation/app/recipes/sheets/recipe-search-overlay';
 import { RecipesAppHeader } from '@presentation/app/recipes/body/recipes-app-header';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
@@ -15,14 +13,14 @@ import { useReportFailure } from '@presentation/base/errors/use-report-failure';
 import { MobileFeedHeader } from '@presentation/app/recipes/body/mobile-feed-header';
 import { FeedReloadingRows } from '@presentation/app/recipes/body/feed-reloading-rows';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
-import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { failureContent, failureIcon, failureSeverity } from '@presentation/base/errors/failure-lookups';
 import { WebRecipeFeed } from '@presentation/app/recipes/body/web-recipe-feed';
 import type { UseRecipeListResult } from '@presentation/app/recipes/model/use-recipe-list-result';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { t } from '@presentation/i18n';
-import { spacing, iconSizes, controlSizes, layoutSizes } from '@presentation/base/theme';
+import { spacing, controlSizes, layoutSizes } from '@presentation/base/theme';
 import type { FeedRowType } from '@presentation/app/recipes/model/ads/feed-row';
 import { FeedRowView } from '@presentation/app/recipes/items/feed-row-view';
 import { useFeedRows } from '@presentation/app/recipes/hooks/use-feed-rows';
@@ -140,19 +138,24 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
           vm.isReloadingResults ? (
             <FeedReloadingRows />
           ) : (
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="food-off" size={iconSizes.giant} color={colors.textMuted} />
-            <ThemedText variant="body" muted style={styles.feedbackTitle}>
-              {vm.activeFilterCount > ValueConstants.zero ? t().recipes.noResults : t().recipes.empty}
-            </ThemedText>
-            <View style={styles.retryButton}>
-              {vm.activeFilterCount > ValueConstants.zero ? (
-                <PrimaryButton label={t().recipes.clearFilters} onPress={vm.onResetFilters} />
-              ) : (
-                <PrimaryButton label={t().common.retry} onPress={vm.onRefresh} />
-              )}
-            </View>
-          </View>
+          vm.activeFilterCount > ValueConstants.zero ? (
+            <ErrorState
+              icon="search"
+              severity={SeverityType.Neutral}
+              title={t().recipes.noResults}
+              body={t().recipes.webEmptyBody}
+              primaryLabel={t().recipes.clearFilters}
+              onPrimary={vm.onResetFilters}
+            />
+          ) : (
+            <ErrorState
+              icon="restaurant-outline"
+              severity={SeverityType.Neutral}
+              title={t().recipes.empty}
+              primaryLabel={t().common.retry}
+              onPrimary={vm.onRefresh}
+            />
+          )
           )
         }
         ItemSeparatorComponent={ItemSeparator}
@@ -187,7 +190,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       {isExpanded ? (
         <>
-          <RecipesAppHeader onNotificationsPress={vm.onNotifications} unreadCount={vm.unreadCount} />
+          <RecipesAppHeader />
           <View style={styles.bodyContainer}>{body}</View>
         </>
       ) : (
@@ -197,8 +200,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             scrollY={vm.scrollY}
             headerTranslateY={vm.headerTranslateY}
             reduceMotion={vm.reduceMotion}
-            onNotificationsPress={vm.onNotifications}
-            unreadCount={vm.unreadCount}
             searchValue={vm.search}
             onSearchChange={vm.onSearchChange}
           />
@@ -249,18 +250,5 @@ const styles = StyleSheet.create({
   },
   separator: {
     height: spacing.md,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.xxl,
-  },
-  feedbackTitle: {
-    marginTop: spacing.md,
-    textAlign: 'center',
-  },
-  retryButton: {
-    marginTop: spacing.lg,
   },
 });

@@ -1,5 +1,7 @@
 export const id = {
   common: {
+    showPassword: 'Tampilkan kata sandi',
+    hidePassword: 'Sembunyikan kata sandi',
     openSettings: 'Buka Pengaturan',
     retry: 'Coba lagi',
     loading: 'Memuat...',
@@ -443,8 +445,6 @@ export const id = {
     signInWithApple: 'Lanjutkan dengan Apple',
     forgot: 'Lupa kata sandi?',
     forgotPassword: 'Lupa kata sandi',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
     continueAsGuest: 'Lanjutkan tanpa akun',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const id = {
     passwordPlaceholder: 'Kata sandi (min. 8 karakter)',
     confirmPlaceholder: 'Konfirmasi kata sandi',
     signUp: 'Buat akun',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
     haveAccount: 'Sudah punya akun?',
     signIn: 'Masuk',
     weak: 'Lemah',
@@ -1330,8 +1328,6 @@ export const id = {
     tooShort: 'Kata sandi minimal 8 karakter.',
     mismatch: 'Kata sandi tidak cocok.',
     invalidOrExpired: 'Tautan atur ulang ini tidak valid atau sudah kedaluwarsa. Minta yang baru.',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
   },
   verify: {
     title: 'Verifikasi email kamu',
@@ -1444,7 +1440,13 @@ export const id = {
     itemLabel: '{name}, {platform} {handle}',
     platformInstagram: 'Instagram',
     platformTiktok: 'TikTok',
-    empty: 'Belum ada koki.',
+    comingSoon: {
+      pill: 'Segera hadir',
+      title: 'Para chef sedang dalam perjalanan',
+      body: 'Kreator kuliner terverifikasi dari Instagram dan TikTok akan membagikan resep mereka di sini.',
+      creatorQuestion: 'Kamu kreator kuliner?',
+      apply: 'Daftar sebagai kreator',
+    },
     back: 'Kembali',
     share: 'Bagikan profil',
     shareText: '{name} di Recipely',

@@ -43,6 +43,9 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
+jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
+  NotificationsBellButton: (): null => null,
+}));
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
@@ -120,7 +123,6 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   sortBy: 'popular',
   filters: emptyFilters,
   activeCuisineLabel: null,
-  unreadCount: 0,
   reduceMotion: true,
   search: '',
   onSearchChange: jest.fn(),
@@ -128,7 +130,6 @@ const baseVm = (): Omit<UseRecipeListResult, 'scrollY' | 'headerTranslateY' | 's
   onRefresh: jest.fn(),
   onOpenRecipe: jest.fn(),
   onOpenCreate: jest.fn(),
-  onNotifications: jest.fn(),
   isSaved: () => false,
   onToggleSave: jest.fn(),
   onChangeSort: jest.fn(),

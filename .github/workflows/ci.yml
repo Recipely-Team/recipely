@@ -69,6 +69,7 @@ jobs:
             # last tag: a breaking change (`type!:` / BREAKING CHANGE) bumps major,
             # any `feat` bumps minor, anything else bumps patch. `[major]`, `[minor]`
             # or `[patch]` in the merge commit's subject (the release PR title) overrides.
+            # Here-strings, never `echo "$log" | grep -q`: under pipefail that read a long log's `feat` as patch.
             last="$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || true)"
             if [ -z "$last" ]; then
               tag='v1.0.0'
@@ -78,11 +79,11 @@ jobs:
               IFS='.' read -r major minor patch <<<"$ver"
               subject="$(git log -1 --format=%s)"
               log="$(git log "$last"..HEAD --format='%s%n%b')"
-              if echo "$subject" | grep -q '\[major\]'; then level=major
-              elif echo "$subject" | grep -q '\[minor\]'; then level=minor
-              elif echo "$subject" | grep -q '\[patch\]'; then level=patch
-              elif echo "$log" | grep -qE '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE'; then level=major
-              elif echo "$log" | grep -qE '^feat(\([^)]*\))?:'; then level=minor
+              if grep -q '\[major\]' <<<"$subject"; then level=major
+              elif grep -q '\[minor\]' <<<"$subject"; then level=minor
+              elif grep -q '\[patch\]' <<<"$subject"; then level=patch
+              elif grep -qE '^[a-z]+(\([^)]*\))?!:|BREAKING CHANGE' <<<"$log"; then level=major
+              elif grep -qE '^feat(\([^)]*\))?:' <<<"$log"; then level=minor
               else level=patch
               fi
               case "$level" in
@@ -559,7 +560,7 @@ jobs:
           set -euo pipefail
           plist="$(ls ios/*/Info.plist | head -n1)"
           modes="$(/usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$plist" 2>/dev/null || true)"
-          if printf '%s' "$modes" | grep -qw audio; then
+          if grep -qw audio <<<"$modes"; then
             echo "::error file=app.json::$plist declares UIBackgroundModes: audio. App Review rejects this (guideline 2.5.4) unless the app plays audible content in the background. Set enableBackgroundPlayback:false on the expo-audio plugin (and supportsBackgroundPlayback:false on expo-video) in app.json."
             exit 1
           fi
@@ -1143,7 +1144,7 @@ jobs:
           set -euo pipefail
           plist="$(ls ios/*/Info.plist | head -n1)"
           modes="$(/usr/libexec/PlistBuddy -c 'Print :UIBackgroundModes' "$plist" 2>/dev/null || true)"
-          if printf '%s' "$modes" | grep -qw audio; then
+          if grep -qw audio <<<"$modes"; then
             echo "::error file=app.json::$plist declares UIBackgroundModes: audio. App Review rejects this (guideline 2.5.4) unless the app plays audible content in the background. Set enableBackgroundPlayback:false on the expo-audio plugin (and supportsBackgroundPlayback:false on expo-video) in app.json."
             exit 1
           fi

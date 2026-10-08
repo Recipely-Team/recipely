@@ -1,5 +1,7 @@
 export const it = {
   common: {
+    showPassword: 'Mostra password',
+    hidePassword: 'Nascondi password',
     openSettings: 'Apri Impostazioni',
     retry: 'Riprova',
     loading: 'Caricamento...',
@@ -443,8 +445,6 @@ export const it = {
     signInWithApple: 'Continua con Apple',
     forgot: 'Password dimenticata?',
     forgotPassword: 'Password dimenticata',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
     continueAsGuest: 'Continua senza account',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const it = {
     passwordPlaceholder: 'Password (min. 8 caratteri)',
     confirmPlaceholder: 'Conferma password',
     signUp: 'Crea account',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
     haveAccount: 'Hai già un account?',
     signIn: 'Accedi',
     weak: 'Debole',
@@ -1330,8 +1328,6 @@ export const it = {
     tooShort: 'La password deve contenere almeno 8 caratteri.',
     mismatch: 'Le password non coincidono.',
     invalidOrExpired: 'Questo link di reimpostazione non è valido o è scaduto. Richiedine uno nuovo.',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
   },
   verify: {
     title: 'Verifica la tua e-mail',
@@ -1444,7 +1440,13 @@ export const it = {
     itemLabel: '{name}, {platform} {handle}',
     platformInstagram: 'Instagram',
     platformTiktok: 'TikTok',
-    empty: 'Ancora nessuno chef.',
+    comingSoon: {
+      pill: 'In arrivo',
+      title: 'Gli chef stanno arrivando',
+      body: 'Creator di cucina verificati su Instagram e TikTok condivideranno qui le loro ricette.',
+      creatorQuestion: 'Sei un food creator?',
+      apply: 'Candidati come creator',
+    },
     back: 'Indietro',
     share: 'Condividi profilo',
     shareText: '{name} su Recipely',

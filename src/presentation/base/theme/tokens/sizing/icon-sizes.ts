@@ -26,6 +26,8 @@ export const iconSizes = {
   xl: scale(20),
   /** Primary action glyph. */
   xxl: scale(24),
+  /** The Recipely mark inline before the Recipes tab title. */
+  brandInline: scale(28),
   /** Feature glyph inside a circular badge. */
   xxxl: scale(32),
   /** Oversized feature glyph. */

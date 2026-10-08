@@ -6,14 +6,13 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights, letterSpacings, zIndices, opacities, BrandColors, radii } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 const VISIBLE_MS = 1400;
 const FADE_MS = 400;
 const TILE_SIZE = 128;
-const TILE_RADIUS = 32;
 const LOGO_SIZE = 96;
 
 /**
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
   tile: {
     width: TILE_SIZE,
     height: TILE_SIZE,
-    borderRadius: TILE_RADIUS,
+    borderRadius: radii.xxxl,
     backgroundColor: BrandColors.white,
     alignItems: 'center',
     justifyContent: 'center',

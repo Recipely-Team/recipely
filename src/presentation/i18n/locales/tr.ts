@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const tr: TranslationsType = {
   common: {
+    showPassword: 'Şifreyi göster',
+    hidePassword: 'Şifreyi gizle',
     openSettings: 'Ayarları aç',
     retry: 'Tekrar dene',
     loading: 'Yükleniyor...',
@@ -446,8 +448,6 @@ export const tr: TranslationsType = {
     signInWithApple: 'Apple ile devam et',
     forgot: 'Şifreni mi unuttun?',
     forgotPassword: 'Şifremi unuttum',
-    showPassword: 'Şifreyi göster',
-    hidePassword: 'Şifreyi gizle',
     continueAsGuest: 'Giriş yapmadan devam et',
   },
   recipes: {
@@ -1287,8 +1287,6 @@ export const tr: TranslationsType = {
     passwordPlaceholder: 'Şifre (en az 8 karakter)',
     confirmPlaceholder: 'Şifreyi onayla',
     signUp: 'Hesap oluştur',
-    showPassword: 'Şifreyi göster',
-    hidePassword: 'Şifreyi gizle',
     haveAccount: 'Zaten hesabın var mı?',
     signIn: 'Giriş yap',
     weak: 'Zayıf',
@@ -1334,8 +1332,6 @@ export const tr: TranslationsType = {
     tooShort: 'Şifre en az 8 karakter olmalı.',
     mismatch: 'Şifreler eşleşmiyor.',
     invalidOrExpired: 'Bu sıfırlama bağlantısı geçersiz ya da süresi dolmuş. Yeni bir tane iste.',
-    showPassword: 'Şifreyi göster',
-    hidePassword: 'Şifreyi gizle',
   },
   verify: {
     title: 'E-postanı doğrula',
@@ -1448,7 +1444,13 @@ export const tr: TranslationsType = {
     itemLabel: '{name}, {platform} {handle}',
     platformInstagram: 'Instagram',
     platformTiktok: 'TikTok',
-    empty: 'Henüz şef yok.',
+    comingSoon: {
+      pill: 'Yakında',
+      title: 'Şefler yolda',
+      body: 'Doğrulanmış Instagram ve TikTok yemek içerik üreticileri tariflerini burada paylaşacak.',
+      creatorQuestion: 'Yemek içerik üreticisi misin?',
+      apply: 'İçerik üreticisi olarak başvur',
+    },
     back: 'Geri',
     share: 'Profili paylaş',
     shareText: "{name} Recipely'de",

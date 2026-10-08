@@ -15,6 +15,12 @@ export interface ThemeColors {
   primaryLight: string;
   primaryGradientStart: string;
   primaryGradientEnd: string;
+  /** `primary` at 8 % — the outer halo ring of an illustration. */
+  primaryHaloOuter: string;
+  /** `primary` at 16 % — the inner halo ring of an illustration. */
+  primaryHaloInner: string;
+  /** `background` at 0 % — where a fade into the page starts. */
+  backgroundClear: string;
   secondary: string;
   secondaryText: string;
   danger: string;

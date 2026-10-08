@@ -47,7 +47,7 @@ export const ProfileIdentity = ({
   const { isWebShell } = useLayout();
 
   return (
-    <View style={styles.identityBlock}>
+    <View style={[styles.identityBlock, { paddingTop: isWebShell ? spacing.xxl : spacing.lg }]}>
       <View style={styles.avatarWrap}>
         <View
           style={[
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
   identityBlock: {
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xxl,
   },
   avatarWrap: {
     width: AVATAR_FRAME,

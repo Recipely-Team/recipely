@@ -1,18 +1,17 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
-import { AuthTextField } from '@presentation/app/register/items/auth-text-field';
+import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { PasswordStrengthMeter } from '@presentation/app/register/items/password-strength-meter';
 import { TermsAgreement } from '@presentation/app/register/items/terms-agreement';
-import { PasswordEyeToggle } from '@presentation/app/register/items/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, controlSizes, opacities, targetSizes } from '@presentation/base/theme';
+import { spacing, fontWeights, targetSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { DISPLAY_NAME_MAX } from '@presentation/base/forms/display-name-limits';
 import { CharConstants, ValueConstants } from '@core/constants';
@@ -39,8 +38,6 @@ export const RegisterForm = (): React.JSX.Element => {
   const [password, setPassword] = useState(CharConstants.empty);
   const [confirm, setConfirm] = useState(CharConstants.empty);
   const [agree, setAgree] = useState(false);
-  const [showPwd, setShowPwd] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
   const [localError, setLocalError] = useState<string | undefined>(undefined);
 
   const emailRef = useRef<TextInput>(null);
@@ -115,21 +112,11 @@ export const RegisterForm = (): React.JSX.Element => {
         placeholder={t().register.emailPlaceholder}
         value={email}
         onChangeText={setEmail}
-        autoCapitalize="none"
         keyboardType="email-address"
         returnKeyType="next"
+        valid={email.length > ValueConstants.zero ? emailValid : undefined}
         onSubmitEditing={() => passwordRef.current?.focus()}
         containerStyle={styles.fieldSpacing}
-        rightSlot={
-          email.length > ValueConstants.zero ? (
-            <Ionicons
-              name={emailValid ? 'checkmark-circle' : 'close-circle'}
-              size={iconSizes.lg}
-              color={emailValid ? colors.success : colors.danger}
-              style={styles.inputStatusIcon}
-            />
-          ) : undefined
-        }
       />
 
       <AuthTextField
@@ -138,16 +125,10 @@ export const RegisterForm = (): React.JSX.Element => {
         placeholder={t().register.passwordPlaceholder}
         value={password}
         onChangeText={setPassword}
-        secureTextEntry={!showPwd}
-        autoCapitalize="none"
+        password
         returnKeyType="next"
         onSubmitEditing={() => confirmRef.current?.focus()}
         containerStyle={styles.passwordSpacing}
-        rightSlot={
-          <View style={styles.eyeButton}>
-            <PasswordEyeToggle visible={showPwd} onToggle={() => setShowPwd((s) => !s)} />
-          </View>
-        }
       />
 
       {password.length > ValueConstants.zero ? <PasswordStrengthMeter strength={strength} /> : null}
@@ -158,23 +139,11 @@ export const RegisterForm = (): React.JSX.Element => {
         placeholder={t().register.confirmPlaceholder}
         value={confirm}
         onChangeText={setConfirm}
-        secureTextEntry={!showConfirm}
-        autoCapitalize="none"
+        password
         returnKeyType="done"
+        valid={confirm.length > ValueConstants.zero ? passwordsMatch : undefined}
         onSubmitEditing={() => { void handleRegister(); }}
         containerStyle={styles.fieldSpacing}
-        rightSlot={
-          <View style={styles.confirmRight}>
-            {confirm.length > ValueConstants.zero ? (
-              <Ionicons
-                name={passwordsMatch ? 'checkmark-circle' : 'close-circle'}
-                size={iconSizes.lg}
-                color={passwordsMatch ? colors.success : colors.danger}
-              />
-            ) : null}
-            <PasswordEyeToggle visible={showConfirm} onToggle={() => setShowConfirm((s) => !s)} />
-          </View>
-        }
       />
 
       <TermsAgreement agree={agree} onToggle={() => setAgree((a) => !a)} />
@@ -185,25 +154,14 @@ export const RegisterForm = (): React.JSX.Element => {
         </View>
       ) : null}
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: !canSubmit || isLoading, busy: isLoading }}
-        onPress={() => { void handleRegister(); }}
-        disabled={!canSubmit || isLoading}
-        style={[
-          styles.submitButton,
-          { backgroundColor: colors.primary },
-          !canSubmit || isLoading ? styles.submitDisabled : null,
-        ]}
-      >
-        {isLoading ? (
-          <ActivityIndicator color={colors.primaryText} />
-        ) : (
-          <ThemedText variant="body" style={[styles.submitLabel, { color: colors.primaryText }]}>
-            {t().register.signUp}
-          </ThemedText>
-        )}
-      </Pressable>
+      <View style={styles.submitRow}>
+        <PrimaryButton
+          label={t().register.signUp}
+          onPress={() => { void handleRegister(); }}
+          loading={isLoading}
+          disabled={!canSubmit}
+        />
+      </View>
 
       <View style={styles.signInRow}>
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
@@ -227,40 +185,11 @@ const styles = StyleSheet.create({
     marginTop: spacing.md,
     marginBottom: spacing.xs2,
   },
-  inputStatusIcon: {
-    position: 'absolute',
-    right: spacing.lg,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: spacing.sm,
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  confirmRight: {
-    position: 'absolute',
-    right: spacing.sm,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
   error: {
     marginTop: spacing.md,
   },
-  submitButton: {
-    minHeight: controlSizes.button,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+  submitRow: {
     marginTop: spacing.md,
-  },
-  submitDisabled: {
-    opacity: opacities.disabled,
-  },
-  submitLabel: {
-    fontWeight: fontWeights.semibold,
   },
   signInRow: {
     flexDirection: 'row',

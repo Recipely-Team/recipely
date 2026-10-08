@@ -1,5 +1,7 @@
 export const ar = {
   common: {
+    showPassword: "إظهار كلمة المرور",
+    hidePassword: "إخفاء كلمة المرور",
     openSettings: 'فتح الإعدادات',
     retry: "إعادة المحاولة",
     loading: "جارٍ التحميل...",
@@ -443,8 +445,6 @@ export const ar = {
     signInWithApple: "المتابعة باستخدام Apple",
     forgot: "نسيت كلمة المرور؟",
     forgotPassword: "نسيت كلمة المرور",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور",
     continueAsGuest: "المتابعة بدون حساب"
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const ar = {
     passwordPlaceholder: "كلمة المرور (8 أحرف على الأقل)",
     confirmPlaceholder: "تأكيد كلمة المرور",
     signUp: "إنشاء حساب",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور",
     haveAccount: "لديك حساب بالفعل؟",
     signIn: "تسجيل الدخول",
     weak: "ضعيفة",
@@ -1330,8 +1328,6 @@ export const ar = {
     tooShort: "يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل.",
     mismatch: "كلمتا المرور غير متطابقتين.",
     invalidOrExpired: "رابط إعادة التعيين غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا.",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور"
   },
   verify: {
     title: "تحقق من بريدك الإلكتروني",
@@ -1444,7 +1440,13 @@ export const ar = {
     itemLabel: '{name}، {platform} {handle}',
     platformInstagram: 'Instagram',
     platformTiktok: 'TikTok',
-    empty: 'لا يوجد طهاة بعد.',
+    comingSoon: {
+      pill: 'قريبًا',
+      title: 'الطهاة في الطريق',
+      body: 'سيشارك صنّاع محتوى الطعام الموثّقون على Instagram وTikTok وصفاتهم هنا.',
+      creatorQuestion: 'هل أنت صانع محتوى طعام؟',
+      apply: 'قدّم كصانع محتوى',
+    },
     back: 'رجوع',
     share: 'مشاركة الملف الشخصي',
     shareText: '{name} على Recipely',

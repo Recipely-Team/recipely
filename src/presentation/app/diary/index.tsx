@@ -2,7 +2,6 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { StoreStatus } from '@application/store/store-status';
-import { useStores } from '@presentation/bootstrap/use-stores';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
@@ -41,8 +40,6 @@ export const DiaryScreen = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
   const { isWebShell, isExpanded, width } = useLayout();
-  const { notificationsStore } = useStores();
-  const unreadCount = notificationsStore((s) => s.unreadCount);
   const vm = useDiaryDay();
   const dayLook = useWeekLooks(vm.selected);
   const sheets = useDiarySheets(vm.selected);
@@ -58,10 +55,8 @@ export const DiaryScreen = (): React.JSX.Element => {
       {isWebShell ? null : (
         <DiaryAppBar
           showCalendar={!isExpanded}
-          unreadCount={unreadCount}
           onOpenCalendar={() => router.push(RoutePaths.diaryCalendar)}
           onOpenGoals={sheets.openGoals}
-          onOpenNotifications={() => router.push(RoutePaths.notifications)}
         />
       )}
       <ScrollView

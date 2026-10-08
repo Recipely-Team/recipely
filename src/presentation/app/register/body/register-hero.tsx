@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, iconSizes, mediaSizes, layoutSizes, opacities } from '@presentation/base/theme';
+import { spacing, iconSizes, mediaSizes, layoutSizes, opacities, decorSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -10,7 +10,10 @@ export interface RegisterHeroProps {
   isLandscapeShell: boolean;
 }
 
-/** Brand mark + title/subtitle shown atop the register screen's gradient. */
+/**
+ * Brand mark + title/subtitle shown atop the register screen's gradient. The
+ * bottom padding reserves the card's overlap so the subtitle is never under it.
+ */
 export const RegisterHero = ({ isLandscapeShell }: RegisterHeroProps): React.JSX.Element => {
   const colors = useTheme().colors;
 
@@ -31,7 +34,7 @@ const styles = StyleSheet.create({
   gradientContent: {
     alignItems: 'center',
     paddingTop: layoutSizes.heroPaddingTop,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.xl + decorSizes.cardOverlap,
   },
   heroLandscape: {
     paddingTop: ValueConstants.zero,

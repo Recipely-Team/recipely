@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, iconSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
@@ -22,9 +22,9 @@ export const PasswordEyeToggle = ({ visible, onToggle }: PasswordEyeToggleProps)
       hitSlop={spacing.sm}
       style={styles.button}
       accessibilityRole="button"
-      accessibilityLabel={visible ? t().register.hidePassword : t().register.showPassword}
+      accessibilityLabel={visible ? t().common.hidePassword : t().common.showPassword}
     >
-      <MaterialCommunityIcons
+      <Ionicons
         name={visible ? 'eye-off-outline' : 'eye-outline'}
         size={iconSizes.lg}
         color={colors.textMuted}

@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable } from 'react-native';
+import { StyleSheet } from 'react-native';
 import Animated, {
   interpolate,
   Extrapolation,
@@ -6,13 +6,12 @@ import Animated, {
   type SharedValue,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
-import { CountBadge } from '@presentation/base/widgets/text/count-badge';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
+import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
+import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, controlSizes, layoutSizes, zIndices } from '@presentation/base/theme';
+import { spacing, iconSizes, layoutSizes, zIndices } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 import { HomeHeaderAnimation } from '@presentation/app/recipes/model/home-header-animation';
@@ -30,8 +29,6 @@ export interface CollapsingHomeHeaderProps {
   headerTranslateY: SharedValue<number>;
   /** When true, the band renders statically shown with no scroll-driven motion. */
   reduceMotion: boolean;
-  onNotificationsPress: () => void;
-  unreadCount: number;
   searchValue: string;
   onSearchChange: (text: string) => void;
 }
@@ -55,8 +52,6 @@ export const CollapsingHomeHeader = ({
   scrollY,
   headerTranslateY,
   reduceMotion,
-  onNotificationsPress,
-  unreadCount,
   searchValue,
   onSearchChange,
 }: CollapsingHomeHeaderProps): React.JSX.Element => {
@@ -105,35 +100,16 @@ export const CollapsingHomeHeader = ({
     <Animated.View
       style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}
     >
-      <View style={styles.titleRow}>
-        <View style={styles.titles}>
+      <TabAppBar
+        title={t().recipes.title}
+        titleStyle={titleStyle}
+        leading={
           <Animated.View style={eyebrowStyle}>
-            <RecipelyLogo size={iconSizes.xl} />
+            <RecipelyLogo size={iconSizes.brandInline} />
           </Animated.View>
-          <Animated.View style={[styles.titleScaleAnchor, titleStyle]}>
-            <ThemedText variant="title" style={styles.screenTitle}>
-              {t().recipes.title}
-            </ThemedText>
-          </Animated.View>
-        </View>
-        <Pressable
-          onPress={onNotificationsPress}
-          style={[styles.bell, { backgroundColor: colors.surface }]}
-          accessibilityRole="button"
-          accessibilityLabel={
-            unreadCount > ValueConstants.zero
-              ? `${t().notifications.title}, ${unreadCount}`
-              : t().notifications.title
-          }
-        >
-          <Ionicons
-            name={unreadCount > ValueConstants.zero ? 'notifications' : 'notifications-outline'}
-            size={iconSizes.xl}
-            color={colors.text}
-          />
-          <CountBadge count={unreadCount} style={styles.badge} />
-        </Pressable>
-      </View>
+        }
+        actions={<NotificationsBellButton />}
+      />
 
       <Animated.View style={[styles.searchWrapper, searchStyle]}>
         <SearchBar
@@ -154,42 +130,11 @@ const styles = StyleSheet.create({
     right: ValueConstants.zero,
     height: layoutSizes.homeHeaderMax,
     zIndex: zIndices.stickyHeader,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingBottom: spacing.sm,
-  },
-  titles: {
-    flex: ValueConstants.one,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  titleScaleAnchor: {
-    alignSelf: 'flex-start',
-    transformOrigin: 'left',
-  },
-  screenTitle: {
-    fontWeight: fontWeights.bold,
-  },
-  bell: {
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  // Placement only; the badge's own shape and colours are the widget's.
-  badge: {
-    top: ValueConstants.zero,
-    right: ValueConstants.zero,
   },
   // Pinned to the band's bottom: list padding is measured against the field.
   searchWrapper: {
     marginTop: 'auto',
+    paddingHorizontal: spacing.lg,
     paddingBottom: spacing.sm,
   },
 });

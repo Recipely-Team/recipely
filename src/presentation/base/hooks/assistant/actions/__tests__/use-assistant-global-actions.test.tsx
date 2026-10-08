@@ -68,7 +68,7 @@ describe('readScreen', () => {
 
     await expect(registry.run(AssistantAction.ReadScreen)).resolves.toMatchObject({
       ok: true,
-      title: 'draft=Mercimek; ingredients: 1) mercimek',
+      summary: 'draft=Mercimek; ingredients: 1) mercimek',
     });
   });
 
@@ -81,7 +81,7 @@ describe('readScreen', () => {
 
     await expect(registry.run(AssistantAction.ReadScreen)).resolves.toMatchObject({
       ok: true,
-      title: 'screen=/settings',
+      summary: 'screen=/settings',
     });
   });
 

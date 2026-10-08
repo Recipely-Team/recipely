@@ -1,19 +1,16 @@
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
+import { spacing, fontSizes, fontWeights } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
 interface ForgotPasswordInputViewProps {
   email: string;
   onChangeEmail: (v: string) => void;
-  focused: boolean;
-  onFocus: () => void;
-  onBlur: () => void;
   loading: boolean;
   onSend: () => void;
   onBack: () => void;
@@ -21,40 +18,21 @@ interface ForgotPasswordInputViewProps {
 }
 
 export const ForgotPasswordInputView = ({
-  email, onChangeEmail, focused, onFocus, onBlur, loading, onSend, onBack, error,
+  email, onChangeEmail, loading, onSend, onBack, error,
 }: ForgotPasswordInputViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <>
-      <View style={[styles.inputWrapper, { marginTop: spacing.xs }]}>
-        <Ionicons
-          name="mail-outline"
-          size={iconSizes.xl}
-          color={colors.textMuted}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.inputBackground,
-              color: colors.text,
-              borderColor: focused ? colors.inputBorderFocused : colors.inputBorder,
-            },
-          ]}
-          placeholder={t().forgotPassword.emailPlaceholder}
-          placeholderTextColor={colors.textMuted}
-          value={email}
-          onChangeText={onChangeEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          returnKeyType="send"
-          onFocus={onFocus}
-          onBlur={onBlur}
-          onSubmitEditing={onSend}
-        />
-      </View>
+      <AuthTextField
+        iconName="mail-outline"
+        placeholder={t().forgotPassword.emailPlaceholder}
+        value={email}
+        onChangeText={onChangeEmail}
+        keyboardType="email-address"
+        returnKeyType="send"
+        onSubmitEditing={onSend}
+        containerStyle={styles.fieldSpacing}
+      />
 
       <ThemedText variant="caption" muted style={styles.hint}>
         {t().forgotPassword.hint}
@@ -90,22 +68,8 @@ export const ForgotPasswordInputView = ({
 };
 
 const styles = StyleSheet.create({
-  inputWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: spacing.lg,
-    zIndex: zIndices.raised,
-  },
-  input: {
-    minHeight: controlSizes.input,
-    borderWidth: borderWidths.thin,
-    borderRadius: radii.lg,
-    paddingLeft: spacing.xxxl,
-    paddingRight: spacing.lg,
-    fontSize: fontSizes.body,
+  fieldSpacing: {
+    marginTop: spacing.xs,
   },
   hint: {
     marginTop: spacing.xs,
