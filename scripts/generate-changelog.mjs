@@ -11,8 +11,9 @@
  * - **Generated, never hand-edited.** `npm run changelog` rewrites the whole
  *   file from the tags, so it cannot drift from what actually shipped.
  * - **Unreleased work is headed with the NEXT version.** Commits after the last
- *   tag are listed under that tag patch-bumped — the exact version the
- *   `tag-release` job will stamp when they reach `main` — marked "unreleased".
+ *   tag are listed under the version the `tag-release` job will stamp when
+ *   they reach `main` (`next-version.mjs`: major / minor / patch by the same
+ *   rule as ci.yml), marked "unreleased".
  *   The release PR runs this, so its diff shows what the release contains.
  * - **App repo only.** Backend changes ship from `recipely-backend` and are not
  *   in this history.
@@ -20,6 +21,7 @@
 import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { nextVersion } from './next-version.mjs';
 
 const ROOT = process.cwd();
 const OUT = path.join(ROOT, 'CHANGELOG.md');
@@ -88,8 +90,8 @@ const main = () => {
   const last = tags.at(-1);
   const pending = last === undefined ? [] : subjects(`${last.tag}..HEAD`);
   if (pending.length > 0) {
-    const [major, minor, patch] = last.version;
-    releases.push(renderRelease(`${major}.${minor}.${patch + 1} — unreleased`, pending));
+    const next = nextVersion(last.version, git('log', '--no-merges', '--format=%s%n%b', `${last.tag}..HEAD`));
+    releases.push(renderRelease(`${next.join('.')} — unreleased`, pending));
   }
 
   const header = [

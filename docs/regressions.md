@@ -2751,3 +2751,9 @@ real step against a scratch repository with a multi-megabyte log, and which forb
 variable into `grep -q` or `head` anywhere in the workflow. Same class as the dev distribution
 gate's `| head`: **under `pipefail`, a reader that exits early is a bug that depends on input
 SIZE — and inside an `if` it does not fail, it lies.**
+
+**Second copy of the rule:** `scripts/generate-changelog.mjs` headed unreleased work with the last
+tag patch-bumped, so CHANGELOG.md would have announced the first minor release as `1.1.16`. It now
+asks `scripts/next-version.mjs`, which states ci.yml's major / minor / patch rule once; covered by
+`scripts/__tests__/changelog-next-version.test.js`. **A version rule written in two places drifts —
+when the bump rule changes, change both, and test both against the same cases.**
