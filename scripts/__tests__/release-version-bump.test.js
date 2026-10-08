@@ -49,9 +49,22 @@ const workflowCode = () =>
     .filter((line) => !line.trimStart().startsWith('#'))
     .join('\n');
 
-const git = (cwd, ...args) => execFileSync('git', args, { cwd, stdio: 'pipe' }).toString().trim();
+/**
+ * Runs git, rethrowing flat: execFileSync's error is circular and kills
+ * jest-worker's JSON hand-off, hiding the real failure.
+ */
+const git = (cwd, args, input) => {
+  try {
+    return execFileSync('git', args, { cwd, input, stdio: 'pipe' }).toString().trim();
+  } catch (failure) {
+    throw new Error(`git ${args[0]} failed: ${String(failure.stderr ?? failure.message)}`);
+  }
+};
 
-/** A body big enough that the log since the tag is megabytes, on any platform's pipe. */
+/**
+ * A body big enough that the log since the tag is far past any platform's pipe.
+ * Fed through stdin: Linux caps one argv string at 128 KB (E2BIG).
+ */
 const LONG_BODY = 'x'.repeat(200000);
 
 /**
@@ -62,15 +75,15 @@ const nextTag = (subjects) => {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'bump-'));
   const origin = path.join(root, 'origin.git');
   const repo = path.join(root, 'repo');
-  execFileSync('git', ['init', '-q', '--bare', origin]);
-  execFileSync('git', ['init', '-q', repo]);
-  git(repo, 'config', 'user.name', 'test');
-  git(repo, 'config', 'user.email', 'test@example.com');
-  git(repo, 'commit', '-q', '--allow-empty', '-m', 'chore: base');
-  git(repo, 'tag', '-a', 'v1.1.14', '-m', 'v1.1.14');
-  git(repo, 'remote', 'add', 'origin', origin);
+  git(root, ['init', '-q', '--bare', origin]);
+  git(root, ['init', '-q', repo]);
+  git(repo, ['config', 'user.name', 'test']);
+  git(repo, ['config', 'user.email', 'test@example.com']);
+  git(repo, ['commit', '-q', '--allow-empty', '-m', 'chore: base']);
+  git(repo, ['tag', '-a', 'v1.1.14', '-m', 'v1.1.14']);
+  git(repo, ['remote', 'add', 'origin', origin]);
   for (const subject of subjects) {
-    git(repo, 'commit', '-q', '--allow-empty', '-m', subject, '-m', LONG_BODY);
+    git(repo, ['commit', '-q', '--allow-empty', '-F', '-'], `${subject}\n\n${LONG_BODY}`);
   }
 
   const outputs = path.join(root, 'out');
