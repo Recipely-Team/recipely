@@ -10,7 +10,7 @@ import { failureContent, failureIcon, failureSeverity } from '@presentation/base
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { CreatorCard } from '@presentation/base/widgets/creators/creator-card';
-import { ChefsEmpty } from '@presentation/app/creators/items/chefs-empty';
+import { ChefsComingSoon } from '@presentation/app/creators/items/chefs-coming-soon';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import type { UseCreatorsScreenResult } from '@presentation/app/creators/model/use-creators-screen-result';
@@ -25,7 +25,7 @@ const keyOf = (creator: CreatorSummaryEntity): string => creator.id;
 
 /**
  * The Chefs tab's body under its heading, by list state: a spinner before the
- * first answer, the error with a retry, the chef-hat empty state, or the card grid.
+ * first answer, the error with a retry, the "coming soon" placeholder, or the card grid.
  * Every settled branch is pull-to-refresh.
  */
 export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.Element => {
@@ -67,7 +67,7 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
       if (vm.creators.length === ValueConstants.zero) {
         return (
           <ScrollView {...scrollable} contentContainerStyle={styles.emptyContent} refreshControl={refreshControl}>
-            <ChefsEmpty />
+            <ChefsComingSoon onApply={vm.onApplyAsCreator} />
           </ScrollView>
         );
       }

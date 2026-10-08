@@ -1,3 +1,4 @@
+import { RoutePaths } from '@presentation/base/constants';
 /**
  * CreatorsScreen (/creators): the grid over the same creators store as the
  * Explore strip — cards when there are creators, an empty note when the list
@@ -15,6 +16,9 @@ import { CreatorsScreen } from '@presentation/app/creators';
 import { t } from '@presentation/i18n';
 
 const mockPush = jest.fn();
+jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
+  NotificationsBellButton: (): null => null,
+}));
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, back: jest.fn(), replace: jest.fn(), canGoBack: () => true }),
 }));
@@ -64,10 +68,30 @@ describe('CreatorsScreen', () => {
     expect(creatorsStore.getState().loadMore).toHaveBeenCalledTimes(1);
   });
 
-  it('says there are none yet when the list is empty', () => {
+  it('shows the coming-soon placeholder, without the grid subtitle, when the list is empty', () => {
     const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([]) });
 
-    expect(textContent(root)).toContain(t().creators.empty);
+    const text = textContent(root);
+    expect(text).toContain(t().creators.comingSoon.title);
+    expect(text).toContain(t().creators.comingSoon.pill);
+    expect(text).not.toContain(t().creators.listSubtitle);
+  });
+
+  it('sends a would-be creator to the creator account section of Edit profile', () => {
+    const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([]) });
+
+    const apply = root.find(
+      (node: ReactTestInstance) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function' && textContent(node).includes(t().creators.comingSoon.apply),
+    );
+    act(() => (apply.props.onPress as () => void)());
+
+    expect(mockPush).toHaveBeenCalledWith(RoutePaths.editProfileCreatorAccount);
+  });
+
+  it('shows the grid subtitle once there are chefs', () => {
+    const { root } = renderComponent(<CreatorsScreen />, { creatorsStore: storeOf([creatorSummaryOf('1')]) });
+
+    expect(textContent(root)).toContain(t().creators.listSubtitle);
   });
 
   it("opens a creator's page from their card", () => {

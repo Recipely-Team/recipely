@@ -3698,6 +3698,37 @@ Source: the Recipely Prototype spec rev 3 (sections marked rev 2 / rev 3).
   your bio", no "up to 2 days"); Submit unlocks at each platform's minimum handle length; status-pill icons are
   14 (spec 13–14); half-point type sizes round to the ladder.
 
+## Tab app bar and Chefs coming soon (Oct 2026)
+
+Source: the Recipely Prototype, Tweaks → "Tab bars · compare" and "Chefs - coming soon". Phone frames only; the
+web shell keeps its own headings.
+
+- **Tab app bar (`base/widgets/navigation/tab-app-bar.tsx`):** one bar on all five bottom-tab roots, so the title
+  never moves when switching tabs. 56 tall (8 top and bottom around a 40 row), 16 sides, `background`. Title
+  24/700 (`title` variant), one line; 12 between the title area and the actions. Actions are
+  `TabAppBarButton` only: 40 round, hairline `cardBorder`, `surface` fill, 20 glyph in `text`; the primary
+  variant fills `primary` with a `primaryText` glyph. 8 between actions, at most three. The unread badge sits
+  2 outside the bell's top-right corner.
+- **Per tab:** Recipes — 28 logo inline (8 before the title), bell; the bar still slides away with the
+  collapsing band. My Recipes — cart, primary add, bell. Chefs — bell; the subtitle moves under the bar (13,
+  `textSubtle`, 12 below) and only shows once there are chefs. Diary — calendar, goals, bell. Profile — bell;
+  the avatar block starts 16 below the bar (was 32). Owner decision: every tab has the bell, no settings gear
+  on Profile.
+- **Chefs coming soon (`app/creators/items/chefs-coming-soon.tsx`):** shown while the list is loaded and empty.
+  Content 16 sides, 24 above the hero; capped at 480 and centred on a wide viewport. Hero 200×176: halos 176
+  (`primaryHaloOuter`, primary 8 %) and 128 (`primaryHaloInner`, 16 %), an 88 gradient core
+  (`primaryGradientStart` → `primaryGradientEnd`, `shadows.md`) with a 44 chef hat in `primaryText`; four 36
+  chips (`cardBackground`, `cardBorder`, `shadows.sm`, 18 `primary` glyphs: restaurant, heart, star, flame)
+  that bob 5 over 3.2 s, staggered, and stay still under reduce motion. Pill 16 below: 26 tall, 10 sides,
+  round, `chipBackground` / `chipText`, 12/700 with a 12 sparkle. Title 12 below: 22/800, tight tracking.
+  Body 8 below: 14, `textSubtle`, max 300. Ghost grid 24 below: 2×2, 12 gap, the real card's shape (radius 16,
+  padding 20/12/16, 64 avatar, bars 12/10/8 tall at 62/46/54 % in `skeleton`), opacity 0.6, fading into
+  `background` from 35 % of its height. CTA card overlaps the grid by 72: radius 16, padding 16, `shadows.md`,
+  12 gap; heading 15/700; button 48 tall, radius 12, `primary`, 15/700 with an 18 chef hat — opens Edit
+  profile at Creator account.
+- **Copy:** `creators.comingSoon.{pill, title, body, creatorQuestion, apply}` in all 14 locales;
+  `creators.empty` is gone.
+
 ## Cooking mode (Oct 2026 — interim, not from the prototype)
 
 TODO(design): cooking mode to be redesigned in Claude Design

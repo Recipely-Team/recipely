@@ -7,6 +7,7 @@ import { spacing, controlSizes } from '@presentation/base/theme';
 import { useProfile } from '@presentation/app/profile/hooks/use-profile';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
+import { ProfileAppBar } from '@presentation/app/profile/body/profile-app-bar';
 import { ProfileIdentity } from '@presentation/app/profile/body/profile-identity';
 import { ProfileStats } from '@presentation/app/profile/body/profile-stats';
 import { ProfileActions } from '@presentation/app/profile/body/profile-actions';
@@ -35,13 +36,11 @@ export const ProfileScreen = (): React.JSX.Element => {
   const scrollable = useAssistantScrollable();
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.background }]}>
+    <View style={[styles.root, { backgroundColor: colors.background, paddingTop: isWebShell ? ValueConstants.zero : insets.top }]}>
+      {isWebShell ? null : <ProfileAppBar />}
       <ScrollView
         {...scrollable}
-        contentContainerStyle={{
-          paddingTop: isWebShell ? ValueConstants.zero : insets.top + spacing.sm,
-          paddingBottom: isWebShell ? controlSizes.tabBar + spacing.xxl : spacing.xxl,
-        }}
+        contentContainerStyle={{ paddingBottom: isWebShell ? controlSizes.tabBar + spacing.xxl : spacing.xxl }}
         showsVerticalScrollIndicator={false}
       >
         <ResponsiveContainer route="profile" gutter={false}>

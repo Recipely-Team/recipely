@@ -49,7 +49,6 @@ export interface UseRecipeListResult {
   sortBy: SortKey;
   filters: UiFilters;
   activeCuisineLabel: string | null;
-  unreadCount: number;
 
   // Mobile collapsing-header scroll state.
   /** The feed list, so the assistant can scroll it. */
@@ -98,7 +97,6 @@ export interface UseRecipeListResult {
   onRefresh: () => void;
   onOpenRecipe: (id: string) => void;
   onOpenCreate: () => void;
-  onNotifications: () => void;
   isSaved: (id: string) => boolean;
   onToggleSave: (id: string) => void;
   onChangeSort: (key: SortKey) => void;
