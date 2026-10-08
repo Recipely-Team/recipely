@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { WebRecipeListItem } from '@presentation/base/widgets/cards/web-recipe-list-item';
 import { WebSectionHead } from '@presentation/app/recipes/items/web-section-head';
@@ -169,15 +171,12 @@ export const WebRecipeGrid = ({
         </View>
       ) : recipes.length === ValueConstants.zero ? (
         <View style={[styles.empty, { borderColor: colors.border }]}>
-          <View style={[styles.emptyIcon, { backgroundColor: colors.surface }]}>
-            <Ionicons name="search" size={iconSizes.xxxl} color={colors.textMuted} />
-          </View>
-          <ThemedText style={[styles.emptyTitle, { color: colors.text }]}>
-            {t().recipes.noResults}
-          </ThemedText>
-          <ThemedText style={[styles.emptyBody, { color: colors.textMuted }]}>
-            {t().recipes.webEmptyBody}
-          </ThemedText>
+          <ErrorState
+            icon="search"
+            severity={SeverityType.Neutral}
+            title={t().recipes.noResults}
+            body={t().recipes.webEmptyBody}
+          />
         </View>
       ) : (
         <FlatList
@@ -274,22 +273,5 @@ const styles = StyleSheet.create({
     borderWidth: borderWidths.thin,
     borderStyle: 'dashed',
     borderRadius: radii.xl,
-    padding: spacing.xxxl,
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  emptyIcon: {
-    width: iconSizes.jumbo,
-    height: iconSizes.jumbo,
-    borderRadius: radii.round,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  emptyTitle: {
-    fontWeight: fontWeights.bold,
-    fontSize: fontSizes.subtitle,
-  },
-  emptyBody: {
-    fontSize: fontSizes.body,
   },
 });
