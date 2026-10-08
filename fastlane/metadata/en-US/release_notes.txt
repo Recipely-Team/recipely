@@ -1,9 +1,6 @@
-Cook with your hands full: cooking mode, scaled recipes and a shopping list.
+One steady top bar on every tab, and a first look at Chefs.
 
-• Cooking mode: one big step at a time, with timers, and the screen stays on.
-• Scale any recipe to your servings, with unit conversion.
-• Shopping list: add a recipe's ingredients in one tap.
-• Log a meal by describing it or snapping a photo.
-• Timers give a quiet heads-up at 5 and 1 minute left, on your watch too.
-• Optional recipe reminders: turn them on in Settings.
-• Smoother scrolling, better accessibility and many fixes.
+• Every tab now has the same top bar, so switching tabs feels steady, and notifications are one tap away on each.
+• Chefs: a new page shows what is coming, and food creators can apply to join.
+• Cleaner sign-in and sign-up fields, and a friendlier screen when a search finds nothing.
+• Many small fixes and polish.

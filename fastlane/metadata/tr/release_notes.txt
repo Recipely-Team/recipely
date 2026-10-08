@@ -1,9 +1,6 @@
-Elin hamurdayken de rahat pişir: pişirme modu, porsiyon ölçekleme ve alışveriş listesi.
+Her sekmede aynı üst çubuk ve Şefler sayfasına ilk bakış.
 
-• Pişirme modu: adımlar tek tek ve büyük, zamanlayıcılarla; ekran kapanmaz.
-• Tarifi porsiyonuna göre ölçekle, birimleri dönüştür.
-• Alışveriş listesi: tarifin malzemelerini tek dokunuşla ekle.
-• Öğününü yazarak ya da fotoğrafını çekerek kaydet.
-• Zamanlayıcılar 5 ve 1 dakika kala sessizce uyarır, saatinde de.
-• İsteğe bağlı tarif hatırlatmaları: Ayarlar'dan aç.
-• Daha akıcı kaydırma, daha iyi erişilebilirlik ve pek çok düzeltme.
+• Tüm sekmelerde aynı üst çubuk: sekmeler arasında geçiş artık sarsılmıyor, bildirimler her sekmede tek dokunuşta.
+• Şefler: yakında gelecekleri gösteren yeni sayfa; yemek içerik üreticileri buradan başvurabilir.
+• Daha sade giriş ve kayıt alanları, arama sonuç vermediğinde daha sıcak bir ekran.
+• Pek çok küçük düzeltme ve iyileştirme.
