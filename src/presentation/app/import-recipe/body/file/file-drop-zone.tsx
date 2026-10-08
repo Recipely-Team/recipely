@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontWeights, iconSizes, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontWeights, iconSizes, borderWidths, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
 export interface FileDropZoneProps {
@@ -14,7 +14,6 @@ export interface FileDropZoneProps {
 /** The upload disc, as the design draws it. */
 const DISC = 56;
 /** The "Choose files" button's height in the design — a compact action, not the page's CTA. */
-const CHOOSE_MIN_HEIGHT = 44;
 
 /**
  * The web's empty state: drop photos or a PDF anywhere, or choose them.
@@ -80,7 +79,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   choose: {
-    minHeight: CHOOSE_MIN_HEIGHT,
+    minHeight: controlSizes.touchTarget,
     paddingHorizontal: spacing.lg2,
     borderRadius: radii.lg,
     alignItems: 'center',

@@ -11,6 +11,7 @@ import {
   iconSizes,
   borderWidths,
   aspectRatios,
+  controlSizes,
 } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { COUNT_TOKEN } from '@presentation/app/import-recipe/model/file/count-token';
@@ -31,7 +32,6 @@ export interface FilePageTileProps {
 /** The page number chip, as the design draws it. */
 const NUMBER_CHIP = 22;
 /** The remove control's touch target; the visible disc inside it is smaller. */
-const REMOVE_TARGET = 44;
 const REMOVE_DISC = 26;
 /** How far the remove target reaches past the tile's corner. */
 const REMOVE_OVERHANG = -6;
@@ -108,8 +108,8 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: REMOVE_OVERHANG,
     top: REMOVE_OVERHANG,
-    width: REMOVE_TARGET,
-    height: REMOVE_TARGET,
+    width: controlSizes.touchTarget,
+    height: controlSizes.touchTarget,
     alignItems: 'center',
     justifyContent: 'center',
   },

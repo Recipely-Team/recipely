@@ -15,16 +15,16 @@ export const decorSizes = {
    * (its 14pt inner box after the 2pt border).
    */
   notifBadgeLineHeight: scale(12),
-  /** Unread-count badge on a tab or bell icon. */
   /** A meta line in a card skeleton — the short grey bar under the title. */
   skeletonLineSm: scale(14),
-
+  /** Unread-count badge on a tab or bell icon. */
   notifBadge: scale(18),
   /** Width of the active page dot in a carousel (the inactive dot is round). */
   dotActiveWidth: scale(18),
 
   /** A title line in a card skeleton. */
   skeletonLineMd: scale(18),
+  /** Numbered disc beside a recipe step. */
   stepDisc: scale(20),
   /** Rank medallion on the web leaderboard cards. */
   rankBadge: scale(26),
@@ -34,7 +34,10 @@ export const decorSizes = {
   cardOverlap: scale(40),
   /** Same tile inside the hero band's side stack, where height is scarce. */
   aiBannerIconCompact: scale(40),
+  /** Icon tile on a stat card. */
   statBadge: scale(42),
+  /** Icon inside the {@link errorStateDisc}. */
+  errorStateIcon: scale(46),
   /** Circular icon plate on the AI banner. */
   aiBannerIcon: scale(52),
 
@@ -46,6 +49,8 @@ export const decorSizes = {
   statusCircle: scale(72),
   /** Sparkle ornament on the AI surfaces. */
   sparkleDecor: scale(80),
+  /** Severity disc at the top of a full-screen ErrorState (error, empty, no results). */
+  errorStateDisc: scale(104),
   /** Scrim gradient over a hero image. */
   gradientHeight: scale(260),
 } as const;
