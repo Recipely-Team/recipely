@@ -2734,3 +2734,20 @@ sentences there; so did `readScreen` (the screen reading) and both `readIngredie
 Covered by `use-assistant-diary-actions.test.tsx` ("puts no English sentence on the transcript
 chip…") and `check:structure` rule AR: in any file that builds an action result, a `title:`
 expression may not contain a string literal or a `.join(` — even inside a ternary. **A field a person reads is not a channel for talking to the model.**
+
+---
+
+## Releases with new features were tagged as patches (2026-10-08)
+
+**Symptom:** v1.1.15 shipped shopping list, meal logging, portion scaling and cooking mode — three
+`feat` commits — and CI tagged it as a patch. Nothing failed; the tag step was green.
+
+**Fix:** the `bump` step in `ci.yml` tested the log with `echo "$log" | grep -qE '^feat…'`. `grep -q`
+exits on its first match; once the log since the last tag outgrew the pipe buffer, `echo` died of
+SIGPIPE and `set -o pipefail` made the `if` false — silently, so it fell through to `patch`. The
+bigger the release, the surer it was to be called a patch. The greps now read here-strings
+(`grep -qE … <<<"$log"`). Covered by `scripts/__tests__/release-version-bump.test.js`, which runs the
+real step against a scratch repository with a multi-megabyte log, and which forbids piping a
+variable into `grep -q` or `head` anywhere in the workflow. Same class as the dev distribution
+gate's `| head`: **under `pipefail`, a reader that exits early is a bug that depends on input
+SIZE — and inside an `if` it does not fail, it lies.**
