@@ -392,6 +392,50 @@ const pageFor = (shell, recipe) => {
   return insertBefore(html, '</body>', noscriptArticle(recipe));
 };
 
+/** The export's pages that render the recipe feed: the front door and the list. */
+const INDEX_PAGES = ['index.html', 'recipes.html', path.join('recipes', 'index.html')];
+
+/**
+ * The recipe feed as a static list, for the pages that render it.
+ *
+ * `/` redirects to `/recipes` in script, so without the bundle both answer
+ * with an empty shell — the "screen without publisher content" AdSense names.
+ * This states what the feed shows: every prerendered recipe, linked, with the
+ * same description its own page carries. In `<noscript>` for the same reason
+ * as {@link noscriptArticle}.
+ */
+const noscriptIndex = (recipes) =>
+  [
+    '<noscript>',
+    '<main>',
+    '<h1>Recipely — recipes, simply yours</h1>',
+    '<p>Recipely is a cooking community: browse recipes from home cooks, scale a recipe to the ' +
+      'servings you need, cook step by step with timers, and build a shopping list from what is ' +
+      `missing. <a href="${SITE_URL}/about">About Recipely</a>.</p>`,
+    '<h2>Recipes</h2>',
+    '<ul>',
+    ...recipes.map(
+      (recipe) =>
+        `<li><a href="${SITE_URL}/recipes/${escapeHtml(recipe.id)}">${escapeHtml(recipe.name)}</a>` +
+        ` — ${escapeHtml(describe(recipe).replace(`${recipe.name} — `, ''))}</li>`,
+    ),
+    '</ul>',
+    '</main>',
+    '</noscript>',
+  ].join('\n');
+
+/** Writes the feed's static list into each index page the export has; returns how many. */
+const writeIndexPages = (recipes) => {
+  let written = 0;
+  for (const page of INDEX_PAGES) {
+    const file = path.join(dist, page);
+    if (!fs.existsSync(file)) continue;
+    fs.writeFileSync(file, insertBefore(fs.readFileSync(file, 'utf8'), '</body>', noscriptIndex(recipes)));
+    written += 1;
+  }
+  return written;
+};
+
 /** Adds every prerendered recipe to the sitemap the export already carries. */
 const extendSitemap = (file, recipes) => {
   if (!fs.existsSync(file)) return false;
@@ -458,9 +502,11 @@ const main = async () => {
   }
 
   const listed = extendSitemap(path.join(dist, 'sitemap.xml'), recipes);
+  const indexed = writeIndexPages(recipes);
   console.log(
     `prerender-recipes: wrote ${String(recipes.length)} recipe page(s) of ${String(all.length)}` +
-      `, from ${path.relative(dist, shellPath)}${listed ? ', sitemap extended' : ''}`,
+      `, from ${path.relative(dist, shellPath)}${listed ? ', sitemap extended' : ''}` +
+      `, ${String(indexed)} index page(s) listed`,
   );
 };
 
