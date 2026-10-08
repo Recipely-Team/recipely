@@ -3,7 +3,6 @@ import { StyleSheet, TextInput, type StyleProp, type ViewStyle } from 'react-nat
 import { useSharedValue } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
-  byRole,
   renderComponent,
   textContent,
 } from '@presentation/base/test-support/render-component';
@@ -13,6 +12,9 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { t } from '@presentation/i18n';
 
+jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
+  NotificationsBellButton: (): null => null,
+}));
 jest.mock('@expo/vector-icons/Ionicons', () => {
   const { Text } = jest.requireActual<typeof import('react-native')>('react-native');
   const Icon = (props: { name: string }): React.JSX.Element => <Text>{`icon:${props.name}`}</Text>;
@@ -25,7 +27,6 @@ jest.mock('@expo/vector-icons/MaterialCommunityIcons', () => {
 });
 
 interface HeaderOverrides {
-  unreadCount?: number;
   searchValue?: string;
   reduceMotion?: boolean;
 }
@@ -34,10 +35,8 @@ const renderHeader = (
   overrides: HeaderOverrides = {},
 ): {
   root: RenderResult['root'];
-  onNotificationsPress: jest.Mock;
   onSearchChange: jest.Mock;
 } => {
-  const onNotificationsPress = jest.fn();
   const onSearchChange = jest.fn();
 
   const Probe = (): React.JSX.Element => {
@@ -48,8 +47,6 @@ const renderHeader = (
         scrollY={scrollY}
         headerTranslateY={headerTranslateY}
         reduceMotion={overrides.reduceMotion ?? true}
-        onNotificationsPress={onNotificationsPress}
-        unreadCount={overrides.unreadCount ?? 0}
         searchValue={overrides.searchValue ?? ''}
         onSearchChange={onSearchChange}
       />
@@ -57,7 +54,7 @@ const renderHeader = (
   };
 
   const { root } = renderComponent(<Probe />);
-  return { root, onNotificationsPress, onSearchChange };
+  return { root, onSearchChange };
 };
 
 /** Recursively flattens a possibly-nested RN style prop into one object. */
@@ -80,8 +77,6 @@ const renderHeaderWithTopInset = (topInset: number): ReactTestInstance => {
         scrollY={scrollY}
         headerTranslateY={headerTranslateY}
         reduceMotion
-        onNotificationsPress={jest.fn()}
-        unreadCount={0}
         searchValue=""
         onSearchChange={jest.fn()}
       />
@@ -162,43 +157,5 @@ describe('CollapsingHomeHeader', () => {
 
     act(() => (input.props.onChangeText as (text: string) => void)('soup'));
     expect(onSearchChange).toHaveBeenCalledWith('soup');
-  });
-
-  it('fires onNotificationsPress when the bell is tapped', () => {
-    const { root, onNotificationsPress } = renderHeader();
-
-    act(() => (byRole(root, 'button').props.onPress as () => void)());
-
-    expect(onNotificationsPress).toHaveBeenCalledTimes(1);
-  });
-
-  it('uses the outline bell icon and a plain label when there are no unread items', () => {
-    const { root } = renderHeader({ unreadCount: 0 });
-
-    expect(textContent(root)).toContain('icon:notifications-outline');
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(t().notifications.title);
-  });
-
-  it('shows the unread badge count and the filled bell when unread > 0', () => {
-    const { root } = renderHeader({ unreadCount: 4 });
-
-    const texts = textContent(root);
-    expect(texts).toContain('icon:notifications');
-    expect(texts).toContain('4');
-  });
-
-  it('folds the unread count into the bell accessibility label', () => {
-    const { root } = renderHeader({ unreadCount: 4 });
-
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().notifications.title}, 4`);
-  });
-
-  it('caps the unread badge at "9+" while keeping the true count in the label', () => {
-    const { root } = renderHeader({ unreadCount: 15 });
-
-    const texts = textContent(root);
-    expect(texts).toContain('9+');
-    expect(texts).not.toContain('15');
-    expect(byRole(root, 'button').props.accessibilityLabel).toBe(`${t().notifications.title}, 15`);
   });
 });

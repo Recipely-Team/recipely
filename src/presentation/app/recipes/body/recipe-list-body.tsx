@@ -190,7 +190,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
     <SafeAreaView style={[styles.root, { backgroundColor: colors.background }]} edges={['top']}>
       {isExpanded ? (
         <>
-          <RecipesAppHeader onNotificationsPress={vm.onNotifications} unreadCount={vm.unreadCount} />
+          <RecipesAppHeader />
           <View style={styles.bodyContainer}>{body}</View>
         </>
       ) : (
@@ -200,8 +200,6 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
             scrollY={vm.scrollY}
             headerTranslateY={vm.headerTranslateY}
             reduceMotion={vm.reduceMotion}
-            onNotificationsPress={vm.onNotifications}
-            unreadCount={vm.unreadCount}
             searchValue={vm.search}
             onSearchChange={vm.onSearchChange}
           />

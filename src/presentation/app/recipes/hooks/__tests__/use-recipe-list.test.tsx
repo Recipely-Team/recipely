@@ -156,7 +156,6 @@ const makeAuthStore = () =>
 
 const makeNotificationsStore = () =>
   create<NotificationsStoreState>(() => ({
-    unreadCount: 0,
   }) as unknown as NotificationsStoreState);
 
 const makeSavedRecipesStore = () =>
