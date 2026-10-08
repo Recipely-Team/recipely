@@ -446,8 +446,6 @@ export const zh = {
     signInWithApple: '使用 Apple 继续',
     forgot: '忘记密码？',
     forgotPassword: '找回密码',
-    showPassword: '显示密码',
-    hidePassword: '隐藏密码',
     continueAsGuest: '不登录，先逛逛',
   },
   recipes: {
@@ -1334,8 +1332,6 @@ export const zh = {
     tooShort: '密码至少需要 8 个字符。',
     mismatch: '两次输入的密码不一致。',
     invalidOrExpired: '这个重置链接无效或已经过期。请重新申请。',
-    showPassword: '显示密码',
-    hidePassword: '隐藏密码',
   },
   verify: {
     title: '验证邮箱',

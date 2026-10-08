@@ -443,8 +443,6 @@ export const de = {
     signInWithApple: 'Mit Apple fortfahren',
     forgot: 'Passwort vergessen?',
     forgotPassword: 'Passwort vergessen',
-    showPassword: 'Passwort anzeigen',
-    hidePassword: 'Passwort ausblenden',
     continueAsGuest: 'Ohne Konto fortfahren',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const de = {
     tooShort: 'Das Passwort muss mindestens 8 Zeichen lang sein.',
     mismatch: 'Die Passwörter stimmen nicht überein.',
     invalidOrExpired: 'Dieser Zurücksetzungslink ist ungültig oder abgelaufen. Fordere einen neuen an.',
-    showPassword: 'Passwort anzeigen',
-    hidePassword: 'Passwort ausblenden',
   },
   verify: {
     title: 'E-Mail bestätigen',

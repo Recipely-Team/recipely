@@ -443,8 +443,6 @@ export const pt = {
     signInWithApple: 'Continuar com Apple',
     forgot: 'Esqueceu a senha?',
     forgotPassword: 'Esqueci minha senha',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
     continueAsGuest: 'Continuar sem uma conta',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const pt = {
     tooShort: 'A senha deve ter pelo menos 8 caracteres.',
     mismatch: 'As senhas não coincidem.',
     invalidOrExpired: 'Este link de redefinição é inválido ou expirou. Peça um novo.',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
   },
   verify: {
     title: 'Confirme seu e-mail',

@@ -443,8 +443,6 @@ export const es = {
     signInWithApple: 'Continuar con Apple',
     forgot: '¿Olvidaste tu contraseña?',
     forgotPassword: 'Olvidé mi contraseña',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
     continueAsGuest: 'Continuar sin una cuenta',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const es = {
     tooShort: 'La contraseña debe tener al menos 8 caracteres.',
     mismatch: 'Las contraseñas no coinciden.',
     invalidOrExpired: 'Este enlace de restablecimiento no es válido o ha caducado. Solicita uno nuevo.',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
   },
   verify: {
     title: 'Verifica tu correo electrónico',

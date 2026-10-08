@@ -10,6 +10,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { PasswordEyeToggle } from '@presentation/base/widgets/inputs/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
 
@@ -21,17 +22,23 @@ export interface AuthTextFieldProps {
   autoCapitalize?: TextInputProps['autoCapitalize'];
   keyboardType?: KeyboardTypeOptions;
   returnKeyType?: ReturnKeyTypeOptions;
-  secureTextEntry?: boolean;
+  password?: boolean;
+  valid?: boolean;
   maxLength?: number;
   onSubmitEditing?: () => void;
-  rightSlot?: React.ReactNode;
   containerStyle?: StyleProp<ViewStyle>;
 }
 
 /**
- * Icon-prefixed auth input with a focus-aware border and an optional right slot
- * (status icon / password-visibility toggle). Forwards its ref to the underlying
- * `TextInput` so callers can chain focus across fields.
+ * The one icon-prefixed text field of the auth forms (login, register, forgot and
+ * reset password), with a focus-aware border.
+ *
+ * @remarks
+ * - **Password:** `password` hides the text and adds the show/hide toggle; the
+ *   field owns that visibility state.
+ * - **Validity:** `valid` shows a check or a cross on the right; leave it
+ *   `undefined` while there is nothing to judge.
+ * - **Ref:** forwarded to the `TextInput` so forms can chain focus.
  */
 export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
   function AuthTextField(
@@ -40,20 +47,23 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
       placeholder,
       value,
       onChangeText,
-      autoCapitalize,
+      autoCapitalize = 'none',
       keyboardType,
       returnKeyType,
-      secureTextEntry,
+      password = false,
+      valid,
       maxLength,
       onSubmitEditing,
-      rightSlot,
       containerStyle,
     },
     ref,
   ): React.JSX.Element {
     const colors = useTheme().colors;
     const [focused, setFocused] = useState(false);
-    const paddingRight = rightSlot !== undefined ? controlSizes.iconBtn + spacing.sm : spacing.lg;
+    const [revealed, setRevealed] = useState(false);
+    const hasStatus = valid !== undefined;
+    const slotCount = Number(password) + Number(hasStatus);
+    const paddingRight = spacing.lg + slotCount * controlSizes.iconBtn;
 
     return (
       <View style={[styles.inputWrapper, containerStyle]}>
@@ -77,13 +87,22 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
           autoCorrect={false}
           keyboardType={keyboardType}
           returnKeyType={returnKeyType}
-          secureTextEntry={secureTextEntry}
+          secureTextEntry={password && !revealed}
           maxLength={maxLength}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onSubmitEditing={onSubmitEditing}
         />
-        {rightSlot}
+        <View style={styles.rightSlot}>
+          {hasStatus ? (
+            <Ionicons
+              name={valid ? 'checkmark-circle' : 'close-circle'}
+              size={iconSizes.lg}
+              color={valid ? colors.success : colors.danger}
+            />
+          ) : null}
+          {password ? <PasswordEyeToggle visible={revealed} onToggle={() => setRevealed((v) => !v)} /> : null}
+        </View>
       </View>
     );
   },
@@ -105,5 +124,12 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     paddingLeft: spacing.xxxl,
     fontSize: fontSizes.body,
+  },
+  rightSlot: {
+    position: 'absolute',
+    right: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
   },
 });

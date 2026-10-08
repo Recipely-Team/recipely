@@ -443,8 +443,6 @@ export const ru = {
     signInWithApple: 'Продолжить с Apple',
     forgot: 'Забыли пароль?',
     forgotPassword: 'Забыли пароль',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
     continueAsGuest: 'Продолжить без аккаунта',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const ru = {
     tooShort: 'Пароль должен содержать не менее 8 символов.',
     mismatch: 'Пароли не совпадают.',
     invalidOrExpired: 'Эта ссылка для сброса недействительна или истекла. Запросите новую.',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
   },
   verify: {
     title: 'Подтвердите электронную почту',

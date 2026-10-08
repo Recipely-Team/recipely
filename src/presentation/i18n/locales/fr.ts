@@ -443,8 +443,6 @@ export const fr = {
     signInWithApple: 'Continuer avec Apple',
     forgot: 'Mot de passe oublié ?',
     forgotPassword: 'Mot de passe oublié',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
     continueAsGuest: 'Continuer sans compte',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const fr = {
     tooShort: 'Le mot de passe doit contenir au moins 8 caractères.',
     mismatch: 'Les mots de passe ne correspondent pas.',
     invalidOrExpired: 'Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
   },
   verify: {
     title: 'Vérifiez votre e-mail',

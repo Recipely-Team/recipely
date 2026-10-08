@@ -443,8 +443,6 @@ export const ja = {
     signInWithApple: 'Appleで続ける',
     forgot: 'パスワードを忘れましたか？',
     forgotPassword: 'パスワードを忘れた場合',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
     continueAsGuest: 'アカウントなしで続ける',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const ja = {
     tooShort: 'パスワードは8文字以上必要です。',
     mismatch: 'パスワードが一致しません。',
     invalidOrExpired: 'このリセットリンクは無効か、有効期限が切れています。新しいリンクを取得してください。',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
   },
   verify: {
     title: 'メールアドレスを確認',

@@ -443,8 +443,6 @@ export const ar = {
     signInWithApple: "المتابعة باستخدام Apple",
     forgot: "نسيت كلمة المرور؟",
     forgotPassword: "نسيت كلمة المرور",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور",
     continueAsGuest: "المتابعة بدون حساب"
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const ar = {
     tooShort: "يجب أن تتكوّن كلمة المرور من 8 أحرف على الأقل.",
     mismatch: "كلمتا المرور غير متطابقتين.",
     invalidOrExpired: "رابط إعادة التعيين غير صالح أو منتهي الصلاحية. اطلب رابطًا جديدًا.",
-    showPassword: "إظهار كلمة المرور",
-    hidePassword: "إخفاء كلمة المرور"
   },
   verify: {
     title: "تحقق من بريدك الإلكتروني",

@@ -443,8 +443,6 @@ export const id = {
     signInWithApple: 'Lanjutkan dengan Apple',
     forgot: 'Lupa kata sandi?',
     forgotPassword: 'Lupa kata sandi',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
     continueAsGuest: 'Lanjutkan tanpa akun',
   },
   recipes: {
@@ -1330,8 +1328,6 @@ export const id = {
     tooShort: 'Kata sandi minimal 8 karakter.',
     mismatch: 'Kata sandi tidak cocok.',
     invalidOrExpired: 'Tautan atur ulang ini tidak valid atau sudah kedaluwarsa. Minta yang baru.',
-    showPassword: 'Tampilkan kata sandi',
-    hidePassword: 'Sembunyikan kata sandi',
   },
   verify: {
     title: 'Verifikasi email kamu',

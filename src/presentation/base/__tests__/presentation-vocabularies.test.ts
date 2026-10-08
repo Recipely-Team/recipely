@@ -3,7 +3,6 @@ import { BreakpointType } from '@presentation/base/responsive/breakpoint-type';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { ThemedTextVariant } from '@presentation/base/widgets/text/themed-text-variant';
 import { NotifKind } from '@presentation/app/notifications/model/notif-kind';
-import { AuthField } from '@presentation/app/login/model/auth-field';
 import { SocialProvider } from '@presentation/app/login/model/social-provider';
 import { NotificationFilter } from '@presentation/app/notifications/model/notification-filter';
 import { TaxonomyPickerKind } from '@presentation/app/create-recipe/model/taxonomy-picker-kind';
@@ -21,7 +20,6 @@ describe.each([
   ['SeverityType', SeverityType],
   ['ThemedTextVariant', ThemedTextVariant],
   ['NotifKind', NotifKind],
-  ['AuthField', AuthField],
   ['SocialProvider', SocialProvider],
   ['NotificationFilter', NotificationFilter],
   ['TaxonomyPickerKind', TaxonomyPickerKind],

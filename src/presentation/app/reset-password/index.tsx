@@ -1,9 +1,8 @@
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { TextInput } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { isString } from '@core/guards/type-guards';
 import { CharConstants, ValueConstants } from '@core/constants';
-import { AuthField } from '@presentation/app/login/model/auth-field';
 import { AuthHeroLayout } from '@presentation/base/widgets/layout/auth-hero-layout';
 import { ResetPasswordFormView } from '@presentation/app/reset-password/body/reset-password-form-view';
 import { ResetPasswordSuccessView } from '@presentation/app/reset-password/body/reset-password-success-view';
@@ -18,9 +17,6 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
   const tokenValue = isString(token) ? token.trim() : CharConstants.empty;
 
   const form = useResetPasswordForm(tokenValue);
-  const [showNew, setShowNew] = useState(false);
-  const [showConfirm, setShowConfirm] = useState(false);
-  const [focusField, setFocusField] = useState<AuthField | null>(null);
   const confirmRef = useRef<TextInput>(null);
   const backToLogin = (): void => router.replace(RoutePaths.login);
 
@@ -36,13 +32,6 @@ export const ResetPasswordScreen = (): React.JSX.Element => {
         onChangeNew={form.setNewPassword}
         confirmPassword={form.confirmPassword}
         onChangeConfirm={form.setConfirmPassword}
-        showNew={showNew}
-        onToggleNew={() => setShowNew((v) => !v)}
-        showConfirm={showConfirm}
-        onToggleConfirm={() => setShowConfirm((v) => !v)}
-        focusField={focusField}
-        onFocus={setFocusField}
-        onBlur={() => setFocusField(null)}
         confirmRef={confirmRef}
         loading={form.loading}
         error={form.error}

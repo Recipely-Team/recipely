@@ -445,8 +445,6 @@ export const hi: TranslationsType = {
     signInWithApple: 'Apple से जारी रखें',
     forgot: 'पासवर्ड भूल गए?',
     forgotPassword: 'पासवर्ड भूल गए',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
     continueAsGuest: 'बिना खाते के जारी रखें',
   },
   recipes: {
@@ -1326,8 +1324,6 @@ export const hi: TranslationsType = {
     tooShort: 'पासवर्ड कम से कम 8 अक्षरों का होना चाहिए।',
     mismatch: 'पासवर्ड मेल नहीं खाते।',
     invalidOrExpired: 'यह रीसेट लिंक गलत है या इसकी समय-सीमा समाप्त हो चुकी है। नया लिंक माँगें।',
-    showPassword: 'पासवर्ड दिखाएँ',
-    hidePassword: 'पासवर्ड छिपाएँ',
   },
   verify: {
     title: 'ईमेल सत्यापित करें',

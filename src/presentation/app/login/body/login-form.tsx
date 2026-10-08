@@ -1,28 +1,18 @@
 import { useCallback, useRef, useState } from 'react';
-import { AuthField } from '@presentation/app/login/model/auth-field';
 import { StoreStatus } from '@application/store/store-status';
-import { ActivityIndicator, Pressable, StyleSheet, TextInput, View } from 'react-native';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
+import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
 import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import {
-  spacing,
-  radii,
-  fontSizes,
-  fontWeights,
-  controlSizes,
-  borderWidths,
-  zIndices,
-  opacities,
-  iconSizes,
-} from '@presentation/base/theme';
+import { spacing, fontWeights } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
@@ -46,8 +36,6 @@ export const LoginForm = (): React.JSX.Element => {
 
   const [email, setEmail] = useState(CharConstants.empty);
   const [password, setPassword] = useState(CharConstants.empty);
-  const [focusField, setFocusField] = useState<AuthField | null>(null);
-  const [showPassword, setShowPassword] = useState(false);
   // Page-scoped error: dies with the screen.
   const [errorMessage, setErrorMessage] = useState<string | undefined>(undefined);
 
@@ -85,81 +73,27 @@ export const LoginForm = (): React.JSX.Element => {
 
   return (
     <>
-      <View style={styles.inputWrapper}>
-        <MaterialCommunityIcons
-          name="email-outline"
-          size={iconSizes.xl}
-          color={colors.textMuted}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          style={[
-            styles.input,
-            {
-              backgroundColor: colors.inputBackground,
-              color: colors.text,
-              borderColor:
-                focusField === AuthField.Email ? colors.inputBorderFocused : colors.inputBorder,
-            },
-          ]}
-          placeholder={t().login.emailPlaceholder}
-          placeholderTextColor={colors.textMuted}
-          value={email}
-          onChangeText={setEmail}
-          autoCapitalize="none"
-          autoCorrect={false}
-          keyboardType="email-address"
-          returnKeyType="next"
-          onFocus={() => setFocusField(AuthField.Email)}
-          onBlur={() => setFocusField(null)}
-          onSubmitEditing={() => passwordRef.current?.focus()}
-        />
-      </View>
+      <AuthTextField
+        iconName="mail-outline"
+        placeholder={t().login.emailPlaceholder}
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+        returnKeyType="next"
+        onSubmitEditing={() => passwordRef.current?.focus()}
+      />
 
-      <View style={[styles.inputWrapper, { marginTop: spacing.md }]}>
-        <MaterialCommunityIcons
-          name="lock-outline"
-          size={iconSizes.xl}
-          color={colors.textMuted}
-          style={styles.inputIcon}
-        />
-        <TextInput
-          ref={passwordRef}
-          style={[
-            styles.input,
-            styles.passwordInput,
-            {
-              backgroundColor: colors.inputBackground,
-              color: colors.text,
-              borderColor:
-                focusField === AuthField.Password ? colors.inputBorderFocused : colors.inputBorder,
-            },
-          ]}
-          placeholder={t().login.passwordPlaceholder}
-          placeholderTextColor={colors.textMuted}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry={!showPassword}
-          autoCapitalize="none"
-          returnKeyType="done"
-          onFocus={() => setFocusField(AuthField.Password)}
-          onBlur={() => setFocusField(null)}
-          onSubmitEditing={() => { void handleSignIn(); }}
-        />
-        <Pressable
-          onPress={() => setShowPassword((visible) => !visible)}
-          hitSlop={spacing.sm}
-          style={styles.eyeButton}
-          accessibilityRole="button"
-          accessibilityLabel={showPassword ? t().login.hidePassword : t().login.showPassword}
-        >
-          <MaterialCommunityIcons
-            name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-            size={iconSizes.lg}
-            color={colors.textMuted}
-          />
-        </Pressable>
-      </View>
+      <AuthTextField
+        ref={passwordRef}
+        iconName="lock-closed-outline"
+        placeholder={t().login.passwordPlaceholder}
+        value={password}
+        onChangeText={setPassword}
+        password
+        returnKeyType="done"
+        onSubmitEditing={() => { void handleSignIn(); }}
+        containerStyle={styles.fieldSpacing}
+      />
 
       {errorMessage ? (
         <View style={styles.error}>
@@ -178,25 +112,14 @@ export const LoginForm = (): React.JSX.Element => {
         </ThemedText>
       </Pressable>
 
-      <Pressable
-        accessibilityRole="button"
-        accessibilityState={{ disabled: fieldsEmpty || isLoading, busy: isLoading }}
-        onPress={() => { void handleSignIn(); }}
-        disabled={fieldsEmpty || isLoading}
-        style={[
-          styles.signInButton,
-          { backgroundColor: colors.primary },
-          fieldsEmpty || isLoading ? styles.buttonDisabled : null,
-        ]}
-      >
-        {isLoading ? (
-          <ActivityIndicator color={colors.primaryText} />
-        ) : (
-          <ThemedText variant="body" style={[styles.signInLabel, { color: colors.primaryText }]}>
-            {t().login.signIn}
-          </ThemedText>
-        )}
-      </Pressable>
+      <View style={styles.submitRow}>
+        <PrimaryButton
+          label={t().login.signIn}
+          onPress={() => { void handleSignIn(); }}
+          loading={isLoading}
+          disabled={fieldsEmpty}
+        />
+      </View>
 
       <SocialAuthSection
         disabled={isLoading}
@@ -210,33 +133,8 @@ export const LoginForm = (): React.JSX.Element => {
 };
 
 const styles = StyleSheet.create({
-  inputWrapper: {
-    position: 'relative',
-    justifyContent: 'center',
-  },
-  inputIcon: {
-    position: 'absolute',
-    left: spacing.lg,
-    zIndex: zIndices.raised,
-  },
-  input: {
-    minHeight: controlSizes.input,
-    borderWidth: borderWidths.thin,
-    borderRadius: radii.lg,
-    paddingLeft: spacing.xxxl,
-    paddingRight: spacing.lg,
-    fontSize: fontSizes.body,
-  },
-  passwordInput: {
-    paddingRight: controlSizes.iconBtn + spacing.sm,
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: spacing.sm,
-    width: controlSizes.iconBtn,
-    height: controlSizes.iconBtn,
-    alignItems: 'center',
-    justifyContent: 'center',
+  fieldSpacing: {
+    marginTop: spacing.md,
   },
   error: {
     marginTop: spacing.md,
@@ -249,17 +147,7 @@ const styles = StyleSheet.create({
   forgotLabel: {
     fontWeight: fontWeights.semibold,
   },
-  signInButton: {
-    minHeight: controlSizes.button,
-    borderRadius: radii.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+  submitRow: {
     marginTop: spacing.lg,
-  },
-  buttonDisabled: {
-    opacity: opacities.disabled,
-  },
-  signInLabel: {
-    fontWeight: fontWeights.semibold,
   },
 });

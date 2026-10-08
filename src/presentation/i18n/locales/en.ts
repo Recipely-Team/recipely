@@ -449,8 +449,6 @@ export const en = {
     signInWithApple: 'Continue with Apple',
     forgot: 'Forgot password?',
     forgotPassword: 'Forgot password',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
     continueAsGuest: 'Continue without an account',
   },
   recipes: {
@@ -1342,8 +1340,6 @@ export const en = {
     tooShort: 'Password must be at least 8 characters.',
     mismatch: "Passwords don't match.",
     invalidOrExpired: 'This reset link is invalid or has expired. Request a new one.',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
   },
   verify: {
     title: 'Verify your email',
