@@ -57,6 +57,8 @@
  *      kotlinc rejects it, and no JS gate compiles native code (CLAUDE.md §24).
  *   AQ. An ErrorState built from a Failure passes `severity=` — the default is
  *      the red danger surface (CLAUDE.md §24).
+ *   AR. An assistant handler's `title` is a name, never a literal sentence — the
+ *      transcript chip shows it, so English prose reached every locale (§11, §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1700,6 +1702,23 @@ function openingTag(src, at) {
       if (m[0].includes('severity=')) continue;
       const line = src.slice(0, m.index).split('\n').length;
       errors.push(`${file}:${line}: an ErrorState built from a Failure has no severity= — pass failureSeverity(failure) (CLAUDE.md §24)`);
+    }
+  }
+}
+
+// --- AR: an assistant handler's title is a name, not a sentence (§11, §24) --
+// The transcript chip shows a handler's `title`. The diary handlers wrote English
+// sentences there ("water 7/8 glasses on …"), so a Turkish user read English on
+// the chip. Sentences for the model go on `summary`, which is never shown; a
+// `title` is a value that already exists (a recipe's name), never a literal.
+{
+  const LITERAL_TITLE = /\btitle:\s*[`'"]/g;
+  for (const file of files) {
+    if (isTest(file) || !path.basename(file).startsWith('use-assistant-')) continue;
+    const src = fs.readFileSync(path.join(SRC, file), 'utf8');
+    for (const m of src.matchAll(LITERAL_TITLE)) {
+      const line = src.slice(0, m.index).split('\n').length;
+      errors.push(`${file}:${line}: an assistant handler puts a literal on \`title\` — the chip shows it untranslated; put the sentence on \`summary\` (CLAUDE.md §11, §24)`);
     }
   }
 }

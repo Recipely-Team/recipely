@@ -127,7 +127,7 @@ export const useAssistantLogFood = ({ openRecipeFood, defaultDate, onLogged, sig
         const amount = entry.product === null ? `${servings.value.value} serving(s)` : `${entry.servings} ${entry.product.unitKey}`;
         return {
           ok: true,
-          title: `Logged ${amount} of ${food.name} to ${meal} on ${date.value.value}, ${Math.round(entry.nutrients.calories)} kcal`,
+          summary: `Logged ${amount} of ${food.name} to ${meal} on ${date.value.value}, ${Math.round(entry.nutrients.calories)} kcal`,
         };
       },
       [defaultDate, diaryStore, onLogged, resolveFood, signedIn],

@@ -81,7 +81,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         const date = resolveDiaryDate(arg ?? CharConstants.empty, CalendarDate.today());
         if (!date.ok) return { ok: false, error: date.error };
         select(date.value);
-        return { ok: true, title: `selected ${date.value.value}` };
+        return { ok: true, summary: `selected ${date.value.value}` };
       },
       [select],
     ),
@@ -100,11 +100,11 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         if (s.saved.status === StoreStatus.Error) return { ok: false, error: failureReason(s.saved.failure) };
         const found = { saved: loadedItems(s.saved), mine: loadedItems(s.mine), products: loadedItems(s.products), recipes: loadedItems(s.recipes) };
         const matches = rankByName(buildFoodCandidates(found, recent.ok ? recent.value.items : []), (c) => c.name, query);
-        if (matches.length === ValueConstants.zero) return { ok: true, title: 'no matches', n: { matches: 0 } };
+        if (matches.length === ValueConstants.zero) return { ok: true, summary: 'no matches', n: { matches: 0 } };
         return {
           ok: true,
           n: { matches: matches.length },
-          title: matches
+          summary: matches
             .slice(ValueConstants.zero, SEARCH_ANSWER_LIMIT)
             .map((c) => `${c.name}, ${Math.round(c.kcal)} kcal ${c.per}, ${c.source}`)
             .join(SCREEN_PART_SEPARATOR),
@@ -129,7 +129,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
         // Clamped: say so, or the model reports the amount it asked for.
         const capped = next.waterGlasses !== day.waterGlasses + glasses.value ? ` (capped at ${next.waterGlasses})` : CharConstants.empty;
-        return { ok: true, title: `water ${next.waterGlasses}/${next.goals.waterGlasses} glasses on ${day.date.value}${capped}` };
+        return { ok: true, summary: `water ${next.waterGlasses}/${next.goals.waterGlasses} glasses on ${day.date.value}${capped}` };
       },
       [diaryStore],
     ),
@@ -148,7 +148,7 @@ export const useAssistantDiaryActions = ({ view, selected, today, select, sheets
         const g = saved.value;
         return {
           ok: true,
-          title: `goals saved: ${g.calories} kcal, protein ${g.protein} g, carbs ${g.carbs} g, fat ${g.fat} g, fiber ${g.fiber} g, water ${g.waterGlasses} glasses`,
+          summary: `goals saved: ${g.calories} kcal, protein ${g.protein} g, carbs ${g.carbs} g, fat ${g.fat} g, fiber ${g.fiber} g, water ${g.waterGlasses} glasses`,
         };
       },
       [diaryStore],

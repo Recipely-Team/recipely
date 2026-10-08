@@ -26,8 +26,8 @@ const findTarget = (day: DiaryDay | null, parsed: ArgParse<EntryTargetArgs>): Ta
   if (matches.length === ValueConstants.one && matches[ValueConstants.zero] !== undefined) return { ok: true, entry: matches[ValueConstants.zero], args: parsed.value };
   // Several: name them so the model asks "which one?". None: name the day's entries so it can retry with the right word.
   return matches.length > ValueConstants.one
-    ? { ok: false, result: { ok: false, error: DiaryArgError.AmbiguousEntry, title: entryListLine(matches) } }
-    : { ok: false, result: { ok: false, error: AssistantActionError.NotFound, title: day.entries.length === ValueConstants.zero ? 'no entries on this day' : entryListLine(day.entries) } };
+    ? { ok: false, result: { ok: false, error: DiaryArgError.AmbiguousEntry, summary: entryListLine(matches) } }
+    : { ok: false, result: { ok: false, error: AssistantActionError.NotFound, summary: day.entries.length === ValueConstants.zero ? 'no entries on this day' : entryListLine(day.entries) } };
 };
 
 /**
@@ -53,7 +53,7 @@ export const useAssistantDiaryEntryActions = (): void => {
         if (!target.ok) return target.result;
         const result = await diaryStore.getState().deleteEntry(target.entry);
         if (!result.ok) return { ok: false, error: failureReason(result.failure) };
-        return { ok: true, title: `removed ${target.entry.name} from ${target.entry.meal} on ${target.entry.date.value}` };
+        return { ok: true, summary: `removed ${target.entry.name} from ${target.entry.meal} on ${target.entry.date.value}` };
       },
       [diaryStore, selectedDay],
     ),
@@ -75,7 +75,7 @@ export const useAssistantDiaryEntryActions = (): void => {
         const updated = result.value;
         return {
           ok: true,
-          title: `${updated.name} is now ${updated.servings} serving(s) in ${updated.meal}, ${Math.round(updated.nutrients.calories)} kcal`,
+          summary: `${updated.name} is now ${updated.servings} serving(s) in ${updated.meal}, ${Math.round(updated.nutrients.calories)} kcal`,
         };
       },
       [diaryStore, selectedDay],

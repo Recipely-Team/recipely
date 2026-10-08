@@ -2719,3 +2719,17 @@ card is pulled up over the hero by `decorSizes.cardOverlap` (40) while the hero 
 the card's negative margin spends. Covered by `register-hero-subtitle-under-card.test.tsx`.
 Same class as "The owner's photo controls were drawn where nobody could press them": **a negative
 margin is a layout fact both siblings must read from one constant.**
+
+---
+
+## The assistant's diary chips spoke English in every language (2026-10-08)
+
+**Symptom:** after "add two glasses of water" the transcript chip read `water 7/8 glasses on
+2026-10-08` — in Turkish, German, Japanese alike. The chip shows a handler's `title` (when it is
+short and unstructured); the diary handlers used `title` for the sentence they wrote for the model.
+
+**Fix:** `AssistantActionResultType.summary` carries text for the model and is never shown; the
+diary handlers (water, goals, select day, search, log / change / remove food, meal log) moved their
+sentences there. Covered by `use-assistant-diary-actions.test.tsx` ("puts no English sentence on the
+transcript chip…") and `check:structure` rule AR: a `use-assistant-*` file may not put a literal on
+`title`. **A field a person reads is not a channel for talking to the model.**

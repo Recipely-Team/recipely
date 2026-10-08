@@ -21,7 +21,7 @@ export const useAssistantMealLogAction = (openMealLog: (text: string) => void): 
         const text = (arg ?? CharConstants.empty).trim();
         if (isBlank(text)) return { ok: false, error: AssistantActionError.Empty };
         openMealLog(text);
-        return { ok: true, title: 'meal list opened on screen; nothing logged yet — ask the user to check the items and tap Add to diary' };
+        return { ok: true, summary: 'meal list opened on screen; nothing logged yet — ask the user to check the items and tap Add to diary' };
       },
       [openMealLog],
     ),
