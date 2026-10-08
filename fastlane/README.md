@@ -17,7 +17,7 @@ fastlane/
       promotional_text.txt      ≤ 170 chars — editable without a new build
       keywords.txt              ≤ 100 chars, comma-separated, no spaces
       description.txt           ≤ 4000 chars
-      release_notes.txt         ≤ 4000 chars — per version
+      release_notes.txt         ≤ 4000 chars — per version; also the TestFlight "What to Test" (Fastfile)
   screenshots/<locale>/      App Store screenshots (deliver picks them up here)
 ```
 
