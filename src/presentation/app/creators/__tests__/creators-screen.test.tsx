@@ -1,9 +1,9 @@
-import { RoutePaths } from '@presentation/base/constants';
 /**
  * CreatorsScreen (/creators): the grid over the same creators store as the
- * Explore strip — cards when there are creators, an empty note when the list
+ * Explore strip — cards when there are creators, the coming-soon placeholder when the list
  * came back empty, and a card opens the creator's page.
  */
+import { RoutePaths } from '@presentation/base/constants';
 import { act, type ReactTestInstance } from 'react-test-renderer';
 import { create } from 'zustand';
 import { loadedList } from '@application/store/paging/loaded-list';

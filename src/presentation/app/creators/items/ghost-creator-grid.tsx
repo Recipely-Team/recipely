@@ -17,13 +17,13 @@ export const GhostCreatorGrid = (): React.JSX.Element => {
   const colors = useTheme().colors;
   return (
     <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-      <View style={[styles.grid, { opacity: M.ghostOpacity }]}>
+      <View style={styles.grid}>
         {GHOSTS.map((key) => (
           <View key={key} style={[styles.card, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }]}>
             <View style={[styles.avatar, { backgroundColor: colors.skeleton }]} />
             {M.ghostBarHeights.map((height, index) => (
               <View
-                key={height + index}
+                key={index}
                 style={[{ height, width: M.ghostBarWidths[index], borderRadius: height / ValueConstants.two, backgroundColor: colors.skeleton }]}
               />
             ))}
@@ -43,6 +43,7 @@ export const GhostCreatorGrid = (): React.JSX.Element => {
 
 const styles = StyleSheet.create({
   grid: {
+    opacity: M.ghostOpacity,
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.md,

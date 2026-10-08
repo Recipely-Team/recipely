@@ -10,13 +10,13 @@ import { useReduceMotion } from '@presentation/base/hooks/accessibility/use-redu
 import { borderWidths, shadows } from '@presentation/base/theme';
 import { ChefsSoonMetrics as M } from '@presentation/app/creators/model/chefs-soon-metrics';
 
-type ChipSpot = (typeof M.chipSpots)[number];
+type ChipSpotType = (typeof M.chipSpots)[number];
 
 const GRADIENT_START = { x: 0, y: 0 };
 const GRADIENT_END = { x: 1, y: 1 };
 
 /** One floating food chip; bobs up and back forever unless the device asks for less motion. */
-const FloatingChip = ({ spot, still }: { spot: ChipSpot; still: boolean }): React.JSX.Element => {
+const FloatingChip = ({ spot, still }: { spot: ChipSpotType; still: boolean }): React.JSX.Element => {
   const colors = useTheme().colors;
   const lift = useSharedValue(ValueConstants.zero);
   useEffect(() => {
