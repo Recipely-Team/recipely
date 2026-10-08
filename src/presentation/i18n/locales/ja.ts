@@ -1,5 +1,7 @@
 export const ja = {
   common: {
+    showPassword: 'パスワードを表示',
+    hidePassword: 'パスワードを隠す',
     openSettings: '設定を開く',
     retry: '再試行',
     loading: '読み込み中...',
@@ -443,8 +445,6 @@ export const ja = {
     signInWithApple: 'Appleで続ける',
     forgot: 'パスワードを忘れましたか？',
     forgotPassword: 'パスワードを忘れた場合',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
     continueAsGuest: 'アカウントなしで続ける',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const ja = {
     passwordPlaceholder: 'パスワード（8文字以上）',
     confirmPlaceholder: 'パスワードを確認',
     signUp: 'アカウントを作成',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
     haveAccount: 'すでにアカウントをお持ちですか？',
     signIn: 'ログイン',
     weak: '弱い',
@@ -1330,8 +1328,6 @@ export const ja = {
     tooShort: 'パスワードは8文字以上必要です。',
     mismatch: 'パスワードが一致しません。',
     invalidOrExpired: 'このリセットリンクは無効か、有効期限が切れています。新しいリンクを取得してください。',
-    showPassword: 'パスワードを表示',
-    hidePassword: 'パスワードを隠す',
   },
   verify: {
     title: 'メールアドレスを確認',

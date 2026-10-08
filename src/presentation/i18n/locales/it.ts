@@ -1,5 +1,7 @@
 export const it = {
   common: {
+    showPassword: 'Mostra password',
+    hidePassword: 'Nascondi password',
     openSettings: 'Apri Impostazioni',
     retry: 'Riprova',
     loading: 'Caricamento...',
@@ -443,8 +445,6 @@ export const it = {
     signInWithApple: 'Continua con Apple',
     forgot: 'Password dimenticata?',
     forgotPassword: 'Password dimenticata',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
     continueAsGuest: 'Continua senza account',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const it = {
     passwordPlaceholder: 'Password (min. 8 caratteri)',
     confirmPlaceholder: 'Conferma password',
     signUp: 'Crea account',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
     haveAccount: 'Hai già un account?',
     signIn: 'Accedi',
     weak: 'Debole',
@@ -1330,8 +1328,6 @@ export const it = {
     tooShort: 'La password deve contenere almeno 8 caratteri.',
     mismatch: 'Le password non coincidono.',
     invalidOrExpired: 'Questo link di reimpostazione non è valido o è scaduto. Richiedine uno nuovo.',
-    showPassword: 'Mostra password',
-    hidePassword: 'Nascondi password',
   },
   verify: {
     title: 'Verifica la tua e-mail',

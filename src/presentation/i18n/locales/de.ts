@@ -1,5 +1,7 @@
 export const de = {
   common: {
+    showPassword: 'Passwort anzeigen',
+    hidePassword: 'Passwort ausblenden',
     openSettings: 'Einstellungen öffnen',
     retry: 'Erneut versuchen',
     loading: 'Wird geladen...',
@@ -443,8 +445,6 @@ export const de = {
     signInWithApple: 'Mit Apple fortfahren',
     forgot: 'Passwort vergessen?',
     forgotPassword: 'Passwort vergessen',
-    showPassword: 'Passwort anzeigen',
-    hidePassword: 'Passwort ausblenden',
     continueAsGuest: 'Ohne Konto fortfahren',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const de = {
     passwordPlaceholder: 'Passwort (mind. 8 Zeichen)',
     confirmPlaceholder: 'Passwort bestätigen',
     signUp: 'Konto erstellen',
-    showPassword: 'Passwort anzeigen',
-    hidePassword: 'Passwort ausblenden',
     haveAccount: 'Du hast schon ein Konto?',
     signIn: 'Anmelden',
     weak: 'Schwach',
@@ -1330,8 +1328,6 @@ export const de = {
     tooShort: 'Das Passwort muss mindestens 8 Zeichen lang sein.',
     mismatch: 'Die Passwörter stimmen nicht überein.',
     invalidOrExpired: 'Dieser Zurücksetzungslink ist ungültig oder abgelaufen. Fordere einen neuen an.',
-    showPassword: 'Passwort anzeigen',
-    hidePassword: 'Passwort ausblenden',
   },
   verify: {
     title: 'E-Mail bestätigen',

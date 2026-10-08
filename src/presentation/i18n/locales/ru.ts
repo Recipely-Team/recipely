@@ -1,5 +1,7 @@
 export const ru = {
   common: {
+    showPassword: 'Показать пароль',
+    hidePassword: 'Скрыть пароль',
     openSettings: 'Открыть настройки',
     retry: 'Повторить',
     loading: 'Загрузка...',
@@ -443,8 +445,6 @@ export const ru = {
     signInWithApple: 'Продолжить с Apple',
     forgot: 'Забыли пароль?',
     forgotPassword: 'Забыли пароль',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
     continueAsGuest: 'Продолжить без аккаунта',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const ru = {
     passwordPlaceholder: 'Пароль (мин. 8 символов)',
     confirmPlaceholder: 'Подтвердите пароль',
     signUp: 'Создать аккаунт',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
     haveAccount: 'Уже есть аккаунт?',
     signIn: 'Войти',
     weak: 'Слабый',
@@ -1330,8 +1328,6 @@ export const ru = {
     tooShort: 'Пароль должен содержать не менее 8 символов.',
     mismatch: 'Пароли не совпадают.',
     invalidOrExpired: 'Эта ссылка для сброса недействительна или истекла. Запросите новую.',
-    showPassword: 'Показать пароль',
-    hidePassword: 'Скрыть пароль',
   },
   verify: {
     title: 'Подтвердите электронную почту',

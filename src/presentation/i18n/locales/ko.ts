@@ -2,6 +2,8 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const ko: TranslationsType = {
   common: {
+    showPassword: '비밀번호 보기',
+    hidePassword: '비밀번호 숨기기',
     openSettings: '설정 열기',
     retry: '다시 시도',
     loading: '불러오는 중...',
@@ -445,8 +447,6 @@ export const ko: TranslationsType = {
     signInWithApple: 'Apple로 계속',
     forgot: '비밀번호를 잊으셨나요?',
     forgotPassword: '비밀번호 찾기',
-    showPassword: '비밀번호 보기',
-    hidePassword: '비밀번호 숨기기',
     continueAsGuest: '계정 없이 계속',
   },
   recipes: {
@@ -1279,8 +1279,6 @@ export const ko: TranslationsType = {
     passwordPlaceholder: '비밀번호(8자 이상)',
     confirmPlaceholder: '비밀번호 확인',
     signUp: '계정 만들기',
-    showPassword: '비밀번호 보기',
-    hidePassword: '비밀번호 숨기기',
     haveAccount: '이미 계정이 있나요?',
     signIn: '로그인',
     weak: '약함',
@@ -1326,8 +1324,6 @@ export const ko: TranslationsType = {
     tooShort: '비밀번호는 8자 이상이어야 해요.',
     mismatch: '비밀번호가 일치하지 않아요.',
     invalidOrExpired: '이 재설정 링크는 유효하지 않거나 만료됐어요. 새 링크를 요청해 주세요.',
-    showPassword: '비밀번호 보기',
-    hidePassword: '비밀번호 숨기기',
   },
   verify: {
     title: '이메일 인증',

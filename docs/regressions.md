@@ -2706,3 +2706,31 @@ for the empty list and "Instagram not configured". Covered by `shopping-list-scr
 (the empty state is neutral) and `check:structure` rule AQ, which fails on any `ErrorState`
 built with `failureIcon(...)` but no `severity=`. **A state that is not an error says so; a
 failure state says how bad it is.**
+
+---
+
+## The register subtitle sat under the card that overlaps the hero (2026-10-08)
+
+**Symptom:** on a phone, "Join Recipely to save and share recipes." was invisible: the register
+card is pulled up over the hero by `decorSizes.cardOverlap` (40) while the hero reserved only
+`spacing.xl` (24) below the subtitle. Seen in the screenshots for the auth-field cleanup.
+
+**Fix:** the hero's bottom padding is `spacing.xl + decorSizes.cardOverlap` — the same named value
+the card's negative margin spends. Covered by `register-hero-subtitle-under-card.test.tsx`.
+Same class as "The owner's photo controls were drawn where nobody could press them": **a negative
+margin is a layout fact both siblings must read from one constant.**
+
+---
+
+## The assistant's diary chips spoke English in every language (2026-10-08)
+
+**Symptom:** after "add two glasses of water" the transcript chip read `water 7/8 glasses on
+2026-10-08` — in Turkish, German, Japanese alike. The chip shows a handler's `title` (when it is
+short and unstructured); the diary handlers used `title` for the sentence they wrote for the model.
+
+**Fix:** `AssistantActionResultType.summary` carries text for the model and is never shown; the
+diary handlers (water, goals, select day, search, log / change / remove food, meal log) moved their
+sentences there; so did `readScreen` (the screen reading) and both `readIngredients` handlers.
+Covered by `use-assistant-diary-actions.test.tsx` ("puts no English sentence on the transcript
+chip…") and `check:structure` rule AR: in any file that builds an action result, a `title:`
+expression may not contain a string literal or a `.join(` — even inside a ternary. **A field a person reads is not a channel for talking to the model.**

@@ -177,7 +177,7 @@ describe('CookModeScreen', () => {
     const { root, registry } = setup({ servings: 2, ingredients: ['# For the sauce', '2 cups flour'] }, { portionChoiceStore });
 
     await act(async () => {
-      await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({ ok: true, title: 'For the sauce, 4 cups flour' });
+      await expect(registry.run(AssistantAction.ReadIngredients)).resolves.toMatchObject({ ok: true, summary: 'For the sauce, 4 cups flour' });
     });
     pressButton(root, t().cookMode.ingredients);
 

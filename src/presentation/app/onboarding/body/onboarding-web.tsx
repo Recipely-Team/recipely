@@ -4,7 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, iconSizes, layoutSizes, opacities, controlSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 import { t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
@@ -20,7 +20,6 @@ const LOGO_SIZE = 30;
 const COLUMN_MAX = layoutSizes.maxContentXl;
 const CONTENT_MAX = 1120;
 const TWO_COL_MIN = 900;
-const ARROW_SIZE = 40;
 const HERO_MAX_HEIGHT = 620;
 
 export interface OnboardingWebProps {
@@ -179,9 +178,9 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   arrowBtn: {
-    width: ARROW_SIZE,
-    height: ARROW_SIZE,
-    borderRadius: ARROW_SIZE / ValueConstants.two,
+    width: controlSizes.floatingBtn,
+    height: controlSizes.floatingBtn,
+    borderRadius: radii.round,
     borderWidth: StyleSheet.hairlineWidth,
     alignItems: 'center',
     justifyContent: 'center',

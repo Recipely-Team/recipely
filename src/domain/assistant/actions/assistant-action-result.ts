@@ -19,8 +19,13 @@
  */
 export interface AssistantActionResultType {
   readonly ok: boolean;
-  /** Present when the action produced something nameable, e.g. a recipe. */
+  /** Present when the action produced something nameable, e.g. a recipe. Shown on the transcript chip. */
   readonly title?: string;
+  /**
+   * What happened, as a sentence for the model only — never shown. The model
+   * says it back in the user's language; on `title` the English reached the chip.
+   */
+  readonly summary?: string;
   /** Counts, never contents: `{ ing: 8, step: 6 }`. */
   readonly n?: Readonly<Record<string, number>>;
   /** One line of screen state, e.g. `screen=createRecipe draft=8/6`. */

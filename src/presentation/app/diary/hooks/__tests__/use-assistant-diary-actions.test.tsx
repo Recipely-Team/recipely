@@ -1,3 +1,4 @@
+import { actionDetail } from '@application/assistant/session/assistant-transcript-lines';
 import { act } from 'react-test-renderer';
 import { create } from 'zustand';
 import { ok } from '@core/result/result-helpers';
@@ -131,7 +132,7 @@ describe('useAssistantDiaryActions', () => {
     const entry = h.store.addEntry.mock.calls[0]?.[0];
     expect([entry?.meal, entry?.servings, entry?.date.value, entry?.nutrients.calories]).toEqual([MealSlot.Lunch, 1.5, yesterday.value, 450]);
     expect(result).toMatchObject({ ok: true });
-    expect(result.title).toContain('450 kcal');
+    expect(result.summary).toContain('450 kcal');
     // Logged to another day: the strip goes there so the user sees it.
     expect(h.select).toHaveBeenCalledWith(yesterday);
   });
@@ -185,7 +186,7 @@ describe('useAssistantDiaryActions', () => {
     const h = harness();
     const result = await h.run(AssistantAction.SearchFood, 'menem');
     expect(h.sheets.openSearch).toHaveBeenCalledWith('menem');
-    expect(result.title).toBe('Menemen, 300 kcal per serving, my recipe');
+    expect(result.summary).toBe('Menemen, 300 kcal per serving, my recipe');
     // The sheet's own search for the same query joins this one: one request, not two.
     expect(h.repo.search).toHaveBeenCalledTimes(1);
   });
@@ -201,7 +202,7 @@ describe('useAssistantDiaryActions', () => {
     ]);
     const result = await two.run(AssistantAction.RemoveFood, 'menemen');
     expect(result).toMatchObject({ ok: false, error: DiaryArgError.AmbiguousEntry });
-    expect(result.title).toContain('dinner');
+    expect(result.summary).toContain('dinner');
     expect(two.store.deleteEntry).not.toHaveBeenCalled();
   });
 
@@ -214,18 +215,28 @@ describe('useAssistantDiaryActions', () => {
 
   it('addWater adds to the day and clamps at the daily maximum', async () => {
     const h = harness();
-    await expect(h.run(AssistantAction.AddWater, '2')).resolves.toMatchObject({ ok: true, title: `water 7/8 glasses on ${today.value}` });
+    await expect(h.run(AssistantAction.AddWater, '2')).resolves.toMatchObject({ ok: true, summary: `water 7/8 glasses on ${today.value}` });
     expect(h.store.setWater).toHaveBeenCalledWith(today, 7);
     await h.run(AssistantAction.AddWater, '20');
     expect(h.store.setWater).toHaveBeenLastCalledWith(today, 12);
     await expect(h.run(AssistantAction.AddWater, 'some')).resolves.toMatchObject({ ok: false });
   });
 
+  it('puts no English sentence on the transcript chip for water, goals or a day', async () => {
+    const h = harness();
+    const water = await h.run(AssistantAction.AddWater, '1');
+    const goals = await h.run(AssistantAction.SetGoals, '{"calories":2200}');
+
+    expect(water.title).toBeUndefined();
+    expect(goals.title).toBeUndefined();
+    expect(actionDetail('1', { ...water })).toBe('1');
+  });
+
   it('setGoals merges, validates through NutritionGoals and saves', async () => {
     const h = harness();
     const result = await h.run(AssistantAction.SetGoals, '{"calories":2200,"protein":150}');
     expect(h.store.saveGoals.mock.calls[0]?.[0].value).toMatchObject({ calories: 2200, protein: 150, carbs: 230 });
-    expect(result.title).toContain('2200 kcal');
+    expect(result.summary).toContain('2200 kcal');
     await expect(h.run(AssistantAction.SetGoals, '{"calories":100}')).resolves.toMatchObject({ ok: false, error: 'invalid_goal:calories' });
   });
 

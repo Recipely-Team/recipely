@@ -1,5 +1,7 @@
 export const fr = {
   common: {
+    showPassword: 'Afficher le mot de passe',
+    hidePassword: 'Masquer le mot de passe',
     openSettings: 'Ouvrir les Réglages',
     retry: 'Réessayer',
     loading: 'Chargement...',
@@ -443,8 +445,6 @@ export const fr = {
     signInWithApple: 'Continuer avec Apple',
     forgot: 'Mot de passe oublié ?',
     forgotPassword: 'Mot de passe oublié',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
     continueAsGuest: 'Continuer sans compte',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const fr = {
     passwordPlaceholder: 'Mot de passe (8 caractères min.)',
     confirmPlaceholder: 'Confirmer le mot de passe',
     signUp: 'Créer un compte',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
     haveAccount: 'Vous avez déjà un compte ?',
     signIn: 'Se connecter',
     weak: 'Faible',
@@ -1330,8 +1328,6 @@ export const fr = {
     tooShort: 'Le mot de passe doit contenir au moins 8 caractères.',
     mismatch: 'Les mots de passe ne correspondent pas.',
     invalidOrExpired: 'Ce lien de réinitialisation est invalide ou a expiré. Demandez-en un nouveau.',
-    showPassword: 'Afficher le mot de passe',
-    hidePassword: 'Masquer le mot de passe',
   },
   verify: {
     title: 'Vérifiez votre e-mail',

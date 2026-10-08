@@ -101,7 +101,7 @@ export const useAssistantReadActions = (
       if (lines.length === ValueConstants.zero) return { ok: false, error: AssistantActionError.NoIngredients };
       return {
         ok: true,
-        title: lines.join(INGREDIENT_SEPARATOR),
+        summary: lines.join(INGREDIENT_SEPARATOR),
         n: { ingredients: lines.length },
       };
     }, []),

@@ -1,12 +1,13 @@
 import { ActivityIndicator, StyleSheet, View, FlatList } from 'react-native';
 import type { AssistantScrollableProps } from '@presentation/base/hooks/assistant/actions/assistant-scrollable-props';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipeListItem } from '@presentation/app/recipes/items/cards/recipe-list-item';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, iconSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
@@ -75,12 +76,12 @@ export const RecipeSearchOverlay = ({
           <ActivityIndicator color={colors.primary} />
         </View>
       ) : recipes.length === ValueConstants.zero ? (
-        <View style={styles.empty}>
-          <Ionicons name="search" size={iconSizes.massive} color={colors.textMuted} />
-          <ThemedText variant="body" muted style={styles.emptyTitle}>
-            {t().recipes.noResults}
-          </ThemedText>
-        </View>
+        <ErrorState
+          icon="search"
+          severity={SeverityType.Neutral}
+          title={t().recipes.noResults}
+          body={t().recipes.webEmptyBody}
+        />
       ) : (
         <FlatList
           {...assistantScroll}
@@ -125,8 +126,5 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: spacing.xl,
     gap: spacing.md,
-  },
-  emptyTitle: {
-    textAlign: 'center',
   },
 });

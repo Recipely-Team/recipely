@@ -15,7 +15,6 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
   const requestPasswordReset = authStore((s) => s.requestPasswordReset);
 
   const [email, setEmail] = useState(CharConstants.empty);
-  const [focused, setFocused] = useState(false);
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
   const [sendError, setSendError] = useState<string | undefined>(undefined);
@@ -54,9 +53,6 @@ export const ForgotPasswordScreen = (): React.JSX.Element => {
         <ForgotPasswordInputView
           email={email}
           onChangeEmail={setEmail}
-          focused={focused}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           loading={loading}
           onSend={() => { void handleSend(); }}
           onBack={goBack}

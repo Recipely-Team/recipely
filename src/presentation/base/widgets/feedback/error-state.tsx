@@ -4,11 +4,9 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
-import { spacing, fontWeights, opacities } from '@presentation/base/theme';
+import { spacing, fontWeights, opacities, decorSizes, radii } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
 
-const DISC_SIZE = 104;
-const DISC_ICON_SIZE = 46;
 const ACTION_MAX_WIDTH = 240;
 const BODY_MAX_WIDTH = 260;
 
@@ -47,7 +45,7 @@ export const ErrorState = ({
   return (
     <View style={styles.root}>
       <View style={[styles.disc, { backgroundColor: surface.disc }]}>
-        <Ionicons name={icon} size={DISC_ICON_SIZE} color={surface.icon} />
+        <Ionicons name={icon} size={decorSizes.errorStateIcon} color={surface.icon} />
       </View>
       <ThemedText variant="title" style={styles.title}>
         {title}
@@ -92,9 +90,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
   },
   disc: {
-    width: DISC_SIZE,
-    height: DISC_SIZE,
-    borderRadius: DISC_SIZE / ValueConstants.two,
+    width: decorSizes.errorStateDisc,
+    height: decorSizes.errorStateDisc,
+    borderRadius: radii.round,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: spacing.lg2,

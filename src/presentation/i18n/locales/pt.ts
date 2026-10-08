@@ -1,5 +1,7 @@
 export const pt = {
   common: {
+    showPassword: 'Mostrar senha',
+    hidePassword: 'Ocultar senha',
     openSettings: 'Abrir Definições',
     retry: 'Tentar novamente',
     loading: 'Carregando...',
@@ -443,8 +445,6 @@ export const pt = {
     signInWithApple: 'Continuar com Apple',
     forgot: 'Esqueceu a senha?',
     forgotPassword: 'Esqueci minha senha',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
     continueAsGuest: 'Continuar sem uma conta',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const pt = {
     passwordPlaceholder: 'Senha (mín. 8 caracteres)',
     confirmPlaceholder: 'Confirmar senha',
     signUp: 'Criar conta',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
     haveAccount: 'Já tem uma conta?',
     signIn: 'Entrar',
     weak: 'Fraca',
@@ -1330,8 +1328,6 @@ export const pt = {
     tooShort: 'A senha deve ter pelo menos 8 caracteres.',
     mismatch: 'As senhas não coincidem.',
     invalidOrExpired: 'Este link de redefinição é inválido ou expirou. Peça um novo.',
-    showPassword: 'Mostrar senha',
-    hidePassword: 'Ocultar senha',
   },
   verify: {
     title: 'Confirme seu e-mail',

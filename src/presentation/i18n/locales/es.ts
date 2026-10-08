@@ -1,5 +1,7 @@
 export const es = {
   common: {
+    showPassword: 'Mostrar contraseña',
+    hidePassword: 'Ocultar contraseña',
     openSettings: 'Abrir Ajustes',
     retry: 'Reintentar',
     loading: 'Cargando...',
@@ -443,8 +445,6 @@ export const es = {
     signInWithApple: 'Continuar con Apple',
     forgot: '¿Olvidaste tu contraseña?',
     forgotPassword: 'Olvidé mi contraseña',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
     continueAsGuest: 'Continuar sin una cuenta',
   },
   recipes: {
@@ -1283,8 +1283,6 @@ export const es = {
     passwordPlaceholder: 'Contraseña (mín. 8 caracteres)',
     confirmPlaceholder: 'Confirmar contraseña',
     signUp: 'Crear cuenta',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
     haveAccount: '¿Ya tienes una cuenta?',
     signIn: 'Iniciar sesión',
     weak: 'Débil',
@@ -1330,8 +1328,6 @@ export const es = {
     tooShort: 'La contraseña debe tener al menos 8 caracteres.',
     mismatch: 'Las contraseñas no coinciden.',
     invalidOrExpired: 'Este enlace de restablecimiento no es válido o ha caducado. Solicita uno nuevo.',
-    showPassword: 'Mostrar contraseña',
-    hidePassword: 'Ocultar contraseña',
   },
   verify: {
     title: 'Verifica tu correo electrónico',

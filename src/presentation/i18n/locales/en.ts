@@ -1,5 +1,7 @@
 export const en = {
   common: {
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
     openSettings: 'Open Settings',
     retry: 'Retry',
     loading: 'Loading...',
@@ -449,8 +451,6 @@ export const en = {
     signInWithApple: 'Continue with Apple',
     forgot: 'Forgot password?',
     forgotPassword: 'Forgot password',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
     continueAsGuest: 'Continue without an account',
   },
   recipes: {
@@ -1295,8 +1295,6 @@ export const en = {
     passwordPlaceholder: 'Password (min 8 chars)',
     confirmPlaceholder: 'Confirm password',
     signUp: 'Create account',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
     haveAccount: 'Already have an account?',
     signIn: 'Sign in',
     weak: 'Weak',
@@ -1342,8 +1340,6 @@ export const en = {
     tooShort: 'Password must be at least 8 characters.',
     mismatch: "Passwords don't match.",
     invalidOrExpired: 'This reset link is invalid or has expired. Request a new one.',
-    showPassword: 'Show password',
-    hidePassword: 'Hide password',
   },
   verify: {
     title: 'Verify your email',
