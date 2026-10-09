@@ -69,6 +69,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.3",
     "expo-system-ui": "~57.0.4",
+    "expo-tracking-transparency": "~57.0.2",
     "expo-web-browser": "~57.0.3",
     "firebase": "^12.14.0",
     "react": "19.2.3",

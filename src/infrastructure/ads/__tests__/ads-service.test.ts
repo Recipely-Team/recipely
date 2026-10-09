@@ -20,6 +20,12 @@ jest.mock("react-native-google-mobile-ads", () => ({
   },
 }));
 
+const mockRequestTracking = jest.fn();
+
+jest.mock("@infrastructure/ads/request-tracking-permission", () => ({
+  requestTrackingPermission: () => mockRequestTracking(),
+}));
+
 jest.mock("@infrastructure/firebase/crashlytics-service", () => ({
   recordCrash: jest.fn(),
 }));
@@ -35,6 +41,34 @@ describe("AdsService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockInitialize.mockResolvedValue([]);
+    mockRequestTracking.mockResolvedValue(undefined);
+  });
+
+  // --- regression: App Review rejected 1.2.0 (5.1.2(i)) — the consent form
+  // spoke of personalised ads, but iOS was never asked for tracking permission.
+  it("asks for tracking permission before the consent form and the SDK", async () => {
+    const order: string[] = [];
+    mockRequestTracking.mockImplementation(async () => order.push("tracking"));
+    mockGatherConsent.mockImplementation(async () => {
+      order.push("consent");
+      return { canRequestAds: true };
+    });
+    mockInitialize.mockImplementation(async () => order.push("initialize"));
+
+    await new AdsService().prepare();
+
+    expect(order).toEqual(["tracking", "consent", "initialize"]);
+  });
+
+  it("still serves ads when the tracking request fails", async () => {
+    mockRequestTracking.mockRejectedValue(new Error("ATT unavailable"));
+    mockGatherConsent.mockResolvedValue({ canRequestAds: true });
+
+    await expect(new AdsService().prepare()).resolves.toBe(true);
+    expect(crashed).toHaveBeenCalledWith(
+      expect.any(Error),
+      "AdsService.requestTrackingPermission",
+    );
   });
 
   it("starts the SDK once consent allows it", async () => {

@@ -1,6 +1,7 @@
 import mobileAds, { AdsConsent, AdsConsentStatus } from 'react-native-google-mobile-ads';
 import type { AdsServiceInterface } from '@domain/ads/ads-service-interface';
 import { recordCrash } from '@infrastructure/firebase/crashlytics-service';
+import { requestTrackingPermission } from '@infrastructure/ads/request-tracking-permission';
 import { ValueConstants } from '@core/constants';
 
 /**
@@ -38,14 +39,14 @@ const MAX_ATTEMPTS = 3;
  *   no platform check left here — `ads-service.web.ts` is what answers on the
  *   web, and a check for one of two remaining platforms is a check that will be
  *   wrong the day a third arrives.
- * - **No App Tracking Transparency, and therefore no tracking.** iOS ads run
- *   CONTEXTUAL: the SDK this version ships has no ATT call, and adding one would
- *   put a new permission prompt in front of an App Review that has already
- *   rejected this app once — for a prompt most users decline anyway, whose
- *   decline lands us exactly where we already are. It also keeps the App Store
- *   privacy declaration honest at "no tracking". Personalised iOS ads are a
- *   later decision, and they cost an ATT prompt plus a privacy-label change.
- * - **Consent comes first and decides everything.** `gatherConsent` runs the
+ * - **App Tracking Transparency comes first.** App Review rejected 1.2.0
+ *   (5.1.2(i)) because the consent form speaks of personalised ads while the
+ *   app never asked iOS for tracking permission. The ATT prompt now runs before
+ *   the consent gather and before the SDK starts; a decline leaves ads
+ *   contextual, and the App Store privacy label declares tracking. A failed ATT
+ *   call is reported and does not stop ads: without an answer iOS hands out no
+ *   advertising id, which is the contextual case already.
+ * - **Consent decides everything.** `gatherConsent` runs the
  *   Google-certified flow, showing a form only where one is required (the EEA
  *   and UK); `canRequestAds` is its answer. Initialising before that answer, or
  *   ignoring it, is what turns a working integration into a policy breach.
@@ -97,6 +98,7 @@ export class AdsService implements AdsServiceInterface {
 
   private async run(): Promise<RunOutcomeType> {
     this.attempts += ValueConstants.one;
+    await this.askTracking();
     const consent = await this.gatherConsent();
     if (consent !== RunOutcome.Allowed) return consent;
     try {
@@ -105,6 +107,14 @@ export class AdsService implements AdsServiceInterface {
     } catch (error) {
       this.report(error, 'AdsService.initialize');
       return RunOutcome.Unavailable;
+    }
+  }
+
+  private async askTracking(): Promise<void> {
+    try {
+      await requestTrackingPermission();
+    } catch (error) {
+      this.report(error, 'AdsService.requestTrackingPermission');
     }
   }
 
