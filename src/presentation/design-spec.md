@@ -3782,3 +3782,35 @@ Claude Design. Claude Design was unavailable when they were built, so both reuse
 - **Settings:** a "Notifications" section under Appearance with one `SettingsRow` ("Recipe reminders",
   `notifications-outline`) whose right element is the shared `SettingsSwitch` (primary track when on). Native only.
 - **Timer heads-ups** have no in-app surface: a quiet notification at 5 and 1 minute left.
+
+## Creator stats (Oct 2026 — from the prototype)
+
+**Prototype:** Recipely Prototype → `src/creator-stats.jsx`; Tweaks → Starting screen *Creator stats* (+ `· loading`,
+`· no automations`, `· no sends`, `· not connected`, `· error`). Spec file in the design project:
+`specs/creator-stats-rn-spec.md`. Plan and data contract: [`docs/creator-stats-plan.md`](../../docs/creator-stats-plan.md).
+
+**Route** `/automations/stats` (`CreatorStatsScreen`), reached from a stats button in the Automations bar (icon on a
+narrow window, outlined "Stats" pill when `isExpanded`) and from a second row in the profile's automations card
+("Last 30 days · {s} DMs · {p} opened"); both appear only once there is at least one automation. A post row opens that
+automation's Activity.
+
+**Layout**: content max 960, centred, padding 16. Range segment (7 / 30 / 90, `SegmentedTabs`) on top. Funnel strip —
+`surface` card, hairline `border` dividers — a 2 × 2 grid, one row of four from 600 content width. Daily chart and
+followers card stack; side by side `1.7 : 1` from 720. Posts: stacked rows, a table with a header row from 720.
+
+**Measurements** live in `app/automations/stats/model/stats-metrics.ts`. Chart 160 / 200 tall, 30 px axis, gridlines
+at 0, ½ and a 1 / 2 / 5 × 10ⁿ ceiling; Sent bars `textMuted` + `colorAlphas.medium` (the prototype's 35% has no token;
+40% is the nearest), Opened line `primary` 2.25, Saved line `text` 1.75. Followers sparkline 96 / 150, area
+`chipBackground`; when tracking began inside the range, a dashed `textMuted` run (3 4) leads to the first dot and a
+"Tracking since …" note replaces "· last N days".
+
+**Deliberate differences from the prototype**
+- Table columns are 92 / 92 / 100 / 108 (prototype 76 / 76 / 84 / 92) so the Turkish headers fit on one line.
+- Posts load five more per "Show more" instead of the prototype's pager.
+- Chart scrub: press-and-drag (touch) and hover (pointer); arrow-key scrubbing is not in yet.
+- Mobile row meta wraps to a second line instead of truncating (Turkish is long).
+- The header is the shared `AutomationsBar` on every width, as on Automations and Activity.
+
+**Delta chip**: `sevSurfaces.success` up, `.danger` down, neutral 0%, hidden when the previous period was 0.
+**States**: skeleton; no automations (disc + CTA → editor); no sends in range (longer-range + "View automations",
+followers card under it); not connected (`InstagramConnectBlock`); error (Try again).

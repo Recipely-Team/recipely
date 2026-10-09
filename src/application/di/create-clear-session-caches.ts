@@ -27,6 +27,7 @@ export const createClearSessionCaches = (stores: Omit<ApplicationStores, 'authSt
   stores.foodCatalogStore.getState().clear();
   stores.instagramStore.getState().clear();
   stores.automationsStore.getState().clear();
+  stores.creatorStatsStore.getState().clear();
   stores.importJobStore.getState().clear();
   stores.fileImportStore.getState().clear();
   stores.userProfileStore.getState().reset();

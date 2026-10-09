@@ -4,6 +4,8 @@ import { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmRuleEntityProps } from '@domain/instagram/dm/dm-rule-entity-props';
 import type { InstagramRepositoryInterface } from '@domain/instagram/instagram-repository-interface';
 import { pageOf } from '@application/diary/foods/__fixtures__/food-fixtures';
+import type { CreatorStats } from '@domain/instagram/stats/creator-stats';
+import { StatsRange } from '@domain/instagram/stats/stats-range';
 
 /** A rule for a test, with only the fields the test is about overridden. */
 export const dmRuleOf = (overrides: Partial<DmRuleEntityProps> = {}): DmRuleEntity => {
@@ -36,4 +38,20 @@ export const fakeInstagramRepository = (): jest.Mocked<InstagramRepositoryInterf
   updateRule: jest.fn(),
   deleteRule: jest.fn().mockResolvedValue(ok(undefined)),
   listSends: jest.fn().mockResolvedValue(ok(pageOf([]))),
+  getStats: jest.fn().mockResolvedValue(ok(statsOf())),
+  recordDmOpen: jest.fn().mockResolvedValue(ok(undefined)),
+  recordDmSave: jest.fn().mockResolvedValue(ok(undefined)),
+});
+
+/** A 30-day stats answer with one automated post; override any part. */
+export const statsOf = (overrides: Partial<CreatorStats> = {}): CreatorStats => ({
+  days: StatsRange.Month,
+  from: '2026-09-11',
+  connected: true,
+  totals: { matched: 40, sent: 36, opened: 18, saved: 6 },
+  previous: { matched: 20, sent: 20, opened: 10, saved: 6 },
+  daily: [{ day: '2026-10-10', matched: 4, sent: 3, opened: 2, saved: 1 }],
+  followers: { current: 1240, change: 40, trackingSince: '2026-09-01', points: [{ day: '2026-09-11', followers: 1200 }, { day: '2026-10-10', followers: 1240 }] },
+  posts: [{ ruleId: 'rule-1', mediaId: 'm1', thumbnailUrl: null, keywords: ['tarif'], enabled: true, matched: 40, sent: 36, opened: 18, saved: 6 }],
+  ...overrides,
 });

@@ -47,6 +47,8 @@ export const RoutePaths = {
   shoppingList: '/shopping-list',
   /** The rule editor; `ruleId` (absent for a new rule) and `step` ride the query. */
   automationEdit: '/automations/edit',
+  /** Creator stats: what the automations brought in. An account page, not crawlable content. */
+  automationStats: '/automations/stats',
   /** One automation's Activity; `ruleId` rides the query (an account page, not crawlable content). */
   automationActivityPath: '/automations/activity',
   automationActivity: (ruleId: string): string => `/automations/activity?ruleId=${encodeURIComponent(ruleId)}`,

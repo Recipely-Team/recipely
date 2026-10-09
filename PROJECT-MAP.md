@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 1969 source files.
+[architecture.md](architecture.md). 2017 source files.
 
 ## Layers
 
@@ -41,7 +41,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `feedback/` _(4)_
 - `flags/` _(1)_
 - `i18n/` _(1)_
-- `instagram/` — activity, connect, dm _(24)_
+- `instagram/` — activity, connect, dm, stats _(33)_
 - `likes/` _(1)_
 - `notifications/` — reminders _(21)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
@@ -66,7 +66,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `favorites/` _(5)_
 - `feedback/` _(3)_
 - `i18n/` _(5)_
-- `instagram/` — activity, connect, rules _(17)_
+- `instagram/` — activity, connect, rules, stats _(25)_
 - `likes/` _(5)_
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
@@ -98,7 +98,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `firebase/` _(7)_
 - `flags/` _(2)_
 - `i18n/` _(1)_
-- `instagram/` — dtos, read, write _(21)_
+- `instagram/` — dtos, read, stats, write _(27)_
 - `likes/` _(1)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(26)_
 - `notifications/` — dtos _(13)_
@@ -169,4 +169,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 5cc0c84acb8fb837 -->
+<!-- fingerprint: 2433ccf60d34b91b -->

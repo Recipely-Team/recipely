@@ -248,6 +248,23 @@ the first 33 recipes are in the backend's `data/curated-recipes/`.
 Recipes Recipely publishes itself under the official account, with original steps, USDA
 nutrition and freely licensed, credited photos.
 
+## 12. Creator stats
+
+**Status:** v1 `building` · v2/v3 `idea` — plan in [creator-stats-plan.md](creator-stats-plan.md)
+
+A stats panel for creators who run comment-to-DM automations: v1 shows the
+funnel only Recipely can see (comment → DM → recipe opened → saved) and a
+follower trend from our own snapshots, with no new Instagram permission.
+
+**Later (v2):** audience by country, city, age and gender compared between two
+dates, and the engaged audience for the last 7 / 30 days — both need
+`instagram_business_manage_insights` and Meta App Review, and both need our own
+snapshots because Instagram keeps no history of them. **v3:** per-post Instagram
+metrics, story insights, suggestions, and a cook event to end the funnel.
+
+**Open:** whether `this_week` / `this_month` are rolling or calendar windows —
+verify with a real call before designing v2's labels.
+
 ## Adding to this file
 
 Keep the shape: **what**, **why**, **what it depends on**, **what is still

@@ -8,6 +8,8 @@ import type { DmRuleEntity } from '@domain/instagram/dm/dm-rule-entity';
 import type { DmRuleDraft } from '@domain/instagram/dm/dm-rule-draft';
 import type { DmRuleChanges } from '@domain/instagram/dm/dm-rule-changes';
 import type { DmSend } from '@domain/instagram/activity/dm-send';
+import type { CreatorStats } from '@domain/instagram/stats/creator-stats';
+import type { StatsRangeType } from '@domain/instagram/stats/stats-range';
 
 /**
  * The viewer's Instagram link and comment-to-DM rules (backend #374). Every
@@ -27,4 +29,10 @@ export interface InstagramRepositoryInterface {
   updateRule(id: string, changes: DmRuleChanges): Promise<Result<DmRuleEntity, Failure>>;
   deleteRule(id: string): Promise<Result<void, Failure>>;
   listSends(ruleId: string, page: number, pageSize: number): Promise<Result<Page<DmSend>, Failure>>;
+  /** The creator stats panel for the last `days` days, today included. */
+  getStats(days: StatsRangeType): Promise<Result<CreatorStats, Failure>>;
+  /** Reports that a DM's recipe link was opened (`?dm=<sendId>`); works without a session. */
+  recordDmOpen(sendId: string): Promise<Result<void, Failure>>;
+  /** Reports that the recipe a DM carried was saved by the signed-in viewer who arrived through it. */
+  recordDmSave(sendId: string, recipeId: string): Promise<Result<void, Failure>>;
 }

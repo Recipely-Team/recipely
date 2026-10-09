@@ -118,6 +118,10 @@ export const ApiRoutes = {
     rules: '/me/instagram/rules',
     rule: (id: string): string => `/me/instagram/rules/${encodeURIComponent(id)}`,
     sends: (ruleId: string): string => `/me/instagram/rules/${encodeURIComponent(ruleId)}/sends`,
+    stats: '/me/instagram/stats',
+    /** No session: the DM's recipe link was opened. */
+    dmOpen: (sendId: string): string => `/instagram/dm-sends/${encodeURIComponent(sendId)}/open`,
+    dmSave: (sendId: string): string => `/me/instagram/dm-sends/${encodeURIComponent(sendId)}/save`,
   },
   assistant: {
     session: '/assistant/session',

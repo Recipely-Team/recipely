@@ -25,6 +25,7 @@ import { AutomationsBar } from "@presentation/app/automations/shared/items/autom
 import { RulesNote } from "@presentation/app/automations/body/rules-note";
 import { AutomationRulesList } from "@presentation/app/automations/body/automation-rules-list";
 import { ConfirmSheet } from "@presentation/base/widgets/sheets/confirm-sheet";
+import { StatsButton } from "@presentation/app/automations/items/stats-button";
 import {
   controlSizes,
   fontSizes,
@@ -152,7 +153,12 @@ export const AutomationsScreen = (): React.JSX.Element => {
         subtitle={null}
         icon="chevron-back"
         onBack={vm.onBack}
-        right={newButton}
+        right={
+          <View style={styles.actions}>
+            {vm.hasRules ? <StatsButton onPress={vm.onStats} /> : null}
+            {newButton}
+          </View>
+        }
       />
       <View style={styles.content}>{body()}</View>
       <ConfirmSheet
@@ -180,6 +186,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   spinner: { marginTop: spacing.xl },
+  actions: { flexDirection: "row", alignItems: "center", gap: spacing.sm },
   locked: { padding: spacing.lg, gap: spacing.lg },
   new: {
     minHeight: controlSizes.iconBtn,
