@@ -37,4 +37,6 @@ export const RegexConstants = {
   hasSymbol: /[^A-Za-z0-9]/,
   /** Absolute http(s) URL prefix. */
   absoluteHttpUrl: /^https?:\/\//i,
+  /** A canonical UUID — the id a creator's DM link carries in `?dm=`. */
+  uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
 } as const;

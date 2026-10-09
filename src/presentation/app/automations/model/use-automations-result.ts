@@ -19,6 +19,9 @@ export interface UseAutomationsResult {
   connect: () => void;
   onBack: () => void;
   onNew: () => void;
+  /** Linked with at least one automation: the bar offers Creator stats. */
+  hasRules: boolean;
+  onStats: () => void;
   onOpen: (rule: DmRuleEntity) => void;
   onToggle: (rule: DmRuleEntity, enabled: boolean) => void;
   /** The rule whose delete is being confirmed; null when the sheet is shut. */

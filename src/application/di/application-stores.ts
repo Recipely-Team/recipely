@@ -14,6 +14,8 @@ import type { FoodCatalogStoreState } from '@application/diary/foods/food-catalo
 import type { SearchFoodsUseCase } from '@application/diary/foods/search/search-foods-use-case';
 import type { InstagramStoreState } from '@application/instagram/instagram-store-state';
 import type { AutomationsStoreState } from '@application/instagram/automations-store-state';
+import type { CreatorStatsStoreState } from '@application/instagram/stats/creator-stats-store-state';
+import type { DmArrivalStoreState } from '@application/instagram/stats/dm-arrival-store-state';
 import type { ShoppingListStoreState } from '@application/shopping/shopping-list-store-state';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
@@ -89,6 +91,10 @@ export interface ApplicationStores {
   instagramStore: BoundStore<InstagramStoreState>;
   /** Instagram comment-to-DM rules, their pickers and activity. User-scoped. */
   automationsStore: BoundStore<AutomationsStoreState>;
+  /** The creator stats panel, one answer per range. */
+  creatorStatsStore: BoundStore<CreatorStatsStoreState>;
+  /** Recipes reached through a creator's DM; app-session scoped so a sign-in in between still counts the save. */
+  dmArrivalStore: BoundStore<DmArrivalStoreState>;
   /** The viewer's shopping list. User-scoped. */
   shoppingListStore: BoundStore<ShoppingListStoreState>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */

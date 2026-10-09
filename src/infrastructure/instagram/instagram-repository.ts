@@ -30,6 +30,12 @@ import { toInstagramLinkResult } from '@infrastructure/instagram/read/to-instagr
 import { toInstagramMedia } from '@infrastructure/instagram/read/to-instagram-media';
 import { toDmRule } from '@infrastructure/instagram/read/to-dm-rule';
 import { toDmSend } from '@infrastructure/instagram/read/to-dm-send';
+import type { CreatorStats } from '@domain/instagram/stats/creator-stats';
+import type { StatsRangeType } from '@domain/instagram/stats/stats-range';
+import type { CreatorStatsDto } from '@infrastructure/instagram/stats/creator-stats-dto';
+import { toCreatorStats } from '@infrastructure/instagram/stats/to-creator-stats';
+import { toStatsQuery } from '@infrastructure/instagram/stats/to-stats-query';
+import { toDmSaveRequest } from '@infrastructure/instagram/stats/to-dm-save-request';
 
 /**
  * Implements `InstagramRepositoryInterface` against backend #374. Lists are
@@ -91,5 +97,20 @@ export class InstagramRepository implements InstagramRepositoryInterface {
   async listSends(ruleId: string, page: number, pageSize: number): Promise<Result<Page<DmSend>, Failure>> {
     const result = await this.http.get<PageDto<DmSendDto>>(ApiRoutes.instagram.sends(ruleId), { params: toPageQuery({ page, pageSize }) });
     return result.ok ? ok(toPage(result.value, toDmSend)) : result;
+  }
+
+  async getStats(days: StatsRangeType): Promise<Result<CreatorStats, Failure>> {
+    const result = await this.http.get<CreatorStatsDto>(ApiRoutes.instagram.stats, { params: toStatsQuery(days) });
+    return result.ok ? toCreatorStats(result.value) : result;
+  }
+
+  async recordDmOpen(sendId: string): Promise<Result<void, Failure>> {
+    const result = await this.http.post<unknown>(ApiRoutes.instagram.dmOpen(sendId));
+    return result.ok ? ok(undefined) : result;
+  }
+
+  async recordDmSave(sendId: string, recipeId: string): Promise<Result<void, Failure>> {
+    const result = await this.http.post<unknown>(ApiRoutes.instagram.dmSave(sendId), toDmSaveRequest(recipeId));
+    return result.ok ? ok(undefined) : result;
   }
 }

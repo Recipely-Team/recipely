@@ -25,6 +25,7 @@ Disallow: /diary/calendar
 Disallow: /automations
 Disallow: /automations/edit
 Disallow: /automations/activity
+Disallow: /automations/stats
 Disallow: /shopping-list
 Disallow: /instagram-connected
 

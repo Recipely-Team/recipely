@@ -7,6 +7,7 @@ import { useStores } from '@presentation/bootstrap/use-stores';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
+import { useDmArrival } from '@presentation/app/recipes/[recipeId]/hooks/use-dm-arrival';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
 import type { ResolvedAuthor } from '@presentation/app/recipes/[recipeId]/model/author/resolved-author';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
@@ -55,7 +56,8 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
 
-  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore } = useStores();
+  const { recipeDetailStore, savedRecipesStore, createdRecipesStore, authStore, favoritesStore, commentsStore, likesStore, userProfileStore, stepProgressStore, dmArrivalStore } = useStores();
+  useDmArrival(recipeId);
   const { cuisineLabel } = useTaxonomyLabel();
   const networkState = recipeDetailStore((s) => s.byId[recipeId]);
   const load = recipeDetailStore((s) => s.load);
@@ -167,8 +169,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     if (failure !== null) {
       showErrorToast(failure);
       favoritesStore.getState().clearError();
+    } else if (!isSaved) {
+      dmArrivalStore.getState().saved(recipeId);
     }
-  }, [isSaved, isLoading, recipeId, userId, favoritesStore]);
+  }, [isSaved, isLoading, recipeId, userId, favoritesStore, dmArrivalStore]);
 
   const handleToggleLike = useCallback(async (): Promise<void> => {
     if (!userId) return;

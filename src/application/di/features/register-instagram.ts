@@ -17,6 +17,11 @@ import { SetDmRuleEnabledUseCase } from '@application/instagram/rules/set-dm-rul
 import { DeleteDmRuleUseCase } from '@application/instagram/rules/delete-dm-rule-use-case';
 import { ListInstagramMediaUseCase } from '@application/instagram/rules/list-instagram-media-use-case';
 import { ListDmSendsUseCase } from '@application/instagram/activity/list-dm-sends-use-case';
+import { configureCreatorStatsStore } from '@application/instagram/stats/creator-stats-store';
+import { configureDmArrivalStore } from '@application/instagram/stats/dm-arrival-store';
+import { GetCreatorStatsUseCase } from '@application/instagram/stats/get-creator-stats-use-case';
+import { RecordDmOpenUseCase } from '@application/instagram/stats/record-dm-open-use-case';
+import { RecordDmSaveUseCase } from '@application/instagram/stats/record-dm-save-use-case';
 import type { FeatureFlagResolver } from '@application/config/feature-flag-resolver';
 import { FeatureFlagName } from '@application/config/feature-flag-name';
 
@@ -26,7 +31,7 @@ import { FeatureFlagName } from '@application/config/feature-flag-name';
  */
 export const registerInstagram = (
   container: Container,
-): Pick<ApplicationStores, 'instagramStore' | 'automationsStore'> => {
+): Pick<ApplicationStores, 'instagramStore' | 'automationsStore' | 'creatorStatsStore' | 'dmArrivalStore'> => {
   const foodCatalogRepo = container.resolve<FoodCatalogRepositoryInterface>(TOKENS.FoodCatalogRepository);
   const instagramRepo = container.resolve<InstagramRepositoryInterface>(TOKENS.InstagramRepository);
   const featureFlags = container.resolve<FeatureFlagResolver>(TOKENS.FeatureFlagResolver);
@@ -46,5 +51,7 @@ export const registerInstagram = (
     listSends: new ListDmSendsUseCase(instagramRepo),
     searchMyRecipes: new SearchRecipeGroupUseCase(foodCatalogRepo),
   });
-  return { instagramStore, automationsStore };
+  const creatorStatsStore = configureCreatorStatsStore({ getStats: new GetCreatorStatsUseCase(instagramRepo) });
+  const dmArrivalStore = configureDmArrivalStore({ recordOpen: new RecordDmOpenUseCase(instagramRepo), recordSave: new RecordDmSaveUseCase(instagramRepo) });
+  return { instagramStore, automationsStore, creatorStatsStore, dmArrivalStore };
 };
