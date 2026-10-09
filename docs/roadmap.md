@@ -50,7 +50,9 @@ caption covers most food posts on its own.
 
 ## 2. Import a recipe from **YouTube**
 
-**Status:** `idea` · **Extends:** the existing video import
+**Status:** `shipped` — YouTube and Facebook sources in #475 (YouTube links go through the
+YouTube Data API importer on the backend, not yt-dlp); TikTok links are imported too. The notes
+below are the original thinking, kept for the open length question.
 
 Mostly the same backend pipeline as Instagram video, pointed at a different
 source.
@@ -234,7 +236,9 @@ of a blog link.
 
 ## 10. Creator storefront
 
-**Status:** `idea` · **After:** comment-to-DM
+**Status:** `partly shipped` · **After:** comment-to-DM — creator pages (`/creators`,
+`/creators/<userId>`), Instagram/TikTok creator tags and follow shipped in #496. Still open: the
+`recipely.net/@handle` URL and a "new recipe" notification to followers.
 
 A public `recipely.net/@handle` page listing a creator's recipes, with follow
 and a "new recipe" notification to followers. Creators verify their account
