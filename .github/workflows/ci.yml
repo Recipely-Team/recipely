@@ -1426,11 +1426,11 @@ jobs:
               in_house: false,
             }));
           '
-          # Processing takes Apple ~5-30 min; don't burn macOS minutes waiting.
-          fastlane pilot upload \
-            --ipa "$IPA_PATH" \
-            --api_key_path "$RUNNER_TEMP/asc-api-key.json" \
-            --skip_waiting_for_build_processing true
+          # fastlane/Fastfile: uploads and sets "What to Test" (EN + TR) from
+          # fastlane/metadata/<locale>/release_notes.txt, without waiting for processing.
+          fastlane ios testflight_upload \
+            ipa:"$IPA_PATH" \
+            api_key_path:"$RUNNER_TEMP/asc-api-key.json"
 
       - name: Clean up signing material
         if: always()

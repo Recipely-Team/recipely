@@ -22,7 +22,7 @@ Pattern from #447 and #449 (and #417, #420, #422, #426).
    for users, about what changed since the last release:
    - `distribution/whatsnew/whatsnew-en-US`, `distribution/whatsnew/whatsnew-tr-TR`
    - `fastlane/metadata/android/en-US/changelogs/default.txt`, `fastlane/metadata/android/tr-TR/changelogs/default.txt`
-   - `fastlane/metadata/en-US/release_notes.txt`, `fastlane/metadata/tr/release_notes.txt`
+   - `fastlane/metadata/en-US/release_notes.txt`, `fastlane/metadata/tr/release_notes.txt` (also TestFlight's "What to Test", set by `fastlane/Fastfile`)
 
    In the same PR, run `git fetch --tags && npm run changelog`: it regenerates the developer-facing `CHANGELOG.md`
    from the `v*` tags, listing everything since the last tag under the version CI will stamp

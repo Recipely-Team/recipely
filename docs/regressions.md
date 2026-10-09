@@ -2757,3 +2757,19 @@ tag patch-bumped, so CHANGELOG.md would have announced the first minor release a
 asks `scripts/next-version.mjs`, which states ci.yml's major / minor / patch rule once; covered by
 `scripts/__tests__/changelog-next-version.test.js`. **A version rule written in two places drifts —
 when the bump rule changes, change both, and test both against the same cases.**
+
+---
+
+## App Review rejected 1.2.0: a tracking consent form without App Tracking Transparency (2026-10-09)
+
+**Symptom:** Guideline 5.1.2(i). In the EEA, Google's UMP form ("personalised advertising… 210
+partners") opened on the welcome screen, yet iOS was never asked for tracking permission and the
+privacy label said "no tracking". Apple reads the form as the app admitting it tracks.
+
+**Fix:** `AdsService.run` now asks ATT (`request-tracking-permission.ts`, which waits for the app to
+be `active` — iOS drops an earlier request without a prompt) before the consent gather and the SDK
+init; the `expo-tracking-transparency` plugin writes `NSUserTrackingUsageDescription`. Covered by
+`ads-service.test.ts` ("asks for tracking permission before the consent form and the SDK") and
+`request-tracking-permission.test.ts`, which also fails if `app.json` installs the ads SDK without
+the ATT usage string. **What a consent form says is a privacy claim: the OS permission and the App
+Store label have to say the same thing.**

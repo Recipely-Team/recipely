@@ -1,0 +1,24 @@
+# TestFlight upload for the prod iOS build (ci.yml → Distribute iOS Prod).
+#
+# Sets the build's "What to Test" text in both App Store locales from the
+# per-version release notes, so testers see what changed instead of an empty
+# field. Passing `changelog` makes pilot wait only until the build appears on
+# App Store Connect, then return without waiting for processing.
+
+default_platform(:ios)
+
+platform :ios do
+  lane :testflight_upload do |options|
+    notes = ->(locale) { File.read(File.join(__dir__, 'metadata', locale, 'release_notes.txt')).strip }
+    upload_to_testflight(
+      ipa: options[:ipa],
+      api_key_path: options[:api_key_path],
+      skip_waiting_for_build_processing: true,
+      changelog: notes.call('en-US'),
+      localized_build_info: {
+        'en-US' => { whats_new: notes.call('en-US') },
+        'tr' => { whats_new: notes.call('tr') },
+      },
+    )
+  end
+end
