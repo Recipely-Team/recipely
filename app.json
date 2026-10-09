@@ -171,6 +171,12 @@
         }
       ],
       [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Recipely uses this to show ads that are more relevant to you. If you decline, you will still see ads, but they will be less personalised."
+        }
+      ],
+      [
         "react-native-google-mobile-ads",
         {
           "androidSdk": "classic",
