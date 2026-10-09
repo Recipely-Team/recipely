@@ -3,4 +3,5 @@ One steady top bar on every tab, and a first look at Chefs.
 • Every tab now has the same top bar, so switching tabs feels steady, and notifications are one tap away on each.
 • Chefs: a new page shows what is coming, and food creators can apply to join.
 • Cleaner sign-in and sign-up fields, and a friendlier screen when a search finds nothing.
+• You now decide whether ads may be personalised for you; every feature works either way.
 • Many small fixes and polish.

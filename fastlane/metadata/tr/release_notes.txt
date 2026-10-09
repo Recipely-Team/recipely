@@ -3,4 +3,5 @@ Her sekmede aynı üst çubuk ve Şefler sayfasına ilk bakış.
 • Tüm sekmelerde aynı üst çubuk: sekmeler arasında geçiş artık sarsılmıyor, bildirimler her sekmede tek dokunuşta.
 • Şefler: yakında gelecekleri gösteren yeni sayfa; yemek içerik üreticileri buradan başvurabilir.
 • Daha sade giriş ve kayıt alanları, arama sonuç vermediğinde daha sıcak bir ekran.
+• Reklamların size göre kişiselleştirilip kişiselleştirilmeyeceğine artık siz karar veriyorsunuz; her özellik iki durumda da çalışır.
 • Pek çok küçük düzeltme ve iyileştirme.
