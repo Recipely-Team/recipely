@@ -19,6 +19,7 @@ export const en = {
   },
   errors: {
     retry: 'Try again',
+    loadMoreFailed: "Couldn't load more",
     back: 'Go back',
     dismiss: 'Dismiss',
     genericTitle: 'Something went wrong',
@@ -577,6 +578,7 @@ export const en = {
     webEmptyBody: 'Try different filters or search terms.',
     refreshing: 'Refreshing…',
     backToRecipes: 'Back to recipes',
+    browseRecipes: "Browse recipes",
     signInToLike: 'Sign in to like this recipe.',
     signInToSave: 'Sign in to save this recipe.',
     copyToDrafts: 'Copy to my drafts',
@@ -1263,7 +1265,6 @@ export const en = {
     addedSummary: "Shopping list: {added} added, {merged} combined",
     view: "View",
     signInToAdd: "Sign in to keep a shopping list.",
-    loadMoreFailed: "Couldn’t load more items",
     tryAgain: "Try again",
   },
   comments: {
@@ -1284,6 +1285,10 @@ export const en = {
   signInPrompt: {
     title: 'Sign in required',
     message: 'Sign in to like, save, and comment on recipes.',
+    myRecipes: "Sign in to keep your saved recipes, likes and drafts in one place.",
+    diary: "Sign in to keep a food diary and track what you eat.",
+    profile: "Sign in to see your profile, reminders and settings.",
+    notifications: "Sign in to see your notifications.",
     cta: 'Sign In',
   },
   register: {

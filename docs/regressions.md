@@ -629,9 +629,12 @@ pushed yourself — and wrong for one the OS pushed for you. A share intent or a
 notification tap on a cold start makes that screen the entire stack, so its X was
 an exit door.
 
-*Guard:* `useGoBackOrHome` asks `router.canGoBack()` and lands on the feed when
-the answer is no. Both entry-point screens (import, create-recipe) use it, and
-both suites hold a "nothing to go back to" case.
+*Guard:* `useGoBackOrHome(fallback)` asks `router.canGoBack()` and lands on the
+feed (or the screen's own fallback: Profile, Login) when the answer is no. The UX
+audit (2026-10-10) found the same dead end on recipe detail — the page most often
+opened cold — notifications, settings, edit profile, register and verify-code; all
+use the hook now, and `check:structure` rule AS fails any bare `router.back()`
+under `app/` without a `canGoBack()` beside it.
 
 **The lesson: a screen the OS can open is a screen that may be the whole stack.**
 Anything reachable from a share intent, a notification, or a deep link cannot
@@ -2781,3 +2784,39 @@ was answered without personalised ads (`AdsService.mayAskTracking`). Covered by 
 ("shows the consent form before tracking permission…", "does not ask for tracking after the form was
 answered without personalised ads"). **A privacy question is asked once: the order of two prompts is
 part of what they say.**
+
+---
+
+## One tap destroyed what could not come back (2026-10-10)
+
+**Symptom:** the trash icon on a draft row and on the user's own comment deleted at once. The
+voice path for the same draft delete asked first, and `comments.deleteConfirm` sat unused in all
+fourteen catalogues. **Fix:** both taps open a `ConfirmSheet` (the draft shares the assistant's
+pending value, so a spoken "yes" answers the same sheet). *Guard:* `draft-delete-confirm.test.tsx`
+and the "deleting a comment" cases in `use-recipe-detail.test.tsx`. **An irreversible action asks,
+whichever limb started it.**
+
+## A failed next page looked like the end of the list (2026-10-10)
+
+**Symptom:** on a flaky connection the spinner under notifications, Chefs, a creator's recipes,
+drafts or the automations lists disappeared and the list simply ended — for the rest of the session,
+because `onEndReached` does not fire again when the content length has not changed. The loader
+recorded `moreFailure`; only the shopping list read it. **Fix:** `FeedFooter` takes `failure` +
+`onRetry` and shows "Couldn't load more · Try again"; every `PagedListLoader` list passes both.
+*Guard:* `feed-footer.test.tsx`. **A failure state that nothing renders is a success state.**
+
+## A setting that existed and could not be reached (2026-10-10)
+
+**Symptom:** a user who accepted the feed's reminders offer had no way to turn reminders off: the
+switch lived on `/settings`, which nothing links to, and Profile's own copy of the settings list
+had no reminders section. **Fix:** the section moved to `base/widgets/settings/` and Profile renders
+it. *Guard:* `profile-settings-sections.reminders.test.tsx`. **Two copies of one list drift; the
+copy users see is the one that counts.**
+
+## A guest's tab press answered with a silent login wall (2026-10-10)
+
+**Symptom:** a guest tapping My Recipes, Diary, Profile or the bell was bounced by the auth guard to
+a login form with no tab bar and no reason. **Fix:** `useGuestRouteGate` keeps the guest where they
+are and opens the sign-in sheet with what the page holds; Sign in returns them to it. Guest browsing
+is unchanged (App Review 5.1.1(v)). *Guard:* `root-tab-bar.test.tsx`, the guest case in
+`notifications-bell-button.test.tsx`. **A wall without a sign reads as a broken button.**

@@ -63,6 +63,8 @@ export interface MyRecipesListProps {
   /** Asks for the next page of drafts; the list pages like the recipe feed does. */
   onDraftsEndReached: () => void;
   isLoadingMoreDrafts: boolean;
+  /** Why the last next page of drafts failed, or null; shows a "Try again" row under the list. */
+  draftsMoreFailure: Failure | null;
   isRefreshing: boolean;
   onRefresh: () => void;
   /**
@@ -103,6 +105,7 @@ export const MyRecipesList = ({
   loadFailure,
   onDraftsEndReached,
   isLoadingMoreDrafts,
+  draftsMoreFailure,
   isRefreshing,
   onRefresh,
   scrollable,
@@ -190,7 +193,9 @@ export const MyRecipesList = ({
         style={styles.list}
         onEndReached={onDraftsEndReached}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
-        ListFooterComponent={<FeedFooter isLoadingMore={isLoadingMoreDrafts} />}
+        ListFooterComponent={
+          <FeedFooter isLoadingMore={isLoadingMoreDrafts} failure={draftsMoreFailure} onRetry={onDraftsEndReached} />
+        }
       />
     );
   }

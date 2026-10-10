@@ -19,6 +19,7 @@ export const de = {
   },
   errors: {
     retry: 'Noch einmal versuchen',
+    loadMoreFailed: "Mehr konnte nicht geladen werden",
     back: 'Zurück',
     dismiss: 'Schließen',
     genericTitle: 'Etwas ist schiefgelaufen',
@@ -566,6 +567,7 @@ export const de = {
     webEmptyBody: 'Probiere andere Filter oder Suchbegriffe.',
     refreshing: 'Wird aktualisiert…',
     backToRecipes: 'Zurück zu den Rezepten',
+    browseRecipes: "Rezepte entdecken",
     signInToLike: 'Melde dich an, um dieses Rezept zu liken.',
     signInToSave: 'Melde dich an, um dieses Rezept zu speichern.',
     copyToDrafts: 'In meine Entwürfe kopieren',
@@ -1251,7 +1253,6 @@ export const de = {
     addedSummary: "Einkaufsliste: {added} hinzugefügt, {merged} zusammengeführt",
     view: "Ansehen",
     signInToAdd: "Melde dich an, um eine Einkaufsliste zu führen.",
-    loadMoreFailed: "Weitere Artikel konnten nicht geladen werden",
     tryAgain: "Erneut versuchen",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const de = {
   signInPrompt: {
     title: 'Anmeldung erforderlich',
     message: 'Melde dich an, um Rezepte zu liken, zu speichern und zu kommentieren.',
+    myRecipes: "Melde dich an, um gespeicherte Rezepte, Likes und Entwürfe an einem Ort zu haben.",
+    diary: "Melde dich an, um ein Ernährungstagebuch zu führen und zu sehen, was du isst.",
+    profile: "Melde dich an, um dein Profil, deine Erinnerungen und Einstellungen zu sehen.",
+    notifications: "Melde dich an, um deine Benachrichtigungen zu sehen.",
     cta: 'Anmelden',
   },
   register: {

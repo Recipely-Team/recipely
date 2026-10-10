@@ -19,6 +19,7 @@ export const id = {
   },
   errors: {
     retry: 'Coba lagi',
+    loadMoreFailed: "Gagal memuat lebih banyak",
     back: 'Kembali',
     dismiss: 'Tutup',
     genericTitle: 'Ada yang tidak beres',
@@ -566,6 +567,7 @@ export const id = {
     webEmptyBody: 'Coba filter atau kata pencarian lain.',
     refreshing: 'Memperbarui…',
     backToRecipes: 'Kembali ke resep',
+    browseRecipes: "Jelajahi resep",
     signInToLike: 'Masuk untuk menyukai resep ini.',
     signInToSave: 'Masuk untuk menyimpan resep ini.',
     copyToDrafts: 'Salin ke draf saya',
@@ -1251,7 +1253,6 @@ export const id = {
     addedSummary: "Daftar belanja: {added} ditambahkan, {merged} digabungkan",
     view: "Lihat",
     signInToAdd: "Masuk untuk menyimpan daftar belanja.",
-    loadMoreFailed: "Tidak dapat memuat item lainnya",
     tryAgain: "Coba lagi",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const id = {
   signInPrompt: {
     title: 'Harus masuk',
     message: 'Masuk untuk menyukai, menyimpan, dan mengomentari resep.',
+    myRecipes: "Masuk untuk menyimpan resep tersimpan, suka, dan draf Anda di satu tempat.",
+    diary: "Masuk untuk mencatat buku harian makanan dan memantau apa yang Anda makan.",
+    profile: "Masuk untuk melihat profil, pengingat, dan pengaturan Anda.",
+    notifications: "Masuk untuk melihat notifikasi Anda.",
     cta: 'Masuk',
   },
   register: {

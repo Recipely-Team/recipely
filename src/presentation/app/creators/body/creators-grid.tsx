@@ -84,7 +84,13 @@ export const CreatorsGrid = ({ vm, scrollable }: CreatorsGridProps): React.JSX.E
           refreshControl={refreshControl}
           onEndReached={vm.onEndReached}
           onEndReachedThreshold={ListConstants.endReachedThreshold}
-          ListFooterComponent={<FeedFooter isLoadingMore={vm.isLoadingMore} />}
+          ListFooterComponent={
+            <FeedFooter
+              isLoadingMore={vm.isLoadingMore}
+              failure={vm.listState.status === StoreStatus.Loaded ? vm.listState.moreFailure : null}
+              onRetry={vm.onEndReached}
+            />
+          }
           initialNumToRender={ListConstants.initialRows}
           maxToRenderPerBatch={ListConstants.rowsPerBatch}
           windowSize={ListConstants.windowSize}

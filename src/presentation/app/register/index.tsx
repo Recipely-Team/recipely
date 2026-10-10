@@ -5,6 +5,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RegisterHero } from '@presentation/app/register/body/register-hero';
 import { RegisterForm } from '@presentation/app/register/body/register-form';
@@ -21,6 +22,7 @@ const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
@@ -84,7 +86,7 @@ export const RegisterScreen = (): React.JSX.Element => {
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t().common.back}
-          onPress={() => router.back()}
+          onPress={goBack}
           style={[styles.backButton, { backgroundColor: colors.gradientSurface, borderColor: colors.gradientBorder }]}
         >
           <Ionicons name="chevron-back" size={iconSizes.xl} color={colors.onOverlay} />

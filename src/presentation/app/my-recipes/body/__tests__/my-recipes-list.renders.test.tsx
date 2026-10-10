@@ -53,6 +53,7 @@ const props: MyRecipesListProps = {
   isFirstLoad: false,
   loadFailure: null,
   isLoadingMoreDrafts: false,
+  draftsMoreFailure: null,
 };
 
 describe('MyRecipesList — re-renders', () => {

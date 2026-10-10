@@ -19,6 +19,7 @@ export const fr = {
   },
   errors: {
     retry: 'Réessayer',
+    loadMoreFailed: "Impossible de charger la suite",
     back: 'Revenir',
     dismiss: 'Fermer',
     genericTitle: 'Un problème est survenu',
@@ -566,6 +567,7 @@ export const fr = {
     webEmptyBody: 'Essayez d’autres filtres ou termes de recherche.',
     refreshing: 'Actualisation…',
     backToRecipes: 'Retour aux recettes',
+    browseRecipes: "Parcourir les recettes",
     signInToLike: 'Connectez-vous pour aimer cette recette.',
     signInToSave: 'Connectez-vous pour enregistrer cette recette.',
     copyToDrafts: 'Copier dans mes brouillons',
@@ -1251,7 +1253,6 @@ export const fr = {
     addedSummary: "Liste de courses : {added} ajoutés, {merged} fusionnés",
     view: "Voir",
     signInToAdd: "Connectez-vous pour tenir une liste de courses.",
-    loadMoreFailed: "Impossible de charger plus d’articles",
     tryAgain: "Réessayer",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const fr = {
   signInPrompt: {
     title: 'Connexion requise',
     message: 'Connectez-vous pour aimer, enregistrer et commenter des recettes.',
+    myRecipes: "Connectez-vous pour retrouver vos recettes enregistrées, vos j’aime et vos brouillons au même endroit.",
+    diary: "Connectez-vous pour tenir un journal alimentaire et suivre ce que vous mangez.",
+    profile: "Connectez-vous pour voir votre profil, vos rappels et vos réglages.",
+    notifications: "Connectez-vous pour voir vos notifications.",
     cta: 'Se connecter',
   },
   register: {

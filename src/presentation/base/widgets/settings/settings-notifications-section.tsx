@@ -4,7 +4,7 @@ import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { SettingsSwitch } from '@presentation/base/widgets/settings/settings-switch';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii } from '@presentation/base/theme';
-import { useRemindersSetting } from '@presentation/app/settings/hooks/use-reminders-setting';
+import { useRemindersSetting } from '@presentation/base/hooks/notifications/use-reminders-setting';
 import { isWeb } from '@infrastructure/constants/platform';
 import { t } from '@presentation/i18n';
 

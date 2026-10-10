@@ -164,13 +164,14 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onToggleSave={toggleSave}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
-            onDeleteDraft={deleteDraft}
+            onDeleteDraft={assistant.requestDraftDelete}
             isFirstLoad={isTabFirstLoad}
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             isLoadingMoreDrafts={
               draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }
+            draftsMoreFailure={draftsListState.status === StoreStatus.Loaded ? draftsListState.moreFailure : null}
             isRefreshing={isRefreshing}
             onRefresh={onRefresh}
             scrollable={assistant.scrollable}

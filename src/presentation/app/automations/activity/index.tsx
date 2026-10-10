@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -63,7 +64,11 @@ export const AutomationActivityScreen = (): React.JSX.Element => {
         }
         ListFooterComponent={
           <>
-            {sends.status === StoreStatus.Loaded && sends.isLoadingMore ? <ActivityIndicator color={colors.primary} /> : null}
+            <FeedFooter
+              isLoadingMore={sends.status === StoreStatus.Loaded && sends.isLoadingMore}
+              failure={sends.status === StoreStatus.Loaded ? sends.moreFailure : null}
+              onRetry={vm.onEndReached}
+            />
             <SizedText size={fontSizes.small} ratio={lineHeights.normal} color={colors.textSubtle} style={styles.note}>
               {copy.failNote}
             </SizedText>

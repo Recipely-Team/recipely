@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
+import { RoutePaths } from '@presentation/base/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -26,7 +27,7 @@ export interface VerifyCodeCardProps {
  * until the current code expires. The parent chooses the surrounding layout.
  */
 export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps): React.JSX.Element => {
-  const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
@@ -168,7 +169,7 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
       </View>
 
       <Pressable
-        onPress={() => router.back()}
+        onPress={goBack}
         style={styles.textLink}
         accessibilityRole="button"
         accessibilityLabel={t().verify.changeEmail}

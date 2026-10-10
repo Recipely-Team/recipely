@@ -6,7 +6,6 @@ import { buildSections } from '@presentation/app/notifications/model/build-secti
 import { NotificationFilter, type NotificationFilterType } from '@presentation/app/notifications/model/notification-filter';
 import { StoreStatus } from '@application/store/store-status';
 import { ActivityIndicator, SectionList, StyleSheet, View, type SectionListData } from 'react-native';
-import { useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useReportFailure } from '@presentation/base/errors/use-report-failure';
@@ -30,6 +29,7 @@ import { ValueConstants } from '@core/constants';
 import { toNotifItem } from '@presentation/app/notifications/model/to-notif-item';
 import { NotificationsHeader } from '@presentation/app/notifications/body/notifications-header';
 import { NotificationFilterPills } from '@presentation/app/notifications/body/notification-filter-pills';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useOpenNotificationTarget } from '@presentation/app/notifications/hooks/use-open-notification-target';
 
 // Module-level so their identity is stable: an inline separator remounts on every render.
@@ -48,7 +48,7 @@ const NotifSeparator = (): React.JSX.Element => {
  * only when their own notification changes.
  */
 export const NotificationsScreen = (): React.JSX.Element => {
-  const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
 
@@ -122,7 +122,7 @@ export const NotificationsScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="notifications" gutter={false} fill>
-      <NotificationsHeader unreadCount={unreadCount} onBack={() => router.back()} onMarkAllRead={() => void markAllRead()} />
+      <NotificationsHeader unreadCount={unreadCount} onBack={goBackOrHome} onMarkAllRead={() => void markAllRead()} />
       <NotificationFilterPills filter={filter} totalCount={items.length} unreadCount={unreadCount} onChange={setFilter} />
 
       {state.status === StoreStatus.Loading || state.status === StoreStatus.Idle ? (
@@ -154,7 +154,13 @@ export const NotificationsScreen = (): React.JSX.Element => {
         }
         onEndReached={() => void loadMore()}
         onEndReachedThreshold={ListConstants.endReachedThreshold}
-        ListFooterComponent={<FeedFooter isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore} />}
+        ListFooterComponent={
+          <FeedFooter
+            isLoadingMore={state.status === StoreStatus.Loaded && state.isLoadingMore}
+            failure={state.status === StoreStatus.Loaded ? state.moreFailure : null}
+            onRetry={() => void loadMore()}
+          />
+        }
         contentContainerStyle={[styles.listContent, { paddingBottom: insets.bottom + spacing.xxl }]}
         ItemSeparatorComponent={NotifSeparator}
       />

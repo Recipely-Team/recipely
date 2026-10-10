@@ -6,6 +6,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
 import { VerifyCodeCard } from '@presentation/app/verify-code/body/verify-code-card';
@@ -22,6 +23,7 @@ const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const VerifyCodeScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
@@ -88,7 +90,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
         />
 
         <Pressable
-          onPress={() => router.back()}
+          onPress={goBack}
           style={[styles.backBtn, { backgroundColor: colors.gradientSurface }]}
           accessibilityRole="button"
           accessibilityLabel={t().verify.changeEmail}

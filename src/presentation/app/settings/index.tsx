@@ -3,6 +3,7 @@ import { useDeleteAccount } from '@presentation/base/hooks/auth/use-delete-accou
 import { StoreStatus } from '@application/store/store-status';
 import { StyleSheet, View, Linking } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ScreenContainer } from '@presentation/base/widgets/layout/screen-container';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
@@ -13,7 +14,7 @@ import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { RoutePaths } from '@presentation/base/constants';
 import { SettingsHeader } from '@presentation/app/settings/body/settings-header';
 import { SettingsAppearanceSection } from '@presentation/app/settings/body/settings-appearance-section';
-import { SettingsNotificationsSection } from '@presentation/app/settings/body/settings-notifications-section';
+import { SettingsNotificationsSection } from '@presentation/base/widgets/settings/settings-notifications-section';
 import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, controlSizes, avatarSizes } from '@presentation/base/theme';
@@ -26,6 +27,7 @@ import { CharConstants, ValueConstants } from '@core/constants';
 
 export const SettingsScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.profile);
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
   const { authStore } = useStores();
   const authState = authStore((s) => s.state);
@@ -64,7 +66,7 @@ export const SettingsScreen = (): React.JSX.Element => {
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <ResponsiveContainer route="settings" gutter={false} fill>
-      <SettingsHeader onBack={() => router.back()} />
+      <SettingsHeader onBack={goBack} />
       <ScreenContainer scrollable padded={false}>
         <View style={styles.profileSection}>
           <AvatarImage uri={photoUrl} name={displayName} size={avatarSizes.xl} />

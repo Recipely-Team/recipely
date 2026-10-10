@@ -47,6 +47,9 @@ const Screen = ({ remove }: { remove: (item: MediaItem) => Promise<void> }): Rea
         onCancelRemovePhoto={removal.cancel}
         photoError={null}
         onDismissPhotoError={noop}
+        commentDeletePending={false}
+        onConfirmDeleteComment={noop}
+        onCancelDeleteComment={noop}
         showDeleteSheet={false}
         deleteError={null}
         isDeleting={false}

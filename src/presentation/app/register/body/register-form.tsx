@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -27,6 +28,7 @@ import { isBlank } from '@core/guards/type-guards';
  */
 export const RegisterForm = (): React.JSX.Element => {
   const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
@@ -167,7 +169,7 @@ export const RegisterForm = (): React.JSX.Element => {
         <ThemedText variant="caption" style={{ color: colors.textMuted }}>
           {t().register.haveAccount}
         </ThemedText>
-        <Pressable accessibilityRole="link" onPress={() => router.back()} style={styles.linkTarget}>
+        <Pressable accessibilityRole="link" onPress={goBack} style={styles.linkTarget}>
           <ThemedText variant="caption" style={[styles.signInLink, { color: colors.primary }]}>
             {t().register.signIn}
           </ThemedText>

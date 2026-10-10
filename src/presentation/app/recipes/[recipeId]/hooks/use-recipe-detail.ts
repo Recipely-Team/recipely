@@ -4,8 +4,10 @@ import { StoreStatus } from '@application/store/store-status';
 import { ScrollView } from 'react-native';
 import { type Href, useLocalSearchParams, usePathname, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useGuestGate } from '@presentation/base/hooks/auth/use-guest-gate';
 import { useScrollToEndOnKeyboard } from '@presentation/app/recipes/[recipeId]/hooks/use-scroll-to-end-on-keyboard';
+import { useCommentRemoval } from '@presentation/app/recipes/[recipeId]/hooks/comments/use-comment-removal';
 import { useRecipeAuthor } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-author';
 import { useDmArrival } from '@presentation/app/recipes/[recipeId]/hooks/use-dm-arrival';
 import { useNutritionRecheck } from '@presentation/app/recipes/[recipeId]/hooks/use-nutrition-recheck';
@@ -52,6 +54,7 @@ const NO_STEPS_DONE: readonly boolean[] = [];
  */
 export const useRecipeDetail = (): UseRecipeDetailResult => {
   const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
   const pathname = usePathname();
   const params = useLocalSearchParams<{ recipeId: string }>();
   const recipeId = isString(params.recipeId) ? params.recipeId : CharConstants.empty;
@@ -119,12 +122,12 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
       createdRecipesStore.getState().resetDeleteState();
       setShowDeleteSheet(false);
       // Wait for the modal dismiss animation to complete before navigating.
-      setTimeout(() => router.back(), durations.sheetDismiss);
+      setTimeout(goBackOrHome, durations.sheetDismiss);
     } else if (s.status === StoreStatus.Error) {
       createdRecipesStore.getState().resetDeleteState();
       setDeleteError(t().myRecipes.deleteError);
     }
-  }, [recipeId, router, createdRecipesStore]);
+  }, [recipeId, goBackOrHome, createdRecipesStore]);
 
   const handleDeleteComment = useCallback(
     async (commentId: string): Promise<void> => {
@@ -136,6 +139,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     },
     [commentsStore, recipeId],
   );
+  const commentRemoval = useCommentRemoval(handleDeleteComment);
 
   /**
    * Posts `text`; resolves true once the post lands.
@@ -320,7 +324,10 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
     onLoadMoreComments: () => void commentsStore.getState().loadMore(recipeId),
     onToggleCommentLike: (id: string) =>
       requestGate(() => void handleToggleCommentLike(id), t().comments.signInToLikeComment),
-    onDeleteComment: (id: string) => void handleDeleteComment(id),
+    onDeleteComment: commentRemoval.request,
+    commentDeletePending: commentRemoval.pendingId !== null,
+    onConfirmDeleteComment: commentRemoval.confirm,
+    onCancelDeleteComment: commentRemoval.cancel,
     shareOpen,
     onOpenShare: () => setShareOpen(true),
     onCloseShare: () => setShareOpen(false),

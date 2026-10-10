@@ -21,6 +21,7 @@ export const hi: TranslationsType = {
   },
   errors: {
     retry: 'फिर कोशिश करें',
+    loadMoreFailed: "और लोड नहीं हो सका",
     back: 'वापस जाएँ',
     dismiss: 'बंद करें',
     genericTitle: 'कुछ गड़बड़ हो गई',
@@ -568,6 +569,7 @@ export const hi: TranslationsType = {
     webEmptyBody: 'दूसरे फ़िल्टर या खोज शब्द आज़माएँ।',
     refreshing: 'रीफ़्रेश हो रहा है…',
     backToRecipes: 'रेसिपी पर वापस जाएँ',
+    browseRecipes: "रेसिपी देखें",
     signInToLike: 'इस रेसिपी को पसंद करने के लिए साइन इन करें।',
     signInToSave: 'इस रेसिपी को सेव करने के लिए साइन इन करें।',
     copyToDrafts: 'मेरे ड्राफ़्ट में कॉपी करें',
@@ -1247,7 +1249,6 @@ export const hi: TranslationsType = {
     addedSummary: "खरीदारी सूची: {added} जोड़े, {merged} मिलाए",
     view: "देखें",
     signInToAdd: "खरीदारी सूची रखने के लिए साइन इन करें।",
-    loadMoreFailed: "और आइटम लोड नहीं हो सके",
     tryAgain: "फिर से कोशिश करें",
   },
   comments: {
@@ -1268,6 +1269,10 @@ export const hi: TranslationsType = {
   signInPrompt: {
     title: 'साइन इन करना ज़रूरी है',
     message: 'रेसिपी को पसंद करने, सेव करने और टिप्पणी करने के लिए साइन इन करें।',
+    myRecipes: "सेव की गई रेसिपी, पसंद और ड्राफ़्ट एक जगह रखने के लिए साइन इन करें।",
+    diary: "फ़ूड डायरी रखने और अपने खाने पर नज़र रखने के लिए साइन इन करें।",
+    profile: "अपनी प्रोफ़ाइल, रिमाइंडर और सेटिंग देखने के लिए साइन इन करें।",
+    notifications: "अपनी सूचनाएँ देखने के लिए साइन इन करें।",
     cta: 'साइन इन',
   },
   register: {

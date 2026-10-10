@@ -19,6 +19,7 @@ export const pt = {
   },
   errors: {
     retry: 'Tentar de novo',
+    loadMoreFailed: "Não foi possível carregar mais",
     back: 'Voltar',
     dismiss: 'Fechar',
     genericTitle: 'Algo deu errado',
@@ -566,6 +567,7 @@ export const pt = {
     webEmptyBody: 'Tente outros filtros ou termos de busca.',
     refreshing: 'Atualizando…',
     backToRecipes: 'Voltar às receitas',
+    browseRecipes: "Explorar receitas",
     signInToLike: 'Entre para curtir esta receita.',
     signInToSave: 'Entre para salvar esta receita.',
     copyToDrafts: 'Copiar para meus rascunhos',
@@ -1251,7 +1253,6 @@ export const pt = {
     addedSummary: "Lista de compras: {added} adicionados, {merged} combinados",
     view: "Ver",
     signInToAdd: "Entre para manter uma lista de compras.",
-    loadMoreFailed: "Não foi possível carregar mais itens",
     tryAgain: "Tentar novamente",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const pt = {
   signInPrompt: {
     title: 'É preciso entrar',
     message: 'Entre para curtir, salvar e comentar receitas.',
+    myRecipes: "Entre para manter suas receitas salvas, curtidas e rascunhos em um só lugar.",
+    diary: "Entre para manter um diário alimentar e acompanhar o que você come.",
+    profile: "Entre para ver seu perfil, lembretes e configurações.",
+    notifications: "Entre para ver suas notificações.",
     cta: 'Entrar',
   },
   register: {

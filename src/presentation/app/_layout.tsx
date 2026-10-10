@@ -19,11 +19,10 @@ import { AssistantPill } from '@presentation/base/widgets/assistant/assistant-pi
 import { ToastHost } from '@presentation/base/feedback/toast-host';
 import { SplashOverlay } from '@presentation/base/widgets/loading/splash-overlay';
 import { WebHeader } from '@presentation/base/widgets/web-header/web-header';
-import { TabBar } from '@presentation/base/widgets/navigation/tab-bar';
+import { RootTabBar } from '@presentation/base/widgets/navigation/root-tab-bar';
 import { AlarmScreen } from '@presentation/navigation/alarm-screen';
 import { useAuthGuard } from '@presentation/navigation/use-auth-guard';
 import { navigationTheme } from '@presentation/navigation/navigation-theme';
-import { useTabBarState } from '@presentation/navigation/use-tab-bar-state';
 import { useWindowBackground } from '@presentation/navigation/use-window-background';
 import { useIconFonts } from '@presentation/navigation/use-icon-fonts';
 import { alarmStore } from '@application/timers/alarm-store';
@@ -84,19 +83,6 @@ const WebShellChrome = (): React.JSX.Element | null => {
   const show = useShouldRenderWebHeader();
   if (!show) return null;
   return <WebHeader />;
-};
-
-/**
- * The one and only mobile TabBar, hosted below the Stack so screen
- * transitions animate the content area above it. Visibility and the active
- * tab are pathname-driven: on tab-less routes (detail pages, create flows,
- * auth screens, …) the bar does not render at all — no collapse animation.
- * The TabBar widget additionally hides itself on the web-shell breakpoint.
- */
-const RootTabBar = (): React.JSX.Element | null => {
-  const state = useTabBarState();
-  if (state === null) return null;
-  return <TabBar active={state.active} onChange={state.onChange} />;
 };
 
 /**

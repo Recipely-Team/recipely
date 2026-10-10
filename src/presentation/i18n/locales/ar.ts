@@ -19,6 +19,7 @@ export const ar = {
   },
   errors: {
     retry: "حاول مجددًا",
+    loadMoreFailed: "تعذّر تحميل المزيد",
     back: "العودة",
     dismiss: "تجاهل",
     genericTitle: "حدث خطأ ما",
@@ -566,6 +567,7 @@ export const ar = {
     webEmptyBody: "جرّب عوامل تصفية أو كلمات بحث مختلفة.",
     refreshing: "جارٍ التحديث…",
     backToRecipes: "العودة إلى الوصفات",
+    browseRecipes: "تصفّح الوصفات",
     signInToLike: "سجّل الدخول للإعجاب بهذه الوصفة.",
     signInToSave: "سجّل الدخول لحفظ هذه الوصفة.",
     copyToDrafts: 'نسخ إلى مسوداتي',
@@ -1251,7 +1253,6 @@ export const ar = {
     addedSummary: "قائمة التسوق: أُضيف {added}، ودُمج {merged}",
     view: "عرض",
     signInToAdd: "سجّل الدخول للاحتفاظ بقائمة تسوق.",
-    loadMoreFailed: "تعذّر تحميل المزيد من العناصر",
     tryAgain: "إعادة المحاولة",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const ar = {
   signInPrompt: {
     title: "تسجيل الدخول مطلوب",
     message: "سجّل الدخول للإعجاب بالوصفات وحفظها والتعليق عليها.",
+    myRecipes: "سجّل الدخول لتجمع وصفاتك المحفوظة وإعجاباتك ومسوداتك في مكان واحد.",
+    diary: "سجّل الدخول لتدوّن يومياتك الغذائية وتتابع ما تأكله.",
+    profile: "سجّل الدخول لعرض ملفك الشخصي وتذكيراتك وإعداداتك.",
+    notifications: "سجّل الدخول لعرض إشعاراتك.",
     cta: "تسجيل الدخول"
   },
   register: {

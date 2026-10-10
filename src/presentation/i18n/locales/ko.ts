@@ -21,6 +21,7 @@ export const ko: TranslationsType = {
   },
   errors: {
     retry: '다시 시도',
+    loadMoreFailed: "더 불러오지 못했어요",
     back: '뒤로 가기',
     dismiss: '닫기',
     genericTitle: '문제가 발생했어요',
@@ -568,6 +569,7 @@ export const ko: TranslationsType = {
     webEmptyBody: '다른 필터나 검색어를 사용해 보세요.',
     refreshing: '새로고침 중…',
     backToRecipes: '레시피로 돌아가기',
+    browseRecipes: "레시피 둘러보기",
     signInToLike: '이 레시피에 좋아요를 누르려면 로그인해 주세요.',
     signInToSave: '이 레시피를 저장하려면 로그인해 주세요.',
     copyToDrafts: '내 초안으로 복사',
@@ -1247,7 +1249,6 @@ export const ko: TranslationsType = {
     addedSummary: "장보기 목록: {added}개 추가, {merged}개 합침",
     view: "보기",
     signInToAdd: "장보기 목록을 쓰려면 로그인하세요.",
-    loadMoreFailed: "항목을 더 불러오지 못했습니다",
     tryAgain: "다시 시도",
   },
   comments: {
@@ -1268,6 +1269,10 @@ export const ko: TranslationsType = {
   signInPrompt: {
     title: '로그인이 필요해요',
     message: '레시피에 좋아요를 누르고 저장하거나 댓글을 남기려면 로그인해 주세요.',
+    myRecipes: "저장한 레시피, 좋아요, 임시 저장본을 한곳에서 보려면 로그인해 주세요.",
+    diary: "식단 일기를 쓰고 먹은 음식을 기록하려면 로그인해 주세요.",
+    profile: "프로필, 알림 설정, 환경설정을 보려면 로그인해 주세요.",
+    notifications: "알림을 보려면 로그인해 주세요.",
     cta: '로그인',
   },
   register: {
