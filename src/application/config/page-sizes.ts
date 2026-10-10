@@ -34,4 +34,6 @@ export const PageSizes = {
   dmRecipes: 6,
   /** The shopping list, per page; unchecked lines come first, so the first page is what is left to buy. */
   shoppingList: 20,
+  /** The meal plan's add sheet recipe list (Saved / My recipes / Search), per page. */
+  planRecipes: 20,
 } as const;

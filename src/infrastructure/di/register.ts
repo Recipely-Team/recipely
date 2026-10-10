@@ -1,4 +1,5 @@
 import { ShoppingListRepository } from '@infrastructure/shopping/shopping-list-repository';
+import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-repository';
 import { type Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
 import { HttpClient } from '@infrastructure/network/http/http-client';
@@ -119,6 +120,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   container.register(TOKENS.LikeRepository, () => new LikeRepository(http));
   container.register(TOKENS.NotificationRepository, () => new NotificationRepository(http));
   container.register(TOKENS.ShoppingListRepository, () => new ShoppingListRepository(http));
+  container.register(TOKENS.MealPlanRepository, () => new MealPlanRepository(http));
   container.register(TOKENS.UserProfileRepository, () => new UserProfileRepository(http));
   container.register(TOKENS.FeedbackRepository, () => new FeedbackRepository(http));
   container.register(TOKENS.AssistantTokenRepository, () => new AssistantTokenRepository(http));

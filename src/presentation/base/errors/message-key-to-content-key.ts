@@ -86,6 +86,11 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.shoppingListChanged]: 'shoppingListChanged',
   [ErrorMessageKey.shoppingItemNotFound]: 'shoppingItemGone',
 
+  [ErrorMessageKey.mealPlanEntryNotFound]: 'mealPlanEntryGone',
+  [ErrorMessageKey.mealPlanRangeInvalid]: 'mealPlanRangeInvalid',
+  [ErrorMessageKey.mealPlanEntryInvalid]: 'mealPlanEntryInvalid',
+  [ErrorMessageKey.mealPlanDayFull]: 'mealPlanDayFull',
+
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',
   [ErrorMessageKey.codeExpired]: 'codeExpired',

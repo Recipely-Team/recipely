@@ -25,6 +25,7 @@ export const TOKENS = {
   LikeRepository: Symbol.for('LikeRepository'),
   NotificationRepository: Symbol.for('NotificationRepository'),
   ShoppingListRepository: Symbol.for('ShoppingListRepository'),
+  MealPlanRepository: Symbol.for('MealPlanRepository'),
   UserProfileRepository: Symbol.for('UserProfileRepository'),
   FeedbackRepository: Symbol.for('FeedbackRepository'),
   FeatureFlagResolver: Symbol.for('FeatureFlagResolver'),

@@ -120,6 +120,15 @@ export const ErrorMessageKey = {
   shoppingListChanged: 'errors.conflict.shopping_list_changed',
   shoppingRateLimited: 'errors.too_many_requests.shopping_list',
 
+  // Meal plan (backend #392)
+  /** The planned meal is gone — removed on another device. */
+  mealPlanEntryNotFound: 'errors.not_found.meal_plan_entry',
+  /** A range longer than 14 days, reversed, or a copy onto the same week. */
+  mealPlanRangeInvalid: 'errors.validation.meal_plan_range_invalid',
+  mealPlanEntryInvalid: 'errors.validation.meal_plan_entry_invalid',
+  /** The day already holds 12 planned meals. */
+  mealPlanDayFull: 'errors.conflict.meal_plan_day_full',
+
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',
   codeInvalid: 'errors.validation.code_invalid',

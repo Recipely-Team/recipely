@@ -17,6 +17,9 @@
 jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
   AddToDiaryButton: () => null,
 }));
+jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-plan-button', () => ({
+  AddToPlanButton: () => null,
+}));
 jest.mock('@presentation/app/recipes/[recipeId]/items/shopping/add-to-shopping-button', () => ({
   AddToShoppingButton: () => null,
 }));

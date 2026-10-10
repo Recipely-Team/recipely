@@ -6,4 +6,5 @@ import type { FeatureFlags } from '@application/config/feature-flags';
  */
 export const FeatureFlagName = {
   InstagramAutomations: 'instagramAutomations',
+  MealPlanner: 'mealPlanner',
 } as const satisfies Record<string, keyof typeof FeatureFlags>;

@@ -44,6 +44,8 @@ export const opacities = {
   disabledStrong: 0.45 as number,
   /** Not disabled but not yet reached — an unvisited step, an inactive dot. */
   inactive: 0.4 as number,
+  /** Done and set aside, still readable — an eaten meal's photo. */
+  done: 0.7 as number,
 
   // ── Secondary copy in the body colour ──────────────────────────────────────
   secondaryInk: 0.78 as number,
