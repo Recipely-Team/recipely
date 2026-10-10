@@ -8,6 +8,11 @@ import { CharConstants, RegexConstants, ValueConstants } from '@core/constants';
  * `/`, is not protocol-relative (`//`), and is not the login route itself
  * (`/login` or `/login?...`, which would loop). Falls back to `/recipes` for
  * any unsafe or absent value.
+ *
+ * @remarks
+ * - **Every way into the app honours it**: login, and the register →
+ *   verify-code path a guest takes from "Sign up" on the login screen, which
+ *   used to drop it and land on the feed instead of the recipe they wanted.
  */
 export const resolveRedirect = (redirect: string | string[] | undefined): string => {
   if (

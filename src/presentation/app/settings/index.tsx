@@ -11,6 +11,8 @@ import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
 import { SectionHeader } from '@presentation/base/widgets/text/section-header';
 import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
+import { enterApp } from '@presentation/navigation/enter-app';
+import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { RoutePaths } from '@presentation/base/constants';
 import { SettingsHeader } from '@presentation/app/settings/body/settings-header';
 import { SettingsAppearanceSection } from '@presentation/app/settings/body/settings-appearance-section';
@@ -41,7 +43,9 @@ export const SettingsScreen = (): React.JSX.Element => {
   const handleSignOut = async () => {
     setSignOutVisible(false);
     await signOut();
-    router.replace(RoutePaths.login);
+    // Guest-first: back to the feed, not a login wall.
+    enterApp(router, RoutePaths.recipes);
+    showSuccessToast(t().settings.signedOut);
   };
 
   useAssistantSettingsActions({

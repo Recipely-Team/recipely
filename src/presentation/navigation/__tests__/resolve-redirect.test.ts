@@ -16,7 +16,7 @@
 // Heavy expo-router / RN peer imports are mocked so this file runs as a plain
 // unit test without a native runtime. Only the resolveRedirect symbol is under
 // test — nothing here exercises any React component.
-import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 
 jest.mock('expo-router', () => ({
   useLocalSearchParams: jest.fn(() => ({})),

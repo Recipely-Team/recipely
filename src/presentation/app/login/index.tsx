@@ -13,7 +13,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, layoutSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { resolveRedirect } from '@presentation/app/login/model/resolve-redirect';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { ValueConstants } from '@core/constants';
 
 const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;

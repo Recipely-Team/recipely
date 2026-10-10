@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
+import { AuthAutofill } from '@presentation/base/widgets/inputs/auth-autofill';
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -36,6 +37,7 @@ export const ResetPasswordFormView = ({
     <>
       <AuthTextField
         iconName="lock-closed-outline"
+        autofill={AuthAutofill.NewPassword}
         placeholder={t().resetPassword.newPasswordPlaceholder}
         value={newPassword}
         onChangeText={onChangeNew}
@@ -48,6 +50,7 @@ export const ResetPasswordFormView = ({
       <AuthTextField
         ref={confirmRef}
         iconName="lock-closed-outline"
+        autofill={AuthAutofill.NewPassword}
         placeholder={t().resetPassword.confirmPlaceholder}
         value={confirmPassword}
         onChangeText={onChangeConfirm}

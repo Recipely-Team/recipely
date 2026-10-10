@@ -5,7 +5,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { VerifyHero } from '@presentation/app/verify-code/body/verify-hero';
@@ -28,7 +29,7 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   const split = useTwoPaneSplit();
   const isLandscapeShell = split.isSplit;
 
-  const params = useLocalSearchParams<{ email?: string; expiresAt?: string }>();
+  const params = useLocalSearchParams<{ email?: string; expiresAt?: string; redirect?: string }>();
   const email = isString(params.email) ? params.email : CharConstants.empty;
   const initialExpiresAt = isString(params.expiresAt) ? params.expiresAt : CharConstants.empty;
 
@@ -38,9 +39,9 @@ export const VerifyCodeScreen = (): React.JSX.Element => {
   useEffect(() => {
     if (state.status === StoreStatus.Authenticated) {
     // The sign-up detour is spent: replace the stack.
-      enterApp(router, RoutePaths.recipes);
+      enterApp(router, resolveRedirect(params.redirect) as Href);
     }
-  }, [state.status, router]);
+  }, [state.status, router, params.redirect]);
 
   if (isLandscapeShell) {
     return (

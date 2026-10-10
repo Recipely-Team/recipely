@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { AuthAutofill } from '@presentation/base/widgets/inputs/auth-autofill';
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -25,6 +26,7 @@ export const ForgotPasswordInputView = ({
     <>
       <AuthTextField
         iconName="mail-outline"
+        autofill={AuthAutofill.Email}
         placeholder={t().forgotPassword.emailPlaceholder}
         value={email}
         onChangeText={onChangeEmail}
