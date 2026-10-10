@@ -7,6 +7,7 @@ import { Email } from '@domain/common/email';
 import { UserEntity } from '@domain/auth/user-entity';
 import { authStoreOf } from '@presentation/base/test-support/auth-store-of';
 import { useUnreadNotificationsSync } from '@presentation/base/hooks/sync/use-unread-notifications-sync';
+import { ok } from '@core/result/result-helpers';
 
 /**
  * **The unread-badge poll kept firing in the background.** Its 30 s interval ignored the app
@@ -37,7 +38,7 @@ const mount = (): { refreshUnread: jest.Mock; renderer: ReactTestRenderer } => {
     load: jest.fn(async () => undefined),
     loadMore: jest.fn(async () => undefined),
     refreshUnread,
-    markAllRead: jest.fn(async () => undefined),
+    markAllRead: jest.fn(async () => ok(undefined)),
     markOneRead: jest.fn(async () => undefined),
     clear: jest.fn(),
   }));

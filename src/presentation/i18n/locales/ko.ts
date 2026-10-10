@@ -2,6 +2,7 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const ko: TranslationsType = {
   common: {
+    undo: '실행 취소',
     showPassword: '비밀번호 보기',
     hidePassword: '비밀번호 숨기기',
     openSettings: '설정 열기',
@@ -1291,6 +1292,7 @@ export const ko: TranslationsType = {
     moreCalories: '50 kcal 늘리기',
   },
   shopping: {
+    removedItem: '{x} 삭제됨',
     title: "장보기 목록",
     entry: "장보기 목록",
     entrySub: "사야 할 모든 것",
@@ -1444,6 +1446,8 @@ export const ko: TranslationsType = {
     ingredients: '개 재료',
   },
   notifications: {
+    caughtUp: '모두 확인했어요',
+    showAll: '모두 보기',
     title: '활동',
     markRead: '모두 읽음 처리',
     all: '전체',

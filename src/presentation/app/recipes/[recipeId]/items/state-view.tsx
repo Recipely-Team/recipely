@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { DetailSkeleton } from '@presentation/app/recipes/[recipeId]/items/detail-skeleton';
 import type Ionicons from '@expo/vector-icons/Ionicons';
 import { FailureCode, UnknownFailure } from '@core/failure';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
@@ -11,7 +11,6 @@ import {
 import { t } from '@presentation/i18n';
 import type { Failure } from '@presentation/base/types';
 import { StateViewStatus } from '@presentation/app/recipes/[recipeId]/model/state-view-status';
-import { ValueConstants } from '@core/constants';
 import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 
 export interface StateViewProps {
@@ -63,9 +62,7 @@ export const StateView = ({
   switch (status) {
     case StateViewStatus.Loading:
       return (
-        <View style={styles.center}>
-          <ActivityIndicator />
-        </View>
+        <DetailSkeleton />
       );
     case StateViewStatus.Error: {
       const f = failure ?? new UnknownFailure();
@@ -114,10 +111,3 @@ export const StateView = ({
   }
 };
 
-const styles = StyleSheet.create({
-  center: {
-    flex: ValueConstants.one,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

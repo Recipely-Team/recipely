@@ -4,6 +4,7 @@ import type { Result } from '@core/result/result';
 import { ValidationFailure } from '@core/failure';
 import { DiagnosticMessage } from '@core/failure/diagnostic-message';
 import { isBlank } from '@core/guards/type-guards';
+import type { ShoppingItemDraft } from '@domain/shopping/items/shopping-item-draft';
 import type { ShoppingItemEntityProps } from '@domain/shopping/items/shopping-item-entity-props';
 
 /**
@@ -25,6 +26,11 @@ export class ShoppingItemEntity extends BaseEntity<ShoppingItemEntityProps> {
     if (isBlank(props.id)) return fail(new ValidationFailure(DiagnosticMessage.shopping.idRequired, 'id'));
     if (isBlank(props.label)) return fail(new ValidationFailure(DiagnosticMessage.shopping.labelRequired, 'label'));
     return ok(new ShoppingItemEntity({ ...props, label: props.label.trim() }));
+  }
+
+  /** This line as a new one — what an Undo after removing it sends back (unticked). */
+  toDraft(): ShoppingItemDraft {
+    return { label: this.props.label, quantity: this.props.quantity, unit: this.props.unit, recipeId: this.props.recipeId, recipeName: this.props.recipeName };
   }
 
   get label(): string {

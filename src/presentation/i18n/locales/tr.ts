@@ -2,6 +2,7 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const tr: TranslationsType = {
   common: {
+    undo: 'Geri al',
     showPassword: 'Şifreyi göster',
     hidePassword: 'Şifreyi gizle',
     openSettings: 'Ayarları aç',
@@ -1299,6 +1300,7 @@ export const tr: TranslationsType = {
     moreCalories: '50 kcal artır',
   },
   shopping: {
+    removedItem: '{x} kaldırıldı',
     title: "Alışveriş listesi",
     entry: "Alışveriş listesi",
     entrySub: "Almanız gereken her şey",
@@ -1452,6 +1454,8 @@ export const tr: TranslationsType = {
     ingredients: 'malzeme',
   },
   notifications: {
+    caughtUp: 'Hepsini okudun',
+    showAll: 'Tümünü göster',
     title: 'Aktivite',
     markRead: "Tümünü okundu say",
     all: 'Tümü',

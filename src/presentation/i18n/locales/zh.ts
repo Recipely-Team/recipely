@@ -1,5 +1,6 @@
 export const zh = {
   common: {
+    undo: '撤销',
     showPassword: '显示密码',
     hidePassword: '隐藏密码',
     openSettings: '打开设置',
@@ -1299,6 +1300,7 @@ export const zh = {
     moreCalories: '增加 50 千卡',
   },
   shopping: {
+    removedItem: '已移除{x}',
     title: "购物清单",
     entry: "购物清单",
     entrySub: "你需要购买的一切",
@@ -1452,6 +1454,8 @@ export const zh = {
     ingredients: '种食材',
   },
   notifications: {
+    caughtUp: '全部已读',
+    showAll: '显示全部',
     title: '动态',
     markRead: '全部标为已读',
     all: '全部',

@@ -1,8 +1,10 @@
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
+import { type Href, useRouter } from 'expo-router';
+import { RoutePaths } from '@presentation/base/constants';
 import { StoreStatus } from '@application/store/store-status';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, fontWeights, lineHeights, lineHeightFor, letterSpacings, borderWidths, opacities } from '@presentation/base/theme';
 import { getLocale, t } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { ProfileStatsState } from '@presentation/app/profile/model/profile-stats-state';
@@ -18,9 +20,14 @@ export interface ProfileStatsProps {
   stats: ProfileStatsState;
 }
 
-/** Renders the recipes / likes / views / saved row with loading + error branches. */
+/**
+ * Renders the recipes / likes / views / saved row with loading + error branches.
+ * "Recipes" and "Saved" open those My Recipes tabs — they read as links, so
+ * they are; likes and views have nowhere to go and stay plain.
+ */
 export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
+  const router = useRouter();
 
   if (stats.status === StoreStatus.Loading) {
     return (
@@ -52,11 +59,12 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
   }
 
   if (stats.status === StoreStatus.Loaded) {
+    const openTab = (tab: string) => (): void => router.push(RoutePaths.myRecipesTab(tab) as Href);
     const cells = [
-      { value: String(stats.recipeCount), label: t().profile.recipes },
-      { value: formatCompactCount(stats.totalLikes, getLocale()), label: t().profile.likes },
-      { value: formatCompactCount(stats.totalViews, getLocale()), label: t().profile.views },
-      { value: String(stats.savedCount), label: t().profile.saved },
+      { value: String(stats.recipeCount), label: t().profile.recipes, onPress: openTab(RoutePaths.myRecipesCreatedTab) },
+      { value: formatCompactCount(stats.totalLikes, getLocale()), label: t().profile.likes, onPress: null },
+      { value: formatCompactCount(stats.totalViews, getLocale()), label: t().profile.views, onPress: null },
+      { value: String(stats.savedCount), label: t().profile.saved, onPress: openTab(RoutePaths.myRecipesSavedTab) },
     ];
 
     return (
@@ -67,20 +75,25 @@ export const ProfileStats = ({ stats }: ProfileStatsProps): React.JSX.Element | 
         ]}
       >
         {cells.map((stat, idx, arr) => (
-          <View
+          <Pressable
             key={stat.label}
-            style={[
+            onPress={stat.onPress ?? undefined}
+            disabled={stat.onPress === null}
+            accessibilityRole={stat.onPress === null ? 'text' : 'link'}
+            accessibilityLabel={`${stat.value} ${stat.label}`}
+            style={({ pressed }) => [
               styles.statCell,
               idx < arr.length - ValueConstants.one
                 ? [styles.statDivider, { borderRightColor: colors.border }]
                 : null,
+              { opacity: pressed ? opacities.pressedSubtle : opacities.full },
             ]}
           >
             <ThemedText style={styles.statValue}>{stat.value}</ThemedText>
-            <ThemedText variant="caption" muted style={styles.statLabel}>
+            <ThemedText variant="caption" muted style={[styles.statLabel, stat.onPress === null ? null : { color: colors.primary }]}>
               {upperCase(stat.label)}
             </ThemedText>
-          </View>
+          </Pressable>
         ))}
       </View>
     );

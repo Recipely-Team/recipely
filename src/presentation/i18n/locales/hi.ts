@@ -2,6 +2,7 @@ import type { TranslationsType } from '@presentation/i18n/translations';
 
 export const hi: TranslationsType = {
   common: {
+    undo: 'पूर्ववत करें',
     showPassword: 'पासवर्ड दिखाएँ',
     hidePassword: 'पासवर्ड छिपाएँ',
     openSettings: 'सेटिंग्स खोलें',
@@ -1291,6 +1292,7 @@ export const hi: TranslationsType = {
     moreCalories: '50 kcal ज़्यादा',
   },
   shopping: {
+    removedItem: '{x} हटाया गया',
     title: "खरीदारी सूची",
     entry: "खरीदारी सूची",
     entrySub: "जो कुछ भी आपको खरीदना है",
@@ -1444,6 +1446,8 @@ export const hi: TranslationsType = {
     ingredients: 'सामग्री',
   },
   notifications: {
+    caughtUp: 'आप सब पढ़ चुके हैं',
+    showAll: 'सभी दिखाएँ',
     title: 'गतिविधि',
     markRead: 'सभी को पढ़ा हुआ मानें',
     all: 'सभी',

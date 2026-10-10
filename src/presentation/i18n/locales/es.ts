@@ -1,5 +1,6 @@
 export const es = {
   common: {
+    undo: 'Deshacer',
     showPassword: 'Mostrar contraseña',
     hidePassword: 'Ocultar contraseña',
     openSettings: 'Abrir Ajustes',
@@ -1295,6 +1296,7 @@ export const es = {
     moreCalories: '50 kcal más',
   },
   shopping: {
+    removedItem: '{x} eliminado',
     title: "Lista de la compra",
     entry: "Lista de la compra",
     entrySub: "Todo lo que necesitas comprar",
@@ -1448,6 +1450,8 @@ export const es = {
     ingredients: 'ingredientes',
   },
   notifications: {
+    caughtUp: 'Estás al día',
+    showAll: 'Mostrar todo',
     title: 'Actividad',
     markRead: 'Marcar todo como leído',
     all: 'Todo',

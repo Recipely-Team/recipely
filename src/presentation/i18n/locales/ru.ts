@@ -1,5 +1,6 @@
 export const ru = {
   common: {
+    undo: 'Отменить',
     showPassword: 'Показать пароль',
     hidePassword: 'Скрыть пароль',
     openSettings: 'Открыть настройки',
@@ -1295,6 +1296,7 @@ export const ru = {
     moreCalories: 'На 50 ккал больше',
   },
   shopping: {
+    removedItem: '{x} удалено',
     title: "Список покупок",
     entry: "Список покупок",
     entrySub: "Всё, что нужно купить",
@@ -1448,6 +1450,8 @@ export const ru = {
     ingredients: 'ингредиентов',
   },
   notifications: {
+    caughtUp: 'Вы всё прочитали',
+    showAll: 'Показать все',
     title: 'Активность',
     markRead: "Прочитать все",
     all: 'Все',

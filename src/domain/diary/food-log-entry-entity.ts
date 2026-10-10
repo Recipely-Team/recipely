@@ -10,6 +10,7 @@ import type { MealSlotType } from '@domain/diary/meal-slot';
 import type { Nutrients } from '@domain/diary/nutrition/nutrients';
 import { LoggableFood } from '@domain/diary/entry/loggable-food';
 import type { FoodLogEntryEntityProps } from '@domain/diary/food-log-entry-entity-props';
+import type { NewFoodLogEntry } from '@domain/diary/entry/new-food-log-entry';
 import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-changes';
 import type { FoodLogProduct } from '@domain/diary/entry/food-log-product';
 import { LoggableProduct } from '@domain/diary/foods/loggable-product';
@@ -80,6 +81,12 @@ export class FoodLogEntryEntity extends BaseEntity<FoodLogEntryEntityProps> {
 
   get isQuickAdd(): boolean {
     return this.props.recipeId === null && this.props.product === null;
+  }
+
+  /** The same food logged afresh — what an Undo after removing it sends back. */
+  toNew(): NewFoodLogEntry {
+    const { date, meal, name, servings, nutrients, recipeId, product } = this.props;
+    return { date, meal, name, servings, nutrients, recipeId, product: product ?? null };
   }
 
   /**

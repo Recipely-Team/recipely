@@ -5,6 +5,8 @@ import { StoreStatus } from '@application/store/store-status';
 import { loadedItems } from '@application/store/paging/loaded-items';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
+import { toastStore } from '@presentation/base/feedback/toast-store';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { showErrorToast, showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { ShoppingConfirm, type ShoppingConfirmType } from '@presentation/app/shopping-list/model/shopping-confirm';
 import { shoppingRows } from '@presentation/app/shopping-list/model/shopping-rows';
@@ -62,7 +64,16 @@ export const useShoppingList = (): UseShoppingListResult => {
   const onRemove = useCallback(
     (item: ShoppingItemEntity): void => {
       void shoppingListStore.getState().remove(item).then((result) => {
-        if (!result.ok) showErrorToast(result.failure);
+        if (!result.ok) {
+      showErrorToast(result.failure);
+      return;
+    }
+        toastStore.getState().show({
+          severity: SeverityType.Neutral,
+          message: t().shopping.removedItem.replace('{x}', item.label),
+          actionLabel: t().common.undo,
+          onAction: () => void shoppingListStore.getState().addDrafts([item.toDraft()]).then((back) => (back.ok ? undefined : showErrorToast(back.failure))),
+        });
       });
     },
     [shoppingListStore],
