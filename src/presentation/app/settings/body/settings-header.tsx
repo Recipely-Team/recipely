@@ -6,6 +6,9 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes } from 
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
+
+/** Grows the 36 pt round button to the 44 pt minimum touch target. */
+const TARGET_SLOP = (controlSizes.touchTarget - controlSizes.iconBtn) / ValueConstants.two;
 export interface SettingsHeaderProps {
   onBack: () => void;
 }
@@ -17,6 +20,7 @@ export const SettingsHeader = ({ onBack }: SettingsHeaderProps): React.JSX.Eleme
     <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
       <Pressable
         onPress={onBack}
+        hitSlop={TARGET_SLOP}
         style={[styles.backBtn, { backgroundColor: colors.surface }]}
         accessibilityRole="button"
         accessibilityLabel={t().navigation.settings}

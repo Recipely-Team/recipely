@@ -23,6 +23,8 @@ import { isBlank } from '@core/guards/type-guards';
  * failure through the `errorDialog` the screen renders as a dialog.
  *
  * @remarks
+ * - **Back asks before dropping an edit.** With unsaved changes it opens a
+ *   Discard / Keep editing sheet; it used to throw the edited bio away silently.
  * - **Save reads the fields through a ref, not this render.** The assistant
  *   can write a field and say "save" in the same turn; both tool calls run
  *   before React re-renders, so the render's `displayName` is the one from
@@ -61,6 +63,7 @@ export const useEditProfile = (): UseEditProfileResult => {
   };
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [discardVisible, setDiscardVisible] = useState(false);
 
   const canSave = !isBlank(displayName);
   const dirty = displayName !== initialDisplayName || bio !== initialBio;
@@ -103,7 +106,13 @@ export const useEditProfile = (): UseEditProfileResult => {
     isDirty: dirty,
     isSaving,
     onSave,
-    onBack: goBack,
+    onBack: () => (dirty ? setDiscardVisible(true) : goBack()),
+    discardVisible,
+    onConfirmDiscard: () => {
+      setDiscardVisible(false);
+      goBack();
+    },
+    onKeepEditing: () => setDiscardVisible(false),
     errorDialog: saveError ?? uploadError,
     onCloseErrorDialog: () => {
       setSaveError(null);

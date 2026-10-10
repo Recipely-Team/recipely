@@ -2820,3 +2820,30 @@ a login form with no tab bar and no reason. **Fix:** `useGuestRouteGate` keeps t
 are and opens the sign-in sheet with what the page holds; Sign in returns them to it. Guest browsing
 is unchanged (App Review 5.1.1(v)). *Guard:* `root-tab-bar.test.tsx`, the guest case in
 `notifications-bell-button.test.tsx`. **A wall without a sign reads as a broken button.**
+
+## A disabled button that never said why (2026-10-10)
+
+**Symptom:** register's Sign up stayed grey until every rule passed, and the message naming the
+failing rule appeared only from the keyboard's Return key — a forgotten terms box read as a dead
+button. **Fix:** the button stays pressable (loading still blocks a double submit) and names the
+first failing rule. *Guard:* `register-form.submit.test.tsx`. **Disable a button only while it is
+busy; otherwise let the press explain.**
+
+## The way back dropped between two forms (2026-10-10)
+
+**Symptom:** a guest who tapped Save → Sign in → Sign up → verified landed on the feed, not the
+recipe. Login honoured `redirect`; register and verify-code never received it. **Fix:** the
+redirect rides login → register → verify-code and every exit resolves it (`resolveRedirect`, now in
+`navigation/`). *Guard:* `register-form.submit.test.tsx`. **A parameter a flow promises must cross
+every screen of the flow.**
+
+## Work lost or messages missed on the way out (2026-10-10)
+
+**Symptom:** Edit Profile's back dropped an edited bio without asking; action toasts ("View",
+"Retry") vanished after 4 s and were never spoken by VoiceOver (the live region is Android-only);
+sign-out landed on a login form with no tab bar in a guest-first app. **Fix:** a Discard / Keep
+editing sheet when dirty; action toasts stay ≥ 8 s (twice that under a screen reader) and every
+toast and form banner is announced on iOS (`useAnnounce`); sign-out goes to the feed with a
+"Signed out" toast. *Guard:* `use-edit-profile.discard.test.tsx`, `toast.timing.test.tsx`, the
+sign-out test in `profile-settings-sections.sign-out.test.tsx`. **Leaving should never cost the
+user something they did not choose to give up.**

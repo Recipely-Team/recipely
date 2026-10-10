@@ -4,7 +4,8 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { useRouter } from 'expo-router';
+import { type Href, useLocalSearchParams, useRouter } from 'expo-router';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RegisterHero } from '@presentation/app/register/body/register-hero';
@@ -22,6 +23,7 @@ const AUTH_CARD_MAX_WIDTH = layoutSizes.authCardMaxWidth;
 
 export const RegisterScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
   const split = useTwoPaneSplit();
@@ -33,9 +35,9 @@ export const RegisterScreen = (): React.JSX.Element => {
   useEffect(() => {
     if (state.status === StoreStatus.Authenticated) {
     // One-way: the form and login must not stay behind a back gesture.
-      enterApp(router, RoutePaths.recipes);
+      enterApp(router, resolveRedirect(redirect) as Href);
     }
-  }, [state.status, router]);
+  }, [state.status, router, redirect]);
 
   if (isLandscapeShell) {
     return (

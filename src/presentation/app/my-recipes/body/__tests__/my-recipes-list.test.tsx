@@ -106,6 +106,8 @@ const baseProps = (): MyRecipesListProps => ({
   loadFailure: null,
   isLoadingMoreDrafts: false,
   draftsMoreFailure: null,
+  onBrowse: jest.fn(),
+  onCreate: jest.fn(),
 });
 
 const render = (overrides: Partial<MyRecipesListProps>): ReactTestInstance => {

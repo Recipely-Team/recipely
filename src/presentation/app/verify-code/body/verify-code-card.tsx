@@ -25,6 +25,13 @@ export interface VerifyCodeCardProps {
  * OTP entry card: code input, verify button, expiry countdown, and resend.
  * Owns the code/countdown state and the verify/resend calls; resend is locked
  * until the current code expires. The parent chooses the surrounding layout.
+ *
+ * @remarks
+ * - **The lock is the server's, not ours.** `POST /auth/register/resend` emails
+ *   nothing while the code (3 min) is still valid and answers with the same
+ *   expiry, so a shorter client cooldown would say "a new code is on its way"
+ *   when none was sent. The wait is covered instead by a "check spam" hint and
+ *   the "Use a different email" link.
  */
 export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps): React.JSX.Element => {
   const goBack = useGoBackOrHome(RoutePaths.login);
@@ -167,6 +174,10 @@ export const VerifyCodeCard = ({ email, initialExpiresAt }: VerifyCodeCardProps)
           </ThemedText>
         </Pressable>
       </View>
+
+      <ThemedText variant="caption" muted style={styles.notice}>
+        {t().verify.checkSpam}
+      </ThemedText>
 
       <Pressable
         onPress={goBack}

@@ -1,9 +1,10 @@
 import { useCallback, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { AuthAutofill } from '@presentation/base/widgets/inputs/auth-autofill';
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
@@ -12,11 +13,12 @@ import type { Failure } from '@presentation/base/types';
 import { FailureCode } from '@core/failure';
 import { SocialAuthSection } from '@presentation/app/login/body/social-auth-section';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, fontWeights } from '@presentation/base/theme';
+import { spacing, fontWeights, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { CharConstants } from '@core/constants';
 import { RoutePaths } from '@presentation/base/constants';
 import { enterApp } from '@presentation/navigation/enter-app';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { isBlank } from '@core/guards/type-guards';
 
 /**
@@ -26,6 +28,7 @@ import { isBlank } from '@core/guards/type-guards';
  */
 export const LoginForm = (): React.JSX.Element => {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const colors = useTheme().colors;
 
   const { authStore } = useStores();
@@ -75,6 +78,7 @@ export const LoginForm = (): React.JSX.Element => {
     <>
       <AuthTextField
         iconName="mail-outline"
+        autofill={AuthAutofill.Email}
         placeholder={t().login.emailPlaceholder}
         value={email}
         onChangeText={setEmail}
@@ -86,6 +90,7 @@ export const LoginForm = (): React.JSX.Element => {
       <AuthTextField
         ref={passwordRef}
         iconName="lock-closed-outline"
+        autofill={AuthAutofill.Password}
         placeholder={t().login.passwordPlaceholder}
         value={password}
         onChangeText={setPassword}
@@ -125,7 +130,7 @@ export const LoginForm = (): React.JSX.Element => {
         disabled={isLoading}
         onGoogle={() => { void runSocial(signInWithGoogle); }}
         onApple={() => { void runSocial(signInWithApple); }}
-        onSignUp={() => router.push(RoutePaths.register)}
+        onSignUp={() => router.push({ pathname: RoutePaths.register, params: { redirect: resolveRedirect(redirect) } })}
         onGuest={() => enterApp(router, RoutePaths.recipes)}
       />
     </>
@@ -142,7 +147,9 @@ const styles = StyleSheet.create({
   forgotRow: {
     alignSelf: 'flex-end',
     marginTop: spacing.xs,
-    paddingVertical: spacing.xs,
+    minHeight: controlSizes.touchTarget,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xs,
   },
   forgotLabel: {
     fontWeight: fontWeights.semibold,

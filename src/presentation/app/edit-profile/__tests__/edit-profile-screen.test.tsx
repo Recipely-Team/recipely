@@ -31,6 +31,9 @@ const mockVm: UseEditProfileResult = {
   isSaving: false,
   onSave: jest.fn(async () => EditProfileSaveOutcome.Unchanged),
   onBack: jest.fn(),
+  discardVisible: false,
+  onConfirmDiscard: jest.fn(),
+  onKeepEditing: jest.fn(),
   errorDialog: null,
   onCloseErrorDialog: jest.fn(),
 };

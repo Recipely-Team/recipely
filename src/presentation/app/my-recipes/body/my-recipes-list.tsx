@@ -2,16 +2,14 @@ import { useCallback } from 'react';
 import { FlatList, RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import { ListConstants } from '@presentation/base/constants';
 import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import { ThemedText } from '@presentation/base/widgets/text/themed-text';
+import { EmptyTab } from '@presentation/app/my-recipes/items/empty-tab';
 import { DraftCard } from '@presentation/app/my-recipes/items/draft-card';
 import { MyRecipesSkeleton } from '@presentation/app/my-recipes/body/my-recipes-skeleton';
 import { MyRecipeCell } from '@presentation/app/my-recipes/items/my-recipe-cell';
 import { TabType } from '@presentation/app/my-recipes/model/tab-type';
-import { TabIcons } from '@presentation/app/my-recipes/model/tab-icons';
 import { GRID_GAP } from '@presentation/app/my-recipes/model/grid-metrics';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, iconSizes } from '@presentation/base/theme';
+import { spacing } from '@presentation/base/theme';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
   failureContent,
@@ -35,13 +33,6 @@ const idKey = (row: { id: string }): string => row.id;
  * the active locale, so a module-level lookup would freeze the copy at the
  * language the app started in.
  */
-const EMPTY_COPY: Record<TabType, () => string> = {
-  [TabType.Saved]: () => t().myRecipes.emptySaved,
-  [TabType.Liked]: () => t().myRecipes.emptyLiked,
-  [TabType.Created]: () => t().myRecipes.emptyCreated,
-  [TabType.Drafts]: () => t().drafts.empty,
-};
-
 export interface MyRecipesListProps {
   tab: TabType;
   drafts: readonly DraftItem[];
@@ -66,6 +57,10 @@ export interface MyRecipesListProps {
   /** Why the last next page of drafts failed, or null; shows a "Try again" row under the list. */
   draftsMoreFailure: Failure | null;
   isRefreshing: boolean;
+  /** The empty Saved / Liked tabs' way to the feed. */
+  onBrowse: () => void;
+  /** The empty Created / Drafts tabs' way to the create screen. */
+  onCreate: () => void;
   onRefresh: () => void;
   /**
    * Spread onto whichever branch renders, so "aşağı kaydır" moves the list the
@@ -107,6 +102,8 @@ export const MyRecipesList = ({
   isLoadingMoreDrafts,
   draftsMoreFailure,
   isRefreshing,
+  onBrowse,
+  onCreate,
   onRefresh,
   scrollable,
 }: MyRecipesListProps): React.JSX.Element => {
@@ -169,12 +166,7 @@ export const MyRecipesList = ({
           contentContainerStyle={styles.emptyContent}
           refreshControl={refreshControl}
         >
-          <View style={styles.empty}>
-            <MaterialCommunityIcons name={TabIcons[TabType.Drafts]} size={iconSizes.jumbo} color={colors.textMuted} />
-            <ThemedText variant="body" muted style={styles.emptyText}>
-              {EMPTY_COPY[TabType.Drafts]()}
-            </ThemedText>
-          </View>
+          <EmptyTab tab={TabType.Drafts} onBrowse={onBrowse} onCreate={onCreate} />
         </ScrollView>
       );
     }
@@ -208,12 +200,7 @@ export const MyRecipesList = ({
         contentContainerStyle={styles.emptyContent}
         refreshControl={refreshControl}
       >
-        <View style={styles.empty}>
-          <MaterialCommunityIcons name={TabIcons[tab]} size={iconSizes.jumbo} color={colors.textMuted} />
-          <ThemedText variant="body" muted style={styles.emptyText}>
-            {EMPTY_COPY[tab]()}
-          </ThemedText>
-        </View>
+        <EmptyTab tab={tab} onBrowse={onBrowse} onCreate={onCreate} />
       </ScrollView>
     );
   }
@@ -261,14 +248,5 @@ const styles = StyleSheet.create({
   // flexGrow keeps the empty state pullable.
   emptyContent: {
     flexGrow: ValueConstants.one,
-  },
-  empty: {
-    alignItems: 'center',
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.xxxl,
-    gap: spacing.md,
-  },
-  emptyText: {
-    textAlign: 'center',
   },
 });

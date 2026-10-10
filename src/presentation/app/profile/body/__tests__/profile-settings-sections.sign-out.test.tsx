@@ -16,7 +16,7 @@ import { t } from '@presentation/i18n';
 
 const mockReplace = jest.fn();
 jest.mock('expo-router', () => ({
-  useRouter: jest.fn(() => ({ push: jest.fn(), replace: mockReplace })),
+  useRouter: jest.fn(() => ({ push: jest.fn(), replace: mockReplace, canDismiss: () => false, dismissAll: jest.fn() })),
 }));
 
 // The support sheet this section also renders owns an unrelated store; stub it
@@ -108,5 +108,7 @@ describe('ProfileSettingsSections — sign out', () => {
     });
 
     expect(signOut).toHaveBeenCalledTimes(1);
+    // Guest-first: signing out lands on the feed, not on a login form with no tab bar.
+    expect(mockReplace).toHaveBeenCalledWith('/recipes');
   });
 });

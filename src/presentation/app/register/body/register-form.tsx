@@ -1,12 +1,14 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
 import { Pressable, StyleSheet, View, type TextInput } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { resolveRedirect } from '@presentation/navigation/resolve-redirect';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
 import { authFormMessage } from '@presentation/base/errors/auth-form-message';
+import { AuthAutofill } from '@presentation/base/widgets/inputs/auth-autofill';
 import { AuthTextField } from '@presentation/base/widgets/inputs/auth-text-field';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { PasswordStrengthMeter } from '@presentation/app/register/items/password-strength-meter';
@@ -25,9 +27,17 @@ import { isBlank } from '@core/guards/type-guards';
  * Register form fields (name / email / password / confirm / terms) with inline
  * validation, password-strength meter, and submit. Owns all form state and the
  * sign-up call; the parent screen only chooses the surrounding layout.
+ *
+ * @remarks
+ * - **Sign up is never a dead button.** It used to stay greyed until every rule
+ *   passed, and the messages saying which rule failed could only appear from the
+ *   keyboard's Return key — someone who missed the terms box saw a button that
+ *   did nothing. It stays pressable (the loading state still blocks a double
+ *   submit) and names the first rule that fails.
  */
 export const RegisterForm = (): React.JSX.Element => {
   const router = useRouter();
+  const { redirect } = useLocalSearchParams<{ redirect?: string }>();
   const goBack = useGoBackOrHome(RoutePaths.login);
   const colors = useTheme().colors;
 
@@ -49,13 +59,6 @@ export const RegisterForm = (): React.JSX.Element => {
   const emailValid = Email.create(email).ok;
   const passwordsMatch = password.length > ValueConstants.zero && password === confirm;
   const strength = useMemo(() => Password.strengthOf(password), [password]);
-
-  const canSubmit =
-    !isBlank(name) &&
-    emailValid &&
-    Password.create(password).ok &&
-    password === confirm &&
-    agree;
 
   const handleRegister = useCallback(async () => {
     if (isBlank(name)) {
@@ -86,12 +89,13 @@ export const RegisterForm = (): React.JSX.Element => {
         params: {
           email: result.value.email,
           expiresAt: result.value.expiresAt,
+          redirect: resolveRedirect(redirect),
         },
       });
     } else {
       setLocalError(authFormMessage(result.failure, { conflict: t().register.emailTaken }));
     }
-  }, [name, email, emailValid, password, confirm, agree, register, router]);
+  }, [name, email, emailValid, password, confirm, agree, register, router, redirect]);
 
   const errorMessage = localError;
 
@@ -99,6 +103,7 @@ export const RegisterForm = (): React.JSX.Element => {
     <>
       <AuthTextField
         iconName="person-outline"
+        autofill={AuthAutofill.Name}
         placeholder={t().register.namePlaceholder}
         value={name}
         onChangeText={setName}
@@ -111,6 +116,7 @@ export const RegisterForm = (): React.JSX.Element => {
       <AuthTextField
         ref={emailRef}
         iconName="mail-outline"
+        autofill={AuthAutofill.Email}
         placeholder={t().register.emailPlaceholder}
         value={email}
         onChangeText={setEmail}
@@ -124,6 +130,7 @@ export const RegisterForm = (): React.JSX.Element => {
       <AuthTextField
         ref={passwordRef}
         iconName="lock-closed-outline"
+        autofill={AuthAutofill.NewPassword}
         placeholder={t().register.passwordPlaceholder}
         value={password}
         onChangeText={setPassword}
@@ -138,6 +145,7 @@ export const RegisterForm = (): React.JSX.Element => {
       <AuthTextField
         ref={confirmRef}
         iconName="lock-closed-outline"
+        autofill={AuthAutofill.NewPassword}
         placeholder={t().register.confirmPlaceholder}
         value={confirm}
         onChangeText={setConfirm}
@@ -161,7 +169,6 @@ export const RegisterForm = (): React.JSX.Element => {
           label={t().register.signUp}
           onPress={() => { void handleRegister(); }}
           loading={isLoading}
-          disabled={!canSubmit}
         />
       </View>
 

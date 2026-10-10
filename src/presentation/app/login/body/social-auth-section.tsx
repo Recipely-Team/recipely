@@ -3,7 +3,7 @@ import { isAndroid } from '@infrastructure/constants/platform';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { SocialSignInButton } from '@presentation/app/login/items/social-sign-in-button';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
-import { spacing, fontWeights, borderWidths, targetSizes } from '@presentation/base/theme';
+import { spacing, fontWeights, borderWidths, targetSizes, controlSizes } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -78,7 +78,7 @@ export const SocialAuthSection = ({
         accessibilityRole="button"
         accessibilityLabel={t().login.continueAsGuest}
       >
-        <ThemedText variant="caption" muted style={styles.guestLink}>
+        <ThemedText variant="body" style={[styles.guestLink, { color: colors.primary }]}>
           {t().login.continueAsGuest}
         </ThemedText>
       </Pressable>
@@ -117,9 +117,11 @@ const styles = StyleSheet.create({
   guestRow: {
     alignSelf: 'center',
     marginTop: spacing.md,
-    paddingVertical: spacing.xs,
+    minHeight: controlSizes.touchTarget,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.lg,
   },
   guestLink: {
-    textDecorationLine: 'underline',
+    fontWeight: fontWeights.semibold,
   },
 });
