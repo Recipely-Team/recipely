@@ -18,6 +18,7 @@ import type { CreatorStatsStoreState } from '@application/instagram/stats/creato
 import type { DmArrivalStoreState } from '@application/instagram/stats/dm-arrival-store-state';
 import type { ShoppingListStoreState } from '@application/shopping/shopping-list-store-state';
 import type { MealPlanStoreState } from '@application/meal-plan/meal-plan-store-state';
+import type { FridgeStoreState } from '@application/fridge/fridge-store-state';
 import type { ListRecentFoodPageUseCase } from '@application/diary/foods/browse/list-recent-food-page-use-case';
 import type { FavoritesStoreState } from '@application/favorites/favorites-store-state';
 import type { ImportJobStoreState } from '@application/recipes/import/import-job-store-state';
@@ -100,6 +101,8 @@ export interface ApplicationStores {
   shoppingListStore: BoundStore<ShoppingListStoreState>;
   /** The weekly meal plan, one state per week, and the add sheet's recipe list. User-scoped. */
   mealPlanStore: BoundStore<MealPlanStoreState>;
+  /** Cook from my fridge: its flag and its two AI calls. Not user-scoped. */
+  fridgeStore: BoundStore<FridgeStoreState>;
   /** The food search without a store, for the assistant's `logFood` / `searchFood`. */
   searchFoods: SearchFoodsUseCase;
   /** Recent foods, product-aware, for the assistant's name matching. */

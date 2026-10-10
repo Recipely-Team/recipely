@@ -15,8 +15,11 @@ import { FeatureAvailability } from '@application/config/feature-availability';
  *   Meta grants Advanced Access (needs a verified business; docs/instagram-app-review.md).
  * - `mealPlanner`: the Diary tab's Plan mode and "Add to plan". Dev only until the
  *   backend's `/me/meal-plan` (#392) reaches production, where it would answer 404.
+ * - `fridgeToRecipe`: Cook from my fridge (photo → ingredients → ideas → AI recipe). Dev only
+ *   while `/fridge/*` is on the dev backend alone; production would answer 404.
  */
 export const FeatureFlags = {
   instagramAutomations: FeatureAvailability.DevOnly,
   mealPlanner: FeatureAvailability.DevOnly,
+  fridgeToRecipe: FeatureAvailability.DevOnly,
 } as const;

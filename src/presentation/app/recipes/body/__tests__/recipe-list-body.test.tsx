@@ -43,6 +43,9 @@ import { RecipeCategory } from '@domain/recipes/taxonomy/recipe-category';
 import { Difficulty } from '@domain/recipes/difficulty';
 import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
+jest.mock('@presentation/app/recipes/items/banners/fridge-camera-button', () => ({
+  FridgeCameraButton: () => null,
+}));
 jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
   NotificationsBellButton: (): null => null,
 }));

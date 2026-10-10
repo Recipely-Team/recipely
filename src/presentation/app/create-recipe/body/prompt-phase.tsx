@@ -12,6 +12,7 @@ import { ResumeDraftCard } from '@presentation/app/create-recipe/items/prompt/re
 import { ImportEntryCard } from '@presentation/app/create-recipe/items/prompt/import-entry-card';
 import { FileImportEntryCard } from '@presentation/app/create-recipe/items/prompt/file-import-entry-card';
 import { StartBlankButton } from '@presentation/app/create-recipe/items/prompt/start-blank-button';
+import { PromptModeCards } from '@presentation/app/create-recipe/items/prompt/prompt-mode-cards';
 import { FieldErrorText } from '@presentation/app/create-recipe/items/field-error-text';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
@@ -103,6 +104,8 @@ export const PromptPhase = ({
 
         <ImportEntryCard onPress={onImportFromInstagram} />
         <FileImportEntryCard onPress={onImportFromFile} />
+
+        <PromptModeCards />
 
         <View
           style={[

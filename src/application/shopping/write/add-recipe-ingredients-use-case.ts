@@ -12,6 +12,7 @@ import { AddShoppingDraftsUseCase } from '@application/shopping/write/add-shoppi
  * @remarks
  * - **`lines` are the lines the reader sees** — scaled and converted — and
  *   the domain reads each into a label, amount and unit; headings are skipped.
+ * - **No recipe (null)** for lines that come from a fridge idea, not a saved recipe.
  * - **Sent like any ready-made lines** (`AddShoppingDraftsUseCase`): batches of
  *   `ShoppingLimits.batchMax`, a refusal stops there, nothing to buy sends nothing.
  */
@@ -22,7 +23,7 @@ export class AddRecipeIngredientsUseCase {
     this.drafts = new AddShoppingDraftsUseCase(repo);
   }
 
-  execute(lines: readonly string[], recipe: ShoppingRecipeRef): Promise<Result<ShoppingAddResult, Failure>> {
+  execute(lines: readonly string[], recipe: ShoppingRecipeRef | null): Promise<Result<ShoppingAddResult, Failure>> {
     return this.drafts.execute(shoppingDraftsFromRecipe(lines, recipe));
   }
 }

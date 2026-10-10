@@ -17,8 +17,8 @@ export interface ShoppingListStoreState {
   refresh: () => Promise<Failure | null>;
   /** One typed line; on success the touched line is shown at once. */
   addText: (text: string) => Promise<Result<ShoppingAddResult, Failure>>;
-  /** A recipe's ingredient lines as the reader sees them (scaled, converted). */
-  addFromRecipe: (lines: readonly string[], recipe: ShoppingRecipeRef) => Promise<Result<ShoppingAddResult, Failure>>;
+  /** A recipe's ingredient lines as the reader sees them (scaled, converted); `recipe` null for lines of no saved recipe. */
+  addFromRecipe: (lines: readonly string[], recipe: ShoppingRecipeRef | null) => Promise<Result<ShoppingAddResult, Failure>>;
   /** Lines already read into label, amount and unit — a planned week's merged ingredients. */
   addDrafts: (drafts: readonly ShoppingItemDraft[]) => Promise<Result<ShoppingAddResult, Failure>>;
   /** Ticks at once; a refusal puts the old tick back unless a later tick of the same line overtook it. */

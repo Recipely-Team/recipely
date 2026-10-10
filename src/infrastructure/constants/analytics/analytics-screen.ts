@@ -30,6 +30,7 @@ export const AnalyticsScreen = {
   diaryCalendar: 'DiaryCalendarScreen',
   createRecipe: 'CreateRecipeScreen',
   importRecipe: 'ImportRecipeScreen',
+  fridge: 'FridgeScreen',
   notifications: 'NotificationsScreen',
   profile: 'ProfileScreen',
   editProfile: 'EditProfileScreen',

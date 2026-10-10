@@ -67,6 +67,17 @@ export type FailureContentKeyType =
   | 'mealParsePhotoUnchecked'
   | 'mealParseQuotaExceeded'
   | 'mealParseUnavailable'
+  // ── key-tier: cook from my fridge ─────────────────────────────────────────
+  | 'fridgeQuotaExceeded'
+  | 'fridgeNoPhotos'
+  | 'fridgeTooManyPhotos'
+  | 'fridgeUnsupportedPhoto'
+  | 'fridgePhotoRejected'
+  | 'fridgePhotoUnchecked'
+  | 'fridgeNothingRecognised'
+  | 'fridgeIngredientsRequired'
+  | 'fridgeIngredientsInvalid'
+  | 'fridgeUnavailable'
   // ── key-tier: creator tag ──────────────────────────────────────────────────
   | 'creatorHandleInvalid'
   | 'creatorHandleTaken'
