@@ -5,7 +5,8 @@ import { GradientCta } from '@presentation/app/fridge/items/buttons/gradient-cta
 import { GhostButton } from '@presentation/app/fridge/items/buttons/ghost-button';
 import { FridgeStep } from '@presentation/app/fridge/model/flow/fridge-step';
 import type { FridgeFlowState } from '@presentation/app/fridge/model/flow/fridge-flow-state';
-import { borderWidths, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, spacing } from '@presentation/base/theme';
+import { useLayout } from '@presentation/base/responsive/use-layout';
 import { WEB_CONTENT_MAX_WIDTH } from '@presentation/base/responsive/breakpoints';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -27,6 +28,7 @@ export interface FridgeFooterProps {
 export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }: FridgeFooterProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
   const insets = useSafeAreaInsets();
+  const { isExpanded } = useLayout();
   const strings = t().fridge;
   const { view } = state;
 
@@ -50,7 +52,9 @@ export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }
   if (action === null) return null;
 
   return (
-    <View style={[styles.footer, { borderTopColor: colors.cardBorder, paddingBottom: Math.max(insets.bottom, spacing.lg) }]}>
+    <View
+      style={[styles.footer, isExpanded ? null : styles.orbClearance, { borderTopColor: colors.cardBorder, paddingBottom: Math.max(insets.bottom, spacing.lg) }]}
+    >
       <View style={styles.column}>{action}</View>
     </View>
   );
@@ -58,5 +62,7 @@ export const FridgeFooter = ({ state, onFindIngredients, onCancel, onShowIdeas }
 
 const styles = StyleSheet.create({
   footer: { paddingTop: spacing.md, paddingHorizontal: spacing.lg, borderTopWidth: borderWidths.hairline },
+  /** On a narrow window the voice assistant's orb floats at the bottom right; the button stops short of it. */
+  orbClearance: { paddingRight: spacing.lg + controlSizes.touchTarget + spacing.sm },
   column: { width: '100%', maxWidth: WEB_CONTENT_MAX_WIDTH.fridge, alignSelf: 'center' },
 });

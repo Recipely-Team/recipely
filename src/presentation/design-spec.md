@@ -3038,6 +3038,8 @@ week", Add a recipe / Copy last week; no shopping bar), week.
   popover widget and rule 23 keeps menus in sheets.
 - Servings follow the backend/diary scale (0.5 steps, 0.5–20) instead of the prototype's whole 1–12.
 - The shopping list is the existing `/shopping-list` screen ("View list"), not a second list sheet.
+- On a phone the sticky "Add week to shopping list" button stops a touch target short of the right edge, where
+  the voice assistant's orb floats (the prototype has no orb).
 
 ## Cook from my fridge (Oct 2026 — from the prototype)
 
@@ -3065,5 +3067,6 @@ rule. Measurements in `fridgeSizes`.
   prompt screen already leads with its hero and import entries.
 - The web Recipes banner's outline "From my fridge" button is not added yet; the web reaches the flow through the AI
   create screen's mode card.
+- On a phone the footer button stops short of the right edge, where the voice assistant's orb floats.
 - The prototype's "Close → from" route param is not used: close goes back, or to the AI create screen when there is
   nothing to go back to (`useGoBackOrHome`).
