@@ -3007,3 +3007,34 @@ at 0, ½ and a 1 / 2 / 5 × 10ⁿ ceiling; Sent bars `textMuted` + `colorAlphas.
 **Delta chip**: `sevSurfaces.success` up, `.danger` down, neutral 0%, hidden when the previous period was 0.
 **States**: skeleton; no automations (disc + CTA → editor); no sends in range (longer-range + "View automations",
 followers card under it); not connected (`InstagramConnectBlock`); error (Try again).
+
+## Meal planner (Oct 2026 — from the prototype)
+
+**Source:** the Claude Design prototype (`src/meal-planner.jsx`, `src/meal-planner-sheets.jsx`; Tweaks →
+Starting screen *Plan · …*), written up there as `meal-planner-rn-spec.md`. Backend: recipely-backend #392
+(`/me/meal-plan`). Behind the `mealPlanner` flag (DevOnly until #392 reaches production).
+
+**Where it lives:** the Diary tab gets a **Plan | Log** `SegmentedTabs` switch (route `/diary?mode=plan`; Log is
+the default and unchanged). Plan owns its own `ScrollView` so the phone's "Add week to shopping list" bar can sit
+fixed under it. Recipe detail gets **Add to plan** (mobile under *Add to diary*, web in the sidebar under it).
+
+**Tokens:** every measurement is in `mealPlanSizes` (`theme/tokens/sizing/meal-plan-sizes.ts`), copied from the
+prototype: strip day h66, slot card header 16/700, planned row thumb 56 / title 14.5, stepper h32 (web h26, 44 pt via
+`hitSlop`), eaten badge 22, web grid `84 + 7 × min 128`, min width 1036 (scrolls sideways below), cell min-h112,
+add dialog max 520, shopping dialog max 560. Colours are theme tokens only; the over-goal tone is
+`DIARY_TONES.over.solid`, "Eaten" is `DIARY_TONES.on`. New shared token: `opacities.done` (0.7) for an eaten meal's
+photo.
+
+**States:** signed out (lock disc, Sign in / Create account, both returning to the plan), loading (skeleton: strip +
+3 slot cards / 4 grid rows, announced busy), error (`FormBanner` + Try again), empty week (seven tiles, "Plan your
+week", Add a recipe / Copy last week; no shopping bar), week.
+
+**Deliberate differences from the prototype:**
+- *Add to plan* sits under *Add to diary*, not beside Save under the title — this app's Save is a floating action.
+- No ±40 px swipe between weeks on the strip: it would fight the tab's vertical scroll; ‹ › page instead.
+- The selected strip day's bar track is `gradientBorder` (white 28%) rather than 35% — the closest existing token.
+- Today's web cells are not tinted `primary` 6% (no token); today's column head is outlined and pilled instead.
+- Week and meal menus are the shared `BottomSheet` everywhere (a centred dialog on the web) — the codebase has no
+  popover widget and rule 23 keeps menus in sheets.
+- Servings follow the backend/diary scale (0.5 steps, 0.5–20) instead of the prototype's whole 1–12.
+- The shopping list is the existing `/shopping-list` screen ("View list"), not a second list sheet.

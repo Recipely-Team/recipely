@@ -13,7 +13,10 @@ import { FeatureAvailability } from '@application/config/feature-availability';
  *   charge. Read through `FeatureFlagResolver`, never this object directly.
  * - `instagramAutomations`: Connect with Instagram + comment-to-DM. Dev only until
  *   Meta grants Advanced Access (needs a verified business; docs/instagram-app-review.md).
+ * - `mealPlanner`: the Diary tab's Plan mode and "Add to plan". Dev only until the
+ *   backend's `/me/meal-plan` (#392) reaches production, where it would answer 404.
  */
 export const FeatureFlags = {
   instagramAutomations: FeatureAvailability.DevOnly,
+  mealPlanner: FeatureAvailability.DevOnly,
 } as const;

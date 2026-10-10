@@ -18,6 +18,7 @@ import type { ShoppingListStoreState } from '@application/shopping/shopping-list
 import type { ListShoppingItemsUseCase } from '@application/shopping/read/list-shopping-items-use-case';
 import type { AddShoppingItemUseCase } from '@application/shopping/write/add-shopping-item-use-case';
 import type { AddRecipeIngredientsUseCase } from '@application/shopping/write/add-recipe-ingredients-use-case';
+import type { AddShoppingDraftsUseCase } from '@application/shopping/write/add-shopping-drafts-use-case';
 import type { UpdateShoppingItemUseCase } from '@application/shopping/write/update-shopping-item-use-case';
 import type { SetShoppingItemCheckedUseCase } from '@application/shopping/write/set-shopping-item-checked-use-case';
 import type { DeleteShoppingItemUseCase } from '@application/shopping/write/delete-shopping-item-use-case';
@@ -28,6 +29,7 @@ interface ShoppingListStoreDeps {
   list: ListShoppingItemsUseCase;
   addText: AddShoppingItemUseCase;
   addFromRecipe: AddRecipeIngredientsUseCase;
+  addDrafts: AddShoppingDraftsUseCase;
   edit: UpdateShoppingItemUseCase;
   setChecked: SetShoppingItemCheckedUseCase;
   remove: DeleteShoppingItemUseCase;
@@ -98,6 +100,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
       },
       addText: async (text) => { const isSession = session.current(); return added(await deps.addText.execute(text), isSession); },
       addFromRecipe: async (lines, recipe) => { const isSession = session.current(); return added(await deps.addFromRecipe.execute(lines, recipe), isSession); },
+      addDrafts: async (drafts) => { const isSession = session.current(); return added(await deps.addDrafts.execute(drafts), isSession); },
 
       setChecked: async (item, checked) => {
         const tick = (ticks.get(item.id) ?? ValueConstants.zero) + ValueConstants.one;

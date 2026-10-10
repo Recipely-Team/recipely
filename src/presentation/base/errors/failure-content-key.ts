@@ -82,6 +82,11 @@ export type FailureContentKeyType =
   | 'shoppingListFull'
   | 'shoppingListChanged'
   | 'shoppingItemGone'
+  // ── key-tier: meal plan ────────────────────────────────────────────────────
+  | 'mealPlanEntryGone'
+  | 'mealPlanRangeInvalid'
+  | 'mealPlanEntryInvalid'
+  | 'mealPlanDayFull'
   | 'contentBlocked'
   // ── key-tier: registration / verification ──────────────────────────────────
   | 'emailExists'

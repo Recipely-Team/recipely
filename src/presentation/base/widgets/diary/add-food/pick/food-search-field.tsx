@@ -9,6 +9,8 @@ import { CharConstants, ValueConstants } from '@core/constants';
 export interface FoodSearchFieldProps {
   value: string;
   onChangeText: (value: string) => void;
+  /** The hint and spoken name; the Add food sheet's own when omitted. */
+  placeholder?: string;
 }
 
 /**
@@ -16,7 +18,7 @@ export interface FoodSearchFieldProps {
  * there is text (Add food v2 spec §2). Focused on open only in the web
  * shell — on a phone the keyboard would cover the tabs.
  */
-export const FoodSearchField = ({ value, onChangeText }: FoodSearchFieldProps): React.JSX.Element => {
+export const FoodSearchField = ({ value, onChangeText, placeholder }: FoodSearchFieldProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { isWebShell } = useLayout();
   const strings = t().diary;
@@ -26,8 +28,8 @@ export const FoodSearchField = ({ value, onChangeText }: FoodSearchFieldProps): 
       <TextInput
         value={value}
         onChangeText={onChangeText}
-        accessibilityLabel={strings.searchPlaceholder}
-        placeholder={strings.searchPlaceholder}
+        accessibilityLabel={placeholder ?? strings.searchPlaceholder}
+        placeholder={placeholder ?? strings.searchPlaceholder}
         placeholderTextColor={colors.textMuted}
         autoFocus={isWebShell}
         autoCorrect={false}

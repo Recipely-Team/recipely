@@ -183,6 +183,14 @@ export const DiagnosticMessage = {
     labelRequired: 'A shopping item needs a label',
     quantityInvalid: 'A shopping quantity must be a positive finite number or none',
   },
+  mealPlan: {
+    idRequired: 'A meal plan entry id must be non-empty',
+    recipeRequired: 'A meal plan entry needs a recipe with an id and a name',
+    positionInvalid: 'A meal plan position must be a whole number from 0 to 999',
+    pastDay: 'A meal cannot be planned on a day that has passed',
+    notYetEaten: 'A meal still ahead cannot be marked eaten',
+    dayFull: 'That day already holds the most meals a plan allows',
+  },
   instagram: {
     keywordInvalid: 'A keyword must be 1–40 characters',
     tooManyKeywords: 'A rule holds at most 10 keywords',

@@ -21,6 +21,11 @@ import { useWeekLooks } from '@presentation/app/diary/hooks/use-week-looks';
 import { useDiarySheets } from '@presentation/app/diary/hooks/use-diary-sheets';
 import { useFirstDay } from '@presentation/app/diary/hooks/use-first-day';
 import { useAssistantDiaryActions } from '@presentation/app/diary/hooks/use-assistant-diary-actions';
+import { useDiaryMode } from '@presentation/app/diary/hooks/plan/use-diary-mode';
+import { useMealPlanWeek } from '@presentation/app/diary/hooks/plan/use-meal-plan-week';
+import { DiaryModeSwitch } from '@presentation/app/diary/items/plan/diary-mode-switch';
+import { PlanView } from '@presentation/app/diary/body/plan/plan-view';
+import { DiaryMode } from '@presentation/app/diary/model/plan/diary-mode';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -32,8 +37,9 @@ import { ValueConstants } from '@core/constants';
  *   two-column page with the month calendar in a rail (so no calendar button
  *   and no calendar route); the web shell swaps the native app bar for a page
  *   heading because the site header already carries the bell.
- * - **Signed-out users never reach this screen** — the auth guard sends them
- *   to sign-in with a redirect back, exactly as it does for My Recipes.
+ * - **Plan | Log** (design spec → Meal planner): with the `mealPlanner` flag
+ *   on, a switch at the top swaps the day's log for the week's plan, which
+ *   scrolls on its own so its shopping bar can stay fixed on a phone.
  */
 export const DiaryScreen = (): React.JSX.Element => {
   const router = useRouter();
@@ -48,57 +54,76 @@ export const DiaryScreen = (): React.JSX.Element => {
   useAssistantDiaryActions({ view: vm.view, selected: vm.selected, today: vm.today, select: vm.select, sheets });
   const hasRailBeside = isExpanded && width >= diarySizes.webColumnsMin;
   const mealColumns = isExpanded && width >= diarySizes.webMealColumnsMin ? ValueConstants.two : ValueConstants.one;
+  const diaryMode = useDiaryMode();
+  const plan = useMealPlanWeek();
+  const modeSwitch = diaryMode.canPlan ? <DiaryModeSwitch mode={diaryMode.mode} onChange={diaryMode.setMode} wide={isExpanded} /> : null;
+  const contentStyle = isExpanded ? styles.webContent : styles.content;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background, paddingTop: isWebShell ? ValueConstants.zero : insets.top }]}>
       <PageTitle subject={t().diary.title} />
       {isWebShell ? null : (
-        <DiaryAppBar
-          showCalendar={!isExpanded}
-          onOpenCalendar={() => router.push(RoutePaths.diaryCalendar)}
-          onOpenGoals={sheets.openGoals}
-        />
+        <DiaryAppBar showCalendar={!isExpanded} onOpenCalendar={() => router.push(RoutePaths.diaryCalendar)} onOpenGoals={sheets.openGoals} />
       )}
-      <ScrollView
-        {...scrollable}
-        contentContainerStyle={isExpanded ? styles.webContent : styles.content}
-        refreshControl={<RefreshControl refreshing={vm.isRefreshing} onRefresh={vm.refresh} />}
-        showsVerticalScrollIndicator={false}
-      >
-        <ResponsiveContainer route="diary" gutter={isExpanded}>
-          {isWebShell ? <DiaryWebTitle onOpenGoals={sheets.openGoals} /> : null}
-          <View style={hasRailBeside ? styles.columns : styles.stacked}>
-            <View style={styles.main}>
-              <View style={isExpanded ? [styles.stripCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }] : null}>
-                <DateStrip
-                  selected={vm.selected}
-                  today={vm.today}
-                  canPageNext={vm.canPageNext}
-                  dayLook={dayLook}
-                  onSelect={vm.select}
-                  onPage={vm.page}
+      {diaryMode.mode === DiaryMode.Plan ? (
+        <PlanView
+          view={plan.view}
+          weekStart={plan.weekStart}
+          today={plan.today}
+          selected={plan.selected}
+          isCurrentWeek={plan.isCurrentWeek}
+          goal={plan.goal}
+          isRefreshing={plan.isRefreshing}
+          onSelect={plan.select}
+          onPage={plan.page}
+          wide={isExpanded}
+          onRetry={plan.retry}
+          onThisWeek={plan.goToThisWeek}
+          onRefresh={() => void plan.refresh()}
+          contentStyle={contentStyle}
+          header={
+            <ResponsiveContainer route="diary" gutter={isExpanded}>
+              {isWebShell ? <DiaryWebTitle onOpenGoals={sheets.openGoals} /> : null}
+              <View style={styles.modeRow}>{modeSwitch}</View>
+            </ResponsiveContainer>
+          }
+        />
+      ) : (
+        <ScrollView
+          {...scrollable}
+          contentContainerStyle={contentStyle}
+          refreshControl={<RefreshControl refreshing={vm.isRefreshing} onRefresh={vm.refresh} />}
+          showsVerticalScrollIndicator={false}
+        >
+          <ResponsiveContainer route="diary" gutter={isExpanded}>
+            {isWebShell ? <DiaryWebTitle onOpenGoals={sheets.openGoals} /> : null}
+            {modeSwitch === null ? null : <View style={styles.modeRow}>{modeSwitch}</View>}
+            <View style={hasRailBeside ? styles.columns : styles.stacked}>
+              <View style={styles.main}>
+                <View style={isExpanded ? [styles.stripCard, { backgroundColor: colors.cardBackground, borderColor: colors.cardBorder }] : null}>
+                  <DateStrip selected={vm.selected} today={vm.today} canPageNext={vm.canPageNext} dayLook={dayLook} onSelect={vm.select} onPage={vm.page} />
+                </View>
+                <DiaryDayBody
+                  view={vm.view}
+                  isFirstDay={isFirstDay}
+                  wide={isExpanded}
+                  mealColumns={mealColumns}
+                  onAdd={sheets.openAdd}
+                  onEdit={sheets.openEdit}
+                  onOpenGoals={sheets.openGoals}
+                  onWater={vm.setWater}
+                  onRetry={vm.retry}
                 />
               </View>
-              <DiaryDayBody
-                view={vm.view}
-                isFirstDay={isFirstDay}
-                wide={isExpanded}
-                mealColumns={mealColumns}
-                onAdd={sheets.openAdd}
-                onEdit={sheets.openEdit}
-                onOpenGoals={sheets.openGoals}
-                onWater={vm.setWater}
-                onRetry={vm.retry}
-              />
+              {isExpanded ? (
+                <View style={hasRailBeside ? styles.rail : null}>
+                  <DiaryRail selected={vm.selected} today={vm.today} onSelect={vm.select} />
+                </View>
+              ) : null}
             </View>
-            {isExpanded ? (
-              <View style={hasRailBeside ? styles.rail : null}>
-                <DiaryRail selected={vm.selected} today={vm.today} onSelect={vm.select} />
-              </View>
-            ) : null}
-          </View>
-        </ResponsiveContainer>
-      </ScrollView>
+          </ResponsiveContainer>
+        </ScrollView>
+      )}
       <AddFoodSheet request={sheets.addRequest} onClose={sheets.closeAdd} />
       <GoalsSheet visible={sheets.goalsOpen} onClose={sheets.closeGoals} />
     </View>
@@ -113,6 +138,7 @@ const styles = StyleSheet.create({
   stacked: { gap: spacing.xl, marginTop: spacing.xs },
   main: { flex: ValueConstants.one, gap: diarySizes.mealGap },
   rail: { width: diarySizes.railWidth },
+  modeRow: { marginBottom: spacing.md },
   stripCard: {
     ...shadows.sm,
     borderRadius: radii.xl,

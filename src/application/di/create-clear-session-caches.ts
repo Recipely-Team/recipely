@@ -16,6 +16,7 @@ export const createClearSessionCaches = (stores: Omit<ApplicationStores, 'authSt
   stores.commentsStore.getState().clear();
   stores.likesStore.getState().clear();
   stores.shoppingListStore.getState().clear();
+  stores.mealPlanStore.getState().clear();
   stores.recipeDetailStore.getState().clear();
   stores.stepProgressStore.getState().clear();
   stores.portionChoiceStore.getState().clear();
