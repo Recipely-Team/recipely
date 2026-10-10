@@ -39,13 +39,17 @@ const MAX_ATTEMPTS = 3;
  *   no platform check left here — `ads-service.web.ts` is what answers on the
  *   web, and a check for one of two remaining platforms is a check that will be
  *   wrong the day a third arrives.
- * - **App Tracking Transparency comes first.** App Review rejected 1.2.0
- *   (5.1.2(i)) because the consent form speaks of personalised ads while the
- *   app never asked iOS for tracking permission. The ATT prompt now runs before
- *   the consent gather and before the SDK starts; a decline leaves ads
- *   contextual, and the App Store privacy label declares tracking. A failed ATT
- *   call is reported and does not stop ads: without an answer iOS hands out no
- *   advertising id, which is the contextual case already.
+ * - **The consent form first, then App Tracking Transparency, then the SDK.**
+ *   1.2.0 was rejected twice: once (5.1.2(i)) for a consent form that speaks of
+ *   personalised ads with no ATT prompt at all, then (5.1.1(iv)) because ATT
+ *   came first and the form asked again after "Ask App Not to Track". Apple
+ *   accepts a GDPR prompt shown before ATT as it is, so the form runs first,
+ *   ATT second and the SDK last — no tracking before the answer.
+ * - **One "no" is final.** Where the form was shown and the user did not
+ *   consent to personalised ads, ATT is not asked at all: that would be the
+ *   same question twice, the other way round. A decline anywhere leaves ads
+ *   contextual. A failed ATT call is reported and does not stop ads: without
+ *   an answer iOS hands out no advertising id, which is the contextual case.
  * - **Consent decides everything.** `gatherConsent` runs the
  *   Google-certified flow, showing a form only where one is required (the EEA
  *   and UK); `canRequestAds` is its answer. Initialising before that answer, or
@@ -98,15 +102,34 @@ export class AdsService implements AdsServiceInterface {
 
   private async run(): Promise<RunOutcomeType> {
     this.attempts += ValueConstants.one;
-    await this.askTracking();
     const consent = await this.gatherConsent();
     if (consent !== RunOutcome.Allowed) return consent;
+    if (await this.mayAskTracking()) await this.askTracking();
     try {
       await mobileAds().initialize();
       return RunOutcome.Allowed;
     } catch (error) {
       this.report(error, 'AdsService.initialize');
       return RunOutcome.Unavailable;
+    }
+  }
+
+  /**
+   * Whether ATT may still be asked after the consent form.
+   *
+   * Outside the EEA and UK no form is shown and ATT is the only question. Where
+   * the form was answered, only a "yes" to personalised ads leaves a tracking
+   * question worth asking. An unreadable answer counts as "no".
+   */
+  private async mayAskTracking(): Promise<boolean> {
+    try {
+      const info = await AdsConsent.getConsentInfo();
+      if (info.status !== AdsConsentStatus.OBTAINED) return true;
+      const choices = await AdsConsent.getUserChoices();
+      return choices.selectPersonalisedAds;
+    } catch (error) {
+      this.report(error, 'AdsService.mayAskTracking');
+      return false;
     }
   }
 

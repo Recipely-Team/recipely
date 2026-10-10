@@ -28,6 +28,7 @@ const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.shoppingList, AnalyticsScreen.shoppingList],
   [RoutePaths.automationEdit, AnalyticsScreen.automationEdit],
   [RoutePaths.automationActivityPath, AnalyticsScreen.automationActivity],
+  [RoutePaths.automationStats, AnalyticsScreen.creatorStats],
   [RoutePaths.instagramConnected, AnalyticsScreen.instagramConnected],
   [RoutePaths.onboarding, AnalyticsScreen.onboarding],
   [RoutePaths.login, AnalyticsScreen.login],

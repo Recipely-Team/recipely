@@ -38,6 +38,7 @@ export const AnalyticsScreen = {
   shoppingList: 'ShoppingListScreen',
   automationEdit: 'AutomationEditScreen',
   automationActivity: 'AutomationActivityScreen',
+  creatorStats: 'CreatorStatsScreen',
   instagramConnected: 'InstagramConnectedScreen',
   onboarding: 'OnboardingScreen',
   login: 'LoginScreen',

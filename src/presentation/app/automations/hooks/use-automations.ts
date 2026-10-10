@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { type Href, useFocusEffect, useRouter } from "expo-router";
 import { StoreStatus } from "@application/store/store-status";
-import { CharConstants } from "@core/constants";
+import { CharConstants, ValueConstants } from "@core/constants";
 import { useStores } from "@presentation/bootstrap/use-stores";
 import { useInstagramConnect } from "@presentation/base/hooks/instagram/use-instagram-connect";
 import {
@@ -71,6 +71,11 @@ export const useAutomations = (): UseAutomationsResult => {
     onBack: () =>
       router.canGoBack() ? router.back() : router.replace(RoutePaths.profile),
     onNew: () => router.push(RoutePaths.automationEdit),
+    hasRules:
+      isConnected &&
+      rules.status === StoreStatus.Loaded &&
+      rules.items.length > ValueConstants.zero,
+    onStats: () => router.push(RoutePaths.automationStats),
     onOpen: (rule) =>
       router.push(RoutePaths.automationActivity(rule.id) as Href),
     onToggle: (rule, enabled) => {

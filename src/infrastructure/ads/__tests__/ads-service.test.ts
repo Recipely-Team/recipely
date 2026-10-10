@@ -4,6 +4,7 @@ import { recordCrash } from "@infrastructure/firebase/crashlytics-service";
 const mockGatherConsent = jest.fn();
 const mockGetConsentInfo = jest.fn();
 const mockInitialize = jest.fn();
+const mockGetUserChoices = jest.fn();
 
 jest.mock("react-native-google-mobile-ads", () => ({
   __esModule: true,
@@ -11,6 +12,7 @@ jest.mock("react-native-google-mobile-ads", () => ({
   AdsConsent: {
     gatherConsent: () => mockGatherConsent(),
     getConsentInfo: () => mockGetConsentInfo(),
+    getUserChoices: () => mockGetUserChoices(),
   },
   AdsConsentStatus: {
     UNKNOWN: "UNKNOWN",
@@ -36,17 +38,24 @@ const crashed = jest.mocked(recordCrash);
 const NOT_ASKED = { canRequestAds: false, status: "UNKNOWN" };
 /** A device whose user went through the form and declined. */
 const DECLINED = { canRequestAds: false, status: "OBTAINED" };
+/** A region where no consent form is required (outside the EEA and UK). */
+const NO_FORM = { canRequestAds: true, status: "NOT_REQUIRED" };
+/** A user who answered the form; ads may run, at least non-personalised. */
+const ANSWERED = { canRequestAds: true, status: "OBTAINED" };
 
 describe("AdsService", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockInitialize.mockResolvedValue([]);
     mockRequestTracking.mockResolvedValue(undefined);
+    mockGetConsentInfo.mockResolvedValue(NO_FORM);
+    mockGetUserChoices.mockResolvedValue({ selectPersonalisedAds: false });
   });
 
-  // --- regression: App Review rejected 1.2.0 (5.1.2(i)) — the consent form
-  // spoke of personalised ads, but iOS was never asked for tracking permission.
-  it("asks for tracking permission before the consent form and the SDK", async () => {
+  // --- regression: App Review rejected 1.2.0 twice — 5.1.2(i), a consent form
+  // with no ATT prompt; then 5.1.1(iv), ATT first and the form asking again
+  // after "Ask App Not to Track". The form comes first, ATT second, SDK last.
+  it("shows the consent form before tracking permission, and both before the SDK", async () => {
     const order: string[] = [];
     mockRequestTracking.mockImplementation(async () => order.push("tracking"));
     mockGatherConsent.mockImplementation(async () => {
@@ -57,7 +66,42 @@ describe("AdsService", () => {
 
     await new AdsService().prepare();
 
-    expect(order).toEqual(["tracking", "consent", "initialize"]);
+    expect(order).toEqual(["consent", "tracking", "initialize"]);
+  });
+
+  it("does not ask for tracking after the form was answered without personalised ads", async () => {
+    mockGatherConsent.mockResolvedValue({ canRequestAds: true });
+    mockGetConsentInfo.mockResolvedValue(ANSWERED);
+    mockGetUserChoices.mockResolvedValue({ selectPersonalisedAds: false });
+
+    await expect(new AdsService().prepare()).resolves.toBe(true);
+    expect(mockRequestTracking).not.toHaveBeenCalled();
+  });
+
+  it("asks for tracking after the form was answered with personalised ads", async () => {
+    mockGatherConsent.mockResolvedValue({ canRequestAds: true });
+    mockGetConsentInfo.mockResolvedValue(ANSWERED);
+    mockGetUserChoices.mockResolvedValue({ selectPersonalisedAds: true });
+
+    await new AdsService().prepare();
+
+    expect(mockRequestTracking).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not ask for tracking when consent refuses ads", async () => {
+    mockGatherConsent.mockResolvedValue({ canRequestAds: false });
+    mockGetConsentInfo.mockResolvedValue(DECLINED);
+
+    await expect(new AdsService().prepare()).resolves.toBe(false);
+    expect(mockRequestTracking).not.toHaveBeenCalled();
+  });
+
+  it("does not ask for tracking when the consent answer cannot be read", async () => {
+    mockGatherConsent.mockResolvedValue({ canRequestAds: true });
+    mockGetConsentInfo.mockRejectedValue(new Error("UMP unavailable"));
+
+    await expect(new AdsService().prepare()).resolves.toBe(true);
+    expect(mockRequestTracking).not.toHaveBeenCalled();
   });
 
   it("still serves ads when the tracking request fails", async () => {
