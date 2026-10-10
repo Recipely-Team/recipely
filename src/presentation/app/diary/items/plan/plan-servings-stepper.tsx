@@ -16,8 +16,8 @@ export interface PlanServingsStepperProps {
 
 /**
  * "− 2 servings +" on a planned meal (design spec → Meal planner, Planned
- * card): h32 on a phone, h26 in the web grid; each button reaches 44 pt
- * through `hitSlop`.
+ * card): h32 on a phone, h26 in the web grid (spanning the card, one line);
+ * each button reaches 44 pt through `hitSlop`.
  */
 export const PlanServingsStepper = ({ servings, onStep, compact = false }: PlanServingsStepperProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -36,9 +36,14 @@ export const PlanServingsStepper = ({ servings, onStep, compact = false }: PlanS
     </Pressable>
   );
   return (
-    <View style={[styles.track, { minHeight: height, backgroundColor: colors.background, borderColor: colors.cardBorder }]}>
+    <View style={[styles.track, compact ? styles.fill : null, { minHeight: height, backgroundColor: colors.background, borderColor: colors.cardBorder }]}>
       {button('remove', ValueConstants.minusOne, strings.decreaseServings)}
-      <SizedText size={compact ? mealPlanSizes.stepperTextWeb : mealPlanSizes.stepperText} weight={fontWeights.bold} style={styles.value}>
+      <SizedText
+        size={compact ? mealPlanSizes.stepperTextWeb : mealPlanSizes.stepperText}
+        weight={fontWeights.bold}
+        numberOfLines={ValueConstants.one}
+        style={[styles.value, compact ? styles.valueFill : null]}
+      >
         {formatPlanServings(servings, locale)}
       </SizedText>
       {button('add', ValueConstants.one, strings.increaseServings)}
@@ -56,4 +61,7 @@ const styles = StyleSheet.create({
   },
   button: { alignSelf: 'stretch', alignItems: 'center', justifyContent: 'center' },
   value: { paddingHorizontal: spacing.xs, fontVariant: ['tabular-nums'] },
+  /** The web card's stepper spans the card, its label centred between the buttons. */
+  fill: { alignSelf: 'stretch' },
+  valueFill: { flex: ValueConstants.one, textAlign: 'center', paddingHorizontal: ValueConstants.zero },
 });

@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
-import { borderWidths, fontSizes, spacing } from '@presentation/base/theme';
+import { borderWidths, controlSizes, fontSizes, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
@@ -17,7 +17,8 @@ export interface PlanShopBarProps {
  * "Add week to shopping list" (design spec → Meal planner, Shopping CTA).
  * On a phone it sits under the scrolling plan, above the tab bar, with a
  * `cardBorder` top rule; on the web it closes the grid, with the week's
- * summary beside it.
+ * summary beside it. On a phone the button stops short of the right edge:
+ * the voice assistant's orb floats there, just above the tab bar.
  */
 export const PlanShopBar = ({ wide, summary, onPress }: PlanShopBarProps): React.JSX.Element => {
   const colors = useTheme().colors;
@@ -46,7 +47,8 @@ const styles = StyleSheet.create({
   grow: { flex: ValueConstants.one },
   bar: {
     paddingTop: spacing.sm,
-    paddingHorizontal: spacing.lg,
+    paddingLeft: spacing.lg,
+    paddingRight: spacing.lg + controlSizes.touchTarget + spacing.sm,
     paddingBottom: spacing.md,
     borderTopWidth: borderWidths.hairline,
   },

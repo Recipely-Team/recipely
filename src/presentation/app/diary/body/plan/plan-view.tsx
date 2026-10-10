@@ -3,6 +3,7 @@ import { RefreshControl, ScrollView, StyleSheet, View } from 'react-native';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { MealPlanWeek } from '@domain/meal-plan/week/meal-plan-week';
 import { FormBanner } from '@presentation/base/widgets/feedback/form-banner';
+import { ResponsiveContainer } from '@presentation/base/widgets/layout/responsive-container';
 import { PrimaryButton } from '@presentation/base/widgets/buttons/primary-button';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { AddToPlanSheet } from '@presentation/base/widgets/meal-plan/add-to-plan-sheet';
@@ -90,46 +91,48 @@ export const PlanView = (props: PlanViewProps): React.JSX.Element => {
         showsVerticalScrollIndicator={false}
       >
         {props.header}
-        {view.kind === PlanViewKind.SignedOut ? (
-          <PlanSignedOut />
-        ) : (
-          <View style={styles.stack}>
-            <PlanWeekBar
-              weekStart={weekStart}
-              isCurrentWeek={isCurrentWeek}
-              summary={summary}
-              wide={wide}
-              onPage={props.onPage}
-              onThisWeek={props.onThisWeek}
-              onMenu={sheets.openWeekMenu}
-            />
-            {wide ? null : <PlanDayStrip week={week} days={weekStart.weekDays()} selected={selected} today={today} goal={goal} onSelect={props.onSelect} />}
-            {view.kind === PlanViewKind.Loading ? <PlanSkeleton wide={wide} /> : null}
-            {view.kind === PlanViewKind.Error ? (
-              <View style={styles.stack}>
-                <FormBanner message={failureContent(view.failure).body} severity={SeverityType.Danger} />
-                <PrimaryButton label={strings.tryAgain} onPress={props.onRetry} />
-              </View>
-            ) : null}
-            {week !== null && week.isEmpty ? (
-              <PlanEmptyWeek
-                todayIndex={todayIndex === ValueConstants.minusOne ? null : todayIndex}
-                onAdd={() => sheets.openAdd(firstOpenDay, null)}
-                onCopyLastWeek={weekActions.copyLastWeek}
+        <ResponsiveContainer route="diary" gutter={wide}>
+          {view.kind === PlanViewKind.SignedOut ? (
+            <PlanSignedOut />
+          ) : (
+            <View style={styles.stack}>
+              <PlanWeekBar
+                weekStart={weekStart}
+                isCurrentWeek={isCurrentWeek}
+                summary={summary}
+                wide={wide}
+                onPage={props.onPage}
+                onThisWeek={props.onThisWeek}
+                onMenu={sheets.openWeekMenu}
               />
-            ) : null}
-            {week !== null && !week.isEmpty ? (
-              <>
-                {wide ? (
-                  <PlanWeekGrid week={week} today={today} goal={goal} {...handlers} />
-                ) : (
-                  <PlanDaySection week={week} date={selected} today={today} goal={goal} {...handlers} />
-                )}
-                {wide ? <PlanShopBar wide summary={summary} onPress={sheets.openShopping} /> : null}
-              </>
-            ) : null}
-          </View>
-        )}
+              {wide ? null : <PlanDayStrip week={week} days={weekStart.weekDays()} selected={selected} today={today} goal={goal} onSelect={props.onSelect} />}
+              {view.kind === PlanViewKind.Loading ? <PlanSkeleton wide={wide} /> : null}
+              {view.kind === PlanViewKind.Error ? (
+                <View style={styles.stack}>
+                  <FormBanner message={failureContent(view.failure).body} severity={SeverityType.Danger} />
+                  <PrimaryButton label={strings.tryAgain} onPress={props.onRetry} />
+                </View>
+              ) : null}
+              {week !== null && week.isEmpty ? (
+                <PlanEmptyWeek
+                  todayIndex={todayIndex === ValueConstants.minusOne ? null : todayIndex}
+                  onAdd={() => sheets.openAdd(firstOpenDay, null)}
+                  onCopyLastWeek={weekActions.copyLastWeek}
+                />
+              ) : null}
+              {week !== null && !week.isEmpty ? (
+                <>
+                  {wide ? (
+                    <PlanWeekGrid week={week} today={today} goal={goal} {...handlers} />
+                  ) : (
+                    <PlanDaySection week={week} date={selected} today={today} goal={goal} {...handlers} />
+                  )}
+                  {wide ? <PlanShopBar wide summary={summary} onPress={sheets.openShopping} /> : null}
+                </>
+              ) : null}
+            </View>
+          )}
+        </ResponsiveContainer>
       </ScrollView>
       {hasShopBar && !wide ? <PlanShopBar wide={false} summary={summary} onPress={sheets.openShopping} /> : null}
 

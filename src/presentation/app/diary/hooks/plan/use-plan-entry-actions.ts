@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { ValueConstants } from '@core/constants';
 import type { CalendarDate } from '@domain/diary/calendar/calendar-date';
 import type { MealSlotType } from '@domain/diary/meal-slot';
@@ -96,6 +96,6 @@ export const usePlanEntryActions = (today: CalendarDate): PlanEntryActions => {
     toggleEaten: (entry) => void toggleEaten(entry),
     remove: (entry) => void remove(entry),
     move: (entry, date, meal) => void move(entry, date, meal),
-    openRecipe: useCallback((entry: MealPlanEntryEntity) => router.push(RoutePaths.recipeDetail(entry.recipe.id)), [router]),
+    openRecipe: useCallback((entry: MealPlanEntryEntity) => router.push(RoutePaths.recipeDetail(entry.recipe.id) as Href), [router]),
   };
 };
