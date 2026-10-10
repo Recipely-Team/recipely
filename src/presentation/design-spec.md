@@ -3038,3 +3038,32 @@ week", Add a recipe / Copy last week; no shopping bar), week.
   popover widget and rule 23 keeps menus in sheets.
 - Servings follow the backend/diary scale (0.5 steps, 0.5–20) instead of the prototype's whole 1–12.
 - The shopping list is the existing `/shopping-list` screen ("View list"), not a second list sheet.
+
+## Cook from my fridge (Oct 2026 — from the prototype)
+
+**Source:** the Claude Design prototype (`src/fridge.jsx`; Tweaks → Starting screen *Fridge · …*), written up there
+as `fridge-to-recipe-rn-spec.md`. Backend: recipely-backend #393 (`/fridge/scan`, `/fridge/ideas`, 20 AI calls a day
+shared). Behind the `fridgeToRecipe` flag (DevOnly until #393 reaches production).
+
+**Route:** `/fridge` (`FridgeScreen`, robots `Disallow`, analytics `FridgeScreen`). Entry points: two mode cards on the AI
+create screen (*Describe it* selected / *From my fridge*), and a 50-wide gradient camera button beside the phone's
+Recipes AI banner. Both render nothing while the flag is off.
+
+**Flow:** Capture (up to 3 photos, camera or library; web is the file picker) → Analysing (photo sweep, Cancel keeps
+the photos) → Ingredients (chips, faded = not sure, tap removes with Undo, *+ Add*; filters max time / diet /
+servings) → Ideas (cards with uses meter and missing chips, *Add missing to shopping list*, *Show 3 more*). An idea
+becomes a prompt and opens the ordinary AI create flow (`/create-recipe?prompt=…`): same generating animation, same
+draft editor. Full-screen states: nothing recognised (Retake / Type them instead), daily limit (Browse recipes /
+Back); offline and other failures return to the step with a banner.
+
+**Layout & tokens:** header back/close + centred title + "n/3" + three 4 pt progress segments; body max 560
+(`WEB_CONTENT_MAX_WIDTH.fridge`), the ideas grid 920 (`fridgeIdeas`, cards min 260); footer CTA under a `cardBorder`
+rule. Measurements in `fridgeSizes`.
+
+**Deliberate differences from the prototype:**
+- The *From my fridge* card sits under the import cards, above the prompt box, rather than at the very top — the
+  prompt screen already leads with its hero and import entries.
+- The web Recipes banner's outline "From my fridge" button is not added yet; the web reaches the flow through the AI
+  create screen's mode card.
+- The prototype's "Close → from" route param is not used: close goes back, or to the AI create screen when there is
+  nothing to go back to (`useGoBackOrHome`).
