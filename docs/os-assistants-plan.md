@@ -1,9 +1,9 @@
 # OS assistants — Siri (iOS) + shortcuts/Gemini (Android)
 
-Opens the in-app voice assistant's **50-action** vocabulary to the phone's own
-assistant. The plan lives at
-`~/.claude/plans/i-erideki-sesli-asistan-yapt-k-warm-heron.md`; **this file is the
-progress board** — when a session ends, work resumes from here.
+Opens the in-app voice assistant's action vocabulary to the phone's own assistant.
+Shipped in #423 (released in v1.1.9). This file keeps the measured findings (D1–D27),
+which code comments cite, and the work still open. The finished phase checklists were
+removed; git history has them.
 
 ## Status board
 
@@ -16,45 +16,75 @@ progress board** — when a session ends, work resumes from here.
 | 4 | Android shortcuts + AppFunctions | 🟢 shipped: shortcuts, tile, widget, R8 clean. AppFunctions backed out (D22) | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 | 5 | Gates and docs | ✅ **done**: rules W, X, AD, AE; CI asserts the kit in both generated projects and runs both parity suites; regression classes recorded | [#423](https://github.com/Recipely-Team/recipely/pull/423) |
 
-Branch: `feat/os-assistants-spike`
+## Open work
 
----
-
-## Phase 0 — Measurement and decision gate
-
-Purpose: decide by measurement whether Phase 2 is needed and where the Swift files
-belong. **Not merged**; findings are written below.
-
-- [x] `feat/os-assistants-spike` branch opened
-- [x] `modules/recipely-assistant-kit/` skeleton (expo-module.config.json, package.json)
-- [x] Shared TS types (four separate files) + the web no-op half
-- [x] **Research round** — three assumptions turned out wrong, see below
-- [x] TS native half + `index.ts`
-- [x] iOS: Swift module classes (`RecipelyAssistantStore`, `RecipelyAssistantKitModule`) + proof intent (`RecipelySearchIntent`)
-- [x] Android: Kotlin module class + store + `RecipelyShortcutPublisher` + `RecipelyAssistantConfig`
-- [x] `plugins/withAssistantKit.js` + 10 tests
-- [x] **Measurement 1a** — `prebuild --clean` passes on both platforms; Swift is copied into the app target and registered in the pbxproj, entitlement/Info.plist/manifest correct (D7, D8)
-- [x] **Measurement 1b** — `pod install` + `xcodebuild` **BUILD SUCCEEDED**; the intent compiles in the app target and is **extracted into `Metadata.appintents`** (`isDiscoverable: true`) — D12, D13
 - [ ] On device: does Siri actually invoke it by VOICE, in TR and EN — the simulator cannot recognise speech; the same intents were run through Shortcuts there (D26)
-- [x] **D27 — Siri has to HEAR the name.** Reported as "Siri uygulamayı bulamıyor". The
-  intents, the phrases and the fourteen `.lproj/AppShortcuts.strings` were all verified in
-  a generated project, and all of it has been on `main` since #423 — so the first answer is
-  that the public App Store build predates the feature. The second is real: `\(.applicationName)`
-  is matched against the display name and `INAlternativeAppNames`, and there were none.
-  A Turkish speaker saying "Recipely" is heard as *resipli* / *resiplay*, which matched
-  nothing. Four alternatives with pronunciation hints now ship in `ios.infoPlist`, asserted
-  on the GENERATED plist in CI rather than on the config.
 - [ ] Follow-up, not quick: one phrase per intent is all the provider declares. Apple
   recommends several per shortcut; adding them means the catalogue, the generator and all
   fourteen languages, so it is a change of its own rather than part of a fix.
-- [x] ~~**Measurement 2**~~ — answered by research, no device needed (D2)
-- [x] **Measurement 3** — `:recipely-assistant-kit:compileDebugKotlin` and the **full `:app:assembleDebug` green** (3m 7s); autolinking finds the module, manifest meta-data correct (D9)
-- [x] Findings written into this file, decisions fixed
+- [ ] `IndexedEntity` for Spotlight semantic search — **still blocked on an entry point, see D20.**
+  The Core Spotlight stopgap (#445) finds a recipe by its NAME; the entity would find it by meaning.
+- [ ] Control Center control — needs a widget extension target, which prebuild does not create today
+- [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side
+- [ ] Action Button — free once the intents exist; needs on-device confirmation only
+- [ ] AppFunctions service — **deferred on purpose, see D22.** alpha11 now matches the docs; what is missing is a caller — the EAP is at capacity and Gemini calls nothing without it.
 
-### Phase 0 findings
+### Carried debt from Phase 2
+- [ ] A `notBase64` reject vector. The three disagree today: Swift refuses an
+  embedded newline, Android's decoder skips CR/LF, and JS throws a raw
+  `InvalidCharacterError` from outside its `try`. Adding the vector fails until
+  they are unified — which is the point, and is why it is a separate change.
+- [ ] `Envelope.Failure` in Kotlin is a sealed class of singleton `object`s, so a
+  thrown failure carries no stack of its own. Fine for a value-like refusal,
+  worth revisiting if one ever needs context.
+- [ ] The Kotlin parity suite runs only in the two Android CI jobs (the only place
+  with that toolchain) and on demand via `npm run verify:envelope:android`. The
+  Swift harness runs in `check:structure`, so it executes on every commit on a
+  developer's machine and skips on Linux.
 
-Following the voice-assistant plan's pattern: **this section overrides the plan
-text.**
+### Debt from review
+
+- [ ] Rule 5: `arg: 'next'` (repeats `StepCursor.Next`) and `arg: 'myRecipes'`
+  (an `AssistantNavigationTargets` key, written for the third time). Domain cannot
+  import presentation → the navigation-target vocabulary has to move to `@domain`
+  or `@core/constants`.
+- [ ] The `'recipe'` entity kind is spelled out in three languages (TS/Swift/Kotlin)
+  — could be brought under rule W.
+- [ ] `subscribe` is defined on both sides but no module calls `sendEvent`; the
+  running-app path opens in Phase 3.
+
+## Open questions for the user
+
+- **A bare `zh` covers both Chinese scripts.** Apple's own resources are
+  `zh_CN` / `zh_HK` / `zh_TW`, and modern apps ship `zh-Hans` / `zh-Hant`. iOS
+  falls back from `zh-Hant` to `zh`, so the phrases DO resolve — a Traditional
+  Chinese device just gets the Simplified wording. That is exactly what the app
+  already does for its in-app copy, so the Siri phrases are consistent with it
+  rather than worse. Splitting the script is an app-wide locale decision, not an
+  assistant one.
+- **~190 strings of build-only weight in the JS bundle.** `osIntentPhrases` and
+  `osShortcutLabels` are read by the generators at build time and by no `t()`
+  call, yet they ship in every locale. Moving them to a Node-only catalogue
+  would take them out of the bundle and out of rule 11's scope; keeping them
+  where they are keeps every translated string in one place for a translator.
+  Worth a decision, not worth guessing at.
+
+---
+
+## Findings
+
+These override the original plan text.
+
+#### Siri has to HEAR the name
+
+Reported as "Siri uygulamayı bulamıyor". The intents, the phrases and the fourteen
+`.lproj/AppShortcuts.strings` were all verified in a generated project, and all of it has
+been on `main` since #423, so the first answer is that the public App Store build predated
+the feature. The second is real: `\(.applicationName)` is matched against the display
+name and `INAlternativeAppNames`, and there were none. A Turkish speaker saying "Recipely"
+is heard as *resipli* / *resiplay*, which matched nothing. Four alternatives with
+pronunciation hints now ship in `ios.infoPlist`, asserted on the GENERATED plist in CI
+rather than on the config.
 
 #### D1 — Siri does NOT accept a free-text parameter inside the phrase
 The plan's headline was a single-turn phrase, `"Ask Recipely \(\.$question)"`. It
@@ -182,35 +212,6 @@ four files.
 
 ---
 
-## Phase 1 — Module skeleton + shared store
-
-- [x] Shared store: iOS App Group `UserDefaults` (`RecipelyAssistantStore.swift`)
-- [x] Shared store: Android `SharedPreferences` — no App Group, same process; nothing to widen
-- [x] App Group identifier derived from the variant; `expo-share-intent` already provisioned it (D8)
-- [x] Port: `src/domain/assistant/os/os-assistant-interface.ts`
-- [x] Catalogue: `src/domain/assistant/os/os-intent-catalogue.ts` (11 entries) + 6 invariant tests
-- [x] Impl + web no-op: `src/infrastructure/assistant/os/os-assistant-bridge{,.web}.ts`
-- [x] DI token `OsAssistant` + infrastructure register + `ApplicationStores.osAssistant`
-- [x] Deep link `recipely://assistant/run?action=&arg=` → `os-intent-link.ts` + `pending-os-intent.ts` + `+native-intent.tsx`
-- [x] `use-os-assistant-invocations.ts`, mounted last in the pill (effect order = tier order)
-- [x] Tests: catalogue invariants (6), deep-link parsing (11), bridge boundary (7), plugin (11)
-- [x] `use-os-entity-catalogue-sync.ts` — writes recipes into the native catalogue + 6 tests (clears on sign-out)
-- [x] Session credential sync (`publishCredentials`) — backend #314 is merged to dev, so this is wired: minted once per launch, withdrawn on sign-out, and a failed mint leaves the stored token alone
-- [x] The native HTTP call that SPENDS the token — `RecipelyAssistantClient` + `RecipelyAssistantWire`; "Ask Recipely" answers in Siri when the reply only speaks, and comes forward when it names an action (D24)
-- [x] The headless call measured end to end against dev-api with the UNMODIFIED Swift client (D25): 1.5–10.9 s, so the client budget is 15 s. Siri's own deadline still needs a device
-
-## Phase 2 — Headless path *(unconditional per D2)*
-
-The order was deliberately reversed: the backend PR needs **separate approval**
-(plan line 204) while the envelope parity work needs nothing from it, so the
-measurable half went first.
-
-- [x] Backend PR: `POST /assistant/intent-token` (narrow scope, 30 days) — [recipely-backend#314](https://github.com/Recipely-Team/recipely-backend/pull/314), open against `dev` (D17)
-- [x] Shared AES-GCM test-vector fixture (`__fixtures__/aes-gcm-vectors.json`, 5 vectors + 3 rejections)
-- [x] Swift `Envelope.swift` (CryptoKit) + parity harness (not XCTest — D14)
-- [x] Kotlin `Envelope.kt` (javax.crypto) + JUnit parity (4 tests green)
-- [x] `EXPO_PUBLIC_API_AES_KEY` written into the artifact at prebuild (Info.plist + manifest), verified in the APK (D15)
-
 ### D14 — A parity test must be byte-exact, NOT a round trip
 Three implementations (@noble/ciphers, CryptoKit, javax.crypto) run against one
 fixture whose bytes come from **OpenSSL** — a fourth implementation, and none of
@@ -292,19 +293,6 @@ validate the alphabet and both native bad-key lists carry the signed forms. And
 `withAssistantKit.test.js` cleared `EXPO_PUBLIC_API_AES_KEY` only in `afterEach`,
 so its "built without a key" case passed only because CI's test job is the one job
 without that variable — D15's trap biting the test instead of the build.
-
-### Carried debt from this phase
-- [ ] A `notBase64` reject vector. The three disagree today: Swift refuses an
-  embedded newline, Android's decoder skips CR/LF, and JS throws a raw
-  `InvalidCharacterError` from outside its `try`. Adding the vector fails until
-  they are unified — which is the point, and is why it is a separate change.
-- [ ] `Envelope.Failure` in Kotlin is a sealed class of singleton `object`s, so a
-  thrown failure carries no stack of its own. Fine for a value-like refusal,
-  worth revisiting if one ever needs context.
-- [ ] The Kotlin parity suite runs only in the two Android CI jobs (the only place
-  with that toolchain) and on demand via `npm run verify:envelope:android`. The
-  Swift harness runs in `check:structure`, so it executes on every commit on a
-  developer's machine and skips on Linux.
 
 ### D27 — The titles Shortcuts shows are localized too, and the prompt still is not
 Every string the intents display — 11 titles, 10 descriptions, 5 parameter
@@ -610,94 +598,3 @@ iOS half remains a contained swap whenever `latest` moves.
 next takes an Expo SDK upgrade — whichever comes first. The thing worth stealing
 before then is Inline Modules as the placement mechanism, which would delete the
 plugin's pbxproj code.
-
-## Open questions for the user
-
-- **A bare `zh` covers both Chinese scripts.** Apple's own resources are
-  `zh_CN` / `zh_HK` / `zh_TW`, and modern apps ship `zh-Hans` / `zh-Hant`. iOS
-  falls back from `zh-Hant` to `zh`, so the phrases DO resolve — a Traditional
-  Chinese device just gets the Simplified wording. That is exactly what the app
-  already does for its in-app copy, so the Siri phrases are consistent with it
-  rather than worse. Splitting the script is an app-wide locale decision, not an
-  assistant one.
-- **~190 strings of build-only weight in the JS bundle.** `osIntentPhrases` and
-  `osShortcutLabels` are read by the generators at build time and by no `t()`
-  call, yet they ship in every locale. Moving them to a Node-only catalogue
-  would take them out of the bundle and out of rule 11's scope; keeping them
-  where they are keeps every translated string in one place for a translator.
-  Worth a decision, not worth guessing at.
-
-## Debt from review, carried into Phase 3/4
-
-- [ ] Rule 5: `arg: 'next'` (repeats `StepCursor.Next`) and `arg: 'myRecipes'`
-  (an `AssistantNavigationTargets` key, written for the third time). Domain cannot
-  import presentation → the navigation-target vocabulary has to move to `@domain`
-  or `@core/constants`.
-- [ ] The `'recipe'` entity kind is spelled out in three languages (TS/Swift/Kotlin)
-  — could be brought under rule W.
-- [ ] `subscribe` is defined on both sides but no module calls `sendEvent`; the
-  running-app path opens in Phase 3.
-
-## Phase 3 — iOS App Intents
-
-- [x] `RecipelySearchIntent` — `ShowInAppSearchResultsIntent`, the only single-turn path for free text (D1, D12)
-- [x] `RecipelyAskIntent` — parameterless phrase + `requestValueDialog` (two turns, D1). Answers headless when it can, comes forward when the answer drives the app or there is no token (D24)
-- [x] 9 singular intents (openRecipe, save, like, startTimer, readIngredients, readNextStep, generate, import, myRecipes)
-- [x] `RecipeAppEntity` + `RecipeEntityQuery` (`EntityStringQuery`, diacritic- and case-folded with the current locale so "kofte" finds "Köfte")
-- [x] `RecipelyRequest` — one enqueue helper, so eleven intents do not each spell the four keys
-- [x] `AppShortcutsProvider` with 10 phrases (the maximum Apple allows, D18) — **English literals**
-- [x] The five `CONFIRMED_ACTIONS` are absent from the catalogue entirely, so no phrase can reach one (rule X)
-- [x] **Verified in a real build**: `BUILD SUCCEEDED`, 11 intents + 1 entity + 1 query extracted into `Metadata.appintents`, all `isDiscoverable: true`, 10 app shortcuts
-- [x] Rule W widened to read the Swift named-argument form (`id:` / `action:`), proved by breaking it
-- [x] Phrases for 14 languages, generated from i18n into `<lang>.lproj/AppShortcuts.strings` (D19)
-- [x] **Core Spotlight, the stopgap D20 named** — the catalogue the app already publishes
-  (24 saved + created recipes) is now written to `CSSearchableIndex` from the pod, where
-  nothing blocks it: `IndexedEntity` is what needed an app-target entry point, and plain
-  `CSSearchableItem` does not. Signing out publishes an empty list, which deletes the
-  domain — the privacy note on `useOsEntityCatalogueSync` finally means something.
-  A tap arrives as `CSSearchableItemActionType` and `RecipelySpotlightSubscriber` re-opens
-  it as `<scheme>://assistant/run?id=openRecipe&action=openRecipe&arg=<id>` — the same road
-  Android's shortcuts take, rather than a second way in. Six checks in
-  `scripts/verify-swift-spotlight.sh`, in the gate chain and on both macOS CI jobs.
-- [ ] `IndexedEntity` for Spotlight semantic search — **still blocked on an entry point, see D20.**
-  The stopgap above finds a recipe by its NAME; the entity would find it by meaning.
-- [ ] Control Center control — needs a widget extension target, which prebuild does not create today
-- [ ] Onscreen entity annotation on recipe detail — needs `NSUserActivity` plumbed from the RN side
-- [ ] Action Button — free once the intents exist; needs on-device confirmation only
-
-## Phase 4 — Android
-
-- [x] `recipely_shortcuts.xml` generated from the catalogue (4 static shortcuts) + labels in 14 languages, verified inside the APK with `aapt2` (D21)
-- [x] The launcher meta-data sits on the **launcher activity**, not `<application>` — on the latter Android ignores it silently
-- [x] Dynamic shortcuts (`pushDynamicShortcut`) — budget asked of `getMaxShortcutCountPerActivity` rather than guessed, minus the static four
-- [x] Rule AE — the generated shortcuts must describe the catalogue that exists
-- [x] 14 tests on the generated ARTIFACTS (`scripts/__tests__/generated-os-artifacts.test.js`), because a freshness rule compares a generator with itself — each of the three shipped bugs was re-introduced and caught
-- [x] CI asserts every shipped language reached the generated project (rule 23c's precedent applied to localization)
-- [x] Rule W widened to the link shape: `id=` mandatory, `action=` optional (proved by removing the id)
-- [x] Quick Settings tile — declared in the **library** manifest so Gradle merges it (a service that ships with the code implementing it cannot fall out of step); verified in the APK
-- [x] `startActivityAndCollapse(Intent)` throws on API 34+, so the `PendingIntent` branch is required rather than tidy
-- [x] Widget — a button, not a data surface: `updatePeriodMillis` is 0 because there is nothing to refresh, and a widget that never refreshes cannot go stale
-- [x] ~~`recipely://assistant/run` intent filter~~ — Expo already registers the variant scheme from `app.config.ts`; verified in the generated manifest
-- [ ] AppFunctions service — **deferred on purpose, see D22.** alpha11 now matches the docs; what is missing is a caller — the EAP is at capacity and Gemini calls nothing without it.
-- [x] `androidx.core:core-google-shortcuts:1.1.0` (so shortcuts reach Google's surfaces, D5) — on the classpath since Phase 1; pulls `play-services-appindex` + `tink-android`, R8 clean
-- [x] ~~Apply to the Google AppFunctions EAP form~~ — checked 2026-09-11: the form is closed, *"The Early Access Program is currently at capacity."* There is nothing to apply to; Gemini stays out of reach until Google opens it
-- [x] R8 keep rules — **not needed**, measured rather than assumed: `:app:minifyReleaseWithR8` is green and not one of its warnings names `assistantkit`. The tile and the widget are reached from the manifest, from which AGP generates keeps of its own.
-
-## Phase 5 — Gates and docs
-
-- [x] `check:structure` rule W — catalogue ↔ Swift/XML drift
-- [x] `check:structure` rule **AD** — the Siri phrase catalogue is fresh (letters reassigned, D16)
-- [x] `check:structure` rule **AE** — the Android shortcuts are fresh; "nothing destructive is headless" is rule **X**
-- [x] CI: the generated `Info.plist` carries the App Group (matching the entitlement), the base URL and the envelope key; no background-audio mode (both iOS jobs, each proved red on a broken artifact)
-- [x] CI: the generated `AndroidManifest.xml` references `@xml/recipely_shortcuts`, the XML exists, and no scheme token is left (both Android jobs)
-- [x] CI: both envelope parity runners — `:recipely-assistant-kit:testDebugUnitTest` on the Android jobs and `scripts/verify-swift-envelope.sh` on the macOS ones
-- [x] `docs/regressions.md` class rows
-- [x] `npm run map`
-
----
-
-## If the session ends
-
-1. `git checkout feat/os-assistants-spike`
-2. Find the first unchecked box in this file.
-3. Read the Phase 0 findings — they take precedence **over** the plan text.

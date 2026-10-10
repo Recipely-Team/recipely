@@ -286,10 +286,3 @@ read it before changing code a rule guards. Rule numbers are cited by scripts, a
 Husky runs on every `git commit`: **lint-staged** (`eslint --fix` on staged `.ts` / `.tsx`), **tsc --noEmit**,
 and **check:structure** (`scripts/check-structure.mjs` and its chain — `architecture.md` §Pre-Commit Quality
 Gate). Emergency bypass: `git commit --no-verify` (document the reason in the commit message).
-
-## Team & Workflow
-
-The agent team and the git flow are defined once, above — see
-**[Agent workflow (inline by default)](#agent-workflow-inline-by-default)**. That section is authoritative. The
-roster and per-agent rules also live in `.claude/agents/` (see `.claude/agents/INDEX.md`); step-by-step
-procedures live in the skills; `WORKFLOW.md` is an index of them.

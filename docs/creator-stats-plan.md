@@ -1,6 +1,6 @@
 # Creator stats — plan
 
-**Status:** v1 `building` · v2, v3 `idea` (see [roadmap §12](roadmap.md#12-creator-stats))
+**Status:** v1 `shipped` to dev (#562, backend #390) · v2, v3 `idea` (see [roadmap §12](roadmap.md#12-creator-stats))
 
 A panel where a creator who runs comment-to-DM automations sees what they bring
 in. Instagram's own Insights already shows reach and audience; repeating it
