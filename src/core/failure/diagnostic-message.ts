@@ -178,6 +178,12 @@ export const DiagnosticMessage = {
     foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
     foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
   },
+  fridge: {
+    noPhotos: 'A fridge scan needs at least one photo',
+    tooManyPhotos: 'A fridge scan takes at most 3 photos',
+    ingredientsRequired: 'Fridge ideas need at least one ingredient',
+    difficultyInvalid: (raw: string): string => `Not a recipe difficulty: ${raw}`,
+  },
   shopping: {
     idRequired: 'A shopping item id must be non-empty',
     labelRequired: 'A shopping item needs a label',

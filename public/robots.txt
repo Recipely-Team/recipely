@@ -33,6 +33,7 @@ Disallow: /instagram-connected
 Disallow: /create-recipe
 Disallow: /import-recipe
 Disallow: /ai-generate
+Disallow: /fridge
 
 # Cook mode: the same recipe, one step at a time; the recipe page is the content.
 Disallow: /recipes/*/cook

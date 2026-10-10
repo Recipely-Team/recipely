@@ -50,6 +50,13 @@ export const ApiRoutes = {
     /** POST marks eaten (logs to the diary); DELETE takes it back. */
     entryEaten: (id: string): string => `/me/meal-plan/entries/${encodeURIComponent(id)}/eaten`,
   },
+  /** Cook from my fridge; both calls share the user's daily AI allowance. */
+  fridge: {
+    /** POST multipart `photos` (1–3) + optional `locale`. */
+    scan: '/fridge/scan',
+    /** POST JSON ingredients + filters. */
+    ideas: '/fridge/ideas',
+  },
   recipes: {
     root: '/recipes',
     trending: '/recipes/trending',

@@ -89,6 +89,20 @@ export const ErrorMessageKey = {
   /** The day's meal-parse allowance (20) is used up. */
   mealParseQuotaExceeded: 'errors.meal_parse.quota_exceeded',
   mealParseUnavailable: 'errors.meal_parse.unavailable',
+  // Cook from my fridge (backend `/fridge/scan`, `/fridge/ideas`)
+  /** The day's AI allowance (20 calls, shared by scans and ideas) is used up. */
+  fridgeQuotaExceeded: 'errors.fridge.quota_exceeded',
+  fridgeNoPhotos: 'errors.fridge.no_photos',
+  fridgeTooManyPhotos: 'errors.fridge.too_many_photos',
+  fridgeUnsupportedPhoto: 'errors.fridge.unsupported_photo',
+  fridgePhotoRejected: 'errors.fridge.photo_rejected',
+  fridgePhotoUnchecked: 'errors.fridge.photo_unchecked',
+  /** The photos showed no food the scan could name. */
+  fridgeNothingRecognised: 'errors.fridge.nothing_recognised',
+  fridgeIngredientsRequired: 'errors.fridge.ingredients_required',
+  fridgeIngredientsInvalid: 'errors.fridge.ingredients_invalid',
+  fridgeOptionsInvalid: 'errors.fridge.options_invalid',
+  fridgeUnavailable: 'errors.fridge.unavailable',
   /** The moderation check refused the text or photo. */
   contentBlocked: 'errors.validation.content_blocked',
   /** No AI provider is configured on the server — to the user, the feature is unavailable. */
