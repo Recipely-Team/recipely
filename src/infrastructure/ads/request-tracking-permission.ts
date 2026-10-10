@@ -8,8 +8,9 @@ import { AppStateStatusValue } from '@infrastructure/constants/app-state-status'
  * @remarks
  * - **Why it exists.** App Review rejected 1.2.0 (5.1.2(i)): the consent form
  *   speaks of personalised ads, and iOS requires the ATT prompt before any data
- *   used for tracking is collected. The ads SDK reads the answer itself; a
- *   decline leaves ads contextual.
+ *   used for tracking is collected. `AdsService` asks it after the consent form
+ *   (5.1.1(iv)); the ads SDK reads the answer itself, and a decline leaves ads
+ *   contextual.
  * - **It waits for `active`.** iOS silently drops the request (answering
  *   "not determined", no prompt) while the app is still launching, and this
  *   runs from the launch warm-up.

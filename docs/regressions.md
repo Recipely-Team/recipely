@@ -2773,3 +2773,11 @@ init; the `expo-tracking-transparency` plugin writes `NSUserTrackingUsageDescrip
 `request-tracking-permission.test.ts`, which also fails if `app.json` installs the ads SDK without
 the ATT usage string. **What a consent form says is a privacy claim: the OS permission and the App
 Store label have to say the same thing.**
+
+**Rejected again, the other way round (5.1.1(iv), 2026-10-10):** with ATT first, a user who chose
+"Ask App Not to Track" was then shown the consent form asking about personalised ads, the same
+question a second time. The order is now consent form → ATT → SDK, and ATT is skipped where the form
+was answered without personalised ads (`AdsService.mayAskTracking`). Covered by `ads-service.test.ts`
+("shows the consent form before tracking permission…", "does not ask for tracking after the form was
+answered without personalised ads"). **A privacy question is asked once: the order of two prompts is
+part of what they say.**
