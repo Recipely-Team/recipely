@@ -4,8 +4,8 @@ Subagents for this project. Each `*.md` file (except this one) is a Claude Code 
 frontmatter — auto-discovered. Each preloads the project skills it needs through the `skills:`
 frontmatter field, so it does not have to read `CLAUDE.md` or `architecture.md` for procedures.
 
-**Use these by default, without being asked**, subject to the Token economy rules in `CLAUDE.md`.
-Skip the team only for genuinely trivial one-liners.
+**The lead works inline by default.** Use these only for large, genuinely parallel work, and ask the
+user before any multi-agent effort (`CLAUDE.md` token budget B1–B6).
 
 ## Roster
 

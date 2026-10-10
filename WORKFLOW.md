@@ -1,20 +1,18 @@
 # Development Workflow
 
-> **Use the agent team by default, without being asked.** For any non-trivial task, delegate
-> to the subagents in `.claude/agents/` (`ts-developer`, `rn-developer`, `test-developer`,
-> `ui-designer`, `code-reviewer`). The user has authorized the whole flow — branch → implement →
-> gate → `code-reviewer` approval → push → PR to `dev` → merge to `dev` — **without asking**.
-> Stop only on failures (lint/tsc/jest/check:structure red, review requests changes, unresolvable
-> conflict) or the release-only steps (promoting `dev → main`, production Firebase Hosting deploy),
-> which are **stop-and-ask**. The authoritative summary is root `CLAUDE.md` → "Agent workflow (use
-> by default)".
+> **The lead works inline by default.** Agents in `.claude/agents/` are for large, genuinely
+> parallel work, and more than one needs the user's yes first (CLAUDE.md token budget B1–B6).
+> The user has authorized the whole flow — branch → implement → gate → review → push → PR to
+> `dev` → merge to `dev` — **without asking**. Stop only on failures or the release-only steps
+> (promoting `dev → main`, production Firebase Hosting deploy). The authoritative summary is root
+> `CLAUDE.md` → "Agent workflow (inline by default)".
 
 The step-by-step procedures live as Claude Code skills in `.claude/skills/`, loaded on demand:
 
 | Step | Skill |
 |---|---|
 | 1. Branch from `dev`: `feat/<short-description>`, `fix/<short-description>`, `refactor/<short-description>`, `chore/<short-description>` | [`pr-flow`](.claude/skills/pr-flow/SKILL.md) |
-| 2. Split the work across agents (UI → `rn-developer`, TS/domain → `ts-developer`, tests → `test-developer`, design → `ui-designer`, review → `code-reviewer`) | `CLAUDE.md` Roster + Token economy |
+| 2. Inline by default; split across agents only for large parallel work, after asking | `CLAUDE.md` Token budget + Roster |
 | 3. Develop — atomic conventional commits | [`pr-flow`](.claude/skills/pr-flow/SKILL.md), [`architecture-rules`](.claude/skills/architecture-rules/SKILL.md) |
 | 4. Code review before merge — one diff-scoped `code-reviewer` pass; DDD guardrails (CLAUDE.md §17-20) are blocking | [`.claude/agents/code-reviewer.md`](.claude/agents/code-reviewer.md) |
 | 5. Push and open a PR to `dev` | [`pr-flow`](.claude/skills/pr-flow/SKILL.md) |
