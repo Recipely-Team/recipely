@@ -10,7 +10,7 @@ interface RemindersSetting {
 }
 
 /**
- * The Settings "Recipe reminders" switch.
+ * The "Recipe reminders" switch, on Profile and on Settings.
  *
  * @remarks
  * - **Shows the truth:** on only with a stored yes and a granted OS permission, so a permission

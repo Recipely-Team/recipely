@@ -19,6 +19,7 @@ export const it = {
   },
   errors: {
     retry: 'Riprova',
+    loadMoreFailed: "Impossibile caricare altro",
     back: 'Torna indietro',
     dismiss: 'Chiudi',
     genericTitle: 'Qualcosa è andato storto',
@@ -566,6 +567,7 @@ export const it = {
     webEmptyBody: 'Prova filtri o termini di ricerca diversi.',
     refreshing: 'Aggiornamento…',
     backToRecipes: 'Torna alle ricette',
+    browseRecipes: "Sfoglia le ricette",
     signInToLike: 'Accedi per mettere Mi piace a questa ricetta.',
     signInToSave: 'Accedi per salvare questa ricetta.',
     copyToDrafts: 'Copia nelle mie bozze',
@@ -1251,7 +1253,6 @@ export const it = {
     addedSummary: "Lista della spesa: {added} aggiunti, {merged} uniti",
     view: "Vedi",
     signInToAdd: "Accedi per tenere una lista della spesa.",
-    loadMoreFailed: "Impossibile caricare altri articoli",
     tryAgain: "Riprova",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const it = {
   signInPrompt: {
     title: 'Accesso richiesto',
     message: 'Accedi per mettere Mi piace, salvare e commentare le ricette.',
+    myRecipes: "Accedi per avere ricette salvate, Mi piace e bozze in un unico posto.",
+    diary: "Accedi per tenere un diario alimentare e seguire ciò che mangi.",
+    profile: "Accedi per vedere il tuo profilo, i promemoria e le impostazioni.",
+    notifications: "Accedi per vedere le tue notifiche.",
     cta: 'Accedi',
   },
   register: {

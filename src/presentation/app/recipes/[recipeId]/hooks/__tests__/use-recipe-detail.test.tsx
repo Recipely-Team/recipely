@@ -510,3 +510,47 @@ describe('useRecipeDetail — the hero photos', () => {
     expect(latest().media.map((m) => m.url)).toEqual(['https://cdn.example.com/c.webp']);
   });
 });
+
+/**
+ * Reported as: "I tapped the bin on my comment and it was gone." The trash icon
+ * deleted the comment on the first tap, while `comments.deleteConfirm` sat in
+ * all fourteen catalogues unused. The tap now opens the confirm sheet; the
+ * delete waits for yes.
+ */
+describe('useRecipeDetail — deleting a comment', () => {
+  const stubStore = (deleteComment: jest.Mock): BoundStore<CommentsStoreState> =>
+    create<CommentsStoreState>(() => ({
+      byRecipe: { [RECIPE_ID]: defaultRecipeCommentsState() },
+      load: jest.fn(),
+      loadMore: jest.fn(),
+      addComment: jest.fn(),
+      deleteComment,
+      toggleLike: jest.fn(),
+      clear: jest.fn(),
+    })) as unknown as BoundStore<CommentsStoreState>;
+
+  it('a tap on the bin asks first and deletes nothing yet', () => {
+    const deleteComment = jest.fn().mockResolvedValue(true);
+    const { latest } = driveHook(stubStore(deleteComment));
+
+    act(() => latest().onDeleteComment('c1'));
+
+    expect(deleteComment).not.toHaveBeenCalled();
+    expect(latest().commentDeletePending).toBe(true);
+  });
+
+  it('deletes the comment once the author confirms, and keeps it on cancel', async () => {
+    const deleteComment = jest.fn().mockResolvedValue(true);
+    const { latest } = driveHook(stubStore(deleteComment));
+
+    act(() => latest().onDeleteComment('c1'));
+    act(() => latest().onCancelDeleteComment());
+    expect(deleteComment).not.toHaveBeenCalled();
+
+    act(() => latest().onDeleteComment('c1'));
+    await act(async () => latest().onConfirmDeleteComment());
+
+    expect(deleteComment).toHaveBeenCalledWith(RECIPE_ID, 'c1');
+    expect(latest().commentDeletePending).toBe(false);
+  });
+});

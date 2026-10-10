@@ -105,6 +105,7 @@ const baseProps = (): MyRecipesListProps => ({
   isFirstLoad: false,
   loadFailure: null,
   isLoadingMoreDrafts: false,
+  draftsMoreFailure: null,
 });
 
 const render = (overrides: Partial<MyRecipesListProps>): ReactTestInstance => {

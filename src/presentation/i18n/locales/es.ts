@@ -19,6 +19,7 @@ export const es = {
   },
   errors: {
     retry: 'Intentar de nuevo',
+    loadMoreFailed: "No se pudo cargar más",
     back: 'Volver',
     dismiss: 'Cerrar',
     genericTitle: 'Algo salió mal',
@@ -566,6 +567,7 @@ export const es = {
     webEmptyBody: 'Prueba con otros filtros o términos de búsqueda.',
     refreshing: 'Actualizando…',
     backToRecipes: 'Volver a recetas',
+    browseRecipes: "Explorar recetas",
     signInToLike: 'Inicia sesión para indicar que te gusta esta receta.',
     signInToSave: 'Inicia sesión para guardar esta receta.',
     copyToDrafts: 'Copiar a mis borradores',
@@ -1251,7 +1253,6 @@ export const es = {
     addedSummary: "Lista de la compra: {added} añadidos, {merged} combinados",
     view: "Ver",
     signInToAdd: "Inicia sesión para tener una lista de la compra.",
-    loadMoreFailed: "No se pudieron cargar más artículos",
     tryAgain: "Reintentar",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const es = {
   signInPrompt: {
     title: 'Debes iniciar sesión',
     message: 'Inicia sesión para indicar que te gustan las recetas, guardarlas y comentarlas.',
+    myRecipes: "Inicia sesión para tener tus recetas guardadas, tus me gusta y tus borradores en un solo lugar.",
+    diary: "Inicia sesión para llevar un diario de comidas y registrar lo que comes.",
+    profile: "Inicia sesión para ver tu perfil, tus recordatorios y tus ajustes.",
+    notifications: "Inicia sesión para ver tus notificaciones.",
     cta: 'Iniciar sesión',
   },
   register: {

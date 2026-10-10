@@ -1,5 +1,7 @@
 import { StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
+import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
+import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { RoutePaths } from '@presentation/base/constants';
 import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-bar-button';
@@ -15,9 +17,12 @@ import { ValueConstants } from '@core/constants';
  * @remarks
  * - **Reads the unread count itself** and opens /notifications itself, so the
  *   five tab screens place it without threading store state through props.
+ * - **A guest gets a reason, not a login wall** — the sign-in sheet says what
+ *   notifications are for ({@link useGuestRouteGate}).
  */
 export const NotificationsBellButton = (): React.JSX.Element => {
   const router = useRouter();
+  const gate = useGuestRouteGate();
   const { notificationsStore } = useStores();
   const unreadCount = notificationsStore((s) => s.unreadCount);
   const hasUnread = unreadCount > ValueConstants.zero;
@@ -26,9 +31,10 @@ export const NotificationsBellButton = (): React.JSX.Element => {
       <TabAppBarButton
         icon={hasUnread ? 'notifications' : 'notifications-outline'}
         accessibilityLabel={hasUnread ? `${t().notifications.title}, ${unreadCount}` : t().notifications.title}
-        onPress={() => router.push(RoutePaths.notifications)}
+        onPress={() => gate.open(RoutePaths.notifications, (path) => router.push(path as Href))}
       />
       <CountBadge count={unreadCount} style={styles.badge} />
+      <SignInPromptSheet {...gate.prompt} />
     </View>
   );
 };

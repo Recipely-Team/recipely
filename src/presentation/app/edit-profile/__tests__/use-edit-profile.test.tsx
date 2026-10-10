@@ -18,7 +18,7 @@ import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/
  * render, with no render in between.
  */
 
-jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn() }) }));
+jest.mock('expo-router', () => ({ useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() }) }));
 
 jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
   useAvatarUpload: () => ({

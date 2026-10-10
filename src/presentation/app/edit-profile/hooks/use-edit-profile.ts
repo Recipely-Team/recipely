@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter } from 'expo-router';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
+import { RoutePaths } from '@presentation/base/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
@@ -33,7 +34,7 @@ import { isBlank } from '@core/guards/type-guards';
  *   same stale render would be wrong in the same way.
  */
 export const useEditProfile = (): UseEditProfileResult => {
-  const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.profile);
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore } = useStores();
@@ -81,7 +82,7 @@ export const useEditProfile = (): UseEditProfileResult => {
         return EditProfileSaveOutcome.Failed;
       }
       showSuccessToast(t().editProfile.saved);
-      router.back();
+      goBack();
       return EditProfileSaveOutcome.Saved;
     } finally {
       setIsSaving(false);
@@ -102,7 +103,7 @@ export const useEditProfile = (): UseEditProfileResult => {
     isDirty: dirty,
     isSaving,
     onSave,
-    onBack: () => router.back(),
+    onBack: goBack,
     errorDialog: saveError ?? uploadError,
     onCloseErrorDialog: () => {
       setSaveError(null);

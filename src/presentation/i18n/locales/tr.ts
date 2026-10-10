@@ -21,6 +21,7 @@ export const tr: TranslationsType = {
   },
   errors: {
     retry: 'Tekrar dene',
+    loadMoreFailed: "Daha fazlası yüklenemedi",
     back: 'Geri dön',
     dismiss: 'Kapat',
     genericTitle: 'Bir şeyler ters gitti',
@@ -569,6 +570,7 @@ export const tr: TranslationsType = {
     webEmptyBody: 'Farklı bir filtre ya da arama dene.',
     refreshing: 'Yenileniyor…',
     backToRecipes: 'Tariflere dön',
+    browseRecipes: "Tariflere göz at",
     signInToLike: 'Bu tarifi beğenmek için giriş yap.',
     signInToSave: 'Bu tarifi kaydetmek için giriş yap.',
     copyToDrafts: 'Taslaklarıma kopyala',
@@ -1255,7 +1257,6 @@ export const tr: TranslationsType = {
     addedSummary: "Alışveriş listesi: {added} eklendi, {merged} birleştirildi",
     view: "Görüntüle",
     signInToAdd: "Alışveriş listesi tutmak için giriş yapın.",
-    loadMoreFailed: "Daha fazla ürün yüklenemedi",
     tryAgain: "Tekrar dene",
   },
   comments: {
@@ -1276,6 +1277,10 @@ export const tr: TranslationsType = {
   signInPrompt: {
     title: 'Giriş gerekli',
     message: 'Tarifleri beğenmek, kaydetmek ve yorum yapmak için giriş yap.',
+    myRecipes: "Kaydettiğin tarifleri, beğenilerini ve taslaklarını tek yerde tutmak için giriş yap.",
+    diary: "Yemek günlüğü tutmak ve ne yediğini takip etmek için giriş yap.",
+    profile: "Profilini, hatırlatıcılarını ve ayarlarını görmek için giriş yap.",
+    notifications: "Bildirimlerini görmek için giriş yap.",
     cta: 'Giriş yap',
   },
   register: {

@@ -19,6 +19,7 @@ export const ja = {
   },
   errors: {
     retry: 'もう一度試す',
+    loadMoreFailed: "続きを読み込めませんでした",
     back: '戻る',
     dismiss: '閉じる',
     genericTitle: '問題が発生しました',
@@ -566,6 +567,7 @@ export const ja = {
     webEmptyBody: '別のフィルターや検索語をお試しください。',
     refreshing: '更新中…',
     backToRecipes: 'レシピ一覧に戻る',
+    browseRecipes: "レシピを見る",
     signInToLike: 'このレシピにいいねするにはログインしてください。',
     signInToSave: 'このレシピを保存するにはログインしてください。',
     copyToDrafts: '下書きにコピー',
@@ -1251,7 +1253,6 @@ export const ja = {
     addedSummary: "買い物リスト: {added} 件追加、{merged} 件統合",
     view: "表示",
     signInToAdd: "買い物リストを使うにはログインしてください。",
-    loadMoreFailed: "これ以上読み込めませんでした",
     tryAgain: "再試行",
   },
   comments: {
@@ -1272,6 +1273,10 @@ export const ja = {
   signInPrompt: {
     title: 'ログインが必要です',
     message: 'レシピへのいいね、保存、コメントにはログインしてください。',
+    myRecipes: "保存したレシピ、いいね、下書きをまとめて管理するにはログインしてください。",
+    diary: "食事日記をつけて食べたものを記録するにはログインしてください。",
+    profile: "プロフィール、リマインダー、設定を見るにはログインしてください。",
+    notifications: "通知を見るにはログインしてください。",
     cta: 'ログイン',
   },
   register: {

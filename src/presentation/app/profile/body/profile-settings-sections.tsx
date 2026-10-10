@@ -11,6 +11,7 @@ import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
+import { SettingsNotificationsSection } from '@presentation/base/widgets/settings/settings-notifications-section';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
@@ -23,6 +24,15 @@ import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
 
+/**
+ * The settings Profile shows under the identity block: appearance, reminders,
+ * account, support and about.
+ *
+ * @remarks
+ * - **Reminders live here too.** `/settings` is linked from nowhere, and this
+ *   copy of the list had no reminders switch — a user who accepted the feed's
+ *   reminders offer had no way to turn them off again.
+ */
 export const ProfileSettingsSections = (): React.JSX.Element => {
   const router = useRouter();
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
@@ -63,6 +73,8 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
 
       <SectionHeader title={t().settings.themePalette} />
       <ThemeGrid selectedThemeId={themeId} onSelect={setThemeId} />
+
+      <SettingsNotificationsSection />
 
       <SectionHeader title={t().settings.account} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>

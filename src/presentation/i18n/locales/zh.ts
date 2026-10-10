@@ -19,6 +19,7 @@ export const zh = {
   },
   errors: {
     retry: '再试一次',
+    loadMoreFailed: "无法加载更多",
     back: '返回',
     dismiss: '关闭',
     genericTitle: '出了点问题',
@@ -569,6 +570,7 @@ export const zh = {
     webEmptyBody: '试试其他筛选条件或关键词。',
     refreshing: '刷新中…',
     backToRecipes: '返回食谱',
+    browseRecipes: "浏览食谱",
     signInToLike: '登录后即可喜欢这份食谱。',
     signInToSave: '登录后即可收藏这份食谱。',
     copyToDrafts: '复制到我的草稿',
@@ -1255,7 +1257,6 @@ export const zh = {
     addedSummary: "购物清单：新增 {added} 项，合并 {merged} 项",
     view: "查看",
     signInToAdd: "登录后即可使用购物清单。",
-    loadMoreFailed: "无法加载更多物品",
     tryAgain: "重试",
   },
   comments: {
@@ -1276,6 +1277,10 @@ export const zh = {
   signInPrompt: {
     title: '需要登录',
     message: '登录后即可点赞、收藏和评论食谱。',
+    myRecipes: "登录后即可在一处管理收藏的食谱、点赞和草稿。",
+    diary: "登录后即可记录饮食日记，追踪你吃了什么。",
+    profile: "登录后即可查看你的个人资料、提醒和设置。",
+    notifications: "登录后即可查看你的通知。",
     cta: '登录',
   },
   register: {

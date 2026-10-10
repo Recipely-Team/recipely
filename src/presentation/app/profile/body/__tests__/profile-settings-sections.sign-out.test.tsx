@@ -34,6 +34,8 @@ const makeStores = (): ApplicationStores =>
       signOut,
       deleteAccount: jest.fn<Promise<null>, []>(() => Promise.resolve(null)),
     })),
+    getRemindersEnabled: { execute: jest.fn(() => Promise.resolve(false)) },
+    setRemindersChoice: { execute: jest.fn(() => Promise.resolve(false)) },
   }) as unknown as ApplicationStores;
 
 /** The pressable carrying the given label, or undefined. */

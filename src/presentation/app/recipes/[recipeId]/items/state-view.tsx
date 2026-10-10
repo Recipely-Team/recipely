@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import type Ionicons from '@expo/vector-icons/Ionicons';
-import { UnknownFailure } from '@core/failure';
+import { FailureCode, UnknownFailure } from '@core/failure';
 import { ErrorState } from '@presentation/base/widgets/feedback/error-state';
 import {
   failureContent,
@@ -19,7 +19,10 @@ export interface StateViewProps {
   failure?: Failure;
   onRetry?: () => void;
   retryLabel?: string;
-  /** Optional secondary action on the error state (e.g. "Get help"). */
+  /**
+   * Optional way out on the error state (e.g. "Browse recipes"). For a NotFound
+   * failure it replaces "Try again" as the primary action.
+   */
   onSecondary?: () => void;
   secondaryLabel?: string;
   /** Small optional diagnostic code shown under the error actions. */
@@ -38,6 +41,11 @@ const FALLBACK_EMPTY_ICON: keyof typeof Ionicons.glyphMap = 'file-tray-outline';
  * `status`. Error and empty states use the shared `ErrorState` design — fully
  * localized, severity-aware, and always offering a way out. The user-facing
  * copy is derived from the failure's class, never its raw message.
+ *
+ * @remarks
+ * - **A NotFound offers no "Try again".** An old shared link or a notification
+ *   about a deleted recipe can never load, so retrying was a dead end; when a
+ *   secondary action is given it is promoted to the only (primary) action.
  */
 export const StateView = ({
   status,
@@ -62,6 +70,20 @@ export const StateView = ({
     case StateViewStatus.Error: {
       const f = failure ?? new UnknownFailure();
       const content = failureContent(f);
+      // A recipe that is gone stays gone: retrying cannot succeed, so the way out becomes the primary action.
+      if (f.code === FailureCode.NotFound && onSecondary !== undefined && secondaryLabel !== undefined) {
+        return (
+          <ErrorState
+            severity={failureSeverity(f)}
+            icon={failureIcon(f)}
+            title={content.title}
+            body={content.body}
+            primaryLabel={secondaryLabel}
+            onPrimary={onSecondary}
+            code={code}
+          />
+        );
+      }
       return (
         <ErrorState
           severity={failureSeverity(f)}

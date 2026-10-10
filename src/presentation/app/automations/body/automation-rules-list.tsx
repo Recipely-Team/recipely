@@ -1,4 +1,5 @@
 import { ActivityIndicator, FlatList, StyleSheet, View } from "react-native";
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from "@application/store/store-status";
 import { useTheme } from "@presentation/base/theme/context/use-theme";
 import type { AssistantScrollableProps } from "@presentation/base/hooks/assistant/actions/assistant-scrollable-props";
@@ -51,9 +52,11 @@ export const AutomationRulesList = ({ vm, scrollable }: AutomationRulesListProps
       }
       ListFooterComponent={
         <>
-          {rules.status === StoreStatus.Loaded && rules.isLoadingMore ? (
-            <ActivityIndicator color={colors.primary} />
-          ) : null}
+          <FeedFooter
+            isLoadingMore={rules.status === StoreStatus.Loaded && rules.isLoadingMore}
+            failure={rules.status === StoreStatus.Loaded ? rules.moreFailure : null}
+            onRetry={vm.onEndReached}
+          />
           <RulesNote />
         </>
       }
