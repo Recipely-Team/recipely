@@ -2847,3 +2847,22 @@ toast and form banner is announced on iOS (`useAnnounce`); sign-out goes to the 
 "Signed out" toast. *Guard:* `use-edit-profile.discard.test.tsx`, `toast.timing.test.tsx`, the
 sign-out test in `profile-settings-sections.sign-out.test.tsx`. **Leaving should never cost the
 user something they did not choose to give up.**
+
+---
+
+## Audit follow-ups, Oct 2026: four small classes
+
+**A removal with no way back.** Removing a diary entry or a shopping item was final. *Now:* both show an
+Undo toast that logs the same thing again (`FoodLogEntryEntity.toNew`, `ShoppingItemEntity.toDraft`).
+*The class:* **an action the user can do by accident needs a confirm or an undo — undo for light ones.**
+
+**A number that looks like a link and is not.** Profile's "Recipes" and "Saved" counts did nothing on tap.
+*Now:* they open those My Recipes tabs. *The class:* **if it reads as navigation, it navigates.**
+
+**An empty state that answers the wrong question.** With the Unread filter on and nothing unread, the inbox
+said "No notifications yet". *Now:* "You're all caught up" + Show all (`notifications-empty.test.tsx`); a
+failed "Mark all read" is said, and the list pulls to refresh. *The class:* **an empty list says why it is
+empty, from the filter the user chose.**
+
+**A question asked again after it was answered.** A guest who tapped "Explore" saw the welcome carousel on
+every launch (`use-onboarding.test.tsx`). *The class:* **a choice the user made is remembered.**

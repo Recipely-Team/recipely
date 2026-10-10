@@ -1,5 +1,6 @@
 export const ar = {
   common: {
+    undo: "تراجع",
     showPassword: "إظهار كلمة المرور",
     hidePassword: "إخفاء كلمة المرور",
     openSettings: 'فتح الإعدادات',
@@ -1295,6 +1296,7 @@ export const ar = {
     moreCalories: "50 سعرة أكثر",
   },
   shopping: {
+    removedItem: "تمت إزالة {x}",
     title: "قائمة التسوق",
     entry: "قائمة التسوق",
     entrySub: "كل ما تحتاج إلى شرائه",
@@ -1448,6 +1450,8 @@ export const ar = {
     ingredients: "مكوّنات"
   },
   notifications: {
+    caughtUp: "لقد اطّلعت على كل شيء",
+    showAll: "عرض الكل",
     title: "النشاط",
     markRead: "تعليم الكل كمقروء",
     all: "الكل",

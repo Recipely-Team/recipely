@@ -5,6 +5,8 @@ import type { FoodLogEntryChanges } from '@domain/diary/entry/food-log-entry-cha
 import type { Failure } from '@core/failure';
 import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
+import { toastStore } from '@presentation/base/feedback/toast-store';
+import { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
 import { showErrorToast, showSuccessToast, showWarningToast } from '@presentation/base/feedback/show-toast';
 import { mealLabel } from '@presentation/base/utils/diary/meal-label';
 import { AddFoodRequestKind } from '@presentation/base/widgets/diary/add-food/request/add-food-request-kind';
@@ -106,9 +108,18 @@ export const useAddFoodWrites = (
     if (request?.kind !== AddFoodRequestKind.Edit) return;
     // The store drops the row at once and puts it back if the server refuses.
     onClose();
-    const result = await diaryStore.getState().deleteEntry(request.entry);
-    if (result.ok) showSuccessToast(t().diary.removedToast);
-    else showErrorToast(result.failure);
+    const { entry } = request;
+    const result = await diaryStore.getState().deleteEntry(entry);
+    if (!result.ok) {
+      showErrorToast(result.failure);
+      return;
+    }
+    toastStore.getState().show({
+      severity: SeverityType.Neutral,
+      message: t().diary.removedToast,
+      actionLabel: t().common.undo,
+      onAction: () => void diaryStore.getState().addEntry(entry.toNew()).then((back) => (back.ok ? undefined : showErrorToast(back.failure))),
+    });
   }, [diaryStore, onClose, request]);
 
   return { isSubmitting, add, addMany, update, remove };

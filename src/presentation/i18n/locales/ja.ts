@@ -1,5 +1,6 @@
 export const ja = {
   common: {
+    undo: '元に戻す',
     showPassword: 'パスワードを表示',
     hidePassword: 'パスワードを隠す',
     openSettings: '設定を開く',
@@ -1295,6 +1296,7 @@ export const ja = {
     moreCalories: '50 kcal 増やす',
   },
   shopping: {
+    removedItem: '{x}を削除しました',
     title: "買い物リスト",
     entry: "買い物リスト",
     entrySub: "買う必要があるものすべて",
@@ -1448,6 +1450,8 @@ export const ja = {
     ingredients: '材料',
   },
   notifications: {
+    caughtUp: 'すべて確認済みです',
+    showAll: 'すべて表示',
     title: 'アクティビティ',
     markRead: 'すべて既読にする',
     all: 'すべて',

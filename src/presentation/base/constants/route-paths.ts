@@ -37,6 +37,8 @@ export const RoutePaths = {
   myRecipesCreatedTab: 'created',
   /** Where a pointer to a draft that no longer exists lands. */
   myRecipesDraftsTab: 'drafts',
+  /** The My Recipes tab the profile's "Saved" count opens. */
+  myRecipesSavedTab: 'saved',
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',

@@ -1,5 +1,6 @@
 export const id = {
   common: {
+    undo: 'Urungkan',
     showPassword: 'Tampilkan kata sandi',
     hidePassword: 'Sembunyikan kata sandi',
     openSettings: 'Buka Pengaturan',
@@ -1295,6 +1296,7 @@ export const id = {
     moreCalories: 'Tambah 50 kkal',
   },
   shopping: {
+    removedItem: '{x} dihapus',
     title: "Daftar belanja",
     entry: "Daftar belanja",
     entrySub: "Semua yang perlu Anda beli",
@@ -1448,6 +1450,8 @@ export const id = {
     ingredients: 'bahan',
   },
   notifications: {
+    caughtUp: 'Semua sudah dibaca',
+    showAll: 'Tampilkan semua',
     title: 'Aktivitas',
     markRead: "Tandai semua dibaca",
     all: 'Semua',

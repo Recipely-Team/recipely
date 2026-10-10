@@ -82,9 +82,10 @@ export const configureNotificationsStore = (
         const wasLoaded = get().state.status === StoreStatus.Loaded;
         show(inbox().markAllRead());
         const result = await deps.markAllRead.execute();
-        if (result.ok) return;
+        if (result.ok) return result;
         if (wasLoaded) await reread();
         else await get().refreshUnread();
+        return result;
       },
       markOneRead: async (id: string) => {
         const before = inbox();
