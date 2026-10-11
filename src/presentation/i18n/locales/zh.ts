@@ -524,6 +524,7 @@ export const zh = {
   },
   recipes: {
     removedFromSaved: '已从收藏中移除',
+    resultsCount: { zero: '{n} 份食谱', one: '{n} 份食谱', two: '{n} 份食谱', few: '{n} 份食谱', many: '{n} 份食谱', other: '{n} 份食谱' },
     title: '食谱',
     empty: '没有找到食谱。',
     noPhoto: '暂时还没有照片',
@@ -1029,6 +1030,7 @@ export const zh = {
     retry: '选择其他页面',
   },
   drafts: {
+    itemsCount: { zero: '{n} 项', one: '{n} 项', two: '{n} 项', few: '{n} 项', many: '{n} 项', other: '{n} 项' },
     title: '草稿',
     empty: '还没有草稿。开始创建一份食谱后，会自动保存到这里。',
     untitled: '未命名食谱',
@@ -1301,6 +1303,9 @@ export const zh = {
     moreCalories: '增加 50 千卡',
   },
   shopping: {
+    toBuyCount: "待买 {n} 项",
+    listEmptyShort: "空",
+    cartA11y: "购物清单，待买 {n} 项",
     removedItem: '已移除{x}',
     title: "购物清单",
     entry: "购物清单",
@@ -1349,6 +1354,7 @@ export const zh = {
     signInToLikeComment: '登录后即可为评论点赞。',
   },
   signInPrompt: {
+    shoppingList: '登录后，购物清单可在手机和网页之间同步。',
     title: '需要登录',
     message: '登录后即可点赞、收藏和评论食谱。',
     myRecipes: "登录后即可在一处管理收藏的食谱、点赞和草稿。",

@@ -523,6 +523,7 @@ export const hi: TranslationsType = {
   },
   recipes: {
     removedFromSaved: 'सहेजे गए से हटाया गया',
+    resultsCount: { zero: '{n} रेसिपी', one: '{n} रेसिपी', two: '{n} रेसिपी', few: '{n} रेसिपी', many: '{n} रेसिपी', other: '{n} रेसिपी' },
     title: 'रेसिपी',
     empty: 'कोई रेसिपी नहीं मिली।',
     noPhoto: 'अभी कोई फ़ोटो नहीं है',
@@ -1021,6 +1022,7 @@ export const hi: TranslationsType = {
     retry: 'दूसरे पेज चुनें',
   },
   drafts: {
+    itemsCount: { zero: '{n} आइटम', one: '{n} आइटम', two: '{n} आइटम', few: '{n} आइटम', many: '{n} आइटम', other: '{n} आइटम' },
     title: 'ड्राफ़्ट',
     empty: 'अभी कोई ड्राफ़्ट नहीं है — रेसिपी बनाना शुरू करें, वह अपने-आप यहाँ सेव हो जाएगी।',
     untitled: 'बिना नाम की रेसिपी',
@@ -1293,6 +1295,9 @@ export const hi: TranslationsType = {
     moreCalories: '50 kcal ज़्यादा',
   },
   shopping: {
+    toBuyCount: "{n} खरीदने हैं",
+    listEmptyShort: "खाली",
+    cartA11y: "खरीदारी सूची, {n} खरीदने हैं",
     removedItem: '{x} हटाया गया',
     title: "खरीदारी सूची",
     entry: "खरीदारी सूची",
@@ -1341,6 +1346,7 @@ export const hi: TranslationsType = {
     signInToLikeComment: 'इस टिप्पणी को पसंद करने के लिए साइन इन करें।',
   },
   signInPrompt: {
+    shoppingList: "फ़ोन से वेब तक साथ रहने वाली खरीदारी सूची के लिए साइन इन करें।",
     title: 'साइन इन करना ज़रूरी है',
     message: 'रेसिपी को पसंद करने, सेव करने और टिप्पणी करने के लिए साइन इन करें।',
     myRecipes: "सेव की गई रेसिपी, पसंद और ड्राफ़्ट एक जगह रखने के लिए साइन इन करें।",

@@ -523,6 +523,7 @@ export const ko: TranslationsType = {
   },
   recipes: {
     removedFromSaved: '저장됨에서 삭제했어요',
+    resultsCount: { zero: '레시피 {n}개', one: '레시피 {n}개', two: '레시피 {n}개', few: '레시피 {n}개', many: '레시피 {n}개', other: '레시피 {n}개' },
     title: '레시피',
     empty: '레시피가 없어요.',
     noPhoto: '아직 사진이 없어요',
@@ -1021,6 +1022,7 @@ export const ko: TranslationsType = {
     retry: '다른 페이지 선택',
   },
   drafts: {
+    itemsCount: { zero: '{n}개', one: '{n}개', two: '{n}개', few: '{n}개', many: '{n}개', other: '{n}개' },
     title: '임시저장',
     empty: '아직 임시저장한 레시피가 없어요. 레시피를 만들기 시작하면 자동으로 저장돼요.',
     untitled: '이름 없는 레시피',
@@ -1293,6 +1295,9 @@ export const ko: TranslationsType = {
     moreCalories: '50 kcal 늘리기',
   },
   shopping: {
+    toBuyCount: "살 것 {n}개",
+    listEmptyShort: "비어 있음",
+    cartA11y: "장보기 목록, 살 것 {n}개",
     removedItem: '{x} 삭제됨',
     title: "장보기 목록",
     entry: "장보기 목록",
@@ -1341,6 +1346,7 @@ export const ko: TranslationsType = {
     signInToLikeComment: '이 댓글에 좋아요를 누르려면 로그인해 주세요.',
   },
   signInPrompt: {
+    shoppingList: "휴대폰과 웹에서 함께 쓰는 장보기 목록을 쓰려면 로그인하세요.",
     title: '로그인이 필요해요',
     message: '레시피에 좋아요를 누르고 저장하거나 댓글을 남기려면 로그인해 주세요.',
     myRecipes: "저장한 레시피, 좋아요, 임시 저장본을 한곳에서 보려면 로그인해 주세요.",

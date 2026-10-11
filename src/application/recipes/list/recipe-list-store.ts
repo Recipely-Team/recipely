@@ -49,6 +49,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
           query: filters?.search ?? CharConstants.empty,
           page: result.value.page,
           hasMore: result.value.hasMore,
+          total: result.value.total,
         },
       });
     },
@@ -85,6 +86,7 @@ export const configureRecipeListStore = (deps: RecipeListStoreDeps): BoundStore<
           recipes: [...state.recipes, ...result.value.items],
           page: result.value.page,
           hasMore: result.value.hasMore,
+          total: result.value.total,
           isLoadingMore: false,
         },
       });

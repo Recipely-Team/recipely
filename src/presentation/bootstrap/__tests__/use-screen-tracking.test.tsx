@@ -70,7 +70,6 @@ describe('useScreenTracking', () => {
     ['/notifications', AnalyticsScreen.notifications],
     ['/profile', AnalyticsScreen.profile],
     ['/edit-profile', AnalyticsScreen.editProfile],
-    ['/settings', AnalyticsScreen.settings],
     ['/onboarding', AnalyticsScreen.onboarding],
     ['/login', AnalyticsScreen.login],
     ['/register', AnalyticsScreen.register],

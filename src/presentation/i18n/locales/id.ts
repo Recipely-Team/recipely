@@ -521,6 +521,7 @@ export const id = {
   },
   recipes: {
     removedFromSaved: 'Dihapus dari tersimpan',
+    resultsCount: { zero: '{n} resep', one: '{n} resep', two: '{n} resep', few: '{n} resep', many: '{n} resep', other: '{n} resep' },
     title: 'Resep',
     empty: 'Tidak ada resep ditemukan.',
     noPhoto: 'Belum ada foto',
@@ -1025,6 +1026,7 @@ export const id = {
     retry: 'Pilih halaman lain',
   },
   drafts: {
+    itemsCount: { zero: '{n} item', one: '{n} item', two: '{n} item', few: '{n} item', many: '{n} item', other: '{n} item' },
     title: 'Draf',
     empty: 'Belum ada draf — mulai membuat resep dan draf akan tersimpan di sini otomatis.',
     untitled: 'Resep tanpa judul',
@@ -1297,6 +1299,9 @@ export const id = {
     moreCalories: 'Tambah 50 kkal',
   },
   shopping: {
+    toBuyCount: "{n} perlu dibeli",
+    listEmptyShort: "Kosong",
+    cartA11y: "Daftar belanja, {n} perlu dibeli",
     removedItem: '{x} dihapus',
     title: "Daftar belanja",
     entry: "Daftar belanja",
@@ -1345,6 +1350,7 @@ export const id = {
     signInToLikeComment: 'Masuk untuk menyukai komentar ini.',
   },
   signInPrompt: {
+    shoppingList: "Masuk agar daftar belanjamu ikut dari ponsel ke web.",
     title: 'Harus masuk',
     message: 'Masuk untuk menyukai, menyimpan, dan mengomentari resep.',
     myRecipes: "Masuk untuk menyimpan resep tersimpan, suka, dan draf Anda di satu tempat.",

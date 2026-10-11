@@ -8,7 +8,7 @@ import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoi
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { pluralCount, t } from '@presentation/i18n';
 import type { RecipeSummaryEntity } from '@domain/recipes/recipe-summary-entity';
 import { ValueConstants } from '@core/constants';
 
@@ -67,7 +67,7 @@ export const RecipeSearchOverlay = ({
           </View>
         ) : (
           <ThemedText variant="caption" muted>
-            {recipes.length} {t().recipes.results}
+            {pluralCount(t().recipes.resultsCount, recipes.length)}
           </ThemedText>
         )}
       </View>

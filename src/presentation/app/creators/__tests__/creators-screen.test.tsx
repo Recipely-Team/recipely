@@ -16,6 +16,9 @@ import { CreatorsScreen } from '@presentation/app/creators';
 import { t } from '@presentation/i18n';
 
 const mockPush = jest.fn();
+jest.mock('@presentation/base/widgets/navigation/shopping-cart-button', () => ({
+  ShoppingCartButton: () => null,
+}));
 jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
   NotificationsBellButton: (): null => null,
 }));

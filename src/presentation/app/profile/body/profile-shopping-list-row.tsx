@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useStores } from '@presentation/bootstrap/use-stores';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useRouter } from 'expo-router';
 import { ValueConstants } from '@core/constants';
@@ -8,11 +10,21 @@ import { RoutePaths } from '@presentation/base/constants';
 import { borderWidths, controlSizes, fontSizes, fontWeights, iconSizes, opacities, radii, spacing } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
 
-/** Profile's way into the shopping list — on every platform, the web shell included. */
+/**
+ * Profile's way into the shopping list — on every platform, the web shell
+ * included. Its second line is the cart badge's number in words ("7 to buy" /
+ * "Empty") once the count is known, the generic line before that.
+ */
 export const ProfileShoppingListRow = (): React.JSX.Element => {
   const colors = useTheme().colors;
   const router = useRouter();
   const copy = t().shopping;
+  const { shoppingListStore } = useStores();
+  const toBuy = shoppingListStore((s) => s.toBuy);
+  useEffect(() => {
+    void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore]);
+  const sub = toBuy === null ? copy.entrySub : toBuy > ValueConstants.zero ? copy.toBuyCount.replace('{n}', String(toBuy)) : copy.listEmptyShort;
   return (
     <Pressable
       onPress={() => router.push(RoutePaths.shoppingList)}
@@ -30,7 +42,7 @@ export const ProfileShoppingListRow = (): React.JSX.Element => {
           {copy.entry}
         </SizedText>
         <SizedText size={fontSizes.small} color={colors.textSubtle} numberOfLines={ValueConstants.one}>
-          {copy.entrySub}
+          {sub}
         </SizedText>
       </View>
       <Ionicons name="chevron-forward" size={iconSizes.md} color={colors.textMuted} />

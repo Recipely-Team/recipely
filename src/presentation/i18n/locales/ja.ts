@@ -521,6 +521,7 @@ export const ja = {
   },
   recipes: {
     removedFromSaved: '保存済みから削除しました',
+    resultsCount: { zero: '{n} 件のレシピ', one: '{n} 件のレシピ', two: '{n} 件のレシピ', few: '{n} 件のレシピ', many: '{n} 件のレシピ', other: '{n} 件のレシピ' },
     title: 'レシピ',
     empty: 'レシピが見つかりませんでした。',
     noPhoto: '写真はまだありません',
@@ -1025,6 +1026,7 @@ export const ja = {
     retry: '別のページを選ぶ',
   },
   drafts: {
+    itemsCount: { zero: '{n} 項目', one: '{n} 項目', two: '{n} 項目', few: '{n} 項目', many: '{n} 項目', other: '{n} 項目' },
     title: '下書き',
     empty: '下書きはまだありません — レシピを作り始めると自動的にここへ保存されます。',
     untitled: '無題のレシピ',
@@ -1297,6 +1299,9 @@ export const ja = {
     moreCalories: '50 kcal 増やす',
   },
   shopping: {
+    toBuyCount: "未購入 {n} 件",
+    listEmptyShort: "空です",
+    cartA11y: "買い物リスト、未購入 {n} 件",
     removedItem: '{x}を削除しました',
     title: "買い物リスト",
     entry: "買い物リスト",
@@ -1345,6 +1350,7 @@ export const ja = {
     signInToLikeComment: 'このコメントにいいねするにはログインしてください。',
   },
   signInPrompt: {
+    shoppingList: "スマホからウェブまで使える買い物リストを使うにはサインインしてください。",
     title: 'ログインが必要です',
     message: 'レシピへのいいね、保存、コメントにはログインしてください。',
     myRecipes: "保存したレシピ、いいね、下書きをまとめて管理するにはログインしてください。",

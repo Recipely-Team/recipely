@@ -1,6 +1,9 @@
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
-import { ok } from '@core/result/result-helpers';
+import { fail, ok } from '@core/result/result-helpers';
+import { ValidationFailure } from '@core/failure';
+import { DiagnosticMessage } from '@core/failure/diagnostic-message';
+import { ValueConstants } from '@core/constants';
 import type { Page } from '@domain/common/page';
 import type { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity';
 import type { ShoppingItemDraft } from '@domain/shopping/items/shopping-item-draft';
@@ -15,6 +18,7 @@ import { toPageQuery } from '@infrastructure/network/paging/to-page-query';
 import type { ShoppingItemDto } from '@infrastructure/shopping/dtos/shopping-item-dto';
 import type { ShoppingAddResponseDto } from '@infrastructure/shopping/dtos/shopping-add-response-dto';
 import type { ShoppingDeletedDto } from '@infrastructure/shopping/dtos/shopping-deleted-dto';
+import type { ShoppingSummaryDto } from '@infrastructure/shopping/dtos/shopping-summary-dto';
 import { toShoppingItem } from '@infrastructure/shopping/to-shopping-item';
 import { toShoppingAddRequest } from '@infrastructure/shopping/to-shopping-add-request';
 import { toShoppingAddResult } from '@infrastructure/shopping/to-shopping-add-result';
@@ -31,6 +35,14 @@ export class ShoppingListRepository implements ShoppingListRepositoryInterface {
   async list(page: number, pageSize: number): Promise<Result<Page<ShoppingItemEntity>, Failure>> {
     const result = await this.http.get<PageDto<ShoppingItemDto>>(ApiRoutes.shopping.list, { params: toPageQuery({ page, pageSize }) });
     return result.ok ? ok(toPage(result.value, toShoppingItem)) : result;
+  }
+
+  async countToBuy(): Promise<Result<number, Failure>> {
+    const result = await this.http.get<ShoppingSummaryDto>(ApiRoutes.shopping.summary);
+    if (!result.ok) return result;
+    return Number.isInteger(result.value.unchecked) && result.value.unchecked >= ValueConstants.zero
+      ? ok(result.value.unchecked)
+      : fail(new ValidationFailure(DiagnosticMessage.shopping.summaryInvalid));
   }
 
   async add(drafts: readonly ShoppingItemDraft[]): Promise<Result<ShoppingAddResult, Failure>> {

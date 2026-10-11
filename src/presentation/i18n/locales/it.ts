@@ -521,6 +521,7 @@ export const it = {
   },
   recipes: {
     removedFromSaved: 'Rimossa dai salvati',
+    resultsCount: { zero: '{n} ricette', one: '{n} ricetta', two: '{n} ricette', few: '{n} ricette', many: '{n} ricette', other: '{n} ricette' },
     title: 'Ricette',
     empty: 'Nessuna ricetta trovata.',
     noPhoto: 'Ancora nessuna foto',
@@ -1025,6 +1026,7 @@ export const it = {
     retry: 'Scegli altre pagine',
   },
   drafts: {
+    itemsCount: { zero: '{n} elementi', one: '{n} elemento', two: '{n} elementi', few: '{n} elementi', many: '{n} elementi', other: '{n} elementi' },
     title: 'Bozze',
     empty: 'Ancora nessuna bozza — inizia una ricetta e verrà salvata qui automaticamente.',
     untitled: 'Ricetta senza titolo',
@@ -1297,6 +1299,9 @@ export const it = {
     moreCalories: '50 kcal in più',
   },
   shopping: {
+    toBuyCount: "{n} da comprare",
+    listEmptyShort: "Vuota",
+    cartA11y: "Lista della spesa, {n} da comprare",
     removedItem: '{x} rimosso',
     title: "Lista della spesa",
     entry: "Lista della spesa",
@@ -1345,6 +1350,7 @@ export const it = {
     signInToLikeComment: 'Accedi per mettere Mi piace a questo commento.',
   },
   signInPrompt: {
+    shoppingList: "Accedi per avere una lista della spesa che ti segue dal telefono al web.",
     title: 'Accesso richiesto',
     message: 'Accedi per mettere Mi piace, salvare e commentare le ricette.',
     myRecipes: "Accedi per avere ricette salvate, Mi piace e bozze in un unico posto.",

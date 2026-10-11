@@ -12,6 +12,9 @@ import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { CollapsingHomeHeader } from '@presentation/app/recipes/body/collapsing-home-header';
 import { t } from '@presentation/i18n';
 
+jest.mock('@presentation/base/widgets/navigation/shopping-cart-button', () => ({
+  ShoppingCartButton: () => null,
+}));
 jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
   NotificationsBellButton: (): null => null,
 }));

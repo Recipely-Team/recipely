@@ -524,6 +524,7 @@ export const tr: TranslationsType = {
   },
   recipes: {
     removedFromSaved: 'Kaydedilenlerden çıkarıldı',
+    resultsCount: { zero: '{n} tarif', one: '{n} tarif', two: '{n} tarif', few: '{n} tarif', many: '{n} tarif', other: '{n} tarif' },
     title: 'Tarifler',
     empty: 'Henüz tarif yok.',
     noPhoto: 'Henüz fotoğraf yok',
@@ -1029,6 +1030,7 @@ export const tr: TranslationsType = {
     retry: 'Başka sayfa seç',
   },
   drafts: {
+    itemsCount: { zero: '{n} malzeme', one: '{n} malzeme', two: '{n} malzeme', few: '{n} malzeme', many: '{n} malzeme', other: '{n} malzeme' },
     title: 'Taslaklar',
     empty: 'Henüz taslağın yok. Bir tarif oluşturmaya başladığında otomatik olarak burada görünecek.',
     untitled: 'Adsız tarif',
@@ -1301,6 +1303,9 @@ export const tr: TranslationsType = {
     moreCalories: '50 kcal artır',
   },
   shopping: {
+    toBuyCount: "{n} ürün alınacak",
+    listEmptyShort: "Boş",
+    cartA11y: "Alışveriş listesi, {n} ürün alınacak",
     removedItem: '{x} kaldırıldı',
     title: "Alışveriş listesi",
     entry: "Alışveriş listesi",
@@ -1349,6 +1354,7 @@ export const tr: TranslationsType = {
     signInToLikeComment: 'Bu yorumu beğenmek için giriş yap.',
   },
   signInPrompt: {
+    shoppingList: "Telefonundan web’e seninle gelen bir alışveriş listesi için giriş yap.",
     title: 'Giriş gerekli',
     message: 'Tarifleri beğenmek, kaydetmek ve yorum yapmak için giriş yap.',
     myRecipes: "Kaydettiğin tarifleri, beğenilerini ve taslaklarını tek yerde tutmak için giriş yap.",

@@ -521,6 +521,7 @@ export const es = {
   },
   recipes: {
     removedFromSaved: 'Quitada de guardadas',
+    resultsCount: { zero: '{n} recetas', one: '{n} receta', two: '{n} recetas', few: '{n} recetas', many: '{n} recetas', other: '{n} recetas' },
     title: 'Recetas',
     empty: 'No se encontraron recetas.',
     noPhoto: 'Aún no hay foto',
@@ -1025,6 +1026,7 @@ export const es = {
     retry: 'Elegir otras páginas',
   },
   drafts: {
+    itemsCount: { zero: '{n} elementos', one: '{n} elemento', two: '{n} elementos', few: '{n} elementos', many: '{n} elementos', other: '{n} elementos' },
     title: 'Borradores',
     empty: 'Aún no hay borradores — empieza una receta y se guardará aquí automáticamente.',
     untitled: 'Receta sin título',
@@ -1297,6 +1299,9 @@ export const es = {
     moreCalories: '50 kcal más',
   },
   shopping: {
+    toBuyCount: "{n} por comprar",
+    listEmptyShort: "Vacía",
+    cartA11y: "Lista de la compra, {n} por comprar",
     removedItem: '{x} eliminado',
     title: "Lista de la compra",
     entry: "Lista de la compra",
@@ -1345,6 +1350,7 @@ export const es = {
     signInToLikeComment: 'Inicia sesión para indicar que te gusta este comentario.',
   },
   signInPrompt: {
+    shoppingList: 'Inicia sesión para tener una lista de la compra que te acompañe del móvil a la web.',
     title: 'Debes iniciar sesión',
     message: 'Inicia sesión para indicar que te gustan las recetas, guardarlas y comentarlas.',
     myRecipes: "Inicia sesión para tener tus recetas guardadas, tus me gusta y tus borradores en un solo lugar.",

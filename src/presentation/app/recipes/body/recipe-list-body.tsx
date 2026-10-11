@@ -124,7 +124,7 @@ export const RecipeListBody = ({ vm }: RecipeListBodyProps): React.JSX.Element =
         ListHeaderComponent={
           <MobileFeedHeader
             filters={vm.filters}
-            resultCount={recipes.length}
+            resultCount={state.status === StoreStatus.Loaded ? (state.total ?? recipes.length) : recipes.length}
             activeFilterCount={vm.activeFilterCount}
             onOpenCreate={vm.onOpenCreate}
             onToggleCuisine={vm.onToggleCuisineQuick}

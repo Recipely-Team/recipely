@@ -9,7 +9,7 @@ export interface TabAppBarProps {
   title: string;
   /** Drawn before the title on the same line — the Recipes logo. */
   leading?: ReactNode;
-  /** {@link TabAppBarButton}s, right-aligned, 8 apart; at most three. */
+  /** {@link TabAppBarButton}s, right-aligned, 8 apart; at most four (Diary: calendar, goals, cart, bell). The cart and the bell end every tab's row. */
   actions?: ReactNode;
   /** Animates the title in place — the Recipes band's scroll-driven shrink. */
   titleStyle?: StyleProp<AnimatedStyle<StyleProp<ViewStyle>>>;

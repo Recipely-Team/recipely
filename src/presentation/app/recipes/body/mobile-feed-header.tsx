@@ -6,7 +6,7 @@ import { ActiveFilterChips } from '@presentation/app/recipes/items/filters/activ
 import type { UiFilters } from '@presentation/app/recipes/model/filtering/ui-filters';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
-import { t } from '@presentation/i18n';
+import { pluralCount, t } from '@presentation/i18n';
 import type { Difficulty } from '@domain/recipes/difficulty';
 import { ValueConstants } from '@core/constants';
 
@@ -48,7 +48,7 @@ export const MobileFeedHeader = ({
       <CuisineStrip selectedCuisines={filters.cuisines} onToggle={onToggleCuisine} />
       <View style={styles.countRow}>
         <ThemedText variant="caption" muted>
-          {resultCount} {t().recipes.results}
+          {pluralCount(t().recipes.resultsCount, resultCount)}
         </ThemedText>
         {activeFilterCount > ValueConstants.zero ? (
           <Pressable

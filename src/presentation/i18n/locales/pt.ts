@@ -521,6 +521,7 @@ export const pt = {
   },
   recipes: {
     removedFromSaved: 'Removida dos salvos',
+    resultsCount: { zero: '{n} receitas', one: '{n} receita', two: '{n} receitas', few: '{n} receitas', many: '{n} receitas', other: '{n} receitas' },
     title: 'Receitas',
     empty: 'Nenhuma receita encontrada.',
     noPhoto: 'Ainda sem foto',
@@ -1025,6 +1026,7 @@ export const pt = {
     retry: 'Escolher outras páginas',
   },
   drafts: {
+    itemsCount: { zero: '{n} itens', one: '{n} item', two: '{n} itens', few: '{n} itens', many: '{n} itens', other: '{n} itens' },
     title: 'Rascunhos',
     empty: 'Ainda não há rascunhos — comece uma receita e ela será salva aqui automaticamente.',
     untitled: 'Receita sem título',
@@ -1297,6 +1299,9 @@ export const pt = {
     moreCalories: 'Mais 50 kcal',
   },
   shopping: {
+    toBuyCount: "{n} para comprar",
+    listEmptyShort: "Vazia",
+    cartA11y: "Lista de compras, {n} para comprar",
     removedItem: '{x} removido',
     title: "Lista de compras",
     entry: "Lista de compras",
@@ -1345,6 +1350,7 @@ export const pt = {
     signInToLikeComment: 'Entre para curtir este comentário.',
   },
   signInPrompt: {
+    shoppingList: "Entre para ter uma lista de compras que acompanha você do celular à web.",
     title: 'É preciso entrar',
     message: 'Entre para curtir, salvar e comentar receitas.',
     myRecipes: "Entre para manter suas receitas salvas, curtidas e rascunhos em um só lugar.",

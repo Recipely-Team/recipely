@@ -27,6 +27,8 @@ const guestReasonFor = (path: string): string | undefined => {
       return t().signInPrompt.profile;
     case RoutePaths.notifications:
       return t().signInPrompt.notifications;
+    case RoutePaths.shoppingList:
+      return t().signInPrompt.shoppingList;
     default:
       return undefined;
   }

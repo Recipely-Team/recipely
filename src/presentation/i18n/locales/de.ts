@@ -521,6 +521,7 @@ export const de = {
   },
   recipes: {
     removedFromSaved: 'Aus Gespeichert entfernt',
+    resultsCount: { zero: '{n} Rezepte', one: '{n} Rezept', two: '{n} Rezepte', few: '{n} Rezepte', many: '{n} Rezepte', other: '{n} Rezepte' },
     title: 'Rezepte',
     empty: 'Keine Rezepte gefunden.',
     noPhoto: 'Noch kein Foto',
@@ -1025,6 +1026,7 @@ export const de = {
     retry: 'Andere Seiten wählen',
   },
   drafts: {
+    itemsCount: { zero: '{n} Elemente', one: '{n} Element', two: '{n} Elemente', few: '{n} Elemente', many: '{n} Elemente', other: '{n} Elemente' },
     title: 'Entwürfe',
     empty: 'Noch keine Entwürfe — starte ein Rezept und es wird hier automatisch gespeichert.',
     untitled: 'Unbenanntes Rezept',
@@ -1297,6 +1299,9 @@ export const de = {
     moreCalories: '50 kcal mehr',
   },
   shopping: {
+    toBuyCount: "{n} zu kaufen",
+    listEmptyShort: "Leer",
+    cartA11y: "Einkaufsliste, {n} zu kaufen",
     removedItem: '{x} entfernt',
     title: "Einkaufsliste",
     entry: "Einkaufsliste",
@@ -1345,6 +1350,7 @@ export const de = {
     signInToLikeComment: 'Melde dich an, um diesen Kommentar zu liken.',
   },
   signInPrompt: {
+    shoppingList: 'Melde dich an, damit dich deine Einkaufsliste vom Handy bis ins Web begleitet.',
     title: 'Anmeldung erforderlich',
     message: 'Melde dich an, um Rezepte zu liken, zu speichern und zu kommentieren.',
     myRecipes: "Melde dich an, um gespeicherte Rezepte, Likes und Entwürfe an einem Ort zu haben.",

@@ -521,6 +521,7 @@ export const ar = {
   },
   recipes: {
     removedFromSaved: 'تمت الإزالة من المحفوظات',
+    resultsCount: { zero: '{n} وصفة', one: '{n} وصفة', two: '{n} وصفتان', few: '{n} وصفات', many: '{n} وصفة', other: '{n} وصفة' },
     title: "الوصفات",
     empty: "لم يتم العثور على وصفات.",
     noPhoto: "لا توجد صورة بعد",
@@ -1025,6 +1026,7 @@ export const ar = {
     retry: 'اختر صفحات أخرى',
   },
   drafts: {
+    itemsCount: { zero: "{n} عنصر", one: "{n} عنصر", two: "{n} عنصران", few: "{n} عناصر", many: "{n} عنصرًا", other: "{n} عنصر" },
     title: "المسودات",
     empty: "لا توجد مسودات بعد — ابدأ وصفة وسيتم حفظها هنا تلقائيًا.",
     untitled: "وصفة بلا عنوان",
@@ -1297,6 +1299,9 @@ export const ar = {
     moreCalories: "50 سعرة أكثر",
   },
   shopping: {
+    toBuyCount: "{n} للشراء",
+    listEmptyShort: "فارغة",
+    cartA11y: "قائمة التسوق، {n} للشراء",
     removedItem: "تمت إزالة {x}",
     title: "قائمة التسوق",
     entry: "قائمة التسوق",
@@ -1345,6 +1350,7 @@ export const ar = {
     signInToLikeComment: "سجّل الدخول للإعجاب بهذا التعليق."
   },
   signInPrompt: {
+    shoppingList: "سجّل الدخول لتحتفظ بقائمة تسوق ترافقك من هاتفك إلى الويب.",
     title: "تسجيل الدخول مطلوب",
     message: "سجّل الدخول للإعجاب بالوصفات وحفظها والتعليق عليها.",
     myRecipes: "سجّل الدخول لتجمع وصفاتك المحفوظة وإعجاباتك ومسوداتك في مكان واحد.",
