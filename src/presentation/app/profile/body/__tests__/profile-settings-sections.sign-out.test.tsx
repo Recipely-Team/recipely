@@ -15,6 +15,8 @@ import type { AuthStoreState } from '@application/auth/auth-store-state';
 import { t } from '@presentation/i18n';
 
 const mockReplace = jest.fn();
+jest.mock('@presentation/app/profile/hooks/use-assistant-settings-actions', () => ({ useAssistantSettingsActions: jest.fn() }));
+jest.mock('@presentation/base/hooks/assistant/actions/use-assistant-confirmation', () => ({ useAssistantConfirmation: jest.fn() }));
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(() => ({ push: jest.fn(), replace: mockReplace, canDismiss: () => false, dismissAll: jest.fn() })),
 }));

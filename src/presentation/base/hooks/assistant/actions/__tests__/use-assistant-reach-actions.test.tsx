@@ -77,14 +77,14 @@ describe('reaching the screen that answers an action', () => {
     probe().registry.register(SETTINGS_ACTION, owner);
 
     await expect(running).resolves.toMatchObject({ ok: true });
-    expect(probe().navigated).toEqual(['/settings']);
+    expect(probe().navigated).toEqual(['/profile']);
     expect(owner).toHaveBeenCalledWith('metric');
   });
 
   // Navigating to where the user already stands leaves a second copy of that
   // screen on the stack, and back stops leaving it.
   it('does not navigate when the user is already there', async () => {
-    probe().pathname = '/settings';
+    probe().pathname = '/profile';
     mountReach();
     probe().registry.register(SETTINGS_ACTION, async () => ({ ok: true as const }));
 

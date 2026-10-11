@@ -520,6 +520,7 @@ export const de = {
     continueAsGuest: 'Ohne Konto fortfahren',
   },
   recipes: {
+    resultsCount: { zero: '{n} Rezepte', one: '{n} Rezept', two: '{n} Rezepte', few: '{n} Rezepte', many: '{n} Rezepte', other: '{n} Rezepte' },
     title: 'Rezepte',
     empty: 'Keine Rezepte gefunden.',
     noPhoto: 'Noch kein Foto',
@@ -1024,6 +1025,7 @@ export const de = {
     retry: 'Andere Seiten wählen',
   },
   drafts: {
+    itemsCount: { zero: '{n} Elemente', one: '{n} Element', two: '{n} Elemente', few: '{n} Elemente', many: '{n} Elemente', other: '{n} Elemente' },
     title: 'Entwürfe',
     empty: 'Noch keine Entwürfe — starte ein Rezept und es wird hier automatisch gespeichert.',
     untitled: 'Unbenanntes Rezept',

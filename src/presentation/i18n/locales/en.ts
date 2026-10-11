@@ -526,6 +526,7 @@ export const en = {
     continueAsGuest: 'Continue without an account',
   },
   recipes: {
+    resultsCount: { zero: '{n} recipes', one: '{n} recipe', two: '{n} recipes', few: '{n} recipes', many: '{n} recipes', other: '{n} recipes' },
     title: 'Recipes',
     empty: 'No recipes found.',
     noPhoto: 'No photo yet',
@@ -1036,6 +1037,7 @@ export const en = {
     retry: 'Choose other pages',
   },
   drafts: {
+    itemsCount: { zero: '{n} items', one: '{n} item', two: '{n} items', few: '{n} items', many: '{n} items', other: '{n} items' },
     title: 'Drafts',
     empty: "No drafts yet — start a recipe and it's saved here automatically.",
     untitled: 'Untitled recipe',

@@ -24,7 +24,6 @@ const SCREEN_BY_PATH: ReadonlyMap<string, string> = new Map([
   [RoutePaths.notifications, AnalyticsScreen.notifications],
   [RoutePaths.profile, AnalyticsScreen.profile],
   [RoutePaths.editProfile, AnalyticsScreen.editProfile],
-  [RoutePaths.settings, AnalyticsScreen.settings],
   [RoutePaths.automations, AnalyticsScreen.automations],
   [RoutePaths.shoppingList, AnalyticsScreen.shoppingList],
   [RoutePaths.automationEdit, AnalyticsScreen.automationEdit],

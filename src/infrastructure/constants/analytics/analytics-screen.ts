@@ -34,7 +34,6 @@ export const AnalyticsScreen = {
   notifications: 'NotificationsScreen',
   profile: 'ProfileScreen',
   editProfile: 'EditProfileScreen',
-  settings: 'SettingsScreen',
   automations: 'AutomationsScreen',
   shoppingList: 'ShoppingListScreen',
   automationEdit: 'AutomationEditScreen',

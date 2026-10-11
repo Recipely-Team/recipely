@@ -520,6 +520,7 @@ export const es = {
     continueAsGuest: 'Continuar sin una cuenta',
   },
   recipes: {
+    resultsCount: { zero: '{n} recetas', one: '{n} receta', two: '{n} recetas', few: '{n} recetas', many: '{n} recetas', other: '{n} recetas' },
     title: 'Recetas',
     empty: 'No se encontraron recetas.',
     noPhoto: 'Aún no hay foto',
@@ -1024,6 +1025,7 @@ export const es = {
     retry: 'Elegir otras páginas',
   },
   drafts: {
+    itemsCount: { zero: '{n} elementos', one: '{n} elemento', two: '{n} elementos', few: '{n} elementos', many: '{n} elementos', other: '{n} elementos' },
     title: 'Borradores',
     empty: 'Aún no hay borradores — empieza una receta y se guardará aquí automáticamente.',
     untitled: 'Receta sin título',

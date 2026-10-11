@@ -520,6 +520,7 @@ export const id = {
     continueAsGuest: 'Lanjutkan tanpa akun',
   },
   recipes: {
+    resultsCount: { zero: '{n} resep', one: '{n} resep', two: '{n} resep', few: '{n} resep', many: '{n} resep', other: '{n} resep' },
     title: 'Resep',
     empty: 'Tidak ada resep ditemukan.',
     noPhoto: 'Belum ada foto',
@@ -1024,6 +1025,7 @@ export const id = {
     retry: 'Pilih halaman lain',
   },
   drafts: {
+    itemsCount: { zero: '{n} item', one: '{n} item', two: '{n} item', few: '{n} item', many: '{n} item', other: '{n} item' },
     title: 'Draf',
     empty: 'Belum ada draf — mulai membuat resep dan draf akan tersimpan di sini otomatis.',
     untitled: 'Resep tanpa judul',

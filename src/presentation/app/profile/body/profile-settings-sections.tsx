@@ -25,6 +25,8 @@ import { enterApp } from '@presentation/navigation/enter-app';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
+import { useAssistantSettingsActions } from '@presentation/app/profile/hooks/use-assistant-settings-actions';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 
 /**
  * The settings Profile shows under the identity block: appearance, reminders,
@@ -53,6 +55,19 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
     enterApp(router, RoutePaths.recipes);
     showSuccessToast(t().settings.signedOut);
   };
+
+  // The voice assistant's settings words live here since /settings became a redirect to Profile.
+  useAssistantSettingsActions({
+    language,
+    preference,
+    themeId,
+    onSetLanguage: setLocale,
+    onSetThemePreference: setPreference,
+    onSetThemeId: setThemeId,
+    onRequestSignOut: () => setSignOutVisible(true),
+  });
+  // The sign-out sheet also takes a spoken answer.
+  useAssistantConfirmation(signOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
 
   return (
     <View>

@@ -522,6 +522,7 @@ export const hi: TranslationsType = {
     continueAsGuest: 'बिना खाते के जारी रखें',
   },
   recipes: {
+    resultsCount: { zero: '{n} रेसिपी', one: '{n} रेसिपी', two: '{n} रेसिपी', few: '{n} रेसिपी', many: '{n} रेसिपी', other: '{n} रेसिपी' },
     title: 'रेसिपी',
     empty: 'कोई रेसिपी नहीं मिली।',
     noPhoto: 'अभी कोई फ़ोटो नहीं है',
@@ -1020,6 +1021,7 @@ export const hi: TranslationsType = {
     retry: 'दूसरे पेज चुनें',
   },
   drafts: {
+    itemsCount: { zero: '{n} आइटम', one: '{n} आइटम', two: '{n} आइटम', few: '{n} आइटम', many: '{n} आइटम', other: '{n} आइटम' },
     title: 'ड्राफ़्ट',
     empty: 'अभी कोई ड्राफ़्ट नहीं है — रेसिपी बनाना शुरू करें, वह अपने-आप यहाँ सेव हो जाएगी।',
     untitled: 'बिना नाम की रेसिपी',

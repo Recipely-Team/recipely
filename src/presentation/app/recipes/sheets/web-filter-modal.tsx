@@ -18,8 +18,7 @@ export interface WebFilterModalProps {
   visible: boolean;
   /** In-flight selection the chips drive (mirrors the screen's pending filters). */
   pending: UiFilters;
-  /** Currently loaded result count (reflects applied filters + search, not the in-flight pending selection). */
-  resultCount: number;
+
   /** Whether any filter is currently active (enables/disables Clear). */
   hasActiveFilters: boolean;
   onToggleCuisine: (key: string) => void;
@@ -40,7 +39,6 @@ export interface WebFilterModalProps {
 export const WebFilterModal = ({
   visible,
   pending,
-  resultCount,
   hasActiveFilters,
   onToggleCuisine,
   onToggleCategory,
@@ -53,8 +51,8 @@ export const WebFilterModal = ({
   const { cuisineLabel, categoryLabel } = useTaxonomyLabel();
   const { cuisineKeys, categoryKeys } = useTaxonomyOptions();
 
-  const applyLabel =
-    resultCount > ValueConstants.zero ? `${t().recipes.showResults} (${resultCount})` : t().recipes.showResults;
+  // No count: the one at hand was for the filters already applied, not the ones being edited.
+  const applyLabel = t().recipes.showResults;
 
   return (
     <BottomSheet

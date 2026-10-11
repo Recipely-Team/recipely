@@ -520,6 +520,7 @@ export const ja = {
     continueAsGuest: 'アカウントなしで続ける',
   },
   recipes: {
+    resultsCount: { zero: '{n} 件のレシピ', one: '{n} 件のレシピ', two: '{n} 件のレシピ', few: '{n} 件のレシピ', many: '{n} 件のレシピ', other: '{n} 件のレシピ' },
     title: 'レシピ',
     empty: 'レシピが見つかりませんでした。',
     noPhoto: '写真はまだありません',
@@ -1024,6 +1025,7 @@ export const ja = {
     retry: '別のページを選ぶ',
   },
   drafts: {
+    itemsCount: { zero: '{n} 項目', one: '{n} 項目', two: '{n} 項目', few: '{n} 項目', many: '{n} 項目', other: '{n} 項目' },
     title: '下書き',
     empty: '下書きはまだありません — レシピを作り始めると自動的にここへ保存されます。',
     untitled: '無題のレシピ',

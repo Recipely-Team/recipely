@@ -36,7 +36,7 @@ export const ASSISTANT_NAVIGATION_TARGETS = {
   notifications: RoutePaths.notifications,
   profile: RoutePaths.profile,
   editProfile: RoutePaths.editProfile,
-  settings: RoutePaths.settings,
+  settings: RoutePaths.profile,
 } as const satisfies Readonly<Record<string, string>>;
 
 /** A screen the assistant can be asked for, by the name the model is given. */

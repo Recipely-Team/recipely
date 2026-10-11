@@ -4,7 +4,7 @@ import { AssistantActionRegistry } from '@application/assistant/actions/assistan
 import { renderComponent } from '@presentation/base/test-support/render-component';
 import { StoresProvider } from '@presentation/bootstrap/stores-context';
 import type { ApplicationStores } from '@application/di/application-stores';
-import { useAssistantSettingsActions } from '@presentation/app/settings/hooks/use-assistant-settings-actions';
+import { useAssistantSettingsActions } from '@presentation/app/profile/hooks/use-assistant-settings-actions';
 
 function harness() {
   const registry = new AssistantActionRegistry();
