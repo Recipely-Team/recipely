@@ -2,6 +2,10 @@
  * What a count badge is saying.
  *
  * @remarks
+ * `ToDo` is a third claim: things the user means to do, sitting on a button
+ * (the cart's lines still to buy). It is `primary`, never red — red stays the
+ * bell's — and it caps like a tally, at 99+.
+ *
  * The two are not a colour choice, they are a different claim. `Alert` means
  * something arrived that the user has not dealt with — unread notifications —
  * and red is the app's word for that. `Tally` just counts what is already
@@ -15,6 +19,7 @@
 export const CountBadgeTone = {
   Alert: 'alert',
   Tally: 'tally',
+  ToDo: 'toDo',
 } as const;
 
 // eslint-disable-next-line @typescript-eslint/no-redeclare -- intentional enum-style value + type pairing

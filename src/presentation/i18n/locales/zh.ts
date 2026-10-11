@@ -1300,6 +1300,9 @@ export const zh = {
     moreCalories: '增加 50 千卡',
   },
   shopping: {
+    toBuyCount: "待买 {n} 项",
+    listEmptyShort: "空",
+    cartA11y: "购物清单，待买 {n} 项",
     removedItem: '已移除{x}',
     title: "购物清单",
     entry: "购物清单",
@@ -1348,6 +1351,7 @@ export const zh = {
     signInToLikeComment: '登录后即可为评论点赞。',
   },
   signInPrompt: {
+    shoppingList: '登录后，购物清单可在手机和网页之间同步。',
     title: '需要登录',
     message: '登录后即可点赞、收藏和评论食谱。',
     myRecipes: "登录后即可在一处管理收藏的食谱、点赞和草稿。",

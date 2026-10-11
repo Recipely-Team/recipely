@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2212 source files.
+[architecture.md](architecture.md). 2214 source files.
 
 ## Layers
 
@@ -75,7 +75,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(62)_
-- `shopping/` — read, write _(12)_
+- `shopping/` — read, write _(13)_
 - `storage/` _(4)_
 - `store/` — paging _(10)_
 - `timers/` _(7)_
@@ -109,7 +109,7 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `network/` — envelope, errors, http, jwt, paging, upload _(26)_
 - `notifications/` — dtos _(13)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
-- `shopping/` — dtos _(10)_
+- `shopping/` — dtos _(11)_
 - `storage/` _(7)_
 - `user-profile/` _(4)_
 
@@ -142,7 +142,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `timers/` — timer control helpers _(9)_
 - `utils/` (diary, instagram, meal-plan) — small pure helpers _(34)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(217)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(218)_
 
 ### Design tokens — `base/theme/tokens/`
 
@@ -175,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 09a455e35bfa0d11 -->
+<!-- fingerprint: 538ae94630df4afd -->

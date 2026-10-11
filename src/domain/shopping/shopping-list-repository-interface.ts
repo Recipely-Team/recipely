@@ -9,6 +9,8 @@ import type { ShoppingAddResult } from '@domain/shopping/items/shopping-add-resu
 /** The viewer's shopping list (`/me/shopping-list`). Unchecked lines come first, then checked. */
 export interface ShoppingListRepositoryInterface {
   list(page: number, pageSize: number): Promise<Result<Page<ShoppingItemEntity>, Failure>>;
+  /** How many lines are still to buy (unchecked) — the cart badge; the list is paged, so it cannot be counted here. */
+  countToBuy(): Promise<Result<number, Failure>>;
   /** 1–`ShoppingLimits.batchMax` lines; the same label and unit merge into an unchecked line. */
   add(drafts: readonly ShoppingItemDraft[]): Promise<Result<ShoppingAddResult, Failure>>;
   update(id: string, changes: ShoppingItemChanges): Promise<Result<ShoppingItemEntity, Failure>>;

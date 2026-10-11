@@ -3,6 +3,7 @@ import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone
 const OVERFLOW = {
   [CountBadgeTone.Alert]: { max: 9, label: '9+' },
   [CountBadgeTone.Tally]: { max: 99, label: '99+' },
+  [CountBadgeTone.ToDo]: { max: 99, label: '99+' },
 } as const;
 
 /**

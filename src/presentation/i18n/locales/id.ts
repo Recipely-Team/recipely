@@ -1296,6 +1296,9 @@ export const id = {
     moreCalories: 'Tambah 50 kkal',
   },
   shopping: {
+    toBuyCount: "{n} perlu dibeli",
+    listEmptyShort: "Kosong",
+    cartA11y: "Daftar belanja, {n} perlu dibeli",
     removedItem: '{x} dihapus',
     title: "Daftar belanja",
     entry: "Daftar belanja",
@@ -1344,6 +1347,7 @@ export const id = {
     signInToLikeComment: 'Masuk untuk menyukai komentar ini.',
   },
   signInPrompt: {
+    shoppingList: "Masuk agar daftar belanjamu ikut dari ponsel ke web.",
     title: 'Harus masuk',
     message: 'Masuk untuk menyukai, menyimpan, dan mengomentari resep.',
     myRecipes: "Masuk untuk menyimpan resep tersimpan, suka, dan draf Anda di satu tempat.",
