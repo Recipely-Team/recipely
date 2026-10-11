@@ -67,11 +67,11 @@ export const ShoppingListBody = ({ vm, scrollable, onEdit }: ShoppingListBodyPro
         )
       }
       ListFooterComponent={
-        list.status === StoreStatus.Loaded && list.moreFailure !== null ? (
-          <ErrorState icon="cloud-offline-outline" severity={SeverityType.Warning} title={copy.loadMoreFailed} primaryLabel={copy.tryAgain} onPrimary={vm.onEndReached} />
-        ) : (
-          <FeedFooter isLoadingMore={list.status === StoreStatus.Loaded && list.isLoadingMore} />
-        )
+        <FeedFooter
+          isLoadingMore={list.status === StoreStatus.Loaded && list.isLoadingMore}
+          failure={list.status === StoreStatus.Loaded ? list.moreFailure : null}
+          onRetry={vm.onEndReached}
+        />
       }
       refreshControl={<RefreshControl refreshing={vm.isRefreshing} onRefresh={vm.onRefresh} tintColor={colors.primary} />}
       onEndReached={vm.onEndReached}

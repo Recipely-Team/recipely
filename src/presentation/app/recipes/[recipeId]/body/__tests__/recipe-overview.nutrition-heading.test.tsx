@@ -12,6 +12,9 @@
 jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-diary-button', () => ({
   AddToDiaryButton: () => null,
 }));
+jest.mock('@presentation/app/recipes/[recipeId]/items/diary/add-to-plan-button', () => ({
+  AddToPlanButton: () => null,
+}));
 
 // The meta card starts cook timers through the timer store, and the caption
 // row words the cuisine through the taxonomy store; neither is under test.

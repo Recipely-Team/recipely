@@ -1,13 +1,9 @@
 import { StyleSheet } from 'react-native';
-import Animated, {
-  interpolate,
-  Extrapolation,
-  useAnimatedStyle,
-  type SharedValue,
-} from 'react-native-reanimated';
+import Animated, { interpolate, Extrapolation, useAnimatedStyle, type SharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
+import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { SearchBar } from '@presentation/app/recipes/items/filters/search-bar';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
@@ -65,12 +61,7 @@ export const CollapsingHomeHeader = ({
   const titleStyle = useAnimatedStyle(() => {
     const scale = reduceMotion
       ? ValueConstants.one
-      : interpolate(
-          scrollY.value,
-          [ValueConstants.zero, layoutSizes.homeTitleShrink],
-          HomeHeaderAnimation.titleScale,
-          Extrapolation.CLAMP,
-        );
+      : interpolate(scrollY.value, [ValueConstants.zero, layoutSizes.homeTitleShrink], HomeHeaderAnimation.titleScale, Extrapolation.CLAMP);
     return { transform: [{ scale }] };
   });
 
@@ -97,9 +88,7 @@ export const CollapsingHomeHeader = ({
   }));
 
   return (
-    <Animated.View
-      style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}
-    >
+    <Animated.View style={[styles.band, bandStyle, { top: insets.top, backgroundColor: colors.background }]}>
       <TabAppBar
         title={t().recipes.title}
         titleStyle={titleStyle}
@@ -108,15 +97,16 @@ export const CollapsingHomeHeader = ({
             <RecipelyLogo size={iconSizes.brandInline} />
           </Animated.View>
         }
-        actions={<NotificationsBellButton />}
+        actions={
+          <>
+            <ShoppingCartButton />
+            <NotificationsBellButton />
+          </>
+        }
       />
 
       <Animated.View style={[styles.searchWrapper, searchStyle]}>
-        <SearchBar
-          value={searchValue}
-          onChangeText={onSearchChange}
-          placeholder={t().recipes.searchPlaceholder}
-        />
+        <SearchBar value={searchValue} onChangeText={onSearchChange} placeholder={t().recipes.searchPlaceholder} />
       </Animated.View>
     </Animated.View>
   );

@@ -117,7 +117,11 @@ export const CreatorProfileBody = ({ vm, scrollable }: CreatorProfileBodyProps):
       onEndReached={vm.onEndReached}
       onEndReachedThreshold={ListConstants.endReachedThreshold}
       ListFooterComponent={
-        <FeedFooter isLoadingMore={recipesState.status === StoreStatus.Loaded && recipesState.isLoadingMore === true} />
+        <FeedFooter
+          isLoadingMore={recipesState.status === StoreStatus.Loaded && recipesState.isLoadingMore === true}
+          failure={recipesState.status === StoreStatus.Loaded ? recipesState.moreFailure : null}
+          onRetry={vm.onEndReached}
+        />
       }
       initialNumToRender={ListConstants.initialRows}
       maxToRenderPerBatch={ListConstants.rowsPerBatch}

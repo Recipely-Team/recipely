@@ -8,6 +8,7 @@ import { useAssistantProfileActions } from '@presentation/app/edit-profile/hooks
 import { useAssistantScrollable } from '@presentation/base/hooks/assistant/actions/use-assistant-scrollable';
 import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-profile';
 import { useSectionScroll } from '@presentation/app/edit-profile/hooks/use-section-scroll';
+import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { FeedbackDialog } from '@presentation/base/widgets/dialogs/feedback-dialog';
 import { t } from '@presentation/i18n';
 import { EditProfileHeader } from '@presentation/app/edit-profile/body/edit-profile-header';
@@ -73,6 +74,17 @@ export const EditProfileScreen = (): React.JSX.Element => {
           </ResponsiveContainer>
         </ScrollView>
       </KeyboardAvoider>
+
+      <ConfirmSheet
+        visible={vm.discardVisible}
+        title={t().editProfile.discardTitle}
+        message={t().editProfile.discardBody}
+        confirmLabel={t().createRecipe.editExitDiscard}
+        cancelLabel={t().createRecipe.keepEditing}
+        destructive
+        onConfirm={vm.onConfirmDiscard}
+        onClose={vm.onKeepEditing}
+      />
 
       <FeedbackDialog
         severity={SeverityType.Danger}

@@ -4,6 +4,7 @@ import { NotificationsBellButton } from '@presentation/base/widgets/navigation/n
 import { t } from '@presentation/i18n';
 
 let mockUnread = 0;
+let mockGuest = false;
 const mockPush = jest.fn();
 
 jest.mock('expo-router', () => ({
@@ -13,6 +14,9 @@ jest.mock('@presentation/bootstrap/use-stores', () => ({
   useStores: jest.fn(() => ({
     notificationsStore: jest.fn((selector: (state: { unreadCount: number }) => unknown) =>
       selector({ unreadCount: mockUnread }),
+    ),
+    authStore: jest.fn((selector: (state: { state: { status: string } }) => unknown) =>
+      selector({ state: { status: mockGuest ? 'unauthenticated' : 'authenticated' } }),
     ),
   })),
 }));
@@ -25,7 +29,19 @@ jest.mock('@expo/vector-icons/Ionicons', () => {
 describe('NotificationsBellButton', () => {
   beforeEach(() => {
     mockUnread = 0;
+    mockGuest = false;
     mockPush.mockClear();
+  });
+
+  // A guest used to be bounced to a bare login form; the bell now says what it is for.
+  it('tells a guest why to sign in instead of opening the page', () => {
+    mockGuest = true;
+    const { root } = renderComponent(<NotificationsBellButton />);
+
+    act(() => (byRole(root, 'button').props.onPress as () => void)());
+
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(textContent(root)).toContain(t().signInPrompt.notifications);
   });
 
   it('opens the notifications page', () => {

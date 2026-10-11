@@ -75,6 +75,9 @@ import { RecipeOrigin } from '@domain/recipes/provenance/recipe-origin';
 
 // ─── module mocks ────────────────────────────────────────────────────────────
 
+jest.mock('@presentation/base/hooks/navigation/use-leave-guard', () => ({
+  useLeaveGuard: () => ({ release: jest.fn() }),
+}));
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showDangerToast: jest.fn(),
   showErrorToast: jest.fn(),

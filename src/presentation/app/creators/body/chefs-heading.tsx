@@ -5,6 +5,7 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { fontSizes, fontWeights, letterSpacings, lineHeights, spacing } from '@presentation/base/theme';
 import { SizedText } from '@presentation/base/widgets/text/sized-text';
 import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
+import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { CreatorsGridMetrics } from '@presentation/app/creators/model/creators-grid-metrics';
 import { t } from '@presentation/i18n';
@@ -30,7 +31,15 @@ export const ChefsHeading = ({ showSubtitle }: ChefsHeadingProps): React.JSX.Ele
   if (!isWebShell) {
     return (
       <View style={{ paddingTop: insets.top }}>
-        <TabAppBar title={t().creators.title} actions={<NotificationsBellButton />} />
+        <TabAppBar
+          title={t().creators.title}
+          actions={
+            <>
+              <ShoppingCartButton />
+              <NotificationsBellButton />
+            </>
+          }
+        />
         {showSubtitle ? (
           <SizedText size={fontSizes.caption} ratio={lineHeights.normal} color={colors.textSubtle} style={styles.subtitle}>
             {t().creators.listSubtitle}

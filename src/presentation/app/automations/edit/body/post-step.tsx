@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
+import { FeedFooter } from '@presentation/base/widgets/lists/feed-footer';
 import { StoreStatus } from '@application/store/store-status';
 import { ValueConstants } from '@core/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -32,6 +33,7 @@ export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepPro
   const { automationsStore } = useStores();
   const media = automationsStore((s) => s.media);
   const rules = automationsStore((s) => s.rules);
+  const loadMoreMedia = (): void => void automationsStore.getState().loadMoreMedia();
   const watched = new Set(rules.status === StoreStatus.Loaded ? rules.items.map((rule) => rule.mediaId) : []);
   const columns = isExpanded ? AutomationMetrics.gridColumnsWeb : AutomationMetrics.gridColumns;
   const copy = t().instagram;
@@ -66,8 +68,14 @@ export const PostStep = ({ handle, selected, onSelect, scrollable }: PostStepPro
       ListEmptyComponent={
         media.status === StoreStatus.Loaded ? <SizedText muted size={fontSizes.medium}>{copy.noPosts}</SizedText> : media.status === StoreStatus.Error ? <SizedText muted size={fontSizes.medium}>{copy.loadFailed}</SizedText> : <ActivityIndicator color={colors.primary} />
       }
-      ListFooterComponent={media.status === StoreStatus.Loaded && media.isLoadingMore ? <ActivityIndicator color={colors.primary} /> : null}
-      onEndReached={() => void automationsStore.getState().loadMoreMedia()}
+      ListFooterComponent={
+        <FeedFooter
+          isLoadingMore={media.status === StoreStatus.Loaded && media.isLoadingMore}
+          failure={media.status === StoreStatus.Loaded ? media.moreFailure : null}
+          onRetry={loadMoreMedia}
+        />
+      }
+      onEndReached={loadMoreMedia}
       onEndReachedThreshold={ListConstants.endReachedThreshold}
       style={styles.list}
     />

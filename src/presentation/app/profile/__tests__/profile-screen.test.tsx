@@ -48,6 +48,12 @@ jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
   useAvatarUpload: jest.fn(() => ({ pickAndUpload: jest.fn(), isUploading: false, uploadError: null, onDismissUploadError: jest.fn() })),
 }));
 
+jest.mock('@presentation/app/profile/body/profile-shopping-list-row', () => ({
+  ProfileShoppingListRow: () => null,
+}));
+jest.mock('@presentation/base/widgets/navigation/shopping-cart-button', () => ({
+  ShoppingCartButton: () => null,
+}));
 jest.mock('@presentation/base/widgets/navigation/notifications-bell-button', () => ({
   NotificationsBellButton: (): null => null,
 }));

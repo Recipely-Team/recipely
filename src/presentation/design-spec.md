@@ -3007,3 +3007,91 @@ at 0, ½ and a 1 / 2 / 5 × 10ⁿ ceiling; Sent bars `textMuted` + `colorAlphas.
 **Delta chip**: `sevSurfaces.success` up, `.danger` down, neutral 0%, hidden when the previous period was 0.
 **States**: skeleton; no automations (disc + CTA → editor); no sends in range (longer-range + "View automations",
 followers card under it); not connected (`InstagramConnectBlock`); error (Try again).
+
+## Meal planner (Oct 2026 — from the prototype)
+
+**Source:** the Claude Design prototype (`src/meal-planner.jsx`, `src/meal-planner-sheets.jsx`; Tweaks →
+Starting screen *Plan · …*), written up there as `meal-planner-rn-spec.md`. Backend: recipely-backend #392
+(`/me/meal-plan`). Behind the `mealPlanner` flag (DevOnly until #392 reaches production).
+
+**Where it lives:** the Diary tab gets a **Plan | Log** `SegmentedTabs` switch (route `/diary?mode=plan`; Log is
+the default and unchanged). Plan owns its own `ScrollView` so the phone's "Add week to shopping list" bar can sit
+fixed under it. Recipe detail gets **Add to plan** (mobile under *Add to diary*, web in the sidebar under it).
+
+**Tokens:** every measurement is in `mealPlanSizes` (`theme/tokens/sizing/meal-plan-sizes.ts`), copied from the
+prototype: strip day h66, slot card header 16/700, planned row thumb 56 / title 14.5, stepper h32 (web h26, 44 pt via
+`hitSlop`), eaten badge 22, web grid `84 + 7 × min 128`, min width 1036 (scrolls sideways below), cell min-h112,
+add dialog max 520, shopping dialog max 560. Colours are theme tokens only; the over-goal tone is
+`DIARY_TONES.over.solid`, "Eaten" is `DIARY_TONES.on`. New shared token: `opacities.done` (0.7) for an eaten meal's
+photo.
+
+**States:** signed out (lock disc, Sign in / Create account, both returning to the plan), loading (skeleton: strip +
+3 slot cards / 4 grid rows, announced busy), error (`FormBanner` + Try again), empty week (seven tiles, "Plan your
+week", Add a recipe / Copy last week; no shopping bar), week.
+
+**Deliberate differences from the prototype:**
+- *Add to plan* sits under *Add to diary*, not beside Save under the title — this app's Save is a floating action.
+- No ±40 px swipe between weeks on the strip: it would fight the tab's vertical scroll; ‹ › page instead.
+- The selected strip day's bar track is `gradientBorder` (white 28%) rather than 35% — the closest existing token.
+- Today's web cells are not tinted `primary` 6% (no token); today's column head is outlined and pilled instead.
+- Week and meal menus are the shared `BottomSheet` everywhere (a centred dialog on the web) — the codebase has no
+  popover widget and rule 23 keeps menus in sheets.
+- Servings follow the backend/diary scale (0.5 steps, 0.5–20) instead of the prototype's whole 1–12.
+- The shopping list is the existing `/shopping-list` screen ("View list"), not a second list sheet.
+- On a phone the sticky "Add week to shopping list" button stops a touch target short of the right edge, where
+  the voice assistant's orb floats (the prototype has no orb).
+
+## Cook from my fridge (Oct 2026 — from the prototype)
+
+**Source:** the Claude Design prototype (`src/fridge.jsx`; Tweaks → Starting screen *Fridge · …*), written up there
+as `fridge-to-recipe-rn-spec.md`. Backend: recipely-backend #393 (`/fridge/scan`, `/fridge/ideas`, 20 AI calls a day
+shared). Behind the `fridgeToRecipe` flag (DevOnly until #393 reaches production).
+
+**Route:** `/fridge` (`FridgeScreen`, robots `Disallow`, analytics `FridgeScreen`). Entry points: two mode cards on the AI
+create screen (*Describe it* selected / *From my fridge*), and a 50-wide gradient camera button beside the phone's
+Recipes AI banner. Both render nothing while the flag is off.
+
+**Flow:** Capture (up to 3 photos, camera or library; web is the file picker) → Analysing (photo sweep, Cancel keeps
+the photos) → Ingredients (chips, faded = not sure, tap removes with Undo, *+ Add*; filters max time / diet /
+servings) → Ideas (cards with uses meter and missing chips, *Add missing to shopping list*, *Show 3 more*). An idea
+becomes a prompt and opens the ordinary AI create flow (`/create-recipe?prompt=…`): same generating animation, same
+draft editor. Full-screen states: nothing recognised (Retake / Type them instead), daily limit (Browse recipes /
+Back); offline and other failures return to the step with a banner.
+
+**Layout & tokens:** header back/close + centred title + "n/3" + three 4 pt progress segments; body max 560
+(`WEB_CONTENT_MAX_WIDTH.fridge`), the ideas grid 920 (`fridgeIdeas`, cards min 260); footer CTA under a `cardBorder`
+rule. Measurements in `fridgeSizes`.
+
+**Deliberate differences from the prototype:**
+- The *From my fridge* card sits under the import cards, above the prompt box, rather than at the very top — the
+  prompt screen already leads with its hero and import entries.
+- The web Recipes banner's outline "From my fridge" button is not added yet; the web reaches the flow through the AI
+  create screen's mode card.
+- On a phone the footer button stops short of the right edge, where the voice assistant's orb floats.
+- The prototype's "Close → from" route param is not used: close goes back, or to the AI create screen when there is
+  nothing to go back to (`useGoBackOrHome`).
+
+## Navigation entry points — the shopping cart (Oct 2026 — from the prototype)
+
+**Source:** Claude Design discoverability pass (`navigation-entry-points-rn-spec.md` in the prototype root).
+The shopping list was reachable only from a Profile row, a My Recipes button and success toasts.
+
+**Cart button:** `ShoppingCartButton` (base/widgets/navigation) — the tab app bar's round button with a
+`cart-outline` glyph, immediately left of the bell on all five tab roots (Recipes, My Recipes, Chefs, Diary,
+Profile); on the web, a 38-wide header button left of the bell, outlined `primary` while on `/shopping-list`.
+Opens `/shopping-list`; a guest gets the sign-in sheet with a reason. The tab app bar now holds up to four actions
+(Diary: calendar, goals, cart, bell).
+
+**Badge:** `CountBadgeTone.ToDo` — `primary` fill, `primaryText` label, 2 px `background` ring, hidden at 0,
+`99+` past 99. Red stays the bell's (an alert); the cart's number is a to-do count. The number is the server's
+(`GET /me/shopping-list/summary`, backend #394) — the list is paged — re-read after every accepted change.
+Label: "Shopping list, {n} to buy".
+
+**Profile:** the shopping-list row's second line is the same count in words ("7 to buy" / "Empty").
+
+**Deliberate differences from the prototype:**
+- The prototype's Reminders screen (per-meal reminder times) is not built: the app's reminders are the
+  come-back and timer reminders in Profile → settings; per-meal reminders need backend support first.
+- The "Kitchen" group heading in Profile is not added; the shopping-list row keeps its place above the creator rows.
+- The active-timers bar already shows on every screen in the app (mounted at the root), which the prototype lacked.
+- The shopping-list screen keeps its existing layout (#537); aisle grouping on that screen is a follow-up.

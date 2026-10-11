@@ -1,6 +1,9 @@
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter, usePathname } from 'expo-router';
+import { type Href, useRouter, usePathname } from 'expo-router';
+import { useGuestRouteGate } from '@presentation/base/hooks/auth/use-guest-route-gate';
+import { SignInPromptSheet } from '@presentation/base/widgets/sheets/sign-in-prompt-sheet';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { useWebShellState } from '@presentation/base/web-shell/use-web-shell-state';
@@ -40,15 +43,26 @@ const isProfileRoute = (pathname: string): boolean =>
  * Sticky desktop chrome that replaces the mobile bottom TabBar and per-screen
  * TopAppBars whenever the LayoutProvider reports `isWebShell === true`. Mounted
  * by the root layout so screens stay platform-agnostic.
+ *
+ * @remarks
+ * - **A guest's press on an account page explains itself** — My Recipes, Diary,
+ *   the bell and the avatar open the sign-in dialog instead of a bare login form
+ *   ({@link useGuestRouteGate}).
  */
 export const WebHeader = (): React.JSX.Element => {
   useLocale(); // re-render the persistent header when the language changes
   const router = useRouter();
+  const gate = useGuestRouteGate();
   const pathname = usePathname();
   const colors = useTheme().colors;
-  const { authStore, notificationsStore } = useStores();
+  const { authStore, notificationsStore, shoppingListStore } = useStores();
+  const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
   const authState = authStore((s) => s.state);
   const unreadCount = notificationsStore((s) => s.unreadCount);
+  const signedIn = authState.status === StoreStatus.Authenticated;
+  useEffect(() => {
+    if (signedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, signedIn]);
   const { searchQuery, setSearchQuery } = useWebShellState();
 
   const activeTab = resolveActiveTab(pathname);
@@ -67,15 +81,18 @@ export const WebHeader = (): React.JSX.Element => {
   const avatarUri = user?.photoUrl ?? undefined;
 
   const goRecipes = (): void => router.replace(RoutePaths.recipes);
+  // Cast: a RoutePaths string is not in the typed-routes union.
+  const replace = (path: string): void => router.replace(path as Href);
   const goTab = (key: WebHeaderTabKey): void => {
     if (key === WebHeaderTabKey.Recipes) router.replace(RoutePaths.recipes);
-    else if (key === WebHeaderTabKey.Diary) router.replace(RoutePaths.diary);
+    else if (key === WebHeaderTabKey.Diary) gate.open(RoutePaths.diary, replace);
     else if (key === WebHeaderTabKey.Chefs) router.replace(RoutePaths.creators);
-    else router.replace(RoutePaths.myRecipes);
+    else gate.open(RoutePaths.myRecipes, replace);
   };
   const goCreate = (): void => router.push(RoutePaths.createRecipe);
-  const goNotifs = (): void => router.push(RoutePaths.notifications);
-  const goProfile = (): void => router.replace(RoutePaths.profile);
+  const goNotifs = (): void => gate.open(RoutePaths.notifications, (path) => router.push(path as Href));
+  const goCart = (): void => gate.open(RoutePaths.shoppingList, (path) => router.push(path as Href));
+  const goProfile = (): void => gate.open(RoutePaths.profile, replace);
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
   // Discover is guest-only and on the Recipes tab.
@@ -117,6 +134,10 @@ export const WebHeader = (): React.JSX.Element => {
         <WebHeaderActions
           createLabel={t().myRecipes.createNew}
           notificationsLabel={t().notifications.title}
+          cartLabel={toBuy > ValueConstants.zero ? t().shopping.cartA11y.replace('{n}', String(toBuy)) : t().shopping.title}
+          toBuy={toBuy}
+          isCartActive={pathname === RoutePaths.shoppingList}
+          onOpenCart={goCart}
           profileLabel={t().navigation.profile}
           unreadCount={unreadCount}
           isProfileActive={isProfileActive}
@@ -129,6 +150,7 @@ export const WebHeader = (): React.JSX.Element => {
           onDiscover={showDiscover ? goDiscover : undefined}
         />
       </View>
+      <SignInPromptSheet {...gate.prompt} />
     </View>
   );
 };

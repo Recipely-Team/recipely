@@ -17,7 +17,12 @@ export interface UseEditProfileResult {
   isSaving: boolean;
   /** Saves, and says what it did — the header ignores the answer, the assistant reads it. */
   onSave: () => Promise<EditProfileSaveOutcomeType>;
+  /** Leaves — or, with unsaved changes, asks first. */
   onBack: () => void;
+  /** True while "Discard your changes?" is open. */
+  discardVisible: boolean;
+  onConfirmDiscard: () => void;
+  onKeepEditing: () => void;
   /** Localized message for the save/avatar failure dialog; null when there is none. */
   errorDialog: string | null;
   onCloseErrorDialog: () => void;

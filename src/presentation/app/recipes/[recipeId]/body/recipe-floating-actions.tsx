@@ -72,6 +72,7 @@ export const RecipeFloatingActions = ({
         onPress={onToggleLike}
         accessibilityRole="button"
         accessibilityLabel={liked ? t().recipes.unlike : t().recipes.like}
+        accessibilityState={{ selected: liked }}
         style={[styles.floatingBtn, { backgroundColor: colors.overlayLight }]}
       >
         <MaterialCommunityIcons
@@ -84,6 +85,7 @@ export const RecipeFloatingActions = ({
         onPress={onToggleSave}
         accessibilityRole="button"
         accessibilityLabel={isSaved ? t().recipes.saved : t().recipes.save}
+        accessibilityState={{ selected: isSaved, disabled: saveDisabled }}
         disabled={saveDisabled}
         style={[styles.floatingBtn, { opacity: saveDisabled ? opacities.disabled : opacities.full, backgroundColor: colors.overlayLight }]}
       >

@@ -67,6 +67,16 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.mealParsePhotoUnchecked]: 'mealParsePhotoUnchecked',
   [ErrorMessageKey.mealParseQuotaExceeded]: 'mealParseQuotaExceeded',
   [ErrorMessageKey.mealParseUnavailable]: 'mealParseUnavailable',
+  [ErrorMessageKey.fridgeQuotaExceeded]: 'fridgeQuotaExceeded',
+  [ErrorMessageKey.fridgeNoPhotos]: 'fridgeNoPhotos',
+  [ErrorMessageKey.fridgeTooManyPhotos]: 'fridgeTooManyPhotos',
+  [ErrorMessageKey.fridgeUnsupportedPhoto]: 'fridgeUnsupportedPhoto',
+  [ErrorMessageKey.fridgePhotoRejected]: 'fridgePhotoRejected',
+  [ErrorMessageKey.fridgePhotoUnchecked]: 'fridgePhotoUnchecked',
+  [ErrorMessageKey.fridgeNothingRecognised]: 'fridgeNothingRecognised',
+  [ErrorMessageKey.fridgeIngredientsRequired]: 'fridgeIngredientsRequired',
+  [ErrorMessageKey.fridgeIngredientsInvalid]: 'fridgeIngredientsInvalid',
+  [ErrorMessageKey.fridgeUnavailable]: 'fridgeUnavailable',
   [ErrorMessageKey.contentBlocked]: 'contentBlocked',
 
   [ErrorMessageKey.creatorHandleInvalid]: 'creatorHandleInvalid',
@@ -85,6 +95,11 @@ export const MESSAGE_KEY_TO_CONTENT_KEY: Record<string, FailureContentKeyType> =
   [ErrorMessageKey.shoppingListFull]: 'shoppingListFull',
   [ErrorMessageKey.shoppingListChanged]: 'shoppingListChanged',
   [ErrorMessageKey.shoppingItemNotFound]: 'shoppingItemGone',
+
+  [ErrorMessageKey.mealPlanEntryNotFound]: 'mealPlanEntryGone',
+  [ErrorMessageKey.mealPlanRangeInvalid]: 'mealPlanRangeInvalid',
+  [ErrorMessageKey.mealPlanEntryInvalid]: 'mealPlanEntryInvalid',
+  [ErrorMessageKey.mealPlanDayFull]: 'mealPlanDayFull',
 
   [ErrorMessageKey.emailExists]: 'emailExists',
   [ErrorMessageKey.codeInvalid]: 'codeInvalid',

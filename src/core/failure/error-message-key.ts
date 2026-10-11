@@ -89,6 +89,20 @@ export const ErrorMessageKey = {
   /** The day's meal-parse allowance (20) is used up. */
   mealParseQuotaExceeded: 'errors.meal_parse.quota_exceeded',
   mealParseUnavailable: 'errors.meal_parse.unavailable',
+  // Cook from my fridge (backend `/fridge/scan`, `/fridge/ideas`)
+  /** The day's AI allowance (20 calls, shared by scans and ideas) is used up. */
+  fridgeQuotaExceeded: 'errors.fridge.quota_exceeded',
+  fridgeNoPhotos: 'errors.fridge.no_photos',
+  fridgeTooManyPhotos: 'errors.fridge.too_many_photos',
+  fridgeUnsupportedPhoto: 'errors.fridge.unsupported_photo',
+  fridgePhotoRejected: 'errors.fridge.photo_rejected',
+  fridgePhotoUnchecked: 'errors.fridge.photo_unchecked',
+  /** The photos showed no food the scan could name. */
+  fridgeNothingRecognised: 'errors.fridge.nothing_recognised',
+  fridgeIngredientsRequired: 'errors.fridge.ingredients_required',
+  fridgeIngredientsInvalid: 'errors.fridge.ingredients_invalid',
+  fridgeOptionsInvalid: 'errors.fridge.options_invalid',
+  fridgeUnavailable: 'errors.fridge.unavailable',
   /** The moderation check refused the text or photo. */
   contentBlocked: 'errors.validation.content_blocked',
   /** No AI provider is configured on the server — to the user, the feature is unavailable. */
@@ -119,6 +133,15 @@ export const ErrorMessageKey = {
   shoppingListFull: 'errors.conflict.shopping_list_full',
   shoppingListChanged: 'errors.conflict.shopping_list_changed',
   shoppingRateLimited: 'errors.too_many_requests.shopping_list',
+
+  // Meal plan (backend #392)
+  /** The planned meal is gone — removed on another device. */
+  mealPlanEntryNotFound: 'errors.not_found.meal_plan_entry',
+  /** A range longer than 14 days, reversed, or a copy onto the same week. */
+  mealPlanRangeInvalid: 'errors.validation.meal_plan_range_invalid',
+  mealPlanEntryInvalid: 'errors.validation.meal_plan_entry_invalid',
+  /** The day already holds 12 planned meals. */
+  mealPlanDayFull: 'errors.conflict.meal_plan_day_full',
 
   // Registration / verification
   emailExists: 'errors.conflict.email_exists',

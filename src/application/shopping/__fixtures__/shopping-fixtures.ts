@@ -3,9 +3,11 @@ import { ShoppingItemEntity } from '@domain/shopping/items/shopping-item-entity'
 import type { ShoppingItemEntityProps } from '@domain/shopping/items/shopping-item-entity-props';
 import type { ShoppingListRepositoryInterface } from '@domain/shopping/shopping-list-repository-interface';
 import { configureShoppingListStore } from '@application/shopping/shopping-list-store';
+import { CountShoppingToBuyUseCase } from '@application/shopping/read/count-shopping-to-buy-use-case';
 import { ListShoppingItemsUseCase } from '@application/shopping/read/list-shopping-items-use-case';
 import { AddShoppingItemUseCase } from '@application/shopping/write/add-shopping-item-use-case';
 import { AddRecipeIngredientsUseCase } from '@application/shopping/write/add-recipe-ingredients-use-case';
+import { AddShoppingDraftsUseCase } from '@application/shopping/write/add-shopping-drafts-use-case';
 import { UpdateShoppingItemUseCase } from '@application/shopping/write/update-shopping-item-use-case';
 import { SetShoppingItemCheckedUseCase } from '@application/shopping/write/set-shopping-item-checked-use-case';
 import { DeleteShoppingItemUseCase } from '@application/shopping/write/delete-shopping-item-use-case';
@@ -34,6 +36,7 @@ export const shoppingItemOf = (over: Partial<ShoppingItemEntityProps> = {}): Sho
 /** A repository whose every call is a jest mock answering an empty success. */
 export const fakeShoppingRepository = (): jest.Mocked<ShoppingListRepositoryInterface> => ({
   list: jest.fn().mockResolvedValue(ok({ items: [], total: 0, page: 1, pageSize: 20, hasMore: false })),
+  countToBuy: jest.fn().mockResolvedValue(ok(0)),
   add: jest.fn().mockResolvedValue(ok({ items: [], added: 0, merged: 0 })),
   update: jest.fn(),
   remove: jest.fn().mockResolvedValue(ok(undefined)),
@@ -47,9 +50,11 @@ export const shoppingStoreOf = (repo: ShoppingListRepositoryInterface = fakeShop
     list: new ListShoppingItemsUseCase(repo),
     addText: new AddShoppingItemUseCase(repo),
     addFromRecipe: new AddRecipeIngredientsUseCase(repo),
+    addDrafts: new AddShoppingDraftsUseCase(repo),
     edit: new UpdateShoppingItemUseCase(repo),
     setChecked: new SetShoppingItemCheckedUseCase(repo),
     remove: new DeleteShoppingItemUseCase(repo),
     clearChecked: new ClearCheckedShoppingItemsUseCase(repo),
     clearAll: new ClearShoppingListUseCase(repo),
+    countToBuy: new CountShoppingToBuyUseCase(repo),
   });

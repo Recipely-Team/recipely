@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet } from 'react-native';
-import { router } from 'expo-router';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { controlSizes, iconSizes, radii, spacing, zIndices } from '@presentation/base/theme';
 
 export interface DetailBackButtonProps {
@@ -19,12 +19,13 @@ export interface DetailBackButtonProps {
 /** The floating back control over the photo, on the phone layout only. */
 export const DetailBackButton = ({ label, top }: DetailBackButtonProps): React.JSX.Element => {
   const colors = useTheme().colors;
+  const goBackOrHome = useGoBackOrHome();
 
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityLabel={label}
-      onPress={() => router.back()}
+      onPress={goBackOrHome}
       style={[styles.button, { top, backgroundColor: colors.overlayLight }]}
     >
       <Ionicons name="chevron-back" size={iconSizes.xxl} color={colors.onOverlay} />

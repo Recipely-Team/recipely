@@ -17,6 +17,10 @@ export interface RecipeDetailSheetsProps {
   /** A localized sentence when a photo could not be added or removed. */
   photoError: string | null;
   onDismissPhotoError: () => void;
+  /** True while the "Delete this comment?" question is open. */
+  commentDeletePending: boolean;
+  onConfirmDeleteComment: () => void;
+  onCancelDeleteComment: () => void;
   showDeleteSheet: boolean;
   deleteError: string | null;
   isDeleting: boolean;
@@ -42,7 +46,8 @@ export interface RecipeDetailSheetsProps {
  *   has to read and act on; a toast that scrolls away is how a refusal becomes
  *   "the button does nothing". The avatar upload makes the same call.
  * - **Removing a photo asks first.** It is the owner's own picture, and it may
- *   also be the only one the recipe has.
+ *   also be the only one the recipe has. Deleting a comment asks too: it cannot
+ *   be undone.
  */
 export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.Element => (
   <>
@@ -72,6 +77,16 @@ export const RecipeDetailSheets = (props: RecipeDetailSheetsProps): React.JSX.El
       primaryLabel={t().common.ok}
       onPrimary={props.onDismissPhotoError}
       onClose={props.onDismissPhotoError}
+    />
+
+    <ConfirmSheet
+      visible={props.commentDeletePending}
+      title={t().comments.delete}
+      message={t().comments.deleteConfirm}
+      confirmLabel={t().comments.delete}
+      destructive
+      onConfirm={props.onConfirmDeleteComment}
+      onClose={props.onCancelDeleteComment}
     />
 
     <DeleteRecipeSheet

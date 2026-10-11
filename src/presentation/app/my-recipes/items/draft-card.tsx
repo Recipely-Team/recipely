@@ -7,7 +7,7 @@ import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, letterSpacings, iconSizes, controlSizes, mediaSizes, borderWidths } from '@presentation/base/theme';
 import { formatTimeAgo } from '@presentation/base/utils/format-time-ago';
-import { t, useLocale } from '@presentation/i18n';
+import { pluralCount, t, useLocale } from '@presentation/i18n';
 import { upperCase } from '@presentation/i18n/upper-case';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import { ValueConstants } from '@core/constants';
@@ -57,7 +57,7 @@ const DraftCardComponent = ({ draft, onOpen, onDelete }: DraftCardProps): React.
           {name !== undefined && name.length > ValueConstants.zero ? name : t().drafts.untitled}
         </ThemedText>
         <ThemedText variant="caption" muted>
-          {ingredientCount} {t().drafts.items} · {formatTimeAgo(draft.updatedAt)}
+          {pluralCount(t().drafts.itemsCount, ingredientCount)} · {formatTimeAgo(draft.updatedAt)}
         </ThemedText>
       </View>
       <Pressable

@@ -1,6 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { SEVERITY_ICON } from '@presentation/base/theme/colors/surfaces/severity-icon';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { useAnnounce } from '@presentation/base/hooks/accessibility/use-announce';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { useSeveritySurfaces } from '@presentation/base/theme/colors/surfaces/use-severity-surfaces';
 import type { SeverityType } from '@presentation/base/theme/colors/surfaces/severity-type';
@@ -20,6 +21,7 @@ export interface FormBannerProps {
  * A message banner pinned above a form — the design's mechanism for a rejected
  * submission that belongs to the whole form, not one field (e.g. "Couldn't sign
  * in. Email or password is wrong."). Severity-tinted; danger by default.
+ * VoiceOver hears it through `useAnnounce` — the live region is Android-only.
  */
 export const FormBanner = ({
   message,
@@ -28,6 +30,7 @@ export const FormBanner = ({
   onDismiss,
 }: FormBannerProps): React.JSX.Element => {
   const surface = useSeveritySurfaces()[severity];
+  useAnnounce(message);
 
   return (
     <View

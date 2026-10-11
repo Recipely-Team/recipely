@@ -29,7 +29,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 const savedStores = (): Partial<ApplicationStores> =>
   ({
     savedRecipesStore: create<Pick<SavedRecipesStoreState, 'savedIds'>>(() => ({ savedIds: new Set<string>() })),
-    favoritesStore: create(() => ({ isLoading: false, error: null })),
+    favoritesStore: create(() => ({ isLoading: false, pending: new Set<string>(), error: null })),
   }) as unknown as Partial<ApplicationStores>;
 
 const mockPush = jest.fn();

@@ -71,7 +71,6 @@ interface ModalHandlers {
 interface RenderOptions {
   visible?: boolean;
   pending?: UiFilters;
-  resultCount?: number;
   hasActiveFilters?: boolean;
 }
 
@@ -81,7 +80,6 @@ const renderModal = (
   const {
     visible = true,
     pending = emptyFilters,
-    resultCount = 0,
     hasActiveFilters = true,
   } = opts;
 
@@ -102,7 +100,6 @@ const renderModal = (
       <WebFilterModal
         visible={visible}
         pending={pending}
-        resultCount={resultCount}
         hasActiveFilters={hasActiveFilters}
         {...handlers}
       />
@@ -143,19 +140,12 @@ describe('WebFilterModal', () => {
     expect(textContent(root)).toContain(t().recipes.filter);
   });
 
-  it('shows the result count inside the apply button label', () => {
-    const { root } = renderModal({ visible: true, resultCount: 7 });
+  // --- regression: "Show results (N)" showed the count for the filters already applied, not the ones being edited.
+  it('labels the apply button without a stale count', () => {
+    const { root } = renderModal({ visible: true });
 
-    expect(textContent(root)).toContain(`${t().recipes.showResults} (7)`);
-  });
-
-  it('omits the parenthesised count when no results match', () => {
-    const { root } = renderModal({ visible: true, resultCount: 0 });
-
-    const texts = textContent(root);
-
-    expect(texts).toContain(t().recipes.showResults);
-    expect(texts).not.toContain(`${t().recipes.showResults} (0)`);
+    expect(textContent(root)).toContain(t().recipes.showResults);
+    expect(textContent(root).some((text) => /\(\d+\)/.test(text))).toBe(false);
   });
 
   it('calls onToggleCuisine with the chip key when a cuisine chip is tapped', () => {
@@ -171,8 +161,8 @@ describe('WebFilterModal', () => {
   });
 
   it('calls onApply when the apply button is tapped', () => {
-    const applyLabel = `${t().recipes.showResults} (3)`;
-    const { root, handlers } = renderModal({ visible: true, resultCount: 3 });
+    const applyLabel = t().recipes.showResults;
+    const { root, handlers } = renderModal({ visible: true });
 
     // PrimaryButton carries no accessibilityLabel, so find the innermost button
     // host node that wraps the apply label text (the outer scrim button also

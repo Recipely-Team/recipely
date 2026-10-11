@@ -64,9 +64,17 @@ const KEY_TO_SEVERITY: Partial<Record<FailureContentKeyType, SeverityType>> = {
   shoppingListFull: SeverityType.Warning,
   shoppingListChanged: SeverityType.Neutral,
   shoppingItemGone: SeverityType.Neutral,
+  mealPlanEntryGone: SeverityType.Neutral,
+  mealPlanRangeInvalid: SeverityType.Warning,
+  mealPlanEntryInvalid: SeverityType.Warning,
+  mealPlanDayFull: SeverityType.Warning,
   mealParseQuotaExceeded: SeverityType.Warning,
   mealParseUnavailable: SeverityType.Neutral,
   mealParsePhotoUnchecked: SeverityType.Warning,
+  fridgeQuotaExceeded: SeverityType.Warning,
+  fridgePhotoUnchecked: SeverityType.Warning,
+  fridgeNothingRecognised: SeverityType.Neutral,
+  fridgeUnavailable: SeverityType.Neutral,
 };
 
 const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
@@ -116,6 +124,10 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   shoppingListFull: 'cart-outline',
   shoppingListChanged: 'refresh-outline',
   shoppingItemGone: 'cart-outline',
+  mealPlanEntryGone: 'calendar-outline',
+  mealPlanRangeInvalid: 'calendar-outline',
+  mealPlanEntryInvalid: 'alert-circle-outline',
+  mealPlanDayFull: 'calendar-outline',
   contentBlocked: 'hand-left-outline',
 
   emailExists: 'mail-outline',
@@ -142,6 +154,17 @@ const KEY_TO_ICON: Partial<Record<FailureContentKeyType, IoniconNameType>> = {
   mealParsePhotoUnchecked: 'time-outline',
   mealParseQuotaExceeded: 'hourglass-outline',
   mealParseUnavailable: 'cloud-offline-outline',
+
+  fridgeQuotaExceeded: 'hourglass-outline',
+  fridgeNoPhotos: 'camera-outline',
+  fridgeTooManyPhotos: 'images-outline',
+  fridgeUnsupportedPhoto: 'image-outline',
+  fridgePhotoRejected: 'image-outline',
+  fridgePhotoUnchecked: 'time-outline',
+  fridgeNothingRecognised: 'search-outline',
+  fridgeIngredientsRequired: 'add-circle-outline',
+  fridgeIngredientsInvalid: 'create-outline',
+  fridgeUnavailable: 'cloud-offline-outline',
 };
 
 const FALLBACK_ICON: IoniconNameType = 'sad-outline';

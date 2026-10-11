@@ -19,6 +19,8 @@ export const RoutePaths = {
   recipes: '/recipes',
   createRecipe: '/create-recipe',
   importRecipe: '/import-recipe',
+  /** Cook from my fridge: photos → ingredients → ideas → an AI recipe (flag `fridgeToRecipe`). */
+  fridge: '/fridge',
   /** The import screen asking for photos or a PDF instead of a link. */
   importRecipeFromFile: `/import-recipe?source=${ImportSource.File}`,
   myRecipes: '/my-recipes',
@@ -35,6 +37,8 @@ export const RoutePaths = {
   myRecipesCreatedTab: 'created',
   /** Where a pointer to a draft that no longer exists lands. */
   myRecipesDraftsTab: 'drafts',
+  /** The My Recipes tab the profile's "Saved" count opens. */
+  myRecipesSavedTab: 'saved',
   notifications: '/notifications',
   profile: '/profile',
   editProfile: '/edit-profile',

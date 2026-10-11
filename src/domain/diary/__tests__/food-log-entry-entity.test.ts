@@ -14,3 +14,12 @@ describe('FoodLogEntryEntity.changesTo', () => {
     expect(entry.changesTo(2, MealSlot.Snacks)).toEqual({ servings: 2, meal: MealSlot.Snacks });
   });
 });
+
+describe('FoodLogEntryEntity.toNew', () => {
+  it('logs the same food again — what Undo after a removal sends back', () => {
+    const entry = foodLogEntryOf({ servings: 1.5, meal: MealSlot.Dinner });
+    const again = entry.toNew();
+    expect(again).toMatchObject({ date: entry.date, meal: MealSlot.Dinner, name: entry.name, servings: 1.5, recipeId: entry.recipeId });
+    expect(again.nutrients).toBe(entry.nutrients);
+  });
+});

@@ -8,6 +8,9 @@ import { spacing, radii, fontWeights, iconSizes, controlSizes } from '@presentat
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
+
+/** Grows the 36 pt round button to the 44 pt minimum touch target. */
+const TARGET_SLOP = (controlSizes.touchTarget - controlSizes.iconBtn) / ValueConstants.two;
 export interface NotificationsHeaderProps {
   unreadCount: number;
   onBack: () => void;
@@ -23,6 +26,7 @@ export const NotificationsHeader = ({ unreadCount, onBack, onMarkAllRead }: Noti
     <View style={[styles.header, { paddingTop: isWebShell ? spacing.md : insets.top + spacing.sm, borderBottomColor: colors.cardBorder }]}>
       <Pressable
         onPress={onBack}
+        hitSlop={TARGET_SLOP}
         style={[styles.backBtn, { backgroundColor: colors.chipBackground }]}
         accessibilityRole="button"
         accessibilityLabel={t().common.back}
@@ -66,7 +70,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   headerTitle: { flex: ValueConstants.one, textAlign: 'center', fontWeight: fontWeights.bold },
-  markReadBtn: { paddingHorizontal: spacing.sm, paddingVertical: spacing.xs },
+  markReadBtn: { paddingHorizontal: spacing.sm, minHeight: controlSizes.touchTarget, justifyContent: 'center' },
   markReadLabel: { fontWeight: fontWeights.semibold },
   headerSpacer: { width: controlSizes.iconBtn },
 });

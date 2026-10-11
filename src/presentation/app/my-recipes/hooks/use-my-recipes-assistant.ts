@@ -34,8 +34,10 @@ interface MyRecipesAssistantArgs {
  * description, scrolling, and the spoken answer to "delete this draft?".
  *
  * @remarks
- * - **Deleting a draft asks first**; the pending draft lives here so the screen's sheet and
- *   the spoken confirmation read the same value.
+ * - **Deleting a draft asks first — by voice AND by touch.** The pending draft lives here so
+ *   the screen's sheet and the spoken confirmation read the same value; the draft row's trash
+ *   icon calls `requestDraftDelete` too (it used to delete on the first tap, so a touch user got
+ *   less protection than a voice user).
  * - **The tab decides which list a name refers to**; Drafts exposes no recipe rows.
  */
 export const useMyRecipesAssistant = ({
@@ -83,5 +85,11 @@ export const useMyRecipesAssistant = ({
   const cancelDraftDelete = (): void => setDraftPendingDelete(null);
   useAssistantConfirmation(draftPendingDelete !== null, confirmDraftDelete, cancelDraftDelete);
 
-  return { scrollable, isDraftDeletePending: draftPendingDelete !== null, confirmDraftDelete, cancelDraftDelete };
+  return {
+    scrollable,
+    isDraftDeletePending: draftPendingDelete !== null,
+    requestDraftDelete: setDraftPendingDelete,
+    confirmDraftDelete,
+    cancelDraftDelete,
+  };
 };

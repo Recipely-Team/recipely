@@ -76,6 +76,7 @@ describe('recipe-list-store', () => {
       query: '',
       page: 1,
       hasMore: false,
+      total: 1,
     });
   });
 
@@ -95,7 +96,7 @@ describe('recipe-list-store', () => {
     const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
 
     await store.getState().load();
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '', page: 1, hasMore: false, total: first.length });
 
     const deferred = makeDeferred();
     useCase.execute.mockReturnValue(deferred.promise);
@@ -107,6 +108,7 @@ describe('recipe-list-store', () => {
       query: '',
       page: 1,
       hasMore: false,
+      total: 1,
       isRefreshing: true,
       refreshFailure: undefined,
     });
@@ -115,7 +117,7 @@ describe('recipe-list-store', () => {
     deferred.resolve(ok(recipePageOf(second)));
     await inFlight;
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '', page: 1, hasMore: false, total: second.length });
   });
 
   it('a failed refresh keeps the previous recipes and surfaces refreshFailure instead of blanking the screen', async () => {
@@ -124,7 +126,7 @@ describe('recipe-list-store', () => {
     const store = configureRecipeListStore({ listRecipes: useCase as unknown as ListRecipesUseCase });
 
     await store.getState().load();
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: first, query: '', page: 1, hasMore: false, total: first.length });
 
     const failure = new NetworkFailure('offline');
     useCase.execute.mockResolvedValue(fail(failure));
@@ -137,6 +139,7 @@ describe('recipe-list-store', () => {
       query: '',
       page: 1,
       hasMore: false,
+      total: 1,
       isRefreshing: false,
       refreshFailure: failure,
     });
@@ -158,7 +161,7 @@ describe('recipe-list-store', () => {
     useCase.execute.mockResolvedValueOnce(ok(recipePageOf(second)));
     await store.getState().load({ cuisines: [CuisineKey.Italian] });
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: second, query: '', page: 1, hasMore: false, total: second.length });
   });
 
   it('records the search the loaded recipes answer', async () => {
@@ -168,7 +171,7 @@ describe('recipe-list-store', () => {
 
     await store.getState().load({ search: 'kek' });
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: rows, query: 'kek', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: rows, query: 'kek', page: 1, hasMore: false, total: rows.length });
   });
 
   it('ignores a superseded response so a slow earlier search cannot overwrite a newer one', async () => {
@@ -192,7 +195,7 @@ describe('recipe-list-store', () => {
     slowFirst.resolve(ok(recipePageOf(older)));
     await first;
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli', page: 1, hasMore: false, total: newer.length });
   });
 
   it('drops a superseded failure instead of reporting it against the newer query', async () => {
@@ -214,7 +217,7 @@ describe('recipe-list-store', () => {
     slowFirst.resolve(fail(new NetworkFailure('offline')));
     await first;
 
-    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli', page: 1, hasMore: false });
+    expect(store.getState().state).toEqual({ status: 'loaded', recipes: newer, query: 'kekli', page: 1, hasMore: false, total: newer.length });
   });
 
   describe('loadMore', () => {

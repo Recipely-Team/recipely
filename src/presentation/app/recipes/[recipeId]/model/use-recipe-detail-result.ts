@@ -58,7 +58,12 @@ export interface UseRecipeDetailResult {
   onCopyToDraft: () => void;
   onLoadMoreComments: () => void;
   onToggleCommentLike: (commentId: string) => void;
+  /** Asks before deleting: opens the confirm sheet for that comment. */
   onDeleteComment: (commentId: string) => void;
+  /** True while the "Delete this comment?" sheet is open. */
+  commentDeletePending: boolean;
+  onConfirmDeleteComment: () => void;
+  onCancelDeleteComment: () => void;
 
   shareOpen: boolean;
   onOpenShare: () => void;

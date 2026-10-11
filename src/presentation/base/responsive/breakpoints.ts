@@ -29,6 +29,10 @@ export const WEB_CONTENT_MAX_WIDTH = {
   createRecipe: 760,
   aiGenerate: 760,
   importRecipe: 560,
+  /** Cook from my fridge: a reading-width flow. */
+  fridge: 560,
+  /** Its ideas step, a grid of cards on a wide window. */
+  fridgeIdeas: 920,
   recipeDetail: 980,
   /** Six creator cards across, as the prototype's Explore row. */
   creators: 1200,

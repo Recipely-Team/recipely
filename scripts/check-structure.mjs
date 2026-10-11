@@ -59,6 +59,9 @@
  *      the red danger surface (CLAUDE.md §24).
  *   AR. An assistant handler's `title` is a name, never a literal sentence — the
  *      transcript chip shows it, so English prose reached every locale (§11, §24).
+ *   AS. No bare `router.back()` under app/ — a cold-started page has no back, so
+ *      it dead-ends on iOS/web and quits on Android; use `useGoBackOrHome`
+ *      (CLAUDE.md §24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1581,6 +1584,28 @@ function openingTag(src, at) {
         break;
       }
     }
+  }
+}
+
+// --- AS: no bare router.back() in a routed page (CLAUDE.md §24) -------------
+// A page opened cold — a shared link, a push tap, a search result, an OS
+// intent — IS the whole stack, and `router.back()` there does nothing on iOS
+// and the web and closes the app on Android. Recipe detail, notifications,
+// settings, edit profile and the auth forms all dead-ended that way. A back
+// under app/ goes through `useGoBackOrHome(fallback)`, or asks `canGoBack()`
+// on the same line or the two lines above it.
+{
+  const BACK = /\brouter\.back\(\)/;
+  const GUARD = /canGoBack\(\)/;
+  for (const file of files) {
+    if (isTest(file) || !file.startsWith(path.join('presentation', 'app') + path.sep)) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      if (!BACK.test(line) || /^\s*(\/\/|\*)/.test(line)) return;
+      const window = lines.slice(Math.max(0, i - 2), i + 1).join('\n');
+      if (GUARD.test(window)) return;
+      errors.push(`${file}:${i + 1}: bare router.back() — a cold-started page has no back; use useGoBackOrHome(fallback) (CLAUDE.md §24)`);
+    });
   }
 }
 

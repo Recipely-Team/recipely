@@ -53,6 +53,9 @@ const props: MyRecipesListProps = {
   isFirstLoad: false,
   loadFailure: null,
   isLoadingMoreDrafts: false,
+  draftsMoreFailure: null,
+  onBrowse: jest.fn(),
+  onCreate: jest.fn(),
 };
 
 describe('MyRecipesList — re-renders', () => {

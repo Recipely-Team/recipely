@@ -151,3 +151,30 @@ describe('ShoppingListStore', () => {
     expect(store.getState().list.status).toBe(StoreStatus.Idle);
   });
 });
+
+describe('ShoppingListStore — the cart badge count', () => {
+  it('reads the server count, re-reads it after a change, and forgets it on sign-out', async () => {
+    const repo = fakeShoppingRepository();
+    repo.countToBuy.mockResolvedValueOnce(ok(3)).mockResolvedValueOnce(ok(4));
+    const store = shoppingStoreOf(repo);
+    expect(store.getState().toBuy).toBeNull();
+
+    await store.getState().loadToBuy();
+    expect(store.getState().toBuy).toBe(3);
+
+    await store.getState().addText('Limon');
+    await new Promise((resolve) => setImmediate(resolve));
+    expect(store.getState().toBuy).toBe(4);
+
+    store.getState().clear();
+    expect(store.getState().toBuy).toBeNull();
+  });
+
+  it('does not re-read the count after a refused change', async () => {
+    const repo = fakeShoppingRepository();
+    repo.add.mockResolvedValueOnce(fail(new NetworkFailure()));
+    const store = shoppingStoreOf(repo);
+    await store.getState().addText('Limon');
+    expect(repo.countToBuy).not.toHaveBeenCalled();
+  });
+});

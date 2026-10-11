@@ -10,9 +10,18 @@ import {
   type ViewStyle,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { AuthAutofill, type AuthAutofillType } from '@presentation/base/widgets/inputs/auth-autofill';
 import { PasswordEyeToggle } from '@presentation/base/widgets/inputs/password-eye-toggle';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, fontSizes, iconSizes, controlSizes, borderWidths, zIndices } from '@presentation/base/theme';
+
+/** iOS spells the same hints differently from `autoComplete`. */
+const TEXT_CONTENT_TYPE: Readonly<Record<AuthAutofillType, TextInputProps['textContentType']>> = {
+  [AuthAutofill.Email]: 'emailAddress',
+  [AuthAutofill.Password]: 'password',
+  [AuthAutofill.NewPassword]: 'newPassword',
+  [AuthAutofill.Name]: 'name',
+};
 
 export interface AuthTextFieldProps {
   iconName: React.ComponentProps<typeof Ionicons>['name'];
@@ -27,6 +36,8 @@ export interface AuthTextFieldProps {
   maxLength?: number;
   onSubmitEditing?: () => void;
   containerStyle?: StyleProp<ViewStyle>;
+  /** What the field holds, for the platform's password manager (Keychain / Google autofill). */
+  autofill?: AuthAutofillType;
 }
 
 /**
@@ -39,6 +50,9 @@ export interface AuthTextFieldProps {
  * - **Validity:** `valid` shows a check or a cross on the right; leave it
  *   `undefined` while there is nothing to judge.
  * - **Ref:** forwarded to the `TextInput` so forms can chain focus.
+ * - **Autofill:** `autofill` names the content (`AuthAutofill`) so Keychain and
+ *   Google's password manager suggest, generate and save credentials; without it
+ *   no sign-in field got a suggestion.
  */
 export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
   function AuthTextField(
@@ -55,6 +69,7 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
       maxLength,
       onSubmitEditing,
       containerStyle,
+      autofill,
     },
     ref,
   ): React.JSX.Element {
@@ -92,6 +107,8 @@ export const AuthTextField = forwardRef<TextInput, AuthTextFieldProps>(
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
           onSubmitEditing={onSubmitEditing}
+          autoComplete={autofill}
+          textContentType={autofill !== undefined ? TEXT_CONTENT_TYPE[autofill] : undefined}
         />
         <View style={styles.rightSlot}>
           {hasStatus ? (

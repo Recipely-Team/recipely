@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
-import { useRouter } from 'expo-router';
+import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
+import { RoutePaths } from '@presentation/base/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { failureKeyMessage, failureToastMessage } from '@presentation/base/errors/failure-lookups';
@@ -22,6 +24,8 @@ import { isBlank } from '@core/guards/type-guards';
  * failure through the `errorDialog` the screen renders as a dialog.
  *
  * @remarks
+ * - **Back asks before dropping an edit.** With unsaved changes it opens a
+ *   Discard / Keep editing sheet; it used to throw the edited bio away silently.
  * - **Save reads the fields through a ref, not this render.** The assistant
  *   can write a field and say "save" in the same turn; both tool calls run
  *   before React re-renders, so the render's `displayName` is the one from
@@ -33,7 +37,7 @@ import { isBlank } from '@core/guards/type-guards';
  *   same stale render would be wrong in the same way.
  */
 export const useEditProfile = (): UseEditProfileResult => {
-  const router = useRouter();
+  const goBack = useGoBackOrHome(RoutePaths.profile);
   const { pickAndUpload, isUploading, uploadError, onDismissUploadError } = useAvatarUpload();
 
   const { authStore } = useStores();
@@ -60,10 +64,17 @@ export const useEditProfile = (): UseEditProfileResult => {
   };
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [discardVisible, setDiscardVisible] = useState(false);
 
   const canSave = !isBlank(displayName);
   const dirty = displayName !== initialDisplayName || bio !== initialBio;
   const showNameError = dirty && !canSave;
+  // The back gesture asks too; off while saving, so the save's own way back is not held.
+  const heldBack = useRef(false);
+  const leaveGuard = useLeaveGuard(dirty && !isSaving, () => {
+    heldBack.current = true;
+    setDiscardVisible(true);
+  });
   const bioAtLimit = bio.length >= BIO_MAX;
   const saveEnabled = canSave && dirty && !isSaving;
 
@@ -81,7 +92,7 @@ export const useEditProfile = (): UseEditProfileResult => {
         return EditProfileSaveOutcome.Failed;
       }
       showSuccessToast(t().editProfile.saved);
-      router.back();
+      goBack();
       return EditProfileSaveOutcome.Saved;
     } finally {
       setIsSaving(false);
@@ -102,7 +113,17 @@ export const useEditProfile = (): UseEditProfileResult => {
     isDirty: dirty,
     isSaving,
     onSave,
-    onBack: () => router.back(),
+    onBack: () => (dirty ? setDiscardVisible(true) : goBack()),
+    discardVisible,
+    onConfirmDiscard: () => {
+      setDiscardVisible(false);
+      if (heldBack.current) leaveGuard.release();
+      else goBack();
+    },
+    onKeepEditing: () => {
+      heldBack.current = false;
+      setDiscardVisible(false);
+    },
     errorDialog: saveError ?? uploadError,
     onCloseErrorDialog: () => {
       setSaveError(null);

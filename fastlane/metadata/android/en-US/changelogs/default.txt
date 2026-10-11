@@ -1,4 +1,5 @@
-• Every tab now has the same top bar, so switching tabs feels steady, and notifications are one tap away on each.
-• Chefs: a new page shows what is coming, and food creators can apply to join.
-• Cleaner sign-in and sign-up fields, and a friendlier screen when a search finds nothing.
+• Your shopping list is now one tap away: a cart on every tab shows how many items are still to buy.
+• Undo after removing a shopping item, a diary entry or a saved recipe.
+• You can cancel while a recipe is being generated, and leaving a half-made recipe or profile edit asks first.
+• Recipe counts show the real total, and notifications can be pulled to refresh.
 • Many small fixes and polish.

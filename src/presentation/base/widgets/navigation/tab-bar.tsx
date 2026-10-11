@@ -21,6 +21,11 @@ export interface TabBarProps {
  * Recipes, My Recipes, Chefs, Diary, Profile (design spec → Chefs tab §5).
  * Each tab shares the width equally and its label stays on one line with an
  * ellipsis. Returns null on the web shell — the WebHeader replaces it there.
+ *
+ * @remarks
+ * - **The bar grows with the text** (`minHeight`, rule 6b): a fixed height
+ *   clipped icon and label at large Dynamic Type. Labels are `micro` (11), not
+ *   the 10 pt they were, and the row is a `tablist` so TalkBack says "tab 2 of 5".
  */
 export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | null => {
   const colors = useTheme().colors;
@@ -39,13 +44,14 @@ export const TabBar = ({ active, onChange }: TabBarProps): React.JSX.Element | n
 
   return (
     <View
+      accessibilityRole="tablist"
       style={[
         styles.container,
         {
           backgroundColor: colors.tabBarBackground,
           borderTopColor: colors.tabBarBorder,
           paddingBottom: bottomPad,
-          height: controlSizes.tabBar + bottomPad,
+          minHeight: controlSizes.tabBar + bottomPad,
         },
       ]}
     >
@@ -98,7 +104,7 @@ const styles = StyleSheet.create({
     gap: spacing.xxs,
   },
   label: {
-    fontSize: fontSizes.tiny,
+    fontSize: fontSizes.micro,
     maxWidth: '100%',
   },
 });

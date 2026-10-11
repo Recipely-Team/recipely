@@ -98,9 +98,7 @@ export const MyRecipesScreen = (): React.JSX.Element => {
   // Stable handlers, so the list's memoised rows and `renderItem` hold across renders.
   const openRecipe = useCallback((id: string): void => router.push(RoutePaths.recipeDetail(id) as Href), [router]);
 
-  const openCreate = (): void => {
-    router.push(RoutePaths.createRecipe);
-  };
+  const openCreate = (): void => router.push(RoutePaths.createRecipe);
 
   const openDraft = useCallback(
     (id: string): void => router.push({ pathname: RoutePaths.createRecipe, params: { draftId: id } }),
@@ -164,14 +162,17 @@ export const MyRecipesScreen = (): React.JSX.Element => {
             onToggleSave={toggleSave}
             onOpenRecipe={openRecipe}
             onOpenDraft={openDraft}
-            onDeleteDraft={deleteDraft}
+            onDeleteDraft={assistant.requestDraftDelete}
             isFirstLoad={isTabFirstLoad}
             loadFailure={loadFailure}
             onDraftsEndReached={() => void loadMoreDrafts()}
             isLoadingMoreDrafts={
               draftsListState.status === StoreStatus.Loaded && draftsListState.isLoadingMore
             }
+            draftsMoreFailure={draftsListState.status === StoreStatus.Loaded ? draftsListState.moreFailure : null}
             isRefreshing={isRefreshing}
+            onBrowse={() => router.replace(RoutePaths.recipes)}
+            onCreate={openCreate}
             onRefresh={onRefresh}
             scrollable={assistant.scrollable}
           />

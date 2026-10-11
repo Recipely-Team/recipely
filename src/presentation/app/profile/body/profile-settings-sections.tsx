@@ -11,6 +11,7 @@ import { SettingsRow } from '@presentation/base/widgets/settings/settings-row';
 import { ConfirmSheet } from '@presentation/base/widgets/sheets/confirm-sheet';
 import { ThemeToggle } from '@presentation/base/widgets/settings/theme-toggle';
 import { ThemeGrid } from '@presentation/base/widgets/settings/theme-grid';
+import { SettingsNotificationsSection } from '@presentation/base/widgets/settings/settings-notifications-section';
 import { LanguageSelector } from '@presentation/base/widgets/settings/language-selector';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing, radii, iconSizes, controlSizes } from '@presentation/base/theme';
@@ -20,9 +21,22 @@ import { FeedbackSheet } from '@presentation/app/profile/sheets/feedback-sheet';
 import { WebFeedbackModal } from '@presentation/app/profile/sheets/web-feedback-modal';
 import { appVersion } from '@presentation/base/utils/app-version';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@infrastructure/constants/api/api-hosts';
+import { enterApp } from '@presentation/navigation/enter-app';
+import { showSuccessToast } from '@presentation/base/feedback/show-toast';
 import { RoutePaths } from '@presentation/base/constants';
 import { ValueConstants } from '@core/constants';
+import { useAssistantSettingsActions } from '@presentation/app/profile/hooks/use-assistant-settings-actions';
+import { useAssistantConfirmation } from '@presentation/base/hooks/assistant/actions/use-assistant-confirmation';
 
+/**
+ * The settings Profile shows under the identity block: appearance, reminders,
+ * account, support and about.
+ *
+ * @remarks
+ * - **Reminders live here too.** `/settings` is linked from nowhere, and this
+ *   copy of the list had no reminders switch — a user who accepted the feed's
+ *   reminders offer had no way to turn them off again.
+ */
 export const ProfileSettingsSections = (): React.JSX.Element => {
   const router = useRouter();
   const { themeId, preference, setThemeId, setPreference, colors } = useTheme();
@@ -37,8 +51,23 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
   const handleSignOut = async (): Promise<void> => {
     setSignOutVisible(false);
     await signOut();
-    router.replace(RoutePaths.login);
+    // Guest-first: back to the feed, not a login wall.
+    enterApp(router, RoutePaths.recipes);
+    showSuccessToast(t().settings.signedOut);
   };
+
+  // The voice assistant's settings words live here since /settings became a redirect to Profile.
+  useAssistantSettingsActions({
+    language,
+    preference,
+    themeId,
+    onSetLanguage: setLocale,
+    onSetThemePreference: setPreference,
+    onSetThemeId: setThemeId,
+    onRequestSignOut: () => setSignOutVisible(true),
+  });
+  // The sign-out sheet also takes a spoken answer.
+  useAssistantConfirmation(signOutVisible, () => void handleSignOut(), () => setSignOutVisible(false));
 
   return (
     <View>
@@ -63,6 +92,8 @@ export const ProfileSettingsSections = (): React.JSX.Element => {
 
       <SectionHeader title={t().settings.themePalette} />
       <ThemeGrid selectedThemeId={themeId} onSelect={setThemeId} />
+
+      <SettingsNotificationsSection />
 
       <SectionHeader title={t().settings.account} />
       <View style={[styles.group, { backgroundColor: colors.cardBackground }]}>

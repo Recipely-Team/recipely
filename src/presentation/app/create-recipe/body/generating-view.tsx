@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Animated from 'react-native-reanimated';
@@ -6,7 +6,7 @@ import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
-import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities, fontWeights, BrandColors } from '@presentation/base/theme';
+import { spacing, radii, fontSizes, iconSizes, decorSizes, layoutSizes, borderWidths, opacities, fontWeights, BrandColors, controlSizes } from '@presentation/base/theme';
 import { useGeneratingAnimation } from '@presentation/app/create-recipe/hooks/use-generating-animation';
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
@@ -15,6 +15,10 @@ import { AnimationConstants } from '@presentation/base/constants';
 export interface GeneratingViewProps {
   /** 0..(steps-1) — drives the checklist fill and progress bar. */
   activeStep: number;
+  /** Stops waiting and goes back to the prompt, the text kept. */
+  onCancel: () => void;
+  /** Space the status bar takes on a phone; 0 in the web shell. */
+  topInset: number;
 }
 
 const STAGE = 188;
@@ -35,10 +39,14 @@ const LOGO_SIZE = 60;
 /**
  * The eye-catching "AI is cooking" showpiece shown while a recipe generates.
  *
+ * A close (×) top-left is live from the first frame: it stops waiting and goes
+ * back to the prompt with the text kept — without it the screen had no way out
+ * until the model answered.
+ *
  * Generation only — the Instagram import is a QUEUED job with its own screen
  * (`app/import-recipe/`), because nobody is waiting on it.
  */
-export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.Element => {
+export const GeneratingView = ({ activeStep, onCancel, topInset }: GeneratingViewProps): React.JSX.Element => {
   const colors = useTheme().colors;
   const { orbitStyle, ringStyle, coreStyle } = useGeneratingAnimation();
 
@@ -52,6 +60,15 @@ export const GeneratingView = ({ activeStep }: GeneratingViewProps): React.JSX.E
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
+      <Pressable
+        onPress={onCancel}
+        hitSlop={spacing.sm}
+        style={[styles.cancel, { top: topInset + spacing.sm }]}
+        accessibilityRole="button"
+        accessibilityLabel={t().createRecipe.cancel}
+      >
+        <Ionicons name="close" size={iconSizes.lg} color={colors.text} />
+      </Pressable>
       <View style={styles.stage}>
         <Animated.View
           style={[
@@ -156,6 +173,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: spacing.lg,
     gap: spacing.xl,
+  },
+  cancel: {
+    position: 'absolute',
+    left: spacing.md,
+    zIndex: ValueConstants.one,
+    width: controlSizes.iconBtn,
+    height: controlSizes.iconBtn,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   stage: {
     width: STAGE,

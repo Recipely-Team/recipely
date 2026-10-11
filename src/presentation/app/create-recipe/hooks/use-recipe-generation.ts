@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatRole } from '@domain/drafts/chat-role';
 import { StoreStatus } from '@application/store/store-status';
 import { useLocalSearchParams, useRouter, type Href } from 'expo-router';
+import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useStores } from '@presentation/bootstrap/use-stores';
 import { t } from '@presentation/i18n';
 import { showDangerToast, showErrorToast } from '@presentation/base/feedback/show-toast';
@@ -244,6 +245,13 @@ const GEN_STEP_INTERVAL_MS = 620;
     refining,
   });
 
+  const generation = useRef<number>(ValueConstants.zero);
+  const onCancelGenerate = useCallback((): void => {
+    generation.current += ValueConstants.one;
+    createdRecipesStore.getState().resetGenerateState();
+    setPhase(PhaseType.Prompt);
+  }, [createdRecipesStore]);
+
   const runGenerate = useCallback(
     async (text: string): Promise<void> => {
       const trimmed = text.trim();
@@ -251,7 +259,11 @@ const GEN_STEP_INTERVAL_MS = 620;
       originalPrompt.current = trimmed;
       setGenerateError(null);
       setPhase(PhaseType.Generating);
+      generation.current += ValueConstants.one;
+      const mine = generation.current;
       await createdRecipesStore.getState().generateRecipe(trimmed);
+      // Cancelled while waiting: the answer is dropped, the prompt screen stays.
+      if (mine !== generation.current) return;
       const state = createdRecipesStore.getState().generateState;
       if (state.status === StoreStatus.Success) {
         setRecipe((prev) => recipeToEditable(state.recipe, prev.media));
@@ -393,6 +405,12 @@ const GEN_STEP_INTERVAL_MS = 620;
     [hasUnkeptWork],
   );
 
+  // The system's own back (Android back, iOS swipe) asks the same question as the close button.
+  const leaveGuard = useLeaveGuard(hasUnkeptWork(), () => {
+    afterExit.current = () => leaveGuard.release();
+    setExitOpen(true);
+  });
+
   /** Either the errand the user was on, or the plain way out. */
   const leave = useCallback((): void => {
     const next = afterExit.current;
@@ -438,6 +456,7 @@ const GEN_STEP_INTERVAL_MS = 620;
     onChangePrompt,
     onAppendChip,
     onGenerate: () => void runGenerate(prompt),
+    onCancelGenerate,
     onStartBlank,
     onImportFromInstagram,
     onImportFromFile,

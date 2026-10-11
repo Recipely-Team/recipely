@@ -1,3 +1,4 @@
+import { act } from 'react-test-renderer';
 /**
  * The generate screen is a spinner, a checklist and a progress bar — it holds
  * nothing the user came to read. It carried a banner anyway, which is the
@@ -17,7 +18,7 @@ jest.mock('@presentation/base/widgets/ads/ad-slot', () => {
 });
 
 const shownText = (activeStep: number): string[] =>
-  textContent(renderComponent(<GeneratingView activeStep={activeStep} />).root);
+  textContent(renderComponent(<GeneratingView activeStep={activeStep} onCancel={jest.fn()} topInset={0} />).root);
 
 describe('the ad that used to be on the generate screen', () => {
   it.each([0, 1, 2])('offers no placement at step %p', (activeStep) => {
@@ -28,5 +29,16 @@ describe('the ad that used to be on the generate screen', () => {
     // Non-vacuity: the assertion above would also pass on a screen that
     // rendered nothing at all.
     expect(shownText(0).length).toBeGreaterThan(0);
+  });
+});
+
+describe('the generating screen has a way out', () => {
+  // --- regression: once "Generate" was pressed there was no close or cancel until the model answered.
+  it('offers a cancel from the first frame', () => {
+    const onCancel = jest.fn();
+    const { root } = renderComponent(<GeneratingView activeStep={0} onCancel={onCancel} topInset={0} />);
+    const cancel = root.find((node) => node.props.accessibilityRole === 'button' && typeof node.props.onPress === 'function');
+    act(() => (cancel.props as { onPress: () => void }).onPress());
+    expect(onCancel).toHaveBeenCalledTimes(1);
   });
 });

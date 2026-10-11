@@ -20,6 +20,8 @@ export interface UseCreateRecipeResult {
   onChangePrompt: (value: string) => void;
   onAppendChip: (chip: string) => void;
   onGenerate: () => void;
+  /** Stops waiting for the model and returns to the prompt, the text kept; a late answer is dropped. */
+  onCancelGenerate: () => void;
   onStartBlank: () => void;
   onImportFromInstagram: () => void;
   /** Opens the import screen asking for photos or a PDF of a written recipe. */

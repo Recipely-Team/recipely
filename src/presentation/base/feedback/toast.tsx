@@ -12,7 +12,14 @@ import {
 import { shadows } from '@presentation/base/theme/tokens/effects/shadows';
 import { spacing, radii, fontSizes, fontWeights, iconSizes, opacities } from '@presentation/base/theme';
 import { t } from '@presentation/i18n';
-import { DEFAULT_TOAST_DURATION_MS } from '@presentation/base/feedback/toast-model';
+import {
+  ACTION_TOAST_DURATION_MS,
+  DEFAULT_TOAST_DURATION_MS,
+  SCREEN_READER_DURATION_FACTOR,
+  TOAST_MAX_LINES,
+} from '@presentation/base/feedback/toast-model';
+import { useAnnounce } from '@presentation/base/hooks/accessibility/use-announce';
+import { useScreenReaderEnabled } from '@presentation/base/hooks/accessibility/use-screen-reader-enabled';
 import type { ToastItem } from '@presentation/base/feedback/toast-item';
 import { ValueConstants } from '@core/constants';
 import { AnimationConstants } from '@presentation/base/constants';
@@ -32,12 +39,19 @@ export interface ToastProps {
  * duration (unless `durationMs` is 0), and animates out before the store drops
  * it. The accent (icon + action) color comes from the severity surface; the
  * pill itself is the fixed dark toast surface in both themes.
+ *
+ * @remarks
+ * - **Spoken on iOS** through `useAnnounce`; the live region covers Android.
+ * - **A toast with a button stays ≥ 8 s**, twice as long again under a screen
+ *   reader, and a long message gets three lines (WCAG 2.2.1).
  */
 export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
   const { scheme } = useTheme();
   const surfaces = useSeveritySurfaces();
   const accent = surfaces[item.severity].icon;
   const anim = useRef(new Animated.Value(ValueConstants.zero)).current;
+  const screenReader = useScreenReaderEnabled();
+  useAnnounce(item.message);
 
   const dismiss = useCallback(() => {
     Animated.timing(anim, {
@@ -54,11 +68,12 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       friction: 9,
       tension: 80,
     }).start();
-    const duration = item.durationMs ?? DEFAULT_TOAST_DURATION_MS;
-    if (duration <= ValueConstants.zero) return;
-    const timer = setTimeout(dismiss, duration);
+    const base = item.durationMs ?? (item.actionLabel !== undefined ? ACTION_TOAST_DURATION_MS : DEFAULT_TOAST_DURATION_MS);
+    if (base <= ValueConstants.zero) return;
+    const floor = item.actionLabel !== undefined ? Math.max(base, ACTION_TOAST_DURATION_MS) : base;
+    const timer = setTimeout(dismiss, screenReader ? floor * SCREEN_READER_DURATION_FACTOR : floor);
     return () => clearTimeout(timer);
-  }, [anim, item.durationMs, dismiss]);
+  }, [anim, item.durationMs, item.actionLabel, screenReader, dismiss]);
 
   const handleAction = useCallback(() => {
     item.onAction?.();
@@ -89,7 +104,7 @@ export const Toast = ({ item, onDismiss }: ToastProps): React.JSX.Element => {
       <View style={[styles.iconChip, { backgroundColor: accent + ICON_CHIP_ALPHA }]}>
         <Ionicons name={SEVERITY_ICON[item.severity]} size={iconSizes.md} color={accent} />
       </View>
-      <Text numberOfLines={ValueConstants.two} style={[styles.message, { color: TOAST_FOREGROUND }]}>
+      <Text numberOfLines={TOAST_MAX_LINES} style={[styles.message, { color: TOAST_FOREGROUND }]}>
         {item.message}
       </Text>
       {item.actionLabel !== undefined ? (

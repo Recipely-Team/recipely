@@ -6,6 +6,9 @@ import { spacing, radii, fontSizes, fontWeights, iconSizes, controlSizes, opacit
 import { t } from '@presentation/i18n';
 import { ValueConstants } from '@core/constants';
 
+
+/** Grows the 36 pt round button to the 44 pt minimum touch target. */
+const TARGET_SLOP = (controlSizes.touchTarget - controlSizes.iconBtn) / ValueConstants.two;
 export interface EditProfileHeaderProps {
   topInset: number;
   saveEnabled: boolean;
@@ -33,6 +36,7 @@ export const EditProfileHeader = ({
     >
       <Pressable
         onPress={onBack}
+        hitSlop={TARGET_SLOP}
         style={[styles.backBtn, { backgroundColor: colors.surface }]}
         accessibilityRole="button"
         accessibilityLabel={t().errors.back}
@@ -45,6 +49,7 @@ export const EditProfileHeader = ({
       <Pressable
         onPress={onSave}
         disabled={!saveEnabled}
+        hitSlop={TARGET_SLOP}
         style={[styles.saveBtn, { backgroundColor: colors.primary }, saveEnabled ? null : styles.saveBtnDisabled]}
         accessibilityRole="button"
         accessibilityLabel={t().editProfile.save}

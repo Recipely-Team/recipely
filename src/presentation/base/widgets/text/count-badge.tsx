@@ -55,22 +55,25 @@ export const CountBadge = ({
   if (count <= ValueConstants.zero) return null;
 
   const isAlert = tone === CountBadgeTone.Alert;
+  const isToDo = tone === CountBadgeTone.ToDo;
+  const fill = isAlert ? colors.danger : isToDo ? colors.primary : colors.chipBackground;
+  const ink = isAlert ? BrandColors.white : isToDo ? colors.primaryText : colors.chipText;
 
   return (
     <View
       style={[
         styles.badge,
         {
-          backgroundColor: isAlert ? colors.danger : colors.chipBackground,
+          backgroundColor: fill,
           borderColor: colors.background,
-          // Only an alert badge sits on its glyph and needs the cut-out ring.
-          borderWidth: isAlert ? borderWidths.medium : ValueConstants.zero,
+          // Alert and to-do badges sit on a button's corner and need the cut-out ring.
+          borderWidth: isAlert || isToDo ? borderWidths.medium : ValueConstants.zero,
         },
         style,
       ]}
     >
       <ThemedText
-        style={[styles.badgeText, { color: isAlert ? BrandColors.white : colors.chipText }]}
+        style={[styles.badgeText, { color: ink }]}
         maxFontSizeMultiplier={maxFontScales.badge}
       >
         {countBadgeLabel(count, tone)}

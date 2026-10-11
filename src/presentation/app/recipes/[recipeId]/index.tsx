@@ -1,6 +1,6 @@
 import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { type Href, useRouter } from 'expo-router';
 import { KeyboardAvoider } from '@presentation/base/widgets/layout/keyboard-avoider';
 import { DetailBackButton } from '@presentation/app/recipes/[recipeId]/items/detail-back-button';
 import { RecipeDetailSheets } from '@presentation/app/recipes/[recipeId]/sheets/recipe-detail-sheets';
@@ -14,6 +14,7 @@ import { RecipeShareSheet } from '@presentation/app/recipes/[recipeId]/sheets/re
 import { SCROLL_EVENT_THROTTLE_MS } from '@presentation/base/hooks/assistant/args/scrolling/scroll-tuning';
 import { useRecipeDetail } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail';
 import { useRecipeDetailAssistant } from '@presentation/app/recipes/[recipeId]/hooks/use-recipe-detail-assistant';
+import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { useBackLabel } from '@presentation/app/recipes/[recipeId]/hooks/use-back-label';
 import { useCommentHighlight } from '@presentation/app/recipes/[recipeId]/hooks/use-comment-highlight';
 import { PageTitle } from '@presentation/base/widgets/head/page-title';
@@ -23,9 +24,14 @@ import { useLayout } from '@presentation/base/responsive/use-layout';
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { spacing } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { RoutePaths } from '@presentation/base/constants';
+import { t } from '@presentation/i18n';
 
 export const RecipeDetailScreen = (): React.JSX.Element => {
   const router = useRouter();
+  const goBackOrHome = useGoBackOrHome();
+  // Cast: a RoutePaths string is not in the typed-routes union.
+  const browseRecipes = (): void => router.dismissTo(RoutePaths.recipes as Href);
   const colors = useTheme().colors;
   const backLabel = useBackLabel();
   const { isExpanded } = useLayout();
@@ -60,13 +66,19 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
           // After the spread so scrollViewProps cannot override it; handled lets the first tap reach the send button.
           keyboardShouldPersistTaps="handled"
         >
-          <StateView status={vm.status} failure={vm.failure} onRetry={vm.onRetry}>
+          <StateView
+            status={vm.status}
+            failure={vm.failure}
+            onRetry={vm.onRetry}
+            onSecondary={browseRecipes}
+            secondaryLabel={t().recipes.browseRecipes}
+          >
             <RecipeDetailContent
               vm={vm}
               isExpanded={isExpanded}
               ownerPhotoControls={ownerPhotoControls}
               commentHighlight={commentHighlight}
-              onBack={() => router.back()}
+              onBack={goBackOrHome}
             />
           </StateView>
         </ScrollView>
@@ -83,6 +95,9 @@ export const RecipeDetailScreen = (): React.JSX.Element => {
         onCancelRemovePhoto={photoRemoval.cancel}
         photoError={photos.error}
         onDismissPhotoError={photos.onDismissError}
+        commentDeletePending={vm.commentDeletePending}
+        onConfirmDeleteComment={vm.onConfirmDeleteComment}
+        onCancelDeleteComment={vm.onCancelDeleteComment}
         showDeleteSheet={vm.showDeleteSheet}
         deleteError={vm.deleteError}
         isDeleting={vm.isDeleting}

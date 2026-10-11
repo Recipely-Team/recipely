@@ -33,11 +33,31 @@ export const ApiRoutes = {
   shopping: {
     /** GET a page; DELETE empties the list. */
     list: '/me/shopping-list',
+    /** GET `{ unchecked }` — the cart badge (backend #394). */
+    summary: '/me/shopping-list/summary',
     /** POST a batch of lines. */
     items: '/me/shopping-list/items',
     /** DELETE every checked line. */
     checked: '/me/shopping-list/items/checked',
     item: (id: string): string => `/me/shopping-list/items/${encodeURIComponent(id)}`,
+  },
+  /** The viewer's weekly meal plan (backend #392); range routes take `from` / `to`. */
+  mealPlan: {
+    /** GET a range; DELETE clears it. */
+    root: '/me/meal-plan',
+    ingredients: '/me/meal-plan/ingredients',
+    copy: '/me/meal-plan/copy',
+    entries: '/me/meal-plan/entries',
+    entry: (id: string): string => `/me/meal-plan/entries/${encodeURIComponent(id)}`,
+    /** POST marks eaten (logs to the diary); DELETE takes it back. */
+    entryEaten: (id: string): string => `/me/meal-plan/entries/${encodeURIComponent(id)}/eaten`,
+  },
+  /** Cook from my fridge; both calls share the user's daily AI allowance. */
+  fridge: {
+    /** POST multipart `photos` (1–3) + optional `locale`. */
+    scan: '/fridge/scan',
+    /** POST JSON ingredients + filters. */
+    ideas: '/fridge/ideas',
   },
   recipes: {
     root: '/recipes',

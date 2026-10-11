@@ -1,3 +1,5 @@
+import type { Result } from '@core/result/result';
+import type { Failure } from '@core/failure';
 import type { PagedList } from '@application/store/paging/paged-list';
 import type { NotificationEntity } from '@domain/notifications/notification-entity';
 
@@ -13,7 +15,8 @@ export interface NotificationsStoreState {
   /** The next page of the feed, on scroll; a no-op while one is in flight or none remains. */
   loadMore: () => Promise<void>;
   refreshUnread: () => Promise<void>;
-  markAllRead: () => Promise<void>;
+  /** Optimistic; a refusal re-reads the inbox and is answered, so the screen can say so. */
+  markAllRead: () => Promise<Result<void, Failure>>;
   /** Marks a single notification as read (optimistic; reloads on failure). */
   markOneRead: (id: string) => Promise<void>;
   /** Resets the feed and badge to their initial state. Called when the session ends; drops any answer still in flight. */

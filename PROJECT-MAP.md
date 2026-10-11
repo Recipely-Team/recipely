@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2017 source files.
+[architecture.md](architecture.md). 2214 source files.
 
 ## Layers
 
@@ -16,7 +16,7 @@ Never upward. Exceptions: `infrastructure/constants/*` is importable anywhere;
 
 ## Routes — `src/presentation/app/<segment>/index.tsx`
 
-`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
+`ai-generate` · `automations` · `create-recipe` · `creators` · `diary` · `edit-profile` · `forgot-password` · `fridge` · `import-recipe` · `instagram-connected` · `login` · `my-recipes` · `notifications` · `onboarding` · `profile` · `recipes` · `register` · `reset-password` · `settings` · `shopping-list` · `verify-code`
 
 Nested detail pages: `creators/[…]`, `recipes/[…]`.
 Each page folder holds `body/ items/ sheets/ hooks/ model/` (+ `shared/` when
@@ -40,9 +40,11 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `favorites/` _(1)_
 - `feedback/` _(4)_
 - `flags/` _(1)_
+- `fridge/` — ideas, scan _(13)_
 - `i18n/` _(1)_
 - `instagram/` — activity, connect, dm, stats _(33)_
 - `likes/` _(1)_
+- `meal-plan/` — shopping, week _(17)_
 - `notifications/` — reminders _(21)_
 - `recipes/` — create, edit, import, import-file, ingredients, list, media, nutrition, provenance, publishing, refine, taxonomy _(76)_
 - `shopping/` — items, recipe _(14)_
@@ -60,18 +62,20 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `config/` _(6)_
 - `creators/` — claim, list, profile _(10)_
 - `device/` _(2)_
-- `di/` — features _(15)_
+- `di/` — features _(17)_
 - `diary/` — day, entries, foods, goals, meal, month _(27)_
 - `drafts/` — list, read, write _(8)_
 - `favorites/` _(5)_
 - `feedback/` _(3)_
+- `fridge/` _(5)_
 - `i18n/` _(5)_
 - `instagram/` — activity, connect, rules, stats _(25)_
 - `likes/` _(5)_
+- `meal-plan/` — read, write _(12)_
 - `notifications/` — list, read, reminders _(15)_
 - `onboarding/` _(2)_
 - `recipes/` — cooking, create, delete, detail, edit, generate, import, import-file, liked, list, my-recipes, photos, publishing, refine, saved, taxonomy, trending _(62)_
-- `shopping/` — read, write _(11)_
+- `shopping/` — read, write _(13)_
 - `storage/` _(4)_
 - `store/` — paging _(10)_
 - `timers/` _(7)_
@@ -97,13 +101,15 @@ it has a nested page). Only `index.tsx`, `_layout.tsx`, `+special` and
 - `feedback/` _(3)_
 - `firebase/` _(7)_
 - `flags/` _(2)_
+- `fridge/` — dtos, read, write _(11)_
 - `i18n/` _(1)_
 - `instagram/` — dtos, read, stats, write _(27)_
 - `likes/` _(1)_
+- `meal-plan/` — dtos, read, write _(17)_
 - `network/` — envelope, errors, http, jwt, paging, upload _(26)_
 - `notifications/` — dtos _(13)_
 - `recipes/` — create, dtos, edit, import, import-file, media, publishing, refine, taxonomy _(33)_
-- `shopping/` — dtos _(10)_
+- `shopping/` — dtos _(11)_
 - `storage/` _(7)_
 - `user-profile/` _(4)_
 
@@ -128,20 +134,20 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(101)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(109)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(5)_
-- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(51)_
+- `theme/` (colors, context, tokens) — design tokens, palettes, active-theme context _(53)_
 - `timers/` — timer control helpers _(9)_
-- `utils/` (diary, instagram) — small pure helpers _(28)_
+- `utils/` (diary, instagram, meal-plan) — small pure helpers _(34)_
 - `web-shell/` — web-only shared UI state (header search query) _(3)_
-- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(205)_
+- `widgets/` (ads, assistant, badges, brand, buttons, cards, creators, dialogs, diary, feedback, head, inputs, instagram, layout, lists, loading, meal-plan, media, navigation, settings, sheets, text, timers, tooltip, web-header) — shared components, grouped by category _(218)_
 
 ### Design tokens — `base/theme/tokens/`
 
   - `effects/` — color-alphas, durations, opacities, shadows, z-indices
-  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, brand-mark-sizes, control-sizes, decor-sizes, diary-sizes, icon-sizes, layout-sizes, media-sizes, radii, spacing, target-sizes
+  - `sizing/` — aspect-ratios, avatar-sizes, border-widths, brand-mark-sizes, control-sizes, decor-sizes, diary-sizes, fridge-sizes, icon-sizes, layout-sizes, meal-plan-sizes, media-sizes, radii, spacing, target-sizes
   - `typography/` — font-sizes, font-weights, letter-spacings, line-height-for, line-heights, max-font-scales, use-text-line-height
 
 Consumed through the `@presentation/base/theme` barrel. `colors/` holds
@@ -169,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 2433ccf60d34b91b -->
+<!-- fingerprint: 88330644615acf61 -->

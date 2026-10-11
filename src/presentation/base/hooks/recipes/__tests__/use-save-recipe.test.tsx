@@ -73,6 +73,7 @@ const makeSavedRecipesStore = (initial: Set<string> = new Set()) =>
 interface FavoritesStoreOptions {
   isLoading?: boolean;
   error?: FavoritesStoreState["error"];
+  pending?: ReadonlySet<string>;
   addFavorite?: jest.Mock;
   removeFavorite?: jest.Mock;
 }
@@ -81,11 +82,13 @@ interface FavoritesStoreOptions {
 const makeFavoritesStore = ({
   isLoading = false,
   error = null,
+  pending = new Set<string>(),
   addFavorite = jest.fn().mockResolvedValue(undefined),
   removeFavorite = jest.fn().mockResolvedValue(undefined),
 }: FavoritesStoreOptions = {}) =>
   create<FavoritesStoreState>((set) => ({
     isLoading,
+    pending,
     error,
     addFavorite,
     removeFavorite,
@@ -317,12 +320,12 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     expect(removeFavorite).not.toHaveBeenCalled();
   });
 
-  it("is a no-op when a request is already in flight (isLoading = true)", async () => {
+  it("is a no-op when that recipe's save is already in flight", async () => {
     const addFavorite = jest.fn().mockResolvedValue(undefined);
     const removeFavorite = jest.fn().mockResolvedValue(undefined);
     const { latest } = driveHook({
       savedIds: new Set<string>(),
-      favoritesOptions: { isLoading: true, addFavorite, removeFavorite },
+      favoritesOptions: { isLoading: true, pending: new Set(["recipe-B"]), addFavorite, removeFavorite },
     });
 
     await act(async () => {
@@ -331,6 +334,21 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
 
     expect(addFavorite).not.toHaveBeenCalled();
     expect(removeFavorite).not.toHaveBeenCalled();
+  });
+
+  // --- regression: while one card's save was in flight, a tap on another card's Save was silently dropped.
+  it("saves another recipe while a different one is still in flight", async () => {
+    const addFavorite = jest.fn().mockResolvedValue(undefined);
+    const { latest } = driveHook({
+      savedIds: new Set<string>(),
+      favoritesOptions: { isLoading: true, pending: new Set(["recipe-A"]), addFavorite },
+    });
+
+    await act(async () => {
+      await latest().toggleSave("recipe-B");
+    });
+
+    expect(addFavorite).toHaveBeenCalledWith("user-1", "recipe-B");
   });
 
   it("does not call the store twice when toggleSave is called concurrently (no duplicate calls)", async () => {
@@ -360,9 +378,9 @@ describe("useSaveRecipe — toggleSave no-op guards", () => {
     const originalAdd = favoritesStore.getState().addFavorite;
     favoritesStore.setState({
       addFavorite: async (userId: string, recipeId: string) => {
-        favoritesStore.setState({ isLoading: true });
+        favoritesStore.setState({ isLoading: true, pending: new Set([recipeId]) });
         await originalAdd(userId, recipeId);
-        favoritesStore.setState({ isLoading: false });
+        favoritesStore.setState({ isLoading: false, pending: new Set<string>() });
       },
     });
 

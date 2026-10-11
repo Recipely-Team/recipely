@@ -1,4 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { CountBadge } from '@presentation/base/widgets/text/count-badge';
+import { CountBadgeTone } from '@presentation/base/widgets/text/count-badge-tone';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { ThemedText } from '@presentation/base/widgets/text/themed-text';
 import { AvatarImage } from '@presentation/base/widgets/media/avatar-image';
@@ -25,6 +27,13 @@ const NOTIF_BTN_SIZE = controlSizes.webHeaderBtn;
 export interface WebHeaderActionsProps {
   createLabel: string;
   notificationsLabel: string;
+  /** The cart's label — with the count when anything is to buy. */
+  cartLabel: string;
+  /** Shopping-list lines still to buy; the cart's `primary` badge (hidden at 0). */
+  toBuy: number;
+  /** On /shopping-list: the cart is drawn active. */
+  isCartActive: boolean;
+  onOpenCart: () => void;
   profileLabel: string;
   unreadCount: number;
   isProfileActive: boolean;
@@ -38,10 +47,14 @@ export interface WebHeaderActionsProps {
   onDiscover?: () => void;
 }
 
-/** Right cluster: Create CTA + notifications bell with badge + avatar route to profile. */
+/** Right cluster: Create CTA + shopping cart with its to-buy badge + notifications bell with badge + avatar route to profile. */
 export const WebHeaderActions = ({
   createLabel,
   notificationsLabel,
+  cartLabel,
+  toBuy,
+  isCartActive,
+  onOpenCart,
   profileLabel,
   unreadCount,
   isProfileActive,
@@ -96,6 +109,24 @@ export const WebHeaderActions = ({
         <ThemedText style={[styles.createLabel, { color: colors.primaryText }]}>
           {createLabel}
         </ThemedText>
+      </Pressable>
+
+      <Pressable
+        onPress={onOpenCart}
+        accessibilityRole="button"
+        accessibilityLabel={cartLabel}
+        accessibilityState={{ selected: isCartActive }}
+        style={({ pressed }) => [
+          styles.iconBtn,
+          {
+            backgroundColor: colors.surface,
+            borderColor: isCartActive ? colors.primary : colors.cardBorder,
+            opacity: pressed ? opacities.pressedSubtle : opacities.full,
+          },
+        ]}
+      >
+        <Ionicons name="cart-outline" size={iconSizes.lg} color={isCartActive ? colors.primary : colors.text} />
+        <CountBadge count={toBuy} tone={CountBadgeTone.ToDo} style={styles.cartBadge} />
       </Pressable>
 
       <Pressable
@@ -195,6 +226,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  cartBadge: { top: -spacing.xs, right: -spacing.xs },
   badgeText: {
     color: BrandColors.white,
     fontSize: fontSizes.tiny,

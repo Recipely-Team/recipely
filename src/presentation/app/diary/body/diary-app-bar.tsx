@@ -1,4 +1,5 @@
 import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
+import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-bar-button';
 import { t } from '@presentation/i18n';
@@ -18,10 +19,9 @@ export const DiaryAppBar = ({ showCalendar, onOpenCalendar, onOpenGoals }: Diary
       title={strings.title}
       actions={
         <>
-          {showCalendar ? (
-            <TabAppBarButton icon="calendar-outline" accessibilityLabel={strings.openCalendar} onPress={onOpenCalendar} />
-          ) : null}
+          {showCalendar ? <TabAppBarButton icon="calendar-outline" accessibilityLabel={strings.openCalendar} onPress={onOpenCalendar} /> : null}
           <TabAppBarButton icon="locate-outline" accessibilityLabel={strings.dailyGoals} onPress={onOpenGoals} />
+          <ShoppingCartButton />
           <NotificationsBellButton />
         </>
       }

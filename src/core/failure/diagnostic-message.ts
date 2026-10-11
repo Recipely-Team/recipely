@@ -178,10 +178,25 @@ export const DiagnosticMessage = {
     foodSourceInvalid: (raw: string): string => `Not a food source: ${raw}`,
     foodKindInvalid: (raw: string): string => `Not a food kind: ${raw}`,
   },
+  fridge: {
+    noPhotos: 'A fridge scan needs at least one photo',
+    tooManyPhotos: 'A fridge scan takes at most 3 photos',
+    ingredientsRequired: 'Fridge ideas need at least one ingredient',
+    difficultyInvalid: (raw: string): string => `Not a recipe difficulty: ${raw}`,
+  },
   shopping: {
     idRequired: 'A shopping item id must be non-empty',
     labelRequired: 'A shopping item needs a label',
     quantityInvalid: 'A shopping quantity must be a positive finite number or none',
+    summaryInvalid: 'The shopping summary count must be a non-negative integer',
+  },
+  mealPlan: {
+    idRequired: 'A meal plan entry id must be non-empty',
+    recipeRequired: 'A meal plan entry needs a recipe with an id and a name',
+    positionInvalid: 'A meal plan position must be a whole number from 0 to 999',
+    pastDay: 'A meal cannot be planned on a day that has passed',
+    notYetEaten: 'A meal still ahead cannot be marked eaten',
+    dayFull: 'That day already holds the most meals a plan allows',
   },
   instagram: {
     keywordInvalid: 'A keyword must be 1–40 characters',

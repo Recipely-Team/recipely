@@ -629,9 +629,12 @@ pushed yourself — and wrong for one the OS pushed for you. A share intent or a
 notification tap on a cold start makes that screen the entire stack, so its X was
 an exit door.
 
-*Guard:* `useGoBackOrHome` asks `router.canGoBack()` and lands on the feed when
-the answer is no. Both entry-point screens (import, create-recipe) use it, and
-both suites hold a "nothing to go back to" case.
+*Guard:* `useGoBackOrHome(fallback)` asks `router.canGoBack()` and lands on the
+feed (or the screen's own fallback: Profile, Login) when the answer is no. The UX
+audit (2026-10-10) found the same dead end on recipe detail — the page most often
+opened cold — notifications, settings, edit profile, register and verify-code; all
+use the hook now, and `check:structure` rule AS fails any bare `router.back()`
+under `app/` without a `canGoBack()` beside it.
 
 **The lesson: a screen the OS can open is a screen that may be the whole stack.**
 Anything reachable from a share intent, a notification, or a deep link cannot
@@ -2781,3 +2784,124 @@ was answered without personalised ads (`AdsService.mayAskTracking`). Covered by 
 ("shows the consent form before tracking permission…", "does not ask for tracking after the form was
 answered without personalised ads"). **A privacy question is asked once: the order of two prompts is
 part of what they say.**
+
+---
+
+## One tap destroyed what could not come back (2026-10-10)
+
+**Symptom:** the trash icon on a draft row and on the user's own comment deleted at once. The
+voice path for the same draft delete asked first, and `comments.deleteConfirm` sat unused in all
+fourteen catalogues. **Fix:** both taps open a `ConfirmSheet` (the draft shares the assistant's
+pending value, so a spoken "yes" answers the same sheet). *Guard:* `draft-delete-confirm.test.tsx`
+and the "deleting a comment" cases in `use-recipe-detail.test.tsx`. **An irreversible action asks,
+whichever limb started it.**
+
+## A failed next page looked like the end of the list (2026-10-10)
+
+**Symptom:** on a flaky connection the spinner under notifications, Chefs, a creator's recipes,
+drafts or the automations lists disappeared and the list simply ended — for the rest of the session,
+because `onEndReached` does not fire again when the content length has not changed. The loader
+recorded `moreFailure`; only the shopping list read it. **Fix:** `FeedFooter` takes `failure` +
+`onRetry` and shows "Couldn't load more · Try again"; every `PagedListLoader` list passes both.
+*Guard:* `feed-footer.test.tsx`. **A failure state that nothing renders is a success state.**
+
+## A setting that existed and could not be reached (2026-10-10)
+
+**Symptom:** a user who accepted the feed's reminders offer had no way to turn reminders off: the
+switch lived on `/settings`, which nothing links to, and Profile's own copy of the settings list
+had no reminders section. **Fix:** the section moved to `base/widgets/settings/` and Profile renders
+it. *Guard:* `profile-settings-sections.reminders.test.tsx`. **Two copies of one list drift; the
+copy users see is the one that counts.**
+
+## A guest's tab press answered with a silent login wall (2026-10-10)
+
+**Symptom:** a guest tapping My Recipes, Diary, Profile or the bell was bounced by the auth guard to
+a login form with no tab bar and no reason. **Fix:** `useGuestRouteGate` keeps the guest where they
+are and opens the sign-in sheet with what the page holds; Sign in returns them to it. Guest browsing
+is unchanged (App Review 5.1.1(v)). *Guard:* `root-tab-bar.test.tsx`, the guest case in
+`notifications-bell-button.test.tsx`. **A wall without a sign reads as a broken button.**
+
+## A disabled button that never said why (2026-10-10)
+
+**Symptom:** register's Sign up stayed grey until every rule passed, and the message naming the
+failing rule appeared only from the keyboard's Return key — a forgotten terms box read as a dead
+button. **Fix:** the button stays pressable (loading still blocks a double submit) and names the
+first failing rule. *Guard:* `register-form.submit.test.tsx`. **Disable a button only while it is
+busy; otherwise let the press explain.**
+
+## The way back dropped between two forms (2026-10-10)
+
+**Symptom:** a guest who tapped Save → Sign in → Sign up → verified landed on the feed, not the
+recipe. Login honoured `redirect`; register and verify-code never received it. **Fix:** the
+redirect rides login → register → verify-code and every exit resolves it (`resolveRedirect`, now in
+`navigation/`). *Guard:* `register-form.submit.test.tsx`. **A parameter a flow promises must cross
+every screen of the flow.**
+
+## Work lost or messages missed on the way out (2026-10-10)
+
+**Symptom:** Edit Profile's back dropped an edited bio without asking; action toasts ("View",
+"Retry") vanished after 4 s and were never spoken by VoiceOver (the live region is Android-only);
+sign-out landed on a login form with no tab bar in a guest-first app. **Fix:** a Discard / Keep
+editing sheet when dirty; action toasts stay ≥ 8 s (twice that under a screen reader) and every
+toast and form banner is announced on iOS (`useAnnounce`); sign-out goes to the feed with a
+"Signed out" toast. *Guard:* `use-edit-profile.discard.test.tsx`, `toast.timing.test.tsx`, the
+sign-out test in `profile-settings-sections.sign-out.test.tsx`. **Leaving should never cost the
+user something they did not choose to give up.**
+
+---
+
+## Audit follow-ups, Oct 2026: four small classes
+
+**A removal with no way back.** Removing a diary entry or a shopping item was final. *Now:* both show an
+Undo toast that logs the same thing again (`FoodLogEntryEntity.toNew`, `ShoppingItemEntity.toDraft`).
+*The class:* **an action the user can do by accident needs a confirm or an undo — undo for light ones.**
+
+**A number that looks like a link and is not.** Profile's "Recipes" and "Saved" counts did nothing on tap.
+*Now:* they open those My Recipes tabs. *The class:* **if it reads as navigation, it navigates.**
+
+**An empty state that answers the wrong question.** With the Unread filter on and nothing unread, the inbox
+said "No notifications yet". *Now:* "You're all caught up" + Show all (`notifications-empty.test.tsx`); a
+failed "Mark all read" is said, and the list pulls to refresh. *The class:* **an empty list says why it is
+empty, from the filter the user chose.**
+
+**A question asked again after it was answered.** A guest who tapped "Explore" saw the welcome carousel on
+every launch (`use-onboarding.test.tsx`). *The class:* **a choice the user made is remembered.**
+
+## Three ways to lose work or a tap
+
+**A screen with no way out while it waits.** Once "Generate" was pressed, create-recipe had no close until the
+model answered. *Now:* a close from the first frame returns to the prompt, text kept; the late answer is dropped
+(`generating-view.test.tsx`). *The class:* **a wait the user did not choose has a cancel.**
+
+**A back gesture that skipped the question the close button asks.** Android back and the iOS swipe left
+create-recipe and Edit Profile with the work gone. *Now:* `useLeaveGuard` holds the gesture, asks the screen's own
+"keep or discard" question, and replays the gesture after the answer (`use-leave-guard.test.tsx`). *The class:*
+**every way out of a screen with unsaved work asks the same question — not only the close button.**
+
+**One global "busy" flag for many independent taps.** While one card's Save was on its way, a tap on another
+card's Save was silently dropped, and unsaving from the Saved tab had no undo. *Now:* `favoritesStore.pending`
+guards each recipe on its own; unsave offers Undo (`use-save-recipe.test.tsx`, `favorites-store.test.ts`).
+*The class:* **an in-flight guard is keyed by what it protects.**
+## A feature with one hidden way in
+
+**The shopping list could only be reached from a row deep in Profile** (plus a My Recipes button and toasts);
+in the prototype it could not be reached at all. *Now:* a cart with a to-buy badge sits left of the bell on every
+tab bar and in the web header (`shopping-cart-button.test.tsx`), and a guest gets a reason instead of a wall.
+*The class:* **every feature the user keeps coming back to has an entry point on the surfaces they already
+look at — the tab bar or the header — not only inside a settings-like page.** A route → entry point table lives
+in the prototype's `navigation-entry-points-rn-spec.md`.
+
+## Counts and copies that told a smaller truth
+
+**A count of what was loaded, shown as the count of what exists.** The feed said "20 recipes" when the server
+matched 340, and the web filter dialog's "Show results (N)" counted the filters already applied, not the ones
+being edited. *Now:* the feed keeps the page envelope's `total`; the dialog shows no number. *The class:* **a count
+the user reads as "how many there are" comes from the server's total, never from loaded rows.**
+
+**"{count} {word}" concatenation.** It said "1 results" and used one fixed form in Russian and Arabic.
+*Now:* `pluralCount` picks the CLDR form (`Intl.PluralRules`) from six forms every locale lists
+(`plural-count.test.ts`). *The class:* **a number and its noun are one translated string with plural forms.**
+
+**Two copies of one settings screen.** Profile's settings and `/settings` drifted (Reminders in one, Send feedback
+in the other). *Now:* `/settings` redirects to Profile, which holds every setting and the assistant's settings
+words. *The class:* **one screen, one copy; a legacy route redirects rather than duplicates.**

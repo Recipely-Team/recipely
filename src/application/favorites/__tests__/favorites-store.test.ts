@@ -38,3 +38,17 @@ describe('favoritesStore', () => {
     expect(s.store.getState().error).toBeNull();
   });
 });
+
+describe('favoritesStore — one guard per recipe', () => {
+  it('saves a second recipe while the first is still on its way, and ignores a repeat of the first', async () => {
+    const s = setup(ok(undefined));
+    const first = s.store.getState().addFavorite('u1', 'r1');
+    expect(s.store.getState().pending.has('r1')).toBe(true);
+    const repeat = s.store.getState().addFavorite('u1', 'r1');
+    const second = s.store.getState().addFavorite('u1', 'r2');
+    await Promise.all([first, repeat, second]);
+    expect(s.addLocal.mock.calls.map(([id]) => id)).toEqual(['r1', 'r2']);
+    expect(s.store.getState().pending.size).toBe(0);
+    expect(s.store.getState().isLoading).toBe(false);
+  });
+});

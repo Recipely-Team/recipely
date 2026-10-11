@@ -7,6 +7,7 @@ import type { UseCreateRecipeResult } from '@presentation/app/create-recipe/mode
 import { useTheme } from '@presentation/base/theme/context/use-theme';
 import { controlSizes } from '@presentation/base/theme';
 import { ValueConstants } from '@core/constants';
+import { t } from '@presentation/i18n';
 
 export interface CreateRecipePreviewProps {
   vm: UseCreateRecipeResult;
@@ -74,6 +75,8 @@ export const CreateRecipePreview = ({ vm }: CreateRecipePreviewProps): React.JSX
         <Pressable
           style={[StyleSheet.absoluteFill, { backgroundColor: colors.overlay }]}
           onPress={vm.onCollapseChat}
+          accessibilityRole="button"
+          accessibilityLabel={t().common.close}
         />
       ) : null}
       <RefineDock
