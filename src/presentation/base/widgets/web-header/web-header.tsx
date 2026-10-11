@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { StoreStatus } from '@application/store/store-status';
 import { type Href, useRouter, usePathname } from 'expo-router';
@@ -54,9 +55,14 @@ export const WebHeader = (): React.JSX.Element => {
   const gate = useGuestRouteGate();
   const pathname = usePathname();
   const colors = useTheme().colors;
-  const { authStore, notificationsStore } = useStores();
+  const { authStore, notificationsStore, shoppingListStore } = useStores();
+  const toBuy = shoppingListStore((s) => s.toBuy) ?? ValueConstants.zero;
   const authState = authStore((s) => s.state);
   const unreadCount = notificationsStore((s) => s.unreadCount);
+  const signedIn = authState.status === StoreStatus.Authenticated;
+  useEffect(() => {
+    if (signedIn) void shoppingListStore.getState().loadToBuy();
+  }, [shoppingListStore, signedIn]);
   const { searchQuery, setSearchQuery } = useWebShellState();
 
   const activeTab = resolveActiveTab(pathname);
@@ -85,6 +91,7 @@ export const WebHeader = (): React.JSX.Element => {
   };
   const goCreate = (): void => router.push(RoutePaths.createRecipe);
   const goNotifs = (): void => gate.open(RoutePaths.notifications, (path) => router.push(path as Href));
+  const goCart = (): void => gate.open(RoutePaths.shoppingList, (path) => router.push(path as Href));
   const goProfile = (): void => gate.open(RoutePaths.profile, replace);
   const goDiscover = (): void => router.push(RoutePaths.onboarding);
 
@@ -127,6 +134,10 @@ export const WebHeader = (): React.JSX.Element => {
         <WebHeaderActions
           createLabel={t().myRecipes.createNew}
           notificationsLabel={t().notifications.title}
+          cartLabel={toBuy > ValueConstants.zero ? t().shopping.cartA11y.replace('{n}', String(toBuy)) : t().shopping.title}
+          toBuy={toBuy}
+          isCartActive={pathname === RoutePaths.shoppingList}
+          onOpenCart={goCart}
           profileLabel={t().navigation.profile}
           unreadCount={unreadCount}
           isProfileActive={isProfileActive}

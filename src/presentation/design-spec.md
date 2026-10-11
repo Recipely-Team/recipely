@@ -3070,3 +3070,28 @@ rule. Measurements in `fridgeSizes`.
 - On a phone the footer button stops short of the right edge, where the voice assistant's orb floats.
 - The prototype's "Close → from" route param is not used: close goes back, or to the AI create screen when there is
   nothing to go back to (`useGoBackOrHome`).
+
+## Navigation entry points — the shopping cart (Oct 2026 — from the prototype)
+
+**Source:** Claude Design discoverability pass (`navigation-entry-points-rn-spec.md` in the prototype root).
+The shopping list was reachable only from a Profile row, a My Recipes button and success toasts.
+
+**Cart button:** `ShoppingCartButton` (base/widgets/navigation) — the tab app bar's round button with a
+`cart-outline` glyph, immediately left of the bell on all five tab roots (Recipes, My Recipes, Chefs, Diary,
+Profile); on the web, a 38-wide header button left of the bell, outlined `primary` while on `/shopping-list`.
+Opens `/shopping-list`; a guest gets the sign-in sheet with a reason. The tab app bar now holds up to four actions
+(Diary: calendar, goals, cart, bell).
+
+**Badge:** `CountBadgeTone.ToDo` — `primary` fill, `primaryText` label, 2 px `background` ring, hidden at 0,
+`99+` past 99. Red stays the bell's (an alert); the cart's number is a to-do count. The number is the server's
+(`GET /me/shopping-list/summary`, backend #394) — the list is paged — re-read after every accepted change.
+Label: "Shopping list, {n} to buy".
+
+**Profile:** the shopping-list row's second line is the same count in words ("7 to buy" / "Empty").
+
+**Deliberate differences from the prototype:**
+- The prototype's Reminders screen (per-meal reminder times) is not built: the app's reminders are the
+  come-back and timer reminders in Profile → settings; per-meal reminders need backend support first.
+- The "Kitchen" group heading in Profile is not added; the shopping-list row keeps its place above the creator rows.
+- The active-timers bar already shows on every screen in the app (mounted at the root), which the prototype lacked.
+- The shopping-list screen keeps its existing layout (#537); aisle grouping on that screen is a follow-up.

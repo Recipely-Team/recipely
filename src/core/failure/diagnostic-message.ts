@@ -188,6 +188,7 @@ export const DiagnosticMessage = {
     idRequired: 'A shopping item id must be non-empty',
     labelRequired: 'A shopping item needs a label',
     quantityInvalid: 'A shopping quantity must be a positive finite number or none',
+    summaryInvalid: 'The shopping summary count must be a non-negative integer',
   },
   mealPlan: {
     idRequired: 'A meal plan entry id must be non-empty',

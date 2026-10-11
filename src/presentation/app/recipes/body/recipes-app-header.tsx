@@ -1,5 +1,6 @@
 import { RecipelyLogo } from '@presentation/base/widgets/brand/recipely-logo';
 import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
+import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { useLayout } from '@presentation/base/responsive/use-layout';
 import { iconSizes } from '@presentation/base/theme';
@@ -13,7 +14,12 @@ export const RecipesAppHeader = (): React.JSX.Element | null => {
     <TabAppBar
       title={t().recipes.title}
       leading={<RecipelyLogo size={iconSizes.brandInline} />}
-      actions={<NotificationsBellButton />}
+      actions={
+        <>
+          <ShoppingCartButton />
+          <NotificationsBellButton />
+        </>
+      }
     />
   );
 };

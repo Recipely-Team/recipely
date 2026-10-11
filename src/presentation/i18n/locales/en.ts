@@ -1308,6 +1308,9 @@ export const en = {
     moreCalories: '50 kcal more',
   },
   shopping: {
+    toBuyCount: "{n} to buy",
+    listEmptyShort: "Empty",
+    cartA11y: "Shopping list, {n} to buy",
     removedItem: 'Removed {x}',
     title: "Shopping list",
     entry: "Shopping list",
@@ -1356,6 +1359,7 @@ export const en = {
     signInToLikeComment: 'Sign in to like this comment.',
   },
   signInPrompt: {
+    shoppingList: "Sign in to keep a shopping list that follows you from your phone to the web.",
     title: 'Sign in required',
     message: 'Sign in to like, save, and comment on recipes.',
     myRecipes: "Sign in to keep your saved recipes, likes and drafts in one place.",

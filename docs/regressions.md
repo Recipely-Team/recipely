@@ -2866,3 +2866,12 @@ empty, from the filter the user chose.**
 
 **A question asked again after it was answered.** A guest who tapped "Explore" saw the welcome carousel on
 every launch (`use-onboarding.test.tsx`). *The class:* **a choice the user made is remembered.**
+
+## A feature with one hidden way in
+
+**The shopping list could only be reached from a row deep in Profile** (plus a My Recipes button and toasts);
+in the prototype it could not be reached at all. *Now:* a cart with a to-buy badge sits left of the bell on every
+tab bar and in the web header (`shopping-cart-button.test.tsx`), and a guest gets a reason instead of a wall.
+*The class:* **every feature the user keeps coming back to has an entry point on the surfaces they already
+look at — the tab bar or the header — not only inside a settings-like page.** A route → entry point table lives
+in the prototype's `navigation-entry-points-rn-spec.md`.

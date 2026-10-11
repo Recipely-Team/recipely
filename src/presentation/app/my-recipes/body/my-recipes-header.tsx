@@ -2,7 +2,7 @@ import { RoundIconButtonTone } from '@presentation/base/widgets/buttons/round-ic
 import { TabAppBar } from '@presentation/base/widgets/navigation/tab-app-bar';
 import { NotificationsBellButton } from '@presentation/base/widgets/navigation/notifications-bell-button';
 import { TabAppBarButton } from '@presentation/base/widgets/navigation/tab-app-bar-button';
-import { ShoppingListButton } from '@presentation/app/my-recipes/items/shopping-list-button';
+import { ShoppingCartButton } from '@presentation/base/widgets/navigation/shopping-cart-button';
 import { t } from '@presentation/i18n';
 
 export interface MyRecipesHeaderProps {
@@ -15,13 +15,8 @@ export const MyRecipesHeader = ({ onCreate }: MyRecipesHeaderProps): React.JSX.E
     title={t().myRecipes.title}
     actions={
       <>
-        <ShoppingListButton inTabBar />
-        <TabAppBarButton
-          icon="add"
-          accessibilityLabel={t().myRecipes.createNew}
-          onPress={onCreate}
-          tone={RoundIconButtonTone.Primary}
-        />
+        <TabAppBarButton icon="add" accessibilityLabel={t().myRecipes.createNew} onPress={onCreate} tone={RoundIconButtonTone.Primary} />
+        <ShoppingCartButton />
         <NotificationsBellButton />
       </>
     }

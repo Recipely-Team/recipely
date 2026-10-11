@@ -1296,6 +1296,9 @@ export const fr = {
     moreCalories: '50 kcal de plus',
   },
   shopping: {
+    toBuyCount: "{n} à acheter",
+    listEmptyShort: "Vide",
+    cartA11y: "Liste de courses, {n} à acheter",
     removedItem: '{x} retiré',
     title: "Liste de courses",
     entry: "Liste de courses",
@@ -1344,6 +1347,7 @@ export const fr = {
     signInToLikeComment: 'Connectez-vous pour aimer ce commentaire.',
   },
   signInPrompt: {
+    shoppingList: 'Connectez-vous pour garder une liste de courses qui vous suit du téléphone au web.',
     title: 'Connexion requise',
     message: 'Connectez-vous pour aimer, enregistrer et commenter des recettes.',
     myRecipes: "Connectez-vous pour retrouver vos recettes enregistrées, vos j’aime et vos brouillons au même endroit.",

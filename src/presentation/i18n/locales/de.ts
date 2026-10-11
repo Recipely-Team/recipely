@@ -1296,6 +1296,9 @@ export const de = {
     moreCalories: '50 kcal mehr',
   },
   shopping: {
+    toBuyCount: "{n} zu kaufen",
+    listEmptyShort: "Leer",
+    cartA11y: "Einkaufsliste, {n} zu kaufen",
     removedItem: '{x} entfernt',
     title: "Einkaufsliste",
     entry: "Einkaufsliste",
@@ -1344,6 +1347,7 @@ export const de = {
     signInToLikeComment: 'Melde dich an, um diesen Kommentar zu liken.',
   },
   signInPrompt: {
+    shoppingList: 'Melde dich an, damit dich deine Einkaufsliste vom Handy bis ins Web begleitet.',
     title: 'Anmeldung erforderlich',
     message: 'Melde dich an, um Rezepte zu liken, zu speichern und zu kommentieren.',
     myRecipes: "Melde dich an, um gespeicherte Rezepte, Likes und Entwürfe an einem Ort zu haben.",

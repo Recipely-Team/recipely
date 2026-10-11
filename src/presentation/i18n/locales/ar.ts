@@ -1296,6 +1296,9 @@ export const ar = {
     moreCalories: "50 سعرة أكثر",
   },
   shopping: {
+    toBuyCount: "{n} للشراء",
+    listEmptyShort: "فارغة",
+    cartA11y: "قائمة التسوق، {n} للشراء",
     removedItem: "تمت إزالة {x}",
     title: "قائمة التسوق",
     entry: "قائمة التسوق",
@@ -1344,6 +1347,7 @@ export const ar = {
     signInToLikeComment: "سجّل الدخول للإعجاب بهذا التعليق."
   },
   signInPrompt: {
+    shoppingList: "سجّل الدخول لتحتفظ بقائمة تسوق ترافقك من هاتفك إلى الويب.",
     title: "تسجيل الدخول مطلوب",
     message: "سجّل الدخول للإعجاب بالوصفات وحفظها والتعليق عليها.",
     myRecipes: "سجّل الدخول لتجمع وصفاتك المحفوظة وإعجاباتك ومسوداتك في مكان واحد.",

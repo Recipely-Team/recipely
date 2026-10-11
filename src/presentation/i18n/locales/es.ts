@@ -1296,6 +1296,9 @@ export const es = {
     moreCalories: '50 kcal más',
   },
   shopping: {
+    toBuyCount: "{n} por comprar",
+    listEmptyShort: "Vacía",
+    cartA11y: "Lista de la compra, {n} por comprar",
     removedItem: '{x} eliminado',
     title: "Lista de la compra",
     entry: "Lista de la compra",
@@ -1344,6 +1347,7 @@ export const es = {
     signInToLikeComment: 'Inicia sesión para indicar que te gusta este comentario.',
   },
   signInPrompt: {
+    shoppingList: 'Inicia sesión para tener una lista de la compra que te acompañe del móvil a la web.',
     title: 'Debes iniciar sesión',
     message: 'Inicia sesión para indicar que te gustan las recetas, guardarlas y comentarlas.',
     myRecipes: "Inicia sesión para tener tus recetas guardadas, tus me gusta y tus borradores en un solo lugar.",

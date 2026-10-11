@@ -1296,6 +1296,9 @@ export const ja = {
     moreCalories: '50 kcal 増やす',
   },
   shopping: {
+    toBuyCount: "未購入 {n} 件",
+    listEmptyShort: "空です",
+    cartA11y: "買い物リスト、未購入 {n} 件",
     removedItem: '{x}を削除しました',
     title: "買い物リスト",
     entry: "買い物リスト",
@@ -1344,6 +1347,7 @@ export const ja = {
     signInToLikeComment: 'このコメントにいいねするにはログインしてください。',
   },
   signInPrompt: {
+    shoppingList: "スマホからウェブまで使える買い物リストを使うにはサインインしてください。",
     title: 'ログインが必要です',
     message: 'レシピへのいいね、保存、コメントにはログインしてください。',
     myRecipes: "保存したレシピ、いいね、下書きをまとめて管理するにはログインしてください。",

@@ -4,6 +4,7 @@ import type { ApplicationStores } from '@application/di/application-stores';
 import type { ShoppingListRepositoryInterface } from '@domain/shopping/shopping-list-repository-interface';
 import { configureShoppingListStore } from '@application/shopping/shopping-list-store';
 import { ListShoppingItemsUseCase } from '@application/shopping/read/list-shopping-items-use-case';
+import { CountShoppingToBuyUseCase } from '@application/shopping/read/count-shopping-to-buy-use-case';
 import { AddShoppingItemUseCase } from '@application/shopping/write/add-shopping-item-use-case';
 import { AddRecipeIngredientsUseCase } from '@application/shopping/write/add-recipe-ingredients-use-case';
 import { AddShoppingDraftsUseCase } from '@application/shopping/write/add-shopping-drafts-use-case';
@@ -26,6 +27,7 @@ export const registerShopping = (container: Container): Pick<ApplicationStores, 
     remove: new DeleteShoppingItemUseCase(repo),
     clearChecked: new ClearCheckedShoppingItemsUseCase(repo),
     clearAll: new ClearShoppingListUseCase(repo),
+    countToBuy: new CountShoppingToBuyUseCase(repo),
   });
   return { shoppingListStore };
 };

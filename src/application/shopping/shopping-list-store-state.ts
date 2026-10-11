@@ -10,6 +10,10 @@ import type { ShoppingItemEdit } from '@application/shopping/write/shopping-item
 export interface ShoppingListStoreState {
   /** Unchecked lines first, then checked — kept in that order through every local change. */
   list: PagedList<ShoppingItemEntity>;
+  /** Lines still to buy, from the server (the list is paged); null until first read or when signed out. */
+  toBuy: number | null;
+  /** Re-reads `toBuy`. Every successful change re-reads it too. */
+  loadToBuy: () => Promise<void>;
   isRefreshing: boolean;
   load: () => Promise<void>;
   loadMore: () => Promise<void>;

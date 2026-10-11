@@ -24,6 +24,7 @@ import type { SetShoppingItemCheckedUseCase } from '@application/shopping/write/
 import type { DeleteShoppingItemUseCase } from '@application/shopping/write/delete-shopping-item-use-case';
 import type { ClearCheckedShoppingItemsUseCase } from '@application/shopping/write/clear-checked-shopping-items-use-case';
 import type { ClearShoppingListUseCase } from '@application/shopping/write/clear-shopping-list-use-case';
+import type { CountShoppingToBuyUseCase } from '@application/shopping/read/count-shopping-to-buy-use-case';
 
 interface ShoppingListStoreDeps {
   list: ListShoppingItemsUseCase;
@@ -35,6 +36,7 @@ interface ShoppingListStoreDeps {
   remove: DeleteShoppingItemUseCase;
   clearChecked: ClearCheckedShoppingItemsUseCase;
   clearAll: ClearShoppingListUseCase;
+  countToBuy: CountShoppingToBuyUseCase;
 }
 
 type Items = readonly ShoppingItemEntity[];
@@ -67,6 +69,8 @@ const hasItem = (list: PagedList<ShoppingItemEntity>, id: string): boolean =>
  *   checked, by position): a line ticked, added or put back past the last
  *   loaded row waits for its page, and every row that leaves goes through the
  *   loader, so the next page re-reads from the shifted offset instead of skipping.
+ * - **`toBuy` is the server's count** (the cart badge): the list is paged, so
+ *   it is never counted from loaded rows; every successful change re-reads it.
  * - **User-scoped**: cleared on sign-out (`clearSessionCaches`); an answer that
  *   lands after that is dropped, so the old account's lines never come back.
  */
@@ -74,6 +78,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
   const ticks = new Map<string, number>();
   const removals = new KeyedRequestEpoch();
   const session = new RequestEpoch();
+  const toBuyReads = new RequestEpoch();
 
   return create<ShoppingListStoreState>((set, get) => {
     const loader = new PagedListLoader<ShoppingItemEntity>(() => get().list, (list) => set({ list }), (item) => item.id);
@@ -82,13 +87,26 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
     const place = (touched: Items, totalDelta?: number): void => loader.rewriteItems((items) => placed(items, touched, hasMore()), totalDelta);
     /** Refreshes a line already on screen; one that has left the window stays with its page. */
     const show = (item: ShoppingItemEntity): void => { if (hasItem(get().list, item.id)) place([item]); };
+    const loadToBuy = async (): Promise<void> => {
+      const isCurrent = toBuyReads.start();
+      const isSession = session.current();
+      const result = await deps.countToBuy.execute();
+      if (result.ok && isCurrent() && isSession()) set({ toBuy: result.value });
+    };
+    /** After a change the server accepted, the badge re-reads its count. */
+    const synced = <T,>(result: Result<T, Failure>): Result<T, Failure> => {
+      if (result.ok) void loadToBuy();
+      return result;
+    };
     const added = (result: Result<ShoppingAddResult, Failure>, isSession: () => boolean): Result<ShoppingAddResult, Failure> => {
       if (result.ok && isSession()) place(result.value.items, result.value.added);
-      return result;
+      return synced(result);
     };
 
     return {
       list: { status: StoreStatus.Idle },
+      toBuy: null,
+      loadToBuy,
       isRefreshing: false,
       load: () => loader.load(fetchPage),
       loadMore: () => loader.loadMore(),
@@ -112,7 +130,7 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
         if (ticks.get(item.id) !== tick || !isSession()) return ok(undefined);
         if (result.ok) show(result.value);
         else if (wasShown) place([item]);
-        return result.ok ? ok(undefined) : result;
+        return synced(result.ok ? ok(undefined) : result);
       },
 
       edit: async (id, edit) => {
@@ -129,27 +147,28 @@ export const configureShoppingListStore = (deps: ShoppingListStoreDeps): BoundSt
         const result = await deps.remove.execute(item.id);
         // Back only if this session's list still lacks it: a refresh may already have brought it back.
         if (!result.ok && wasShown && isCurrent() && !hasItem(get().list, item.id)) place([item], ValueConstants.one);
-        return result;
+        return synced(result);
       },
 
       clearChecked: async () => {
         const result = await deps.clearChecked.execute();
         if (result.ok) loader.rewriteItems((items) => items.filter((item) => !item.checked), -result.value);
-        return result;
+        return synced(result);
       },
 
       clearAll: async () => {
         const result = await deps.clearAll.execute();
         if (result.ok) set((s) => ({ list: s.list.status === StoreStatus.Loaded ? { ...s.list, items: [], total: ValueConstants.zero, hasMore: false } : s.list }));
-        return result;
+        return synced(result);
       },
 
       clear: () => {
         removals.invalidate();
         session.invalidate();
+        toBuyReads.invalidate();
         ticks.clear();
         loader.reset();
-        set({ isRefreshing: false });
+        set({ isRefreshing: false, toBuy: null });
       },
     };
   });

@@ -33,6 +33,8 @@ export const ApiRoutes = {
   shopping: {
     /** GET a page; DELETE empties the list. */
     list: '/me/shopping-list',
+    /** GET `{ unchecked }` — the cart badge (backend #394). */
+    summary: '/me/shopping-list/summary',
     /** POST a batch of lines. */
     items: '/me/shopping-list/items',
     /** DELETE every checked line. */
