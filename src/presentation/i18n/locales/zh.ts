@@ -523,6 +523,7 @@ export const zh = {
     continueAsGuest: '不登录，先逛逛',
   },
   recipes: {
+    removedFromSaved: '已从收藏中移除',
     title: '食谱',
     empty: '没有找到食谱。',
     noPhoto: '暂时还没有照片',

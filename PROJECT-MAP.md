@@ -5,7 +5,7 @@
 
 Read this before exploring: it answers "where does X live?" without a grep.
 Rules live in [CLAUDE.md](CLAUDE.md); the reasoning behind them in
-[architecture.md](architecture.md). 2212 source files.
+[architecture.md](architecture.md). 2213 source files.
 
 ## Layers
 
@@ -134,7 +134,7 @@ locale list `application/i18n/locale-constants.ts`.
 - `errors/` — Failure → user-facing copy/severity lookups _(9)_
 - `feedback/` — toast store, host and helpers _(10)_
 - `forms/` — shared field limits _(1)_
-- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(108)_
+- `hooks/` (accessibility, ads, assistant, auth, diary, instagram, interaction, meal-plan, navigation, notifications, profile, recipes, sync, timers) — shared hooks, grouped by capability _(109)_
 - `responsive/` (fold) — breakpoints, LayoutProvider, viewport metrics _(13)_
 - `taxonomy/` — cuisine/category/difficulty display vocabulary _(6)_
 - `test-support/` — render harness for component tests _(5)_
@@ -175,4 +175,4 @@ Consumed through the `@presentation/base/theme` barrel. `colors/` holds
 
 All four gates must be green before anything is done.
 
-<!-- fingerprint: 09a455e35bfa0d11 -->
+<!-- fingerprint: aa839372ca210d80 -->

@@ -520,6 +520,7 @@ export const de = {
     continueAsGuest: 'Ohne Konto fortfahren',
   },
   recipes: {
+    removedFromSaved: 'Aus Gespeichert entfernt',
     title: 'Rezepte',
     empty: 'Keine Rezepte gefunden.',
     noPhoto: 'Noch kein Foto',

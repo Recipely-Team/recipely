@@ -2866,3 +2866,19 @@ empty, from the filter the user chose.**
 
 **A question asked again after it was answered.** A guest who tapped "Explore" saw the welcome carousel on
 every launch (`use-onboarding.test.tsx`). *The class:* **a choice the user made is remembered.**
+
+## Three ways to lose work or a tap
+
+**A screen with no way out while it waits.** Once "Generate" was pressed, create-recipe had no close until the
+model answered. *Now:* a close from the first frame returns to the prompt, text kept; the late answer is dropped
+(`generating-view.test.tsx`). *The class:* **a wait the user did not choose has a cancel.**
+
+**A back gesture that skipped the question the close button asks.** Android back and the iOS swipe left
+create-recipe and Edit Profile with the work gone. *Now:* `useLeaveGuard` holds the gesture, asks the screen's own
+"keep or discard" question, and replays the gesture after the answer (`use-leave-guard.test.tsx`). *The class:*
+**every way out of a screen with unsaved work asks the same question — not only the close button.**
+
+**One global "busy" flag for many independent taps.** While one card's Save was on its way, a tap on another
+card's Save was silently dropped, and unsaving from the Saved tab had no undo. *Now:* `favoritesStore.pending`
+guards each recipe on its own; unsave offers Undo (`use-save-recipe.test.tsx`, `favorites-store.test.ts`).
+*The class:* **an in-flight guard is keyed by what it protects.**

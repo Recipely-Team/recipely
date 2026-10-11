@@ -520,6 +520,7 @@ export const ja = {
     continueAsGuest: 'アカウントなしで続ける',
   },
   recipes: {
+    removedFromSaved: '保存済みから削除しました',
     title: 'レシピ',
     empty: 'レシピが見つかりませんでした。',
     noPhoto: '写真はまだありません',

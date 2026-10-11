@@ -523,6 +523,7 @@ export const tr: TranslationsType = {
     continueAsGuest: 'Giriş yapmadan devam et',
   },
   recipes: {
+    removedFromSaved: 'Kaydedilenlerden çıkarıldı',
     title: 'Tarifler',
     empty: 'Henüz tarif yok.',
     noPhoto: 'Henüz fotoğraf yok',

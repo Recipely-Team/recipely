@@ -526,6 +526,7 @@ export const en = {
     continueAsGuest: 'Continue without an account',
   },
   recipes: {
+    removedFromSaved: 'Removed from saved',
     title: 'Recipes',
     empty: 'No recipes found.',
     noPhoto: 'No photo yet',

@@ -7,6 +7,9 @@ import { useEditProfile } from '@presentation/app/edit-profile/hooks/use-edit-pr
 import type { UseEditProfileResult } from '@presentation/app/edit-profile/model/use-edit-profile-result';
 
 const mockBack = jest.fn();
+jest.mock('@presentation/base/hooks/navigation/use-leave-guard', () => ({
+  useLeaveGuard: () => ({ release: jest.fn() }),
+}));
 jest.mock('expo-router', () => ({ useRouter: () => ({ back: mockBack, canGoBack: () => true, replace: jest.fn() }) }));
 jest.mock('@presentation/base/hooks/profile/use-avatar-upload', () => ({
   useAvatarUpload: () => ({ pickAndUpload: jest.fn(), isUploading: false, uploadError: null, onDismissUploadError: jest.fn() }),

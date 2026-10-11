@@ -522,6 +522,7 @@ export const hi: TranslationsType = {
     continueAsGuest: 'बिना खाते के जारी रखें',
   },
   recipes: {
+    removedFromSaved: 'सहेजे गए से हटाया गया',
     title: 'रेसिपी',
     empty: 'कोई रेसिपी नहीं मिली।',
     noPhoto: 'अभी कोई फ़ोटो नहीं है',

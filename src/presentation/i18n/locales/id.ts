@@ -520,6 +520,7 @@ export const id = {
     continueAsGuest: 'Lanjutkan tanpa akun',
   },
   recipes: {
+    removedFromSaved: 'Dihapus dari tersimpan',
     title: 'Resep',
     empty: 'Tidak ada resep ditemukan.',
     noPhoto: 'Belum ada foto',

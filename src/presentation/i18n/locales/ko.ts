@@ -522,6 +522,7 @@ export const ko: TranslationsType = {
     continueAsGuest: '계정 없이 계속',
   },
   recipes: {
+    removedFromSaved: '저장됨에서 삭제했어요',
     title: '레시피',
     empty: '레시피가 없어요.',
     noPhoto: '아직 사진이 없어요',

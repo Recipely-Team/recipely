@@ -520,6 +520,7 @@ export const ar = {
     continueAsGuest: "المتابعة بدون حساب"
   },
   recipes: {
+    removedFromSaved: 'تمت الإزالة من المحفوظات',
     title: "الوصفات",
     empty: "لم يتم العثور على وصفات.",
     noPhoto: "لا توجد صورة بعد",

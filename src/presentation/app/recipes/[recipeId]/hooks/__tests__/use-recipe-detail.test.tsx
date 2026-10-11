@@ -235,7 +235,7 @@ const makeStores = (commentsStore: BoundStore<CommentsStoreState>, overrides: St
   );
 
   const savedRecipesStore = create(() => ({ savedIds: new Set<string>() }));
-  const favoritesStore = create(() => ({ isLoading: false, error: null }));
+  const favoritesStore = create(() => ({ isLoading: false, pending: new Set<string>(), error: null }));
   const createdRecipesStore = create(() => ({
     findById: () => undefined,
     deleteState: { status: 'idle' as const },
