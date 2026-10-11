@@ -1,7 +1,7 @@
-Her sekmede aynı üst çubuk ve Şefler sayfasına ilk bakış.
+Alışveriş listen artık her sekmeden tek dokunuşta.
 
-• Tüm sekmelerde aynı üst çubuk: sekmeler arasında geçiş artık sarsılmıyor, bildirimler her sekmede tek dokunuşta.
-• Şefler: yakında gelecekleri gösteren yeni sayfa; yemek içerik üreticileri buradan başvurabilir.
-• Daha sade giriş ve kayıt alanları, arama sonuç vermediğinde daha sıcak bir ekran.
-• Reklamların size göre kişiselleştirilip kişiselleştirilmeyeceğine artık siz karar veriyorsunuz ve bu yalnızca bir kez soruluyor; her özellik iki durumda da çalışır.
+• Alışveriş listen artık tek dokunuş uzağında: her sekmedeki sepet, alınacak ürün sayısını gösterir.
+• Alışveriş ürünü, günlük kaydı ya da kayıtlı tarif kaldırdıktan sonra geri alabilirsin.
+• Tarif oluşturulurken iptal edebilirsin; yarım kalan tarif ya da profil düzenlemesinden çıkarken önce sorulur.
+• Tarif sayıları gerçek toplamı gösterir, bildirimler aşağı çekerek yenilenir.
 • Pek çok küçük düzeltme ve iyileştirme.
