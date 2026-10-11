@@ -520,6 +520,7 @@ export const fr = {
     continueAsGuest: 'Continuer sans compte',
   },
   recipes: {
+    removedFromSaved: 'Retiré des enregistrements',
     resultsCount: { zero: '{n} recette', one: '{n} recette', two: '{n} recettes', few: '{n} recettes', many: '{n} recettes', other: '{n} recettes' },
     title: 'Recettes',
     empty: 'Aucune recette trouvée.',

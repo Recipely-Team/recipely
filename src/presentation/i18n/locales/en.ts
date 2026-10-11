@@ -526,6 +526,7 @@ export const en = {
     continueAsGuest: 'Continue without an account',
   },
   recipes: {
+    removedFromSaved: 'Removed from saved',
     resultsCount: { zero: '{n} recipes', one: '{n} recipe', two: '{n} recipes', few: '{n} recipes', many: '{n} recipes', other: '{n} recipes' },
     title: 'Recipes',
     empty: 'No recipes found.',

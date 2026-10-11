@@ -520,6 +520,7 @@ export const id = {
     continueAsGuest: 'Lanjutkan tanpa akun',
   },
   recipes: {
+    removedFromSaved: 'Dihapus dari tersimpan',
     resultsCount: { zero: '{n} resep', one: '{n} resep', two: '{n} resep', few: '{n} resep', many: '{n} resep', other: '{n} resep' },
     title: 'Resep',
     empty: 'Tidak ada resep ditemukan.',

@@ -520,6 +520,7 @@ export const ru = {
     continueAsGuest: 'Продолжить без аккаунта',
   },
   recipes: {
+    removedFromSaved: 'Удалено из сохранённых',
     resultsCount: { zero: '{n} рецептов', one: '{n} рецепт', two: '{n} рецепта', few: '{n} рецепта', many: '{n} рецептов', other: '{n} рецепта' },
     title: 'Рецепты',
     empty: 'Рецепты не найдены.',

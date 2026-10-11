@@ -1,3 +1,4 @@
+import { ValueConstants } from '@core/constants';
 import type { BoundStore } from '@application/store/bound-store';
 import { create } from 'zustand';
 import { UnknownFailure } from '@core/failure';
@@ -15,39 +16,53 @@ interface FavoritesStoreDeps {
 export const configureFavoritesStore = (deps: FavoritesStoreDeps): BoundStore<FavoritesStoreState> => {
   const { addFavoriteUseCase, removeFavoriteUseCase, savedRecipesStore } = deps;
 
-  return create<FavoritesStoreState>((set) => ({
+  return create<FavoritesStoreState>((set, get) => {
+    const begin = (recipeId: string): boolean => {
+      if (get().pending.has(recipeId)) return false;
+      const pending = new Set(get().pending).add(recipeId);
+      set({ pending, isLoading: true, error: null });
+      return true;
+    };
+    const end = (recipeId: string, error: FavoritesStoreState['error'] = null): void => {
+      const pending = new Set(get().pending);
+      pending.delete(recipeId);
+      set({ pending, isLoading: pending.size > ValueConstants.zero, ...(error === null ? {} : { error }) });
+    };
+    return {
     isLoading: false,
+    pending: new Set<string>(),
     error: null,
     addFavorite: async (userId: string, recipeId: string) => {
+      if (!begin(recipeId)) return;
       try {
-        set({ isLoading: true, error: null });
         const result = await addFavoriteUseCase.execute(userId, recipeId);
         if (!result.ok) {
-          set({ isLoading: false, error: result.failure });
+          end(recipeId, result.failure);
           return;
         }
         savedRecipesStore.getState().addLocal(recipeId);
-        set({ isLoading: false });
+        end(recipeId);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        set({ isLoading: false, error: new UnknownFailure(errorMsg) });
+        end(recipeId, new UnknownFailure(errorMsg));
       }
     },
     removeFavorite: async (userId: string, recipeId: string) => {
+      if (!begin(recipeId)) return;
       try {
-        set({ isLoading: true, error: null });
         const result = await removeFavoriteUseCase.execute(userId, recipeId);
         if (!result.ok) {
-          set({ isLoading: false, error: result.failure });
+          end(recipeId, result.failure);
           return;
         }
         savedRecipesStore.getState().removeLocal(recipeId);
-        set({ isLoading: false });
+        end(recipeId);
       } catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err);
-        set({ isLoading: false, error: new UnknownFailure(errorMsg) });
+        end(recipeId, new UnknownFailure(errorMsg));
       }
     },
     clearError: () => set({ error: null }),
-  }));
+    };
+  });
 };

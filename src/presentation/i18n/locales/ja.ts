@@ -520,6 +520,7 @@ export const ja = {
     continueAsGuest: 'アカウントなしで続ける',
   },
   recipes: {
+    removedFromSaved: '保存済みから削除しました',
     resultsCount: { zero: '{n} 件のレシピ', one: '{n} 件のレシピ', two: '{n} 件のレシピ', few: '{n} 件のレシピ', many: '{n} 件のレシピ', other: '{n} 件のレシピ' },
     title: 'レシピ',
     empty: 'レシピが見つかりませんでした。',

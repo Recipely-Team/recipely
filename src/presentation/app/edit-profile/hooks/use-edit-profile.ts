@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { StoreStatus } from '@application/store/store-status';
+import { useLeaveGuard } from '@presentation/base/hooks/navigation/use-leave-guard';
 import { useGoBackOrHome } from '@presentation/base/hooks/navigation/use-go-back-or-home';
 import { RoutePaths } from '@presentation/base/constants';
 import { useStores } from '@presentation/bootstrap/use-stores';
@@ -68,6 +69,12 @@ export const useEditProfile = (): UseEditProfileResult => {
   const canSave = !isBlank(displayName);
   const dirty = displayName !== initialDisplayName || bio !== initialBio;
   const showNameError = dirty && !canSave;
+  // The back gesture asks too; off while saving, so the save's own way back is not held.
+  const heldBack = useRef(false);
+  const leaveGuard = useLeaveGuard(dirty && !isSaving, () => {
+    heldBack.current = true;
+    setDiscardVisible(true);
+  });
   const bioAtLimit = bio.length >= BIO_MAX;
   const saveEnabled = canSave && dirty && !isSaving;
 
@@ -110,9 +117,13 @@ export const useEditProfile = (): UseEditProfileResult => {
     discardVisible,
     onConfirmDiscard: () => {
       setDiscardVisible(false);
-      goBack();
+      if (heldBack.current) leaveGuard.release();
+      else goBack();
     },
-    onKeepEditing: () => setDiscardVisible(false),
+    onKeepEditing: () => {
+      heldBack.current = false;
+      setDiscardVisible(false);
+    },
     errorDialog: saveError ?? uploadError,
     onCloseErrorDialog: () => {
       setSaveError(null);

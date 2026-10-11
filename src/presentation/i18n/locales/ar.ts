@@ -520,6 +520,7 @@ export const ar = {
     continueAsGuest: "المتابعة بدون حساب"
   },
   recipes: {
+    removedFromSaved: 'تمت الإزالة من المحفوظات',
     resultsCount: { zero: '{n} وصفة', one: '{n} وصفة', two: '{n} وصفتان', few: '{n} وصفات', many: '{n} وصفة', other: '{n} وصفة' },
     title: "الوصفات",
     empty: "لم يتم العثور على وصفات.",

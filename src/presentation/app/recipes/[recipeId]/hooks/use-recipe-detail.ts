@@ -66,7 +66,7 @@ export const useRecipeDetail = (): UseRecipeDetailResult => {
   const load = recipeDetailStore((s) => s.load);
   const localRecipe = createdRecipesStore((s) => s.findById(recipeId));
   const isSaved = savedRecipesStore((s) => s.savedIds.has(recipeId));
-  const isLoading = favoritesStore((s) => s.isLoading);
+  const isLoading = favoritesStore((s) => s.pending.has(recipeId));
   const authState = authStore((s) => s.state);
   const userId = authState.status === StoreStatus.Authenticated ? authState.session.user.id : null;
   const { promptVisible, promptMessage, requestGate, closePrompt } = useGuestGate(userId);

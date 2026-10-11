@@ -117,7 +117,7 @@ export const CreateRecipeScreen = (): React.JSX.Element => {
     return (
       <View style={[styles.root, { backgroundColor: colors.background }]}>
         <ResponsiveContainer route="createRecipe" gutter={false} fill>
-          <GeneratingView activeStep={vm.genStep} />
+          <GeneratingView activeStep={vm.genStep} onCancel={vm.onCancelGenerate} topInset={vm.isWebShell ? ValueConstants.zero : vm.insets.top} />
         </ResponsiveContainer>
       </View>
     );

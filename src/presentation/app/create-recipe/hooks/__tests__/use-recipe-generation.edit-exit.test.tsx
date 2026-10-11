@@ -31,6 +31,9 @@ import { emptyEditable } from '@presentation/app/create-recipe/model/drafting/em
 import type { EditableRecipe } from '@presentation/app/create-recipe/model/drafting/editable-recipe';
 import { PhaseType } from '@presentation/app/create-recipe/model/phase-type';
 
+jest.mock('@presentation/base/hooks/navigation/use-leave-guard', () => ({
+  useLeaveGuard: () => ({ release: jest.fn() }),
+}));
 jest.mock('@presentation/base/feedback/show-toast', () => ({
   showDangerToast: jest.fn(),
   showErrorToast: jest.fn(),

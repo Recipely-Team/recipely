@@ -523,6 +523,7 @@ export const zh = {
     continueAsGuest: '不登录，先逛逛',
   },
   recipes: {
+    removedFromSaved: '已从收藏中移除',
     resultsCount: { zero: '{n} 份食谱', one: '{n} 份食谱', two: '{n} 份食谱', few: '{n} 份食谱', many: '{n} 份食谱', other: '{n} 份食谱' },
     title: '食谱',
     empty: '没有找到食谱。',
