@@ -523,6 +523,7 @@ export const tr: TranslationsType = {
     continueAsGuest: 'Giriş yapmadan devam et',
   },
   recipes: {
+    resultsCount: { zero: '{n} tarif', one: '{n} tarif', two: '{n} tarif', few: '{n} tarif', many: '{n} tarif', other: '{n} tarif' },
     title: 'Tarifler',
     empty: 'Henüz tarif yok.',
     noPhoto: 'Henüz fotoğraf yok',
@@ -1028,6 +1029,7 @@ export const tr: TranslationsType = {
     retry: 'Başka sayfa seç',
   },
   drafts: {
+    itemsCount: { zero: '{n} malzeme', one: '{n} malzeme', two: '{n} malzeme', few: '{n} malzeme', many: '{n} malzeme', other: '{n} malzeme' },
     title: 'Taslaklar',
     empty: 'Henüz taslağın yok. Bir tarif oluşturmaya başladığında otomatik olarak burada görünecek.',
     untitled: 'Adsız tarif',

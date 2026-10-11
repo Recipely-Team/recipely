@@ -24,6 +24,8 @@ export type RecipeListState =
       page: number;
       /** True while the backend has more matching recipes than are loaded. */
       hasMore: boolean;
+      /** How many recipes match in all, from the page envelope — what "N recipes" says; absent from old fixtures. */
+      total?: number;
       /** True while an appending fetch for the NEXT page is in flight. */
       isLoadingMore?: boolean;
       isRefreshing?: boolean;

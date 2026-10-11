@@ -522,6 +522,7 @@ export const ko: TranslationsType = {
     continueAsGuest: '계정 없이 계속',
   },
   recipes: {
+    resultsCount: { zero: '레시피 {n}개', one: '레시피 {n}개', two: '레시피 {n}개', few: '레시피 {n}개', many: '레시피 {n}개', other: '레시피 {n}개' },
     title: '레시피',
     empty: '레시피가 없어요.',
     noPhoto: '아직 사진이 없어요',
@@ -1020,6 +1021,7 @@ export const ko: TranslationsType = {
     retry: '다른 페이지 선택',
   },
   drafts: {
+    itemsCount: { zero: '{n}개', one: '{n}개', two: '{n}개', few: '{n}개', many: '{n}개', other: '{n}개' },
     title: '임시저장',
     empty: '아직 임시저장한 레시피가 없어요. 레시피를 만들기 시작하면 자동으로 저장돼요.',
     untitled: '이름 없는 레시피',

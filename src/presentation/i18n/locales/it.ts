@@ -520,6 +520,7 @@ export const it = {
     continueAsGuest: 'Continua senza account',
   },
   recipes: {
+    resultsCount: { zero: '{n} ricette', one: '{n} ricetta', two: '{n} ricette', few: '{n} ricette', many: '{n} ricette', other: '{n} ricette' },
     title: 'Ricette',
     empty: 'Nessuna ricetta trovata.',
     noPhoto: 'Ancora nessuna foto',
@@ -1024,6 +1025,7 @@ export const it = {
     retry: 'Scegli altre pagine',
   },
   drafts: {
+    itemsCount: { zero: '{n} elementi', one: '{n} elemento', two: '{n} elementi', few: '{n} elementi', many: '{n} elementi', other: '{n} elementi' },
     title: 'Bozze',
     empty: 'Ancora nessuna bozza — inizia una ricetta e verrà salvata qui automaticamente.',
     untitled: 'Ricetta senza titolo',

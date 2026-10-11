@@ -520,6 +520,7 @@ export const fr = {
     continueAsGuest: 'Continuer sans compte',
   },
   recipes: {
+    resultsCount: { zero: '{n} recette', one: '{n} recette', two: '{n} recettes', few: '{n} recettes', many: '{n} recettes', other: '{n} recettes' },
     title: 'Recettes',
     empty: 'Aucune recette trouvée.',
     noPhoto: 'Pas encore de photo',
@@ -1024,6 +1025,7 @@ export const fr = {
     retry: 'Choisir d\'autres pages',
   },
   drafts: {
+    itemsCount: { zero: '{n} élément', one: '{n} élément', two: '{n} éléments', few: '{n} éléments', many: '{n} éléments', other: '{n} éléments' },
     title: 'Brouillons',
     empty: 'Aucun brouillon pour le moment — commencez une recette et elle sera enregistrée ici automatiquement.',
     untitled: 'Recette sans titre',

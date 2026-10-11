@@ -523,6 +523,7 @@ export const zh = {
     continueAsGuest: '不登录，先逛逛',
   },
   recipes: {
+    resultsCount: { zero: '{n} 份食谱', one: '{n} 份食谱', two: '{n} 份食谱', few: '{n} 份食谱', many: '{n} 份食谱', other: '{n} 份食谱' },
     title: '食谱',
     empty: '没有找到食谱。',
     noPhoto: '暂时还没有照片',
@@ -1028,6 +1029,7 @@ export const zh = {
     retry: '选择其他页面',
   },
   drafts: {
+    itemsCount: { zero: '{n} 项', one: '{n} 项', two: '{n} 项', few: '{n} 项', many: '{n} 项', other: '{n} 项' },
     title: '草稿',
     empty: '还没有草稿。开始创建一份食谱后，会自动保存到这里。',
     untitled: '未命名食谱',

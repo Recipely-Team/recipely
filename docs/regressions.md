@@ -2875,3 +2875,18 @@ tab bar and in the web header (`shopping-cart-button.test.tsx`), and a guest get
 *The class:* **every feature the user keeps coming back to has an entry point on the surfaces they already
 look at — the tab bar or the header — not only inside a settings-like page.** A route → entry point table lives
 in the prototype's `navigation-entry-points-rn-spec.md`.
+
+## Counts and copies that told a smaller truth
+
+**A count of what was loaded, shown as the count of what exists.** The feed said "20 recipes" when the server
+matched 340, and the web filter dialog's "Show results (N)" counted the filters already applied, not the ones
+being edited. *Now:* the feed keeps the page envelope's `total`; the dialog shows no number. *The class:* **a count
+the user reads as "how many there are" comes from the server's total, never from loaded rows.**
+
+**"{count} {word}" concatenation.** It said "1 results" and used one fixed form in Russian and Arabic.
+*Now:* `pluralCount` picks the CLDR form (`Intl.PluralRules`) from six forms every locale lists
+(`plural-count.test.ts`). *The class:* **a number and its noun are one translated string with plural forms.**
+
+**Two copies of one settings screen.** Profile's settings and `/settings` drifted (Reminders in one, Send feedback
+in the other). *Now:* `/settings` redirects to Profile, which holds every setting and the assistant's settings
+words. *The class:* **one screen, one copy; a legacy route redirects rather than duplicates.**

@@ -520,6 +520,7 @@ export const ar = {
     continueAsGuest: "المتابعة بدون حساب"
   },
   recipes: {
+    resultsCount: { zero: '{n} وصفة', one: '{n} وصفة', two: '{n} وصفتان', few: '{n} وصفات', many: '{n} وصفة', other: '{n} وصفة' },
     title: "الوصفات",
     empty: "لم يتم العثور على وصفات.",
     noPhoto: "لا توجد صورة بعد",
@@ -1024,6 +1025,7 @@ export const ar = {
     retry: 'اختر صفحات أخرى',
   },
   drafts: {
+    itemsCount: { zero: "{n} عنصر", one: "{n} عنصر", two: "{n} عنصران", few: "{n} عناصر", many: "{n} عنصرًا", other: "{n} عنصر" },
     title: "المسودات",
     empty: "لا توجد مسودات بعد — ابدأ وصفة وسيتم حفظها هنا تلقائيًا.",
     untitled: "وصفة بلا عنوان",
