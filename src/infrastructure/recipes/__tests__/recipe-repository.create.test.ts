@@ -4,7 +4,7 @@ import type { Result } from '@core/result/result';
 import { RecipeEntity } from '@domain/recipes/recipe-entity';
 import { RecipeVisibility } from '@domain/recipes/publishing/recipe-visibility';
 import type { CreateRecipeInput } from '@domain/recipes/create/create-recipe-input';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { RecipeDto } from '@infrastructure/recipes/dtos/recipe-dto';
 import { RecipeRepository } from '@infrastructure/recipes/recipe-repository';
 import { CuisineKey } from '@domain/recipes/taxonomy/cuisine-key';
@@ -61,14 +61,14 @@ interface UploadCall {
 
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: UploadCall[] } => {
+): { http: AxiosHttpClient; calls: UploadCall[] } => {
   const calls: UploadCall[] = [];
   const stub = {
     uploadMultipart: jest.fn((url: string, formData: FormData) => {
       calls.push({ url, formData });
       return Promise.resolve(result);
     }),
-  } as unknown as HttpClient;
+  } as unknown as AxiosHttpClient;
   return { http: stub, calls };
 };
 
@@ -105,7 +105,7 @@ describe('RecipeRepository.createRecipe', () => {
     }
   });
 
-  it('propagates an HttpClient upload failure unchanged', async () => {
+  it('propagates an AxiosHttpClient upload failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new RecipeRepository(http);

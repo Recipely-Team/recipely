@@ -4,7 +4,7 @@ import { fail, ok } from '@core/result/result-helpers';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 
@@ -18,7 +18,7 @@ interface RequestCall {
   data?: unknown;
 }
 
-const makeHttp = (): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(jest.fn((config: RequestCall) => {
     calls.push({ url: config.url, data: config.data });

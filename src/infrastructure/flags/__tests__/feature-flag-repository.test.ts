@@ -2,11 +2,11 @@ import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FeatureFlagRepository } from '@infrastructure/flags/feature-flag-repository';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
-const repoAnswering = (value: ReturnType<HttpClient['get']>) => {
+const repoAnswering = (value: ReturnType<AxiosHttpClient['get']>) => {
   const get = jest.fn().mockReturnValue(value);
-  return { repo: new FeatureFlagRepository({ get } as unknown as HttpClient), get };
+  return { repo: new FeatureFlagRepository({ get } as unknown as AxiosHttpClient), get };
 };
 
 describe('FeatureFlagRepository', () => {

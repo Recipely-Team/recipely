@@ -6,7 +6,7 @@ import { HttpHeader, HttpMediaType } from '@infrastructure/network/http/http-hea
 import { MULTIPART_UPLOAD_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { encryptEnvelope } from '@infrastructure/crypto/aes-envelope';
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { CharConstants } from '@core/constants';
 
 /**
@@ -22,7 +22,7 @@ import { CharConstants } from '@core/constants';
  * and the backend rejects the request.
  */
 export const buildRequestInterceptor = (
-  options: HttpClientOptions,
+  options: AxiosHttpClientOptions,
   aesKey: Uint8Array,
 ) => {
   return async (config: InternalAxiosRequestConfig): Promise<InternalAxiosRequestConfig> => {

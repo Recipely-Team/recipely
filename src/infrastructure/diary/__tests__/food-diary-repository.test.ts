@@ -6,7 +6,7 @@ import { CalendarMonth } from '@domain/diary/calendar/calendar-month';
 import { MealSlot } from '@domain/diary/meal-slot';
 import { NutritionGoals } from '@domain/diary/nutrition/nutrition-goals';
 import { nutrientsOf } from '@domain/diary/__fixtures__/nutrients-of';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import { FoodDiaryRepository } from '@infrastructure/diary/food-diary-repository';
 
@@ -17,7 +17,7 @@ interface RequestCall {
   params?: unknown;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(
     jest.fn((config: RequestCall) => {

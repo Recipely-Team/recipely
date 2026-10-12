@@ -1,7 +1,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { TaxonomyItemDto } from '@infrastructure/recipes/taxonomy/dtos/taxonomy-item-dto';
 import { TaxonomyRepository } from '@infrastructure/recipes/taxonomy/taxonomy-repository';
@@ -16,10 +16,10 @@ interface RequestCall {
   url?: string;
 }
 
-// Minimal HttpClient stub — only `request` is used by the repository.
+// Minimal AxiosHttpClient stub — only `request` is used by the repository.
 const makeHttp = (
   result: Result<unknown, unknown>,
-): { http: HttpClient; calls: RequestCall[] } => {
+): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(jest.fn((config: RequestCall) => {
       calls.push(config);
@@ -67,7 +67,7 @@ describe('TaxonomyRepository.listCuisines', () => {
     if (r.ok) expect(r.value.map((i) => i.key)).toEqual(['TURKISH', 'ITALIAN']);
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new TaxonomyRepository(http);
@@ -105,7 +105,7 @@ describe('TaxonomyRepository.listCategories', () => {
     expect(calls[0].url).toBe(ApiRoutes.recipes.categories);
   });
 
-  it('propagates the HttpClient failure unchanged', async () => {
+  it('propagates the AxiosHttpClient failure unchanged', async () => {
     const failure = new NetworkFailure('offline');
     const { http } = makeHttp(fail(failure));
     const repo = new TaxonomyRepository(http);

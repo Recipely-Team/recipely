@@ -13,7 +13,7 @@ import { failureFromResponse } from '@infrastructure/network/errors/failure-from
 import { isEnvelope } from '@infrastructure/network/envelope/is-envelope';
 import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely-data-body';
 import { buildCommonHeaders } from '@infrastructure/network/http/build-common-headers';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import type { UploadProgressEvent } from '@infrastructure/network/upload/upload-progress-event';
 import { joinUrl } from '@infrastructure/network/http/join-url';
 
@@ -28,7 +28,7 @@ import { joinUrl } from '@infrastructure/network/http/join-url';
  * needed for endpoints mounted outside `/api/v1` like `/upload`).
  */
 export const uploadMultipart = async <T>(
-  options: HttpClientOptions,
+  options: AxiosHttpClientOptions,
   aesKey: Uint8Array,
   url: string,
   formData: FormData,

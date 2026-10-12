@@ -6,7 +6,7 @@ import { type Failure, NotFoundFailure } from '@core/failure';
 import type { RecipeDraft } from '@domain/drafts/recipe-draft';
 import type { RecipeDraftRepositoryInterface } from '@domain/drafts/recipe-draft-repository-interface';
 import type { UpsertDraftInput } from '@domain/drafts/upsert-draft-input';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { RecipeDraftDto } from '@infrastructure/drafts/dtos/recipe-draft-dto';
 import { toRecipeDraft } from '@infrastructure/drafts/recipe-draft-mapper';
@@ -17,10 +17,10 @@ import type { PageDto } from '@infrastructure/network/paging/page-dto';
 /**
  * Implements `RecipeDraftRepositoryInterface` against the Recipely backend draft
  * endpoints (mounted under `/recipes`). All bodies are sent as JSON; the
- * locale rides the `Accept-Language` header attached by `HttpClient`.
+ * locale rides the `Accept-Language` header attached by `AxiosHttpClient`.
  */
 export class RecipeDraftRepository implements RecipeDraftRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async listDrafts(
     page: number,

@@ -1,4 +1,4 @@
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { HttpHeader, BEARER_PREFIX } from '@infrastructure/network/http/http-header';
 
 /**
@@ -10,7 +10,7 @@ import { HttpHeader, BEARER_PREFIX } from '@infrastructure/network/http/http-hea
 
  */
 export const buildCommonHeaders = async (
-  options: HttpClientOptions,
+  options: AxiosHttpClientOptions,
 ): Promise<Record<string, string>> => {
   const headers: Record<string, string> = {
     [HttpHeader.acceptLanguage]: await options.localeProvider(),

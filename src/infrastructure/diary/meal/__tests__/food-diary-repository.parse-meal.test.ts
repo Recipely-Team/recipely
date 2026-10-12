@@ -1,6 +1,6 @@
 import { ok } from '@core/result/result-helpers';
 import { MealParseInputKind } from '@domain/diary/meal/meal-parse-input-kind';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
 import type { RecordedRequest } from '@infrastructure/network/http/__fixtures__/recorded-request';
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
@@ -26,7 +26,7 @@ const makeHttp = () => {
       uploads.push({ url, form, timeout });
       return Promise.resolve(ok(answer));
     }),
-  } as unknown as HttpClient;
+  } as unknown as AxiosHttpClient;
   return { http, requests, uploads };
 };
 

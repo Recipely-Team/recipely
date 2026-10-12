@@ -1,7 +1,7 @@
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { ApiLimits } from '@infrastructure/constants/api/api-limits';
 import { AssistantMessenger } from '@infrastructure/assistant/message/assistant-messenger';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
 /**
  * The text path is a MODEL call, not a lookup.
@@ -19,7 +19,7 @@ describe('AssistantMessenger', () => {
       calls.push({ url, data, config });
       return { ok: true as const, value: { reply: 'tamam' } };
     },
-  } as unknown as HttpClient;
+  } as unknown as AxiosHttpClient;
 
   beforeEach(() => {
     calls.length = 0;

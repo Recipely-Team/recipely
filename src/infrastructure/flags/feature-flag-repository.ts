@@ -2,7 +2,7 @@ import { ok, fail } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import { isObject } from '@core/guards/type-guards';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { FeatureFlagRepositoryInterface } from '@domain/flags/feature-flag-repository-interface';
 import type { FeatureFlagsResponseDto } from '@infrastructure/flags/feature-flags-dto';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
@@ -15,7 +15,7 @@ import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
  *   flag on its build-time value, never switch it.
  */
 export class FeatureFlagRepository implements FeatureFlagRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async fetchOverrides(): Promise<Result<Readonly<Record<string, boolean>>, Failure>> {
     const result = await this.http.get<FeatureFlagsResponseDto>(ApiRoutes.flags);

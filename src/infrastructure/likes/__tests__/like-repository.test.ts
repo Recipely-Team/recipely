@@ -8,7 +8,7 @@
 import { NetworkFailure } from '@core/failure';
 import { fail, ok } from '@core/result/result-helpers';
 import type { Result } from '@core/result/result';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import type { RecipeListItemDto } from '@infrastructure/recipes/dtos/recipe-list-item-dto';
 import { LikeRepository } from '@infrastructure/likes/like-repository';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
@@ -25,7 +25,7 @@ interface RequestCall {
   params?: unknown;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const stub = withHttpVerbs(
     jest.fn((config: RequestCall) => {

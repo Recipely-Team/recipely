@@ -3,7 +3,7 @@ import type { Result } from '@core/result/result';
 import type { Failure } from '@core/failure';
 import type { TaxonomyRepositoryInterface } from '@domain/recipes/taxonomy/taxonomy-repository-interface';
 import type { TaxonomyItem } from '@domain/recipes/taxonomy/taxonomy-item';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { CategoriesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/categories-response-dto';
 import type { CuisinesResponseDto } from '@infrastructure/recipes/taxonomy/dtos/cuisines-response-dto';
@@ -15,7 +15,7 @@ import { toTaxonomyItems } from '@infrastructure/recipes/taxonomy/taxonomy-mappe
  * via the `Accept-Language` header the HTTP client already attaches.
  */
 export class TaxonomyRepository implements TaxonomyRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async listCuisines(): Promise<Result<TaxonomyItem[], Failure>> {
     const result = await this.http.get<CuisinesResponseDto>(ApiRoutes.recipes.cuisines);

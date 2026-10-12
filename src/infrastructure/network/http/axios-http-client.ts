@@ -7,7 +7,7 @@ import { failureFromResponse } from '@infrastructure/network/errors/failure-from
 import { DEFAULT_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import { API_AES_KEY_HEX } from '@infrastructure/constants/build-secrets';
 import { keyFromHex } from '@infrastructure/crypto/aes-envelope';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { isRecipelyDataBody } from '@infrastructure/network/envelope/is-recipely-data-body';
 import { mapAxiosError } from '@infrastructure/network/errors/map-axios-error';
 import { buildRequestInterceptor } from '@infrastructure/network/http/build-request-interceptor';
@@ -43,11 +43,11 @@ interface RequestConfig {
  * JSON request bodies and decrypts AES-GCM response envelopes, and maps
  * non-2xx responses and network errors to the domain `Failure` hierarchy.
  */
-export class HttpClient {
+export class AxiosHttpClient {
   private readonly instance: AxiosInstance;
   private readonly aesKey: Uint8Array;
 
-  constructor(private readonly options: HttpClientOptions) {
+  constructor(private readonly options: AxiosHttpClientOptions) {
     this.aesKey = keyFromHex(API_AES_KEY_HEX);
 
     this.instance = create({

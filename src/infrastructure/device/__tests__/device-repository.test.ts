@@ -7,7 +7,7 @@ import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { FixedDeviceIdentity } from '@infrastructure/device/__fixtures__/fixed-device-identity';
 import { HttpMethod } from '@infrastructure/network/http/http-method';
 import { withHttpVerbs } from '@infrastructure/network/http/__fixtures__/with-http-verbs';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 
 interface RequestCall {
   method?: string;
@@ -15,7 +15,7 @@ interface RequestCall {
   data?: unknown;
 }
 
-const makeHttp = (result: Result<unknown, unknown>): { http: HttpClient; calls: RequestCall[] } => {
+const makeHttp = (result: Result<unknown, unknown>): { http: AxiosHttpClient; calls: RequestCall[] } => {
   const calls: RequestCall[] = [];
   const http = withHttpVerbs(jest.fn((config: RequestCall) => {
     calls.push({ method: config.method, url: config.url, data: config.data });

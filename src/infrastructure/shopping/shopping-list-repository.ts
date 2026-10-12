@@ -10,7 +10,7 @@ import type { ShoppingItemDraft } from '@domain/shopping/items/shopping-item-dra
 import type { ShoppingItemChanges } from '@domain/shopping/items/shopping-item-changes';
 import type { ShoppingAddResult } from '@domain/shopping/items/shopping-add-result';
 import type { ShoppingListRepositoryInterface } from '@domain/shopping/shopping-list-repository-interface';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import type { PageDto } from '@infrastructure/network/paging/page-dto';
 import { toPage } from '@infrastructure/network/paging/to-page';
@@ -30,7 +30,7 @@ import { toShoppingItemChangesRequest } from '@infrastructure/shopping/to-shoppi
  * the wire; `toPage` derives it), which skips an unreadable line.
  */
 export class ShoppingListRepository implements ShoppingListRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async list(page: number, pageSize: number): Promise<Result<Page<ShoppingItemEntity>, Failure>> {
     const result = await this.http.get<PageDto<ShoppingItemDto>>(ApiRoutes.shopping.list, { params: toPageQuery({ page, pageSize }) });

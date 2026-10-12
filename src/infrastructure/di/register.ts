@@ -3,8 +3,8 @@ import { MealPlanRepository } from '@infrastructure/meal-plan/meal-plan-reposito
 import { FridgeRepository } from '@infrastructure/fridge/fridge-repository';
 import { type Container } from '@core/di/container';
 import { TOKENS } from '@application/di/tokens';
-import { HttpClient } from '@infrastructure/network/http/http-client';
-import type { HttpClientOptions } from '@infrastructure/network/http/http-client-options';
+import { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
+import type { AxiosHttpClientOptions } from '@infrastructure/network/http/axios-http-client-options';
 import { SecureTokenStorage } from '@infrastructure/storage/secure-token-storage';
 import { PreferenceStore } from '@infrastructure/storage/preference-store';
 import { AuthRepository } from '@infrastructure/auth/auth-repository';
@@ -86,7 +86,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   // Fold and hinge posture; the web half reads the Viewport Segments API.
   container.register(TOKENS.WindowPosture, () => new WindowPostureBridge());
 
-  const httpClientOptions: HttpClientOptions = {
+  const httpClientOptions: AxiosHttpClientOptions = {
     baseUrl: API_BASE_URL,
     tokenProvider: async () => {
       const result = await storage.loadSession();
@@ -106,7 +106,7 @@ export const registerInfrastructure = (container: Container, opts?: Infrastructu
   if (opts?.onUnauthorized) {
     httpClientOptions.onUnauthorized = opts.onUnauthorized;
   }
-  const http = new HttpClient(httpClientOptions);
+  const http = new AxiosHttpClient(httpClientOptions);
 
   container.register(TOKENS.AuthRepository, () => new AuthRepository(http, storage, deviceIdentity));
   container.register(TOKENS.DeviceRepository, () => new DeviceRepository(http));

@@ -5,7 +5,7 @@ import type { FridgeIngredient } from '@domain/fridge/scan/fridge-ingredient';
 import type { FridgeScanInput } from '@domain/fridge/scan/fridge-scan-input';
 import type { FridgeIdea } from '@domain/fridge/ideas/fridge-idea';
 import type { FridgeIdeasInput } from '@domain/fridge/ideas/fridge-ideas-input';
-import type { HttpClient } from '@infrastructure/network/http/http-client';
+import type { AxiosHttpClient } from '@infrastructure/network/http/axios-http-client';
 import { ApiRoutes } from '@infrastructure/constants/api/api-routes';
 import { AI_REQUEST_TIMEOUT_MS } from '@infrastructure/constants/api/api-timeouts';
 import type { FridgeScanDto } from '@infrastructure/fridge/dtos/fridge-scan-dto';
@@ -20,7 +20,7 @@ import { toFridgeIdeas } from '@infrastructure/fridge/read/to-fridge-ideas';
  * the AI timeout, since each waits on a model.
  */
 export class FridgeRepository implements FridgeRepositoryInterface {
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: AxiosHttpClient) {}
 
   async scan(input: FridgeScanInput): Promise<Result<readonly FridgeIngredient[], Failure>> {
     const result = await this.http.uploadMultipart<FridgeScanDto>(ApiRoutes.fridge.scan, await toFridgeScanForm(input), undefined, AI_REQUEST_TIMEOUT_MS);
