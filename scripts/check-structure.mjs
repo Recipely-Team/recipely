@@ -62,6 +62,8 @@
  *   AS. No bare `router.back()` under app/ — a cold-started page has no back, so
  *      it dead-ends on iOS/web and quits on Android; use `useGoBackOrHome`
  *      (CLAUDE.md §24).
+ *   AU. No Intl API Hermes lacks (PluralRules, RelativeTimeFormat, ListFormat,
+ *      Segmenter, DisplayNames, Locale, DurationFormat) outside tests (§24).
  *   T. Ads only on screens carrying publisher content, and the ad loader only
  *      in the widget that mounts a unit — never in a page and never in the web
  *      shell, which wraps every route. AdSense flagged both (CLAUDE.md §23e).
@@ -1605,6 +1607,23 @@ function openingTag(src, at) {
       const window = lines.slice(Math.max(0, i - 2), i + 1).join('\n');
       if (GUARD.test(window)) return;
       errors.push(`${file}:${i + 1}: bare router.back() — a cold-started page has no back; use useGoBackOrHome(fallback) (CLAUDE.md §24)`);
+    });
+  }
+}
+
+// --- AU: no Intl API the phones' engine lacks (CLAUDE.md §24) --------------
+// Hermes ships Intl.Collator, DateTimeFormat and NumberFormat — nothing else.
+// `new Intl.PluralRules` passed every gate (browsers and Jest's Node have it)
+// and v1.4.0 opened on the crash screen on iOS and Android. Plural categories
+// come from `pluralCategory` in presentation/i18n.
+{
+  const MISSING = /\bIntl\.(PluralRules|RelativeTimeFormat|ListFormat|Segmenter|DisplayNames|Locale|DurationFormat)\b/;
+  for (const file of files) {
+    if (isTest(file)) continue;
+    const lines = fs.readFileSync(path.join(SRC, file), 'utf8').split('\n');
+    lines.forEach((line, i) => {
+      if (!MISSING.test(line) || /^\s*(\/\/|\*)/.test(line)) return;
+      errors.push(`${file}:${i + 1}: ${line.match(MISSING)[0]} does not exist on Hermes (iOS/Android) — it throws in the native builds only (check:structure rule AU)`);
     });
   }
 }
